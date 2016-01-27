@@ -1,14 +1,16 @@
-# Contributing to generator-oraclejet
+# Contributing to Oracle JET
 
 *Copyright (c) 2014,2016 Oracle and/or its affiliates
 The Universal Permissive License (UPL), Version 1.0*
 
-Pull requests can be made under [The Oracle Contributor Agreement](https://www.oracle.com/technetwork/community/oca-486395.html)
+**Pull requests are currently not being accepted for the Oracle JET project.**  
+
+We plan to provide this functionality in the future. At that time, you will need to follow [The Oracle Contributor Agreement](https://www.oracle.com/technetwork/community/oca-486395.html)
 (OCA).
 
-If you have ideas, comments, or issues related to Oracle JET and Yeoman generators, swing on by the [Oracle JET Generators discussion forum.](https://community.oracle.com/community/development_tools/oracle-jet/generators)
+If you have ideas, comments, or issues related to Oracle JET, swing on by the [Oracle JET discussion forum.](https://community.oracle.com/community/development_tools/oracle-jet)
 
-For pull requests to be accepted into generator-oraclejet, the bottom of
+For pull requests to be accepted into oraclejet, the bottom of
 your commit message must have the following line using your name and
 e-mail address as it appears in the OCA Signatories list.
 
