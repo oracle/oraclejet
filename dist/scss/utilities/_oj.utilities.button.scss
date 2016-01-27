@@ -1,0 +1,340 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// for icons in buttons see _oj.utilities.icon.button.scss
+@import "oj.utilities.gradients";
+@import "oj.utilities.boxshadow";
+
+
+
+
+
+//*****************************************************************************
+// mixin to override button colors (including gradients and shadows) 
+//
+// Example usage:
+// 
+// $demoPurpleColor: #800080;
+// 
+// .demo-button-purple {
+//   @include oj-button-state-overrides (
+//     $altButtonTextColorHover:      lighten($demoPurpleColor, 10%),
+//     $altButtonIconColorHover:      lighten($demoPurpleColor, 15%),
+//     $altButtonBgColorActive:       $demoPurpleColor,
+//     $altButtonBorderColorActive:   $demoPurpleColor,
+//     $altButtonBgColorSelected:     $demoPurpleColor,
+//     $altButtonBorderColorSelected: $demoPurpleColor);
+// }
+//
+// Note: This mixin does not support buttonsets
+//*****************************************************************************
+@mixin oj-button-state-overrides (
+
+    // default
+    $altButtonTextColor:                   null,
+    $altButtonBgColor:                     null,
+    $altButtonIconColor:                   null,
+    $altButtonBorderColor:                 null,
+    $altButtonBgImage:                     null, 
+    $altButtonTextShadow:                  null, 
+    $altButtonBoxShadow:                   null,
+
+    // hover
+    $altButtonTextColorHover:              null,
+    $altButtonBgColorHover:                null,
+    $altButtonIconColorHover:              null,
+    $altButtonBorderColorHover:            null,
+    $altButtonBgImageHover:                null,                   
+    $altButtonTextShadowHover:             null,
+    $altButtonBoxShadowHover:              null,
+
+    // active
+    $altButtonTextColorActive:             null,
+    $altButtonBgColorActive:               null,
+    $altButtonIconColorActive:             null,
+    $altButtonBorderColorActive:           null,
+    $altButtonBgImageActive:               null,                  
+    $altButtonTextShadowActive:            null,
+    $altButtonBoxShadowActive:             null,
+    $altButtonOpacityActive:               null,
+
+    // selected 
+    $altButtonBgColorSelected:             null, 
+    $altButtonTextColorSelected:           null,
+    $altButtonIconColorSelected:           null,
+    $altButtonBorderColorSelected:         null,
+    $altButtonBgImageSelected:             null,                 
+    $altButtonTextShadowSelected:          null,
+    $altButtonBoxShadowSelected:           null,
+
+    // selected and hovered 
+    $altButtonBgColorSelectedHover:        null, 
+    $altButtonTextColorSelectedHover:      null,
+    $altButtonIconColorSelectedHover:      null,
+    $altButtonBorderColorSelectedHover:    null,
+    $altButtonBgImageSelectedHover:        null,                 
+    $altButtonTextShadowSelectedHover:     null,
+    $altButtonBoxShadowSelectedHover:      null,
+
+    // disabled 
+    $altButtonBgColorDisabled:             null,
+    $altButtonTextColorDisabled:           null,
+    $altButtonIconColorDisabled:           null,
+    $altButtonBorderColorDisabled:         null,
+    $altButtonOpacityDisabled:             null,
+
+    // disabled and selected
+    $altButtonTextColorSelectedDisabled:   null,
+    $altButtonIconColorSelectedDisabled:   null,
+    $altButtonBgColorSelectedDisabled:     null,
+    $altButtonBorderColorSelectedDisabled: null
+ )
+{
+
+    &.oj-button.oj-default,
+    &.oj-button.oj-focus-only {
+        background-color: $altButtonBgColor; 
+        @include oj-background-image($altButtonBgImage);
+        border-color: $altButtonBorderColor;   
+        color: $altButtonTextColor;    
+        @include oj-box-shadow($altButtonBoxShadow); 
+        // can't set text-shadow on oj-button-text class because oj-button-text 
+        // not used on inputs of type button, submit, and reset
+        text-shadow: $altButtonTextShadow ;
+    }
+
+    &.oj-button.oj-default .oj-button-icon,
+    &.oj-button.oj-focus-only .oj-button-icon {
+        color: $altButtonIconColor; 
+    }
+
+    &.oj-button.oj-hover {
+        background-color: $altButtonBgColorHover;
+        @include oj-background-image($altButtonBgImageHover);
+        border-color: $altButtonBorderColorHover; 
+        color: $altButtonTextColorHover;  
+        @include oj-box-shadow($altButtonBoxShadowHover); 
+        text-shadow: $altButtonTextShadowHover;
+    }
+
+    &.oj-button.oj-hover .oj-button-icon {
+        color: $altButtonIconColorHover; 
+    }
+
+    &.oj-button.oj-active {
+        background-color: $altButtonBgColorActive;
+        @include oj-background-image($altButtonBgImageActive);
+        border-color: $altButtonBorderColorActive;
+        color: $altButtonTextColorActive;  
+        @include oj-box-shadow($altButtonBoxShadowActive); 
+        text-shadow: $altButtonTextShadowActive;
+        opacity: $altButtonOpacityActive;
+    }
+
+    &.oj-button.oj-active .oj-button-icon {
+        color: $altButtonIconColorActive; 
+    }
+    
+    &.oj-button.oj-selected {
+        background-color: $altButtonBgColorSelected;
+        @include oj-background-image($altButtonBgImageSelected);
+        border-color: $altButtonBorderColorSelected;
+        color: $altButtonTextColorSelected;  
+        @include oj-box-shadow($altButtonBoxShadowSelected); 
+        text-shadow: $altButtonTextShadowSelected;
+    }
+    
+    &.oj-button.oj-selected.oj-hover {
+        background-color: $altButtonBgColorSelectedHover;
+        @include oj-background-image($altButtonBgImageSelectedHover);
+        border-color: $altButtonBorderColorSelectedHover;
+        color: $altButtonTextColorSelectedHover;  
+        @include oj-box-shadow($altButtonBoxShadowSelectedHover); 
+        text-shadow: $altButtonTextShadowSelectedHover;
+    }
+    
+    &.oj-button.oj-selected .oj-button-icon  {
+        color: $altButtonIconColorSelected; 
+    }
+
+    &.oj-button.oj-selected.oj-hover .oj-button-icon  {
+        color: $altButtonIconColorSelectedHover; 
+    }
+
+    &.oj-button.oj-disabled {
+        background-color: $altButtonBgColorDisabled;
+        border-color: $altButtonBorderColorDisabled;
+        color: $altButtonTextColorDisabled;
+        opacity: $altButtonOpacityDisabled;
+    }
+
+    &.oj-button.oj-disabled .oj-button-icon  {
+        color: $altButtonIconColorDisabled; 
+    }
+
+    &.oj-button.oj-disabled.oj-selected { 
+        color: $altButtonTextColorSelectedDisabled;
+        background-color: $altButtonBgColorSelectedDisabled;
+        border-color: $altButtonBorderColorSelectedDisabled;
+    }
+
+    &.oj-button.oj-disabled.oj-selected .oj-button-icon { 
+        color: $altButtonIconColorSelectedDisabled;
+    }
+
+
+  
+}
+
+
+
+//*****************************************************************************
+// mixin to make it easy to create flat buttons
+// by passing in just a few colors. Only the values
+// $altButtonBgColor, $altButtonBgColorHover, and $altButtonBgColorActive
+// are required, all other values are defaulted.
+//
+// example usage:
+//
+//   $demoErrorColor: #dd3333;
+//
+//   .demo-button-error {
+//     @include oj-button-state-flat (
+//       $altButtonTextColor:            #ffffff,
+//       $altButtonBgColor:              $demoErrorColor,
+//       $altButtonBgColorHover:         adjust-color($demoErrorColor, $saturation: 20%),
+//       $altButtonBgColorActive:        adjust-color($demoErrorColor, $lightness: -15%),
+//       $altButtonBgColorSelectedHover: adjust-color($demoErrorColor, $lightness: -10%));
+//   }
+//
+// Note: This mixin does not support buttonsets 
+//*****************************************************************************
+@mixin oj-button-state-flat (
+    // required fields
+    $altButtonBgColor,
+    $altButtonBgColorHover,
+    $altButtonBgColorActive,
+
+    // default
+    $altButtonTextColor:                   null,
+    $altButtonIconColor:                   $altButtonTextColor,
+    $altButtonBorderColor:                 $altButtonBgColor,
+    $altButtonBgImage:                     none, 
+    $altButtonTextShadow:                  none, 
+    $altButtonBoxShadow:                   none,
+
+    // hover
+    $altButtonTextColorHover:              $altButtonTextColor,
+    $altButtonIconColorHover:              $altButtonIconColor,
+    $altButtonBorderColorHover:            $altButtonBgColorHover,
+    $altButtonBgImageHover:                none,                   
+    $altButtonTextShadowHover:             none,
+    $altButtonBoxShadowHover:              none,
+
+    // active
+    $altButtonTextColorActive:             $altButtonTextColor,
+    $altButtonIconColorActive:             $altButtonIconColor,
+    $altButtonBorderColorActive:           $altButtonBgColorActive,
+    $altButtonBgImageActive:               none,                  
+    $altButtonTextShadowActive:            none,
+    $altButtonBoxShadowActive:             none,
+    $altButtonOpacityActive:               null,
+
+    // selected - default to use active values
+    $altButtonBgColorSelected:             $altButtonBgColorActive, 
+    $altButtonTextColorSelected:           $altButtonTextColorActive,
+    $altButtonIconColorSelected:           $altButtonIconColorActive,
+    $altButtonBorderColorSelected:         $altButtonBorderColorActive,
+    $altButtonBgImageSelected:             $altButtonBgImageActive,                 
+    $altButtonTextShadowSelected:          $altButtonTextShadowActive,
+    $altButtonBoxShadowSelected:           $altButtonBoxShadowActive,
+
+    // selected and hovered - default to use selected colors and hover shadows
+    $altButtonBgColorSelectedHover:        $altButtonBgColorSelected, 
+    $altButtonTextColorSelectedHover:      $altButtonTextColorSelected,
+    $altButtonIconColorSelectedHover:      $altButtonIconColorSelected,
+    $altButtonBorderColorSelectedHover:    $altButtonBorderColorSelected,
+    $altButtonBgImageSelectedHover:        $altButtonBgImageSelected,                 
+    $altButtonTextShadowSelectedHover:     $altButtonTextShadowHover,
+    $altButtonBoxShadowSelectedHover:      $altButtonBoxShadowHover,
+
+    // disabled - default to use default colors with reduced opacity
+    $altButtonBgColorDisabled:             $altButtonBgColor,
+    $altButtonTextColorDisabled:           $altButtonTextColor,
+    $altButtonIconColorDisabled:           $altButtonIconColor,
+    $altButtonBorderColorDisabled:         $altButtonBorderColor,
+    $altButtonOpacityDisabled:             .4,
+
+    // disabled and selected
+    $altButtonTextColorSelectedDisabled:   $altButtonTextColorSelected,
+    $altButtonIconColorSelectedDisabled:   $altButtonIconColorSelected,
+    $altButtonBgColorSelectedDisabled:     $altButtonBgColorSelected,
+    $altButtonBorderColorSelectedDisabled: $altButtonBorderColorSelected
+ )
+{
+
+
+
+    @include oj-button-state-overrides (
+
+        // default
+        $altButtonTextColor:                   $altButtonTextColor,
+        $altButtonBgColor:                     $altButtonBgColor,
+        $altButtonIconColor:                   $altButtonIconColor,
+        $altButtonBorderColor:                 $altButtonBorderColor,
+        $altButtonBgImage:                     $altButtonBgImage, 
+        $altButtonTextShadow:                  $altButtonTextShadow, 
+        $altButtonBoxShadow:                   $altButtonBoxShadow,
+
+        // hover
+        $altButtonTextColorHover:              $altButtonTextColorHover,
+        $altButtonBgColorHover:                $altButtonBgColorHover,
+        $altButtonIconColorHover:              $altButtonIconColorHover,
+        $altButtonBorderColorHover:            $altButtonBorderColorHover,
+        $altButtonBgImageHover:                $altButtonBgImageHover,                   
+        $altButtonTextShadowHover:             $altButtonTextShadowHover,
+        $altButtonBoxShadowHover:              $altButtonBoxShadowHover,
+
+        // active
+        $altButtonTextColorActive:             $altButtonTextColorActive,
+        $altButtonBgColorActive:               $altButtonBgColorActive,
+        $altButtonIconColorActive:             $altButtonIconColorActive,
+        $altButtonBorderColorActive:           $altButtonBorderColorActive,
+        $altButtonBgImageActive:               $altButtonBgImageActive,                  
+        $altButtonTextShadowActive:            $altButtonTextShadowActive,
+        $altButtonBoxShadowActive:             $altButtonBoxShadowActive,
+        $altButtonOpacityActive:               $altButtonOpacityActive,
+
+        // selected 
+        $altButtonBgColorSelected:             $altButtonBgColorSelected, 
+        $altButtonTextColorSelected:           $altButtonTextColorSelected,
+        $altButtonIconColorSelected:           $altButtonIconColorSelected,
+        $altButtonBorderColorSelected:         $altButtonBorderColorSelected,
+        $altButtonBgImageSelected:             $altButtonBgImageSelected,                 
+        $altButtonTextShadowSelected:          $altButtonTextShadowSelected,
+        $altButtonBoxShadowSelected:           $altButtonBoxShadowSelected,
+
+        // selected and hovered 
+        $altButtonBgColorSelectedHover:        $altButtonBgColorSelectedHover, 
+        $altButtonTextColorSelectedHover:      $altButtonTextColorSelectedHover,
+        $altButtonIconColorSelectedHover:      $altButtonIconColorSelectedHover,
+        $altButtonBorderColorSelectedHover:    $altButtonBorderColorSelectedHover,
+        $altButtonBgImageSelectedHover:        $altButtonBgImageSelectedHover,                 
+        $altButtonTextShadowSelectedHover:     $altButtonTextShadowSelectedHover,
+        $altButtonBoxShadowSelectedHover:      $altButtonBoxShadowSelectedHover,
+
+        // disabled 
+        $altButtonBgColorDisabled:             $altButtonBgColorDisabled,
+        $altButtonTextColorDisabled:           $altButtonTextColorDisabled,
+        $altButtonIconColorDisabled:           $altButtonIconColorDisabled,
+        $altButtonBorderColorDisabled:         $altButtonBorderColorDisabled,
+        $altButtonOpacityDisabled:             $altButtonOpacityDisabled,
+
+        // disabled and selected
+        $altButtonTextColorSelectedDisabled:   $altButtonTextColorSelectedDisabled,
+        $altButtonIconColorSelectedDisabled:   $altButtonIconColorSelectedDisabled,
+        $altButtonBgColorSelectedDisabled:     $altButtonBgColorSelectedDisabled,
+        $altButtonBorderColorSelectedDisabled: $altButtonBorderColorSelectedDisabled
+     )
+
+
+  
+}

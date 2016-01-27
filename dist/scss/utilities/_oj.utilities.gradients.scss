@@ -1,0 +1,154 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+$gradientDirectionWebkit: (
+    'to bottom':       'top',
+    'to top':          'bottom',
+    'to right':        'left',
+    'to left':         'right',
+    'to bottom right': 'left top',
+    'to bottom left':  'right top',
+    'to top right':    'left bottom',
+    'to top left':     'right bottom',
+);
+
+// todo: as of release 1.0 of JET this webkit linear gradient mixin is only needed for
+// safari 6, http://www.w3schools.com/css/css3_gradients.asp,
+// this mixin will be removed once -webkit-linear-gradient is no longer needed
+@mixin oj-webkit-linear-gradient($gradient) 
+{
+  $gradientDirection: null;
+
+  $gradientToStartIndex: str_index($gradient, 'to ');
+  $gradientWebkit: null;
+
+  @if ($gradientToStartIndex != null)
+  {
+
+    $gradientToEndIndex: str_index($gradient, ',');
+    $gradientDirection: str_slice($gradient, $gradientToStartIndex, $gradientToEndIndex - 1);
+
+
+    $gradientWebkit: unquote("-webkit-" + str-slice($gradient, 0, $gradientToStartIndex - 1) + 
+          map-get($gradientDirectionWebkit, $gradientDirection) + 
+          str-slice($gradient, $gradientToEndIndex));
+
+    //@debug($gradientWebkit);
+  }
+
+  // we only support prefixes that we require for our supported browsers
+  // don't use ms- prefix: http://blogs.msdn.com/b/ie/archive/2012/06/06/moving-the-stable-web-forward-in-ie10-release-preview.aspx
+  // See: http://www.css3files.com/gradient/
+  // don't need -moz-linear-gradient, that's for FF 15 and older. 
+  // don't need -webkit-gradient, use -webkit-linear-gradient
+
+  background-image: $gradientWebkit;
+
+}
+
+//*****************************************************************************
+//
+// Use this mixin in conjunction with the bidi mixins (oj-rtl and oj-ltr)
+// 
+// Usage Example:
+//
+//
+//    .oj-buttonset .oj-button.oj-buttonset-first {
+//        @include oj-ltr() {
+//          @include oj-background-image($buttonBgImage,
+//                                    $slowOverride: false);
+//        }
+//        @include oj-rtl() {
+//          @include oj-background-image($buttonBgImage,
+//                                    $slowOverride: false);
+//        }
+//
+//        @include oj-gradients-slowoverride($buttonBgImage);
+//    }
+//
+// $bgImage: the bgImage value to check for a linear gradient 
+//           (if the bgImage is in a var you may not know whether 
+//           there's a gradient or not). If you don't pass any bgImage 
+//           then the background image will be set to none for the 
+//           oj-slow-cssgradients case.
+//*****************************************************************************
+
+@mixin oj-gradients-slowoverride($bgImage: null)
+{
+  @if ($gradientGeneration == slowOverride)
+  {
+
+    @if ( $bgImage == null or str-index($bgImage, 'linear-gradient') != null )
+    {
+      html.oj-slow-cssgradients & {
+        background-image: none; 
+        @content;
+      }
+    }
+  }
+}
+
+
+
+//*****************************************************************************
+//
+// NOTE: when you use this mixin inside of the bidi mixins (oj-rtl and oj-ltr), 
+//       the slow override is not written out, see the doc for 
+//       mixin oj-gradients-slowoverride() for more info
+//
+// Usage Example:
+//
+//      .oj-foo .oj-binky {
+//       
+//        @include oj-background-image(linear-gradient(to bottom, $headerBgColor 0%,#f0f0f0 100%));
+//      }
+//
+//
+// $slowOverride: set this to false to not write out the slow override. 
+//       In some cases the slow override cannot be written out properly, 
+//       for example when you use this mixin inside 
+//       of the bidi mixins (oj-rtl and oj-ltr). 
+//       See the doc for mixin oj-gradients-slowoverride() for more info. 
+//       If you are in a bidi call and don't set this to false it will 
+//       warn you. 
+//*****************************************************************************
+@mixin oj-background-image($bgImage, 
+                           $slowOverride: true)
+{
+  @if ($bgImage != null)
+  {
+    $linearIndex: str-index($bgImage, 'linear-gradient');
+
+    @if ($linearIndex != null and $gradientGeneration != off)
+    {
+      @include oj-webkit-linear-gradient($bgImage);
+    }
+
+    @if ($linearIndex == null or $gradientGeneration != off)
+    {
+      background-image: $bgImage; 
+    }
+
+    @if ($linearIndex != null and $gradientGeneration == slowOverride)
+    {
+     
+      @if ($_inbidi == true and $slowOverride == false)
+      {
+        //@warn "bidi's match, slow override not written out";
+      }
+      @else if ($_inbidi == true and $slowOverride == true)
+      {
+        @warn "oj-background-image mixin called inside a bidi mixin without setting $slowOverride to false, see doc for mixin oj-gradients-slowoverride for proper use";
+      }   
+      @else if ($_inbidi != true and $slowOverride == false)
+      {
+        @warn "error: oj-background-image mixin called outside a bidi mixin, but with $slowOverride set to false.";
+      }
+      @else
+      {
+        html.oj-slow-cssgradients & {
+          background-image: none; 
+        }
+      }
+    }
+  }
+}

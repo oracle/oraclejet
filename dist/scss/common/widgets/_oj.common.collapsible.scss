@@ -1,0 +1,145 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.collapsible.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+//--------------------------------------------------------
+
+// include dependencies
+@if $includeCollapsibleClasses != false {
+  @include module-include-once("common.collapsible") {
+
+    .oj-collapsible {
+      margin-bottom: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* collapsible with "showDetail" style */
+    /* ------------------------------------*/
+    /*
+     * this is the default style for collapsible header
+     */
+    .oj-collapsible-header {
+      display: block;
+
+      position: relative;
+      font-weight: $listViewHeaderFontWeight;
+      color: $headerTextColor;
+      padding: 5px 0 3px 0;
+      margin: 0;
+    }
+
+    /*
+     * this is the default style for collapsible content
+     */
+    .oj-collapsible-content {
+      color: $textColor;
+      background-color: transparent;
+      padding: 4px 0 0;
+      margin: 0;
+    }
+
+    /*
+     * add more padding between header and collapsible content when header has a border
+     */
+    .oj-header-border + .oj-collapsible-wrapper > .oj-collapsible-content {
+      padding-top: 7px;
+      padding-bottom: 4px;
+    }
+
+    /*
+     * specify sizes for h1 - h4 collapsible header
+     */
+    h1.oj-collapsible-header {
+      font-size: $header1FontSize;
+    }
+
+    h2.oj-collapsible-header {
+      font-size: $header2FontSize;
+    }
+
+    h3.oj-collapsible-header {
+      font-size: $header3FontSize;
+    }
+
+    h4.oj-collapsible-header {
+      font-size: $header4FontSize;
+    }
+
+    /*
+     * applied to the disabled collapsible header
+     */
+    .oj-collapsible.oj-disabled > .oj-collapsible-header {
+      color: $textColorDisabled;
+    }
+
+    /*
+     * remove top padding for the first nested collapsible
+     */
+    .oj-collapsible-content > .oj-collapsible:first-child > .oj-collapsible-header {
+      padding-top: 0;
+    }
+
+    /* collapsible content transition effects */
+    /* -------------------------------------- */
+
+    /*
+     * transtion properties and duration
+     */
+    .oj-collapsible-transition {
+      transition: max-height $collapsibleAnimationDuration;
+    }
+
+    /*
+     * applied to the wrapper of the collapsible content.
+     */
+    .oj-collapsible-wrapper {
+      border: 0;
+      padding: 0;
+      margin:0;
+    }
+
+
+    /* suppress all browser decorations of anchors in the header */
+    /* --------------------------------------------------------- */
+    .oj-collapsible-header a,
+    .oj-collapsible-header a:active,
+    .oj-collapsible-header a:visited,
+    .oj-collapsible-header a:hover,
+    .oj-collapsible-header a:focus {
+      text-decoration: none;
+    }
+
+
+    /* disclosure icons for headers */
+    /* -----------------------------*/
+
+    .oj-collapsible-header-icon {
+      // padding needed to make this big enough for touch screens
+      padding: 5px 3px 5px 5px;
+      // we don't want the focus ring to include the padding, so
+      // outline back in
+      outline-offset: -5px;
+    }
+
+    /*
+     * set hand cursor while over the clickable area
+     */
+    .oj-collapsible-header.oj-hover,
+    .oj-collapsible-header-icon.oj-hover {
+      cursor: pointer;
+    }
+
+    /*
+     * For disabled headers
+     */
+    .oj-collapsible.oj-disabled .oj-collapsible-header-icon {
+      color: $iconColorDisabled;
+      opacity: $opacityDisabled;
+    }
+  }
+}

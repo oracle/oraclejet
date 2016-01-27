@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="pressed_x5F_checked" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="21px" height="21px" viewBox="0 0 21 21" enable-background="new 0 0 21 21" xml:space="preserve">
+<rect x="0" opacity="0.15" fill="#0572CE" width="21" height="21"/>
+<path fill="#0572CE" d="M21,21H0V0h21V21z M19,2H2v17h17V2z"/>
+<polygon id="check_mark" fill="#0572CE" points="3,11.45 9.04,17.99 10.02,17.99 19.02,6.34 16.24,3.98 9.61,13.01 9.15,13.01 
+	5.43,8.92 "/>
+</svg>

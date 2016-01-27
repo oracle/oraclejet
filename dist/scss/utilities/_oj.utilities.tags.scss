@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// this mixin checks the value of the variable $allowTagSelectors,
+// if it's true it writes out $tagSelectors, otherwise it writes out $classSelectors
+//
+// example usage:
+//
+// @include oj-tag-selectors(
+//       $tagSelectors:   "ul, ol", 
+//       $classSelectors: ".oj-ul, .oj-ol")
+//     {
+//       margin: 12px 0; 
+//     }
+@mixin oj-tag-selectors($tagSelectors, $classSelectors)
+{
+  @if($allowTagSelectors)
+  {
+    #{$tagSelectors} {
+      @content;
+    }
+  }
+  @else
+  {
+
+    #{$classSelectors} {
+      @content;
+    }
+  }
+}

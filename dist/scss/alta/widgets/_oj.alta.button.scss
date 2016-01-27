@@ -1,0 +1,58 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeButtonClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "oj.alta.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.button"; 
+
+@mixin oj-button-alt-alta($altColor) {
+  
+        @include oj-button-state-flat (
+          $altButtonTextColor:            $buttonContrastTextColor,
+          $altButtonBgColor:              $altColor,
+          $altButtonBgColorHover:         lighten($altColor, 6%),
+          $altButtonBgColorActive:        darken($altColor, 6%),
+          $altButtonBgColorSelectedHover: darken($altColor, 3%),
+          $altButtonBgImage:              linear-gradient(to bottom, 
+                                                  lighten($altColor, 4%) 0%, 
+                                                  $altColor 50%,
+                                                  darken($altColor, 2%) 100%))
+}
+
+@if $includeButtonClasses != false {
+  @include module-include-once("alta.button") {
+
+
+      // alternate button colors
+      //----------------------------------
+
+      .oj-button-primary {
+        @if $buttonPrimaryColor != null {
+          @include oj-button-alt-alta($altColor: $buttonPrimaryColor);
+        }
+      }
+      .oj-button-confirm {
+        @if $buttonConfirmColor != null {
+          @include oj-button-alt-alta($altColor: $buttonConfirmColor);
+        }
+      }
+
+
+    
+  }
+}

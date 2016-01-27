@@ -1,0 +1,186 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//-------------------------------------------------------------------------------------------------
+// Creates a popup tail using a SVG data URL. The point $x1,$y1 and $x3,$y3 must align to the popup.
+//-------------------------------------------------------------------------------------------------
+
+@function oj-popup-tail-url($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3) {
+  $x1: oj-strip-unit($x1);
+  $y1: oj-strip-unit($y1);
+  $x2: oj-strip-unit($x2);
+  $y2: oj-strip-unit($y2);
+  $x3: oj-strip-unit($x3);
+  $y3: oj-strip-unit($y3);
+  $borderWidth: oj-strip-unit($borderWidth);
+
+  @if function-exists(oj-popup-tail-url-delegate) {    
+    @return oj-popup-tail-url-delegate($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3);
+  } @else {
+      @return oj-svg-url(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}'>" +
+          "<polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$fillColor};stroke:#{$fillColor};stroke-width:1;fill-rule:evenodd;'/>" +  
+          "<g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'>" +
+            "<line x1='#{$x1}' y1='#{$y1}' x2='#{$x2}' y2='#{$y2}'/>" +
+            "<line x1='#{$x3}' y1='#{$y3}' x2='#{$x2}' y2='#{$y2}'/>" +
+          "</g>" +
+        "</svg>");
+  }
+}
+
+@if $includePopupClasses != false {
+  @include module-include-once("common.popup") {
+    /* popup */
+    /* --------------------------------------------------------------- */
+    
+    /* defines the stacking context for the popup and its children */
+    .oj-popup-layer {
+      @extend .oj-component-layer;
+      z-index: $popupZindex;
+    }
+    .oj-popup-layer.oj-focus-within {
+      z-index: $popupZindex + 1;
+    }
+    .oj-popup-layer.oj-popup-tail-simple {
+      z-index: $noteWindowZindex;
+    }
+    .oj-popup-layer.oj-popup-tail-simple.oj-focus-within {
+      z-index: $noteWindowZindex + 1;
+    }
+    .oj-popup {
+      @extend .oj-component-popup;
+      border: $popupBorderWidth solid $popupBorderColor;
+      @include oj-border-radius($popupBorderRadius);
+      background-color: $popupBgColor;
+      @include oj-box-shadow($popupBoxShadow);
+      @include oj-will-change-property(top, left);
+    }
+    .oj-popup.oj-popup-tail-simple {
+      @include oj-box-shadow($noteWindowBoxShadow);
+      border-width: $noteWindowBorderWidth;
+      border-color: $noteWindowBorderColor;
+      background-color: $noteWindowBgColor;
+      @include oj-will-change-property(top, left, bottom, right);
+    }
+    .oj-popup.oj-popup-no-chrome {
+      border-width: 0;
+      @include oj-box-shadow(none);
+      @include oj-border-radius(0);
+      background-color: transparent;
+    }  
+    .oj-popup-content {
+      padding: $panelPadding;
+    }
+    .oj-popup-no-chrome > .oj-popup-content {
+      padding: 0;
+    }
+    .oj-popup-tail {
+      position: absolute;
+      pointer-events: none;
+    }
+    .oj-popup-tail.oj-popup-tail-simple {
+      @extend .oj-component-icon;
+      height: $noteWindowTailSimpleHeight;
+      width: $noteWindowTailSimpleWidth;
+      font-size: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
+      left: -$noteWindowTailSimpleWidth;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      right: -$noteWindowTailSimpleWidth;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+      top: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      bottom: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+      top: 50%;
+    } 
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
+      left: 50%;
+    } 
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-top', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, 0, 0, $noteWindowTailSimpleWidth, round($noteWindowTailSimpleHeight * 0.25))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-middle', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, $noteWindowTailSimpleWidth, 0, 0, ($noteWindowTailSimpleWidth / 2), $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-bottom', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, $noteWindowTailSimpleWidth, 0, 0, $noteWindowTailSimpleHeight, $noteWindowTailSimpleWidth, round($noteWindowTailSimpleHeight * 0.75))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-top', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, 0, round($noteWindowTailSimpleHeight * 0.25), $noteWindowTailSimpleWidth, 0, 0, $noteWindowTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-middle', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, 0, 0, $noteWindowTailSimpleWidth, ($noteWindowTailSimpleHeight / 2), 0, $noteWindowTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-bottom', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, 0, 0, $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, 0, round($noteWindowTailSimpleHeight * .75))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top {
+      top: -$noteWindowTailSimpleHeight;
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('center-top', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, 0, $noteWindowTailSimpleHeight, ($noteWindowTailSimpleWidth / 2), 0, $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
+      bottom: -$noteWindowTailSimpleHeight;
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('center-bottom', $noteWindowTailSimpleWidth, $noteWindowTailSimpleHeight, $noteWindowBorderColor, $noteWindowBorderWidth, $noteWindowBgColor, 0, 0, ($noteWindowTailSimpleWidth / 2), $noteWindowTailSimpleHeight, $noteWindowTailSimpleWidth, 0)
+      );
+    }
+
+    // IE11 override - needs a block display or blows out the svg image outside 
+    // boundaries of the tail dom rect
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
+      display: block;
+    }
+    
+    // option defaults
+    //----------------------------------
+    $popupDefaultOptions: ();
+ 
+    @if ($popupModalityOptionDefault) {
+      $popupDefaultOptions: map-merge($popupDefaultOptions, (modality: $popupModalityOptionDefault));
+    }
+ 
+    // component default options selector 
+    .oj-popup-option-defaults {
+      font-family: oj-json-from-map($popupDefaultOptions);
+    }
+  }
+}

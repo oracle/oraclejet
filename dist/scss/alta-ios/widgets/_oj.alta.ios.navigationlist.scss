@@ -1,0 +1,63 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// set up include variables before importing dependencies
+@if $includeNavigationListClasses != false {
+  $includeIconClasses:              true !global;
+  $includeButtonClasses:            true !global;
+  $includeMenuClasses:              true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "oj.alta.ios.icons";
+@import "oj.alta.ios.button";
+@import "oj.alta.ios.menu";
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.navigationlist";
+
+@if $includeNavigationListClasses != false {
+    @include module-include-once("alta.ios.navigationlist") {
+
+        /* Start of Page Level navlist styles*/
+        .oj-navigationlist-page-level.oj-navigationlist-icon-only .oj-navigationlist-item:not(.oj-hover) .oj-navigationlist-item-icon
+        {
+            color: $navigationListPageLevelItemIconColorDefault;
+        }
+
+        //center align the entire contents
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+            @include oj-justify-content-property(center);
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content .oj-navigationlist-item-label {
+            @include oj-flex-property(0 0 auto);
+        }
+         // This is needed in ios, as icon only list does't have dark color bg circle.
+        .oj-navigationlist-page-level.oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon,
+        .oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+            color: $navigationListPageLevelItemIconColorSelected;
+        }
+
+        //For page level horizontal navlist, button size should be equal.
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item {
+            @include oj-flex-property(1 1 0);
+        }
+
+        /* End of Page Level navlist styles*/
+        .oj-navigationlist-previous-icon {
+            @extend .oj-fwk-icon-caret-start; //Previous icon used in sliding navlist to move up one level
+        }
+
+        .oj-navigationlist-collapsible .oj-navigationlist-expand-icon {
+            @extend .oj-fwk-icon-caret-s; //Collapse and expand icon is same for collapsible navlist
+        }
+        .oj-navigationlist-collapsible .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-caret-end;
+        }
+        .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-caret-end;
+        }
+    }
+}

@@ -1,0 +1,209 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.dialog.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeDialogClasses != false {
+  @include module-include-once("common.dialog") {
+    
+    /* dialog */
+    /* --------------------------------------------------------------- */
+
+    /* defines the stacking context of the dialog and for it's children '**/
+    .oj-dialog-layer {
+       @extend .oj-component-layer;
+       z-index: $dialogZindex;
+    }    
+ 
+    .oj-dialog-layer.oj-focus-within {
+      z-index: $dialogZindex + 1;
+    }
+
+    .oj-dialog {
+      @extend .oj-component-popup;
+      overflow:hidden;
+      width: 300px;
+      min-width: 200px;
+      height: auto;
+      // note: min-height overrides height auto, so do not 
+      //       specify min-height in combination with height:auto
+      // display: block;
+      @include oj-box-sizing-property(border-box);
+      @include oj-display-flex-property();
+      @include oj-flex-direction-property(column);
+    }
+
+    .oj-dialog-header {     
+      position: relative;
+    }
+
+    .oj-draggable .oj-dialog-header { 
+      cursor: move; 
+    }
+
+    /* Creates a larger touch area for the close icon */
+    .oj-dialog-header-close-wrapper { 
+      @include oj-ltr() {
+         float: right;
+      }
+      @include oj-rtl() {    
+         float: left;
+      }
+      text-align: center;
+      cursor: default;
+    }
+
+    .oj-dialog-title {
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .oj-draggable .oj-dialog-title { 
+      cursor: move; 
+    }
+
+   .oj-dialog-close-icon { 
+     @include oj-border-radius( $buttonBorderRadius );
+     cursor: $buttonCursor;
+     border-width: 1px; 
+     border-style: solid;
+     color: $buttonIconColor;   
+     // We have a 1px border for active/hover, so make it transparent when inactive. 
+     border-color: transparent;
+    }
+    
+    .oj-dialog-header-close-wrapper.oj-hover .oj-dialog-close-icon {
+      background-color: $buttonBgColorHover;
+      @include oj-background-image($buttonBgImageHover);
+      border-color: $buttonBorderColorHover; 
+      color: $buttonIconColorHover;
+      @include oj-box-shadow($buttonBoxShadowHover); 
+    }
+
+    .oj-dialog-header-close-wrapper.oj-default .oj-dialog-close-icon,
+    .oj-dialog-header-close-wrapper.oj-focus-only .oj-dialog-close-icon {
+        color: $buttonIconColor; 
+    }
+
+    .oj-dialog-header-close-wrapper.oj-focus .oj-dialog-close-icon {
+        @include oj-browser-focus-outline-approximation($buttonTextColor);
+     }
+
+    .oj-dialog-header-close-wrapper.oj-active .oj-dialog-close-icon {
+      background-color: $buttonBgColorActive;
+      @include oj-background-image($buttonBgImageActive);
+      border-color: $buttonBorderColorActive;
+      color: $buttonIconColorActive;  
+      @include oj-box-shadow($buttonBoxShadowActive); 
+     }
+
+    .oj-dialog-content > p:last-child {
+       margin-bottom: 0;
+     }
+
+    .oj-dialog-content {
+       overflow: auto;
+       position: relative;
+       // enable scrolled content within the dialog (for IOS)
+       -webkit-overflow-scrolling: touch;
+      @include oj-flex-property(1 1 auto);
+     }
+
+    .oj-dialog-body { 
+      position: relative; 
+      overflow: auto;   
+      @include oj-box-sizing-property(border-box);
+    }
+
+   // optional footer separator
+   //------------------------------------------
+    .oj-dialog-footer-separator {
+      border-width: 1px 0 0;
+      border-style: solid;
+      border-color: $dialogBorderColor;
+    }   
+
+    .oj-dialog-footer {
+      padding-top: 10px;
+      // Buttons include $wrappableMarginBottom of bottom padding.
+      padding-bottom: 10px - $wrappableMarginBottom;
+      padding-right: 10px;
+      padding-left: 10px;
+      @include oj-ltr() {
+         text-align: right;
+      }
+      @include oj-rtl() {    
+         text-align: left;
+      }
+      @include oj-flex-property(0 0 auto);
+    }
+
+    // todo: moved from alta version of file
+     
+    .oj-dialog { 
+      top: 0;
+      left: 0;
+      padding: 0; 
+      @include oj-box-shadow($largeBoxShadow);
+      background: $dialogBgColor;
+      border: $dialogBorderWidth solid $dialogBorderColor;
+      @include oj-border-radius($smallBorderRadius);
+    }
+
+    .oj-dialog-header {     
+      // the height of any bottom padding put on here plus the height of the close icon
+      // would make the header too tall. Therefore the bottom padding is put on the title,
+      // see the bottom margin in .oj-dialog-title
+      padding: $panelPadding $panelPadding 0 $panelPadding;
+      background-color: $headerBgColor;
+      @include oj-background-image($headerBgImage);
+      border-width: 0 0 1px 0;
+      border-style: solid;
+      border-color: $dialogBorderColor;        
+      font-size: $header3FontSize;
+      color: $headerTextColor;
+      font-weight: $headerFontWeight;
+      @include oj-border-radius($smallBorderRadius $smallBorderRadius 0 0);
+      @include oj-flex-property(0 0 auto);
+    }
+
+    .oj-dialog-header-close-wrapper { 
+      padding: 5px;
+      margin: -5px; 
+    }
+
+    .oj-dialog-title { 
+      display: block;
+      // see the explanation in .oj-dialog-header as to why we are setting the bottom padding here
+      padding-bottom: $panelPadding;
+      @include oj-ltr() {
+         padding-right: 10px;
+      }
+      @include oj-rtl() {    
+         padding-left: 10px;
+      }
+
+      @include oj-user-select-property (none);
+    }
+
+    .oj-dialog-body { 
+      border: 0; 
+      padding: $panelPadding;
+      background: $dialogBgColor;
+      color: $textColor;
+    }
+
+   // icons
+   //------------------------------------------
+
+    .oj-dialog-close-icon { 
+       @extend .oj-fwk-icon-cross;
+    }
+
+
+  }
+}

@@ -1,0 +1,725 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "oj.utilities.prefix";
+@import "oj.utilities.bidi";
+
+
+//*****************************************************************************
+// This mixin can be used to create the image css to use in a clickable 
+// component like a button which supports different states (like 
+// hover/active/disabled states) and uses marker styles like oj-hover, oj-active, etc. 
+//
+// For example let's say you have image files for an outdent icon and you want to generate 
+// the selector demo-outdent-icon. Your scss might look like:
+//
+// .demo-outdent-icon {
+//   height: 16px;
+//   width: 16px;
+// 
+//   @include oj-clickable-icon( 
+//        // NOTE: you can choose to do regular and/or the high resolution icons
+//        $icon:            url("clickable/outdent-ena.png"),
+//        $iconHover:       url("clickable/outdent-ovr.png"),                       
+//        $iconActive:      url("clickable/outdent-dwn.png"),   
+//        $iconDisabled:    url("clickable/outdent-dis.png"),
+//
+//        // NOTE:  you can choose to do regular and/or the high resolution icons
+//        $iconHiRes:         url("clickable/outdent-ena@2x.png"),
+//        $iconHiResHover:    url("clickable/outdent-ovr@2x.png"),
+//        $iconHiResActive:   url("clickable/outdent-dwn@2x.png"),
+//        $iconHiResDisabled: url("clickable/outdent-dis@2x.png"),
+// 
+//        // NOTE: right to left versions optional
+//        $iconRtl:         url("clickable/rtl/outdent-rtl-ena.png"),
+//        $iconRtlHover:    url("clickable/rtl/outdent-rtl-ovr.png"),
+//        $iconRtlActive:   url("clickable/rtl/outdent-rtl-dwn.png"),
+//        $iconRtlDisabled: url("clickable/rtl/outdent-rtl-dis.png"),
+//
+//        // NOTE: high resolution right to left versions optional
+//        $iconHiResRtl:         url("clickable/rtl/outdent-rtl-ena@2x.png"),
+//        $iconHiResRtlHover:    url("clickable/rtl/outdent-rtl-ovr@2x.png"),
+//        $iconHiResRtlActive:   url("clickable/rtl/outdent-rtl-dwn@2x.png"),
+//        $iconHiResRtlDisabled: url("clickable/rtl/outdent-rtl-dis@2x.png")
+//   );
+// }
+//
+//
+// You would then use demo-outdent-icon in conjunction with the class oj-icon, 
+// so in a button it might look like
+//
+// <button data-bind="ojComponent: {
+//          component:'ojButton', 
+//          icons: {start:'oj-icon demo-outdent-icon'}, 
+//          label: 'outdent'}"></button>
+//
+//
+// Note that if $iconSelected is not specified the $iconActive icon will be 
+// be used for both the active and selected states.
+// 
+// $ancestorSelector: In general what is output is something like this:
+//                             .oj-hover .demo-outdent-icon....
+//                    However in certain cases you want an ancestor selector, 
+//                    for example:
+//                             .demo-foo .oj-hover .demo-outdent-icon....
+//                    To achieve this you would pass in '.demo-foo' as the 
+//                    ancestor selector, for example: 
+//                             .demo-outdent-icon {
+//                                  @include oj-clickable-icon( 
+//                                       $ancestorSelector: '.demo-foo'.
+//                                       $icon:              url("clickable/outdent-ena.png")....
+// 
+// $markerSelector:   In general what is output is something like this:
+//                             .oj-hover .demo-outdent-icon....
+//                    However in certain cases you want to specify a selector 
+//                    on the same element as the marker classes, for example:
+//                             .demo-bar.oj-hover .demo-outdent-icon....
+//                    To achieve this you would pass in '.demo-bar' as the 
+//                    marker selector, for example: 
+//                             .demo-outdent-icon {
+//                                  @include oj-clickable-icon( 
+//                                       $markerSelector: '.demo-bar'.
+//                                       $icon:            url("clickable/outdent-ena.png")....
+//*****************************************************************************
+@mixin oj-clickable-icon ( 
+       $icon:                 null,  
+       $iconDisabled:         null,          
+       $iconHover:            null,                       
+       $iconActive:           null,     
+       $iconSelected:         null, 
+       $iconRtl:              null,
+       $iconRtlDisabled:      null,
+       $iconRtlHover:         null,
+       $iconRtlActive:        null,
+       $iconRtlSelected:      null,  
+       $iconHiRes:            null,  
+       $iconHiResDisabled:    null,
+       $iconHiResHover:       null,   
+       $iconHiResActive:      null,
+       $iconHiResSelected:    null,  
+       $iconHiResRtl:         null,  
+       $iconHiResRtlDisabled: null,
+       $iconHiResRtlHover:    null,   
+       $iconHiResRtlActive:   null,
+       $iconHiResRtlSelected: null,
+       $devicePixelRatio:     $highResolutionDevicePixelRatio,
+       $highResProportion:    .5,
+       $lowResProportion:     1,
+       $ancestorSelector:     null,
+       $markerSelector:       null)
+{
+
+
+  // todo: it would be nice to be able to control mappings, 
+  //       like control where to map selected plus hover, etc.
+
+  #{$ancestorSelector} #{$markerSelector}.oj-default &,
+  #{$ancestorSelector} #{$markerSelector}.oj-focus-only & {
+    @include oj-icon-content(                                   
+         $icon:              $icon,
+         $iconRtl:           $iconRtl,                                   
+         $iconHiRes:         $iconHiRes,
+         $iconHiResRtl:      $iconHiResRtl,
+         $devicePixelRatio:  $devicePixelRatio,
+         $highResProportion: $highResProportion,
+         $lowResProportion:  $lowResProportion) ;
+  }
+
+  #{$ancestorSelector} #{$markerSelector}.oj-hover &, 
+  #{$ancestorSelector} #{$markerSelector}.oj-hover.oj-selected & {
+    @include oj-icon-content(                                   
+         $icon:              $iconHover,
+         $iconRtl:           $iconRtlHover,                                   
+         $iconHiRes:         $iconHiResHover,
+         $iconHiResRtl:      $iconHiResRtlHover,
+         $devicePixelRatio:  $devicePixelRatio,
+         $highResProportion: $highResProportion,
+         $lowResProportion:  $lowResProportion) ;
+  }
+
+  // active/selected definition should be after hover definition
+  // in order to have higher specificity
+
+  @if ($iconSelected != null)
+  {
+    #{$ancestorSelector} #{$markerSelector}.oj-active & {
+      @include oj-icon-content(                                   
+           $icon:              $iconActive,
+           $iconRtl:           $iconRtlActive,                                   
+           $iconHiRes:         $iconHiResActive,
+           $iconHiResRtl:      $iconHiResRtlActive,
+           $devicePixelRatio:  $devicePixelRatio,
+           $highResProportion: $highResProportion,
+           $lowResProportion:  $lowResProportion) ;
+    }
+
+    #{$ancestorSelector} #{$markerSelector}.oj-selected & {
+      @include oj-icon-content(                                   
+           $icon:              $iconSelected,
+           $iconRtl:           $iconRtlSelected,                                   
+           $iconHiRes:         $iconHiResSelected,
+           $iconHiResRtl:      $iconHiResRtlSelected,
+           $devicePixelRatio:  $devicePixelRatio,
+           $highResProportion: $highResProportion,
+           $lowResProportion:  $lowResProportion) ;
+    }
+  }
+  @else
+  {
+    #{$ancestorSelector} #{$markerSelector}.oj-active &, 
+    #{$ancestorSelector} #{$markerSelector}.oj-selected & {
+      @include oj-icon-content(                                   
+           $icon:              $iconActive,
+           $iconRtl:           $iconRtlActive,                                   
+           $iconHiRes:         $iconHiResActive,
+           $iconHiResRtl:      $iconHiResRtlActive,
+           $devicePixelRatio:  $devicePixelRatio,
+           $highResProportion: $highResProportion,
+           $lowResProportion:  $lowResProportion) ;
+    }
+  }
+
+
+  #{$ancestorSelector} #{$markerSelector}.oj-disabled & {
+    @include oj-icon-content(                                   
+         $icon:              $iconDisabled,
+         $iconRtl:           $iconRtlDisabled,                                   
+         $iconHiRes:         $iconHiResDisabled,
+         $iconHiResRtl:      $iconHiResRtlDisabled,
+         $devicePixelRatio:  $devicePixelRatio,
+         $highResProportion: $highResProportion,
+         $lowResProportion:  $lowResProportion) ;
+  }
+
+  
+}
+
+
+
+// the default point at which we consider a screen a high resolution
+// (or retina) display.
+//
+// The value is set to 1.5 because as of 2014 there's a lot 
+// of Android devices out there that are half-way between the 
+// legacy screen resolutions and retina (aka "xhdpi" in Google's terminology) 
+// they use a 1.5 factor so the default device pixel ratio is 1.5
+//
+// NOTE: This variable is defined here in order to allow stand alone 
+// use of these utility mixins, however this variable may also 
+// be defined in other variable files. Because of the !default, 
+// the actual value will be the value in the file loaded first.
+$highResolutionDevicePixelRatio: 1.5 !default;
+
+
+// this is used to test the layout within the allotted space.
+// by setting these test values to different colors
+// you can see where the "canvas" of elements are.
+$testBgColorBase:          null;//green;
+$testBgColorBaseBefore:    null;//pink;
+$testBgColorContent:       null;//blue;
+$testBgColorContentBefore: null;//orange;
+
+
+//-------------------------------------------------------------------------------------------------
+// This mixin just takes whatever content you give it and puts it in a media query 
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-media-query($queryMinWidth:     null,
+                           $queryMaxWidth:     null)
+{
+  $query: "";
+
+
+  @if ($queryMinWidth)
+  {
+    $query: "(min-width: " + $queryMinWidth + " )";
+  }
+
+  @if ($queryMaxWidth)
+  {
+    @if ($query != "")
+    {
+      $query: $query + " and ";
+    }
+
+    $query: $query + "(max-width: " + $queryMaxWidth + " )";
+  }
+
+
+  @if ($query != "")
+  {
+    @media #{$query} 
+    {
+      @content;
+    }
+  }
+  @else
+  {
+    @content;
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+// This mixin just takes whatever content you give it and puts it in a media query 
+// based on the devicePixelRatio you pass in.
+//
+//-------------------------------------------------------------------------------------------------
+@function oj-icon-hi-res-media-query-string($devicePixelRatio: $highResolutionDevicePixelRatio,
+                                  $queryMinWidth:    null,
+                                  $queryMaxWidth:    null)
+{
+
+  // UX designers may specify high resolution images. If they specify both high and low resolution 
+  // images then you will need to have a media query in the css. There's a bunch of different 
+  // possible units and syntax for these media queries. Which to use?
+  //
+  // First let's look at the units, the resolution media query describes the resolution 
+  // of the output device, and its unit can be
+  //
+  // - dpi (dots per inch)
+  // - dpcm (dots per centimeter)
+  // - dppx (dots per pixel, proposed for CSS3), not all browsers support this yet.
+  //
+  // 96dpi is equivalent to a device pixel ratio (DPR) of 1, so multiply the DPR by 96 
+  // to get the value, for example if the DPR is 1.5 use 144dpi. Some browsers use the new dppx unit. 
+  // This is equivalent to the DPR, and has the advantage of being intended for on-screen use.
+  //
+  // We use the following syntax in JET:
+  //
+  // - FF, IE9, chrome 29+ , use dpi units unless we can confirm all browsers support dppx
+  //      @media only screen and (min-resolution: 144dpi)
+  // - chrome before 29 and safari, both desktop and mobile for both
+  //      @media only screen and (-webkit-min-device-pixel-ratio: 1.5)
+  //
+
+  
+  $temp: "";
+
+  @if ($queryMinWidth)
+  {
+    $temp: "(min-width: " + $queryMinWidth + " ) and ";
+  }
+
+  @if ($queryMaxWidth)
+  {
+    $temp: $temp + "(max-width: " + $queryMaxWidth + " ) and ";
+  }
+
+  $queryString1:  $temp + "(-webkit-min-device-pixel-ratio: " + $devicePixelRatio +")";
+  $queryString2:  $temp + "(min-resolution: " + $devicePixelRatio * 96 + "dpi)";
+  // some  browsers don't support dppx yet, however chrome nags you without dppx
+  // https://code.google.com/p/chromium/issues/detail?id=336276
+  $queryString3:  $temp + "(min-resolution: " + $devicePixelRatio + "dppx)";
+
+  @return "#{$queryString1}, #{$queryString2}, #{$queryString3}";
+
+}
+
+//-------------------------------------------------------------------------------------------------
+// This mixin just takes whatever content you give it and puts it in a media query 
+// based on the devicePixelRatio you pass in.
+//
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-hi-res-media-query($devicePixelRatio: $highResolutionDevicePixelRatio,
+                                  $queryMinWidth:    null,
+                                  $queryMaxWidth:    null)
+{
+
+  // UX designers may specify high resolution images. If they specify both high and low resolution 
+  // images then you will need to have a media query in the css. There's a bunch of different 
+  // possible units and syntax for these media queries. Which to use?
+  //
+  // First let's look at the units, the resolution media query describes the resolution 
+  // of the output device, and its unit can be
+  //
+  // - dpi (dots per inch)
+  // - dpcm (dots per centimeter)
+  // - dppx (dots per pixel, proposed for CSS3), not all browsers support this yet.
+  //
+  // 96dpi is equivalent to a device pixel ratio (DPR) of 1, so multiply the DPR by 96 
+  // to get the value, for example if the DPR is 1.5 use 144dpi. Some browsers use the new dppx unit. 
+  // This is equivalent to the DPR, and has the advantage of being intended for on-screen use.
+  //
+  // We use the following syntax in JET:
+  //
+  // - FF, IE9, chrome 29+ , use dpi units unless we can confirm all browsers support dppx
+  //      @media only screen and (min-resolution: 144dpi)
+  // - chrome before 29 and safari, both desktop and mobile for both
+  //      @media only screen and (-webkit-min-device-pixel-ratio: 1.5)
+  //
+
+  
+  $temp: "";
+
+  @if ($queryMinWidth)
+  {
+    $temp: "(min-width: " + $queryMinWidth + " ) and ";
+  }
+
+  @if ($queryMaxWidth)
+  {
+    $temp: $temp + "(max-width: " + $queryMaxWidth + " ) and ";
+  }
+
+  $queryString1:  $temp + "(-webkit-min-device-pixel-ratio: " + $devicePixelRatio +")";
+  $queryString2:  $temp + "(min-resolution: " + $devicePixelRatio * 96 + "dpi)";
+  // some  browsers don't support dppx yet, however chrome nags you without dppx
+  // https://code.google.com/p/chromium/issues/detail?id=336276
+  $queryString3:  $temp + "(min-resolution: " + $devicePixelRatio + "dppx)";
+
+
+  @media #{$queryString1},  
+         #{$queryString2},  
+         #{$queryString3} 
+  {
+    @content;
+  }
+
+  
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+// This mixin generates css for high contrast icons. People often use 
+// background images in css to show an icon. The difficulty with high contrast 
+// mode is that on windows in high contrast mode the background images will 
+// disappear on IE9 and Firefox. To test on windows you can hit the following to switch to 
+// high contrast mode:left ALT + left SHIFT + PRINT SCREEN. 
+//
+// This mixin therefore does not use a background image to show an icon. 
+//
+// $width:                   the width the icon should be on the page
+// $height:                  the height the icon should be on the page         
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-base( $width, 
+                     $height)
+{
+  // Using :before and content the image doesn't disappear in high contrast mode. 
+  // However you don't have a property like background-size, 
+  // instead you need to scale and translate the image with css transform 
+
+  display:        inline-block;
+  width:          $width;
+  height:         $height;
+  // without line-height of 1there can be padding at the top.
+  line-height:    1;
+  overflow:       hidden;
+  direction:      ltr;
+  text-align:     center;
+  @include oj-box-sizing-property(content-box);
+  @content;
+
+  background-color: $testBgColorBase; // test the layout within the allotted space
+
+  &:before
+  {
+    display: inline-block;
+    @include oj-box-sizing-property(content-box);
+
+    background-color: $testBgColorBaseBefore; // test the layout within the allotted space
+  }
+
+}
+
+
+
+  
+//-------------------------------------------------------------------------------------------------
+// This mixin can be used in conjuntion with a class created with the "oj-icon-base" mixin.
+// For example JET uses the "oj-icon-base" mixin to create the '.oj-icon' class. 
+// ".oj-icon" has the defaults for a high contrast image. 
+//
+// You can use this mixin ("oj-icon-content") to generate 
+// a class with additions/overrides, which you can use in conjunction 
+// with ".oj-icon". 
+//
+// For example let's say you used this mixin to generate a class ".binky-icon-hc". You
+// could then put class="oj-icon binky-icon-hc" on your dom element. 
+//
+//
+// $icon:                    the low res default icon. You pass in the "url" syntax as well, 
+//                               like so: url("icon.png"). 
+//                               You can also pass in multiple urls as a list:
+//                                  (url("icon1.png" ),url("con2.png"))
+// $iconRtl:                 optional right to left version of $icon
+// $iconHiContrast:          the special high contrast icon, this icon is shown when 
+//                               "oj-hicontrast" is placed on the body tag. This value can be null,
+//                                in which case $icon will still show up. See above for syntax.
+// $iconHiContrastRtl:       optional right to left version of $iconHiContrast
+// $iconHiRes:               the high res icon. See above for syntax
+// $iconHiResRtl:            optional right to left version of $iconHiRes
+// $devicePixelRatio:        the device pixel ratio, used in the media query if there is 
+//                                 a $icon passed in.  
+// $highResProportion        the percentage to shrink the high res icon to. 
+//                                 For example ".5" if the image will be half it's original size. 
+//                                 ".25" if it will be a quarter of its original size.     
+// $lowResProportion         the percentage to shrink the low res icon to. 
+//                                 For example ".5" if the image will be half it's original size. 
+//                                 ".25" if it will be a quarter of its original size.   
+// $queryMinWidth:           media query min width
+// $queryMaxWidth:           media query max width
+// $iconFontFamily:          icon font family to use in high contrast 
+// $iconFontChar:            icon font char to use in high contrast 
+// $iconFontCharRtl:         optional right to left icon font char to use in high contrast 
+// $iconFontSize:            size of icon font to use in high contrast         
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-content ( $icon:              null, 
+                         $iconRtl:           null,  
+                         $iconHiContrast:    null,  
+                         $iconHiContrastRtl: null,  
+                         $iconHiRes:         null,  
+                         $iconHiResRtl:      null,  
+                         $devicePixelRatio:  $highResolutionDevicePixelRatio,
+                         $highResProportion: .5,
+                         $lowResProportion:  1,
+                         $queryMinWidth:     null,
+                         $queryMaxWidth:     null,
+                         $iconFontFamily:    null,
+                         $iconFontChar:      null,
+                         $iconFontCharRtl:   null,
+                         $iconFontSize:      null)
+{
+
+  // icon   icon@2x   icon@hc    in hc
+  //  y/n     y/n       y        use icon@hc
+  //  y       y         n        use icon@2x
+  //  y       n         n        use icon
+  //  n       y         n        use icon@2x
+
+
+  @if ($icon)
+  {
+    @include oj-icon-media-query($queryMinWidth, $queryMaxWidth)
+    {
+      &
+      {
+        @content;
+      }
+      
+      &:before
+      {
+        content: $icon;
+
+        @include oj-rtl()
+        {
+          content: $iconRtl;
+        }
+
+        @if ($lowResProportion != 1)
+        {
+          $translatePercent: - percentage((1 - $lowResProportion)/2);
+          // scale down the image and then move it to the top left corner 
+          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+        }
+      }
+
+      @if ($iconHiContrast)
+      {
+        .oj-hicontrast &:before
+        {
+          content: $iconHiContrast;
+
+          @include oj-rtl()
+          {
+            content: $iconHiContrastRtl;
+          }
+
+          @if ($lowResProportion != 1)
+          {
+            $translatePercent: - percentage((1 - $lowResProportion)/2);
+            // scale down the image and then move it to the top left corner 
+            @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+          }
+        }
+      }
+    }
+
+    @if ($iconHiRes)
+    {
+      $translatePercent: - percentage((1 - $highResProportion)/2);
+
+      // only generate the media queries if a low res icon is also defined
+      @include oj-icon-hi-res-media-query($devicePixelRatio, $queryMinWidth, $queryMaxWidth)
+      {
+
+        &:before
+        {
+          content: $iconHiRes;
+          // scale down the image and then move it to the top left corner 
+          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($highResProportion));
+          
+          @include oj-rtl()
+          {
+            content: $iconHiResRtl;
+          }
+        }
+
+        @if ($iconHiContrast)
+        {
+          .oj-hicontrast &:before
+          {
+            @if ($lowResProportion != 1)
+            {
+              $translatePercent: - percentage((1 - $lowResProportion)/2);
+              // scale down the image and then move it to the top left corner 
+              @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+            }
+            @else
+            {
+              @include oj-transform-property(none);
+            }
+          }
+        }
+      }
+    }  
+  }
+  @else
+  { 
+
+    @include oj-icon-media-query($queryMinWidth, $queryMaxWidth)
+    {
+      &
+      {
+        @content;
+      }
+
+      .oj-hicontrast &:before
+      {
+        content: $iconHiContrast;
+        
+        @include oj-rtl()
+        {
+          content: $iconHiContrastRtl;
+        }
+      }
+
+      @if  ($iconHiRes)
+      {
+
+        $translatePercent: - percentage((1 - $highResProportion)/2);
+
+        &:before
+        {
+          content: $iconHiRes;
+          // scale down the image and then move it to the top left corner 
+          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($highResProportion));
+
+          
+          @include oj-rtl()
+          {
+            content: $iconHiResRtl;
+          }
+        }
+
+        @if ($iconHiContrast)
+        {
+          // we don't support high res high contrast images
+          .oj-hicontrast &:before
+          {
+            @if ($lowResProportion != 1)
+            {
+              $translatePercent: - percentage((1 - $lowResProportion)/2);
+              // scale down the image and then move it to the top left corner 
+              @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+            }
+            @else
+            {
+              @include oj-transform-property(none);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @if $iconFontChar
+  {
+    @include oj-icon-media-query($queryMinWidth, $queryMaxWidth)
+    {
+      .oj-hicontrast &
+      {
+        font-family: $iconFontFamily;
+        font-size: $iconFontSize;
+        text-align: center;
+        line-height: 1;
+      }
+
+      .oj-hicontrast &:before
+      {
+        content: $iconFontChar;
+        @include oj-transform-property(none);
+
+        @include oj-rtl()
+        {
+          content: $iconFontCharRtl;
+        }
+      }
+    }
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+//
+// This mixin generates css for icon fonts
+//
+// $width:                   the width the icon should be on the page
+// $height:                  the height the icon should be on the page   
+// $fontSize:                the font size
+// $fontFamily:              the font family         
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-font-base($fontFamily,
+                         $fontSize:   null,
+                         $fontWeight: normal,
+                         $color:      null)
+{
+
+  font-family:    $fontFamily;
+  font-size:      $fontSize;
+  line-height:    1;
+  display:        inline-block;
+  font-weight:    $fontWeight;
+  speak:          none;
+  font-style:     normal;
+  font-variant:   normal;
+  text-transform: none;
+  color:          $color;
+  text-align:     center; 
+  @include oj-box-sizing-property(content-box);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background-color: $testBgColorBase; // test the layout within the allotted space
+
+  &:before{
+    display: inline-block;
+
+    background-color: $testBgColorBaseBefore; // test the layout within the allotted space
+  }
+
+}
+
+
+//-------------------------------------------------------------------------------------------------
+// You can use this mixin ("oj-icon-font-content") to generate 
+// a class with additions/overrides, which you can use in conjunction 
+// with the class created with the "oj-icon-font-base". 
+//
+// For example let's say you used the mixin "oj-icon-font-base" to generate a class 
+// ".demo-icon-font". You could then use this mixin to generate a class 
+// ".demo-icon-font-clock" for the clock icon, and then you would put
+// a class="demo-icon-font demo-icon-font-clock" on your dom element. 
+//-------------------------------------------------------------------------------------------------
+@mixin oj-icon-font-content($fontSize:   null,
+                            $color:      null,
+                            $char:       null)
+{
+
+  font-size: $fontSize;
+  color:     $color;
+
+  background-color: $testBgColorContent; // test the layout within the allotted space
+
+  &:before{
+    content: $char;
+    
+    background-color: $testBgColorContentBefore;// test the layout within the allotted space
+  }
+}

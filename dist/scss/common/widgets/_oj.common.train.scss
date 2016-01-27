@@ -1,0 +1,232 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.train.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../utilities/oj.utilities";
+
+@if $includeTrainClasses != false  {
+  @include module-include-once("common.train") {
+
+    /* train */
+    /* --------------------------------------------------------------- */    
+
+    .oj-train{
+      white-space: nowrap;
+      text-align: center
+    }
+
+    .oj-train-wrapper {
+      font-size: 0;
+      display: inline-block;
+      position:relative;
+    }
+     
+	/* Class that can be added to stretch train to container size */
+    .oj-train-stretch .oj-train-wrapper {
+      width: 100%;
+    }
+
+	/* Wrapper class that contains step connector and fill */
+    .oj-train-connector-wrapper {
+      position: absolute;
+      width: 100%;
+      @include oj-box-sizing-property(border-box);
+      padding: 0 $trainStepWidth/2;
+    }
+    
+	/* Classes that define the bar and shadow connecting the steps */
+
+    .oj-train-connector,
+    .oj-train-connector-fill { 
+      position: relative;
+      height: $trainConnectorHeight;
+      width: 100%;
+	  
+	  // top spacing to center the connector 
+      top: ($trainButtonConnectorDiameter - $trainConnectorHeight)/2;
+      @include oj-box-sizing-property(border-box);
+    }
+
+
+    .oj-train-connector {
+      background-color: $trainConnectorBgColor;
+    }
+
+	  /* Shades in the connector to the position of the selected step */
+    .oj-train-connector-fill {
+      background-color: $trainConnectorBgColorSelected;
+      // move the fill on top of the normal connector
+      margin-top: -$trainConnectorHeight;
+    }
+
+	/* Connector circle behind the individual step buttons which matches the connector */
+    .oj-train-button-connector {
+      position: relative;
+      width: $trainButtonConnectorDiameter;
+      height: $trainButtonConnectorDiameter;
+      display:inline-block;
+      @include oj-border-radius(50%);
+      background: $trainConnectorBgColor;
+      @include oj-box-sizing-property(border-box);
+    }
+
+	 
+    .oj-train-button-connector.oj-train-fill {
+      background-color: $trainConnectorBgColorSelected;
+      @include oj-background-image(none);
+      top: 0;
+    }	
+
+    /* Inividual step buttons that are used for train navigation */
+    .oj-train-button {
+      cursor: pointer;
+      @include oj-border-radius(50%);     
+      border-width: 1px;
+      border-style: solid;
+      width: $trainButtonDiameter;
+      height: $trainButtonDiameter;
+      margin:($trainButtonConnectorDiameter - $trainButtonDiameter)/2;
+      @include oj-box-sizing-property(border-box);
+    }
+
+    .oj-train-button.oj-default {
+      border-color: $trainBorderColor;
+      background-color: $trainBgColor;
+    }
+
+    .oj-train-button.oj-visited {
+      border-color: $trainBorderColorVisited;
+      background-color: $trainBgColorVisited;
+    }
+
+    .oj-train-button.oj-hover {
+      border-color: $trainBorderColorHover;
+      background-color: $trainBgColorHover;
+    }
+
+    .oj-train-button.oj-selected {
+      border-color: $trainBorderColorSelected;
+      background-color: $trainBgColorSelected;
+      cursor: default;
+    }
+
+    .oj-train-button.oj-disabled {
+      border-color: $trainBorderColorDisabled;
+      background-color: $trainBgColorDisabled;
+      opacity: $buttonOpacityDisabled;
+      cursor: default;
+    }
+
+    .oj-train-step-list {
+      margin: 0;
+      padding: 0;
+    }
+
+
+	  /* Class for each li that stores the label and button information for each step in the train */
+    .oj-train-step-list-item {
+      font-size: 1rem;
+      width: $trainStepWidth;
+      text-align: center;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    
+    .oj-train-label-wrapper {
+      overflow: hidden; 
+      white-space: nowrap;
+      text-overflow: ellipsis;
+	  padding-top: 1px;
+    }
+    
+    .oj-train-label {
+      text-decoration: none;
+      margin-right: 5px;
+      margin-left: 5px;
+      color: $linkTextColor;
+      text-align: center; 
+    }
+
+    .oj-train-label.oj-visited {
+      color: $trainLabelColorVisited;
+    }
+
+    .oj-train-label.oj-disabled {
+      text-decoration: none;
+      font-weight:normal;
+      color: $linkTextColorDisabled;
+      opacity: $opacityDisabled;
+    }
+
+    .oj-train-label.oj-hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .oj-train-label.oj-selected {
+      text-decoration: none;
+      cursor: default;
+      font-weight:bold;
+    }
+
+	/* The message icon to be displayed on the step */
+    .oj-train-icon {
+      position: absolute;
+      margin-bottom: 1px;
+	  aria-hidden: true;
+      bottom: ($trainButtonConnectorDiameter - $trainButtonDiameter)/2;
+
+      @include oj-ltr() {
+        right: ($trainButtonConnectorDiameter - $trainButtonDiameter)/2;	  
+      }
+      @include oj-rtl() {
+        left: ($trainButtonConnectorDiameter - $trainButtonDiameter)/2;
+      }
+    }
+
+    .oj-train-icon.oj-hover {
+      cursor: pointer;
+    }
+
+    .oj-train-icon.oj-confirmation {
+      @extend .oj-fwk-icon-status-confirmation2;
+	  }
+
+    .oj-train-icon.oj-info{
+      @extend .oj-fwk-icon-status-info2;
+    }
+
+    .oj-train-icon.oj-warning {
+      @extend .oj-fwk-icon-status-warning2;
+    }
+
+    .oj-train-icon.oj-error {
+      @extend .oj-fwk-icon-status-error2;
+    }
+
+    // A selected step will have a more prominent border
+    .oj-hicontrast .oj-train-button.oj-selected{
+      border-width: $trainButtonDiameter/2;
+    }
+
+    // A disabled step will have a less prominent border
+    .oj-hicontrast .oj-train-button.oj-disabled {
+      border-style: dotted;
+    }
+
+    .oj-hicontrast .oj-train-button.oj-visited {
+      border-width: 2px;
+    }
+
+    // For high contrast mode add a transparent border around the train elements.
+    .oj-hicontrast .oj-train-connector {
+      border: 1px solid;
+    }
+
+     .oj-hicontrast .oj-train-connector-fill {
+      border: $trainConnectorHeight/2 solid;
+    }
+  }
+}

@@ -1,0 +1,218 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// form controls
+//----------------------------------
+
+@mixin oj-form-control-content($valueColor: $formControlInputValueColor,
+                               $textAlign:  $formControlTextAlign) {   
+
+    @include oj-bidi-property($property: 'text-align', $startOrEnd: $textAlign);
+    color: $valueColor; 
+    background-color: $formControlBgColor; 
+    @include oj-form-control-border;
+    // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+    -webkit-appearance: none;
+    // remove ios background-color on tap since we tend to put our own background-color on tap
+    -webkit-tap-highlight-color: transparent; 
+
+    @include oj-placeholder()
+    {
+      color: $formControlPlaceholderColor;
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: $formControlPlaceholderFontStyle;
+    }
+    
+}
+
+// this doesn't add borders
+@mixin oj-form-control-input($valueColor: $formControlInputValueColor,
+                             $textAlign:  $formControlTextAlign) {   
+
+    @include oj-bidi-property($property: 'text-align', $startOrEnd: $textAlign);
+    color: $valueColor; 
+    background-color: $formControlBgColor; 
+  
+    // iOS's iPad has a bug of showing an inner top shadow, the below CSS is to remove it for webkit
+    -webkit-appearance: none;
+    // remove ios background-color on tap since we tend to put our own background-color on tap
+    -webkit-tap-highlight-color: transparent; 
+    
+
+    @include oj-placeholder()
+    {
+      color: $formControlPlaceholderColor;
+      // in Firefox the default opacity is not 1 for placeholder
+      opacity: 1;
+      font-style: $formControlPlaceholderFontStyle;
+    }
+}
+
+@mixin oj-form-control-border($borderWidth: $formControlBorderWidth) {   
+    border-style: solid;
+    border-color: $formControlBorderColor;
+    border-width: $borderWidth;
+    @include oj-border-radius($formControlBorderRadius);
+}
+
+@mixin oj-form-control-content-disabled {
+    color: $formControlValueColorDisabled;
+    background-color: $formControlBgColorDisabled;
+    border-color: $formControlBorderColorDisabled;
+    opacity: $formControlOpacityDisabled;
+}
+
+@mixin oj-form-control-content-readonly {
+    color: $formControlValueColorReadOnly;
+    background-color: transparent;
+    border-color: transparent;
+    // Remove the border on the left/right so that the
+    //       input value is flush with the label gutter
+    border-left-width: 0;
+    border-right-width: 0;
+    font-size: $formControlFontSizeReadOnly;
+    font-weight: $formControlFontWeightReadOnly;
+}
+
+// if the form control adds a thicker border on bottom or on bottom/top on focus, 
+// then we need to compensate with padding
+// otherwise the text in the input jumps. When there is no focus, we
+// add top/bottom padding (both are needed to keep it centered), 
+// and on focus we remove the padding. see oj-form-control-content-focus mixin.
+// assumptions: bottom border only or if not, bottom border and top border that are equal.
+// no top border-only since we doubt anyone would do that.
+@mixin oj-form-control-content-no-focus-padding {
+  padding-top: value-bottom-difference($formControlInputBorderWidthFocus, $formControlBorderWidth);
+  padding-bottom: value-bottom-difference($formControlInputBorderWidthFocus, $formControlBorderWidth);
+}
+
+@mixin oj-form-control-content-focus {
+  border-color: $formControlInputBorderColorFocus;
+  @if ($formControlInputBorderWidthFocus != null) {
+    border-width: $formControlInputBorderWidthFocus;
+  }
+}
+
+@mixin oj-form-control-content-focus-padding {
+  @if ($formControlInputBorderWidthFocus != null) {
+    // if border-top and border-bottom width is the same, then add padding-top: 0 as well
+    // as padding-bottom: 0.
+    @if (focus-top-bottom-border-difference($formControlInputBorderWidthFocus) == null)
+    {
+      padding-top: 0;
+    }
+    padding-bottom: 0;
+  }
+}
+
+// returns the difference between the bottom border width on focus and the bottom border width
+// when not in focus.
+@function value-bottom-difference ($borderWidthFocus, $borderWidth) {
+  @if ($borderWidthFocus != null and $borderWidth != null ) {
+    $bottom-difference: (oj-shorthand-property-value-bottom($borderWidthFocus)
+                    - oj-shorthand-property-value-bottom($borderWidth));
+    @return if(($bottom-difference/1px) > 0,
+            $bottom-difference,
+            null);
+  }
+  @else {  
+    @return null;
+  }
+}
+
+// returns the difference between the top and bottom border widths. 
+// returns null if they are the same or there is no border.
+@function focus-top-bottom-border-difference ($borderWidthFocus) {
+  @if ($borderWidthFocus != null) {
+    $difference: (oj-shorthand-property-value-bottom($borderWidthFocus)
+                  - oj-shorthand-property-value-top($borderWidthFocus));
+    @return if(($difference/1px) != 0,
+            $difference,
+            null);
+  }
+  @else {  
+    @return null;
+  }
+}
+
+// sets the border-width and border-radius for the message box by looking at the background-color
+// of the form control, and the border width and the error border width.
+// The logic is, if the form control has a background-color, then use the errorBorderWidth as the
+// border width. If it has no background-color or form control border (like in ios), then use
+// the errorBorder's bottom border only as the error border.
+// usage: 
+// @include oj-form-control-border-message-width($inputSearchBgColor); where the background
+// color variable is not the default $formControlBgColor.
+// @include oj-form-control-border-message-width; if using the defaults
+@mixin oj-form-control-border-message-width(
+                              $backgroundColor: $formControlBgColor,
+                              $borderWidth:  $formControlBorderWidth,
+                              $messageBorderWidth: $formControlMessagingBorderWidth) { 
+                                
+  $finalMessageBorderWidth: oj-form-control-border-message-width-func($backgroundColor, 
+                                                                      $borderWidth, 
+                                                                      $messageBorderWidth);
+  border-width: $finalMessageBorderWidth;
+  // We don't want to mess with the border-radius if the error border is on all four sides. 
+  // Otherwise, set the border-radius to 0 to show a straight border.
+  @if(not(oj-form-control-message-border-four-sides($finalMessageBorderWidth)) and 
+      $formControlBorderRadius != 0) {
+    @include oj-border-radius(0);
+  }
+}
+
+// returns the border-width for when there is a message (e.g., error) on the form control.
+// we calculate this because in some cases, we want only a bottom-border, in other cases we
+// want a border on all four sides.
+@function oj-form-control-border-message-width-func (
+  $backgroundColor: $formControlBgColor,
+  $borderWidth:  $formControlBorderWidth,
+  $messageBorderWidth: $formControlMessagingBorderWidth) {
+  // if there is a visible background color, then use the error border width as is. This may
+  // be on all four sides if $formControlMessagingBorderWidth is set to that.
+  @if ($backgroundColor != null and $backgroundColor != transparent) {
+    @return $messageBorderWidth;
+  }
+    
+  $top: oj-shorthand-property-value-top($borderWidth);
+  $right: oj-shorthand-property-value-right($borderWidth);
+  $bottom: oj-shorthand-property-value-bottom($borderWidth);
+  $left: oj-shorthand-property-value-left($borderWidth);
+  
+  // if no form control background color or form control borders, then use the bottom only
+  // border
+  @if ($top == 0 and $right == 0 and $bottom == 0 and $left == 0)  {
+    @return 0 0 oj-shorthand-property-value-bottom($messageBorderWidth) 0;
+  }  
+  
+  $errortop: oj-shorthand-property-value-top($messageBorderWidth);
+  $errorright: oj-shorthand-property-value-right($messageBorderWidth);
+  $errorbottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $errorleft: oj-shorthand-property-value-left($messageBorderWidth);
+  
+  $returntop: if(($top != null and $top != 0), $errortop, 0);
+  $returnright: if(($right != null and $right != 0), $errorright, 0);
+  $returnbottom: if(($bottom != null and $bottom != 0), $errorbottom, 0);
+  $returnleft: if(($left != null and $left != 0), $errorleft, 0);
+        
+  @return $returntop $returnright $returnbottom $returnleft;
+}
+
+// returns true if the message border width has four sides
+@function oj-form-control-message-border-four-sides ($messageBorderWidth) {
+
+  $top: oj-shorthand-property-value-top($messageBorderWidth);
+  $right: oj-shorthand-property-value-right($messageBorderWidth);
+  $bottom: oj-shorthand-property-value-bottom($messageBorderWidth);
+  $left: oj-shorthand-property-value-left($messageBorderWidth);
+  
+  // count form control borders. If all four are set, return true
+  @if ($top != 0 and $right != 0 and $bottom != 0 and $left != 0)  {
+    @return true;
+  }
+  @else {
+    @return false;
+  }
+}

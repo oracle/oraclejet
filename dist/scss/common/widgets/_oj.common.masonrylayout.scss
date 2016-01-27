@@ -1,0 +1,163 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.masonrylayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+
+//-------------------------------------------------------------------------------------------------
+// Return true if the colSpan/rowSpan combination is a valid masonryLayout tile 
+// size, false if not.
+//
+// $colSpan:  The number of columns to span.
+// $rowSpan:  The number of rows to span.
+//-------------------------------------------------------------------------------------------------
+@function oj-masonrylayout-tile-valid-size($colSpan, $rowSpan) {
+  @if ($colSpan == 3) {
+    @if ($rowSpan == 3) {
+      @return false;
+    }
+  }
+  @return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Create masonryLayout tile size style classes for all valid sizes, including 
+// drop target and drag feedback marker variations.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-masonrylayout-tile-sizes() {
+  @for $c from 1 through 3 {
+    @for $r from 1 through 3 {
+      @if (oj-masonrylayout-tile-valid-size($colSpan: $c, $rowSpan: $r) == true) {
+        @include oj-masonrylayout-tile-size($colSpan: $c, $rowSpan: $r);
+      }
+    }
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+// Create a masonryLayout tile size style class for one size, including drop 
+// target and drag feedback marker variations.
+//
+// $colSpan:  The number of columns to span.
+// $rowSpan:  The number of rows to span.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-masonrylayout-tile-size($colSpan, $rowSpan) {
+  .oj-masonrylayout-tile-#{$colSpan}x#{$rowSpan} {
+    @extend %oj-masonrylayout-tile-size-base;
+    width: ($colSpan * $masonryLayoutTileWidth + ($colSpan - 1) * 2 * $masonryLayoutTileMargin);
+    height: ($rowSpan * $masonryLayoutTileHeight + ($rowSpan - 1) * 2 * $masonryLayoutTileMargin);
+  }
+  .oj-masonrylayout-tile-#{$colSpan}x#{$rowSpan}.oj-drop {
+    @extend %oj-masonrylayout-tile-drop-base;
+  }
+  .oj-masonrylayout-tile-#{$colSpan}x#{$rowSpan}.oj-drag {
+    @extend %oj-masonrylayout-tile-drag-base;
+  }
+}
+
+
+@if $includeMasonryLayoutClasses != false  {
+  @include module-include-once("common.masonrylayout") {
+    
+    /* masonrylayout */
+    /* --------------------------------------------------------------- */
+    
+    //applied to the root element
+    .oj-masonrylayout {
+        //specify min size so that it's always greater than 0 and the component
+        //can get notified of resizes
+        min-height: 1px;
+        min-width: 1px;
+        position: relative;
+    }
+    
+    //transition end state applied when the component is resized
+    .oj-masonrylayout-transition-resize-to {
+        transition: width $masonryLayoutAnimationDuration, height $masonryLayoutAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    //faster transition end state applied when the component is resized due to
+    //continuous user interaction, like drag-and-drop reorder
+    .oj-masonrylayout-transition-resize-to-fast {
+        transition: width $masonryLayoutAnimationDurationFast, height $masonryLayoutAnimationDurationFast;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    /* masonry tile */
+    
+    //transition end state applied during layout
+    .oj-masonrylayout-tile-transition-move-to {
+        transition: top $masonryLayoutAnimationDuration, left $masonryLayoutAnimationDuration, right $masonryLayoutAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    //faster transition end state applied during layout due to continuous user
+    //interaction, like drag-and-drop reorder
+    .oj-masonrylayout-tile-transition-move-to-fast {
+        transition: top $masonryLayoutAnimationDurationFast, left $masonryLayoutAnimationDurationFast, right $masonryLayoutAnimationDurationFast;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    //transition end state applied during tile resize
+    .oj-masonrylayout-tile-transition-resize-to {
+        //include 'top' and 'left' attrs here because if both resize and move are 
+        //applied together, only one will win, which will be resize because
+        //it occurs later in the css file, so the move wouldn't otherwise
+        //get animated
+        transition: width $masonryLayoutAnimationDuration, height $masonryLayoutAnimationDuration, top $masonryLayoutAnimationDuration, left $masonryLayoutAnimationDuration, right $masonryLayoutAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    //transition start state applied before tile is removed
+    .oj-masonrylayout-tile-transition-hide-from {
+        opacity: 1;
+    }
+    
+    //transition end state applied when tile is removed
+    .oj-masonrylayout-tile-transition-hide-to {
+        transition: opacity $masonryLayoutAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+        opacity: 0;
+    }
+    
+    //transition start state applied before tile is inserted
+    .oj-masonrylayout-tile-transition-show-from {
+        opacity: 0;
+    }
+    
+    //transition end state applied when tile is inserted
+    .oj-masonrylayout-tile-transition-show-to {
+        transition: opacity $masonryLayoutAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+        opacity: 1;
+    }
+    
+    //base styles for tile size classes
+    %oj-masonrylayout-tile-size-base {
+        @include oj-box-sizing-property(border-box);
+        margin: $masonryLayoutTileMargin;
+        position: absolute;
+    }
+
+    //base styles for tile drop target
+    %oj-masonrylayout-tile-drop-base {
+        background-color: $dropTarget1Color;
+        border: 1px solid $dropTarget2Color;
+        opacity: .75;
+    }
+
+    //base styles for tile drag feedback
+    %oj-masonrylayout-tile-drag-base {
+        opacity: .75;
+    }
+    
+    //generate the tile size classes, including drop target and drag feedback
+    //variations
+    @include oj-masonrylayout-tile-sizes();
+  }
+}

@@ -1,0 +1,306 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.filmstrip.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+
+@if $includeFilmStripClasses != false  {
+  @include module-include-once("common.filmstrip") {
+    
+    /* filmstrip */
+    /* --------------------------------------------------------------- */
+    
+    //applied to the root element
+    .oj-filmstrip {
+        //specify min size so that it's always greater than 0 and the component
+        //can get notified of resizes
+        min-height: 1px;
+        min-width: 1px;
+        overflow: hidden;
+    }
+    
+    //applied to each layout container
+    .oj-filmstrip-container {
+        position: relative;
+        @include oj-display-flex-property();
+    }
+    
+    //applied to each layout container in a vertical filmstrip
+    .oj-filmstrip-vertical.oj-filmstrip-container,
+    .oj-filmstrip-vertical .oj-filmstrip-container {
+        @include oj-flex-direction-property(column);
+    }
+    
+    //applied to the container around the oj-filmstrip-pages-container when
+    //navigation arrows are "adjacent" and not hidden
+    .oj-filmstrip-content-container {
+        overflow: hidden;
+    }
+    
+    //applied to each logical page and the container around all logical pages,
+    //as well as the container around the oj-filmstrip-pages-container when
+    //navigation arrows are "adjacent" and not hidden
+    .oj-filmstrip-pages-container,
+    .oj-filmstrip-page,
+    .oj-filmstrip-content-container {
+        @include oj-flex-grow-property(1);
+        @include oj-flex-shrink-property(0);
+    }
+    
+    //applied to the container around each item in the filmstrip
+    .oj-filmstrip-item-container {
+        @include oj-align-items-property(center);
+        @include oj-justify-content-property(space-around);
+    }
+    
+    //applied to each item in the filmstrip
+    .oj-filmstrip-item {
+        @include oj-flex-grow-property(0);
+        @include oj-flex-shrink-property(0);
+    }
+    
+    //this class specifies the basic details of a logical page navigation
+    //transition, but the details of the initial and destination states of
+    //the transition are specified by the *-from and *-to classes below
+    .oj-filmstrip-transition {
+        //can't use oj-transition-property mixin here because we need to split
+        //the transform properties across the different transition properties 
+        //to ensure that transitions on iOS work
+        -webkit-transition: -webkit-transform $animationDurationMedium;
+        transition: transform $animationDurationMedium;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    //the below oj-filmstrip-transition-*-from and oj-filmstrip-transition-*-to
+    //classes are applied to each individual logical page involved in a
+    //transition and specify the initial and destination states of the 
+    //transition
+    
+    //these oj-filmstrip-transition-*-from classes are empty because the 
+    //default slide transition does not require special initial state
+    .oj-filmstrip-transition-next-oldpage-from,
+    .oj-filmstrip-transition-next-newpage-from,
+    .oj-filmstrip-transition-prev-oldpage-from,
+    .oj-filmstrip-transition-prev-newpage-from {
+    }
+    
+    //the default layout of logical pages positions them next to each other in 
+    //a single row or column in their original DOM order, so the 
+    //oj-filmstrip-transition-*-to classes below need to transform them from 
+    //that natural position to the destination position
+    
+    .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to,
+    .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
+        @include oj-ltr() {
+            //slide the page left by a page width
+            @include oj-transform-property(translate3d(-100%, 0, 0));
+        }
+        @include oj-rtl() {
+            //slide the page right by a page width
+            @include oj-transform-property(translate3d(100%, 0, 0));
+        }
+    }
+    
+    .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to,
+    .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
+        @include oj-ltr() {
+            //slide the page right by a page width
+            @include oj-transform-property(translate3d(100%, 0, 0));
+        }
+        @include oj-rtl() {
+            //slide the page left by a page width
+            @include oj-transform-property(translate3d(-100%, 0, 0));
+        }
+    }
+    
+    .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-next-oldpage-to,
+    .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-next-newpage-to {
+        //slide the page up by a page height
+        @include oj-transform-property(translate3d(0, -100%, 0));
+    }
+    
+    .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-prev-oldpage-to,
+    .oj-filmstrip.oj-filmstrip-vertical .oj-filmstrip-transition-prev-newpage-to {
+        //slide the page down by a page height
+        @include oj-transform-property(translate3d(0, 100%, 0));
+    }
+    
+    /* navigation arrows */
+    
+    //applied to the container around a navigation arrow
+    .oj-filmstrip-arrow-container {
+        @include oj-display-flex-property();
+        @include oj-align-items-property(center);
+        @include oj-flex-grow-property(0);
+        @include oj-flex-shrink-property(0);
+        @include oj-align-self-property(center);
+    }
+    
+    .oj-filmstrip-vertical .oj-filmstrip-arrow-container {
+        @include oj-flex-direction-property(column);
+    }
+    
+    //applied to the container around a navigation arrow when the arrows overlay
+    //the filmStrip
+    .oj-filmstrip-arrow-container-overlay {
+        position: absolute;
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-start {
+        @include oj-ltr() {
+            left: 0;
+        }
+        @include oj-rtl() {
+            right: 0;
+        }
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-end {
+        @include oj-ltr() {
+            right: 0;
+        }
+        @include oj-rtl() {
+            left: 0;
+        }
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-start,
+    .oj-filmstrip-arrow-container-overlay.oj-end {
+        //can't use 'align-self: center' here because the container is
+        //absolutely positioned
+        top: 50%;
+        @include oj-transform-property(translate3d(0, -50%, 0));
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-top {
+        top: 0;
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-bottom {
+        bottom: 0;
+    }
+    
+    .oj-filmstrip-arrow-container-overlay.oj-top,
+    .oj-filmstrip-arrow-container-overlay.oj-bottom {
+        //can't use 'align-self: center' here because the container is
+        //absolutely positioned
+        @include oj-ltr() {  
+            left: 50%;
+            @include oj-transform-property(translate3d(-50%, 0, 0));
+        }
+        @include oj-rtl() {
+            right: 50%;
+            @include oj-transform-property(translate3d(50%, 0, 0));
+        }
+    }
+    
+    //applied to a navigation arrow
+    .oj-filmstrip-arrow {
+        @include oj-box-sizing-property(border-box);
+        width: $conveyorBeltOverflowIndicatorHeight;
+        height: $conveyorBeltOverflowIndicatorHeight;
+        //specify line-height to be same as height so that arrows appear 
+        //vertically centered regardless of font size
+        line-height: $conveyorBeltOverflowIndicatorHeight;
+        text-align: center;
+        cursor: $buttonCursor;
+        @include oj-border-radius($filmStripArrowBorderRadius);
+        border: 1px solid;
+        display: inline-block;
+        opacity: $filmStripArrowOpacity;
+        outline: none;
+    }
+
+    .oj-filmstrip-arrow.oj-default {
+        border-color: transparent;
+    }
+
+    .oj-filmstrip-arrow.oj-hover {
+        //from .oj-button.oj-hover
+        background-color: $buttonHalfChromeBgColorHover;
+        @include oj-background-image($buttonBgImageHover);
+        border-color: $buttonHalfChromeBorderColorHover;
+    }
+    
+    //active should trump hover
+    .oj-filmstrip-arrow.oj-active,
+    .oj-filmstrip-arrow.oj-active.oj-hover {
+        //from .oj-button.oj-active
+        background-color: $buttonHalfChromeBgColorActive;
+        @include oj-background-image($buttonBgImageActive);
+        border-color: $buttonHalfChromeBorderColorActive;
+        opacity: $buttonHalfChromeOpacityActive;
+    }
+
+    
+    /* navigation arrow icons */
+    .oj-filmstrip-arrow .oj-filmstrip-arrow-icon {
+        // make sure that the cursor is uniform across the whole navigation button
+        cursor: inherit;
+        //align the icon vertically; add margin on bottom to center it better 
+        //than vertical-align by itself
+        vertical-align: middle;
+        margin-bottom: 3px;
+    }
+    
+    .oj-filmstrip-arrow.oj-default .oj-filmstrip-arrow-icon {
+        color: $buttonHalfChromeIconColor;
+    }
+
+    .oj-filmstrip-arrow.oj-hover .oj-filmstrip-arrow-icon {
+        //from .oj-button.oj-hover .oj-button-icon
+        color: $buttonHalfChromeIconColorHover;
+    }
+
+    //active should trump hover
+    .oj-filmstrip-arrow.oj-active .oj-filmstrip-arrow-icon,
+    .oj-filmstrip-arrow.oj-active.oj-hover .oj-filmstrip-arrow-icon {
+        //from .oj-button.oj-active .oj-button-icon
+        color: $buttonHalfChromeIconColorActive;
+    }
+    
+    //applied to the navigation arrows when they are only shown on hover
+    .oj-filmstrip-arrow-transition {
+        transition: opacity $animationDurationMedium/2;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+    
+    .oj-filmstrip.oj-filmstrip-hover .oj-filmstrip-arrow-transition.oj-filmstrip-arrow-container {
+        //if on the arrow container, set opacity to 1 because it doesn't affect
+        //the opacity of the arrow itself
+        opacity: 1;
+    }
+    
+    .oj-filmstrip.oj-filmstrip-hover .oj-filmstrip-arrow-transition.oj-filmstrip-arrow {
+        //if on the arrow, set opacity to 0.8, which is the default arrow
+        //opacity, because this value will override that
+        opacity: $filmStripArrowOpacity;
+    }
+    
+    .oj-filmstrip:not(.oj-filmstrip-hover) .oj-filmstrip-arrow-transition {
+        opacity: 0;
+    }
+
+    
+
+    // icons
+    //------------------------------------------
+
+    .oj-filmstrip-arrow-icon.oj-start {
+        @extend .oj-fwk-icon-caret-start;
+    }
+    .oj-filmstrip-arrow-icon.oj-end {
+        @extend .oj-fwk-icon-caret-end;
+    }
+    .oj-filmstrip-arrow-icon.oj-top {
+        @extend .oj-fwk-icon-caret-n;
+    }
+    .oj-filmstrip-arrow-icon.oj-bottom {
+        @extend .oj-fwk-icon-caret-s;
+    }
+  }
+}

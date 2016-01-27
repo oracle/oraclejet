@@ -1,0 +1,226 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+//-------------------------------------------------------------------------------------------------
+// This function returns an image url relative to the $imageDir variable
+//-------------------------------------------------------------------------------------------------
+@function oj-image-url($path)
+{
+  @if $path == null {@return null;}
+  @else { @return url($imageDir + $path);}
+}
+
+
+//-------------------------------------------------------------------------------------------------
+// This function returns an image url relative to the $commonImageDir variable
+//-------------------------------------------------------------------------------------------------
+@function oj-common-image-url($path)
+{
+  @if $path == null {@return null;}
+  @else { @return url($commonImageDir + $path);}
+}
+
+//-------------------------------------------------------------------------------------------------
+// This function returns a font relative to the $fontDir variable
+//-------------------------------------------------------------------------------------------------
+@function oj-font-url($path)
+{
+  @if $path == null {@return null;}
+  @else { @return url($fontDir + $path);}
+}
+
+//-------------------------------------------------------------------------------------------------
+// Joins a list of strings into a single string
+//-------------------------------------------------------------------------------------------------
+@function oj-join-list-to-string($list) 
+{
+  $result: "";
+
+  @for $i from 1 through length($list) 
+  {
+    $e: nth($list, $i);
+    $result: "#{$result}#{$e}";
+  }
+  //@debug "oj-join-list-to-string: #{$result}";
+  @return $result;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Passed in a string of 6 chars representing 6 bits.  Decode the char into the 
+// corresponding base 10 number.  Return the calculated index into the base64 encoding table.
+//-------------------------------------------------------------------------------------------------
+@function oj-to-base64-index($pattern)
+{
+  $twoToTheN: (0: 1, 1: 2, 2: 4, 3: 8, 4: 16, 5: 32); 
+  $index: 0;
+  $i: 1;
+  $y: 5;
+  @while ($i <= 6)
+  {
+    $b: str-slice($pattern, $i, $i);
+    @if ($b == '1')
+    {
+      $n:  map-get($twoToTheN, $y);
+      //@debug "oj-to-base64-index: 2 to the (#{$y}) == #{$n}";
+      $index: $index + $n;
+    }
+      
+    $y: $y - 1;
+    $i: $i + 1;
+  }
+  //@debug "oj-to-base64-index(#{$pattern}) == #{$index}";
+  @return $index;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Simple base64 encoding without bitwise language operators.  Assumes character data from XML svg.
+//-------------------------------------------------------------------------------------------------
+@function oj-encodebase64($svg) 
+{
+  //There are three steps to the conversion:
+  //1) Grab 3 chars at a time in the input svg string. If the length of the input
+  //   is not evenly divisible by 3 then zero fill the other parts.  This is mapped
+  //   to the 'null' mnemonic.
+  //2) For each char, look-up up a 8 char string that represents its binary ordinal
+  //   value.  Only a small subset of printable XML chars are mapped.  If a char
+  //   is not found in the mapping a '?' char will be used.
+  //3) Concatenate the three 8 char strings into a 24 char string.
+  //4) Regroup the 24 char string into 4 strings of 6 chars.
+  //5) Convert the character representation of binary data into the base 10 
+  //   numeric value.  This will be the index into the base64 set of chars.
+  //6) Look-up the base 64 char that corresponds to the index ordinal value of the
+  //   string of 6 chars representing binary and append it to a list that will be
+  //   the target output.  Apply padding rules to the the last two of the 4 base 64
+  //   chars.  This is based on the last 2 of the 3 chars that are selected for
+  //   encoding.  The padding char is a '=' char.
+    
+  $base64set: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  $charToBinary: (' ' : '00100000',
+  '!' : '00100001', '"' : '00100010', '#' : '00100011', '$' : '00100100',
+  '%' : '00100101', '&' : '00100110', "'" : '00100111', '(' : '00101000',
+  ')' : '00101001', '*' : '00101010', '+' : '00101011', ',' : '00101100',
+  '-' : '00101101', '.' : '00101110', '/' : '00101111',
+  '0' : '00110000', '1' : '00110001', '2' : '00110010', '3' : '00110011',
+  '4' : '00110100', '5' : '00110101', '6' : '00110110', '7' : '00110111',
+  '8' : '00111000', '9' : '00111001', ':' : '00111010', ';' : '00111011',
+  '<' : '00111100', '=' : '00111101', '>' : '00111110', '?' : '00111111',
+  '@' : '01000000', 'A' : '01000001', 'B' : '01000010', 'C' : '01000011',
+  'D' : '01000100', 'E' : '01000101', 'F' : '01000110', 'G' : '01000111',
+  'H' : '01001000', 'I' : '01001001', 'J' : '01001010', 'K' : '01001011',
+  'L' : '01001100', 'M' : '01001101', 'N' : '01001110', 'O' : '01001111',
+  'P' : '01010000', 'Q' : '01010001', 'R' : '01010010', 'S' : '01010011',
+  'T' : '01010100', 'U' : '01010101', 'V' : '01010110', 'W' : '01010111',
+  'X' : '01011000', 'Y' : '01011001', 'Z' : '01011010', '[' : '01011011',
+  '\\' : '01011100', ']' : '01011101', '^' : '01011110', '_' : '01011111',
+  '`' : '01100000', 'a' : '01100001', 'b' : '01100010', 'c' : '01100011',
+  'd' : '01100100', 'e' : '01100101', 'f' : '01100110', 'g' : '01100111',
+  'h' : '01101000', 'i' : '01101001', 'j' : '01101010', 'k' : '01101011',
+  'l' : '01101100', 'm' : '01101101', 'n' : '01101110', 'o' : '01101111',
+  'p' : '01110000', 'q' : '01110001', 'r' : '01110010', 's' : '01110011',
+  't' : '01110100', 'u' : '01110101', 'v' : '01110110', 'w' : '01110111',
+  'x' : '01111000', 'y' : '01111001', 'z' : '01111010', '{' : '01111011',
+  '|' : '01111100', '}' : '01111101', '~' : '01111110', 'null': '00000000'
+  ); 
+  
+  $svgLen: str-length($svg);
+  $i: 1;
+  $encoded: ();
+  
+  @while $i <= $svgLen 
+  {
+    $a: 'null';
+    $b: 'null';
+    $c: 'null';
+    
+    $a: str-slice($svg, $i, $i);
+    
+    @if ($i + 1 <= $svgLen)
+    {
+      $b: str-slice($svg, $i + 1, $i + 1);
+    }
+    @else
+    {
+      $b: 'null';
+    }
+
+    @if ($i + 2 <= $svgLen)
+    {
+      $c: str-slice($svg, $i + 2, $i + 2);
+    }
+    @else
+    {
+      $c: 'null';
+    }
+
+    //Validate limited char set support.  Only printable chars that are found in
+    //XML data has been accounted for in this mapping. SCSS can't raise errors
+    //from functions so just log it and use a default so that a decode will make
+    //it easy to see the chars in question.
+    @if (not map-has-key($charToBinary, $a))
+    {
+      @debug "Error: unmapped char '#{$a}' in basic 64 encode in offset #{$i}. Using '?' instead.";
+      $a: unquote('?');
+    }
+    @if (not map-has-key($charToBinary, $b))
+    {
+      @debug "Error: unmapped char '#{$b}' in basic 64 encode in offset #{$i+1}. Using '?' instead.";
+      $b: unquote('?');
+    }
+    @if (not map-has-key($charToBinary, $c))
+    {
+      @debug "Error: unmapped char '#{$c}' in basic 64 encode in offset #{$i+2}. Using '?' instead.";
+      $c: unquote('?');
+    }
+
+    // lookup the strings that represents the 8 bits for the target char.
+    $list: ();
+    $list: append($list, unquote(map-get($charToBinary, $a)));
+    $list: append($list, unquote(map-get($charToBinary, $b)));
+    $list: append($list, unquote(map-get($charToBinary, $c)));
+    
+    //join together 3 sets of 8 chars representing bits (octet) to a single 24 char string
+    $bitpattern: oj-join-list-to-string($list);
+    
+    // regroup into 4 sets of 6 bits finding the index from binary
+    $i1: oj-to-base64-index(str-slice($bitpattern, 1, 6));
+    $i2: oj-to-base64-index(str-slice($bitpattern, 7, 12));
+    $i3: oj-to-base64-index(str-slice($bitpattern, 13, 18));
+    $i4: oj-to-base64-index(str-slice($bitpattern, 19, 24));
+    
+    // decode the index into base64 encoding set
+    $encoded: append($encoded, str-slice($base64set, $i1 + 1, $i1 + 1));
+    $encoded: append($encoded, str-slice($base64set, $i2 + 1, $i2 + 1));
+    
+    // number of chars are not divisible by 3, the padding char is '='
+    @if ($b != 'null')
+    {
+      $encoded: append($encoded, str-slice($base64set, $i3 + 1, $i3 + 1));
+    }
+    @else
+    {
+      $encoded: append($encoded, unquote('='));
+    }
+
+    @if ($c != 'null')
+    {
+      $encoded: append($encoded, str-slice($base64set, $i4 + 1, $i4 + 1));
+    }
+    @else
+    {
+      $encoded: append($encoded, unquote('='));   
+    }
+    
+    $i: $i + 3;
+    
+    //@debug "oj-encodebase64 i: #{$i} len:#{$svgLen}" ;
+  }
+
+  @return oj-join-list-to-string($encoded);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Returns a data svg url that is base64 encoded (encoding is required for IE)
+//-------------------------------------------------------------------------------------------------
+@function oj-svg-url($svg) {
+  //@debug "oj-svg-url before encode: #{$svg}";
+  @return url("data:image/svg+xml;base64," + oj-encodebase64($svg));
+}

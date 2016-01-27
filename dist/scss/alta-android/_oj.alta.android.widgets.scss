@@ -1,0 +1,95 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// helpers
+@import "../common/helpers/oj.common.helpers";
+
+// tags & text
+@import "widgets/oj.alta.android.tags.core";
+@import "widgets/oj.alta.android.tags.typography";
+@import "widgets/oj.alta.android.tags.lists";
+@import "widgets/oj.alta.android.utilities";
+
+
+// shared
+@import "widgets/oj.alta.android.icons";
+@import "widgets/oj.alta.android.resizable";
+
+// layout & nav
+@import "widgets/oj.alta.android.panel";
+@import "widgets/oj.alta.android.collapsible";
+@import "widgets/oj.alta.android.accordion";
+@import "widgets/oj.alta.android.conveyorbelt";
+@import "widgets/oj.alta.android.filmstrip";
+@import "widgets/oj.alta.android.masonrylayout";
+@import "widgets/oj.alta.android.tabs";
+@import "widgets/oj.alta.android.train";
+@import "widgets/oj.alta.android.navigationlist";
+@import "widgets/oj.alta.android.offcanvas";
+
+// behavior
+@import "widgets/oj.alta.android.animation";
+@import "widgets/oj.alta.android.progressbar";
+@import "widgets/oj.alta.android.pulltorefresh";
+@import "widgets/oj.alta.android.swipetoreveal";
+
+// secondary windows
+@import "widgets/oj.alta.android.dialog";
+@import "widgets/oj.alta.android.popup";
+
+// button and menu
+@import "widgets/oj.alta.android.menu";
+@import "widgets/oj.alta.android.button";
+@import "widgets/oj.alta.android.buttonset";
+@import "widgets/oj.alta.android.toolbar";
+
+
+// data collections
+@import "widgets/oj.alta.android.pagingcontrol";
+@import "widgets/oj.alta.android.table";
+@import "widgets/oj.alta.android.tree";
+@import "widgets/oj.alta.android.datagrid";
+@import "widgets/oj.alta.android.rowexpander";
+@import "widgets/oj.alta.android.listview";
+@import "widgets/oj.alta.android.indexer";
+
+// data visualizations
+@import "widgets/oj.alta.android.dvt.base";
+@import "widgets/oj.alta.android.dvt.chart";
+@import "widgets/oj.alta.android.dvt.diagram";
+@import "widgets/oj.alta.android.dvt.gauge";
+@import "widgets/oj.alta.android.dvt.nbox";
+@import "widgets/oj.alta.android.dvt.pictochart";
+@import "widgets/oj.alta.android.dvt.tagcloud";
+@import "widgets/oj.alta.android.dvt.thematicmap";
+@import "widgets/oj.alta.android.dvt.treemap";
+@import "widgets/oj.alta.android.dvt.sunburst";
+@import "widgets/oj.alta.android.dvt.timeline";
+
+// form controls and messaging
+@import "widgets/oj.alta.android.messaging";
+@import "widgets/oj.alta.android.formcontrol.label";
+@import "widgets/oj.alta.android.formcontrol.common";
+@import "widgets/oj.alta.android.formcontrol.inputtext";
+@import "widgets/oj.alta.android.formcontrol.inputpassword";
+@import "widgets/oj.alta.android.formcontrol.textarea";
+@import "widgets/oj.alta.android.formcontrol.inputnumber";
+@import "widgets/oj.alta.android.formcontrol.inputdatetime";
+@import "widgets/oj.alta.android.formcontrol.radioset";
+@import "widgets/oj.alta.android.formcontrol.checkboxset";
+@import "widgets/oj.alta.android.formcontrol.listbox";
+@import "widgets/oj.alta.android.formcontrol.combobox";
+@import "widgets/oj.alta.android.formcontrol.select";
+@import "widgets/oj.alta.android.formcontrol.inputsearch";
+@import "widgets/oj.alta.android.formcontrol.switch";
+@import "widgets/oj.alta.android.formcontrol.slider";
+
+// responsive
+@import "widgets/oj.alta.android.flex";
+@import "widgets/oj.alta.android.grid";
+@import "widgets/oj.alta.android.responsive.helpers";
+@import "widgets/oj.alta.android.responsive.mediaqueries";
+@import "widgets/oj.alta.android.formlayout";
+
+// appplication layout
+@import "widgets/oj.alta.android.applayout.hybrid";
+@import "widgets/oj.alta.android.applayout.web";

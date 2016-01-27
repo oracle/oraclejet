@@ -1,0 +1,256 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.tree.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";  
+
+@if $includeTreeClasses != false  {
+  @include module-include-once("common.tree") {
+
+
+    /* tree */
+    /* --------------------------------------------------------------- */
+
+    /*  Base style for tree and nodes  */
+    .oj-tree-list,
+    .oj-tree-list ul,
+    .oj-tree-node {
+       display: block;
+       margin: 0 ;
+       padding: 0;
+       list-style-type: none;
+    }
+
+    /*  Basic node  */ 
+    .oj-tree-node {
+       min-height: 1.833em;
+       white-space: nowrap;
+       @include oj-ltr() {
+          margin-left: 18px;
+       }
+       @include oj-rtl() {
+          margin-right: 18px;
+       }
+       min-width: 18px;
+       vertical-align: middle;
+    }
+
+    /*  First level nodes are not indented  */
+    .oj-tree-list > .oj-tree-node {
+       @include oj-ltr() {
+          margin-left: 0;
+       }
+       @include oj-rtl() {
+          margin-right: 0;
+       }
+    }
+
+    /* Allow some extra space before the top child of a parent */ 
+    .oj-tree-list ul > li:first-child {
+       margin-top: 4px;
+    }
+
+    /*  Node anchor */
+    .oj-tree-list a {
+       @include oj-box-sizing-property(content-box);
+       display: inline-block;
+       white-space: nowrap;
+       text-decoration: none;
+       margin: 0;
+       vertical-align:middle;
+    }
+
+    /*  No focus effect */
+    .oj-tree-list a:focus {
+       outline: none;
+    }
+
+    /*  Tree icon (node, disclosure)  */
+    .oj-tree-icon {
+       display: inline-block;
+       text-decoration: none;
+       width: 16px;
+       height: 16px;
+       vertical-align: middle;
+       @include oj-ltr() {
+         margin-left: 0.250em;
+         margin-right: 0;
+       }
+       @include oj-rtl() {
+         margin-right: 0.250em;
+       }
+    }
+
+    /*  Node icon  */
+    .oj-tree-node-icon {
+       cursor: default;
+    }
+
+    /*  Disclosure icon  */
+    .oj-tree-disclosure-icon {
+       cursor: pointer;
+    }
+
+    /*  Default expanded parent image */
+    .oj-expanded:not(.oj-tree-type) > a .oj-tree-node-icon {
+       @extend .oj-fwk-icon-folder-open;
+    }
+
+    /*  Default collapsed parent image  */
+    .oj-collapsed:not(.oj-tree-type) > a .oj-tree-node-icon {
+       @extend .oj-fwk-icon-folder-collapsed;
+    }
+
+    /*  Default leaf node image */
+    .oj-tree-leaf:not(.oj-tree-type) a .oj-tree-node-icon {
+       @extend .oj-fwk-icon-document;
+    }
+
+    /*  Animated node "loading" icon  */
+    .oj-tree-loading .oj-tree-icon,
+    .oj-collapsed a.oj-tree-loading > .oj-tree-node-icon.oj-tree-icon {
+       @extend .oj-fwk-icon-load;
+       background-repeat: no-repeat;
+       background-image: none;
+       vertical-align: middle;
+    }
+
+    /*  No node icons to be displayed, option icons:false */
+    .oj-tree-no-icons  .oj-tree-node-icon {
+       display:none;
+    }
+
+    /*  Disabled  */
+    .oj-tree-list.oj-disabled .oj-tree-disclosure-icon,
+    .oj-tree-node.oj-disabled  {
+       color: $textColorDisabled;
+       cursor: default;
+    }
+
+    /*  Collapsed node children */
+    .oj-tree-node.oj-collapsed > ul {
+       display: none;
+    }
+
+    /*  Node text */
+    .oj-tree-title {
+       // adding a transparent border so that the height
+       // doesn't change when border shown for hovered/selected 
+       border: 1px solid transparent;     
+       color: $treeTextColor;
+       cursor: pointer;
+       vertical-align: -0.15rem;
+       @include oj-ltr() {
+          margin-left: 0.250em;
+       }
+       @include oj-rtl() {
+          margin-right: 0.250em;
+       }
+    }
+
+    /*  Active node text  */
+    .oj-hover .oj-tree-title {
+       border:  1px dashed $treeNodeBorderColorHover;
+       background-color: $treeNodeBgColorHover;
+    }
+
+    /*  Selected node text  */
+    .oj-selected  .oj-tree-title {
+       border: 1px solid $treeNodeBorderColorSelected;
+       background-color: $treeNodeBgColorSelected;
+       font-weight: bold;
+    }
+
+    /*  Selected inactive node text  */
+    .oj-selected.oj-tree-inactive .oj-tree-title {
+        border: 1px solid $treeNodeBorderColorSelectedInactive;
+        background-color: $treeNodeBgColorSelectedInactive;
+    }
+
+    /*  active and selected node text  */
+    .oj-hover.oj-selected .oj-tree-title {
+       background-color: $treeNodeBgColorHoverSelected;
+       border:  1px solid $treeNodeBorderColorHoverSelected;
+       font-weight: bold;
+    }
+
+    /*  Cursor over invalid drop target  */
+    .oj-tree-node.oj-invalid-drop .oj-tree-title,
+    .oj-tree-node.oj-invalid-drop .oj-tree-icon,
+    .oj-tree.oj-invalid-drop {
+       cursor: no-drop ;
+    }
+
+    /*  Node dragged text (DnD reorder) */ 
+    .oj-tree-title.oj-drag {
+       position: absolute;
+    }
+
+
+    /* transition properties and duration  */
+    .oj-tree-transition {
+      transition: max-height $treeAnimationDuration;
+    }
+
+    /* DnD reorder insert position pointer container */
+    .oj-tree-drop-marker {
+       position: absolute;
+       display: none;
+       background-color: transparent;
+    }
+    /*  DnD reorder insert position icon font  */
+    .oj-tree-drop-marker-icon {
+        height: 12px;
+        width: 8px;
+        display: inline-block;
+        text-decoration: none;
+        color: $treeDndMarkerLineColor;
+    }
+
+    /*  DnD reorder insert position pointer line when dropping between nodes  */
+    .oj-tree-drop-marker-line {
+       height: 1px;
+       width: 100px;
+       position: absolute;
+       display: none;
+       background-color: $treeDndMarkerLineColor;
+    }
+
+
+
+      
+    /* Styling for a collapsed icon */
+    .oj-collapsed > .oj-tree-disclosure-icon {
+        @include oj-ltr() {
+            @extend .oj-fwk-icon-arrow03-e;  
+        }
+        @include oj-rtl() {    
+            @extend .oj-fwk-icon-arrow03-w;  
+        }    
+    }
+    
+    /* Styling for an expanded icon */
+      .oj-expanded > .oj-tree-disclosure-icon {
+          @include oj-ltr() {
+              @extend .oj-fwk-icon-arrow03-se;  
+          }
+          @include oj-rtl() {    
+              @extend .oj-fwk-icon-arrow03-sw;  
+          }    
+      }
+
+      /*  Drag/Drop insert pointer icon */
+      .oj-tree-drop-ptr {
+          @include oj-ltr() {
+            @extend .oj-fwk-icon-arrow03-e;  
+          }
+          @include oj-rtl() {
+            @extend .oj-fwk-icon-arrow03-w;  
+          }
+      }
+
+  }
+}

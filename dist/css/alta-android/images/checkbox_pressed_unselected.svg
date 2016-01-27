@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="48px" height="48px" viewBox="-7.5 8.5 48 48" enable-background="new -7.5 8.5 48 48" xml:space="preserve">
+<g id="ellipse">
+	<circle opacity="0.6" fill="#C4C4C5" enable-background="new    " cx="16.5" cy="32.5" r="24"/>
+</g>
+<g id="check_box">
+	<path fill="#6D6D6D" d="M25.5,40.49c0,0.55-0.45,1-1,1h-16c-0.55,0-1-0.45-1-1v-16c0-0.551,0.45-1,1-1h16c0.55,0,1,0.449,1,1V40.49
+		z M23.75,25.641h-14v14h14V25.641z"/>
+</g>
+</svg>

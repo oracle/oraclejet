@@ -1,0 +1,675 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// WARNING:
+// windows theme UNDER DEVELOPMENT!
+// currently defining windows overrides for alta web values so need to import alta web var files
+
+// This is the variable file for the Oracle Alta windows look and feel.
+
+// path to platform specific images directory, note that any images present in the alta images
+// directory must be present in the platform specific images directory as well
+$imageDir: "images/" !default;
+
+
+
+//----------------------------------------------------------------
+// "ABSTRACT" STYLING
+//     in general these "abstract" variables are not used directly
+//     in the widget files, rather they are referred to by
+//     other variables.
+//----------------------------------------------------------------
+
+
+// background colors
+//----------------------------------
+
+$background1Color: #ffffff !default;
+$background2Color: #f6f6f7 !default;
+$background3Color: #fcfdfe !default;
+$background4Color: #e2e2e5 !default;
+$background5Color: #fafafa !default;
+$background6Color: #e4e8ea !default;
+
+
+// border colors
+//----------------------------------
+$border1Color:       #e7e7e9 !default;
+$border2Color:       #d5dfe5 !default;
+$border3Color:       #c8c8c8 !default;
+$border4Color:       #c8cfd5 !default;
+// todo: should I just replace where I see border5color with border2color instead of
+//       assigning border5color to border2Color?
+$border5Color:       $border2Color !default;
+$border6Color:       #000000 !default;
+$border7Color:       #ffffff !default;
+$border8Color:       #4f4f4f !default;
+
+
+// interaction state colors
+//----------------------------------
+$interaction1Color: #0572ce !default;
+$interaction2Color: #ebeced !default;
+// todo: this color is quite dark, may cause contrast ratio issues
+$interaction3Color: #dcdcde !default;
+$interaction4Color: #c2ddf7 !default;
+$interaction5Color: #d4d4d6 !default;
+$interaction6Color: #dae9f5 !default;
+
+//----------------------------------------------------------------
+// GENERAL STYLING
+//       these variables are used broadly in the widget files
+//----------------------------------------------------------------
+
+
+$fontFamily: 'Segoe UI', Segoe, Tahoma, Geneva, sans-serif !default;
+
+// font
+//----------------------------------
+// https://msdn.microsoft.com/en-us/library/windows/apps/hh700394.aspx
+$rootFontSize:    .9375em !default;  // 15px
+
+$fontSize:         1rem   !default;
+$smallestFontSize: .8rem    !default;  // 12px when root 15px
+$smallFontSize:    .9333rem !default;  // 14px when root 15px
+$mediumFontSize:   1.333rem !default;  // 20px when root 15px
+$largeFontSize:    1.6rem   !default;  // 24px when root 15px
+$largestFontSize:  2.267rem !default;  // 34px when root 15px
+
+
+// text colors
+//----------------------------------
+$textColor:             #000 !default;
+$primaryTextColor:      $textColor !default;
+$secondaryTextColor:    #595959!default;
+$tertiaryTextColor:     $secondaryTextColor !default;
+$contrastTextColor:     #ffffff !default;
+$headerTextColor:       #3a3a3a !default;
+$formControlLabelColor: #3a3a3a !default;
+$linkTextColor:         $interaction1Color !default;
+
+
+
+// border radius
+//----------------------------------
+$smallBorderRadius:    0 !default;
+$mediumBorderRadius:   1px !default;
+$largeBorderRadius:    2px !default;
+
+
+// shadow
+//----------------------------------
+$boxShadowColor: #000000 !default;
+$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
+$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
+$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+
+
+// disabled
+//----------------------------------
+// opacity is often used to indicate something is disabled
+$opacityDisabled: .5 !default;
+
+// animation
+//----------------------------------
+$animationDrillInDefault:   zoomIn   !default;
+$animationDrillOutDefault:  zoomOut  !default;
+
+
+//----------------------------------------------------------------
+// CATEGORY AND WIDGET VARIABLES
+//----------------------------------------------------------------
+
+
+
+// LINK
+//----------------------------------------------------------------
+// link text color defined in "text colors" section, look for "$linkTextColor"
+$linkTextDecoration:      underline !default;
+$linkTextDecorationHover: underline !default;
+$linkFontWeightActive:    normal !default;
+// todo: spec says #f3f7ff, use current interaction2color? change interaction2Color to #f3f7ff?
+$linkBgColorActive:       $interaction2Color !default;
+
+
+// HEADERS
+//----------------------------------------------------------------
+$header2FontSize: $largeFontSize !default;
+
+
+// WINDOW
+//----------------------------------------------------------------
+$windowBorderColor: #c8d7e0 !default;
+$windowBorderWidth: 2px !default;
+
+// POPUP
+//----------------------------------------------------------------
+// mobile override to the default ojPopup modality option
+$popupModalityOptionDefault: modal !default;
+
+// NOTEWINDOW
+//----------------------------------------------------------------
+$noteWindowBoxShadow: $smallBoxShadow !default;
+
+
+
+// CHARTS
+//----------------------------------------------------------------
+// chart subtitle text color
+$dvtChartSubtitleTextColor: $secondaryTextColor !default;
+
+
+// MENUS
+//----------------------------------------------------------------
+
+// horizontal spacing
+//----------------------------------
+
+// Need rems, not ems, since we set icon font size (and if we didn't, app often would).
+
+// applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
+$menuTextToEdgePadding:              (18/15)*1rem !default; // 18px @15px font size.
+
+// these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
+$menuIconSize:                       24px !default; // per theming discussion, force it to size required by Windows spec, but don't grow/shrink via rems in case of artifacts, and DO scale the surrounding space via rems.
+// Like Android but unlike iOS, the Windows spec clearly shows the 4px of spacing ((32-24)/2) NOT being a part of the margin, which is 12px in Windows.
+$menuIconToEdgePadding:              (16/15)*1rem !default; // (12+4)px @15px font size.
+
+// padding on both left and right of submenu icon:
+// Spec only provides the "after" spacing of 16px, which we use for the "before" spacing value as well.  
+$menuSubmenuIconPadding:             (18/15)*1rem !default; // 18px @15px font size
+
+
+// menu parts
+//----------------------------------
+
+// menus (.oj-menu), whether top-level or submenu
+$menuBorderColor:                    $windowBorderColor !default;
+
+// top-level menus (.oj-menu.oj-component)
+$menuBoxShadow:                      null !default;
+
+// submenus (.oj-menu.oj-menu-submenu)
+$menuSubmenuBoxShadow:               $menuBoxShadow !default;
+
+// menu items (.oj-menu-item) and their anchors
+$menuItemTextColor:                  $headerTextColor !default;
+$menuItemLineHeight:                 44/15 !default; // 44px @15px font.
+
+// disabled menu items and their anchors
+$menuItemTextColorDisabled:          transparentize($menuItemTextColor, 0.80) !default; 
+
+// focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor) 
+$menuItemBgColorFocus:               $interaction3Color !default;
+
+// menu icons (.oj-menu-item-icon), not submenu icons
+$menuIconColor:                      $interaction1Color !default;
+
+// disabled menu icons, not submenu icons
+$menuIconOpacityDisabled:            0.2 !default;
+
+// submenu icons
+$menuSubmenuIconColor:               #999 !default; // fill color of SVG icon in UX spec
+
+// menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuDividerBorderColor:             $border2Color !default;
+
+
+// BUTTONS
+//----------------------------------------------------------------
+
+$buttonFontWeight:   bold !default;
+$buttonBorderRadius: $smallBorderRadius !default; // 0px
+
+// we set button and form control heights to the same value so they will line up nicely
+$buttonHeight:       (36/15)*1rem !default; // 36px when root is 15px
+$buttonSmallHeight:  $buttonHeight * 28/36 !default;  // 28px when root is 15px
+$buttonLargeHeight:  $buttonHeight * 46/36 !default;  // 46px when root is 15px
+$buttonXlargeHeight: $buttonHeight * 1.35 !default; // not spec'd.  same multiplier as Android, whose multipliers run similar to Windows. 48.6px when root is 15px
+
+$buttonFontSize:       $smallFontSize !default; // 14px when root 15px
+$buttonSmallFontSize:  $buttonFontSize !default; // 14px when root 15px
+$buttonLargeFontSize:  $mediumFontSize !default; // 20px when root 15px
+$buttonXlargeFontSize: (22/15)*1rem !default; // not spec'd.  In AltaWeb is 2px bigger than large, so go with 22px since Windows large is 20px.
+
+
+// button padding
+//----------------------------------
+
+// Horiz space between text and edge of button when no intervening icon.
+$buttonTextToEdgePadding:       (24/15)*1rem !default; // 24px when root 15px
+$buttonSmallTextToEdgePadding:  (16/15)*1rem !default; // 16px when root 15px
+$buttonLargeTextToEdgePadding:  (32/15)*1rem !default; // 32px when root 15px
+$buttonXlargeTextToEdgePadding: $buttonLargeTextToEdgePadding !default; // no spec, so make same as large
+
+// Horiz space between text and icon.
+$buttonIconToTextPadding:       (8/15)*1rem !default; // 8px when root 15px
+$buttonSmallIconToTextPadding:  (6/15)*1rem !default; // 6px when root 15px
+$buttonLargeIconToTextPadding:  (16/15)*1rem !default; // 16px when root 15px
+$buttonXlargeIconToTextPadding: $buttonLargeIconToTextPadding !default; // no spec, so make same as large
+
+// Horiz space between icon and edge of button when text also showing.
+$buttonIconToEdgePadding:       (24/15)*1rem !default; // 24px when root 15px
+$buttonSmallIconToEdgePadding:  (16/15)*1rem !default; // 16px when root 15px
+$buttonLargeIconToEdgePadding:  (28/15)*1rem !default; // 28px when root 15px
+$buttonXlargeIconToEdgePadding: $buttonLargeIconToEdgePadding !default; // no spec, so make same as large
+
+// Horiz space between icon and edge of button when icon only.
+$buttonIconOnlyPadding:       $buttonIconToEdgePadding !default;
+$buttonSmallIconOnlyPadding:  $buttonSmallIconToEdgePadding !default;
+$buttonLargeIconOnlyPadding:  $buttonLargeIconToEdgePadding !default;
+$buttonXlargeIconOnlyPadding: $buttonXlargeIconToEdgePadding !default;
+
+
+// button states
+//----------------------------------
+
+// default
+$buttonBgColor:                   $interaction1Color !default; // #0572ce
+$buttonTextColor:                 $contrastTextColor !default; // #ffffff
+$buttonIconColor:                 $buttonTextColor !default; // #ffffff
+$buttonBorderColor:               $buttonBgColor!default; // #0572ce
+$buttonBgImage:                   none !default;
+
+// hover
+// NOTE: no full-chrome hover spec, so all hover variables are made-up.
+$buttonBgColorHover:              lighten($buttonBgColor, 6%) !default;
+$buttonBorderColorHover:          $buttonBgColorHover !default;
+$buttonTextColorHover:            $buttonTextColor !default;
+
+// TODO: could also just inherit Common's rule, which is: $iconColorHover !default;
+// but so far Windows doesn't redefine $iconColorHover, so might not be ready
+// to use yet, and current approach of icon color matching text color is
+// consistent with rest of Windows spec.
+$buttonIconColorHover:            $buttonTextColorHover !default;
+
+$buttonBorderColorHover:          $buttonBgColorHover !default;
+
+// active
+$buttonBgColorActive:             #044f91 !default;
+$buttonTextColorActive:           $buttonTextColor !default; // #ffffff
+
+// selected
+$buttonBgColorSelected:           $buttonBgColorActive !default;
+
+// selected and hovered
+// No "selected and hovered" spec, so handling is arbitrary
+$buttonTextColorSelectedHover:    darken($buttonTextColor, 15%) !default;
+$buttonIconColorSelectedHover:    $buttonTextColorSelectedHover !default;
+
+// disabled and selected
+// No "selected and disabled" spec, so arbitrarily inherit all from Common.
+
+
+// button chroming
+//----------------------------------
+
+// half chrome
+$buttonHalfChromeFontWeight:              $buttonFontWeight !default;
+
+// half chrome default
+$buttonHalfChromeTextColor:               $buttonBgColor !default;
+$buttonHalfChromeIconColor:               $buttonHalfChromeTextColor !default;
+
+// half chrome hover
+// Unlike full chrome, there is a spec for half-chrome hover, per email: from filmstrip/conveyor
+// fwd/back button specs, use SVG fill colors for text/icon color, and use background colors from spec wiki
+$buttonHalfChromeTextColorHover:          $buttonTextColor !default;
+$buttonHalfChromeBgColorHover:            #0582e8 !default; // confirmed that it's intentional for this color to be just slightly different than the usual #0572ce
+
+// half chrome active
+$buttonHalfChromeTextColorActive:         $buttonTextColor !default;
+$buttonHalfChromeBgColorActive:           $buttonBgColorActive !default;
+
+// half chrome selected
+$buttonHalfChromeTextColorSelected:       $buttonHalfChromeTextColorActive !default;
+$buttonHalfChromeBgColorSelected:         $buttonHalfChromeBgColorActive !default;
+
+// half chrome selected and hovered
+$buttonHalfChromeTextColorSelectedHover:  darken($buttonTextColor, 20%) !default;
+
+// half chrome disabled
+$buttonHalfChromeTextColorDisabled:       $buttonHalfChromeTextColor !default;
+$buttonHalfChromeIconColorDisabled:       $buttonHalfChromeTextColorDisabled !default;
+
+// outlined hover
+$buttonOutlinedChromeBgColorHover:        $buttonHalfChromeBgColorHover !default;
+$buttonOutlinedChromeBorderColorHover:    $buttonOutlinedChromeBgColorHover !default;
+
+
+// alternate button colors
+//----------------------------------
+
+// $buttonPrimaryColor not used b/c primary==default color for now.
+$buttonConfirmColor:        #168100 !default;
+
+
+// BUTTONSET
+//----------------------------------------------------------------
+
+
+// TOOLBAR
+//----------------------------------------------------------------
+
+
+// FORM CONTROLS
+//----------------------------------------------------------------
+
+$formControlLargeMaxWidth:  100% !default;
+$formControlMediumMaxWidth: 100% !default;
+
+// form control common
+//----------------------------------
+$formControlTriggerHeight:   2.133rem !default; // 32px when base font 15px. 
+$formControlBorderRadius:    0 !default;
+$formControlBorderWidth:     2px !default;
+
+// controls the horizontal padding inside an input
+$formControlPaddingHorizontal: 5px !default;
+
+// form control states
+//----------------------------------
+//default
+$formControlBgColor:         $background1Color !default;
+$formControlBorderColor:     #bababa          !default;
+
+// active 
+$formControlTriggerBgColorActive: $interaction3Color !default;
+
+// focus
+$formControlInputBorderColorFocus:           $interaction1Color  !default;
+
+// readonly
+$formControlFontWeightReadOnly:  bold !default;
+
+// disabled
+$formControlBgColorDisabled: #ececec !default;
+
+// placeholder
+$formControlPlaceholderColor: #6b6b6b !default;
+
+// form labels
+//----------------------------------
+// label text color defined above, look for "text colors"
+$formControlLabelFontWeight: normal !default;
+$formControlLabelFontSize: $smallFontSize !default;
+$formControlLabelRequiredChar: '' !default;
+
+// inline labels
+//----------------------------------
+
+// gutter (padding) between the inline label and the control
+$formControlLabelInlineGutter:     1.333rem !default; // 20px when root is 15px
+
+
+// form layout
+//----------------------------------
+
+// In a form layout this is the space expected between
+// form controls in different rows
+$formLayoutMarginBottom: 10px !default;
+
+// inline label in a form; we do not float, thus we need line-height
+// to maintain label's height, and we need a different top margin for this case.
+$formLayoutLabelInlineMarginTop: .2em !default;
+
+
+
+// INPUT TEXT, INPUT PASSWORD, TEXT AREA
+//----------------------------------------------------------------
+// common
+$formControlInputHeight:                     2.4rem              !default;
+
+//INPUT SEARCH
+//--------------------------------------------------------------
+$inputSearchIconPosition: start !default; // Possible values are 'start' and 'end'
+$inputSearchIconPadding: 0 3px 0 10px !default;
+
+// RADIOSET AND CHECKBOXSET
+$radioCheckboxRenderInputAs: backgroundImage !default;
+// Windows has label come after icon font
+$radioCheckboxLabelPosition: end !default;
+$radioCheckboxRowHeight: 2.9rem !default;
+
+// padding between edge and the label text
+$radioCheckboxLabelToEdgePadding: 0 !default;
+
+// radioset and checkboxset states
+//
+// default
+$radioCheckboxSetBorderColor: $border1Color !default;
+// Windows has a background color on the set that isn't white
+$radioCheckboxSetBgColor: $background2Color !default;
+// on Windows theme there is no divider border so we set the color to transparent
+$radioCheckboxItemDividerColor: transparent !default;
+
+// SELECT
+//----------------------------------------
+
+//options
+$selectRenderModeOptionDefault: native !default;
+
+// arrow
+$selectArrowColor: #000000 !default;
+$selectArrowPadding: 0 7px 0 3px !default;
+
+
+// SLIDER
+//----------------------------------------------------------------
+
+//
+// Windows Slider:
+//   - Rectangular Thumbs (thumb width is greater than thumb height)
+//   - Normal sized Active thumbs (same size as enabled thumbs).
+//   - Thumbs without borders
+//
+
+// Thumb dimensions.
+// In the windows theme, slider thumbs are 8x24 pixels when horizontal,
+// and 24x8 pixels when vertical.
+// (note that the common code will swap the width/height assignments
+//  for vertical sliders)
+$sliderThumbHeight:  	  24px !default;
+$sliderThumbWidth:  	  8px !default;
+
+// Thumb dimensions for the active state.
+$sliderThumbHeightActive:  	  $sliderThumbHeight !default;
+
+$sliderThumbBorderRadius: 12px !default;
+$sliderThumbBorderWidth:  0 !default;
+
+// colors for enabled state
+$sliderThumbBgColor:             $interaction1Color !default;
+$sliderBarBgColor:               #c6c6c6 !default;
+
+// active
+$sliderThumbBgColorActive:       #00a8ff !default;
+$sliderBarValueBgColorActive:    $sliderThumbBgColorActive !default;
+
+// disabled
+$sliderThumbBgColorDisabled:     #c8c8c8 !default;
+$sliderBarValueBgColorDisabled:  $sliderThumbBgColorDisabled !default;
+
+//SWITCH
+//----------------------------------------------------------------
+
+// CONTAINER HEIGHT/WIDTH
+$switchContainerHeight: $formControlTriggerHeight !default; // 2.133rem = 32px when base font 15px
+$switchContainerWidth: $formControlTriggerHeight * 1.4736 !default;
+
+// TRACK HEIGHT/WIDTH
+$switchTrackHeight: $switchContainerHeight * 0.625 !default; // 20px
+$switchTrackWidth: $switchContainerHeight * 1.375 !default; // 44px
+
+// TRACK BORDERS
+$switchTrackBorderWidth: 2px !default;
+$switchTrackBorderWidthReadonly: 2px !default;
+
+// THUMB BORDERS
+$switchThumbBorderWidth: 1px !default;
+$switchThumbBorderWidthReadonly: $switchTrackBorderWidthReadonly !default;
+
+// ENABLED OFF
+$switchThumbHeight: $switchContainerHeight * 0.3125 !default; // 10px
+$switchThumbWidth: $switchThumbHeight !default;
+$switchThumbShadow: none !default;
+// ----- COLORS -----
+$switchTrackBgColor:                     $background1Color !default; // #ffffff
+$switchTrackBorderColor:                 #2a5fa2 !default;
+$switchThumbBgColor:                     $switchTrackBorderColor !default; // #2a5fa2
+$switchThumbBorderColor:                 $switchTrackBorderColor !default; // #2a5fa2
+
+// ENABLED ON
+$switchThumbHeightSelected: $switchThumbHeight !default;
+$switchThumbWidthSelected: $switchThumbHeightSelected !default;
+$switchThumbShadowSelected: $switchThumbShadow !default;
+// ----- COLORS -----
+$switchTrackBgColorSelected:             $switchTrackBorderColor !default; // #2a5fa2
+$switchTrackBorderColorSelected:         $switchTrackBgColorSelected !default; // #2a5fa2
+$switchThumbBgColorSelected:             $background1Color !default; // #ffffff
+$switchThumbBorderColorSelected:         $switchThumbBgColorSelected !default; // #ffffff
+
+// HOVER OFF
+$switchThumbHeightHover: $switchThumbHeight !default;
+$switchThumbWidthHover: $switchThumbHeight !default;
+$switchThumbBorderWidthHover: $switchThumbBorderWidth !default;
+// ----- COLORS -----
+$switchTrackBgColorHover:                $background1Color !default; // #ffffff
+$switchTrackBorderColorHover:            #329ffb !default;
+$switchThumbBgColorHover:                $switchTrackBorderColorHover !default; // #329ffb
+$switchThumbBorderColorHover:            $switchTrackBorderColorHover !default; // #329ffb
+
+// HOVER ON
+$switchThumbHeightSelectedHover: $switchThumbHeight !default;
+$switchThumbWidthSelectedHover: $switchThumbHeight !default;
+$switchThumbBorderWidthSelectedHover: $switchThumbBorderWidthHover !default;
+// ----- COLORS -----
+$switchTrackBgColorSelectedHover:        $switchTrackBorderColorHover !default; // #329ffb
+$switchTrackBorderColorSelectedHover:    $switchTrackBgColorSelectedHover !default; // #329ffb
+$switchThumbBgColorSelectedHover:        $background1Color !default; // #ffffff
+$switchThumbBorderColorSelectedHover:    $switchThumbBgColorSelectedHover !default; // #ffffff
+
+// ACTIVE OFF
+$switchThumbHeightActive: $switchThumbHeight !default;
+$switchThumbWidthActive: $switchThumbHeight !default;
+$switchThumbBorderWidthActive: $switchThumbBorderWidthHover !default;
+// ----- COLORS -----
+$switchTrackBgColorActive:               $switchTrackBgColorHover !default; // #ffffff
+$switchTrackBorderColorActive:           $switchTrackBorderColorHover !default; // #329ffb
+$switchThumbBgColorActive:               $switchThumbBgColorHover !default; // #329ffb
+$switchThumbBorderColorActive:           $switchThumbBorderColorHover !default; // #329ffb
+
+// ACTIVE ON
+$switchThumbHeightSelectedActive: $switchThumbHeight !default;
+$switchThumbWidthSelectedActive: $switchThumbHeight !default;
+$switchThumbBorderWidthSelectedActive: $switchThumbBorderWidthHover !default;
+// ----- COLORS -----
+$switchTrackBgColorSelectedActive:        $switchTrackBgColorSelectedHover !default; // #329ffb
+$switchTrackBorderColorSelectedActive:    $switchTrackBorderColorSelectedHover !default; // #329ffb
+$switchThumbBgColorSelectedActive:        $switchThumbBgColorSelectedHover !default; // #ffffff
+$switchThumbBorderColorSelectedActive:    $switchThumbBorderColorSelectedHover !default; // #ffffff
+
+// READONLY OFF
+$switchThumbHeightReadonly: $switchThumbHeight !default;
+$switchThumbWidthReadonly: $switchThumbHeight !default;
+// ----- COLORS -----
+$switchTrackBgColorReadonly:             $background1Color !default; // #ffffff
+$switchTrackBorderColorReadonly:         #000000 !default;
+$switchThumbBgColorReadonly:             $switchTrackBorderColorReadonly !default; // #000000
+$switchThumbBorderColorReadonly:         $switchTrackBorderColorReadonly !default; // #000000
+
+// READONLY ON
+$switchThumbHeightSelectedReadonly: $switchThumbHeight !default;
+$switchThumbWidthSelectedReadonly: $switchThumbHeight !default;
+// ----- COLORS -----
+$switchTrackBgColorSelectedReadonly:     $switchTrackBorderColorReadonly !default; // #000000
+$switchTrackBorderColorSelectedReadonly: $switchTrackBgColorSelectedReadonly !default; // #000000
+$switchThumbBgColorSelectedReadonly:     $background1Color !default; // #ffffff
+$switchThumbBorderColorSelectedReadonly: $switchThumbBgColorSelectedReadonly !default; // #ffffff
+
+// DISABLED OFF
+$switchThumbHeightDisabled: $switchThumbHeight !default;
+$switchThumbWidthDisabled: $switchThumbHeight !default;
+// ----- COLORS -----
+$switchTrackBgColorDisabled:             #fdfdfd !default;
+$switchTrackBorderColorDisabled:         #e5e5e5 !default;
+$switchThumbBgColorDisabled:             $switchTrackBorderColorDisabled !default; // #e5e5e5
+$switchThumbBorderColorDisabled:         $switchTrackBorderColorDisabled !default; // #e5e5e5
+
+// DISABLED ON
+$switchThumbHeightSelectedDisabled: $switchThumbHeight !default;
+$switchThumbWidthSelectedDisabled: $switchThumbHeight !default;
+// ----- COLORS -----
+$switchTrackBgColorSelectedDisabled:     $switchTrackBorderColorDisabled !default; // #e5e5e5
+$switchTrackBorderColorSelectedDisabled: $switchTrackBgColorSelectedDisabled !default; // #e5e5e5
+$switchThumbBgColorSelectedDisabled:     #cfcfcf !default;
+$switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !default; // #cfcfcf
+
+// NAVIGATION LIST
+//----------------------------------------
+//Default
+$navigationListPageLevelItemTextColorDefault: $formControlLabelColor !default;
+$navigationListPageLevelItemIconColorDefault: $formControlLabelColor !default;
+$navigationListPageLevelItemBorderColor: transparent !default;
+
+//Selected
+$navigationListPageLevelItemTextColorSelected: $interaction1Color !default;
+$navigationListPageLevelItemBorderColorSelected: transparent !default;
+$navigationListPageLevelItemBgColorSelected: transparent !default;
+
+//Sizing
+$navigationListPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationBarPageLevelItemBorderWidth: 0 !default;
+$navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
+// END of NavigationList variables
+
+
+// PROGRESSBAR
+//----------------------------------------------------------------
+$progressbarBgColor:                     $border3Color !default; //#c8c8c8
+$progressbarValueBgColor:                $interaction1Color !default; // #0572ce
+$progressbarBorderRadius:                0 !default;
+$progressbarBorderStyle:                 none !default;
+$progressbarIndeterminateOverlayOpacity: 1 !default;
+
+// TRAIN
+//----------------------------------------------------------------
+$trainStepWidth: 7rem !default;
+
+// DATAGRID
+//----------------------------------------------------------------
+// Cells - Focus
+$dataGridCellBgColorFocus:                  $interaction3Color !default;
+// Cells - Selected
+$dataGridCellBgColorSelected:               $interaction3Color !default;
+// Cells - Selected Inactive (selected but focus outside the component)
+$dataGridCellBgColorSelectedInactive:       $interaction3Color !default;
+
+// LISTVIEW
+//----------------------------------------------------------------
+// the right and left margins will be flipped in rtl languanges
+$listViewCardMargin:     20px 20px 20px 0 !default;
+$listViewHeaderFontSize: $header2FontSize !default;
+$listViewHeaderOpacity:  0.85 !default;
+
+// APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
+//-------------------------------------------------------------
+// Padding
+$appLayoutHybridPadding: 1.333rem !default;
+// Header
+$appLayoutHybridHeaderOpacity: 1 !default;
+$appLayoutHybridHeaderMinHeight: 48px !default;
+$appLayoutHybridHeaderTitleFontSize: 1rem !default;
+// Nav Bar
+// Used for positioning the nav bar either at the top or bottom of the page on native platforms
+$appLayoutNavBarAlignment: top !default;
+$appLayoutHybridNavBarItemBorderStyle: solid !default;
+// Nav Drawer
+$appLayoutHybridOffcanvasWidth: 400px !default;
+
+// OFFCANVAS
+//----------------------------------------
+// options
+$offcanvasDisplayModeOptionDefault: overlay !default;
+
+
+@import "../common/oj.common.variables";

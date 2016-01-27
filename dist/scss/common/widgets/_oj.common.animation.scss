@@ -1,0 +1,209 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.animation.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAnimationClasses != false {
+  @include module-include-once("common.animation") {
+
+    /*
+     * Viewport element for clipping ojModule view host during animation
+     * so that the view content doesn't overlap surrounding elements
+     */
+    .oj-animation-host-viewport {
+      overflow: hidden;
+    }
+
+    /*
+     * ojModule view host for holding view content temporarily during animation
+     */
+    .oj-animation-host {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slidein-left) {
+      from {left: 100%;}
+      to {left: 0;}
+    }
+    .oj-animation-coverleft.oj-enter {
+      @include oj-animation-property(oj-animation-slidein-left $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slidein-right) {
+      from {left: -100%;}
+      to {left: 0;}
+    }
+    .oj-animation-coverright.oj-enter {
+      @include oj-animation-property(oj-animation-slidein-right $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slidein-up) {
+      from {top: 100%;}
+      to {top: 0;}
+    }
+    .oj-animation-coverup.oj-enter {
+      @include oj-animation-property(oj-animation-slidein-up $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    .oj-animation-coverstart.oj-enter {
+      @include oj-ltr() {
+        @extend .oj-animation-coverleft.oj-enter;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-coverright.oj-enter;
+      }
+    }
+    
+    @include oj-keyframes-at-rule(oj-animation-slideout30-left) {
+      from {left: 0;}
+      to {left: -30%;}
+    }
+    .oj-animation-coverleft.oj-leave {
+      @include oj-animation-property(oj-animation-slideout30-left $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slideout30-right) {
+      from {left: 0;}
+      to {left: 30%;}
+    }
+    .oj-animation-coverright.oj-leave {
+      @include oj-animation-property(oj-animation-slideout30-right $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    .oj-animation-coverstart.oj-leave {
+      @include oj-ltr() {
+        @extend .oj-animation-coverleft.oj-leave;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-coverright.oj-leave;
+      }
+    }
+    
+    @include oj-keyframes-at-rule(oj-animation-slideout-left) {
+      from {left: 0;}
+      to {left: -100%;}
+    }
+    .oj-animation-revealleft.oj-leave {
+      @include oj-animation-property(oj-animation-slideout-left $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slideout-right) {
+      from {left: 0;}
+      to {left: 100%;}
+    }
+    .oj-animation-revealright.oj-leave {
+      @include oj-animation-property(oj-animation-slideout-right $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+    
+    @include oj-keyframes-at-rule(oj-animation-slideout-down) {
+      from {top: 0;}
+      to {top: 100%;}
+    }
+    .oj-animation-revealdown.oj-leave {
+      @include oj-animation-property(oj-animation-slideout-down $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    .oj-animation-revealend.oj-leave {
+      @include oj-ltr() {
+        @extend .oj-animation-revealright.oj-leave;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-revealleft.oj-leave;
+      }
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slidein30-left) {
+      from {left: 30%;}
+      to {left: 0;}
+    }
+    .oj-animation-revealleft.oj-enter {
+      @include oj-animation-property(oj-animation-slidein30-left $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-slidein30-right) {
+      from {left: -30%;}
+      to {left: 0;}
+    }
+    .oj-animation-revealright.oj-enter {
+      @include oj-animation-property(oj-animation-slidein30-right $animationDurationShort ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    .oj-animation-revealend.oj-enter {
+      @include oj-ltr() {
+        @extend .oj-animation-revealright.oj-enter;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-revealleft.oj-enter;
+      }
+    }
+    
+    @include oj-keyframes-at-rule(oj-animation-zoomin) {
+      from {@include oj-transform-property(scale(0, 0));}
+      to {@include oj-transform-property(scale(1, 1));}
+    }
+    .oj-animation-zoomin.oj-enter {
+      @include oj-animation-property(oj-animation-zoomin $animationDurationMedium ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-zoomout) {
+      from {@include oj-transform-property(scale(1, 1));}
+      to {@include oj-transform-property(scale(0, 0));}
+    }
+    .oj-animation-zoomout.oj-leave {
+      @include oj-animation-property(oj-animation-zoomout $animationDurationMedium ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-fadein) {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .oj-animation-fade.oj-enter {
+      @include oj-animation-property(oj-animation-fadein $animationDurationMedium ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    @include oj-keyframes-at-rule(oj-animation-fadeout) {
+      from {opacity: 1;}
+      to {opacity: 0;}
+    }
+    .oj-animation-fade.oj-leave {
+      @include oj-animation-property(oj-animation-fadeout $animationDurationMedium ease-in-out);
+      @include oj-animation-fill-mode-property(forwards);
+    }
+
+    $animationNavigateMethods: ();
+
+    @if ($animationDrillInDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (drillIn: $animationDrillInDefault));
+    }
+
+    @if ($animationDrillOutDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (drillOut: $animationDrillOutDefault));
+    }
+
+    .oj-animation-navigate-methods {
+      font-family: oj-json-from-map($animationNavigateMethods);
+    }
+
+  }
+}

@@ -1,0 +1,131 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.tags.typography.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../utilities/oj.utilities";
+
+@if $includeTagsTypographyClasses != false {
+  @include module-include-once("common.tagstypography") {
+
+    /* links */
+    /* --------------------------------------------------------------- */
+    
+    @include oj-tag-selectors(
+      $tagSelectors:   "a", 
+      $classSelectors: ".oj-link") {
+        color: $linkTextColor;
+        line-height: inherit;
+        text-decoration: $linkTextDecoration; 
+    }
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "a:visited", 
+      $classSelectors: ".oj-link:visited") {
+        color: $linkTextColorVisited; 
+    }
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "a:hover, a:focus", 
+      $classSelectors: ".oj-link:hover, .oj-link:focus") {
+        text-decoration: $linkTextDecorationHover;
+    }
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "a:active", 
+      $classSelectors: ".oj-link:active") {
+        font-weight: $linkFontWeightActive;
+        background-color: $linkBgColorActive;
+        @include oj-border-radius($smallBorderRadius);
+    }
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "a.oj-disabled", 
+      $classSelectors:  ".oj-link.oj-disabled") {
+          color: $linkTextColorDisabled;
+          opacity: $opacityDisabled;
+          cursor: default;
+          text-decoration: none;
+        }
+
+
+
+    /* header */
+    /* --------------------------------------------------------------- */
+    @include oj-tag-selectors(
+      $tagSelectors:   "h1, h2, h3, h4, h5",
+      $classSelectors: ".oj-header") {
+        color: $headerTextColor; 
+        font-family: inherit;
+        font-style: normal;
+        font-weight: $headerFontWeight; 
+        margin: 8px 0;
+        padding: 0 0 2px;
+
+    }
+
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "h1", 
+      $classSelectors: "h1.oj-header") {
+          font-size: $header1FontSize;
+    }
+
+    @include oj-tag-selectors(
+      $tagSelectors:   "h2", 
+      $classSelectors: "h2.oj-header") {
+          font-size: $header2FontSize; 
+    }
+
+   
+    @include oj-tag-selectors(
+      $tagSelectors:   "h3", 
+      $classSelectors: "h3.oj-header") {
+          font-size: $header3FontSize; 
+    }
+
+    
+    @include oj-tag-selectors(
+      $tagSelectors:   "h4", 
+      $classSelectors: "h4.oj-header") {
+          font-size: $header4FontSize; 
+    }
+
+    
+    @include oj-tag-selectors(
+      $tagSelectors:   "h5", 
+      $classSelectors: "h5.oj-header") {
+          font-size: $header5FontSize; 
+    }
+
+
+    .oj-header-border {
+        border: solid $headerBorderColor;
+        border-width: 0 0 1px;
+        padding: 0 0 7px;
+    }
+
+
+    /* hr */
+    /* --------------------------------------------------------------- */
+    @include oj-tag-selectors(
+      $tagSelectors:   "hr", 
+      $classSelectors: ".oj-hr") {
+        border: solid $panelBorderColor;
+        border-width: 1px 0 0;
+        margin: 7px 0;
+    }
+    
+
+    /* p */
+    /* --------------------------------------------------------------- */
+    @include oj-tag-selectors(
+      $tagSelectors:   "p", 
+      $classSelectors: ".oj-p") {
+      margin: 0 0 12px 0;
+    }
+
+  }
+
+}

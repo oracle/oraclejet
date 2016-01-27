@@ -1,0 +1,22 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeTextAreaClasses != false {
+  $includeInputTextClasses: true !global;
+}
+
+// ----- end dependencies ---------
+
+// currently inputtext, inputpassword, and textarea all defined in one file, 
+// so just import the alta inputText file.
+@import "oj.alta.formcontrol.inputtext";
+
+@if $includeTextAreaClasses != false {
+  @include module-include-once("alta.textarea") {
+
+  }
+}

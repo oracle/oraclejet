@@ -1,0 +1,197 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.messaging.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeMessagingClasses != false {
+  @include module-include-once("common.messaging") {
+
+    /* messaging */
+    /* --------------------------------------------------------------- */
+
+    /* styles the root of the popup component that wraps all messaging content */
+    
+    /* wraps all messaging content that displays inside popup */
+    .oj-messaging-popup-container {
+      max-width: 340px; 
+    }
+    
+    /* separator inside popup container */
+    .oj-messaging-popup-container hr {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* wraps all messaging content that displays inline */
+    .oj-messaging-inline-container .oj-message {
+      padding: 10px;
+      border-style: solid;
+      border-width: 0 1px 1px 1px;
+      // if border-radius is > 3, then detach from the form, and also detach from each message
+      // box if there is more than one message box per component.
+      @if($formControlBorderRadius != null 
+          and $formControlBorderRadius != 0 and $formControlBorderRadius/1px > 3) {
+        margin-top: 5px;
+        border-top-width: 1px;
+        border-radius: $formControlBorderRadius;
+      }
+    }
+
+    // For these components it needs a top border regardless of border radius.
+    .oj-radioset .oj-messaging-inline-container .oj-message:first-child,
+    .oj-checkboxset .oj-messaging-inline-container  .oj-message:first-child,
+    .oj-switch .oj-messaging-inline-container .oj-message:first-child,
+    .oj-slider .oj-messaging-inline-container .oj-message:first-child {
+      border-top-width: 1px;
+    }
+    
+    // switch and slider always needs room between the component and the inline message.
+    .oj-switch .oj-messaging-inline-container .oj-message:first-child,
+    .oj-slider .oj-messaging-inline-container .oj-message:first-child {
+      margin-top: 5px;
+    }  
+    
+    // the vertical slider's thumb is positioned into the message container, so we need extra margin
+    .oj-slider-vertical .oj-messaging-inline-container .oj-message:first-child {
+      margin-top: 18px;
+    }
+
+    // red box
+    .oj-messaging-inline-container .oj-message.oj-message-error {
+      background-color: $messageInlineBgColorError;
+      border-color: $messageInlineBorderColorError;
+    }
+
+    // gold box
+    .oj-messaging-inline-container .oj-message.oj-message-warning {
+      background-color: $messageInlineBgColorWarning;
+      border-color: $messageInlineBorderColorWarning;
+    }    
+
+    // blue box
+    .oj-messaging-inline-container .oj-message.oj-message-info {
+      background-color: $messageInlineBgColorInfo;
+      border-color: $messageInlineBorderColorInfo;
+    }
+
+    // green box
+    .oj-messaging-inline-container .oj-message.oj-message-confirmation {
+      background-color: $messageInlineBgColorConfirmation;
+      border-color: $messageInlineBorderColorConfirmation;
+    }
+
+    /** 
+     * wraps a message block that includes the icon and content inline-blocks
+     * 1. prevent wrapping the content inline-block.  
+     */
+    
+    .oj-message {
+      display: block;
+      @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
+      white-space: nowrap; /* 1 */
+    }
+
+    /* from second to last message blocks inside popup container */
+    .oj-messaging-popup-container .oj-message:nth-of-type(n+2) {
+      padding-top:20px;
+    }
+
+    .oj-message-content {
+      display: inline-block;
+      width:95%;
+    }
+    /* 
+     * wraps the message summary and detail parts 
+     * 1. IE requires width to be set in addition to max-width. 324 is 95% of 340px
+     */
+    .oj-messaging-popup-container .oj-message-content {
+      max-width: 324px;
+      width:95%; /* 1 */
+    }
+
+    /**
+     * message summary text 
+     * 1. allow summary text to wrap normally.
+     */
+    
+    .oj-message-summary {
+      color: $textColor;
+      font-size: $fontSize;    
+      font-weight: $headerFontWeight;
+      vertical-align: top;
+      white-space: normal; /* 1 */
+      @include oj-ltr() {
+        padding: 0 0 0 10px;
+      }
+      @include oj-rtl() { 
+        padding: 0 10px 0 0; 
+      } 
+    }
+
+    /** 
+     * message detail text 
+     * 1. allow detail text to wrap normally.
+     */
+    .oj-message-detail { 
+      color: $textColor;
+      white-space: normal; /* 1 */
+      @include oj-ltr() {
+        padding: 7px 0 0 10px;
+      }
+      @include oj-rtl() { 
+        padding: 7px 10px 0 0; 
+      } 
+    }
+    
+    /**
+     * wraps all hints
+     */
+    .oj-form-control-hints {
+    }    
+    
+    /**
+     * for hint types - validator, converter
+     */
+    .oj-form-control-hint-converter,
+    .oj-form-control-hint-validator {
+      
+    }
+    
+    /**
+     * for hint title 
+     * 1. if title isn't the first hint add padding to the top. 
+     */
+    .oj-form-control-hint-title:not(:first-child) {
+      padding-top: 20px; /* 1 */
+    }
+
+    //------------------------------------------
+    // icons
+    //------------------------------------------
+
+    .oj-message-status-icon {
+      display: inline-block;
+      vertical-align:top;
+    }
+
+    .oj-message-status-icon.oj-message-error-icon {
+      @extend .oj-fwk-icon-status-error;
+    }
+    
+    .oj-message-status-icon.oj-message-warning-icon {
+      @extend .oj-fwk-icon-status-warning;
+    }
+
+    .oj-message-status-icon.oj-message-info-icon {
+      @extend .oj-fwk-icon-status-info;
+    }
+
+    .oj-message-status-icon.oj-message-confirmation-icon {
+      @extend .oj-fwk-icon-status-confirmation;
+    }
+  }
+}

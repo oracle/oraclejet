@@ -1,0 +1,259 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// NOTE: The mixins defined in these files are needed 
+// based on our current supported browsers. Mixins in this 
+// file will be removed when we no longer need to use vendor 
+// prefixes for a particular property.
+
+
+//****************************************************
+// START FLEXBOX PROPERTIES
+// flex syntax: http://the-echoplex.net/flexyboxes
+// ie10 syntax: http://msdn.microsoft.com/en-us/library/ie/dn265027(v=vs.85).aspx
+// prefixes:
+//   -webkit:   syntax for Chrome 21-28, Safari 6.1+
+//   no prefix: syntax for IE11, Chrome 29+, Firefox 22+
+//****************************************************
+@mixin oj-display-flex-property ()
+{
+   display: -webkit-flex;  
+   display: flex;          
+}
+
+@mixin oj-display-inline-flex-property ()
+{
+   display: -webkit-inline-flex;  
+   display: inline-flex;         
+}
+
+@mixin oj-flex-property ($flexValue)
+{
+    // IE11 doesn't support flex:initial, 
+    // so if they pass in 'initial' set it explicitly to '0 1 auto'
+    // http://www.w3.org/TR/css-flexbox-1/#flex-common
+    @if ($flexValue == initial)
+    {
+      $flexValue: 0 1 auto;
+    }
+    //@else if ($flexValue == auto)
+    //{
+    //  $flexValue: 1 1 auto;
+    //}
+    //@else if (length($flexValue) == 1 and type_of($flexValue) == number)
+    //{
+    //  $flexValue: $flexValue 1 0%;
+    //}
+
+
+    -webkit-flex: $flexValue; 
+    flex: $flexValue;
+}
+
+@mixin oj-flex-direction-property($flexDirectionValue) {
+  -webkit-flex-direction: $flexDirectionValue;
+  flex-direction: $flexDirectionValue;
+}
+
+
+@mixin oj-flex-wrap-property($flexWrapValue) {
+  -webkit-flex-wrap: $flexWrapValue;
+  flex-wrap: $flexWrapValue;
+}
+
+@mixin oj-align-items-property($alignItemsValue) {
+
+  -webkit-align-items: $alignItemsValue;
+  align-items: $alignItemsValue;
+}
+
+@mixin oj-align-self-property($alignSelfValue) {
+  
+  -webkit-align-self: $alignSelfValue;
+  align-self: $alignSelfValue;
+}
+
+@mixin oj-align-content-property($alignContentValue) {
+  
+  -webkit-align-content: $alignContentValue;
+  align-content: $alignContentValue;
+}
+
+
+@mixin oj-justify-content-property($justifyContentValue) {
+  -webkit-justify-content: $justifyContentValue;
+  justify-content: $justifyContentValue;
+}
+
+@mixin oj-order-property($orderValue)
+{
+  -webkit-order: $orderValue;
+  order: $orderValue;
+}
+
+@mixin oj-flex-shrink-property($flexShrinkValue) {
+
+  -webkit-flex-shrink: $flexShrinkValue;
+  flex-shrink: $flexShrinkValue;
+}
+
+@mixin oj-flex-grow-property($flexGrowValue) {
+
+  -webkit-flex-grow: $flexGrowValue;
+  flex-grow: $flexGrowValue;
+}
+
+@mixin oj-flex-basis-property($flexBasisValue) {
+
+  -webkit-flex-basis: $flexBasisValue;
+  flex-basis: $flexBasisValue;
+}
+
+
+//****************************************************
+// END FLEXBOX PROPERTIES
+//****************************************************
+
+@mixin oj-transform-property ($transformValue)
+{
+    -webkit-transform: $transformValue;
+    transform: $transformValue;
+}
+
+@mixin oj-will-change-property ($willChangeValue...)
+{
+  -webkit-will-change: $willChangeValue;
+  -ms-will-change: $willChangeValue;
+  -mos-will-change: $willChangeValue;
+
+  // cssLint doesn't yet support this property.
+  // tracking bug https://github.com/CSSLint/parser-lib/issues/121
+  // will-change: $willChangeValue;
+}
+
+@mixin oj-column-width-property ($columnWidthValue)
+{
+  -webkit-column-width: $columnWidthValue; 
+     -moz-column-width: $columnWidthValue; 
+          column-width: $columnWidthValue; 
+}
+
+@mixin oj-break-inside-property ($breakInsideValue)
+{
+  // -moz-column-break-inside doesn't work on FF 24 on windows
+  // try adding page-break-inside as well
+     -moz-column-break-inside: $breakInsideValue; 
+  -webkit-column-break-inside: $breakInsideValue; 
+      -ms-column-break-inside: $breakInsideValue; 
+                 break-inside: $breakInsideValue; 
+}
+
+@mixin oj-column-count-property ($columnCountValue)
+{
+  -webkit-column-count: $columnCountValue;
+     -moz-column-count: $columnCountValue;
+          column-count: $columnCountValue;
+}
+
+
+@mixin oj-box-sizing-property ($boxSizingValue)
+{
+    // supported without -moz in ff 31, remove mixin?
+    -moz-box-sizing: $boxSizingValue;
+    box-sizing: $boxSizingValue;
+}
+
+
+//*****************************************************************************
+//
+// Usage Example:
+//
+// .oj-foo, .oj-bar
+// {
+//   @include oj-placeholder()
+//   {
+//     color: red;
+//   }
+// }
+//*****************************************************************************
+
+@mixin oj-placeholder ()
+{
+  // tried comma separating these, didn't work, meaning tried this: 
+  //    &::-webkit-input-placeholder,
+  //    &::-moz-placeholder,
+  //    &:-ms-input-placeholder{
+  //      @content
+  //    }
+  
+  &::-webkit-input-placeholder {
+   @content
+  }
+
+  &::-moz-placeholder{
+   @content
+  }
+
+  &:-ms-input-placeholder {
+   @content
+  }
+}
+
+@mixin oj-user-select-property ($userSelectValue)
+{
+    -ms-user-select: $userSelectValue;
+    -webkit-user-select: $userSelectValue;
+    -moz-user-select: $userSelectValue;    
+    user-select:$userSelectValue;
+}
+
+@mixin oj-transition-timing-function-property ($transitionTimingValue)
+{
+	-webkit-transition-timing-function: $transitionTimingValue;
+	transition-timing-function: $transitionTimingValue;
+}
+
+@mixin oj-backface-visibility-property ($backfaceVisibilityValue)
+{
+	-webkit-backface-visibility: $backfaceVisibilityValue;
+	backface-visibility: $backfaceVisibilityValue;
+}
+
+@mixin oj-transition-property ($transitionValue)
+{
+        -webkit-transition: $transitionValue;
+        transition: $transitionValue;
+}
+
+@mixin oj-perspective-property ($perspectiveValue)
+{
+	-webkit-perspective: $perspectiveValue;
+	perspective: $perspectiveValue;
+}
+
+@mixin oj-animation-duration-property ($animationDurationValue)
+{
+  -webkit-animation-duration: $animationDurationValue;
+  animation-duration: $animationDurationValue;
+}
+
+@mixin oj-keyframes-at-rule ($name)
+{
+  @-webkit-keyframes #{$name} {
+    @content
+  }
+  
+  @keyframes #{$name} {
+    @content
+  }
+}
+
+@mixin oj-animation-property ($animationValue)
+{
+  -webkit-animation: $animationValue;
+  animation: $animationValue;
+}
+
+@mixin oj-animation-fill-mode-property ($animationFillModeValue)
+{
+  -webkit-animation-fill-mode: $animationFillModeValue;
+  animation-fill-mode: $animationFillModeValue;
+}

@@ -1,0 +1,94 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.chart.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeChartClasses != false {
+  @include module-include-once("common.chart") {
+    .oj-chart {
+      @include oj-user-select-property(none);
+      outline:none;
+      width:400px;
+      height:300px;
+    }
+
+    .oj-chart-select-icon {
+      background-image: oj-common-image-url("dvt/chart/marquee-up.png");
+    }
+
+    .oj-chart-select-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/marquee-down.png");
+    }
+
+    .oj-chart-pan-icon {
+      background-image: oj-common-image-url("dvt/chart/pan-up.png");
+    }
+
+    .oj-chart-pan-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/pan-down.png");
+    }
+
+    .oj-chart-zoom-icon {
+      background-image: oj-common-image-url("dvt/chart/zoom-up.png");
+    }
+
+    .oj-chart-zoom-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/zoom-down.png");
+    }
+
+    .oj-chart-footnote {
+      font-size: $smallFontSize;
+      color: $textColor;
+    }
+
+    .oj-chart-data-label{
+      font-size: $smallFontSize;
+    }
+
+    .oj-chart-subtitle {
+      font-size: $header3FontSize;
+      color: $dvtChartSubtitleTextColor;
+    }
+    .oj-chart-stock-falling {
+      background-color: $dvtChartStockFallingBgColor;
+    }
+
+    .oj-chart-stock-range {
+      background-color: $dvtChartStockRangeBgColor;
+    }
+
+    .oj-chart-stock-rising {
+      background-color: $dvtChartStockRisingBgColor;
+    }
+
+    .oj-chart-title {
+      font-size: $header3FontSize;
+      color: $dvtChartTitleTextColor;
+      font-weight: $headerFontWeight;
+    }
+
+    .oj-chart-pie-center-label,
+    .oj-chart-xaxis-title,
+    .oj-chart-yaxis-title,
+    .oj-chart-y2axis-title {
+      font-size: $fontSize;
+      color: $dvtAxisTitleTextColor;
+    }
+
+    .oj-chart-xaxis-tick-label,
+    .oj-chart-yaxis-tick-label,
+    .oj-chart-y2axis-tick-label {
+      font-size: $smallFontSize;
+      color: $textColor;
+    }
+
+    .oj-sparkchart {
+      width:100px;
+      height:18px;
+    }
+  }
+}

@@ -1,0 +1,60 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeListViewClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.ios.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.listview";
+
+@if $includeListViewClasses != false {
+  @include module-include-once("alta.ios.listview") {
+
+        /* Styling for the expand icon */
+        .oj-listview-expand-icon{
+          @extend .oj-fwk-icon-arrow-s;
+        }
+        
+        /* Styling for the collapse icon */
+        .oj-listview-collapse-icon {
+           @extend .oj-fwk-icon-arrow-end;
+        }
+
+        /* Styling for each list item */
+        /* the border is position to where the content starts */
+        .oj-listview-item {
+            background-position: $panelPadding 0;
+        }
+
+        /* Styling on focused list or group item */
+        .oj-listview-item.oj-focus,
+        .oj-listview-group-item.oj-focus {
+            outline-style: none;
+        }
+
+        /* Styling for drill icon */
+        .oj-listview-drill-icon {
+            @extend .oj-fwk-icon-caret03-end;
+        }
+
+        /* Styling for drill icon in various states */
+        .oj-listview-item.oj-hover .oj-listview-drill-icon,
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon,
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected .oj-listview-drill-icon {
+            color: $listViewDrillIconColor;
+        }
+  }
+}

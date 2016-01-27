@@ -1,0 +1,121 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.grid.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+
+@mixin oj-grid-column($column)
+{
+  $colPercentage: percentage($column/$gridTotalColumns);
+  @include oj-flex-property(0 1 $colPercentage);
+  // max-width is required to work around an IE11 bug where the padding is 
+  // not getting included in the flex-basis percentage even though 
+  // box-sizing: border-box is set
+  max-width: $colPercentage;
+  // these classes are sometimes used in non-flex cases, for example
+  // in the off canvas responsive patterns, so set the 
+  // width as well
+  width: $colPercentage; 
+}
+
+
+//-------------------------------------------------------------------------------------------------
+// generate grid classes that belong inside of media queries
+//-------------------------------------------------------------------------------------------------
+@mixin oj-grid-responsive($selectorPrefix, 
+                          $generateBasics:    true, 
+                          $generateOddEven:   true) {
+
+
+  @if ($generateBasics) {
+    @for $i from 1 through $gridTotalColumns {
+      .#{$selectorPrefix}-#{$i} { 
+         @include oj-grid-column($i);
+      }
+    }
+  }
+
+  @if ($generateOddEven) {
+    // only need to specify odd in a 2 column grid
+    @for $i from 1 through $gridTotalColumns {
+
+      .#{$selectorPrefix}-odd-cols-#{$i} > .oj-flex > .oj-flex-item:nth-child(odd) {
+         @include oj-grid-column($i);
+      }
+
+      .#{$selectorPrefix}-odd-cols-#{$i} > .oj-flex > .oj-flex-item:nth-child(even) {
+         @if ($i == $gridTotalColumns)
+         {
+           @include oj-grid-column($i);
+         }
+         @else 
+         {
+           @include oj-grid-column($gridTotalColumns - $i);
+         }
+      }
+    }
+
+
+    // used for when there's 4+ columns
+    @for $i from 1 through (($gridTotalColumns/2) - 1){
+
+      .#{$selectorPrefix}-even-cols-#{$i} > .oj-flex > .oj-flex-item:nth-child(even) {
+         @include oj-grid-column($i);
+      }
+    }
+  }
+
+}
+
+
+
+@if $includeGridClasses != false {
+  @include module-include-once("common.grid") {
+
+
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} {
+        @include oj-grid-responsive($selectorPrefix: "oj-sm");
+      }
+    }
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media  #{$responsiveQueryMediumUp} {
+        @include oj-grid-responsive($selectorPrefix: "oj-md");
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media  #{$responsiveQueryLargeUp} {
+        @include oj-grid-responsive($selectorPrefix: "oj-lg");
+
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media  #{$responsiveQueryXlargeUp} {
+        @include oj-grid-responsive($selectorPrefix: "oj-xl");
+
+      }
+    }
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media  #{$responsiveQueryXXlargeUp} {
+        @include oj-grid-responsive($selectorPrefix: "oj-xxl");
+
+      }
+    }
+
+    
+    @if $responsiveQueryPrint and $responsiveQueryPrint != none {
+      @media  #{$responsiveQueryPrint} {
+        @include oj-grid-responsive($selectorPrefix: "oj-print");
+      }
+    }
+
+  }
+}

@@ -1,0 +1,67 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.diagram.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeDiagramClasses != false {
+  @include module-include-once("common.diagram") {
+
+    // top level diagram styles
+    .oj-diagram {
+      @include oj-user-select-property(none);
+      outline:none;
+      width:100%;
+      height:400px;
+    }
+    
+    // diagram node
+    .oj-diagram-node {
+    }    
+
+    // applied to the diagram node on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border
+    .oj-diagram-node.oj-hover {
+      border-top-color:$dvtDiagramNodeBorderColorHover;
+      border-bottom-color: $dvtBorder2Color;
+    }    
+
+    // applied to the selected diagram node
+    .oj-diagram-node.oj-selected {
+      border-color: $dvtBorderColor;
+    }    
+    
+    // applied to the diagram node label
+    .oj-diagram-node-label {
+      font-size: $fontSize;
+      color: $textColor; 
+    }    
+
+    // diagram link
+    .oj-diagram-link {
+      color: $dvtDiagramLinkColor; 
+    }
+
+    // applied to the diagram link on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border    
+    .oj-diagram-link.oj-hover {
+      border-top-color:$dvtDiagramLinkBorderColorHover;
+      border-bottom-color: $dvtBorder2Color;    
+    }    
+
+    // applied to the selected diagram link
+    .oj-diagram-link.oj-selected {
+      border-color: $dvtBorderColor;
+    }    
+
+    // applied to the diagram link label
+    .oj-diagram-link-label {
+      font-size: $fontSize;
+      color: $textColor;      
+    }
+  }
+}

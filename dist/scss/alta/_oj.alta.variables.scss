@@ -1,0 +1,435 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../utilities/oj.utilities.urls";
+@import "../utilities/oj.utilities.math";
+
+// This is the variable file for the Oracle Alta look and feel.
+
+
+// DEPRECATED starting in JET version 1.2.0
+$includeAllClasses: true !default;
+$includeDeprecatedGridClasses:        $includeAllClasses !default;
+$includeDeprecatedFormLayoutClasses:  $includeAllClasses !default;
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+
+// path to images
+$imageDir: "images/" !default;
+
+
+// interaction state colors
+//----------------------------------
+
+// $interaction1Color is often used to
+// indicate a selected state.
+$interaction1Color: #0572ce !default;
+
+// $interaction2Color and $interaction3Color are often
+// used to indicate hover or focus on a row or item
+$interaction2Color: #ebeced !default;
+$interaction3Color: #e4f0fa !default;
+
+// $interaction4Color is often used to
+// indicate active or selected on a row or item
+$interaction4Color: #cfe8fc !default;
+
+// $interaction5Color and $interaction6Color are
+// often used to indicate state in a "header",
+// for example a column header
+$interaction5Color: #d6d7d8 !default;
+$interaction6Color: #dae9f5 !default;
+
+
+
+// background colors
+//----------------------------------
+$background1Color: #ffffff !default;
+$background2Color: #f9f9f9 !default;
+$background3Color: #fcfdfe !default;
+$background4Color: #f0f0f0 !default;
+$background5Color: #fafafa !default;
+$background6Color: #e4e8ea !default;
+
+// border colors
+//----------------------------------
+$border1Color:       #d6dfe6 !default;
+$border2Color:       #d9dfe3 !default;
+$border3Color:       #c4ced7 !default;
+$border4Color:       #dfe4e7 !default;
+$border5Color:       #eeeeee !default;
+$border6Color:       #000000 !default;
+$border7Color:       #ffffff !default;
+$border8Color:       #4f4f4f !default;
+
+// icon colors
+//----------------------------------
+$iconColorHover:    #85bbe7 !default;
+
+
+
+//----------------------------------------------------------------
+// GENERAL STYLING
+//       these variables are used broadly in the widget files
+//----------------------------------------------------------------
+
+// font
+//----------------------------------
+
+// font family
+$fontFamily: "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+
+// font size
+
+// $rootFontSize is only used on the html element
+// in order to support using rem units.
+//
+// If you have $allowTagSelectors set to false you can
+// use the class oj-html to get the JET html tag styling.
+// If you are not generating classes for the html element in JET
+// you can still use rem's if you can set the font size on
+// the html element with your own class or inline style.
+//
+// The browser usually uses 16px and the Alta default is 14px.
+// Therefore set $rootFontValue to .875em to get 14px;
+$rootFontSize:    .875em !default;    // 14px
+
+$fontSize:         1rem !default;      // 14px
+$smallestFontSize: .7857rem !default;  // 11px when root 14px
+$smallFontSize:    .857rem !default;   // 12px when root 14px
+$mediumFontSize:   1.143rem !default;  // 16px when root 14px
+$largeFontSize:    1.286rem !default;  // 18px when root 14px
+$largestFontSize:  1.429rem !default;  // 20px when root 14px
+
+
+
+// text colors
+//----------------------------------
+$textColor:             #333333 !default;
+$primaryTextColor:      darken($textColor, 25%) !default;  // = #000000;
+$secondaryTextColor:    lighten($textColor, 10%) !default; // = #454545;
+$tertiaryTextColor:     lighten($textColor, 25%) !default; // = #737373;
+$contrastTextColor:     #ffffff !default;
+$textColorDisabled:     #9e9e9e !default;
+$formControlLabelColor: #4f4f4f !default;
+$headerTextColor:       #252525 !default;
+$linkTextColor:         #045fab !default;
+$linkTextColorVisited:  $linkTextColor !default;
+$linkTextColorDisabled: $textColorDisabled !default;
+
+
+// interaction cue colors
+//----------------------------------
+$colorRequired: $interaction1Color !default;
+
+
+// icon colors
+//----------------------------------
+$iconColorDisabled: #d4d6d7 !default;
+$iconColorDefault:  #878c90 !default;
+
+// shadow
+//----------------------------------
+$boxShadowColor: #000000 !default;
+$smallBoxShadow:  1px 1px 3px 0 transparentize($boxShadowColor, .65) !default;
+$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
+$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+
+
+// disabled
+//----------------------------------
+$opacityDisabled: null !default;
+
+
+//----------------------------------------------------------------
+// CATEGORY AND WIDGET VARIABLES
+//----------------------------------------------------------------
+
+
+// BODY
+//----------------------------------------------------------------
+// to remove background image use $bodyBgImage: none;
+$bodyBgImage:   oj-image-url('texture.png') !default;
+
+
+
+// WINDOW
+//----------------------------------------------------------------
+$windowBorderColor: $border3Color !default;
+$windowBgColor:     $background2Color !default;
+
+
+// HEADERS
+//----------------------------------------------------------------
+$headerFontWeight:      bold !default;
+
+// PANEL
+//----------------------------------------------------------------
+
+$panelPadding:             .8571rem !default; // 12px when root is 14px
+
+
+// using these adjustments panels can choose to
+// consistently determine their border colors by changing
+// the saturation/lightness of their background colors
+$panelBorderColorSaturationAdjustment: 5% !default;
+$panelBorderColorLightnessAdjustment: -5% !default;
+
+
+$panel1BgColor:     #eff2f5 !default;
+$panel1BorderColor: $border1Color !default;
+
+$panel2BgColor:     #e8f2fb !default;
+$panel2BorderColor: adjust-color($panel2BgColor,
+                                 $lightness: $panelBorderColorLightnessAdjustment,
+                                 $saturation: $panelBorderColorSaturationAdjustment) !default;
+
+$panel5BgColor:     #fce8fe !default;
+$panel5BorderColor: adjust-color($panel5BgColor,
+                                 $lightness: $panelBorderColorLightnessAdjustment,
+                                 $saturation: $panelBorderColorSaturationAdjustment) !default;
+
+
+// FORM CONTROLS
+//----------------------------------------------------------------
+
+//default
+$formControlBgColor:             $background3Color !default;
+
+
+//disabled
+$formControlBgColorDisabled:     #efeff1 !default;
+$formControlValueColorDisabled:  $textColorDisabled !default;
+$formControlBorderColorDisabled: $formControlBgColorDisabled !default;
+
+// placeholder
+$formControlPlaceholderFontStyle: italic !default;
+
+
+$formLayoutLabelInlineAlign: end !default;
+
+// RADIOSET AND CHECKBOXSET
+
+$radioCheckboxRowHeight: auto !default;
+$radioCheckboxItemBgColorActive: transparent !default;
+
+// INPUTDATE / INPUTDATETIME
+//----------------------------------------------------------------
+
+//options
+// For option 'datePicker:showOn' in ojInputDate
+$inputDateShowOnOptionDefault: image !default;
+
+// SLIDER
+//----------------------------------------------------------------
+
+$sliderBarThickness:            4px !default;
+$sliderThumbBorderColor:        #b2bcc4 !default;
+$sliderThumbBgColorHover:       $interaction2Color !default;
+
+
+// MENU
+//----------------------------------------------------------------
+
+// horizontal spacing
+//----------------------------------
+
+// Need rems, not ems, since we set icon font size (and if we didn't, app often would).
+
+// these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
+$menuIconSize:                         16px !default; // per theming discussion, force it to size required by Alta spec, but don't grow/shrink via rems in case of artifacts, and DO scale the surrounding space via rems.
+$menuIconToEdgePadding:                0.583rem !default; // 7px @12px font per Alta spec, 8.162px @14px font.
+$menuTextToIconPadding:                $menuIconToEdgePadding !default;
+
+// applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
+$menuTextToEdgePadding:   calc(#{$menuIconToEdgePadding} + #{$menuIconSize} + #{$menuTextToIconPadding}) !default; // Alta spec leaves a space for icons even if no item in the menu has an icon
+
+
+// menu parts
+//----------------------------------
+
+// top-level menus (.oj-menu.oj-component)
+$menuBoxShadow:           $smallBoxShadow !default;
+
+// submenus (.oj-menu.oj-menu-submenu)
+$menuSubmenuBoxShadow:    $menuBoxShadow !default;
+
+// disabled menu icons, not submenu icons
+$menuIconColorDisabled:   $iconColorDisabled !default;
+
+// menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuDividerMargin:       0.083rem !default; // 1px @12px font, 1.162px @14px font. This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
+
+
+// BUTTONS
+//----------------------------------------------------------------
+
+// button padding
+//----------------------------------
+
+
+
+// button states
+//----------------------------------
+
+// default
+$buttonBorderColor:               $border3Color !default;
+$buttonInternalBorderColor:       null !default;
+
+// hover
+$buttonIconColorHover:            $iconColorHover !default;
+$buttonBorderColorHover:          $buttonBorderColor !default;
+
+// active
+$buttonInternalBorderColorActive: $buttonBorderColor !default;
+
+// selected - default to use active values
+$buttonInternalBorderColorSelected: $buttonInternalBorderColorActive !default;
+
+// selected and hovered
+
+// disabled
+$buttonBgColorDisabled:           #f4f6f7 !default;
+$buttonTextColorDisabled:         $textColorDisabled !default;
+$buttonIconColorDisabled:         $iconColorDisabled !default;
+$buttonBorderColorDisabled:       #e0e6eb !default;
+$buttonOpacityDisabled:           $opacityDisabled !default;
+
+// disabled and selected
+$buttonBgColorSelectedDisabled:              $buttonIconColorDisabled !default;
+$buttonInternalBorderColorSelectedDisabled:  $buttonBorderColorDisabled !default;
+
+
+// button chroming
+//----------------------------------
+
+// chroming option defaulting
+
+// half chrome
+
+// half chrome default
+
+// half chrome hover
+$buttonHalfChromeIconColorHover:          $buttonIconColorHover !default;
+$buttonHalfChromeBorderColorHover:        $buttonBorderColorHover !default;
+
+// half chrome active
+
+// half chrome selected
+
+// half chrome selected and hovered
+
+// half chrome disabled
+$buttonHalfChromeTextColorDisabled:       $buttonTextColorDisabled !default;
+$buttonHalfChromeOpacityDisabled:         $buttonOpacityDisabled !default;
+
+// half chrome disabled and selected
+
+// outlined
+$buttonOutlinedChromeInternalBorderColor:          $buttonInternalBorderColor !default;
+
+// outlined default
+$buttonOutlinedChromeBorderColor:                  $buttonHalfChromeBorderColorHover !default;
+
+// outlined hover
+$buttonOutlinedChromeBorderColorHover:             $buttonOutlinedChromeBorderColor !default;
+
+// outlined active
+$buttonOutlinedChromeInternalBorderColorActive:    $buttonInternalBorderColorActive !default;
+
+// outlined selected
+$buttonOutlinedChromeInternalBorderColorSelected:  $buttonInternalBorderColorSelected !default;
+
+// outlined selected and hovered
+
+// outlined disabled
+$buttonOutlinedChromeBorderColorDisabled:          $buttonBorderColorDisabled!default;
+
+// outlined disabled and selected
+$buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonInternalBorderColorSelectedDisabled !default;
+
+
+// alternate button colors
+//----------------------------------
+
+// LISTVIEW
+//----------------------------------------------------------------
+$listViewHeaderBorderWidth: 1px !default;
+
+// BUTTONSET
+//----------------------------------------------------------------
+
+
+// TOOLBAR
+//----------------------------------------------------------------
+
+
+//NAVIGATIONLIST
+//-----------------------------------
+
+//Default
+$navigationListItemLabelColorDefault:       $linkTextColor !default;
+$navigationListCollapsibleIconColorDefault: $iconColorDefault !default;
+$navigationListIconColorDefault:            $iconColorDefault !default;
+//Hover
+$navigationListItemIconOnlyBgColorHover:    $interaction2Color !default;
+//Selected
+$navigationListItemIconOnlyBgColorSelected: $interaction1Color !default;
+$navigationListIconOnlyIconColorSelected:   $contrastTextColor !default;
+$navigationListItemLabelColorSelected:      $navigationListItemLabelColorDefault !default;
+$navigationListItemBgColorSelected:         $interaction3Color !default; // only applies to vertical navlist
+//Disabled
+$navigationListItemLabelColorDisabled:      $linkTextColorDisabled !default;
+$navigationListIconColorDisabled:           $iconColorDisabled !default;
+
+//Sizing
+$navigationListItemStartEndPadding:         1.072rem !default; //15px
+$navigationListIconToTextPadding:           0.714rem !default; // 10px
+$navigationListItemMinHeight: 3.142rem !default;   //applies to vertical only, 44 px height when root font 14px.
+$navigationListIconOnlyStyle:  circle !default;
+$navigationListIconOnlyItemPadding: 4px !default;
+
+$navigationListHierarchyMenuDisplayThresholdLevelOptionDefault: 3 !default;
+
+//---Start of Navigation bar---
+//Default
+$navigationBarItemLabelColorDefault: #4d4d4d !default;
+$navigationBarItemIconColorDefault: #333 !default;
+//Sizing
+$navigationBarFontSize: 1rem !default;
+$navigationBarMinHeight: 2.714rem !default;//38 px height when root font 14px
+$navigationBarStackedIconMinHeight: 4.285rem !default; //60 px height when root font 14px
+$navigationBarItemPadding: 0.5rem $navigationListItemStartEndPadding 4px !default;
+$navigationBarIconMargin: 0 !default;
+$navigationBarIconToTextPadding: $navigationListIconToTextPadding !default;
+$navigationBarIconOnlyStyle:  circle !default;
+//---End of Navigation bar---
+
+$navigationListItemContrastLabelColorDisabled:  #616365 !default;
+
+// FILM STRIP
+//----------------------------------------------------------------
+
+// opacity of arrows
+$filmStripArrowOpacity: 0.8 !default;
+// border radius of arrows
+$filmStripArrowBorderRadius: 50% !default;
+
+
+// APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
+//-------------------------------------------------------------
+// Padding
+$appLayoutHybridPadding: 0.625rem !default;
+//Header
+$appLayoutHybridHeaderTitleFontSize: 1.125rem !default; // 18px when root 16px
+$appLayoutHybridHeaderBorderColor: $border2Color !default;
+// Footer
+$appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
+
+// INDEXER
+//----------------------------------------------------------------
+
+$indexerTextColor:         $linkTextColor !default;
+$indexerTextColorDisabled: $linkTextColorDisabled !default;
+
+@import "../common/oj.common.variables";

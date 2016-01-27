@@ -1,0 +1,389 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.listbox.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+@if $includeListboxClasses != false {
+  @include module-include-once("common.listbox") {
+
+
+    /* listbox */
+    /* --------------------------------------------------------------- */
+    
+    /*
+     * applied to the dropdown
+     */
+    
+    /* defines the stacking context for the listbox */
+    .oj-listbox-drop-layer {
+      @extend .oj-component-layer;
+      z-index: $popupZindex;
+    }
+    
+    .oj-listbox-drop {
+      @extend .oj-component-popup;
+      @include oj-box-sizing-property(border-box);
+      top: 100%;
+      background: $popupBgColor;
+      border: 1px solid $popupBorderColor;
+      border-top: 0;
+      @include oj-box-shadow($smallBoxShadow);
+    }
+
+    /*
+     * applied to the dropdown when it is open above the component
+     */
+    .oj-listbox-drop-above {
+      border-top: 1px solid $popupBorderColor;
+      border-bottom: 0;
+    }
+
+    /*
+     * applied to placeholder in the dropdown
+     */
+    .oj-listbox-placeholder {
+      color: $formControlPlaceholderColor;
+    }
+
+    /* 
+     * applied to results
+     */
+    .oj-listbox-results {
+      max-height: 200px;
+      padding: 0;
+      margin: 1px 0 2px 0;
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+    }
+
+    /* 
+     * applied to nested option groups
+     */
+    .oj-listbox-result-sub {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 
+     * applied to result labels
+     */
+    .oj-listbox-result-label {
+      line-height: 2rem;
+      margin: 0;
+      cursor: pointer;
+      min-height: 2rem;
+      -webkit-touch-callout: none;
+      @include oj-user-select-property(none);
+      @include oj-ltr() {
+        padding-left: $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: $listboxItemPadding;
+      }
+    }
+
+    /* 
+     * applied to result labels in different nested levels of option groups.
+     * Padding is used instead of margins because the background color for states
+     * like hover need to span across the entire box.
+     */
+    .oj-listbox-results-depth-1 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-2 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 2 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 2 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-3 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 3 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 3 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-4 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 4 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 4 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-5 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 5 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 5 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-6 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 6 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 6 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    .oj-listbox-results-depth-7 > .oj-listbox-result-label {
+      @include oj-ltr() {
+        padding-left: 7 * $listboxIndentWidth + $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: 7 * $listboxIndentWidth + $listboxItemPadding;
+      }
+    }
+
+    /* 
+     * applied to the nested option group labels, 
+     * they are direct children of li.oj-listbox-result-with-children
+     */
+    .oj-listbox-result-with-children > .oj-listbox-result-label {
+      font-weight: bold; 
+    }
+
+    /* 
+     * applied to choices in the dropdown
+     */
+    .oj-listbox-results li {
+      list-style: none;
+      display: list-item;
+      background-image: none; 
+    }
+
+    /* 
+     * applied to the hovered choices in the dropdown
+     */
+    .oj-listbox-results .oj-hover {
+      background: $listboxBgColorFocus;
+    }
+
+    /*
+     * applied to disabled choices in the dropdown
+     */
+    .oj-listbox-results .oj-disabled {
+      color: $textColorDisabled;
+      display: list-item;
+      cursor: default; 
+    }
+
+    /*
+     * applied to selected choice in the dropdown
+     */
+    .oj-listbox-results .oj-selected {
+      display: none; 
+    }
+
+    /*
+     * This class is only applied transiently to measure the browser native scollbar
+     */
+    .oj-listbox-measure-scrollbar {
+      position: absolute;
+      top: -10000px;
+      width: 100px;
+      height: 100px;
+      overflow: scroll; 
+      @include oj-ltr() {
+        left: -10000px;
+      }
+      @include oj-rtl() {
+        right: -10000px;
+      }
+    }
+
+
+    /* icons */
+    /* -----------------------------*/
+
+    /* 
+     * Applied to the search icon
+     */
+    .oj-listbox-search-icon {
+      @extend .oj-fwk-icon-magnifier;
+      color: $buttonIconColor;
+    }
+
+    /* 
+     * Applied to the spyglass (search icon) container
+     */
+    .oj-listbox-spyglass-box {
+      @include oj-box-sizing-property(border-box);
+      text-align: center;
+      vertical-align: middle;
+      border:0;
+      overflow: hidden;
+      display: inline-block;
+      position: absolute;
+      @include oj-ltr() {
+        right: 0;
+        padding-right: $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        left: 0;
+        padding-left: $listboxItemPadding;
+      }
+    }
+
+    /* 
+     * Applied to the search box which includes the search text and the spyglass icon
+     */
+    .oj-listbox-search {
+      @include oj-box-sizing-property(border-box);
+      width: 100%;
+      display: inline-table;
+      background-color: $panelBgColor;
+      border-style: solid;
+      border-color: $formControlBorderColor;
+      border-width: $formControlBorderWidth;
+      @include oj-border-radius($formControlBorderRadius);
+    }
+
+    /* 
+     * Applied to the search text
+     */
+    .oj-listbox-input {
+      @include oj-box-sizing-property(border-box);
+      width: 100%;
+      color: $textColor;
+      outline: none;
+      border: 0;
+      // even if the border is 0, we still need to set border radius here otherwise
+      // the inputbox background color bleeds thru the container's corner 
+      // (see oj-listbox-search), which makes the container border radius 
+      // look disconnected.
+      @include oj-border-radius($formControlBorderRadius);
+      background-color: inherit;
+      @include oj-box-shadow(none);
+
+      padding-top: 6px;
+      padding-bottom: 5px;
+      @include oj-ltr() {
+        padding-right: 2rem;
+        padding-left: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        padding-left: 2rem;
+        padding-right: $formControlPaddingHorizontal;
+      }
+
+     }
+
+    /* 
+     * Used to cover the border bottom of the select box when the dropdown is open
+     */
+    .oj-listbox-search-wrapper {
+      border: 0;
+      padding: $listboxItemPadding;
+      background-color: $formControlBgColor;
+    }
+
+    /* 
+     * Applied to the "No matches found" result entry
+     */
+   .oj-listbox-no-results {
+      @include oj-ltr() {
+        padding-left: $listboxItemPadding;
+      }
+      @include oj-rtl() {
+        padding-right: $listboxItemPadding;
+      }
+   }
+
+    // High Contrast
+    //--------------------------------------------
+
+    // apply to a hovered choice
+    .oj-hicontrast .oj-listbox-results .oj-hover {
+      border: 1px solid $formControlBorderColor;
+    }
+
+    // apply to a disabled choice
+    .oj-hicontrast .oj-listbox-results .oj-disabled {
+      border: 1px dotted $formControlBorderColor;
+    }
+    
+    /* 
+     * Applied to the search icon
+     */
+    .oj-listbox-search-icon {
+        padding: 0.31rem;
+    }
+
+    /* 
+     * Applied to the spyglass (search icon) container
+     */
+    .oj-listbox-spyglass-box {
+      padding-top: 1px;
+
+      @include oj-ltr() {
+        padding-right: 6px;
+      }
+      @include oj-rtl() {
+        padding-left: 6px;
+      }
+    }
+
+    /* 
+     * Applied to the listbox results if it has custonm header.
+     */
+    .oj-listbox-results-with-header {
+      padding: 0;
+      margin: 0;
+    }
+
+    /* 
+     * Applied to the listbox custonm header options.
+     */
+    .oj-listbox-results-with-header li {
+      background-image: none;
+      list-style: outside none none;
+    }
+
+    /* 
+     * Applied to the listbox custonm header.
+     */
+    .oj-listbox-result-header {
+      padding: $listboxItemPadding $listboxItemPadding 0 $listboxItemPadding;
+    }
+
+    .oj-listbox-result-header ul {
+      padding: 0;
+    }
+
+    .oj-listbox-result-header a.oj-focus {
+      text-decoration: underline;
+      @include oj-browser-focus-outline-approximation($buttonTextColor);
+    }
+
+    /* 
+     * Applied to the matching text in the dropdown options
+     */
+    .oj-listbox-highlighter {
+      font-weight: bold;
+    }
+
+  }
+}

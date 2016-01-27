@@ -1,0 +1,48 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//-------------------------------------------------------------------------------------------------
+// generate layout utility classes, usually these belong inside of media queries
+//
+//
+// $selectorPrefix:    name of class prefix to use, i.e. "oj-sm" will generate 
+//                     .oj-sm-hide, .oj-sm-float-end, etc.
+// $generateHide:         generate hide classes like .oj-sm-hide
+// $generateTextAlignEnd: generate text align end classes like .oj-sm-text-align-end
+// $generateFloatStart:   generate float end classes like .oj-sm-float-end
+// $generateFloatEnd:     generate float start classes like .oj-sm-float-start
+//-------------------------------------------------------------------------------------------------
+@mixin oj-layout-helpers-responsive($selectorPrefix,
+                                    $generateHide:                  $responsiveGenerateHide,
+                                    $generateTextAlignEnd:          $responsiveGenerateTextAlignEnd,
+                                    $generateFloatEnd:              $responsiveGenerateFloatEnd,
+                                    $generateFloatStart:            $responsiveGenerateFloatStart)
+{
+  @if $generateHide {
+    .#{$selectorPrefix}-hide { display:none; }
+  }
+
+  @if $generateTextAlignEnd {
+    .#{$selectorPrefix}-text-align-end {
+      @include oj-bidi-property(
+                 $property: "text-align", 
+                 $startOrEnd: end);
+    }
+  }
+
+  @if $generateFloatEnd {
+    .#{$selectorPrefix}-float-end {
+      @include oj-bidi-property(
+                 $property: "float", 
+                 $startOrEnd: end);
+    }
+  }
+
+  @if $generateFloatStart {
+    .#{$selectorPrefix}-float-start {
+      @include oj-bidi-property(
+                 $property: "float", 
+                 $startOrEnd: start);
+    }
+  }
+
+}
+

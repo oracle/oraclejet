@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+//
+// NOTE: This variable is defined here in order to allow stand alone 
+// use of these utility mixins, however this variable may also 
+// be defined in other variable files. Because of the !default, 
+// the actual value will be the value in the file loaded first.
+$boxShadowGeneration: slowOverride !default;
+
+//*****************************************************************************
+//
+// Usage Example:
+//
+//      .oj-foo .oj-binky {
+//       
+//        @include oj-box-shadow(1px 1px 3px 0 rgba(0, 0, 0, .35));
+//      }
+//
+//*****************************************************************************
+
+@mixin oj-box-shadow($boxShadow...)
+{
+  @if (nth($boxShadow, 1) != null and $boxShadowGeneration != off)
+  {
+    
+    box-shadow: $boxShadow; 
+
+    @if (nth($boxShadow, 1) != none and $boxShadowGeneration == slowOverride)
+    {
+      html.oj-slow-boxshadow & {
+        box-shadow: none; 
+      }
+    }
+  }
+}

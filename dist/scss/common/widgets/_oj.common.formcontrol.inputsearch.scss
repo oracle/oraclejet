@@ -1,0 +1,160 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.inputsearch.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+
+@if $includeInputSearchClasses != false {
+  @include module-include-once("common.inputsearch") {
+    /* InputSearch */
+    /* --------------------------------------------------------------- */
+    .oj-inputsearch {
+      display: inline-block;
+      position: relative;
+      vertical-align: middle; 
+      max-width: $formControlLargeMaxWidth;
+      min-width: $formControlMinWidth;
+      width: 100%;
+      // font size needs to be on the root, because max/min width is in em.
+      font-size: $formControlInputFontSize;
+    }
+
+    /* 
+     * Applied to the InputSearch box which includes the input field and the search icon
+     */
+    .oj-inputsearch-choice {
+      @include oj-form-control-content;
+      @include oj-box-sizing-property(border-box);
+      @include oj-display-flex-property();
+      @if $inputSearchIconPosition == start {
+        @include oj-flex-direction-property(row-reverse);
+      }
+      height: $formControlInputHeight;
+      width: 100%;
+      outline: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      background-clip: padding-box;
+      @include oj-form-control-content-no-focus-padding;
+    }
+
+    .oj-inputsearch-choice {
+      background-color: $inputSearchBgColor;
+    }
+
+    /* 
+     * Applied to the input field
+     */
+    .oj-inputsearch-input {
+      @include oj-box-shadow(none);
+      @include oj-flex-property(1);
+      border: 0;
+      outline: 0;
+      padding: 0 $formControlPaddingHorizontal;
+      background-color: $formControlBgColor;
+      color: $formControlInputValueColor;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis; 
+      font-size: $formControlInputFontSize;
+      @include oj-placeholder()
+      {
+        color: $formControlPlaceholderColor;
+        // in Firefox the default opacity is not 1 for placeholder
+        opacity: 1;
+        font-style: $formControlPlaceholderFontStyle;
+      }
+    }
+
+    /* 
+     * Applied to the search button
+     */
+    .oj-inputsearch-search-button {
+      @include oj-box-sizing-property(border-box);
+      @include oj-display-inline-flex-property();
+      @include oj-align-items-property(center);
+      cursor: pointer;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+    }
+
+    .oj-inputsearch-search-button:hover, .oj-inputsearch-search-button:focus  {
+      text-decoration: none;
+    }
+
+    /* 
+     * Search button icon
+     */
+    .oj-inputsearch-search-icon {
+      @extend .oj-fwk-icon-magnifier;
+
+      line-height: inherit;
+      font-size: $formControlInputFontSize;
+
+      @include oj-ltr() {
+        padding-left: oj-shorthand-property-value-left($inputSearchIconPadding);
+        padding-right: oj-shorthand-property-value-right($inputSearchIconPadding);
+      }
+      @include oj-rtl() {
+        padding-right: oj-shorthand-property-value-left($inputSearchIconPadding);
+        padding-left: oj-shorthand-property-value-right($inputSearchIconPadding);
+      }
+    }
+
+    /*
+     * Styling for focus state
+     */
+    .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus
+    .oj-inputsearch-choice {
+      @include oj-form-control-content-focus;
+      @include oj-form-control-content-focus-padding;
+    }
+
+    /* 
+     * Invalid styling for the widget 
+     */
+    .oj-inputsearch.oj-invalid .oj-inputsearch-choice {
+      @include oj-form-control-border-message-width($inputSearchBgColor);
+      border-style: solid;
+      border-color: $borderColorError;
+      
+    }
+
+    /* 
+     * Warning styling for the widget 
+     */
+    .oj-inputsearch.oj-warning .oj-inputsearch-choice {
+      @include oj-form-control-border-message-width($inputSearchBgColor);
+      border-style: solid;
+      border-color: $borderColorWarning;
+    }
+
+    /* 
+     * Disabled styles for single-select 
+     */
+    .oj-inputsearch.oj-disabled .oj-inputsearch-choice,
+    .oj-inputsearch.oj-disabled input {
+      @include oj-form-control-content-disabled;
+    }
+
+    .oj-inputsearch.oj-disabled .oj-inputsearch-choice,
+    .oj-inputsearch.oj-disabled input {
+      background-color: $inputSearchBgColorDisabled;
+      border-style: $inputTextBorderStyleDisabled;
+    }
+
+    .oj-inputsearch.oj-disabled input {
+      border: 0;
+    }
+
+    .oj-inputsearch.oj-disabled .oj-inputsearch-search-button { 
+      cursor: default;
+    }
+  }
+}

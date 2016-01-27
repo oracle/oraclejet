@@ -1,0 +1,180 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.inputtextarea.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+@if $includeInputTextClasses != false {
+  @include module-include-once("common.inputtext") {
+    
+    // this file includes classes for ojInputText, ojInputPassword, and ojTextarea,
+    // but you will also see classes to use html/css without a component, classes are: 
+    //   .oj-inputtext-nocomp,
+    //   .oj-inputpassword-nocomp,
+    //   .oj-textarea-nocomp 
+    // to use these put oj-form-control on as well, for example
+    //   <input class="oj-inputtext-nocomp oj-form-control">
+
+    
+
+    // general css styles between the wrapper components
+    .oj-inputtext,
+    .oj-inputpassword,
+    .oj-textarea,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp,
+    .oj-textarea-nocomp 
+    {
+      @include oj-box-sizing-property(border-box);
+      
+      display: inline-block;
+      
+      // because max/min width is in em the font size needs to be on this element 
+      // and not on the selector that goes on the input.
+      font-size: $formControlInputFontSize;
+	  
+      /* use a width of 100% and then max and min width so that when 
+         there's less room for the form control it can automatically 
+         get smaller instead of overflowing its boundaries */
+      max-width: $formControlLargeMaxWidth;
+      min-width: $formControlMinWidth;
+      width: 100%;
+    }
+	
+    // general css input styles between the components
+    .oj-inputtext-input,
+    .oj-inputpassword-input,
+    .oj-textarea-input,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp,
+    .oj-textarea-nocomp
+    {
+      @include oj-form-control-content($textAlign: $inputTextTextAlign);
+
+      // normally removing an outline can cause accessibility issues, however
+      // on an input the cursor blinks so an outline is not required for
+      // accessibility. As of 6-11-14 only chrome is putting
+      // an outline on inputs anyway
+      outline: 0;
+      
+      @include oj-box-sizing-property(border-box);
+
+      font-family: inherit;
+      font-weight: normal;
+
+      width: 100%;
+    }
+	
+    // When size is provided, set width to auto to allow proper sizing
+    .oj-inputtext-input[size],
+    .oj-inputpassword-input[size],
+    .oj-textarea-input[size] 
+    {
+      width: auto;
+    }
+
+    // specific css for inputtext-input + inputpassword-input
+    .oj-inputtext-input,
+    .oj-inputpassword-input,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp
+    {
+      @include oj-normalize-text-input;
+      
+      height: $formControlInputHeight;
+      padding: 0 $formControlPaddingHorizontal;
+      @include oj-box-sizing-property(border-box);
+      @include oj-form-control-content-no-focus-padding;
+    }
+
+    // specific css for textarea-input
+    .oj-textarea-input,
+    .oj-textarea-nocomp
+    {
+      @include oj-normalize-textarea;
+      
+      height: auto;
+      padding: .5em $formControlPaddingHorizontal;
+      resize: none; //turning off as resizing can cause layout problems.
+
+      line-height: $textAreaLineHeight;
+    }
+
+    // Styling for invalid state
+    .oj-inputtext.oj-invalid .oj-inputtext-input,
+    .oj-inputpassword.oj-invalid .oj-inputpassword-input,
+    .oj-textarea.oj-invalid .oj-textarea-input
+    {
+
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+      border-color: $borderColorError; 
+    }
+
+    // Styling for warning state
+    .oj-inputtext.oj-warning .oj-inputtext-input,
+    .oj-inputpassword.oj-warning .oj-inputpassword-input,
+    .oj-textarea.oj-warning .oj-textarea-input
+    {
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+      border-color: $borderColorWarning; 
+    }
+
+    // Styling for disabled state
+    .oj-inputtext.oj-disabled .oj-inputtext-input,
+    .oj-inputpassword.oj-disabled .oj-inputpassword-input,
+    .oj-textarea.oj-disabled .oj-textarea-input,
+    .oj-inputtext-nocomp[disabled],
+    .oj-inputpassword-nocomp[disabled],
+    .oj-textarea-nocomp[disabled]
+    {
+      @include oj-form-control-content-disabled;
+
+      border-style: $inputTextBorderStyleDisabled;
+    }
+
+    // Styling for readonly state, if supported in the future
+    .oj-inputtext.oj-read-only .oj-inputtext-input,
+    .oj-inputpassword.oj-read-only .oj-inputpassword-input,
+    .oj-textarea.oj-read-only .oj-textarea-input,
+    .oj-inputtext-nocomp[readonly],
+    .oj-inputpassword-nocomp[readonly],
+    .oj-textarea-nocomp[readonly]
+    {
+      @include oj-form-control-content-readonly;
+      
+      padding: 0;
+    }
+	
+    .oj-textarea.oj-read-only .oj-textarea-input,
+    .oj-textarea-nocomp[readonly]
+    {
+      padding-top: 6px;
+    }
+
+    // Styling for focus state
+    .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+    .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+    .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus,
+    .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-textarea-nocomp:not([disabled]):not([readonly]):focus
+    {
+      @include oj-form-control-content-focus;
+    }
+ 
+    // Styling for focus state. only change padding for input, not textarea
+    .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+    .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+    .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+    .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus
+    {
+      @include oj-form-control-content-focus-padding;
+    }
+  }
+}

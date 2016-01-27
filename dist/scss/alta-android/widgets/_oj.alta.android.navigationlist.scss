@@ -1,0 +1,84 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// set up include variables before importing dependencies
+@if $includeNavigationListClasses != false {
+  $includeIconClasses:              true !global;
+  $includeButtonClasses:            true !global;
+  $includeMenuClasses:              true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "oj.alta.android.icons";
+@import "oj.alta.android.button";
+@import "oj.alta.android.menu";
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.navigationlist";
+
+@if $includeNavigationListClasses != false {
+    @include module-include-once("alta.android.navigationlist") {
+        // center align the content
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+            @include oj-justify-content-property(center);
+        }
+        //Dont stretch item content
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content .oj-navigationlist-item-label {
+            @include oj-flex-property(0 0 auto);
+        }
+
+        // Add 1px border-bottom as a separator
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
+        {
+            //Padding at start of item
+            //Need to override border-bottom as eariler border was added as part of rtl mixin
+            @include oj-rtl() {
+                padding-right: calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
+                border-bottom-width: 1px;
+            }
+            @include oj-ltr() {
+                padding-left:  calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
+                border-bottom-width: 1px;
+            }
+        }
+
+        // Icons only bar should have same color as icons with text color.
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item .oj-navigationlist-item-icon
+        {
+            color: $navigationListPageLevelItemIconColorDefault;
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        {
+            color: $navigationListPageLevelItemIconColorSelected;
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        {
+            color: $navigationListIconColorHover;
+        }
+
+        //Add bottom border to separate list items
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item{
+            border-bottom-color: $border1Color;
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected{
+            border-bottom-color: $border1Color;
+        }
+
+
+        .oj-navigationlist-previous-icon {
+            @extend .oj-fwk-icon-arrowtail-start;
+        }
+        .oj-navigationlist-collapsible .oj-navigationlist-expand-icon {
+            @extend .oj-fwk-icon-caret-s;
+        }
+        .oj-navigationlist-collapsible .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-caret-end;
+        }
+        .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
+            @extend .oj-fwk-icon-arrowtail-end;
+        }
+    }
+}

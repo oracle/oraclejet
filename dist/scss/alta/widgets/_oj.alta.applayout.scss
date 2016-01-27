@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// ----- start dependencies ---------
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.applayout"; 
+
+
+@if $includeAppLayoutClasses != false {
+  @include module-include-once("alta.applayout") {
+  }
+}

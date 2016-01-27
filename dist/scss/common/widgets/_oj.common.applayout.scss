@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.applayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAppLayoutClasses != false {
+  @include module-include-once("common.applayout") {
+
+    // OFFCANVAS
+    %oj-applayout-offcanvas-wrapper {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    %oj-applayout-offcanvas {
+      z-index: 2;
+    }
+
+    // SCROLLABLE CONTAINERS
+    %oj-applayout-scrollable-wrapper {
+      position: relative;
+      height: 100%;
+    }
+    %oj-applayout-scrollable {
+      overflow: auto;
+      /* To enable momentum scrolling on android devices */
+      z-index: 0;
+      /* To enable momentum scrolling on ios devices */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    // PAGE LAYOUT
+    %oj-applayout-page {
+      @include oj-display-flex-property();
+      @include oj-flex-direction-property(column);
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+}

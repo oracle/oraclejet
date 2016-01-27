@@ -1,0 +1,296 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.listview.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeListViewClasses != false {
+    @include module-include-once("common.listview") {
+
+        /* Styling for the listview widget container */
+        .oj-listview {
+            position: relative;
+            border-width: 1px 0;
+            border-color: $dataGridBorderColor;
+            border-style: solid;
+            @include oj-user-select-property (none);
+            @include oj-box-sizing-property(border-box);
+            // min-height is 1 row to leave space for the no data message.
+            min-height: $dataGridRowHeight;
+        }
+
+        /* styling for the listview root element and group element */
+        .oj-listview-element,
+        .oj-listview-group {
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+        }
+
+        /* Styling to remove focus ring border on focusable elements */
+        .oj-listview:focus,
+        .oj-listview-element:focus,
+        .oj-listview-expand-icon:focus,
+        .oj-listview-collapse-icon:focus,
+        .oj-listview-group-item:focus,
+        .oj-listview-item-element:focus {
+            outline: none;
+        }
+
+        /* Styling for the component div container element. */
+        .oj-listview-container {
+            overflow: auto;
+        }
+
+        /* to enable momentum scrolling on touch devices */
+        .oj-listview-container-touch {
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+
+        /* remove border top for the first group to prevent double border */
+        .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+            border-top: 0;
+        }
+
+        /* remove border top for the first group or leaf item to prevent double border */
+        .oj-listview-element > .oj-listview-item:first-child,
+        ul:not(.oj-listview-card-layout) .oj-listview-group > .oj-listview-item:first-child,
+        .oj-listview-element > .oj-listview-item-element:first-child .oj-listview-group-item {
+            background-size: 0;
+        }
+
+        /* styling on each list item */
+        /* note that background image is used for border because we need to ability to position the border.
+           using linear-gradient allows us to customize the color of the border */
+        .oj-listview-item {
+            padding: $panelPadding;
+            background-image: linear-gradient($dataGridCellBorderColor, $dataGridCellBorderColor);
+            background-size: 100% 1px;
+            background-position: 0 0;
+            background-repeat: no-repeat;
+            @include oj-box-sizing-property(border-box);
+            border-top:1px solid transparent;
+        }
+
+        /* set on item before add or remove animation */
+        .oj-listview-item-add-remove-transition {
+            transition: max-height $listViewAnimationDuration, opacity $listViewAnimationDuration;
+            overflow: hidden;
+        }
+
+        /* styling on list item element */
+        .oj-listview-item-element {
+            line-height: normal;
+        }
+
+        /* Styling on list item hover */
+        .oj-listview-item.oj-hover {
+            background-color: $dataGridCellBgColorHover;
+            border-top: 1px solid $dataGridCellBorderColorHover;
+            background-size: 0;
+        }
+
+        .oj-listview-group-item.oj-hover {
+            background-color: $dataGridCellBgColorHover;
+        }
+
+        .oj-listview-item.oj-hover + li.oj-listview-item {
+            border-top: 1px solid $dataGridCellBorderColorHover;
+            background-size: 0;
+        }
+
+        /* Styling on list item selection */
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected {
+            background-color: $dataGridCellBgColorSelected;
+            border-top: 1px solid $dataGridCellBorderColorSelected;
+            background-size: 0;
+        }
+
+        .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-selected {
+            background-color: $dataGridCellBgColorSelected;
+        }
+
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected + li.oj-listview-item {
+            border-top: 1px solid $dataGridCellBorderColorSelected;
+            background-size: 0;
+        }
+
+        /* Styling on list item inactive selection (when the root is not focus) */
+        .oj-listview-item.oj-selected {
+            background-color: $dataGridCellBgColorSelectedInactive;
+            border-top: 1px solid $dataGridCellBorderColorSelectedInactive;
+            background-size: 0;
+        }
+
+        .oj-listview-group-item.oj-selected {
+            background-color: $dataGridCellBgColorSelectedInactive;
+        }
+
+        /* Styling on focused list or group item */
+        .oj-listview-item.oj-focus,
+        .oj-listview-group-item.oj-focus {
+            outline-width: 1px;
+            outline-style: dotted;
+            outline-offset: -1px;
+        }
+
+        /* Styling on focused list item */
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus {
+            background-color: $dataGridCellBgColorFocus;
+            border-top: 1px solid $dataGridCellBorderColorFocus;
+            background-size: 0;
+        }
+
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus + li.oj-listview-item {
+            border-top: 1px solid $dataGridCellBorderColorFocus;
+            background-size: 0;
+        }
+
+        /* Styling on focused group item */
+        .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-focus {
+            background-color: $headerBgColor;
+        }
+
+        /* Styling for the list item elements in selected state when listview is in high contrast mode. */
+        .oj-hicontrast .oj-listview-item.oj-selected,
+        .oj-hicontrast .oj-listview-group-item.oj-selected {
+            border-width: 1px 2px 2px 1px;
+            border-style: solid;
+            border-color: initial;
+        }
+
+        /* Styling for the list item elements in focus state when listview is in high contrast mode. */
+        .oj-hicontrast .oj-listview-item.oj-focus,
+        .oj-hicontrast .oj-listview-group-item.oj-focus {
+            outline-width: 2px;
+            outline-style: dotted;
+            border-width: 0 1px 1px 0;
+            border-style: dotted;
+        }
+
+        /* Styling addition for group items */
+        .oj-listview-group-item {
+            font-weight: $listViewHeaderFontWeight;
+            color: $headerTextColor;
+            padding: $panelPadding;
+            border: 0 solid $headerBorderColor;
+            border-width: $listViewHeaderBorderWidth;
+            font-size: $listViewHeaderFontSize;
+            background-color: $headerBgColor;
+            opacity: $listViewHeaderOpacity;
+            @include oj-background-image($headerBgImage);
+            @include oj-box-sizing-property(border-box);
+            @include oj-rtl() {
+                right: 0;
+            }
+        }
+
+        .oj-listview-item-element.oj-expanded .oj-listview-group-item,
+        .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
+            padding: 3px 0;
+        }
+
+        /* Styling for group items when it is in collapsed state, remove bottom border to avoid double border */
+        .oj-listview-item-element.oj-collapsed .oj-listview-group-item {
+            border-bottom: 0;
+        }
+
+        /* Styling for group item element that has focus */
+        .oj-listview-group-item .oj-focus,
+        .oj-listview-group-item .oj-selected {
+            background-color: transparent;
+            background-image: none;
+        }
+
+        /* expand and collapse animation */
+        .oj-listview-collapsible-transition {
+            transition: max-height $listViewAnimationDuration;
+            overflow: hidden;
+        }
+
+        /* Styling on the status text, such as fetching data */
+        .oj-listview-status {
+            position: absolute;
+            display: none;
+            background-color: $popupBgColor;
+            padding: 5px;
+            top: 50%;
+        }
+
+        /* Styling for the empty list text */
+        .oj-listview-empty-text {
+            padding: $panelPadding;
+            background-color: $dataGridCellBgColor;
+        }
+
+        /* Alignment for the expand and collapse icons */
+        .oj-listview-expand-icon,
+        .oj-listview-collapse-icon {
+            padding: 9px;
+            outline-offset: -9px;
+        }
+
+        /* Styling for group item when card layout is used */
+        .oj-listview-card-layout .oj-listview-group {
+            @include oj-display-flex-property();
+            @include oj-flex-wrap-property(wrap);
+        }
+
+        /* Styling for item when card layout is used */
+        .oj-listview-card-layout li.oj-listview-item {
+            width: $listViewCardWidth;
+            height: $listViewCardHeight;
+            border: 1px solid $panelBorderColor;
+            border-radius: $panelBorderRadius;
+            margin-top: oj-shorthand-property-value-top($listViewCardMargin);;
+            margin-bottom: oj-shorthand-property-value-bottom($listViewCardMargin);;
+            @include oj-rtl() {
+                margin-right: oj-shorthand-property-value-left($listViewCardMargin);;
+                margin-left: oj-shorthand-property-value-right($listViewCardMargin);;
+            }
+            @include oj-ltr() {
+                margin-left: oj-shorthand-property-value-left($listViewCardMargin);;
+                margin-right: oj-shorthand-property-value-right($listViewCardMargin);;
+            }
+            background-size: 0;
+            @include oj-box-sizing-property(border-box);
+        }
+
+        /* Styling for the drill icon */
+        .oj-listview-drill-icon {
+            width: 16px;
+            height: 16px;
+            color: $listViewDrillIconColor;
+        }
+
+        /* Styling for the drill icon when item has focus */
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus .oj-listview-drill-icon {
+            color: $iconColorActive;
+        }
+
+        /* Styling for the drill icon when item is selected */
+        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected .oj-listview-drill-icon {
+            color: $iconColorSelected;
+        }
+
+        /* Styling for the drill icon when hover over an item */
+        .oj-listview-item.oj-hover .oj-listview-drill-icon {
+            color: $iconColorHover;
+        }
+
+        /* Styling for the activity indicator for high watermark scrolling */
+        .oj-listview-loading-icon {
+            width: 40px;
+            height: 40px;
+            margin: auto;
+            @include oj-icon-content(
+                $icon: oj-image-url("pull_to_refresh_full.gif")
+            );
+        }
+    }
+}

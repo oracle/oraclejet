@@ -1,0 +1,273 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.button.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+
+@if $includeButtonsetClasses != false {
+  @include module-include-once("common.buttonset") {
+
+    /* buttonset */
+    /* --------------------------------------------------------------- */
+
+    /* oj-buttonset-multi is present iff it's a multi-button buttonset, which is the only kind of buttonset to which 
+       buttonset styling should be applied.  When a single button is wrapped in a buttonset (typically for use with 
+       the "checked" option), that's an implementation detail; users still see it as a standalone button, so it 
+       should be themed as such. */
+    .oj-buttonset-multi { 
+        display: inline-block; // so buttonset shows in same row as rest of containing toolbar, unlike display:block
+        white-space:nowrap; // so buttonset's buttons are all in one line
+    }
+
+
+    // Buttonset spacing
+    //----------------------------------
+
+
+    /* Due to limitations in CSS syntax, the buttonset rules that depend on the chroming level check whether 
+       the buttonset itself has .oj-button-XXX-chrome.  This is why we put those classes on the buttonset itself.*/
+    
+    .oj-buttonset-multi.oj-button-full-chrome, 
+    .oj-buttonset-multi.oj-button-outlined-chrome {
+        // inline-block makes whitespace appear between the buttons if the html has any whitespace 
+        // between the tags.  We previously avoided this by removing all the text nodes at create time, but it caused 
+        // problems with the KO foreach binding.  To make the whitespace go away, we now set font size to 0.
+        // This means we have to set vertical-align to top, and must set the button font-size 
+        // explicitly below.  In iOS9 only, the first-choice font-family of our iOS theme doesn't seem to support font-size
+        // 0, so that the whitespace isn't successfully removed, so the iOS theme sets a font-family that supports 
+        // font-size 0, and restores the usual font-family on the individual buttons below.
+        font-size: 0;
+        font-family: $buttonsetFontFamily;
+        vertical-align: top;
+    }
+
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button, 
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button {
+        @include oj-border-radius(0);
+        border-right-width: 0; // collapse borders between buttons.  We restore the last button's right border below.
+
+        // don't override .oj-button's margin-bottom which properly spaces 
+        // buttons that wrap to the next line 
+        margin-left: 0; 
+        margin-right: 0;
+        
+        font-size: $buttonFontSize; // see above comment about inline-block whitespace
+        font-family: $buttonsetButtonFontFamily; // ditto
+    }
+
+
+    // Alternate button sizes
+    //----------------------------------
+
+
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button-sm.oj-button, 
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-sm.oj-button {
+        font-size: $buttonSmallFontSize; // see above comment about inline-block whitespace
+    }
+
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button-lg.oj-button, 
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-lg.oj-button {
+        font-size: $buttonLargeFontSize; // see above comment about inline-block whitespace
+    }
+
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button-xl.oj-button, 
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-xl.oj-button {
+        font-size: $buttonXlargeFontSize; // see above comment about inline-block whitespace
+    }
+
+
+    // Border radius
+    //----------------------------------
+
+
+    /* .oj-buttonset-first is applied to the first button of the buttonset. */
+    .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
+        @include oj-ltr() {
+          @include oj-border-top-left-radius($buttonsetBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-left-radius($buttonsetBorderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          border-right-width: 1px; // restore the last button's right border
+          @include oj-border-top-right-radius($buttonsetBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-right-radius($buttonsetBorderRadius, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+    }
+
+    /* .oj-buttonset-last is applied to the last button of the buttonset. */
+    .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
+        @include oj-ltr() {
+          border-right-width: 1px; // restore the last button's right border
+          @include oj-border-top-right-radius($buttonsetBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-right-radius($buttonsetBorderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-left-radius($buttonsetBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-left-radius($buttonsetBorderRadius, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+    }
+    
+
+    // Internal borders
+    //----------------------------------
+
+
+    // The shared border *between* the buttons of full-chrome and outlined buttonsets is the 
+    // right button's left border.  The left button has no right border.
+ 
+    // This shared border can be a different color than when not in a buttonset, 
+    // depending on the state of the button owning the border (the right button).
+
+    // full-chrome ---
+
+    // LTR full-chrome and (default, focus-only, hover, or disabled)
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-default,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-hover,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
+        @include oj-ltr() {
+            border-left-color: $buttonInternalBorderColor;
+        }
+    }
+
+    // RTL full-chrome and (default, focus-only, hover, or disabled)
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-default,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-hover,
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
+        @include oj-rtl() {
+            border-left-color: $buttonInternalBorderColor;
+        }
+    }
+
+    // LTR full-chrome active
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-active {
+        @include oj-ltr() {
+            border-left-color: $buttonInternalBorderColorActive;
+        }
+    }
+
+    // RTL full-chrome active
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-active {
+         @include oj-rtl() {
+            border-left-color: $buttonInternalBorderColorActive;
+         }
+    }
+	
+    // LTR full-chrome selected (affects selectedHovered too)
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-selected {
+        @include oj-ltr() {
+            border-left-color: $buttonInternalBorderColorSelected;
+        }
+    }
+
+    // RTL full-chrome selected (affects selectedHovered too)
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-selected {
+         @include oj-rtl() {
+            border-left-color: $buttonInternalBorderColorSelected;
+         }
+    }
+
+    // LTR full-chrome selectedDisabled
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-selected.oj-disabled {
+        @include oj-ltr() {
+            border-left-color: $buttonInternalBorderColorSelectedDisabled;
+        }
+    }
+
+    // RTL full-chrome selectedDisabled
+    .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-selected.oj-disabled {
+         @include oj-rtl() {
+            border-left-color: $buttonInternalBorderColorSelectedDisabled;
+         }
+    }
+
+    // outlined ---
+
+    // LTR outlined and (default, focus-only, hover, or disabled)
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-default,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-hover,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
+        @include oj-ltr() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColor;
+        }
+    }
+
+    // RTL outlined and (default, focus-only, hover, or disabled)
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-default,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-hover,
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
+        @include oj-rtl() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColor;
+        }
+    }
+
+    // LTR outlined active
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-active {
+        @include oj-ltr() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorActive;
+        }
+    }
+
+    // RTL outlined active
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-active {
+         @include oj-rtl() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorActive;
+         }
+    }
+	
+    // LTR outlined selected (affects selectedHovered too)
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-selected {
+        @include oj-ltr() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorSelected;
+        }
+    }
+
+    // RTL outlined selected (affects selectedHovered too)
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-selected {
+         @include oj-rtl() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorSelected;
+         }
+    }
+	
+    // LTR outlined selectedDisabled
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-first).oj-selected.oj-disabled {
+        @include oj-ltr() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorSelectedDisabled;
+        }
+    }
+
+    // RTL outlined selectedDisabled
+    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button:not(.oj-buttonset-last).oj-selected.oj-disabled {
+         @include oj-rtl() {
+            border-left-color: $buttonOutlinedChromeInternalBorderColorSelectedDisabled;
+         }
+    }
+
+
+    // Option defaults
+    //----------------------------------
+
+    $buttonsetDefaultOptions: ();
+
+    @if ($buttonsetChromingOptionDefault != null) {
+        $buttonsetDefaultOptions: map-merge($buttonsetDefaultOptions, (chroming: $buttonsetChromingOptionDefault));
+    }
+
+    .oj-buttonset-option-defaults {
+        font-family: oj-json-from-map($buttonsetDefaultOptions);
+    }
+
+  }
+}

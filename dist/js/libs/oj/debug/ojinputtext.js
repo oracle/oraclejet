@@ -1,0 +1,1441 @@
+/**
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'], 
+       /*
+        * @param {Object} oj 
+        * @param {jQuery} $
+        */
+       function(oj, $)
+{
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @ojcomponent oj.inputBase
+ * @augments oj.editableValue
+ * @abstract
+ * @since 0.6
+ * 
+ * @classdesc
+ * <h3 id="inputBaseOverview-section">
+ *   Abstract inputBase component
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputBaseOverview-section"></a>
+ * </h3>
+ * 
+ * <p>Description: The inputBase component takes care of general needs of other input components [i.e. text + password]
+ * 
+ * @param {Object=} options a map of option-value pairs to set on the component
+ */
+oj.__registerWidget("oj.inputBase", $['oj']['editableValue'], 
+{
+  version : "1.0.0", 
+  widgetEventPrefix : "oj",
+  
+  /**
+   * Convenience Array which one can extend to set the attribute to a mandatory value if it doesn't exist or is set to something else 
+   * [
+   * {
+   *    "attr"              : string - attribute associated to the task
+   *    "setMandatory"      : value it must be set to [i.e. type="text"]
+   * }
+   * ]
+   * 
+   * Examples:
+   * 1) [{"attr": "type", "setMandatory": "text"}]
+   * 
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK : [],
+  
+  /** 
+   * Class names to be applied to this.element()
+   * 
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES : "",
+  
+  /** 
+   * Class names to be applied to this.widget()
+   * 
+   * Note that if this value is defined then the this.element will be wrapped with a root dom element
+   * 
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES : "",
+  
+  /** 
+   * Class names to be applied to the dom that wraps the input and trigger elements. It is a child
+   * of the root dom element - this.widget().
+   * 
+   * An element can be wrapped by a root dom element OR by both a root dom element and this extra
+   * wrapper dom. the time and date pickers have two wrappers since we want to do an extra
+   * wrapping when an input has trigger elements (date icon, for example). This is needed so we
+   * can add extra dom to the root dom element for inline messaging.
+   * 
+   * @expose
+   * @private
+   */
+  _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES : "",
+  
+  /** 
+   * Array to be used for oj.EditableValueUtils.initializeOptionsFromDom
+   * attribute is the html-5 dom attribute name. If option is different, like in the case of 
+    readonly (readonly html vs readOnly (camelcase) component option), specify both attribute and option.
+   * @expose
+   * @private
+   */
+  _GET_INIT_OPTIONS_PROPS: [{attribute: 'disabled', validateOption: true},
+                            {attribute: 'pattern'},
+                            {attribute: 'placeholder'},
+                            {attribute: 'value'},
+                            {attribute: 'readonly', option: 'readOnly', 
+                             validateOption: true},
+                            {attribute: 'required', coerceDomValue: true, validateOption: true},
+                            {attribute: 'title'}],
+  
+  /**
+   * If defined will append a div element containing text to be read out by Jaws when focus is placed on the input element 
+   * and the value will be used to locate the translated text to be read out by Jaws.
+   * 
+   * Note the component must also be wrapped
+   * Used in conjunction with the above variable. Used to locate the translated text to be read out by Jaws
+   * 
+   * @expose
+   * @private
+   */
+  _INPUT_HELPER_KEY: "",
+  
+  _BLUR_HANDLER_KEY: "blur",
+  _KEYDOWN_HANDLER_KEY: "keydown",
+  _INPUT_HANDLER_KEY: "input",
+  _DROP_HANDLER_KEY: "drop",
+  
+  options : 
+  {
+    /** 
+     * a converter instance that duck types {@link oj.Converter}. Or an object literal containing 
+     * the following properties. 
+     * <p>
+     * When <code class="prettyprint">converter</code> option changes due to programmatic 
+     * intervention, the component performs various tasks based on the current state it is in. </br>
+     * 
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>Any cached converter instance is cleared and new converter created. The converter hint is 
+     * pushed to messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     * 
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when <code class="prettyprint">converter</code> option changes, the 
+     * display value is refreshed.</li>
+     * <li>if component is invalid and is showing messages -
+     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <code class="prettyprint">converter</code> option changes, then all messages generated by the 
+     * component are cleared and full validation run using its current display value. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated, and the errors pushed to <code class="prettyprint">messagesShown</code>
+     *   option. The display value is not refreshed in this case. </li>
+     *   <li>if no errors result from the validation, <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors. The 
+     *   display value is refreshed with the formatted value provided by converter.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages -  
+     * <code class="prettyprint">messagesHidden</code> option is non-empty, when 
+     * <code class="prettyprint">converter</code> option changes, then the display value is 
+     * refreshed with the formatted value provided by converter.</li>
+     * </ul>
+     * </p>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>When component messages are cleared in the cases described above, messages created by 
+     * the component that are present in both <code class="prettyprint">messagesHidden</code> and 
+     * <code class="prettyprint">messagesShown</code> options are cleared.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared. Page authors can 
+     * choose to clear it explicitly when setting the converter option.</li>
+     * </ul>
+     * </p>
+     * 
+     * @property {string} type - the converter type registered with the oj.ConverterFactory. 
+     * Supported types are 'number' and 'datetime'. See {@link oj.ConverterFactory} for details. <br/>
+     * E.g., <code class="prettyprint">{converter: {type: 'number'}</code>
+     * @property {Object=} options - optional Object literal of options that the converter expects. 
+     * See {@link oj.IntlNumberConverter} for options supported by the number converter. See 
+     * {@link oj.IntlDateTimeConverter} for options supported by the date time converter. <br/>
+     * E.g., <code class="prettyprint">{converter: {type: 'number', options: {style: 'decimal'}}</code>
+     * 
+     * @example <caption>Initialize the component with a number converter instance:</caption>
+     * // Initialize converter instance using currency options
+     * var options = {style: 'currency', 'currency': 'USD', maximumFractionDigits: 0};
+     * var numberConverterFactory = oj.Validation.converterFactory("number");
+     * var salaryConverter = numberConverterFactory.createConverter(options);<br/>
+     * // set converter instance using converter option
+     * $(".selector").ojFoo({ // Foo is InputText, InputPassword, TextArea
+     *   value: 25000, 
+     *   converter: salaryConverter
+     * });
+     * 
+     * @example <caption>Initialize the component with converter object literal:</caption>
+     * $(".selector").ojFoo({ // Foo is InputText, InputPassword, TextArea
+     *   value: new Date(),
+     *   converter: {
+     *     type: 'datetime', 
+     *     options : {
+     *       formatType: 'date', 
+     *       dateFormat: 'long'
+     *     }
+     *   }
+     * });
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof! oj.inputBase
+     * @type {Object|undefined}
+     */    
+    converter: undefined,    
+    
+    /**
+     * The placeholder text to set on the element. Though it is possible to set placeholder 
+     * attribute on the element itself, the component will only read the value when the component
+     * is created. Subsequent changes to the element's placeholder attribute will not be picked up 
+     * and page authors should update the option directly.
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">placeholder</code> option:</caption>
+     * &lt;!-- Foo is InputText, InputPassword, TextArea -->
+     * &lt;input id="userId" data-bind="ojComponent: {component: 'ojFoo', placeholder: 'User Name'}" /&gt;
+     * 
+     * @example <caption>Initialize <code class="prettyprint">placeholder</code> option from html attribute:</caption>
+     * &lt;!-- Foo is InputText, InputPassword, TextArea -->
+     * &lt;input id="userId" data-bind="ojComponent: {component: 'ojFoo'}" placeholder="User Name" /&gt;
+     * 
+     * // reading the placeholder option will return "User Name"
+     * $(".selector").ojFoo("option", "placeholder"); // Foo is InputText, InputPassword, TextArea<br/>
+     * 
+     * @default when the option is not set, the element's placeholder attribute is used if it exists. 
+     * If the attribute is not set and if a datetime converter is set then the converter hint is 
+     * used. See displayOptions for details.
+     * 
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof! oj.inputBase
+     * @type {string|null|undefined}
+     */    
+    placeholder: undefined,    
+     /**
+     * <p>The  <code class="prettyprint">rawValue</code> is the read-only option for retrieving 
+     * the current value from the input field in text form.</p>
+     * <p>
+     * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event, 
+     * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. 
+     * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2', 
+     * ..., and finally '1,200'. Then when the user blurs or presses 
+     * Enter the <code class="prettyprint">value</code> option gets updated.
+     * </p>
+     * <p>This is a read-only option so page authors cannot set or change it directly.</p>
+     * @expose 
+     * @access public
+     * @instance
+     * @default n/a
+      * @memberof! oj.inputBase
+     * @type {string|undefined}
+     * @since 1.2
+     * @readonly
+     */
+    rawValue: undefined,     
+    /** 
+     * Dictates component's readOnly state. Note that option value 
+     * always supercedes element's attribute value and it is best practice to pass the value as an option than to 
+     * set it as an element's attribute.
+     * 
+     * @example <caption>Initialize component with <code class="prettyprint">readOnly</code> option:</caption>
+     * $(".selector").ojInputNumber({"readOnly": true});
+     * 
+     * @expose 
+     * @type {boolean|undefined}
+     * @default <code class="prettyprint">false</code>
+     * @instance
+     * @memberof! oj.inputBase
+     */
+    readOnly: false
+  },
+  
+  /**
+   * The base method needs to be overriden so that one can perform attribute check/set [i.e. ojInputText can only have type="text"] 
+   * 
+   * @protected
+   * @override
+   * @param {Object} element - jQuery selection to save attributes for
+   * @instance
+   * @memberof! oj.inputBase
+   */
+  _SaveAttributes : function (element)
+  {
+    var ret = this._superApply(arguments);
+    
+    this._processAttrCheck();
+    
+    return ret;
+  },
+  
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.inputBase
+   */
+  _InitOptions: function(originalDefaults, constructorOptions)
+  {
+    this._super(originalDefaults, constructorOptions);
+    oj.EditableValueUtils.initializeOptionsFromDom(this._GET_INIT_OPTIONS_PROPS, constructorOptions, this);    
+  },
+
+  /**
+   * 1) Initializes the options
+   * 2) If needed wraps the input element, 
+   * 
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.inputBase
+   */
+  _ComponentCreate : function()
+  {
+    var node = this.element, 
+        ret = this._superApply(arguments),
+        savedAttributes = this._GetSavedAttributes(node),
+        readOnly = this.options['readOnly'];
+    
+    this._rtl = this._GetReadingDirection() === "rtl";
+    
+    // update element state using options
+    if (typeof readOnly === "boolean") 
+    {
+      this.element.prop("readonly", readOnly);
+    }
+    
+    if (this._DoWrapElement())
+    {
+      this._wrapElementInRootDomElement();
+      // may need to do an extra wrapping if the element has triggers
+      if (this._DoWrapElementAndTriggers())
+      {
+        this._wrapElement();
+      }
+    }
+
+    
+    // remove pattern attribute to not trigger html5 validation + inline bubble
+    if ('pattern' in savedAttributes)
+    {
+      node.removeAttr('pattern');
+    }
+    
+    this._defaultRegExpValidator = {};
+    this._eventHandlers = null;
+    return ret;
+  },
+  
+  /**
+   * 1) Updates component state based on the option values
+   * 2) Adds the classname to the element [intentionally postponing till this process since the component might need to 
+   *    reset this.element for some reason]
+   * 3) Hooks up the blur handler
+   * 4) If necessary appends an input helper to be read out by Jaws accessibility reader
+   * 
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.inputBase
+   */        
+  _AfterCreate : function () 
+  {
+    var ret = this._superApply(arguments),
+        options = ["disabled", "readOnly"],
+        self = this;
+    
+    if(this._CLASS_NAMES) 
+    {
+      this.element.addClass(this._CLASS_NAMES);
+    }
+    
+    //attach handlers such as blur, keydown, and drop. placed in a function so to detach the handlers as well
+    //when the options change
+    this._attachDetachEventHandlers();
+    
+    this._AppendInputHelper();
+    
+    $.each(options, function(index, ele)
+    {
+      if(self.options[ele]) 
+      {
+        self._processDisabledReadOnly(ele, self.options[ele]);
+      }
+    });
+    
+    return ret;
+  },
+  
+  _processDisabledReadOnly : function __processDisabledReadOnly(key, value) 
+  {
+    if (key === "disabled")
+    {
+      this.element.prop("disabled", value);
+    }
+    
+    if (key === "readOnly")
+    {
+      this.element.prop("readonly", value);
+      this._refreshStateTheming("readOnly", value);
+    }
+    
+    if(key === "disabled" || key === "readOnly") 
+    {
+      this._attachDetachEventHandlers();
+    }
+  },
+  
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _setOption : function __setOption(key, value)
+  {
+    var retVal = this._superApply(arguments);
+    
+    if(key === "disabled" || key === "readOnly") 
+    {
+      this._processDisabledReadOnly(key, value);
+    }
+
+    if (key === "pattern")
+    {
+      this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] = this._getImplicitRegExpValidator();
+      this._AfterSetOptionValidators();
+    }
+    
+    return retVal;
+  },
+  
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _destroy : function __destroy()
+  {
+    var ret = this._superApply(arguments);
+
+    this.element.off("blur drop keydown input");
+    
+    if(this._inputHelper) 
+    {
+      this._inputHelper.remove();
+    }
+    
+    if(this._DoWrapElement())
+    {
+      //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
+      if (this._DoWrapElementAndTriggers())
+        oj.DomUtils.unwrap(this.element, this._wrapper);
+      else
+        oj.DomUtils.unwrap(this.element);
+    }
+ 
+    return ret;
+  },
+  
+  _attachDetachEventHandlers: function __attachDetachEventHandlers() 
+  {
+    
+    if(!this.options["readOnly"] && !this.options["disabled"]) {
+      
+      this._eventHandlers = {};
+      
+      var blurHandler = $.proxy(this._onBlurHandler, this),
+          keyDownHandler = $.proxy(this._onKeyDownHandler, this),
+          inputHandler = $.proxy(this._onInputHandler, this),
+          dropHandler = function() 
+                        {
+                          this.focus();
+                        };
+      
+      this.element.on("blur", blurHandler);
+      this.element.on("keydown", keyDownHandler);
+      this.element.on("input", inputHandler);
+      
+      //other than FF when a drop is dispatched focus is placed back on the element
+      //this would cause difference in behavior of the observable change [as set within blur], so in order to provide
+      //consisteny placing the focus on the element after the drop
+      this.element.on("drop", dropHandler);
+      
+      this._eventHandlers[this._BLUR_HANDLER_KEY] = blurHandler;
+      this._eventHandlers[this._KEYDOWN_HANDLER_KEY] = keyDownHandler;
+      this._eventHandlers[this._INPUT_HANDLER_KEY] = inputHandler;
+      this._eventHandlers[this._DROP_HANDLER_KEY] = dropHandler;
+    }
+    else 
+    {
+      
+      //meaning either it is readOnly or is disabled, remove the handlers if they were attached previously
+      if(this._eventHandlers) 
+      {
+        var eventEntries = [this._BLUR_HANDLER_KEY, this._KEYDOWN_HANDLER_KEY, 
+          this._INPUT_HANDLER_KEY, this._DROP_HANDLER_KEY];
+        
+        for(var i=0, j=eventEntries.length; i < j; i++) 
+        {
+          if(this._eventHandlers[eventEntries[i]]) 
+          {
+            this.element.off(eventEntries[i], this._eventHandlers[eventEntries[i]]);
+            delete this._eventHandlers[eventEntries[i]];
+          }
+        }
+      }
+    }
+    
+  },
+  
+   /**
+   * when below listed options are passed to the component, corresponding CSS will be toggled
+   * @private
+   * @const
+   * @type {Object}
+   */
+  _OPTION_TO_CSS_MAPPING: {
+    "readOnly": "oj-read-only"
+  }, 
+  
+  /**
+   * Performs the attribute check/set by using _ATTR_CHECK variable [i.e. ojInputText must have type be set to "text"].
+   * 
+   * @private
+   */
+  _processAttrCheck : function __processAttrCheck()
+  {
+    
+    var attrCheck = this._ATTR_CHECK;
+    
+    for(var i=0, j=attrCheck.length; i < j; i++) 
+    {
+      var attr = attrCheck[i]["attr"],
+          setMandatoryExists = "setMandatory" in attrCheck[i];
+      
+      //if it doesn't exist just have to check whether one should set it to a mandatory value
+      if(setMandatoryExists)
+      {
+        this.element.attr(attr, attrCheck[i]["setMandatory"]);
+      }
+    }
+  },
+  
+  /**
+   * Invoked when blur is triggered of the this.element
+   * 
+   * @ignore
+   * @protected
+   * @param {Event} event
+   */
+  _onBlurHandler : function __onBlurHandler(event) 
+  {
+    this._SetValue(this._GetDisplayValue(), event);
+  },
+  
+  /**
+   * Invoked when keydown is triggered of the this.element
+   * 
+   * When of keyCode is of Enter, invoke _SetValue on it
+   * 
+   * @ignore
+   * @protected
+   * @param {Event} event
+   */
+  _onKeyDownHandler : function __onKeyDownHandler(event) 
+  {
+    if(event.keyCode === $.ui.keyCode.ENTER) 
+    {
+      this._SetValue(this._GetDisplayValue(), event);
+    }
+  },
+    
+  /**
+   * Invoked when the input event happens
+   * 
+   * @ignore
+   * @protected
+   * @param {Event} event
+   */
+  _onInputHandler : function __onInputHandler(event) 
+  {
+    this._SetRawValue(this._GetContentElement().val(), event);
+  },
+  
+  /**
+   * Whether the this.element should be wrapped in a root dom element. 
+   * Method so that additional conditions can be placed
+   * 
+   * @ignore
+   * @protected
+   * @return {boolean}
+   */
+  _DoWrapElement : function ()
+  {
+    return this._WIDGET_CLASS_NAMES;
+  },
+          
+            
+  /**
+   * Whether the this.element and triggers should be wrapped. 
+   * Method so that additional conditions can be placed
+   * 
+   * @ignore
+   * @protected
+   * @return {boolean}
+   */
+  _DoWrapElementAndTriggers : function ()
+  {
+    return this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES;
+  },
+  
+  /**
+   * Wraps the this.element and adds _WIDGET_CLASS_NAMES classes to the wrapped element
+   * 
+   * @private
+   */
+  _wrapElementInRootDomElement : function _wrapElementInRootDomElement() 
+  {
+    //@HTMLUpdateOK
+    $(this.element).wrap( $("<div>").addClass(this._WIDGET_CLASS_NAMES) );
+    this._wrapper = this.element.parent();
+  },
+          
+            
+  /**
+   * Wraps the this.element and adds _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES classes to the wrapped element.
+   * We might need this extra wrapper if the component has input+triggers (like inputDate).
+   * 
+   * @private
+   */
+  _wrapElement : function _wrapElement() 
+  {
+    //@HTMLUpdateOK
+    $(this.element).wrap( $("<div>").addClass(this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES) );
+  },
+  
+  /**
+   * In some complex components [i.e. datepicker], when the input element receives focus we wish to have Jaws read 
+   * out some content.
+   * 
+   * For those case does this method exist.
+   *  
+   * @protected
+   * @instance
+   * @memberOf !oj.inputBase
+   */
+  _AppendInputHelper : function __AppendInputHelper()
+  {
+    if(this._INPUT_HELPER_KEY && this._DoWrapElement()) 
+    {
+      var describedBy = this.element.attr("aria-describedby") || "",
+          helperDescribedById = this._GetSubId(this._INPUT_HELPER_KEY);
+      
+      describedBy += " " + helperDescribedById;
+      this.element.attr("aria-describedby", describedBy);
+      this._inputHelper = $("<div class='oj-helper-hidden-accessible' id='" + helperDescribedById + "'>" + this._EscapeXSS(this.getTranslatedString(this._INPUT_HELPER_KEY)) + "</div>");
+      
+      //@HTMLUpdateOK
+      this._AppendInputHelperParent().append(this._inputHelper);
+    }
+  },
+  
+  /** 
+   * Helper function to escape Cross site script text
+   * 
+   * @param {string} escapeMe
+   * @return {jQuery|string}
+   * @ignore
+   */
+  _EscapeXSS : function __EscapeXSS(escapeMe) 
+  {
+    return $("<span>" + escapeMe + "</span>").text();
+  },
+  
+  /**
+   * Which parent node the inputHelper should be appended to. Usually do not need to override.
+   *  
+   * @protected
+   * @instance
+   * @memberOf !oj.inputBase
+   */
+  _AppendInputHelperParent : function __AppendInputHelperParent() 
+  {
+    return this.widget();
+  },
+  
+  /**
+   * Sets up the default regExp validator.
+   * 
+   * @ignore
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.inputBase
+   */
+  _GetImplicitValidators : function ()
+  {
+    var ret = this._superApply(arguments);
+
+    // register a default RegExp validator if we have a valid pattern
+    if (this.options['pattern'])
+    {
+      // add validator to the special internalValidators list. These are validators created by 
+      // the framework. We don't want these cleared using the option - 'validators'
+      this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] = this._getImplicitRegExpValidator();
+    }
+    
+    return $.extend(this._defaultRegExpValidator, ret);
+  },
+    /**
+   * Toggles css selector on the widget. E.g., when readOnly option changes, 
+   * the oj-read-only selector needs to be toggled.
+   * @param {string} option
+   * @param {Object|string} value 
+   * @private
+   */        
+  _refreshStateTheming : function (option, value)
+  {
+    if (Object.keys(this._OPTION_TO_CSS_MAPPING).indexOf(option) != -1) 
+    {
+      // value is a boolean
+      this.widget().toggleClass(this._OPTION_TO_CSS_MAPPING[option], !!value);
+    }
+  },
+  
+  /**
+   * Returns the regexp validator instance or creates it if needed and caches it.
+   * @private
+   */
+  _getImplicitRegExpValidator : function ()
+  {
+    if (!this.options['pattern']) 
+    {
+      return null;
+    }
+    var regexpOptions = {'pattern': this.options['pattern'], 
+                                   'label': this._getLabelText()};
+    
+    $.extend(regexpOptions, this.options['translations']['regexp'] || {});
+    return oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator(regexpOptions);
+  },
+  
+  /**
+   * This helper function will generate ids using widget's uuid as unique identifier for 
+   * wai-aria and other necessary ids
+   * 
+   * @ignore
+   * @protected
+   * @param {string} sub
+   * @return {string}
+   */
+  _GetSubId : function __getSubId(sub)
+  {
+    return this["uuid"] + "_" + sub;
+  },
+  
+  /**
+   * @ignore
+   * @protected
+   * @return {boolean}
+   */
+  _IsRTL : function ()
+  {
+    return this._rtl;
+  },
+  
+  /**
+   * <p>Refreshes the component.
+   *
+   * @expose
+   * @memberof oj.inputBase
+   * @instance
+   */
+  refresh: function()
+  {
+    var retVal = this._superApply(arguments);
+    
+    this._rtl = this._GetReadingDirection() === "rtl";
+    
+    return retVal;
+  },
+  
+  /**
+   * Return the subcomponent node represented by the documented locator attribute values.
+   * @expose
+   * @override
+   * @instance
+   * @memberof oj.inputBase
+   * @param {Object} locator An Object containing at minimum a subId property whose value is a string, documented by the component, that allows the component to 
+   *                        look up the subcomponent associated with that string.  It contains:<p>
+   *                        component: optional - in the future there may be more than one component contained within a page element<p>
+   *                        subId: the string, documented by the component, that the component expects in getNodeBySubId to locate a particular subcomponent
+   * @returns {Object|null} the subcomponent located by the subId string passed in locator, if found.<p>
+   */
+  getNodeBySubId: function(locator)
+  {
+    return this._super(locator);
+  },
+
+  /**
+   * Returns a <code class="prettyprint">jQuery</code> object containing the element visually 
+   * representing the component, excluding the label associated with the it. 
+   * 
+   * <p>This method does not accept any arguments.</p>
+   * 
+   * @expose
+   * @memberof! oj.inputBase
+   * @instance
+   * @return {jQuery} the root of the component
+   * 
+   * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
+   * var widget = $( ".selector" ).ojFoo( "widget" ); // Foo is InputText, InputPassword, TextArea
+   */       
+  widget : function _widget() 
+  {
+    return this._DoWrapElement() ? this._wrapper : this.element;
+  }
+
+}, true);
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @ojcomponent oj.ojInputPassword
+ * @augments oj.inputBase
+ * @since 0.6
+ *
+ * @classdesc
+ * <h3 id="inputPasswordOverview-section">
+ *   JET ojInputPassword Component
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputPasswordOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: The ojInputPassword component enhances a browser input type="password" element.
+ * <h3 id="pseudos-section">
+ *   Pseudo-selectors
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>$( ":oj-inputPassword" )            // selects all JET input on the page
+ * </code>
+ * </pre>
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the label to the input component.
+ * For inputPassword, you should put an <code>id</code> on the input, and then set
+ * the <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <h3 id="label-section">
+ *   Label and InputPassword
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * For accessibility, you should associate a label element with the input
+ * by putting an <code>id</code> on the input, and then setting the
+ * <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <p>
+ * The component will decorate its associated label with required and help
+ * information, if the <code>required</code> and <code>help</code> options are set.
+ * </p>
+ * <h3 id="binding-section">
+ *   Declarative Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ *    &lt;input id="passwordId" data-bind="ojComponent: {component: 'ojInputPassword'}" /&gt;
+ * </code>
+ * </pre>
+ *
+ * @desc Creates or re-initializes a JET ojInputPassword
+ *
+ * @param {Object=} options a map of option-value pairs to set on the component
+ *
+ * @example <caption>Initialize the input element with no options specified:</caption>
+ * $( ".selector" ).ojInputPassword();
+ *
+ * * @example <caption>Initialize the input element with some options:</caption>
+ * $( ".selector" ).ojInputPassword( { "disabled": true } );
+ *
+ * @example <caption>Initialize the input element via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
+ * &lt;input id="passwordId" data-bind="ojComponent: {component: 'ojInputPassword'}" /&gt;
+ */
+oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
+{
+  version : "1.0.0",
+  defaultElement : "<input>",
+  widgetEventPrefix : "oj",
+
+  /**
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK : [{"attr": "type", "setMandatory": "password"}],
+
+  /**
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES : "oj-inputpassword-input",
+
+  /**
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES : "oj-inputpassword oj-form-control oj-component",
+
+  options :
+  {
+    /**
+     * Regular expression pattern which will be used to validate the component's value. Note that option value
+     * always supercedes element's attribute value and it is best practice to pass the value as an option than to
+     * set it as an element's attribute.
+     * <p>
+     * When pattern is set to true, an implicit regExp validator is created using the validator
+     * factory -
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+     * </p>
+     *
+     * <p>
+     * Note: It is recommended that the <code class="prettyprint">title</code> option be used to
+     * describe the pattern expected for the value entered by end-user.
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> option:</caption>
+     * $(".selector").ojInputPassword({pattern: "[a-zA-Z0-9]{3,}"});<br/>
+     * @example <caption>Initialize <code class="prettyprint">pattern</code> option from the html attribute 'pattern':</caption>
+     * &lt;input type="text" id="username" value= "" pattern="[a-zA-Z0-9]{3,}"
+     *           title="Enter at least 3 alphanumeric characters"/><br/>
+     * // reading the pattern option will return "[a-zA-Z0-9]{3,}"
+     * $(".selector").ojInputPassword("option", "pattern");<br/>
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputPassword
+     * @type {string|undefined}
+     */
+    pattern: ""
+  },
+
+  /**
+   * Return the subcomponent node represented by the documented locator attribute values. <br/>
+   * If the locator is null or no subId string is provided then this method returns the element that
+   * this component was initalized with. <br/>
+   * If a subId was provided but a subcomponent node cannot be located this method returns null.
+   *
+   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
+   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
+   *
+   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
+   * can be located, then this method returns <code class="prettyprint">null</code>.
+   *
+   * @expose
+   * @override
+   * @memberof oj.ojInputText
+   * @instance
+   *
+   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
+   * property. See the table for details on its fields.
+   *
+   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
+   *
+   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
+   *
+   * @property {number=} locator.index - A zero-based index, used to locate a message content node
+   * or a hint node within the popup.
+   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
+   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
+   *
+   * @example <caption>Get the node for a certain subId:</caption>
+   * var node = $( ".selector" ).ojInputPassword( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
+   */
+  getNodeBySubId: function(locator)
+  {
+    var node = this._superApply(arguments), subId;
+    if (!node)
+    {
+      subId = locator['subId'];
+      if (subId === "oj-inputpassword-input") {
+        node = this.element ? this.element[0] : null;
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
+
+  /**
+   * @override
+   * @instance
+   * @memberof! oj.ojInputPassword
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass : function ()
+  {
+    return "oj-inputpassword";
+  }
+
+});
+
+//////////////////     SUB-IDS     //////////////////
+/**
+ * <p>Sub-ID for the ojInputPassword component's input element.</p>
+ *
+ * @ojsubid oj-inputpassword-input
+ * @memberof oj.ojInputPassword
+ * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+ *
+ * @example <caption>Get the node for the input element:</caption>
+ * var node = $( ".selector" ).ojInputPassword( "getNodeBySubId", {'subId': 'oj-inputpassword-input'} );
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @ojcomponent oj.ojTextArea
+ * @augments oj.inputBase
+ * @since 0.6
+ *
+ * @classdesc
+ * <h3 id="textAreaOverview-section">
+ *   JET ojTextArea Component
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#textAreaOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: The ojTextArea component enhances a browser textarea element.
+ * <h3 id="pseudos-section">
+ *   Pseudo-selectors
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>$( ":oj-textarea" )            // selects all JET textarea on the page
+ * </code>
+ * </pre>
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the label to the textarea
+ * component. For textarea, you should put an <code>id</code> on the textarea,
+ * and then set the <code>for</code> attribute on the label to be the textarea's id.
+ * </p>
+ * <h3 id="label-section">
+ *   Label and TextArea
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * For accessibility, you should associate a label element with the textarea
+ * by putting an <code>id</code> on the textarea, and then setting the
+ * <code>for</code> attribute on the label to be the textarea's id.
+ * </p>
+ * <p>
+ * The component will decorate its associated label with required and help
+ * information, if the <code>required</code> and <code>help</code> options are set.
+ * </p>
+ * <h3 id="binding-section">
+ *   Declarative Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ *    &lt;textarea id="textAreaId" data-bind="ojComponent: {component: 'ojTextArea'}" &gt;&lt;/textarea&gt;
+ * </code>
+ * </pre>
+ *
+ * @desc Creates or re-initializes a JET ojTextArea.
+ *
+ * @param {Object=} options a map of option-value pairs to set on the component
+ *
+ * @example <caption>Initialize the textarea with no options specified:</caption>
+ * $( ".selector" ).ojTextArea();
+ *
+ * * @example <caption>Initialize the textarea with some options:</caption>
+ * $( ".selector" ).ojTextArea( { "disabled": true } );
+ *
+ * @example <caption>Initialize the textarea via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
+ * &lt;textarea id="textAreaId" data-bind="ojComponent: {component: 'ojTextArea'}" &gt;&lt;/textarea&gt;
+ */
+oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
+{
+  version : "1.0.0",
+  defaultElement : "<textarea>",
+  widgetEventPrefix : "oj",
+
+  /**
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK : [],
+
+  /**
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES : "oj-textarea-input",
+
+  /**
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES : "oj-textarea oj-form-control oj-component",
+
+  options :
+  {
+    /**
+     * Regular expression pattern which will be used to validate the component's value. Note that
+     * option value always supercedes element's attribute value and it is best practice to pass the
+     * value as an option than to set it as an element's attribute.
+     * <p>
+     * When pattern is set to true, an implicit regExp validator is created using the validator
+     * factory -
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+     * </p>
+     *
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> option:</caption>
+     * $(".selector").ojTextArea({pattern: "[a-zA-Z0-9]{3,}"});<br/>
+     * @example <caption>Initialize <code class="prettyprint">pattern</code> option from the html attribute 'pattern':</caption>
+     * &lt;input type="text" id="username" value= "" pattern="[a-zA-Z0-9]{3,}"
+     *           title="Enter at least 3 alphanumeric characters"/><br/>
+     * // reading the pattern option will return "[a-zA-Z0-9]{3,}"
+     * $(".selector").ojTextArea("option", "pattern");<br/>
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojTextArea
+     * @type {string|undefined}
+     */
+    pattern: ""
+  },
+
+  /**
+   * Return the subcomponent node represented by the documented locator attribute values. <br/>
+   * If the locator is null or no subId string is provided then this method returns the element that
+   * this component was initalized with. <br/>
+   * If a subId was provided but a subcomponent node cannot be located this method returns null.
+   *
+   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
+   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
+   *
+   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
+   * can be located, then this method returns <code class="prettyprint">null</code>.
+   *
+   * @expose
+   * @override
+   * @memberof oj.ojInputText
+   * @instance
+   *
+   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
+   * property. See the table for details on its fields.
+   *
+   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
+   *
+   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
+   *
+   * @property {number=} locator.index - A zero-based index, used to locate a message content node
+   * or a hint node within the popup.
+   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
+   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
+   *
+   * @example <caption>Get the node for a certain subId:</caption>
+   * var node = $( ".selector" ).ojTextArea( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
+   */
+  getNodeBySubId: function(locator)
+  {
+    var node = this._superApply(arguments), subId;
+    if (!node)
+    {
+      subId = locator['subId'];
+      if (subId === "oj-textarea-input") {
+        node = this.element ? this.element[0] : null;
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
+
+  /**
+   * @instance
+   * @memberof! oj.ojTextArea
+   * @override
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass : function ()
+  {
+    return "oj-textarea";
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojTextArea
+   */
+  _GetTranslationsSectionName: function()
+  {
+    return "oj-inputBase";
+  }
+
+});
+
+//////////////////     SUB-IDS     //////////////////
+/**
+ * <p>Sub-ID for the ojTextArea component's textarea element.</p>
+ * 
+ * @ojsubid oj-textarea-input
+ * @memberof oj.ojTextArea
+ * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+ *
+ * @example <caption>Get the node for the input element:</caption>
+ * var node = $( ".selector" ).ojTextArea( "getNodeBySubId", {'subId': 'oj-textarea-input'} );
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @ojcomponent oj.ojInputText
+ * @augments oj.inputBase
+ * @since 0.6
+ *
+ * @classdesc
+ * <h3 id="inputTextOverview-section">
+ *   JET ojInputText Component
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputTextOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: The ojInputText component enhances a browser input type="text" element.
+ * <h3 id="pseudos-section">
+ *   Pseudo-selectors
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pseudos-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>$( ":oj-inputText" )            // selects all JET input on the page
+ * </code>
+ * </pre>
+ * <h3 id="a11y-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
+ * </h3>
+ * <p>
+ * It is up to the application developer to associate the label to the input component.
+ * For inputText, you should put an <code>id</code> on the input, and then set
+ * the <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <h3 id="label-section">
+ *   Label and InputText
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+ * </h3>
+ * <p>
+ * For accessibility, you should associate a label element with the input
+ * by putting an <code>id</code> on the input, and then setting the
+ * <code>for</code> attribute on the label to be the input's id.
+ * </p>
+ * <p>
+ * The component will decorate its associated label with required and help
+ * information, if the <code>required</code> and <code>help</code> options are set.
+ * </p>
+ * <h3 id="binding-section">
+ *   Declarative Binding
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#binding-section"></a>
+ * </h3>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ *    &lt;input id="textId" data-bind="ojComponent: {component: 'ojInputText'}" /&gt;
+ * </code>
+ * </pre>
+ *
+ * @desc Creates or re-initializes a JET ojInputText
+ *
+ * @param {Object=} options a map of option-value pairs to set on the component
+ *
+ * @example <caption>Initialize the input element with no options specified:</caption>
+ * $( ".selector" ).ojInputText();
+ *
+ * * @example <caption>Initialize the input element with some options:</caption>
+ * $( ".selector" ).ojInputText( { "disabled": true } );
+ *
+ * @example <caption>Initialize the input element via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
+ * &lt;input id="textId" data-bind="ojComponent: {component: 'ojInputText'}" /&gt;
+ */
+oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
+{
+  version : "1.0.0",
+  defaultElement : "<input>",
+  widgetEventPrefix : "oj",
+
+  /**
+   * @expose
+   * @private
+   */
+  _ATTR_CHECK : [{"attr": "type", "setMandatory": "text"}],
+
+  /**
+   * @expose
+   * @private
+   */
+  _CLASS_NAMES : "oj-inputtext-input",
+
+  /**
+   * @expose
+   * @private
+   */
+  _WIDGET_CLASS_NAMES : "oj-inputtext oj-form-control oj-component",
+
+  options :
+  {
+    /**
+     * Regular expression pattern which will be used to validate the component's value. Note that option value
+     * always supercedes element's attribute value and it is best practice to pass the value as an option than to
+     * set it as an element's attribute.
+     * <p>
+     * When pattern is set to true, an implicit regExp validator is created using the validator
+     * factory -
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP).createValidator()</code>.
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">pattern</code> option:</caption>
+     * $(".selector").ojInputText({pattern: "[a-zA-Z0-9]{3,}"});<br/>
+     * @example <caption>Initialize <code class="prettyprint">pattern</code> option from the html attribute 'pattern':</caption>
+     * &lt;input type="text" id="username" value= "" pattern="[a-zA-Z0-9]{3,}"
+     *           title="Enter at least 3 alphanumeric characters"/><br/>
+     * // reading the pattern option will return "[a-zA-Z0-9]{3,}"
+     * $(".selector").ojInputText("option", "pattern");<br/>
+     *
+     * @expose
+     * @instance
+     * @memberof! oj.ojInputText
+     * @type {string|undefined}
+     */
+    pattern: ""
+  },
+
+  /**
+   * Return the subcomponent node represented by the documented locator attribute values. <br/>
+   * If the locator is null or no subId string is provided then this method returns the element that
+   * this component was initalized with. <br/>
+   * If a subId was provided but a subcomponent node cannot be located this method returns null.
+   *
+   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
+   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
+   *
+   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
+   * can be located, then this method returns <code class="prettyprint">null</code>.
+   *
+   * @expose
+   * @override
+   * @memberof oj.ojInputText
+   * @instance
+   *
+   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
+   * property. See the table for details on its fields.
+   *
+   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
+   *
+   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
+   *
+   * @property {number=} locator.index - A zero-based index, used to locate a message content node
+   * or a hint node within the popup.
+   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
+   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
+   *
+   * @example <caption>Get the node for a certain subId:</caption>
+   * var node = $( ".selector" ).ojInputText( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
+   */
+  getNodeBySubId: function(locator)
+  {
+    var node = this._superApply(arguments), subId;
+    if (!node)
+    {
+      subId = locator['subId'];
+      if (subId === "oj-inputtext-input") {
+        node = this.element ? this.element[0] : null;
+      }
+    }
+    // Non-null locators have to be handled by the component subclasses
+    return node || null;
+  },
+
+  /**
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   * @protected
+   * @return {string}
+   */
+  _GetDefaultStyleClass : function ()
+  {
+    return "oj-inputtext";
+  },
+
+  /**
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputText
+   */
+  _GetTranslationsSectionName: function()
+  {
+    return "oj-inputBase";
+  }
+
+});
+
+//////////////////     SUB-IDS     //////////////////
+/**
+ * <p>Sub-ID for the ojInputText component's input element.</p>
+ * 
+ * @ojsubid oj-inputtext-input
+ * @memberof oj.ojInputText
+ * @deprecated This sub-ID is not needed.  Since the application supplies this element, it can supply a unique ID by which the element can be accessed.
+ *
+ * @example <caption>Get the node for the input element:</caption>
+ * var node = $( ".selector" ).ojInputText( "getNodeBySubId", {'subId': 'oj-inputtext-input'} );
+ */
+
+});

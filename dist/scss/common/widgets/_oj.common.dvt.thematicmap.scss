@@ -1,0 +1,44 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.thematicmap.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeThematicMapClasses != false {
+  @include module-include-once("common.thematicmap") {
+    .oj-thematicmap{
+      @include oj-user-select-property(none);
+      outline:none;
+      width:600px;
+      height:375px;
+    }
+
+    .oj-thematicmap-arealayer {
+      background-color: $dvtMapBgColor;
+      border-color: $dvtBorder2Color;
+      font-size: $fontSize;
+    }
+
+    .oj-thematicmap-area {
+      border-color: $dvtBorder2Color;
+    }
+
+    .oj-thematicmap-area.oj-hover {
+      border-color: $dvtBorder2Color;
+    }
+
+    .oj-thematicmap-area.oj-selected {
+      border-top-color: $dvtBorder2Color;
+      border-bottom-color: $dvtBorderColor;
+    }
+
+    .oj-thematicmap-marker {
+      border-color: $dvtBorder2Color;
+      background-color: $dvtMapMarkerBgColor;
+      color: $textColor;
+      font-size: $fontSize;
+    }
+  }
+}

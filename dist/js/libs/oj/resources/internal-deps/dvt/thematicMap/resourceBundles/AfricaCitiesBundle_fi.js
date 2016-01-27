@@ -1,0 +1,5 @@
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+"use strict";var l={"ZAF_CAPE_TOWN":[null,"Kapkaupunki"],"DZA_ALGIERS":[null,"Alger"],"EGY_CAIRO":[null,"Kairo"],"EGY_ALEXANDRIA":[null,"Aleksandria"],"SDN_KHARTOUM":[null,"Khartum"],"SDN_KHARTOUM_UMM_DURMAN":[null,"Khartum-Umm Durman"],"ETH_ADDIS_ABABA":[null,"Addis Abeba"]};(this?this:window)['DvtBaseMapManager']['_UNPROCESSED_MAPS'][2].push(["africa","cities",l]);

@@ -1,0 +1,71 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.indexer.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@if $includeIndexerClasses != false {
+  @include module-include-once("common.indexer") {
+    
+    /* Styling for the indexer widget container */
+    .oj-indexer {
+      width: $indexerItemWidth;
+      height: 100%;
+    }    
+
+    /* Styling to remove focus ring border on indexer */
+    .oj-indexer ul:focus {
+      outline: none; 
+    }
+
+    /* styling for the indexer root element */
+    .oj-indexer ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* styling on each item */
+    .oj-indexer li {
+      text-align: center;
+      height: $indexerItemHeight;
+      width: $indexerItemWidth;
+      line-height: $indexerItemHeight - 1;
+      vertical-align: middle;
+      color: $indexerTextColor;
+      text-decoration: $indexerTextDecoration;
+      font-weight: $indexerFontWeight;
+      font-size: $smallestFontSize;
+    }
+
+    /* styling on each item that does not have a corresponding group header */
+    .oj-indexer li.oj-disabled {
+      opacity: $opacityDisabled;
+      color: $indexerTextColorDisabled;
+    }
+
+    /* styling on hovered item */
+    .oj-indexer li:hover {
+      text-decoration: $indexerTextDecorationHover;
+    }
+
+    /* styling on focused item */
+    .oj-indexer.oj-focus-ancestor li.oj-focus {
+      outline-width: 1px;
+      outline-style: dotted;
+      outline-offset: -1px;
+    }
+
+    /* styling on each item when indexer is abbreviated */
+    .oj-indexer.oj-indexer-abbr li {
+      height: $indexerAbbrItemHeight;
+    }
+
+    /* styling for the ellipsis between two characters */ 
+    .oj-indexer-ellipsis:after {
+      content: "\25CF";
+    }
+  }
+}
+ 

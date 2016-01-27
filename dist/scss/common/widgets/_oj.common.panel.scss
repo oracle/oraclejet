@@ -1,0 +1,147 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.panel.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@import "../../utilities/oj.utilities";
+  
+
+$includePanelClasses:   $includeAllClasses !default;
+
+
+@if $includePanelClasses != false {
+  @include module-include-once("common.panel") {
+
+    .oj-panel {
+      border: 1px solid $panelBorderColor;
+      background-color: $panelBgColor;
+      @include oj-border-radius( $panelBorderRadius );
+      @include oj-box-sizing-property(border-box);
+      overflow: hidden;
+      padding: $panelPadding;
+      position: relative;
+    }
+
+    .oj-panel-alt1 {
+      background-color: $panel1BgColor;
+      border-color: $panel1BorderColor;
+    }
+
+    .oj-panel-alt2 {
+      background-color: $panel2BgColor;
+      border-color: $panel2BorderColor;
+    }
+
+    .oj-panel-alt3 {
+      background-color: $panel3BgColor;
+      border-color: $panel3BorderColor;
+    }
+
+    .oj-panel-alt4 {
+      background-color: $panel4BgColor;
+      border-color: $panel4BorderColor;
+    }
+
+    .oj-panel-alt5 {
+      background-color: $panel5BgColor;
+      border-color: $panel5BorderColor;
+    }
+
+    .oj-panel.oj-selected {
+      border-color: $panelBorderColorSelected;
+    }
+
+    .oj-hicontrast .oj-panel.oj-selected {
+      border-width: 3px;
+    }
+
+
+    .oj-panel-shadow-sm {
+      @include oj-box-shadow(0 2px 2px 0 transparentize($boxShadowColor, .86), 0 3px 1px -2px transparentize($boxShadowColor, .8), 0 1px 5px 0 transparentize($boxShadowColor, .88)); 
+    }
+
+    .oj-panel-shadow-md {
+      @include oj-box-shadow(0 4px 5px 0 transparentize($boxShadowColor, .86), 0 1px 10px 0 transparentize($boxShadowColor, .88), 0 2px 4px -1px transparentize($boxShadowColor, .8)); 
+    }
+
+    .oj-panel-shadow-lg {
+      @include oj-box-shadow(0 6px 10px 0 transparentize($boxShadowColor, .86), 0 1px 18px 0 transparentize($boxShadowColor, .88), 0 3px 5px -1px transparentize($boxShadowColor, .8)); 
+    }
+
+    //this should be applied to the drag handle of a draggable panel
+    .oj-panel-drag-handle {
+      text-align: center;
+      vertical-align: middle;
+      cursor: move;
+      height: 20px;
+      line-height: 20px;
+      margin-top: -$panelPadding;
+      margin-left: -$panelPadding;
+      margin-right: -$panelPadding;
+    }
+    
+    //these should be applied to the button used to resize or remove
+    //a panel, for example in a masonry layout tile
+    //(need to specify oj-button here so that this selector is more
+    //specific than oj-button and will override margin-bottom)
+    .oj-panel-resize-button,
+    .oj-panel-remove-button,
+    .oj-panel-resize-button.oj-button,
+    .oj-panel-remove-button.oj-button {
+        position: absolute;
+        margin-bottom: 0;
+        overflow: hidden;
+        width: $buttonHeight;
+        @include oj-ltr() {
+            right: 0;
+        }
+        @include oj-rtl() {
+            left: 0;
+        }
+    }
+    .oj-panel-resize-button {
+        bottom: 0;
+    }
+    .oj-panel-remove-button {
+        top: 0;
+    }
+
+    //this should be applied to the icon in the drag handle of a draggable panel
+    .oj-panel-drag-icon {
+      @extend .oj-fwk-icon-drag;
+      @extend .oj-fwk-icon;
+    }
+
+    //this should be applied to the icon in the expand button of a
+    //resizable panel
+    .oj-panel-expand-icon {
+        @extend .oj-fwk-icon-maximize;
+        @extend .oj-fwk-icon;
+    }
+    
+    //this should be applied to the icon in the collapse button of a
+    //resizable panel
+    .oj-panel-collapse-icon {
+        @extend .oj-fwk-icon-minimize;
+        @extend .oj-fwk-icon;
+    }
+    
+    //this should be applied to the icon in the remove button of a
+    //removable panel
+    .oj-panel-remove-icon {
+        @extend .oj-fwk-icon-cross;
+        @extend .oj-fwk-icon;
+    }
+    
+    //need to specify .oj-end here to make these selectors more specific
+    //than ojButton selectors in order to override margins
+    .oj-panel-resize-button .oj-panel-expand-icon.oj-end,
+    .oj-panel-resize-button .oj-panel-collapse-icon.oj-end,
+    .oj-panel-remove-button .oj-panel-remove-icon.oj-end {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+  }
+}

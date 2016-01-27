@@ -1,0 +1,134 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@include module-include-once("common.helper") {
+
+  /* helpers
+  ----------------------------------*/
+
+  // todo: is this the right place for this?
+  @if $initialVisibility == hidden {
+    // set visibility hidden on dom bound to a component, 
+    // this rule only matches until the component is initialized, 
+    // at which point oj-component-initnode is set
+    // on the init dom elment. This is to prevent the flash of unstyled content before the 
+    // html becomes JET components
+    [data-bind*="ojComponent"]:not(.oj-component-initnode) {
+      visibility: hidden;
+    }      
+  }
+
+  .oj-helper-hidden-accessible {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .oj-helper-clearfix {
+    @include oj-clearfix();
+  }
+  
+  /* Used by the framework's support for detecting resize */
+  .oj-helper-detect-expansion,
+  .oj-helper-detect-contraction {
+      position: absolute;
+      overflow: hidden;
+      visibility: hidden;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      direction: ltr
+  }
+
+  // you might wonder what the point is of this class, why not just use 
+  // display: none directly instead of a class. The problem is that if 
+  // you set something to display:none but then want to show it again 
+  // you have to set it to a new display value, but it's not always clear 
+  // whether to set it to inline, block, etc. By using the class you 
+  // can hide something and then set it back to its natural display 
+  // value by just removing the class
+  // NOTE: this uses !important, it is meant to be used to override a default value
+  .oj-helper-hidden {
+    display: none !important;
+  }
+  
+  // todo: add a demo for these text-align classes
+
+  /* aligns text left by default, aligns right when dir="rtl" is set on html element
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-start {
+    @include oj-bidi-property(
+         $property: 'text-align', 
+         $startOrEnd: start,
+         $important: true) ;
+
+  }
+
+
+  /* aligns text right by default, aligns left when dir="rtl" is set on html element
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-end {
+    @include oj-bidi-property(
+         $property: 'text-align', 
+         $startOrEnd: end,
+         $important: true);
+  
+  }
+
+  
+
+  /* Sets the start margin, equivalent to setting
+     margin-left: auto in ltr languages and margin-right: auto in rtl languages */
+  .oj-helper-margin-start-auto {
+
+    @include oj-ltr() {
+      margin-left: auto;
+    }
+
+    @include oj-rtl() {
+      margin-right: auto;
+    }
+
+  }
+
+  /* Sets the end margin, equivalent to setting
+     margin-right: auto in ltr languages and margin-left: auto in rtl languages */
+  .oj-helper-margin-end-auto {
+
+    @include oj-ltr() {
+      margin-right: auto;
+    }
+
+    @include oj-rtl() {
+      margin-left: auto;
+    }
+
+  }
+
+  /* aligns text right
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-right {
+    text-align: right !important;
+  }
+
+  /* aligns text left
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-text-align-left {
+    text-align: left !important;
+  }
+  
+  /* Used by the ojModule binding on a DIV that will hold cached Views */
+  .oj-helper-module-cache {
+      position: absolute;
+      display: none;
+      width: 0;
+      heiht: 0;
+  }
+
+}

@@ -1,0 +1,46 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeSwitchClasses != false {
+  $includeComponentClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.ios.component";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.formcontrol.switch"; 
+
+@if $includeSwitchClasses != false {
+  @include module-include-once("alta.ios.switch") {
+	/* switch specific */ 
+	/* --------------------------------------------------------------- */
+
+	.oj-switch .oj-switch-thumb {
+		margin-left: -1px;
+		margin-right: -1px;
+	}
+			
+	// DISABLED OFF
+	.oj-switch.oj-disabled,
+	.oj-switch.oj-disabled.oj-selected {
+		.oj-switch-track {
+			opacity: 0.5;
+		}
+	}
+	
+	// READONLY OFF/ON
+	.oj-switch.oj-read-only .oj-switch-thumb,
+	.oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
+		color: transparent;
+	}
+	
+  }
+}

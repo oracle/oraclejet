@@ -1,0 +1,63 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "oj.utilities.icons";
+
+//*****************************************************************************
+// DEPRECATED: use oj-clickable-icon in file _oj.utilities.icon.clickable.scss
+//*****************************************************************************
+@mixin oj-button-icon ( 
+       $icon:                 null,  
+       $iconDisabled:         null,          
+       $iconHover:            null,                       
+       $iconActive:           null,     
+       $iconSelected:         null, 
+       $iconRtl:              null,
+       $iconRtlDisabled:      null,
+       $iconRtlHover:         null,
+       $iconRtlActive:        null,
+       $iconRtlSelected:      null,  
+       $iconHiRes:            null,  
+       $iconHiResDisabled:    null,
+       $iconHiResHover:       null,   
+       $iconHiResActive:      null,
+       $iconHiResSelected:    null,  
+       $iconHiResRtl:         null,  
+       $iconHiResRtlDisabled: null,
+       $iconHiResRtlHover:    null,   
+       $iconHiResRtlActive:   null,
+       $iconHiResRtlSelected: null,
+       $devicePixelRatio:     $highResolutionDevicePixelRatio,
+       $highResProportion:    .5,
+       $lowResProportion:     1)
+{
+
+  @include oj-clickable-icon ( 
+         $markerSelector:       '.oj-button',
+         $icon:                 $icon,  
+         $iconDisabled:         $iconDisabled,          
+         $iconHover:            $iconHover,                       
+         $iconActive:           $iconActive,     
+         $iconSelected:         $iconSelected, 
+         $iconRtl:              $iconRtl,
+         $iconRtlDisabled:      $iconRtlDisabled,
+         $iconRtlHover:         $iconRtlHover,
+         $iconRtlActive:        $iconRtlActive,
+         $iconRtlSelected:      $iconRtlSelected,  
+         $iconHiRes:            $iconHiRes,  
+         $iconHiResDisabled:    $iconHiResDisabled,
+         $iconHiResHover:       $iconHiResHover,   
+         $iconHiResActive:      $iconHiResActive,
+         $iconHiResSelected:    $iconHiResSelected,  
+         $iconHiResRtl:         $iconHiResRtl,  
+         $iconHiResRtlDisabled: $iconHiResRtlDisabled,
+         $iconHiResRtlHover:    $iconHiResRtlHover,   
+         $iconHiResRtlActive:   $iconHiResRtlActive,
+         $iconHiResRtlSelected: $iconHiResRtlSelected,
+         $devicePixelRatio:     $devicePixelRatio,
+         $highResProportion:    $highResProportion,
+         $lowResProportion:     $lowResProportion)
+  {
+  }
+
+  
+}

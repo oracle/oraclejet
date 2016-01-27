@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// implementation currently in common
+@import "../../common/widgets/oj.common.formlayout"; 
+
+
+@if $includeFormLayoutClasses != false {
+  @include module-include-once("alta.android.formlayout") {
+
+    .oj-form > .oj-flex {
+        padding-left: $formControlLabelInlineGutter;
+        padding-right: $formControlLabelInlineGutter;
+    }
+  }
+}

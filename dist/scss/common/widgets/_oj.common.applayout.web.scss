@@ -1,0 +1,202 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.applayout.web.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAppLayoutWebClasses != false {
+  @include module-include-once("common.applayout.web") {
+
+    // OFFCANVAS
+    .oj-web-applayout-offcanvas-wrapper {
+      @extend %oj-applayout-offcanvas-wrapper;
+    }
+    .oj-web-applayout-offcanvas {
+      @extend %oj-applayout-offcanvas;
+    }
+    .oj-web-applayout-offcanvas {
+      background-color: $appLayoutWebOffcanvasBgColor;
+      color: $contrastTextColor;
+    }
+    .oj-web-applayout-offcanvas-icon {
+      @extend .oj-fwk-icon;
+      @extend .oj-fwk-icon-hamburger;
+      font-size: 24px;
+    }
+
+    // NAV BAR
+    .oj-web-applayout-navbar.oj-navigationlist-horizontal .oj-navigationlist-element {
+      margin: 0;
+    }
+
+    // PAGE LAYOUT
+    /* Can also be used within oj-web-applayout-offcanvas element if header
+      and footer are needed */
+    .oj-web-applayout-page {
+      @extend %oj-applayout-page;
+      position: absolute;
+      @include oj-box-sizing-property(border-box);
+      min-height: 100vh;
+      // always set vertical scrolling on so that end elements in header won't
+      // jump around when switching modules with scrolling to non scrolling content
+      // for a single page application
+      overflow-y: scroll;
+    }
+    // The following classes adhere to the max app content width
+    .oj-web-applayout-max-width {
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+      max-width: $appLayoutMaxWidth;
+      @include oj-box-sizing-property(border-box);
+    }
+    // The following classes have flex none so they are sized correctly in the
+    // page layout
+    .oj-web-applayout-header,
+    .oj-web-applayout-footer,
+    .oj-web-applayout-navbar,
+    .oj-web-applayout-header + .oj-progressbar-embedded {
+      @include oj-flex-property(0 0 auto);
+    }
+    // Add padding between the start and title containers
+    // Add padding to bar-start instead of title because the web pattern sometimes hides bar-start
+    .oj-web-applayout-header .oj-flex-bar-start {
+      @include oj-ltr() {
+        padding-right: 10px;
+      }
+      @include oj-rtl() {
+        padding-left: -10px;
+      }
+    }
+
+    // The following classes participate in max width
+
+    // SCROLLABLE CONTAINERS
+    .oj-web-applayout-scrollable-wrapper {
+      @extend %oj-applayout-scrollable-wrapper;
+    }
+    .oj-web-applayout-scrollable {
+      @extend %oj-applayout-scrollable;
+    }
+
+    // HEADER
+    .oj-web-applayout-header {
+      background-color: $appLayoutWebHeaderBgColor;
+      @include oj-box-shadow($appLayoutWebHeaderBoxShadow);
+    }
+    .oj-slow-boxshadow .oj-web-applayout-header {
+      // Use a border color if not using a shadow
+      border-bottom: 1px solid $appLayoutWebHeaderBorderColor;
+    }
+    .oj-web-applayout-header .oj-button {
+      // for vertical alignment of header elements
+      margin-bottom: 0;
+    }
+    .oj-web-applayout-header > div:first-child {
+      min-height: $appLayoutWebHeaderMinHeight;
+      @include oj-box-sizing-property(border-box);
+    }
+    .oj-web-applayout-header > div,
+    .oj-web-applayout-footer > div {
+      padding-left: $appLayoutWebPadding;
+      padding-right: $appLayoutWebPadding;
+    }
+    .oj-web-applayout-header .oj-flex-bar-start .oj-button:first-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        margin-left: -$buttonIconOnlyPadding;
+      }
+      @include oj-rtl() {
+        margin-right: -$buttonIconOnlyPadding;
+      }
+    }
+    .oj-web-applayout-header .oj-flex-bar-start .oj-button.oj-button-lg:first-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        margin-left: -$buttonLargeIconOnlyPadding;
+      }
+      @include oj-rtl() {
+        margin-right: -$buttonLargeIconOnlyPadding;
+      }
+    }
+    .oj-web-applayout-header .oj-flex-bar-end .oj-button:last-child,
+    .oj-web-applayout-header .oj-flex-bar-end .oj-toolbar:last-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        margin-right: -$buttonIconOnlyPadding;
+      }
+      @include oj-rtl() {
+        margin-left: -$buttonIconOnlyPadding;
+      }
+    }
+    .oj-web-applayout-header-title {
+      font-size: $mediumFontSize;
+      font-weight: normal;
+      color: $appLayoutWebHeaderTextColor;
+      // Because we baseline algin the logo and application name we can't easily
+      // vertically center aligned them to other elements like an offcanvas toggle
+      // button so we discount the height of the text by setting line-height to 0
+      line-height: 0;
+    }
+
+    // CONTENT
+    .oj-web-applayout-content {
+      @include oj-flex-property(1 0 auto);
+      // We expect content area to use a grid layout so we need to subtract
+      // half of the column gutter from the padding of the content area so
+      // that its contents will align with header and footer
+      padding: $appLayoutWebPadding - $spacingMedium;
+    }
+
+    // FOOTER
+    .oj-web-applayout-footer {
+      min-height: $appLayoutWebFooterMinHeight;
+      @include oj-box-sizing-property(border-box);
+      border-top: 1px solid $appLayoutWebFooterBorderColor;
+      background-color: $appLayoutWebFooterBgColor;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .oj-web-applayout-footer ul {
+      margin: 0;
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }
+    }
+    .oj-web-applayout-footer li {
+      list-style: none;
+      display: inline-block;
+      @include oj-ltr() {
+        margin-right: 5px;
+        margin-left: 0;
+        padding-right: 5px;
+        border-right: 1px solid $appLayoutWebFooterBorderColor;
+      }
+      @include oj-rtl() {
+        margin-left: 5px;
+        margin-right: 0;
+        padding-left: 5px;
+        border-left: 1px solid $appLayoutWebFooterBorderColor;
+      }
+    }
+    .oj-web-applayout-footer li:last-child {
+      @include oj-ltr() {
+        margin-right: 0;
+        padding-right: 0;
+        border-right: none;
+      }
+      @include oj-rtl() {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+      }
+    }
+
+  }
+}

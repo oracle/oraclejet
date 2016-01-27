@@ -1,0 +1,230 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.applayout.hybrid.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAppLayoutHybridClasses != false {
+  @include module-include-once("common.applayout.hybrid") {
+
+    /* Class used to suppress copy/paste and context menus for hybrid mobile apps */
+    .oj-hybrid {
+      // suppress copy/paste and iOS mag lens
+      @include oj-user-select-property(none);
+      // Turn off context menu popups
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    .oj-hybrid input,
+    .oj-hybrid textarea {
+      // allow text selection on input and text areas
+      @include oj-user-select-property(text);
+    }
+
+    /* Class used to position the application header and title for iOS hybrid
+       applications where the status bar is overlaid in the WebView.
+       This class has no effect on other platforms. */
+    .oj-hybrid.oj-platform-ios.oj-platform-cordova .oj-hybrid-statusbar-spacer.oj-hybrid-applayout-header {
+      padding-top: 20px;
+    }
+    .oj-hybrid.oj-platform-ios.oj-platform-cordova .oj-hybrid-statusbar-spacer.oj-hybrid-applayout-header .oj-hybrid-applayout-header-title {
+      margin-top: 20px;
+    }
+
+    // PADDING
+    .oj-hybrid-padding {
+      padding: $appLayoutHybridPadding;
+    }
+    .oj-hybrid-padding-vertical {
+      padding-top: $appLayoutHybridPadding;
+      padding-bottom: $appLayoutHybridPadding;
+    }
+    .oj-hybrid-padding-horizontal {
+      padding-left: $appLayoutHybridPadding;
+      padding-right: $appLayoutHybridPadding;
+    }
+    .oj-hybrid-padding-top {
+      padding-top: $appLayoutHybridPadding;
+    }
+    .oj-hybrid-padding-bottom {
+      padding-bottom: $appLayoutHybridPadding;
+    }
+    .oj-hybrid-padding-start {
+      @include oj-ltr() {
+        padding-left: $appLayoutHybridPadding;
+      }
+      @include oj-rtl() {
+        padding-right: $appLayoutHybridPadding;
+      }
+    }
+    .oj-hybrid-padding-end {
+      @include oj-ltr() {
+        padding-right: $appLayoutHybridPadding;
+      }
+      @include oj-rtl() {
+        padding-left: $appLayoutHybridPadding;
+      }
+    }
+
+    // OFFCANVAS
+    .oj-hybrid-applayout-offcanvas-wrapper {
+      @extend %oj-applayout-offcanvas-wrapper;
+    }
+    .oj-hybrid-applayout-offcanvas {
+      @extend %oj-applayout-offcanvas;
+      min-width: $appLayoutHybridOffcanvasWidth;
+      @include oj-box-sizing-property(border-box);
+      background-color: $appLayoutHybridOffcanvasBgColor;
+      color: $contrastTextColor;
+    }
+    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
+    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
+      background-color: $appLayoutHybridOffcanvasBgColor;
+    }
+    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
+    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
+      border-style: none;
+    }
+
+    // PAGE LAYOUT
+    .oj-hybrid-applayout-page {
+      @extend %oj-applayout-page;
+      position: fixed;
+    }
+    // The following classes have flex none so they are sized correctly in the
+    // page layout
+    .oj-hybrid-applayout-header,
+    .oj-hybrid-applayout-footer,
+    .oj-hybrid-applayout-navbar {
+      @include oj-flex-property(0 0 auto);
+    }
+
+    .oj-hybrid-applayout-header > .oj-flex-bar-start {
+      // add padding to the end side of the start box
+      @extend .oj-hybrid-padding-end;
+    }
+
+    // HEADER
+    .oj-hybrid-applayout-header {
+      @include oj-box-shadow($appLayoutHybridHeaderBoxShadow);
+      // ensure the header is first item
+      @include oj-order-property(-2);
+      min-height: $appLayoutHybridHeaderMinHeight;
+      width: 100%;
+      @include oj-box-sizing-property(border-box);
+      @if $appLayoutHybridHeaderBorderColor != null {
+        border-bottom: 1px solid $appLayoutHybridHeaderBorderColor;
+      }
+      background-color: $appLayoutHybridHeaderBgColor;
+      opacity: $appLayoutHybridHeaderOpacity;
+      padding: 0 $appLayoutHybridPadding 0 $appLayoutHybridPadding;
+    }
+    .oj-hybrid-applayout-header-title {
+      font-weight: $appLayoutHybridHeaderTitleFontWeight;
+      font-size: $appLayoutHybridHeaderTitleFontSize;
+      color: $appLayoutHybridHeaderTextColor;
+      padding: 0;
+      margin: 0;
+    }
+    /* Use instead of oj-hybrid-applayout-header when a top fixed nav bar is present
+       so we can correctly style the header border */
+    .oj-hybrid-applayout-header-no-border {
+      @extend .oj-hybrid-applayout-header;
+      @include oj-box-shadow(none);
+      border-style: none;
+    }
+    .oj-hybrid-applayout-header .oj-button {
+      // for vertical alignment of header elements
+      margin-bottom: 0;
+    }
+    .oj-hybrid-applayout-header .oj-flex-bar-start .oj-button:first-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        margin-left: -$buttonIconOnlyPadding;
+      }
+      @include oj-rtl() {
+        margin-right: -$buttonIconOnlyPadding;
+      }
+    }
+    .oj-hybrid-applayout-header .oj-flex-bar-end .oj-button:last-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        margin-right: -$buttonIconOnlyPadding;
+      }
+      @include oj-rtl() {
+        margin-left: -$buttonIconOnlyPadding;
+      }
+    }
+
+    // SCROLLABLE CONTAINERS
+    .oj-hybrid-applayout-scrollable-wrapper {
+      @extend %oj-applayout-scrollable-wrapper;
+    }
+    .oj-hybrid-applayout-scrollable {
+      @extend %oj-applayout-scrollable;
+    }
+
+    // CONTENT
+    .oj-hybrid-applayout-content {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    // FOOTER
+    .oj-hybrid-applayout-footer {
+      // ensure the footer is last item
+      @include oj-order-property(2);
+      min-height: $appLayoutHybridFooterMinHeight;
+      width: 100%;
+      @include oj-box-sizing-property(border-box);
+      @if $appLayoutHybridFooterBorderColor != null {
+        border-top: 1px solid $appLayoutHybridFooterBorderColor;
+      }
+      background-color: $appLayoutHybridHeaderBgColor;
+      opacity: $appLayoutHybridFooterOpacity;
+    }
+    // FOOTER TOOLBAR
+    .oj-hybrid-applayout-toolbar-stretch .oj-button {
+      @include oj-flex-property(1 1 auto);
+      // height: 100% isn't working, but explicitly setting to a px value works
+      min-height: $appLayoutHybridFooterMinHeight;
+      @include oj-box-sizing-property(border-box);
+      margin: 0;
+    }
+
+    // NAV BAR
+    .oj-hybrid-applayout-navbar {
+      @include oj-order-property(if($appLayoutNavBarAlignment == 'top', -1, 1));
+      @if $appLayoutHybridFooterBorderColor != null {
+        border-top: 1px solid $appLayoutHybridFooterBorderColor;
+      }
+      background-color: $appLayoutHybridHeaderBgColor;
+    }
+    .oj-hybrid-applayout-navbar-fixed-top {
+      @extend .oj-hybrid-applayout-navbar;
+      @include oj-order-property(-1);
+      border-style: none;
+    }
+    .oj-hybrid-applayout-navbar-fixed-bottom {
+      @extend .oj-hybrid-applayout-navbar;
+      @include oj-order-property(1);
+    }
+    .oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element {
+      margin: 0;
+    }
+    .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-selected,
+    .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-hover {
+      border-style: $appLayoutHybridNavBarItemBorderStyle;
+    }
+    /* Apply to page when a header and non fixed nav bar are present
+       so we can correctly style the header and nav bar borders */
+    .oj-hybrid-applayout-navbar-non-fixed {}
+
+    }
+    }

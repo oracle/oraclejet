@@ -1,0 +1,100 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// helpers
+@import "../common/helpers/oj.common.helpers";
+
+// tags & text
+@import "widgets/oj.alta.tags.core";
+@import "widgets/oj.alta.tags.typography";
+@import "widgets/oj.alta.tags.lists";
+@import "widgets/oj.alta.utilities";
+
+
+// shared
+@import "widgets/oj.alta.icons";
+@import "widgets/oj.alta.resizable";
+
+// layout & nav
+@import "widgets/oj.alta.panel";
+@import "widgets/oj.alta.collapsible";
+@import "widgets/oj.alta.accordion";
+@import "widgets/oj.alta.conveyorbelt";
+@import "widgets/oj.alta.filmstrip";
+@import "widgets/oj.alta.masonrylayout";
+@import "widgets/oj.alta.tabs";
+@import "widgets/oj.alta.train";
+@import "widgets/oj.alta.navigationlist";
+@import "widgets/oj.alta.offcanvas";
+
+// behavior
+@import "widgets/oj.alta.animation";
+@import "widgets/oj.alta.progressbar";
+@import "widgets/oj.alta.pulltorefresh";
+@import "widgets/oj.alta.swipetoreveal";
+
+// secondary windows
+@import "widgets/oj.alta.dialog";
+@import "widgets/oj.alta.popup";
+
+// button and menu
+@import "widgets/oj.alta.menu";
+@import "widgets/oj.alta.button";
+@import "widgets/oj.alta.buttonset";
+@import "widgets/oj.alta.toolbar";
+
+
+// data collections
+@import "widgets/oj.alta.pagingcontrol";
+@import "widgets/oj.alta.table";
+@import "widgets/oj.alta.tree";
+@import "widgets/oj.alta.datagrid";
+@import "widgets/oj.alta.rowexpander";
+@import "widgets/oj.alta.listview";
+@import "widgets/oj.alta.indexer";
+
+// data visualizations
+@import "widgets/oj.alta.dvt.base";
+@import "widgets/oj.alta.dvt.chart";
+@import "widgets/oj.alta.dvt.diagram";
+@import "widgets/oj.alta.dvt.gauge";
+@import "widgets/oj.alta.dvt.nbox";
+@import "widgets/oj.alta.dvt.pictochart";
+@import "widgets/oj.alta.dvt.tagcloud";
+@import "widgets/oj.alta.dvt.thematicmap";
+@import "widgets/oj.alta.dvt.treemap";
+@import "widgets/oj.alta.dvt.sunburst";
+@import "widgets/oj.alta.dvt.timeline";
+
+// form controls and messaging
+@import "widgets/oj.alta.messaging";
+@import "widgets/oj.alta.formcontrol.label";
+@import "widgets/oj.alta.formcontrol.common";
+@import "widgets/oj.alta.formcontrol.inputtext";
+@import "widgets/oj.alta.formcontrol.inputpassword";
+@import "widgets/oj.alta.formcontrol.textarea";
+@import "widgets/oj.alta.formcontrol.inputnumber";
+@import "widgets/oj.alta.formcontrol.inputdatetime";
+@import "widgets/oj.alta.formcontrol.radioset";
+@import "widgets/oj.alta.formcontrol.checkboxset";
+@import "widgets/oj.alta.formcontrol.listbox";
+@import "widgets/oj.alta.formcontrol.combobox";
+@import "widgets/oj.alta.formcontrol.select";
+@import "widgets/oj.alta.formcontrol.inputsearch";
+@import "widgets/oj.alta.formcontrol.switch";
+@import "widgets/oj.alta.formcontrol.slider";
+
+// responsive
+@import "widgets/oj.alta.flex";
+@import "widgets/oj.alta.grid";
+@import "widgets/oj.alta.responsive.helpers";
+@import "widgets/oj.alta.responsive.mediaqueries";
+@import "widgets/oj.alta.formlayout";
+
+// appplication layout
+@import "widgets/oj.alta.applayout.hybrid";
+@import "widgets/oj.alta.applayout.web";
+
+
+//DEPRECATED
+@import "../common/widgets/oj.DEPRECATED.common.grid";
+@import "../common/widgets/oj.DEPRECATED.common.formlayout";

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+/********************************************************************************************
+* This is the "no tag selectors" version of the theme file.
+* In the regular version of the JET CSS file we directly style certain tags like 
+* <p> <a> <h1>, etc. However for developers trying to mix JET with other 
+* technologies styling these tags directly could cause issues on other parts of the page. 
+* We therefore set $allowTagSelectors: false; in this version of the file.
+*
+* See the "compatibility" section of the theming documentation for more information
+*********************************************************************************************/
+
+$allowTagSelectors: false;
+
+@import "oj-alta";

@@ -1,0 +1,112 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+//-------------------------------------------------------------------------------------------------
+// If the normalize module hasn't been loaded (for example 
+// $allowTagSelectors is false) _normalize.scss is not included so
+// these mixins are provided in order to normalize the tags for jet selectors.
+// See _normalize.scss for why these values are what they are. 
+// For example if you search normalize for "textarea" you will see we've
+// combined all the properties into one mixin that can be pulled in 
+// on a text area selector when $allowTagSelectors is false.
+//-------------------------------------------------------------------------------------------------
+
+@mixin oj-normalize-content {
+  @if module-included('normalize') == false {
+    @content;
+  }
+}
+
+@mixin oj-normalize-html {
+  @include oj-normalize-content {
+    // not including the font-family, we are setting the 
+    // font-family in oj-html and it's creating a duplicate 
+    // property css lint error
+    // font-family: sans-serif; 
+    -ms-text-size-adjust: 100%; 
+    -webkit-text-size-adjust: 100%; 
+  }
+}
+
+
+@mixin oj-normalize-body {
+  @include oj-normalize-content {
+    margin: 0;
+  }
+}
+
+
+@mixin oj-normalize-textarea {
+  @include oj-normalize-content {
+    font-family: inherit; 
+    font-size: 100%;      
+    margin: 0;            
+    overflow: auto;       
+    vertical-align: top; 
+  }
+}
+
+
+@mixin oj-normalize-text-input {
+  @include oj-normalize-content {
+    font-family: inherit; 
+    font-size: 100%;      
+    margin: 0;            
+    line-height: normal;  
+
+    &::-moz-focus-inner{
+      border: 0;
+      padding: 0;
+    }
+  }
+}
+
+// for input typt="search"
+@mixin oj-normalize-search-input {
+  @include oj-normalize-content {
+    -webkit-appearance: textfield;    
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;  
+    box-sizing: content-box;
+  }
+}
+
+// for checkbox and radio buttons
+@mixin oj-normalize-choice {
+  @include oj-normalize-content {
+    box-sizing: border-box; 
+    padding: 0;   
+  }          
+}
+
+@mixin oj-normalize-select {
+  @include oj-normalize-content {
+    font-family: inherit; 
+    font-size: 100%;      
+    margin: 0;            
+    text-transform: none; 
+  }          
+}
+
+@mixin oj-normalize-button {
+  @include oj-normalize-content {
+    font-family: inherit; 
+    font-size: 100%;      
+    margin: 0;            
+    text-transform: none; 
+    line-height: normal;
+    -webkit-appearance: button; 
+    cursor: pointer; 
+    
+    &::-moz-focus-inner{
+      border: 0;
+      padding: 0;
+    }
+  }          
+}
+
+@mixin oj-normalize-table {
+  @include oj-normalize-content {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }          
+}

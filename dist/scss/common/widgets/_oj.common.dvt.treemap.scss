@@ -1,0 +1,124 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.treemap.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeTreemapClasses != false {
+  @include module-include-once("common.treemap") {
+
+    .oj-treemap {
+      @include oj-user-select-property(none);
+      outline:none;
+      width:650px;
+      height:400px;
+      font-size: $smallFontSize;
+      color: $textColor;
+    }
+
+    .oj-treemap-isolate-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_ena_rtl.png");
+      }
+    }
+
+    .oj-treemap-restore-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_ena_rtl.png");
+      }
+    }
+
+    .oj-treemap-isolate-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_ovr_rtl.png");
+      }
+    }
+
+   .oj-treemap-restore-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_ovr_rtl.png");
+      }
+    }
+
+    .oj-treemap-isolate-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_max_dwn_rtl.png");
+      }
+    }
+
+    .oj-treemap-restore-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/treemap/s_restore_dwn_rtl.png");
+      }
+    }
+
+    .oj-treemap-attribute-type-text {
+      font-weight: bold;
+      color: $formControlLabelColor;
+      font-size: $fontSize;
+    }
+
+    .oj-treemap-attribute-value-text {
+      font-size: $fontSize;
+    }
+
+    .oj-treemap-current-text {
+      color: $textColor;
+      font-size: $fontSize;
+    }
+
+    .oj-treemap-node {
+      font-size: $smallFontSize;
+    }
+
+    .oj-treemap-node.oj-hover {
+      border-color: $dvtTreemapNodeBorderColorHover;
+    }
+
+    .oj-treemap-node.oj-selected {
+      border-top-color:$dvtBorderColor;
+      border-bottom-color: $dvtBorder2Color;
+    }
+
+    .oj-treemap-node-header {
+      font-size: $smallFontSize;
+      color: $headerTextColor;
+      background-color: $dvtComponentBgColor;
+      border-color: $dvtTreemapNodeHeaderBorderColor;
+    }
+
+    .oj-treemap-node-header.oj-hover {
+      background-color: $dvtTreemapNodeBorderColorHover;
+      border-color: $dvtTreemapNodeHeaderBorderColor;
+      border-top-color : $dvtTreemapNodeBorderColorHover;
+      border-bottom-color: $dvtTreemapNodeHeaderBorderColorHover;
+    }
+
+    .oj-treemap-node-header.oj-selected {
+      background-color: $dvtTreemapNodeHeaderBgColor;
+      border-color: $dvtTreemapNodeHeaderBorderColor;
+      border-top-color: $dvtBorderColor;
+      border-bottom-color: $dvtBorder2Color;
+    }
+  }
+}

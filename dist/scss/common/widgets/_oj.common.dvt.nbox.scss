@@ -1,0 +1,102 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.nbox.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeNBoxClasses != false {
+  @include module-include-once("common.nbox") {
+
+    .oj-nbox {
+
+      // hide any selection effects on the actual component
+      @include oj-user-select-property(none);
+      outline:none;
+      width:100%;
+      height:540px;
+    }
+
+    .oj-nbox-columns-title,
+    .oj-nbox-rows-title {
+      color: $textColor;
+      font-size: $fontSize;
+    }
+
+    .oj-nbox-column-label,
+    .oj-nbox-row-label {
+      color: $textColor;
+      font-size: $smallFontSize;
+    }
+
+    .oj-nbox-cell {
+      background-color: $dvtNBoxCellBgColor;
+    }
+
+    // Cells are shown in minimized state when any other node is maximized
+    .oj-nbox-cell.oj-minimized {
+      background-color: $dvtNBoxCellBgColorMinimized;
+    }
+
+    .oj-nbox-cell-label {
+      color: $textColor;
+      font-size: $fontSize;    
+      font-weight: $headerFontWeight;
+    }
+
+    // Cell node count in the body of the cell.  Shown when nbox is too
+    // small to show all of the nodes.
+    .oj-nbox-cell-countlabel {
+      color: $textColor;  
+    }
+
+    // Cell node count in the header of the cell.  Shown when specified
+    // in the nbox options.
+    .oj-nbox-cell-countlabel.oj-nbox-cell-header {
+      font-size: $fontSize;          
+    }
+
+    .oj-nbox-node {
+      background-color: $dvtComponentBgColor;
+    }
+
+    .oj-nbox-node.oj-hover {
+      border-color: $dvtBorder2Color;
+    }
+
+    .oj-nbox-node.oj-selected {
+      border-color: $dvtBorderColor;
+    }
+
+    .oj-nbox-node-label {
+      font-size: $fontSize;
+    }
+
+    .oj-nbox-node-secondarylabel {
+      font-size: $smallFontSize;    
+    }
+
+    // Group node label
+    .oj-nbox-node-categorylabel {
+    }
+
+    // Dialog is shown when inspecting a group node
+    .oj-nbox-dialog {
+      background-color: $dvtNBoxCellBgColor;    
+      border-color: $dvtNBoxDialogBorderColor;
+    }
+
+    .oj-nbox-dialog-label {
+      color: $textColor;
+      font-size: $fontSize;
+      font-weight: $headerFontWeight;
+    }
+
+    // Dialog node count in the header of the dialog.  Shown by default.
+    .oj-nbox-dialog-countlabel {
+      font-size: $fontSize;
+      font-weight: $headerFontWeight;    
+    }
+  }
+}

@@ -1,0 +1,89 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.responsive.helpers.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+
+
+@if $includeResponsiveHelperClasses != false {
+  @include module-include-once("common.responsivehelper") {
+
+    // UP
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} {
+        @include oj-layout-helpers-responsive("oj-sm");
+      }
+    }
+
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media #{$responsiveQueryMediumUp} {
+        @include oj-layout-helpers-responsive("oj-md");
+      }
+    }
+
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media #{$responsiveQueryLargeUp} {
+        @include oj-layout-helpers-responsive("oj-lg");
+      }
+    }
+
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media #{$responsiveQueryXlargeUp} {
+        @include oj-layout-helpers-responsive("oj-xl");
+      }
+    }
+
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media #{$responsiveQueryXXlargeUp} {
+        @include oj-layout-helpers-responsive("oj-xxl");
+      }
+    }
+
+    //ONLY
+
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+      /* small only screen layout helpers */
+        @include oj-layout-helpers-responsive("oj-sm-only");
+      }
+    }
+
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media #{$responsiveQueryMediumOnly} {
+      /* medium only screen layout helpers */
+        @include oj-layout-helpers-responsive("oj-md-only");
+      }
+    }
+
+    @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+      @media #{$responsiveQueryLargeOnly} {
+      /* large only screen layout helpers */
+        @include oj-layout-helpers-responsive("oj-lg-only");
+      }
+    }
+
+    @if $responsiveQueryXlargeOnly and $responsiveQueryXlargeOnly != none {
+      @media #{$responsiveQueryXlargeOnly} {
+      /* large only screen layout helpers */
+        @include oj-layout-helpers-responsive("oj-xl-only");
+      }
+    }
+
+
+    // PRINT
+    @if $responsiveQueryPrint and $responsiveQueryPrint != none {
+      @media #{$responsiveQueryPrint} {
+      /* print layout helpers */
+        @include oj-layout-helpers-responsive("oj-print");
+      }
+    }
+  }
+}

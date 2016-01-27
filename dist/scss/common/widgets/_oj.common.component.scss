@@ -1,0 +1,44 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.component.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeComponentClasses != false {
+  @include module-include-once("common.component") {
+    
+    /* component */
+    /* --------------------------------------------------------------- */
+
+    .oj-component-popup {
+      z-index: $defaultZindex;
+      position: absolute;
+    };
+
+     // alternate layer configuration
+     //     position: absolute;
+     //     top: 0;
+     //     left: 0;
+     //     height: 0;
+     //     width:100%;
+    .oj-component-layer {
+      position: relative;
+    }
+
+    /* overlay used to hide non-modal content */
+    .oj-component-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: $overlayBgColor;
+      opacity: .4;
+      @include oj-user-select-property(none);
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+}

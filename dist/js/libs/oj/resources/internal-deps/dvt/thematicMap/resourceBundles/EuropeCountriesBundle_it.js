@@ -1,0 +1,5 @@
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+"use strict";var l={"DNK":["DNK","Danimarca"],"FRO":["FRO","Faer \u00D8er"],"POL":["POL","Polonia"],"IRL":["IRL","Irlanda"],"NLD":["NLD","Paesi Bassi"],"SVK":["SVK","Slovacchia"],"BLR":["BLR","Bielorussia"],"SWE":["SWE","Svezia"],"ESP":["ESP","Spagna"],"ISL":["ISL","Islanda"],"BEL":["BEL","Belgio"],"ITA":["ITA","Italia"],"UKR":["UKR","Ucraina"],"CHE":["CHE","Svizzera"],"MDA":["MDA","Moldavia"],"HRV":["HRV","Croazia"],"PRT":["PRT","Portogallo"],"CYP":["CYP","Cipro"],"GIB":["GIB","Gibilterra"],"CZE":["CZE","Repubblica Ceca"],"NOR":["NOR","Norvegia"],"GRC":["GRC","Grecia"],"LTU":["LTU","Lituania"],"GBR":["GBR","Regno Unito"],"BIH":["BIH","Bosnia-Erzegovina"],"HUN":["HUN","Ungheria"],"FIN":["FIN","Finlandia"],"LUX":["LUX","Lussemburgo"],"TUR":["TUR","Turchia"],"FRA":["FRA","Francia"],"DEU":["DEU","Germania"],"LVA":["LVA","Lettonia"]};(this?this:window)['DvtBaseMapManager']['_UNPROCESSED_MAPS'][2].push(["europe","countries",l]);

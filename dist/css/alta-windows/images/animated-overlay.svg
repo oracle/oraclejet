@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Windows_Indeterminate_Progress_Bar_Ellipses"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="52px" height="4px"
+	 viewBox="0 0 52 4" enable-background="new 0 0 52 4" xml:space="preserve">
+<circle fill="#0572CE" cx="50" cy="2" r="2"/>
+<circle fill="#0572CE" cx="38" cy="2" r="2"/>
+<circle fill="#0572CE" cx="26" cy="2" r="2"/>
+<circle fill="#0572CE" cx="14" cy="2" r="2"/>
+<circle fill="#0572CE" cx="2" cy="2" r="2"/>
+</svg>

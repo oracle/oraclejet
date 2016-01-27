@@ -1,0 +1,33 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+//*****************************************************************************
+//
+// Usage Example:
+//
+//      .oj-foo.oj-focus {
+//       
+//        @include oj-browser-focus-outline-approximation($buttonTextColor);
+//      }
+//
+// By default browsers often show a default outline on elements with focus. 
+// This outline appearance is different on different browsers, 
+// while IE and firefox show a 1px dotted border, chrome shows a much 
+// thicker solid blue border. At times an element may not actually have focus, 
+// but you'd like it to appear that way. It would be nice if you could say 
+// something like "outline: browser-focus-default", however that is not supported. 
+// This mixin attempts to approximate the browser default focus outline with a 
+// default focus ring on chrome (webkit) and a 1px dotted border on other browsers.
+//
+// $outlineColor: $outlineColor is used on most browsers, however on chrome 
+//                -webkit-focus-ring-color is used. On FF the focus outline
+//                attempts to match the color of text, so a good value to consider
+//                for the outline color is the color of the text within.
+//*****************************************************************************
+
+@mixin oj-browser-focus-outline-approximation($outlineColor)
+{
+  outline: dotted 1px $outlineColor;       // used on most browsers
+  outline: -webkit-focus-ring-color auto;  // used on chrome
+}
+

@@ -1,0 +1,170 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.timeline.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeTimelineClasses != false {
+  @include module-include-once("common.timeline") {
+    .oj-timeline {
+      @include oj-user-select-property(none);
+      outline:none;
+      border-color:$dvtTimelineBorderColor;
+    }
+    
+    .oj-timeline-item {
+      background-color:$dvtTimelineItemBgColor;
+      border-color:$dvtTimelineItemBorderColor;
+    }
+    
+    .oj-timeline-item.oj-hover {
+      border-color:$dvtTimelineItemBorderColorHover;
+    }
+    
+    .oj-timeline-item.oj-selected {
+      border-color:$dvtTimelineItemBorderColorSelected;
+    }
+    
+    .oj-timeline-item-description {
+      color:$dvtTimelineItemDescriptionColor;
+      white-space:nowrap;
+      font-size:$smallFontSize;
+      font-family:$fontFamily;	
+    }
+    
+    .oj-timeline-item-title {
+      color:$dvtTimelineItemTitleColor;
+      white-space:nowrap;
+      font-size:$smallFontSize;
+      font-weight:bold;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-major-axis-label {
+      color:$dvtTimelineMajorAxisLabelColor;
+      white-space:nowrap;
+      font-size:$fontSize;
+      font-weight:bold;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-major-axis-separator {
+      color:$dvtTimelineMajorAxisSeparatorColor;
+    }
+    
+    .oj-timeline-minor-axis {
+      background-color:$dvtTimelineMinorAxisBgColor;
+      border-color:$dvtTimelineMinorAxisBorderColor;
+    }
+    
+    .oj-timeline-minor-axis-label {
+      color:$dvtTimelineMinorAxisLabelColor;
+      white-space:nowrap;
+      font-size:$smallFontSize;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-minor-axis-separator {
+      color:$dvtTimelineMinorAxisSeparatorColor;
+    }
+    
+    .oj-timeline-overview {
+      background-color:$dvtTimelineOverviewBgColor;
+    }
+    
+    .oj-timeline-overview-label {
+      color:$dvtTimelineOverviewLabelColor;
+      white-space:nowrap;
+      font-size:$smallFontSize;
+      font-weight:bold;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-overview-window {
+      background-color:$dvtTimelineOverviewWindowBgColor;
+      border-color:$dvtTimelineOverviewWindowBorderColor;
+    }
+    
+    .oj-timeline-overview-window-handle-horizontal {
+      background-image:oj-common-image-url("dvt/common/drag_horizontal.png");
+    }
+    
+    .oj-timeline-overview-window-handle-vertical {
+      background-image:oj-common-image-url("dvt/common/drag_vertical.png");
+    }
+    
+    .oj-timeline-reference-object {
+      color:$dvtTimelineReferenceObjectColor;
+    }
+    
+    .oj-timeline-series {
+      background-color: $dvtTimelineSeriesBgColor;
+    }
+    
+    .oj-timeline-series-label {
+      color:$dvtTimelineSeriesLabelColor;
+      white-space:nowrap;
+      font-size:$fontSize;
+      font-weight:bold;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-series-empty-text {
+      color:$dvtTimelineSeriesEmptyTextColor;
+      white-space:nowrap;
+      font-size:$smallFontSize;
+      font-family:$fontFamily;
+    }
+    
+    .oj-timeline-scroll-indicator-back {
+      background-image:oj-common-image-url("dvt/timeline/scroll_l.png");
+    }
+    
+    .oj-timeline-scroll-indicator-forward {
+      background-image:oj-common-image-url("dvt/timeline/scroll_r.png");
+    }
+    
+    .oj-timeline-scroll-indicator-up {
+      background-image:oj-common-image-url("dvt/timeline/scroll_t.png");
+    }
+    
+    .oj-timeline-scroll-indicator-down {
+      background-image:oj-common-image-url("dvt/timeline/scroll_b.png");
+    }
+    
+    .oj-timeline-zoomin-icon {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_hov.png");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_dis.png");
+    }
+    
+    .oj-timeline-zoomout-icon {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_hov.png");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_dis.png");
+    }
+  }
+}

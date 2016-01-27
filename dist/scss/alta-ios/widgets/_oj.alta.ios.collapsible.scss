@@ -1,0 +1,67 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeCollapsibleClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "oj.alta.ios.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.collapsible";
+
+
+@if $includeCollapsibleClasses != false {
+  @include module-include-once("alta.ios.collapsible") {
+    .oj-collapsible-header {
+      @include oj-display-flex-property();
+      @include oj-align-items-property(center);
+    }
+
+    .oj-collapsible-header-icon {
+      padding: 4px;
+    }
+
+    .oj-collapsible-header a,
+    .oj-collapsible-header .oj-collapsible-header-icon {
+      /*
+       * For a basic collapsible (not in an accordion)
+       * the closed font icon has some whitespace on the left side,
+       * use a negative margin to move over the icon
+       */
+      @include oj-ltr() {
+        margin: 0 3px 0 -7px;
+      }
+      @include oj-rtl() {
+        margin: 0 -7px 0 3px;
+      }
+    }
+
+    .oj-collapsible-close-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
+
+    .oj-collapsible-open-icon {
+      @extend .oj-fwk-icon-arrow03-s;
+    }
+
+    // align content with header text
+    .oj-collapsible-content {
+      @include oj-ltr() {
+        padding-left: 20px;
+      }
+      @include oj-rtl() {
+        padding-right: 20px;
+      }
+    }
+  }
+}

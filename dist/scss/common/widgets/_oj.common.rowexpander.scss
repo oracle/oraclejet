@@ -1,0 +1,126 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeRowExpanderClasses != false {
+    @include module-include-once("common.rowexpander") {
+        
+        /* Styling for the widget */
+        .oj-rowexpander{   
+            display:inline-block;       
+        }              
+        
+        /* Bottom alignment in datagrid */
+        .oj-datagrid .oj-rowexpander{
+            height:100%;    
+        }        
+        
+        /* Size and position the spacer */        
+        .oj-rowexpander-icon-spacer{
+            min-width:1.5em; 
+            display:inline-block;
+        }        
+        
+        /* Size and position the touch area */        
+        .oj-rowexpander-touch-area{
+            @include oj-box-sizing-property (border-box);
+            height: 1.5em;
+            width: 1.5em;
+            padding: .25em;
+            margin-bottom: -.25em;
+        }        
+        
+        /* Data grid specific bottom alignment of touch area */                
+        .oj-datagrid .oj-rowexpander-touch-area{
+            position:absolute;
+            bottom:0;
+        }
+        
+        /* Table specific centered alignment of touch area */
+        .oj-table .oj-rowexpander-touch-area{
+            margin-top: -.25em;
+        }        
+
+        /* Alignment for the leaf, expand, lazyload and collapse icons */
+        .oj-rowexpander-leaf-icon, 
+        .oj-rowexpander-expand-icon, 
+        .oj-rowexpander-collapse-icon, 
+        .oj-rowexpander-lazyload-icon {
+            font-size:1em;
+            // for iOS alignment issues
+            line-height:1;  
+        }
+        
+        /* Data grid specific absolute icon positioning */
+        .oj-datagrid .oj-rowexpander-leaf-icon, 
+        .oj-datagrid .oj-rowexpander-expand-icon, 
+        .oj-datagrid .oj-rowexpander-collapse-icon, 
+        .oj-datagrid .oj-rowexpander-lazyload-icon {
+            position:absolute;
+        }        
+        
+        /* Styling for the load icon */
+        .oj-rowexpander-lazyload-icon {
+            @extend .oj-fwk-icon-load;  
+            width: 100%;
+        }
+        
+        /* Add this class name to your text when stamping a row expander inside of data grid to obtain bottom alignment */        
+        .oj-rowexpander-cell-text{
+            position:absolute;
+            overflow:hidden;
+            //in the row expander case text is default aligned to the bottom
+            bottom:0;
+            // for iOS alignment issues
+            line-height:1;  
+        }
+        
+        .oj-rowexpander-indent{
+            display:inline-block;
+        }
+        
+        /* Set the indentation here depth 1 is one indent level */        
+        .oj-rowexpander-depth-1 {
+            width: $rowExpanderIndentWidth;
+        }
+        
+        .oj-rowexpander-depth-2 {
+            width: ($rowExpanderIndentWidth * 2);
+        }
+        
+        .oj-rowexpander-depth-3 {
+            width: ($rowExpanderIndentWidth * 3);
+        }    
+        
+        .oj-rowexpander-depth-4 {
+            width: ($rowExpanderIndentWidth * 4);
+        }
+        
+        .oj-rowexpander-depth-5 {
+            width: ($rowExpanderIndentWidth * 5);
+        }
+        
+        .oj-rowexpander-depth-6 {
+            width: ($rowExpanderIndentWidth * 6);
+        }           
+        
+        .oj-rowexpander-depth-7 {
+            width: ($rowExpanderIndentWidth * 7);
+        }   
+
+        /* Styling for the expand icon */
+        .oj-rowexpander-expand-icon{
+            @extend .oj-fwk-icon-arrow03-end;  
+        }
+        
+        /* Styling for the collapse icon */
+        .oj-rowexpander-collapse-icon {
+            @extend .oj-fwk-icon-arrow03-s-end; 
+        }
+        
+        /* Styling to remove the default underlining of hovered links */
+        .oj-rowexpander a:hover, 
+        .oj-rowexpander a:focus{
+            text-decoration:none;
+        }
+    }
+}

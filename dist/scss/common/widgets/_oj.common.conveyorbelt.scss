@@ -1,0 +1,100 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.conveyorbelt.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+
+@if $includeConveyerBeltClasses != false {
+  @include module-include-once("common.conveyorbelt") {
+    
+    /* conveyorbelt */
+    /* --------------------------------------------------------------- */
+    
+    .oj-conveyorbelt {
+        position: relative;
+    }
+    
+    /* overflow indicators */
+    .oj-conveyorbelt-overflow-indicator {
+        @include oj-box-sizing-property(border-box);
+        width: $conveyorBeltOverflowIndicatorHeight;
+        height: $conveyorBeltOverflowIndicatorHeight;
+        //FIX BUG 19571727: specify line-height to be same as height so that
+        //arrows appear vertically centered regardless of font size
+        line-height: $conveyorBeltOverflowIndicatorHeight;
+        text-align: center;
+        cursor: $buttonCursor;
+        @include oj-border-radius($buttonBorderRadius);
+        border: 1px solid;
+    }
+
+    .oj-conveyorbelt-overflow-indicator.oj-default {
+        border-color: transparent;
+    }
+
+    .oj-conveyorbelt-overflow-indicator.oj-hover {
+        //from .oj-button.oj-hover
+        background-color: $buttonHalfChromeBgColorHover;
+        @include oj-background-image($buttonBgImageHover);
+        border-color: $buttonHalfChromeBorderColorHover;
+    }
+
+    //active should trump hover
+    .oj-conveyorbelt-overflow-indicator.oj-active,
+    .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover {
+        //from .oj-button.oj-active
+        background-color: $buttonHalfChromeBgColorActive;
+        @include oj-background-image($buttonBgImageActive);
+        border-color: $buttonHalfChromeBorderColorActive;
+        opacity: $buttonHalfChromeOpacityActive;
+    }
+
+    
+    /* overflow icons */
+    .oj-conveyorbelt-overflow-indicator .oj-conveyorbelt-overflow-icon {
+        // make sure that the cursor is uniform across the whole overflow indicator 
+        cursor: inherit;
+        //FIX BUG 19571727: align the icon vertically; add margin on bottom to
+        //center it better than vertical-align by itself
+        vertical-align: middle;
+        margin-bottom: 3px;
+    }
+    
+    .oj-conveyorbelt-overflow-indicator.oj-default .oj-conveyorbelt-overflow-icon {
+        color: $buttonHalfChromeIconColor;
+    }
+
+    .oj-conveyorbelt-overflow-indicator.oj-hover .oj-conveyorbelt-overflow-icon {
+        //from .oj-button.oj-hover .oj-button-icon
+        color: $buttonHalfChromeIconColorHover;
+    }
+
+    //active should trump hover
+    .oj-conveyorbelt-overflow-indicator.oj-active .oj-conveyorbelt-overflow-icon,
+    .oj-conveyorbelt-overflow-indicator.oj-active.oj-hover .oj-conveyorbelt-overflow-icon {
+        //from .oj-button.oj-active .oj-button-icon
+        color: $buttonHalfChromeIconColorActive;
+    }
+
+
+    // icons
+    //------------------------------------------
+
+    .oj-conveyorbelt-overflow-icon.oj-start {
+        @extend .oj-fwk-icon-caret-start;
+    }
+    .oj-conveyorbelt-overflow-icon.oj-end {
+        @extend .oj-fwk-icon-caret-end;
+    }
+    .oj-conveyorbelt-overflow-icon.oj-top {
+        @extend .oj-fwk-icon-caret-n;
+    }
+    .oj-conveyorbelt-overflow-icon.oj-bottom {
+        @extend .oj-fwk-icon-caret-s;
+    }
+  }
+}

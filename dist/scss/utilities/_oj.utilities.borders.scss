@@ -1,0 +1,170 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "oj.utilities.bidi";
+
+//*****************************************************************************
+//
+// Use this mixin in conjunction with the bidi mixins (oj-rtl and oj-ltr), 
+//     otherwise use mixins like oj-border-radius
+// 
+// Usage Example:
+//
+//    .oj-buttonset .oj-button.oj-buttonset-first {
+//        @include oj-ltr() {
+//          @include oj-border-radius($buttonBorderRadius 0 0 $buttonBorderRadius,
+//                                    $slowOverride: false);
+//        }
+//        @include oj-rtl() {
+//          @include oj-border-radius(0 $buttonBorderRadius $buttonBorderRadius 0,
+//                                    $slowOverride: false);
+//        }
+//
+//        @include oj-border-radius-slowoverride();
+//    }
+//
+//*****************************************************************************
+
+@mixin oj-border-radius-slowoverride()
+{
+  @if ($borderRadiusGeneration == slowOverride) 
+  {
+    html.oj-slow-borderradius & {
+      border-radius: 0;
+      @content;
+    }
+  }
+}
+
+//*****************************************************************************
+//
+// 
+// Usage Example:
+//
+//      .oj-foo .oj-binky {
+//       
+//        @include oj-border-radius(0 $buttonBorderRadius $buttonBorderRadius 0);
+//      }
+//
+// $slowOverride: set this to false to not write out the slow override. 
+//       In some cases the slow override cannot be written out properly, 
+//       for example when you use this mixin inside 
+//       of the bidi mixins (oj-rtl and oj-ltr). 
+//       See the doc for mixin oj-gradients-slowoverride() for more info. 
+//       If you are in a bidi call and don't set this to false it will 
+//       warn you. 
+//*****************************************************************************
+
+@mixin oj-border-radius-property ($borderRadiusProperty, 
+                                  $borderRadiusValue, 
+                                  $slowOverride: true)
+{
+
+  @if ($borderRadiusGeneration != off)
+  {
+    #{$borderRadiusProperty}: $borderRadiusValue;
+
+    @if ($borderRadiusGeneration == slowOverride) {
+      // we don't need to write any override out if the border radius is 0
+      $borderRadiusValueZero: false;
+      
+      // check if there's even a 0 in there
+      @if (str-index(inspect($borderRadiusValue), "0") != null)
+      {
+        $borderRadiusValueZero: true;
+        
+        @for $i from 1 through length($borderRadiusValue)
+        {
+          $val: nth($borderRadiusValue,$i);
+
+          @if ($val != 0) {
+            $borderRadiusValueZero: false;
+          }
+        }       
+      }
+
+      @if ($borderRadiusValueZero == false) {
+        @if ($_inbidi == true and $slowOverride == false)
+        {
+          //@warn "slow override not written out";
+        }
+        @else if ($_inbidi == true and $slowOverride == true)
+        {
+          @warn "oj-border-radius-property mixin called inside a bidi mixin without setting $slowOverride to false, see doc for mixin oj-border-radius-slowoverride for proper use";
+        }   
+        @else if ($slowOverride == false and $_inbidi != true )
+        {
+          @warn "error: oj-border-radius-property mixin called outside a bidi mixin, but with $slowOverride set to false.";
+        }
+        @else
+        {
+          html.oj-slow-borderradius & {
+            border-radius: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+@mixin oj-border-radius ($borderRadiusValue, 
+                         $slowOverride: true)
+{
+  @include oj-border-radius-property("border-radius", 
+                                     $borderRadiusValue, 
+                                     $slowOverride)
+}
+
+@mixin oj-border-top-left-radius ($borderRadiusValue, 
+                                  $slowOverride: true)
+{
+  @include oj-border-radius-property("border-top-left-radius", 
+                                     $borderRadiusValue, 
+                                     $slowOverride)
+}
+
+@mixin oj-border-top-right-radius ($borderRadiusValue, 
+                                   $slowOverride: true)
+{
+  @include oj-border-radius-property("border-top-right-radius", 
+                                     $borderRadiusValue, 
+                                     $slowOverride)
+}
+
+@mixin oj-border-bottom-left-radius ($borderRadiusValue, 
+                                     $slowOverride: true)
+{
+  @include oj-border-radius-property("border-bottom-left-radius", 
+                                     $borderRadiusValue, 
+                                     $slowOverride)
+}
+
+@mixin oj-border-bottom-right-radius ($borderRadiusValue, 
+                                      $slowOverride: true)
+{
+  @include oj-border-radius-property("border-bottom-right-radius", 
+                                     $borderRadiusValue, 
+                                     $slowOverride)
+}
+
+//*****************************************************************************
+//
+// Usage Example:
+//
+//      .oj-foo .oj-binky {
+//       
+//        @include oj-border-position(60px);
+//      }
+//
+//*****************************************************************************
+
+@mixin oj-border-position ($borderPositionHorizontal:0, 
+                           $borderPositionVertical:0)
+{
+    @include oj-ltr() {
+        background-position: $borderPositionHorizontal $borderPositionVertical;
+    }
+    @include oj-rtl() {
+        background-position: (-$borderPositionHorizontal) $borderPositionVertical;
+    }
+}

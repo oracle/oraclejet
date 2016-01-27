@@ -1,0 +1,66 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.swipetoreveal.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeSwipeToRevealClasses != false {
+  @include module-include-once("common.swipetoreveal") {
+
+    /*
+     * Applied to offcanvas when it is in open state 
+     */
+    .oj-swipetoreveal.oj-offcanvas-start.oj-offcanvas-open,
+    .oj-swipetoreveal.oj-offcanvas-end.oj-offcanvas-open {
+      @include oj-display-flex-property();
+      overflow: hidden;      
+    }
+
+    /*
+     * Applied to action items 
+     */
+    .oj-swipetoreveal-action {
+      @include oj-flex-property(1);
+      max-width: 100%;
+      text-align:center;
+      vertical-align:middle;
+      height: 100%;
+      overflow: hidden;
+      color: $swipeToRevealActionTextColor;
+      transition: max-width $swipeToRevealAnimationDuration;
+      @include oj-transition-timing-function-property(ease-in-out);
+      background-color: $swipeToRevealActionBgColor;
+    }
+
+    /*
+     * Applied to action items that should be hidden when full trigger occurs
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-hide-when-full {
+        max-width: 0;
+    }
+
+    /*
+     * Applied to the more action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-more {
+        background-color: $swipeToRevealMoreActionBgColor;
+    }
+
+    /*
+     * Applied to the flag action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-flag {
+        background-color: $swipeToRevealFlagActionBgColor;
+    }
+
+    /*
+     * Applied to the alert action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-alert {
+        background-color: $swipeToRevealAlertActionBgColor;
+    }
+  }
+}

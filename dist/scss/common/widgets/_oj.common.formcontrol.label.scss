@@ -1,0 +1,247 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.label.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+
+@if $includeLabelClasses != false {
+  @include module-include-once("common.label") {
+
+
+    // this file includes classes for ojLabel, but you will also see
+    // a class .oj-label-nocomp to use label html/css without a component.
+    // For example you might see:
+    //    <label class="oj-label-nocomp" for="foo">label text</label>
+    //    <input id="foo" class="oj-form-control oj-inputtext-nocomp"
+
+    // JET is designed to be mobile first, therefore labels are 
+    // top aligned as this should be their position on a mobile device.
+    // If the user wants them to be inline, they use the oj-label-inline selector
+    // to indicate this.
+    // oj-label most likely will be on a div surrounding the help and 
+    // required icons as well as the label element. It won't be on the label
+    // element itself (the input component wraps the label element and adds
+    // oj-label style)
+    // If oj-label-inline is set on the label element in the page, 
+    // the input component moves it to the label's wrapper dom element.
+    .oj-label,
+    .oj-label-nocomp {
+        display: block;
+        // the color, size, and font-weight need to go on outer dom 
+        // in case you use something like text-overflow: ellipsis,
+        // otherwise the ellipsis won't be the same font 
+        // color/size/weight as the label text.
+        color: $formControlLabelColor;
+        font-size: $formControlLabelFontSize;    
+        font-weight: $formControlLabelFontWeight;
+        margin-bottom: $formControlLabelMarginBottom;
+    }
+
+    /* 
+      We need to line up a label with plain text but without giving it top margins which 
+      we get with oj-label-inline.
+     */
+     .oj-label-nocomp.oj-label-inline.oj-label-for-non-control {
+        margin-top:0;
+        vertical-align: baseline;
+     }
+
+    /* When label is block, this wrapper is needed in order 
+       to float modifiers (required, help, changed) to the end of the label */
+    .oj-label-group {
+        display: inline-block;
+        // align bottom to take out the inherent padding. Then I can add my own padding that
+        // works for non-component and component labels
+        vertical-align: bottom;
+    }
+
+    // There are selectors that set float: none on oj-label-help-icon.
+    // (see float:none in _oj.common.formlayout.scss/
+    // .#{$selectorPrefix}-label-inline).
+    // Since vertical-align is needed when not floating, we put it here by default.
+    // It appears to have no effect when floating.
+    .oj-label-help-icon {
+         vertical-align: middle;
+    }
+
+    // There are selectors that set float: none on oj-label-required-icon.
+    // (see float:none in _oj.common.formlayout.scss/
+    // .#{$selectorPrefix}-label-inline).
+    // Since vertical-align is needed when not floating, we put it here by default.
+    // It appears to have no effect when floating.
+    .oj-label-required-icon {
+         vertical-align: top;
+    }
+    // JET is designed to be mobile first, therefore by default labels are 
+    // top aligned as this should be their position on a mobile device.
+    // When labels are on top of the field, the alta spec says the
+    // icons (required, help) come after the label. We use float to achieve this.
+    .oj-label label {
+        @include oj-bidi-property($property: 'float', $startOrEnd: start);
+    }
+
+    // JET is designed to be mobile first, therefore by default labels are 
+    // top aligned as this should be their position on a mobile device.
+    // When labels are on top of the field, the alta spec says the
+    // icons (required, help) come after the label. 
+    // We use float to position them this way.
+    .oj-label-required-icon,
+    .oj-label-help-icon {
+         @include oj-bidi-property($property: 'float', $startOrEnd: end);
+         // need 6px of space between icons and label. if floating
+         // end, then that means icons are after label, so we want
+         // space on the left in ltr.
+         @include oj-ltr {
+            margin-left: 6px;
+            margin-right: 0;
+         }
+         @include oj-rtl(){
+           margin-right: 6px;
+           margin-left: 0;
+         }
+    }
+    // we need a tiny bit of padding. If we put a border around the oj-label-group,
+    // or when we set overflow:hidden on oj-label-group during nowrap, the icon gets slightly
+    // cut off.
+    .oj-label-help-icon-anchor {
+        @include oj-bidi-property($property: 'float', $startOrEnd: end);
+          @include oj-ltr {
+            padding-right: 2px;
+         }
+         @include oj-rtl(){
+           padding-left: 2px;
+         }       
+    }
+    // This is for when you don't want your labels to wrap, whether the label is inline or
+    // on top.
+    .oj-label.oj-label-nowrap {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;      
+        @include oj-ltr()
+        {
+          padding-right: $formControlLabelInlineGutter;
+        }
+
+        @include oj-rtl()
+        {
+          padding-left: $formControlLabelInlineGutter;
+        }
+    }
+    
+    // oj-label-group is a little less wide than oj-label, and we want to contain the
+    // text within oj-label group as well. The only reason I see where this is nicer
+    // than setting overflow: hidden on this dom node instead of root is that 
+    // the user could style the root to do other things besides overflow: hidden
+    // and this will inherit it.
+    .oj-label.oj-label-nowrap  .oj-label-group {
+      overflow: inherit;
+      text-overflow: inherit;
+  }
+    
+    // This is for inline labels - labels and input are on the same line
+    .oj-label-inline {
+        display: inline-block;
+        vertical-align: top;
+        margin-top: $formControlLabelInlineMarginTop;
+        // box sizing required for firefox
+        @include oj-box-sizing-property(border-box);
+
+        @include oj-ltr()
+        {
+          padding-right: $formControlLabelInlineGutter;
+        }
+
+        @include oj-rtl()
+        {
+          padding-left: $formControlLabelInlineGutter;
+        }
+    }
+    // This is for inline text - labels and text are on the same line. We put oj-label-inline
+    // on the label and we need this to put on the plain text to have them line up.
+    .oj-form-non-control-inline {
+        display: inline-block;
+        vertical-align: top;
+        margin-top: $formControlLabelInlineMarginTop;
+        // box sizing required for firefox
+        @include oj-box-sizing-property(border-box);
+    }
+    // When labels are inline with the field, the alta spec says the
+    // icons (required, help) come before the label. 
+    // We use float to achieve this. The oj-label-inline selector tells
+    // us it is inline.
+    .oj-label-inline label {
+        @include oj-bidi-property($property: 'float', $startOrEnd: end);
+    }
+    
+    // When labels are inline with the field, the alta spec says the
+    // icons (required, help) come before the label. 
+    // We float to achieve this. The oj-label-inline selector tells
+    // us it is inline.
+    .oj-label-inline .oj-label-required-icon,
+    .oj-label-inline .oj-label-help-icon
+    {
+      @include oj-bidi-property($property: 'float', $startOrEnd: start);
+      @include oj-ltr {
+         margin-right: 6px;
+         margin-left: 0;
+      }
+      @include oj-rtl(){
+        margin-left: 6px;
+        margin-right: 0;
+      }
+    }
+    .oj-label-inline .oj-label-help-icon-anchor {
+      @include oj-bidi-property($property: 'float', $startOrEnd: start);    
+    }
+
+    .oj-label-inline.oj-label-inline-top {
+      margin-top: 0;
+    }
+
+    .oj-label-accesskey {
+      text-decoration: underline;
+    }
+    
+    // the alta spec says to underline the label when there is help definition
+    .oj-label-help-def {
+      border-bottom: 2px dotted $helpBorderColor;
+    }
+
+    .oj-label-help-icon {
+      @extend .oj-fwk-icon-help;
+    }
+    // render the label's required icon as an icon font character, else render as plain css.
+    // this allows the alta theme to render an '*' icon using content css property, 
+    // and alta mobile themes to render a circle w/o using content css property.
+    @if ($formControlLabelRequiredChar and $formControlLabelRequiredChar != '')
+    {
+      
+      .oj-label-required-icon:before {
+        content: $formControlLabelRequiredChar;
+      }
+
+      .oj-label-required-icon {
+        color: $colorRequired;
+        font-size: $largeFontSize;
+        font-weight: normal;
+        line-height: $fontSize;
+        font-family: inherit;
+      }
+    }
+    @else
+    {
+      .oj-label-required-icon {
+        background-color: $colorRequired;
+        border-radius: 50%;
+        height: 4px;
+        width: 4px; // px is ok since it is so small it won't make a difference if font size changes
+      }
+    }
+
+  }
+}

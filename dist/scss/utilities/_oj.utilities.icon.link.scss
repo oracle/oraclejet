@@ -1,0 +1,83 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "oj.utilities.icons";
+
+//*****************************************************************************
+// This mixin can be used to create the image css to use in a link. 
+// The mixin is only useful if the image varies depending on the state, 
+// meaning you want to use a different icon in hover/active/disabled states. 
+//
+// For example let's say you have image files for an outdent icon and you want to generate 
+// the selector demo-outdent-icon. Your scss might look like:
+//
+// .demo-outdent-icon {
+//   height: 16px;
+//   width: 16px;
+// 
+//   @include oj-link-icon( 
+//        $icon:            url("clickable/outdent-ena.png"),
+//        $iconHover:       url("clickable/outdent-ovr.png"),                       
+//        $iconActive:      url("clickable/outdent-dwn.png"),   
+//        $iconDisabled:    url("clickable/outdent-dis.png"),
+// 
+//        // NOTE: right to left versions optional
+//        $iconRtl:         url("clickable/rtl/outdent-rtl-ena.png"),
+//        $iconRtlHover:    url("clickable/rtl/outdent-rtl-ovr.png"),
+//        $iconRtlActive:   url("clickable/rtl/outdent-rtl-dwn.png"),
+//        $iconRtlDisabled: url("clickable/rtl/outdent-rtl-dis.png")
+//   );
+// }
+//
+//
+// You would then use demo-outdent-icon in conjunction with the class oj-icon, 
+// so in a link it might look like.
+//
+// 
+//    <a href="http://www.oracle.com"
+//      ><span class="oj-icon demo-outdent-icon"></span> outdent</a>
+//
+// Note that since the image is inline-block you need to control whitespace,
+// the example above might look a little funny because we've removed
+// spaces, see this article:
+// http://css-tricks.com/fighting-the-space-between-inline-block-elements/
+//*****************************************************************************
+@mixin oj-link-icon ( 
+       $icon,  
+       $iconDisabled,          
+       $iconHover,                       
+       $iconActive,     
+       $iconRtl:         null,
+       $iconRtlDisabled: null,
+       $iconRtlHover:    null,
+       $iconRtlActive:   null)
+{
+
+    a & {
+      @include oj-icon-content(                                   
+           $icon:    $icon,
+           $iconRtl: $iconRtl);
+    }
+
+    a:hover &  {
+      @include oj-icon-content(                                   
+           $icon:    $iconHover,
+           $iconRtl: $iconRtlHover);
+    }
+
+    // active definition should be after hover/focus definition
+    // in order to have higher specificity
+    a:active &  {
+      @include oj-icon-content(                                   
+           $icon:    $iconActive,
+           $iconRtl: $iconRtlActive);
+    }
+
+
+    a.oj-disabled &  {
+      @include oj-icon-content(                                   
+           $icon:    $iconDisabled,
+           $iconRtl: $iconRtlDisabled) ;
+    }
+
+  
+}

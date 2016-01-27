@@ -1,0 +1,72 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.sunburst.scss
+// !!!
+@import "../../utilities/oj.utilities";
+@if $includeSunburstClasses != false {
+  @include module-include-once("common.sunburst") {
+
+    .oj-sunburst {
+      @include oj-user-select-property(none);
+      outline:none;
+      width:400px;
+      height:400px;
+      font-size: $smallFontSize;
+      color: $textColor;
+    }
+
+    .oj-sunburst-expand-icon {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand.png");
+    }
+
+    .oj-sunburst-collapse-icon {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse.png");
+    }
+
+    .oj-sunburst-expand-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
+    }
+
+    .oj-sunburst-collapse-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
+    }
+
+    .oj-sunburst-expand-icon.oj-active {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
+    }
+
+    .oj-sunburst-collapse-icon.oj-active {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
+    }
+
+    .oj-sunburst-attribute-type-text {
+      font-weight: bold;
+      color: $formControlLabelColor;
+      font-size: $fontSize;
+    }
+    
+    .oj-sunburst-attribute-value-text { 
+      font-size: $fontSize;
+    }
+
+    .oj-sunburst-current-text { 
+      color: $textColor;
+      font-size: $fontSize;
+    }
+
+    .oj-sunburst-node {
+      font-size: $smallFontSize;
+    }
+
+    .oj-sunburst-node.oj-hover {
+      border-color: $dvtSunburstNodeBorderColorHover;
+    }
+
+    .oj-sunburst-node.oj-selected {
+      border-top-color:$dvtBorderColor;
+      border-bottom-color: $dvtBorder2Color;
+    }
+  }
+}

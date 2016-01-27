@@ -1,0 +1,42 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeIconClasses: $includeAllClasses !default;
+
+
+// icon font vars
+$oj-fwk-icon-arrow-e: "\e600" !default;
+$oj-fwk-icon-arrow-se: "\e601" !default;
+$oj-fwk-icon-arrow02-s: "\e602" !default;
+$oj-fwk-icon-arrow03-e: "\e603" !default;
+$oj-fwk-icon-arrow03-se: "\e604" !default;
+$oj-fwk-icon-calendar: "\e609" !default;
+$oj-fwk-icon-caret-e: "\e605" !default;
+$oj-fwk-icon-caret02-e: "\e606" !default;
+$oj-fwk-icon-caret02end-e: "\e607" !default;
+$oj-fwk-icon-caret03-e: "\e612" !default;
+$oj-fwk-icon-clock: "\e60a" !default;
+$oj-fwk-icon-cross02: "\e60c" !default;
+$oj-fwk-icon-cross03: "\e60e" !default;
+$oj-fwk-icon-cross: "\e608" !default;
+$oj-fwk-icon-drag: "\e610" !default;
+$oj-fwk-icon-folderhierarchy: "\e611" !default;
+$oj-fwk-icon-hamburger: "\e60f" !default;
+$oj-fwk-icon-help: "\e60b" !default;
+$oj-fwk-icon-magnifier: "\e60d" !default;
+$oj-fwk-icon-minimize: "\e613" !default;
+$oj-fwk-icon-maximize: "\e614" !default;
+$oj-fwk-icon-checkmark: "\e615" !default; 
+
+
+@import "../../common/widgets/oj.common.icons"; 
+
+@if $includeIconClasses != false {
+  @include module-include-once("alta.icons") {
+
+   
+
+  }
+}
+
+

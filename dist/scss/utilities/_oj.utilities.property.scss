@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "oj.utilities.bidi";
+
+
+//*****************************************************************************
+//
+//*****************************************************************************
+
+@function oj-shorthand-property-value-side ($propertyValue, $side)
+{
+  @if ($side == top or length($propertyValue) == 1 )
+  {
+    @return nth($propertyValue, 1);
+  }
+  @else if (length($propertyValue) == 2)
+  {
+    @if ($side == bottom)
+    {
+      @return nth($propertyValue, 1);
+    }
+    @else
+    {
+      @return nth($propertyValue, 2);
+    }
+  }
+  @else if (length($propertyValue) == 3)
+  {
+    @if ($side == bottom)
+    {
+      @return nth($propertyValue, 3);
+    }
+    @else
+    {
+      @return nth($propertyValue, 2);
+    }
+  }
+  @else if (length($propertyValue) == 4)
+  {
+    @if ($side == right)
+    {
+      @return nth($propertyValue, 2);
+    }
+    @if ($side == bottom)
+    {
+      @return nth($propertyValue, 3);
+    }
+    @else
+    {
+      @return nth($propertyValue, 4);
+    }
+  }
+}
+
+
+@function oj-shorthand-property-value-top ($propertyValue)
+{
+  @return oj-shorthand-property-value-side($propertyValue, top);
+}
+
+@function oj-shorthand-property-value-right ($propertyValue)
+{
+  @return oj-shorthand-property-value-side($propertyValue, right);
+}
+
+@function oj-shorthand-property-value-bottom ($propertyValue)
+{
+  @return oj-shorthand-property-value-side($propertyValue, bottom);
+}
+
+@function oj-shorthand-property-value-left ($propertyValue)
+{
+  @return oj-shorthand-property-value-side($propertyValue, left);
+}

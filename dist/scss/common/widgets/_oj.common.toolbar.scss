@@ -1,0 +1,123 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.toolbar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@if $includeToolbarClasses != false {
+  @include module-include-once("common.toolbar") {
+
+    /* toolbar*/
+    /* --------------------------------------------------------------- */
+    
+    .oj-toolbar {
+        padding: 0.250em 0; //as per spec padding is only needed on top and bottom
+        border-style: solid;
+        border-color: $toolbarBorderColor;
+        border-width: $toolbarBorderWidth;
+        @include oj-border-radius($mediumBorderRadius);
+        background-color: $toolbarBgColor;
+    }    
+
+    // override button margins
+    .oj-toolbar .oj-button {
+        margin-bottom: 0; //override hardcoded 4px in ojbutton
+    }
+
+    /* Apps can apply this class to a span to get a toolbar separator.  
+     * To make it accessible, the span should also have 
+     * role="separator" aria-orientation="vertical".
+     * Separators should be placed around any buttonsets in the toolbar, and 
+     * anywhere else in the toolbar that a separator is desirable.
+     */
+    .oj-toolbar-separator {
+        border-left: solid 1px $toolbarBorderColor; 
+        height: 1.833em; // spec says 22px
+        display:inline-block; 
+        vertical-align:middle;
+
+        // spec says padding left/right 6px, but inline-block does not ignore whitespace,
+        // which means you get about ~4px from the whitespace, so use 2px.
+        // has to be margin, not padding, since the border is the separator.
+        margin-left: 0.167em; // equals 2px. see above
+        margin-right: 0.167em; // equals 2px. see above.
+    }
+
+    /* To layout multiple toolbars, an element with .oj-toolbars can contain 1 or more elements 
+       each having .oj-toolbar-row, which can each contain 1 or more JET Toolbars 
+       (which have the oj-toolbar class). */
+
+    .oj-toolbars {
+        border-style: solid;
+        border-color: $toolbarBorderColor;
+        border-width: $toolbarBorderWidth;
+        @include oj-border-radius($mediumBorderRadius);
+        background-color: $toolbarBgColor;
+    }
+
+    // when a toolbar is inside a toolbar row the toolbar row will do the chroming, if any
+    .oj-toolbar-row .oj-toolbar {
+      display: inline-block;
+      background-color: transparent;
+      border: 0;
+    }
+
+    // inside a toolbar row put a vertical separator (border) between two adjacent toolbars
+    .oj-toolbar-row .oj-toolbar + .oj-toolbar {
+      @include oj-border-radius(0);
+      
+      @include oj-ltr()
+      {
+        border-left: 1px solid $toolbarBorderColor;
+        // spec says padding left/right 6px, but inline-block does not ignore whitespace,
+        // which means you get about ~4px from the whitespace, so use 2px.
+        
+        //Since the "toolbar divider" is a 1px border of second toolbar container, 
+        //the margin-left of (2+4) is the spacing on the left of the divider, 
+        //and the padding-left of 6 is the spacing on the right of the divider
+        margin-left: 0.167em; // equals 2px. see above
+        padding-left: 0.5em; //6px as per spec
+      }
+      @include oj-rtl()
+      {
+        border-right: 1px solid $toolbarBorderColor;
+        margin-right: 0.167em; // equals 2px. see above
+        padding-right: 0.5em; //6px as per spec
+      }
+    }
+
+    // put a horizontal separator between two toolbar rows
+    .oj-toolbar-row + .oj-toolbar-row {
+      border-top: 1px solid $toolbarBorderColor;
+    }
+
+    
+    /* Apps can apply this class if a top toolbar border is desired */
+    .oj-toolbar-top-border {
+        border-top-width: 1px;
+        @include oj-border-radius(0);
+    }
+
+    /* Apps can apply this class if a bottom toolbar border is desired */
+    .oj-toolbar-bottom-border {
+        border-bottom-width: 1px;
+        @include oj-border-radius(0);
+    }
+
+    // option defaults
+    //----------------------------------
+
+    $toolbarDefaultOptions: ();
+
+    @if ($toolbarChromingOptionDefault != null) {
+        $toolbarDefaultOptions: map-merge($toolbarDefaultOptions, (chroming: $toolbarChromingOptionDefault));
+    }
+
+    .oj-toolbar-option-defaults {
+        font-family: oj-json-from-map($toolbarDefaultOptions);
+    }
+
+  }
+}
+ 

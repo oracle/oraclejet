@@ -1,0 +1,436 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.common.formlayout.scss
+// !!!
+
+
+//-------------------------------------------------------------------------------------------------
+// Create form layout classes, example call is 
+//      @include oj-form-responsive("oj-sm");
+// 
+// $selectorPrefix: prefix to use for label classes, for example "oj-sm"
+//-------------------------------------------------------------------------------------------------
+@mixin oj-form-responsive($selectorPrefix, 
+                          $labelInlineMarginTop: $formLayoutLabelInlineMarginTop, 
+                          $labelInlineGutter: $formControlLabelInlineGutter, 
+                          $labelInlineAlign: $formLayoutLabelInlineAlign, 
+                          $fieldInlineAlign: $formLayoutFieldInlineAlign)
+{
+
+
+  // when there are multiple columns put a gutter between the columns
+  .oj-form-layout:not(.#{$selectorPrefix}-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
+     // todo: temporarily using $labelInlineGutter
+     @include oj-ltr {
+       margin-left: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       margin-right: $labelInlineGutter;
+     }
+  }
+
+
+  // nowrap label support
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+  // inline label suport
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-inline,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    // we're using width of 100% and so on for the case where 
+    // the label-nowrap classes are used.
+    // See the form layout demo titled "label wrapping" 
+    // before checking the values in here
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @if $labelInlineAlign != null
+    {
+      @include oj-bidi-property(
+           $property: 'text-align', 
+           $startOrEnd: $labelInlineAlign);
+    }
+  }
+
+  // inline field suport
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(even) {
+    @if $fieldInlineAlign != null
+    {
+      @include oj-bidi-property(
+           $property: 'text-align', 
+           $startOrEnd: $fieldInlineAlign);
+    }
+  }
+
+  // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+     @include oj-ltr {
+       padding-left: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-right: $labelInlineGutter;
+     }
+  }
+
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+     @include oj-ltr {
+       padding-right: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-left: $labelInlineGutter;
+     }
+  }
+
+  // without this, the required icon is chopped off at top in Chrome. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon {
+     margin-top: 1px;
+  }
+
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon,
+  .#{$selectorPrefix}-label-inline.oj-label label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
+     float:none; 
+  }
+  
+    // when labels are inline we don't float. 
+  .#{$selectorPrefix}-label-inline .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+     // when we don't float, then the order of the dom is the order of what
+     // you see, so we want spacing after the icons, not before.
+     @include oj-ltr {
+       margin-left: 0;
+       margin-right: 6px;
+     }
+     @include oj-rtl(){
+       margin-right: 0;
+       margin-left: 6px;
+     }
+  }
+  
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-label-inline .oj-label-help-icon-anchor,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon-anchor {
+     float:none; 
+  }
+
+  .#{$selectorPrefix}-label-inline.oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: $labelInlineMarginTop;
+    // box sizing required for firefox or the 
+    // gutter padding  doesn't work
+    @include oj-box-sizing-property(border-box);
+
+    @include oj-ltr {
+      padding-right: $labelInlineGutter; 
+    }
+
+    @include oj-rtl(){
+      padding-left: $labelInlineGutter;
+    }
+  }
+  
+  // when the label should be top aligned
+  .#{$selectorPrefix}-label-inline.oj-label-inline-top,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
+  .#{$selectorPrefix}-label-inline.oj-label-nocomp.oj-label-for-non-control,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp.oj-label-for-non-control {
+    margin-top: 0;
+  }
+  
+  // radioset/checkboxset are inline-top aligned, but they need to be
+  // a couple pixels higher than other input components to have the label
+  // line up with the first radio's label
+  .#{$selectorPrefix}-label-inline.oj-radioset-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
+  .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+    margin-top: -2px;
+    margin-bottom: 0;
+  }
+
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+    .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-nowrap  .oj-label-group,
+  .#{$selectorPrefix}-labels-nowrap > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label  .oj-label-group {
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+  
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+  .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .#{$selectorPrefix}-label-inline .oj-label-group,
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label .oj-label-group{
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+    line-height: 1.6em;
+  }
+
+  // if it's a no component label and it's for a form control* set the line height so things
+  // match exactly. we put line-height on component labels to line things up and to give room
+  // for the required and help icons.
+  // *(inline label in a oj-flex > .oj-flex-item; we do not float, thus we need line-height
+  // to maintain label's height.
+  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > 
+    .oj-label-nocomp:not(.oj-label-for-non-control) {
+    line-height: 1.6em;
+  }
+
+}
+
+// changes for when the column drops to one column
+@mixin oj-form-columns($selectorPrefix, 
+                       $labelInlineGutter: $formControlLabelInlineGutter)
+{
+      
+
+  @if $formLayoutDividerColor != null and $formLayoutDividerColor != transparent {
+    // when there is only one column add back the divider except on the last form
+    .oj-form-layout.#{$selectorPrefix}-flex-direction-column > .oj-flex-item:not(:last-child) > .oj-form > .oj-flex:last-child {
+      border-width: 0 0 1px 0;
+    }
+  }
+}
+
+@if $includeFormLayoutClasses != false {
+  @include module-include-once("common.formlayout") {
+
+    // The technique used in these column classes use css multi column layout.
+    // http://dev.w3.org/csswg/css-multicol/ 
+    // With this layout the columns should automatically be 
+    // approximately the same heights.
+    .oj-form-cols-labels-inline { 
+      @include oj-column-width-property($formLayoutLabelsInlineColumnWidth);
+    } 
+
+    .oj-form-cols { 
+      @include oj-column-width-property($formLayoutColumnWidth);
+    } 
+
+    // set the max number of columns to 2
+    .oj-form-cols-max2 { 
+      @include oj-column-count-property(2);
+    } 
+
+    // without controlling breaking then in some cases a label will 
+    // show up in the first column but its associated field will show 
+    // up in the second column.
+    .oj-form-cols > .oj-flex,
+    .oj-form-cols-labels-inline > .oj-flex { 
+      @include oj-break-inside-property(avoid);
+      // page-break-inside is needed for FF 24, the col break written 
+      // out by the mixin doesn't work
+      page-break-inside: avoid; 
+    } 
+
+   
+
+    // headers inside a form layout have different margins than regular headers
+    .oj-form > hr,
+    .oj-form > h1,
+    .oj-form > h2,
+    .oj-form > h3,
+    .oj-form > h4 {
+      // the margins above and below are 15px, but there's
+      // already the formlayout margin bottom above, so subtract that
+      // from the top
+      margin: (15px - $formLayoutMarginBottom) 0 15px 0;
+    }
+
+
+    //
+    // Stacked (non-responsive) form layout
+    //
+
+    .oj-form > .oj-form-control,
+    .oj-form > .oj-form-non-control {
+      margin-bottom: $formLayoutMarginBottom;
+    }
+
+    // in some cases form controls are grouped together with the 
+    // oj-form-control-group class, in that case you need
+    // to subtract wrappableMarginBottom
+    .oj-form > .oj-form-control-group {
+      margin-bottom: ($formLayoutMarginBottom - $wrappableMarginBottom);
+    }
+
+
+    // when a form is nested reset the text align to start, otherwise the field's
+    // text-align property will be inherited
+    .oj-form > .oj-flex > .oj-flex-item > .oj-form{
+      @include oj-bidi-property(
+           $property: 'text-align', 
+           $startOrEnd: start);
+    }
+    
+
+    // Originally the margin was on .oj-form .oj-flex. However there was a problem. 
+    // In the "across" form layout there's 4 grid cells in a row. 
+    // On large screens these 4 cells are all on one line. 
+    // But on medium screens the first 2 cells stay on the 
+    // first line and the second 2 cells wrap to a new line 
+    // to create a second "row". However there's no actual row 
+    // class in this case, so the margins need to be on the field columns.
+    //
+    // The :last-child is to handle cases where there is a colspan
+    // across all the cells.
+    //
+    // See the form layout demo titled "inline responsive across" 
+    // before checking in any changes to where the margin is placed.
+    .oj-form > .oj-flex > .oj-flex-item:nth-child(even),
+    .oj-form > .oj-flex > .oj-flex-item:last-child {
+      margin: 0 0 ($formLayoutMarginBottom - $wrappableMarginBottom) 0;
+    }
+      
+    .oj-form > .oj-flex > .oj-flex-item > .oj-form-non-control {
+      margin-bottom: $wrappableMarginBottom;
+    }
+
+
+
+    // borders around the form
+    @if $formLayoutBorderColor != null and $formLayoutBorderColor != transparent {
+      .oj-form-layout {
+        border-color: $formLayoutBorderColor;
+        border-style: solid;
+        border-width: 1px 0 0;
+      }
+
+      .oj-form-layout-inset {
+        // todo: use vars from Amy's padding classes?
+        margin: 12px;
+        border-width: 1px;
+      }
+    }
+
+    // dividers between rows
+    @if  $formLayoutDividerColor != null and $formLayoutDividerColor != transparent {
+      .oj-form > .oj-flex {
+        border-style: solid;
+        border-color: $formLayoutDividerColor;
+        border-width: 0 0 1px 0;
+        padding: $formLayoutMarginBottom 0 0;
+      }
+    
+      // no border on the last row
+      .oj-form > .oj-flex:last-child{
+        border-width: 0;
+      }
+ 
+      // Ideally when you have multiple columns there wouldn't be 
+      // divider under the last item in each column. However
+      // on layouts using the css multi column layout we don't know
+      // when there's multiple columns, so we need to put a border
+      // on the last item, otherwise when there's multiple columns the 
+      // first column has a divider on the bottom, but the second column doesn't.
+      .oj-form-layout > .oj-form[class*="oj-form-cols-"] > .oj-flex:last-child {
+        border-width: 0 0 1px 0;
+      }
+
+      .oj-form-no-dividers > .oj-flex,
+      .oj-form-layout > .oj-form-no-dividers[class*="oj-form-cols-"] > .oj-flex:last-child,
+      .oj-form-layout > .oj-flex-item > .oj-form-no-dividers > .oj-flex:last-child {
+        border-width: 0;
+      }
+    }
+
+
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} 
+      {
+        @include oj-form-responsive($selectorPrefix: "oj-sm");
+      }
+    }
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media #{$responsiveQueryMediumUp} 
+      {
+        @include oj-form-responsive($selectorPrefix: "oj-md");
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media #{$responsiveQueryLargeUp} 
+      {
+        @include oj-form-responsive($selectorPrefix: "oj-lg");
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media #{$responsiveQueryXlargeUp} 
+      {
+        @include oj-form-responsive($selectorPrefix: "oj-xl");
+      }
+    }
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media #{$responsiveQueryXXlargeUp} 
+      {
+        @include oj-form-responsive($selectorPrefix: "oj-xxl");
+      }
+    }
+
+
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} 
+      {
+        @include oj-form-columns($selectorPrefix: "oj-sm-only");
+      }
+    }
+
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media #{$responsiveQueryMediumOnly} 
+      {
+        @include oj-form-columns($selectorPrefix: "oj-md-only");
+      }
+    }
+
+    @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+      @media #{$responsiveQueryLargeOnly} 
+      {
+        @include oj-form-columns($selectorPrefix: "oj-lg-only");
+      }
+    }
+
+
+    @if $responsiveQueryXlargeOnly and $responsiveQueryXlargeOnly != none {
+      @media #{$responsiveQueryXlargeOnly} 
+      {
+        @include oj-form-columns($selectorPrefix: "oj-xl-only");
+      }
+    }
+
+  }
+}

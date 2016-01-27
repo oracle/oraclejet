@@ -1,0 +1,170 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// for more information see the doc in the variable files 
+// (for example _oj.alta.variables.scss)
+$textDirection: null !default;
+
+//*****************************************************************************
+// There's 2 types of rtl values, PER DIRECTION and OVERRIDABLE
+//*****************************************************************************
+
+//*****************************************************************************
+//
+// 1.  PER DIRECTION: properties that should be set per direction, otherwise  
+//     you have to undo the default setting. For example setting margin-right
+//     in rtl doesn't undo setting margin-left in a default class, 
+//     therefore in the example below margin-left is only set in the ltr
+//     direction.
+//
+//     oj-ltr and oj-rtl can be used for this case. 
+//
+// SCSS EXAMPLE:
+//
+//       .single {
+//         margin-bottom: 2px;
+//       
+//         @include oj-ltr() {
+//           margin-left: 5px;
+//         }
+//       
+//         @include oj-rtl() {
+//           margin-right: 5px;
+//         }
+//       }
+//       
+// 
+// CSS:
+//       .single {
+//         margin-bottom: 2px;
+//       }
+//
+//       html:not([dir="rtl"]) .single {
+//         margin-left: 5px; }
+// 
+//       html[dir="rtl"] .single {
+//         margin-right: 5px; }
+// 
+//*****************************************************************************
+
+
+@mixin oj-ltr() {
+  $_inbidi: true !global;
+
+  @if ($textDirection == null)
+  {
+    html:not([dir="rtl"]) & {
+        @content;
+    }
+  }
+  @else if ($textDirection == 'ltr')
+  {
+    @content;
+  }
+
+  $_inbidi: false !global;
+}
+
+@mixin oj-rtl()
+{
+  $_inbidi: true !global;
+
+  @if ($textDirection == null)
+  {
+    html[dir="rtl"] & {
+      @content;
+    }
+  }
+  @else if ($textDirection == 'rtl')
+  {
+    @content;
+  }
+
+  $_inbidi: false !global;
+}
+
+
+//*****************************************************************************
+// 2. OVERRIDABLE properties can be set to a default and overridden 
+//    in rtl direction. For example setting float left as a default is overridden
+//    when the page is rtl. 
+//
+//     oj-direction-start, oj-direction-end, and oj-bidi-property
+//     can be used for this case. For example the scss might look like:
+// 
+//
+//
+// SCSS EXAMPLE: 
+//    .myselector {
+//      // this default selector migh have a bunch of other properties in it
+//   
+//      @include oj-bidi-property($property: 'float', $startOrEnd: start);
+//    }
+//  
+//    
+//
+// CSS:
+//     .myselector {
+//       float: left; }
+// 
+//     html[dir="rtl"] .myselector {
+//       float: right; }
+//
+//*****************************************************************************
+
+
+// if you pass in rtl you'll get right, otherwise you get left        
+@function oj-direction-start($direction: $textDirection)
+{
+  @if ($direction == rtl) {@return right;}
+  @else {@return left;}
+}
+
+// if you pass in rtl you'll get left, otherwise you get right
+@function oj-direction-end($direction: $textDirection)
+{
+  @if ($direction == rtl) {@return left;}
+  @else {@return right;}
+}
+
+// useful if you're just writing out float, text-align, etc.
+@mixin  oj-bidi-property($property, $startOrEnd: end, $important: false)
+{
+  $importantString: if($important, ' !important', '');
+
+  @if($startOrEnd == null or $startOrEnd == start or $startOrEnd == end)
+  {
+    @if ($startOrEnd == end) 
+    { 
+      $tempString: oj-direction-end() + $importantString;
+      #{$property}: $tempString;
+    }
+    @else 
+    { 
+      $tempString: oj-direction-start() + $importantString;
+      #{$property}: $tempString;
+    }
+
+    
+    // if dir is null we need to support both directions in the same file,
+    // so override the default with the rtl specific value
+    @if ($textDirection == null)
+    {
+      @include oj-rtl()
+      {
+        @if ($startOrEnd == end){ 
+          $tempString: left + $importantString;
+          #{$property}: $tempString; 
+        }
+        @else { 
+          $tempString: right + $importantString;
+          #{$property}: $tempString; 
+        }
+      }
+    }
+  }
+  @else
+  {
+    #{$property}: $startOrEnd + $importantString;
+  }
+}
+
+

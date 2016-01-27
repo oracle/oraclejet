@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeTrainClasses != false {
+  $includeIconClasses:              true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.android.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.train";
+
+@if $includeTrainClasses != false {
+  @include module-include-once("alta.android.train") {
+
+  
+  }
+}

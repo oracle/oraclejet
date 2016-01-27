@@ -1,0 +1,254 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.common.formlayout.scss
+// !!!
+
+
+
+//-------------------------------------------------------------------------------------------------
+// MIXIN IS DEPRECATED, DO NOT USE
+//
+// Create form layout classes, example call is 
+//      @include oj--DEPRECATED-form-responsive("oj-sm");
+// 
+// $selectorPrefix: prefix to use for label classes, for example "oj-sm"
+//-------------------------------------------------------------------------------------------------
+@mixin oj-DEPRECATED-form-responsive($selectorPrefix, 
+                          $labelInlineMarginTop, 
+                          $labelInlineGutter, 
+                          $labelInlineAlign: end)
+{
+
+  // nowrap label support
+  .oj-form > .oj-row > .oj-col:nth-child(odd) > .#{$selectorPrefix}-label-nowrap,
+  .#{$selectorPrefix}-labels-nowrap > .oj-row > .oj-col:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-nowrap > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+  // inline label suport
+  .oj-form > .oj-row > .oj-col:nth-child(odd) > .#{$selectorPrefix}-label-inline,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    // we're using width of 100% and so on for the case where 
+    // the label-nowrap classes are used.
+    // See the form layout demo titled "label wrapping" 
+    // before checking the values in here
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    @include oj-bidi-property(
+         $property: 'text-align', 
+         $startOrEnd: $labelInlineAlign);
+  }
+
+  // without this, the required icon is chopped off at top in Chrome. 
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon {
+     margin-top: 1px;
+  }
+
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) label {
+     float:none; 
+  }
+  
+    // when labels are inline we don't float. 
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+     // when we don't float, then the order of the dom is the order of what
+     // you see, so we want spacing after the icons, not before.
+     @include oj-ltr {
+       margin-left: 0;
+       margin-right: 6px;
+     }
+     @include oj-rtl(){
+       margin-right: 0;
+       margin-left: 6px;
+     }
+  }
+  
+  // when labels are inline we don't float. 
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon-anchor {
+     float:none; 
+  }
+
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-label,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: $labelInlineMarginTop;
+    // box sizing required for firefox or the 
+    // gutter padding  doesn't work
+    @include oj-box-sizing-property(border-box);
+
+    @include oj-ltr {
+      padding-right: $labelInlineGutter; 
+    }
+
+    @include oj-rtl(){
+      padding-left: $labelInlineGutter;
+    }
+  }
+  
+  // when the label should be top aligned
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-label-inline-top,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-label-nocomp.oj-label-for-non-control {
+    margin-top: 0;
+  }
+  
+  // radioset/checkboxset are inline-top aligned, but they need to be
+  // a couple pixels higher than other input components to have the label
+  // line up with the first radio's label
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-radioset-label,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col > .oj-checkboxset-label {
+    margin-top: -2px;
+    margin-bottom: 0;
+  }
+
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+    .oj-form > .oj-row > .oj-col:nth-child(odd) > .#{$selectorPrefix}-label-nowrap  .oj-label-group,
+  .#{$selectorPrefix}-labels-nowrap > .oj-row > .oj-col:nth-child(odd) > .oj-label  .oj-label-group {
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+  }
+  
+  // This is for cases where there are label modifiers (required, etc), in which case
+  // the properties below need to be inherited by oj-label-group
+  // otherwise the ellipsis doesn't show when the label-nowrap classes are used.
+  // See the form layout demo titled "label wrapping" 
+  // before checking the values in here
+  // line-height is needed so that the label has enough height to show borders.
+  // line-height on label itself has no effect.
+  .oj-form > .oj-row > .oj-col:nth-child(odd) > .#{$selectorPrefix}-label-inline .oj-label-group,
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label .oj-label-group{
+    width: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+    line-height: 1.6em;
+  }
+
+  // if it's a no component label and it's for a form control* set the line height so things
+  // match exactly. we put line-height on component labels to line things up and to give room
+  // for the required and help icons.
+  // *(inline label in a oj-row > oj-col; we do not float, thus we need line-height
+  // to maintain label's height.
+  .#{$selectorPrefix}-labels-inline > .oj-row > .oj-col:nth-child(odd) > 
+    .oj-label-nocomp:not(.oj-label-for-non-control) {
+    line-height: 1.6em;
+  }
+
+}
+
+@if $includeDeprecatedFormLayoutClasses != false {
+  @include module-include-once("common.DEPRECATED.formlayout") {
+
+
+    // without controlling breaking then in some cases a label will 
+    // show up in the first column but its associated field will show 
+    // up in the second column.
+    .oj-form-cols > .oj-row,
+    .oj-form-cols-labels-inline > .oj-row { 
+      @include oj-break-inside-property(avoid);
+      // page-break-inside is needed for FF 24, the col break written 
+      // out by the mixin doesn't work
+      page-break-inside: avoid; 
+    } 
+
+    // 
+    // Responsive form layout
+    //
+
+    .oj-form > .oj-row > .oj-col {
+      // remove all grid padding, padding will come from the label when appropriate
+      padding: 0;
+    }
+
+    // Originally the margin was on .oj-form .oj-row. However there was a problem. 
+    // In the "across" form layout there's 4 grid cells in a row. 
+    // On large screens these 4 cells are all on one line. 
+    // But on medium screens the first 2 cells stay on the 
+    // first line and the second 2 cells wrap to a new line 
+    // to create a second "row". However there's no actual row 
+    // class in this case, so the margins need to be on the field columns.
+    //
+    // The :last-child is to handle cases where there is a colspan
+    // across all the cells.
+    //
+    // See the form layout demo titled "inline responsive across" 
+    // before checking in any changes to where the margin is placed.
+    .oj-form > .oj-row > .oj-col:nth-child(even),
+    .oj-form > .oj-row > .oj-col:last-child {
+      margin: 0 0 ($formLayoutMarginBottom - $wrappableMarginBottom) 0;
+    }
+      
+    .oj-form > .oj-row > .oj-col > .oj-form-non-control {
+      margin-bottom: $wrappableMarginBottom;
+    }
+
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} 
+      {
+        @include oj-DEPRECATED-form-responsive($selectorPrefix: "oj-sm", 
+                                    $labelInlineMarginTop: $formLayoutLabelInlineMarginTop,
+                                    $labelInlineGutter: $formControlLabelInlineGutter,
+                                    $labelInlineAlign: $formLayoutLabelInlineAlign);
+      }
+    }
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media #{$responsiveQueryMediumUp} 
+      {
+        @include oj-DEPRECATED-form-responsive($selectorPrefix: "oj-md", 
+                                    $labelInlineMarginTop: $formLayoutLabelInlineMarginTop,
+                                    $labelInlineGutter: $formControlLabelInlineGutter,
+                                    $labelInlineAlign: $formLayoutLabelInlineAlign);
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media #{$responsiveQueryLargeUp} 
+      {
+        @include oj-DEPRECATED-form-responsive($selectorPrefix: "oj-lg", 
+                                    $labelInlineMarginTop: $formLayoutLabelInlineMarginTop,
+                                    $labelInlineGutter: $formControlLabelInlineGutter,
+                                    $labelInlineAlign: $formLayoutLabelInlineAlign);
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media #{$responsiveQueryXlargeUp} 
+      {
+        @include oj-DEPRECATED-form-responsive($selectorPrefix: "oj-xl", 
+                                    $labelInlineMarginTop: $formLayoutLabelInlineMarginTop,
+                                    $labelInlineGutter: $formControlLabelInlineGutter,
+                                    $labelInlineAlign: $formLayoutLabelInlineAlign);
+      }
+    }
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media #{$responsiveQueryXXlargeUp} 
+      {
+        @include oj-DEPRECATED-form-responsive($selectorPrefix: "oj-xxl", 
+                                    $labelInlineMarginTop: $formLayoutLabelInlineMarginTop,
+                                    $labelInlineGutter: $formControlLabelInlineGutter,
+                                    $labelInlineAlign: $formLayoutLabelInlineAlign);
+      }
+    }
+
+  }
+}

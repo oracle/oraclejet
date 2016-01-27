@@ -1,0 +1,426 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.grid.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+
+// optimizations: there are a lot of different grid classes, some of which you may not need.
+// These variables control whether certain types of grid classes are generated
+//
+//
+// $gridGenerateBasics:    generate basic grid classes like .oj-sm-1, .oj-sm-2, etc.
+// $gridGenerateOffsets:   generate offset grid classes like
+//                         .oj-md-offset-1, .oj-md-offset-2, etc.
+//                         Note that offset classes are not generated for small
+//                         screens even when the variable is true.
+// $gridGenerateCentering: generate centering grid classes like .oj-sm-center
+// $gridGenerateOddEven:   generate odd and even grid classes like .oj-md-odd-cols-1,
+//                         .oj-md-odd-cols-2, etc.
+$gridGenerateBasics:             true !default;
+$gridGenerateOffsets:            true !default;
+$gridGenerateCentering:          true !default;
+$gridGenerateOddEven:            true !default;
+$gridColumnGutter:               20px !default;
+
+// app content max width
+//----------------------------------
+// $appContentMaxWidth is the maximum width an application is designed for.
+// While monitors can be very large, many applications are not designed
+// to be infinitely wide. This variable is used to set the max-width property on
+// the grid's .oj-row, which is in turn used for responsive page layout.
+//
+// When the screen is larger than this width there will be empty margins
+// on either side taking up the rest of the screen.
+//
+// If the application has no maximum content width then set this value to
+// 'none', for example:
+//    $appContentMaxWidth: none;
+//
+// Note that this value is used in the responsive screen size variables below.
+$appContentMaxWidth: 1440px !default;
+
+//
+// Grid Mixins
+//
+
+//-------------------------------------------------------------------------------------------------
+// Create default or nested rows
+//
+// $behavior - Any special beavior for this row?
+//             Options: nest, null
+//             Default: null.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-float-grid-row($behavior:     null,
+                         $columnGutter: $gridColumnGutter,
+                         $maxWidth:     $appContentMaxWidth) {
+
+  // use @include oj-float-grid-row(nest); to include a nested row
+  @if $behavior == nest {
+    margin-left: -($columnGutter/2);
+    margin-right: -($columnGutter/2);
+    max-width: none;
+    width: auto;
+  }
+
+
+  // use @include oj-float-grid-row; to use a container row
+  @else {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    max-width: $maxWidth;
+    width: 100%;
+  }
+
+  @include oj-box-sizing-property(border-box);
+
+  // We use this to clear floats http://nicolasgallagher.com/micro-clearfix-hack/
+  &:before, &:after { content: " "; display: table; }
+  &:after { clear: both; }
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+// For creating columns
+//
+// $columns:   The number of columns this should be. Default: false
+// $center:    Center these columns? Default: false.
+// $offset:    # of columns to offset. Default: false.
+// $push:      # of columns to push. Default: false.
+// $pull:      # of columns to pull. Default: false.
+// $padding:   left and right padding value on column.
+//             True means use $columnGutter/2.
+//             Default: null.
+// $float:     Should this float to the start or end side
+//             Options: null, start or end.
+//             Default: null.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-float-grid-column($columns:      false,
+                            $center:       false,
+                            $offset:       false,
+                            $push:         false,
+                            $pull:         false,
+                            $padding:      null,
+                            $float:        null,
+                            $totalColumns: $gridTotalColumns,
+                            $columnGutter: $gridColumnGutter) {
+
+  @if $padding == true {
+    padding-left: $columnGutter / 2;
+    padding-right: $columnGutter / 2;
+  }
+  // If padding, get rid of gutter padding
+  @else if $padding != null {
+    padding-left: $padding;
+    padding-right: $padding;
+  }
+
+  // If a column number is given, calculate width
+  @if $columns {
+    width: percentage($columns/$totalColumns);
+
+  }
+
+  // If offset, calculate appropriate margins
+  @if $offset {
+    $offsetPercentage: $offset/$totalColumns;
+
+    @if ($offsetPercentage == 0)
+    {
+      @include oj-ltr()
+      {
+        margin-left: 0;
+      }
+
+      @include oj-rtl()
+      {
+        margin-right: 0;
+      }
+    }
+    @else
+    {
+      @include oj-ltr()
+      {
+        margin-left: percentage($offsetPercentage);
+      }
+
+      @include oj-rtl()
+      {
+        margin-right: percentage($offsetPercentage);
+      }
+    }
+  }
+
+  // Source Ordering, adds left/right depending on which you use.
+  @if $push
+  {
+      @include oj-ltr()
+      {
+        left: percentage($push/$totalColumns);
+        right: auto;
+      }
+
+      @include oj-rtl()
+      {
+        right: percentage($push/$totalColumns);
+        left: auto;
+      }
+  }
+  @if $pull
+  {
+
+      @include oj-ltr()
+      {
+        right: percentage($push/$totalColumns);
+        left: auto;
+      }
+
+      @include oj-rtl()
+      {
+        left: percentage($push/$totalColumns);
+        right: auto;
+      }
+  }
+
+  // If centered, get rid of float and add appropriate margins
+  @if $center {
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
+  }
+
+  // if float is set then float to the side specified
+  @if $float != null {
+    @include oj-bidi-property($property:float, $startOrEnd: $float);
+  }
+
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+// generate grid classes, usually these belong inside of media queries
+//
+//
+// $selectorPrefix:    name of class prefix to use, i.e. "oj-sm" will generate
+//                     .oj-sm-1, .oj-sm-offset-1, etc.
+// $generateBasics:    generate basic grid classes like .oj-sm-1, .oj-sm-2, etc.
+// $generateOffsets:   generate offset grid classes like .oj-sm-offset-1, .oj-sm-offset-2, etc.
+// $generateCentering: generate centering grid classes like .oj-sm-center
+// $generateOddEven:   generate odd and even grid classes like .oj-sm-odd-cols-1,
+//                     .oj-sm-odd-cols-2, etc.
+// $generateCol:       generate col classes like .oj-md-col, can be used in responsive
+//                     patterns to choose when cols take effect
+//-------------------------------------------------------------------------------------------------
+@mixin oj-float-grid-responsive(
+          $selectorPrefix,
+          $generateBasics:             $gridGenerateBasics,
+          $generateOffsets:            $gridGenerateOffsets,
+          $generateCentering:          $gridGenerateCentering,
+          $generateOddEven:            $gridGenerateOddEven,
+          $totalColumns:               $gridTotalColumns,
+          $generateCol:                false) {
+
+  @if ($generateCol) {
+    .#{$selectorPrefix}-col {
+      @include oj-float-grid-column($columns: $gridTotalColumns,
+                                    $float:   start);
+    }
+  }
+
+  @if ($generateBasics) {
+    @for $i from 1 through $totalColumns {
+      .#{$selectorPrefix}-#{$i} { @include oj-float-grid-column($columns:$i); }
+    }
+  }
+
+  @if ($generateOffsets) {
+    @for $i from 0 through $totalColumns - 1 {
+      // the regular grid no longer supports offsets,
+      // only support offsets when oj-col is also set on the same element
+      .oj-col.#{$selectorPrefix}-offset-#{$i} {
+        @include oj-float-grid-column($offset:$i);
+      }
+    }
+  }
+
+  @if ($generateCentering) {
+    .oj-row.#{$selectorPrefix}-center > .oj-col { @include oj-float-grid-column($center:true); }
+
+    /* Centering multiple columns with th current implementation makes them stack.
+       In future we plan to switch the grid to use flexbox which would not stack the columns,
+       so to future proof the current classes jet only supports centering a single column,
+       anything after the first column is hidden.*/
+    .oj-row.#{$selectorPrefix}-center > .oj-col:not(:first-child){display:none;}
+  }
+
+  @if ($generateOddEven) {
+    // only need to specify odd in a 2 column grid
+    @for $i from 1 through $totalColumns - 1 {
+
+      .#{$selectorPrefix}-odd-cols-#{$i} > .oj-row > .oj-col:nth-child(odd) {
+         @include oj-float-grid-column($i);
+      }
+
+      .#{$selectorPrefix}-odd-cols-#{$i} > .oj-row > .oj-col:nth-child(even) {
+         @include oj-float-grid-column($totalColumns - $i);
+      }
+    }
+
+
+    // used for when there's 4+ columns
+    @for $i from 1 through (($totalColumns/2) - 1) {
+
+      .#{$selectorPrefix}-even-cols-#{$i} > .oj-row > .oj-col:nth-child(even) {
+         @include oj-float-grid-column($i);
+      }
+    }
+  }
+
+}
+
+
+
+
+@if $includeDeprecatedGridClasses != false {
+  @include module-include-once("common.DEPRECATED.grid") {
+
+    /* Grid HTML Classes */
+    .oj-row {
+      @include oj-float-grid-row();
+
+      > .oj-col > .oj-row {
+        @include oj-float-grid-row($behavior: nest);
+      }
+    }
+
+
+    .oj-col {
+      @include oj-float-grid-column($columns: $gridTotalColumns,
+                                    $float:   start,
+                                    $padding: true);
+
+      position: relative;
+      @include oj-box-sizing-property(border-box);
+    }
+
+
+    .oj-row.oj-cols-nopad > .oj-col,
+    .oj-cols-nopad > .oj-row > .oj-col {
+         @include oj-float-grid-column($padding: 0);
+    }
+
+    // Media query classes
+
+    //UP
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} {
+
+        @include oj-float-grid-responsive($selectorPrefix: "oj-sm",
+                                          // basics are now generated by the regular grid
+                                          $generateBasics: false,
+                                          $generateOffsets: false);
+      }
+    }
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media  #{$responsiveQueryMediumUp} {
+        @include oj-float-grid-responsive($selectorPrefix: "oj-md",
+                                          // basics are now generated by the regular grid
+                                          $generateBasics: false,
+                                          $generateCol: true);
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media  #{$responsiveQueryLargeUp} {
+        @include oj-float-grid-responsive($selectorPrefix: "oj-lg",
+                                          // basics are now generated by the regular grid
+                                          $generateBasics: false,
+                                          $generateCol: true);
+
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media  #{$responsiveQueryXlargeUp} {
+        @include oj-float-grid-responsive($selectorPrefix: "oj-xl",
+                                          // basics are now generated by the regular grid
+                                          $generateBasics: false,
+                                          $generateCol: true);
+
+      }
+    }
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media  #{$responsiveQueryXXlargeUp} {
+        @include oj-float-grid-responsive($selectorPrefix: "oj-xxl",
+                                          // basics are now generated by the regular grid
+                                          $generateBasics: false,
+                                          $generateCol: true);
+
+      }
+    }
+
+    //ONLY
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+        // only generate centering classes
+        @include oj-float-grid-responsive($selectorPrefix:            "oj-sm-only",
+                                          $generateCentering:          $gridGenerateCentering,
+                                          $generateBasics:             false,
+                                          $generateOffsets:            false,
+                                          $generateOddEven:            false);
+      }
+    }
+
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media #{$responsiveQueryMediumOnly} {
+        // only generate centering classes
+        @include oj-float-grid-responsive($selectorPrefix:            "oj-md-only",
+                                          $generateCentering:          $gridGenerateCentering,
+                                          $generateBasics:             false,
+                                          $generateOffsets:            false,
+                                          $generateOddEven:            false);
+      }
+    }
+
+    @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+      @media #{$responsiveQueryLargeOnly} {
+        // only generate centering classes
+        @include oj-float-grid-responsive($selectorPrefix:            "oj-lg-only",
+                                          $generateCentering:          $gridGenerateCentering,
+                                          $generateBasics:             false,
+                                          $generateOffsets:            false,
+                                          $generateOddEven:            false);
+      }
+    }
+
+    @if $responsiveQueryXlargeOnly and $responsiveQueryXlargeOnly != none {
+      @media #{$responsiveQueryXlargeOnly} {
+        // only generate centering classes
+        @include oj-float-grid-responsive($selectorPrefix:            "oj-xl-only",
+                                          $generateCentering:          $gridGenerateCentering,
+                                          $generateBasics:             false,
+                                          $generateOffsets:            false,
+                                          $generateOddEven:            false);
+      }
+    }
+
+    @if $responsiveQueryPrint and $responsiveQueryPrint != none {
+      @media  #{$responsiveQueryPrint} {
+        @include oj-float-grid-responsive($selectorPrefix: "oj-print");
+      }
+    }
+
+
+  }
+}

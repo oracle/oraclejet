@@ -1,0 +1,5 @@
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+"use strict";var l={"TJK_DUSHANBE":[null,"Dusjanbe"],"RUS_MOSCOW":[null,"Moskva"],"IRQ_BAGHDAD":[null,"Bagdad"],"RUS_SAINT_PETERSBURG":[null,"Sankt Petersburg"],"NPL_KATHMANDU":[null,"Katmandu"],"RUS_NIZHNIY_NOVGOROD":[null,"Nizjnij Novgorod"],"IND_KOLKATA":[null,"Calcutta"],"CHN_BEIJING":[null,"Peking"],"IRN_TEHRAN":[null,"Teheran"],"MAC_MACAU":[null,"Macao"],"VNM_HO_CHI_MINH_CITY":[null,"Ho Chi Minh-staden"]};(this?this:window)['DvtBaseMapManager']['_UNPROCESSED_MAPS'][2].push(["asia","cities",l]);

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeFormControlCommonClasses:  $includeFormControlClasses !default;
+
+@import "../../common/helpers/oj.common.helpers"; 
+@import "../../common/widgets/oj.common.formcontrol.common";
+
+@if $includeFormControlCommonClasses != false  {
+  @include module-include-once("alta.ios.formcontrolcommon") {
+
+  }
+}
+

@@ -1,0 +1,215 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.offcanvas.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeOffcanvasClasses != false {
+  @include module-include-once("common.offcanvas") {
+
+    /*
+     * applied to the outer most element of the offcanvas
+     */
+    .oj-offcanvas-outer-wrapper {
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      @include oj-box-sizing-property(border-box);
+    }
+
+    /*
+     * applied to the inner wrapper of the offcanvas in push mode
+     */
+    .oj-offcanvas-inner-wrapper,
+    .oj-offcanvas-inner-push-wrapper {
+      position: relative;
+      height: 100%;
+    }
+
+    /*
+     * Transition selector is only applied while the offcanvas is activating.
+     * In push mode, it's applied to the inner wrapper of the offcanvas.
+     * In overlay mode, it's applied to the offcanvas element.
+     */
+    .oj-offcanvas-transition {
+      //mixin oj-transition-property doesn't work: value should be "-webkit-transform" not "transform"
+      -webkit-transition: -webkit-transform $animationDurationMedium;
+      transition: transform $animationDurationMedium;
+
+      @include oj-transition-timing-function-property (ease-in-out);
+      @include oj-backface-visibility-property (hidden);
+    }
+
+
+    // common to all edges
+    %oj-offcanvas-edge {
+      position: absolute;
+      @include oj-box-sizing-property(border-box);
+      border-radius: 0;
+
+      //don't allow user tab into the offcanvas when it's closed.
+      display: none;
+    }
+
+
+    // common to start/end
+    %oj-offcanvas-start-end {
+      height: 100%;
+      bottom: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+
+    // common to top/bottom
+    %oj-offcanvas-top-bottom {
+      width: 100%;
+      left: 0;
+      right: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    /*
+     * applied to the offcanvas on the start edge
+     */
+    .oj-offcanvas-start {
+      @extend %oj-offcanvas-edge;
+      @extend %oj-offcanvas-start-end;
+      top: 0;
+
+      @include oj-ltr() {
+        @include oj-transform-property(translate3d(-100%, 0, 0));
+        left: 0;
+        border-width: 0 1px 0 0;
+      }
+      @include oj-rtl() {
+        @include oj-transform-property(translate3d(100%, 0, 0));
+        right: 0;
+        border-width: 0 0 0 1px;
+      }
+    }
+
+    /*
+     * applied to the offcanvas on the end edge
+     */
+    .oj-offcanvas-end {
+      @extend %oj-offcanvas-edge;
+      @extend %oj-offcanvas-start-end;
+
+      @include oj-ltr() {
+        right: 0;
+        @include oj-transform-property(translate3d(100%, 0, 0));
+        border-width: 0 0 0 1px;
+      }
+      @include oj-rtl() {
+        left: 0;
+        @include oj-transform-property(translate3d(-100%, 0, 0));
+        border-width: 0 1px 0 0;
+      }
+    }
+
+
+    /*
+     * applied to the offcanvas on the top edge
+     */
+    .oj-offcanvas-top {
+      @extend %oj-offcanvas-edge;
+      @extend %oj-offcanvas-top-bottom;
+      border-width: 0 0 1px;
+      top: 0;
+      @include oj-transform-property(translate3d(0, -100%, 0));
+    }
+
+    /*
+     * applied to the offcanvas on the bottom edge
+     */
+    .oj-offcanvas-bottom {
+      @extend %oj-offcanvas-edge;
+      @extend %oj-offcanvas-top-bottom;
+      border-width: 1px 0 0 0;
+      bottom: 0;
+      @include oj-transform-property(translate3d(0, 100%, 0));
+    }
+
+    /*
+     * applied to the offcanvas when it is open
+     */
+    .oj-offcanvas-start.oj-offcanvas-open,
+    .oj-offcanvas-end.oj-offcanvas-open,
+    .oj-offcanvas-top.oj-offcanvas-open,
+    .oj-offcanvas-bottom.oj-offcanvas-open {
+      display: block;
+    }
+
+    /*
+     * applied to the offcanvas on the start edge when displayMode is overlay
+     */
+    .oj-offcanvas-overlay.oj-offcanvas-start {
+      //need to set z-index otherwise the start area is covered by the main content
+      z-index: 1;
+    }
+
+    /*
+     * Overlay: start and end offcanvases shift
+     */
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-start > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-end > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-start > .oj-offcanvas-inner-wrapper > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-end > .oj-offcanvas-inner-wrapper > .oj-offcanvas-overlay {
+      @include oj-transform-property(translate3d(0%, 0, 0));
+    }
+
+    /*
+     * Overlay: top and bottom offcanvases shift
+     */
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-down > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-up > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-down > .oj-offcanvas-inner-wrapper > .oj-offcanvas-overlay,
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-shift-up > .oj-offcanvas-inner-wrapper > .oj-offcanvas-overlay {
+      @include oj-transform-property(translate3d(0, 0%, 0));
+    }
+
+    /*
+     * Applied to the glass pane of modal offcanvas
+     */
+    .oj-offcanvas-glasspane {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: $overlayBgColor;
+      opacity: 0;
+
+      @include oj-transition-property(opacity 0.5s);
+      @include oj-transition-timing-function-property (ease-in-out);
+    }
+
+    /*
+     * glass pane opacity after animation
+     */
+    .oj-offcanvas-glasspane-dim {
+      opacity: 0.4;
+    }
+
+    // Native theming
+    //--------------------------------------------
+
+    /* Override default options*/
+    $offcanvasDefaultOptions: ();
+
+    @if ($offcanvasDisplayModeOptionDefault)
+    {
+      $offcanvasDefaultOptions: map-merge($offcanvasDefaultOptions, (displayMode: $offcanvasDisplayModeOptionDefault));
+    }
+    .oj-offcanvas-option-defaults {
+      font-family: oj-json-from-map($offcanvasDefaultOptions);
+    }
+
+
+  }
+}

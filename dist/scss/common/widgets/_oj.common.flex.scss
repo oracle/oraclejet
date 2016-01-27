@@ -1,0 +1,291 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.grid.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+// generate flex classes that belong inside of media queries
+//-------------------------------------------------------------------------------------------------
+@mixin oj-flex-responsive($selectorPrefix,
+                          $generateJustify:   true,
+                          $generateAlign:     true,
+                          $generateOrdering:  true,
+                          $generateVertical:  true,
+                          $generateChildFlex: true,
+                          $generateFlexWrap:  true) {
+
+
+
+  @if ($generateChildFlex) {
+    .#{$selectorPrefix}-flex-items-1 > .oj-flex-item,
+    .#{$selectorPrefix}-flex-1 {
+      // make the columns even widths
+      // regardless of content by setting the flex property to 1
+      @include oj-flex-property(1);
+    }
+
+    .#{$selectorPrefix}-flex-items-initial > .oj-flex-item,
+    .#{$selectorPrefix}-flex-initial {
+      @include oj-flex-property(initial);
+    }
+  }
+
+  @if ($generateOrdering)
+  {
+    @for $i from 0 through 5 {
+      .#{$selectorPrefix}-order-#{$i} {
+        @include oj-order-property($i)
+      }
+    }
+  }
+
+  @if ($generateJustify) {
+
+
+    .#{$selectorPrefix}-justify-content-flex-end {
+      @include oj-justify-content-property(flex-end);
+    }
+
+    .#{$selectorPrefix}-justify-content-center {
+      @include oj-justify-content-property(center);
+    }
+
+    .#{$selectorPrefix}-justify-content-space-between {
+      @include oj-justify-content-property(space-between);
+    }
+
+    .#{$selectorPrefix}-justify-content-space-around {
+      @include oj-justify-content-property(space-around);
+    }
+  }
+
+
+  @if ($generateAlign) {
+    //can be placed on flex container
+    .#{$selectorPrefix}-align-items-center {
+      @include oj-align-items-property(center);
+    }
+
+    .#{$selectorPrefix}-align-items-baseline {
+      @include oj-align-items-property(baseline);
+    }
+
+    .#{$selectorPrefix}-align-items-flex-start {
+      @include oj-align-items-property(flex-start);
+    }
+
+    .#{$selectorPrefix}-align-items-flex-end {
+      @include oj-align-items-property(flex-end);
+    }
+
+
+
+    // can be placed on flex items
+    .#{$selectorPrefix}-align-self-center {
+      @include oj-align-self-property(center);
+    }
+
+    .#{$selectorPrefix}-align-self-flex-start {
+      @include oj-align-self-property(flex-start);
+    }
+
+    .#{$selectorPrefix}-align-self-flex-end {
+      @include oj-align-self-property(flex-end);
+    }
+  }
+
+
+  @if ($generateVertical) {
+    .#{$selectorPrefix}-flex-direction-column {
+      @include oj-flex-direction-property(column);
+    }
+  }
+
+  @if ($generateFlexWrap) {
+    .#{$selectorPrefix}-flex-wrap-nowrap {
+      @include oj-flex-wrap-property(nowrap);
+    }
+  }
+
+}
+
+@if $includeFlexClasses != false {
+  @include module-include-once("common.flex") {
+
+    /* Grid HTML Classes */
+    .oj-flex {
+      @include oj-box-sizing-property(border-box);
+      @include oj-display-flex-property();
+      @include oj-flex-wrap-property(wrap);
+
+    }
+
+    .oj-flex-item {
+      @include oj-flex-property(auto);
+      @include oj-box-sizing-property(border-box);
+    }
+
+    // we want people to have a way to change from oj-row/oj-col
+    // to use oj-flex/oj-flex-item using search and replace.
+    // However one of the problems we had is while oj-flex-item has no default width
+    // the default width of oj-col was 100%.
+    // Because the default width of oj-col was 100% in many cases our demos
+    // left off adding <code>oj-sm-12</code>. So in order to help
+    // folks transition we're adding the class 'deprecated-col-default-width',
+    // this will allow them to search and
+    // replace 'oj-col' with 'oj-flex-item deprecated-col-default-width',
+    // which should get them up and running. Then they can go through
+    // their files and remove 'deprecated-col-default-width' in favor of oj-sm-12 if they
+    // don't already have a small size set.
+    .deprecated-col-default-width {
+
+      @include oj-flex-property(0 1 100%);
+      // max-width is required to work around an IE11 bug where the padding is
+      // not getting included in the flex-basis percentage even though
+      // box-sizing: border-box is set
+      max-width: 100%;
+      // these classes are sometimes used in non-flex cases, for example
+      // in the off canvas responsive patterns, so set the
+      // width as well
+      width: 100%;
+    }
+
+
+    .oj-flex-bar,
+    .oj-flex-bar-start,
+    .oj-flex-bar-middle,
+    .oj-flex-bar-end,
+    .oj-flex-bar-center-absolute {
+      @include oj-box-sizing-property(border-box);
+      @include oj-display-flex-property();
+    }
+
+    .oj-flex-bar {
+      position: relative;
+    }
+
+    .oj-flex-bar-middle {
+      @include oj-flex-property(auto);
+    }
+
+    .oj-flex-bar-end {
+
+      @include oj-ltr() {
+        margin-left: auto;
+      }
+
+      @include oj-rtl() {
+        margin-right: auto;
+      }
+    }
+
+    .oj-flex-bar-center-absolute {
+      @include oj-align-items-property(center);
+      @include oj-justify-content-property(center);
+      position:absolute;
+      left: 50%;
+      @include oj-transform-property(translateX(-50%));
+      bottom: 0;
+      top: 0;
+    }
+
+
+
+    .oj-flex-items-pad > .oj-flex > .oj-flex-item,
+    .oj-flex.oj-flex-items-pad > .oj-flex-item {
+      padding-left: $spacingMedium;
+      padding-right: $spacingMedium;
+    }
+
+    // nested
+    .oj-flex-items-pad > .oj-flex > .oj-flex-item > .oj-flex,
+    .oj-flex.oj-flex-items-pad > .oj-flex-item > .oj-flex {
+      margin-left: -$spacingMedium;
+      margin-right: -$spacingMedium;
+    }
+
+
+    @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+      @media #{$responsiveQuerySmallUp} {
+        // generateOrdering is false because we're mobile first, so
+        // in theory the ordering matches small dom order and then you move
+        // things around on bigger screens
+        @include oj-flex-responsive($selectorPrefix: "oj-sm",
+                                    $generateOrdering: false);
+      }
+    }
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+      @media  #{$responsiveQueryMediumUp} {
+        @include oj-flex-responsive($selectorPrefix: "oj-md");
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+      @media  #{$responsiveQueryLargeUp} {
+        @include oj-flex-responsive($selectorPrefix: "oj-lg");
+
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+      @media  #{$responsiveQueryXlargeUp} {
+        @include oj-flex-responsive($selectorPrefix: "oj-xl");
+
+      }
+    }
+
+    @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+      @media  #{$responsiveQueryXXlargeUp} {
+        @include oj-flex-responsive($selectorPrefix: "oj-xxl");
+
+      }
+    }
+
+
+    @if $responsiveQueryPrint and $responsiveQueryPrint != none {
+      @media  #{$responsiveQueryPrint} {
+        @include oj-flex-responsive($selectorPrefix: "oj-print");
+      }
+    }
+
+
+    //ONLY
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+        @include oj-flex-responsive($selectorPrefix:    "oj-sm-only",
+                                    $generateOrdering:  false);
+      }
+    }
+
+    @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+      @media #{$responsiveQueryMediumOnly} {
+        // only generate centering classes
+        @include oj-flex-responsive($selectorPrefix:    "oj-md-only",
+                                    $generateOrdering:  false);
+      }
+    }
+
+    @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+      @media #{$responsiveQueryLargeOnly} {
+        @include oj-flex-responsive($selectorPrefix:    "oj-lg-only",
+                                    $generateOrdering:  false);
+      }
+    }
+
+    @if $responsiveQueryXlargeOnly and $responsiveQueryXlargeOnly != none {
+      @media #{$responsiveQueryXlargeOnly} {
+        @include oj-flex-responsive($selectorPrefix:    "oj-xl-only",
+                                    $generateOrdering:  false);
+      }
+    }
+
+  }
+}

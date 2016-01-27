@@ -1,0 +1,63 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+
+//*****************************************************************************
+// return json from a map. 
+// 
+// This function will add quotes to the keys 
+// and to values where $type-of($value) == string
+//
+// example of adding a submap 
+//  $submap2: ();
+//  $submap2: map-merge($submap2, (foo: fooValue));
+//  $submap2: map-merge($submap2, (disabled: true));
+//  
+//  $mainmap2: ();
+//  $mainmap2: map-merge($mainmap2, (display: $submap2));
+//  $mainmap2: map-merge($mainmap2, (binky: 6));
+//
+//  font-family: oj-json-from-map($mainmap2);
+//*****************************************************************************
+@function oj-json-from-map($map) {
+  $mapKeys: map-keys($map);
+  $length: length($mapKeys);
+
+  // open json map
+  $json: '{';
+  
+  @if ($length > 0)
+  {
+    @for $i from 1 through $length {
+
+      //get the key and value
+      $key: nth($mapKeys, $i);
+      $value: map-get($map, $key);
+
+      // quote the key and add it
+      $json: '#{$json}"#{$key}":';
+
+      // if the value is a map recurse
+      @if type-of($value) == map {
+        $value: oj-json-from-map($value);
+      }
+      // if the value is is a string quote it
+      @else if type-of($value) == string {
+        $value: '"#{$value}"';
+      }
+
+      // add the value to the map
+      $json: '#{$json}#{$value}';
+
+      @if $i < $length {
+        $json: '#{$json},';
+      }
+    }
+  }
+  
+  // close json map
+  $json: '#{$json}}';
+
+  //@debug $json;
+  @return $json;
+}

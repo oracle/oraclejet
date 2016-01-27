@@ -1,0 +1,95 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// helpers
+@import "../common/helpers/oj.common.helpers";
+
+// tags & text
+@import "widgets/oj.alta.windows.tags.core";
+@import "widgets/oj.alta.windows.tags.typography";
+@import "widgets/oj.alta.windows.tags.lists";
+@import "widgets/oj.alta.windows.utilities";
+
+
+// shared
+@import "widgets/oj.alta.windows.icons";
+@import "widgets/oj.alta.windows.resizable";
+
+// layout & nav
+@import "widgets/oj.alta.windows.panel";
+@import "widgets/oj.alta.windows.collapsible";
+@import "widgets/oj.alta.windows.accordion";
+@import "widgets/oj.alta.windows.conveyorbelt";
+@import "widgets/oj.alta.windows.filmstrip";
+@import "widgets/oj.alta.windows.masonrylayout";
+@import "widgets/oj.alta.windows.tabs";
+@import "widgets/oj.alta.windows.train";
+@import "widgets/oj.alta.windows.navigationlist";
+@import "widgets/oj.alta.windows.offcanvas";
+
+// behavior
+@import "widgets/oj.alta.windows.animation";
+@import "widgets/oj.alta.windows.progressbar";
+@import "widgets/oj.alta.windows.pulltorefresh";
+@import "widgets/oj.alta.windows.swipetoreveal";
+
+// secondary windows
+@import "widgets/oj.alta.windows.dialog";
+@import "widgets/oj.alta.windows.popup";
+
+// button and menu
+@import "widgets/oj.alta.windows.menu";
+@import "widgets/oj.alta.windows.button";
+@import "widgets/oj.alta.windows.buttonset";
+@import "widgets/oj.alta.windows.toolbar";
+
+
+// data collections
+@import "widgets/oj.alta.windows.pagingcontrol";
+@import "widgets/oj.alta.windows.table";
+@import "widgets/oj.alta.windows.tree";
+@import "widgets/oj.alta.windows.datagrid";
+@import "widgets/oj.alta.windows.rowexpander";
+@import "widgets/oj.alta.windows.listview";
+@import "widgets/oj.alta.windows.indexer";
+
+// data visualizations
+@import "widgets/oj.alta.windows.dvt.base";
+@import "widgets/oj.alta.windows.dvt.chart";
+@import "widgets/oj.alta.windows.dvt.diagram";
+@import "widgets/oj.alta.windows.dvt.gauge";
+@import "widgets/oj.alta.windows.dvt.nbox";
+@import "widgets/oj.alta.windows.dvt.pictochart";
+@import "widgets/oj.alta.windows.dvt.tagcloud";
+@import "widgets/oj.alta.windows.dvt.thematicmap";
+@import "widgets/oj.alta.windows.dvt.treemap";
+@import "widgets/oj.alta.windows.dvt.sunburst";
+@import "widgets/oj.alta.windows.dvt.timeline";
+
+// form controls and messaging
+@import "widgets/oj.alta.windows.messaging";
+@import "widgets/oj.alta.windows.formcontrol.label";
+@import "widgets/oj.alta.windows.formcontrol.common";
+@import "widgets/oj.alta.windows.formcontrol.inputtext";
+@import "widgets/oj.alta.windows.formcontrol.inputpassword";
+@import "widgets/oj.alta.windows.formcontrol.textarea";
+@import "widgets/oj.alta.windows.formcontrol.inputnumber";
+@import "widgets/oj.alta.windows.formcontrol.inputdatetime";
+@import "widgets/oj.alta.windows.formcontrol.radioset";
+@import "widgets/oj.alta.windows.formcontrol.checkboxset";
+@import "widgets/oj.alta.windows.formcontrol.listbox";
+@import "widgets/oj.alta.windows.formcontrol.combobox";
+@import "widgets/oj.alta.windows.formcontrol.select";
+@import "widgets/oj.alta.windows.formcontrol.inputsearch";
+@import "widgets/oj.alta.windows.formcontrol.switch";
+@import "widgets/oj.alta.windows.formcontrol.slider";
+
+// responsive
+@import "widgets/oj.alta.windows.flex";
+@import "widgets/oj.alta.windows.grid";
+@import "widgets/oj.alta.windows.responsive.helpers";
+@import "widgets/oj.alta.windows.responsive.mediaqueries";
+@import "widgets/oj.alta.windows.formlayout";
+
+// appplication layout
+@import "widgets/oj.alta.windows.applayout.hybrid";
+@import "widgets/oj.alta.windows.applayout.web";

@@ -1,0 +1,367 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.select.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+
+@if $includeSelectClasses != false {
+  @include module-include-once("common.select") {
+
+    /* select */
+    /* --------------------------------------------------------------- */
+    
+    .oj-select {
+      position: relative;
+      display: inline-block;
+      max-width: $formControlLargeMaxWidth;
+      min-width: $formControlMinWidth;
+      width: 100%;
+      // font size needs to be on the root, because max/min width is in em.
+      font-size: $formControlTriggerFontSize;
+
+      @include oj-box-sizing-property(border-box); 
+    }
+
+    /* 
+     * Applied to the select box which includes the selected text and the dropdown open icon
+     */
+    .oj-select-choice {
+      @include oj-form-control-content($formControlTriggerValueColor);
+      @include oj-box-sizing-property(border-box);
+      display: block;
+      overflow: hidden;
+      position: relative;
+      white-space: nowrap;
+      background-clip: padding-box;
+      text-overflow: ellipsis;
+      height: $formControlTriggerHeight;
+      line-height: $formControlTriggerHeight;
+      @include oj-ltr() {
+        padding-left: $formControlPaddingHorizontal;
+        padding-right: 0;
+      }
+      @include oj-rtl() {
+        padding-left: 0;
+        padding-right: $formControlPaddingHorizontal;
+      }
+    }
+    
+    /* multi-select */
+    
+    /* 
+     * Applied to the multi-select box which includes the input field and the selected choices
+     */
+    .oj-select-choices {
+      @include oj-box-sizing-property(border-box);
+      @include oj-form-control-content;
+      height: auto;
+      min-height: $formControlTriggerHeight;
+      margin: 0;
+      position: relative;
+      cursor: text;
+      overflow: hidden;
+      padding: 0 $formControlPaddingHorizontal 5px;      
+    }
+    
+    /* 
+     * Applied to the multi-select box list items which include the search field and the selected choices
+     */
+    .oj-select-choices li {
+      list-style: none; 
+      @include oj-ltr() {
+        float: left;
+      }
+      @include oj-rtl() {
+        float: right;
+      }   
+    }
+    
+    /* 
+     * Applied to the multi-select search field which is an li to wrap the input
+     */
+    .oj-select-search-field {
+      margin-top: 5px;
+      padding: 0;
+      white-space: nowrap; 
+      line-height: $formControlTriggerHeight * 0.9;
+    }
+    
+    /* 
+     * Applied to the input field. Override default .oj-listbox-input
+     */
+    .oj-select-multi .oj-listbox-input {
+      color: $formControlInputValueColor;
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis; 
+      font-size: $formControlInputFontSize;
+      @include oj-placeholder()
+      {
+        color: $formControlPlaceholderColor;
+        // in Firefox the default opacity is not 1 for placeholder
+        opacity: 1;
+        font-style: $formControlPlaceholderFontStyle;
+      }
+      padding-top: 0;
+      padding-bottom: 0;
+      @include oj-ltr() {
+        padding-right: 0;
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+    }
+    
+    /* 
+     * Applied to the multi-select selected choice
+     */
+    .oj-select-selected-choice {
+      position: relative;
+      line-height: 1.8rem;
+      cursor: default;
+      @include oj-border-radius($buttonBorderRadius);
+      border: 1px solid $buttonOutlinedChromeBorderColor;
+      color: $buttonOutlinedChromeTextColor;
+      background-clip: padding-box;
+      @include oj-ltr() {
+        padding: 0 4px 0 7px;
+        margin: 5px 6px 0 0;
+      }
+      @include oj-rtl() {
+        padding: 0 7px 0 4px;
+        margin: 5px 0 0 6px;
+      }
+    }
+
+    /* 
+     * Applied to the multi-select selected choice when getting focus
+     */
+    .oj-select-selected-choice.oj-focus {
+      @include oj-browser-focus-outline-approximation($buttonTextColor);
+    }
+    
+    /* 
+     * Applied to the label of the selected choice
+     */
+    .oj-select-selected-choice-label {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /*
+     * Applied to the clear entry field of the selected choice
+     */
+    .oj-select-clear-entry {
+      display: inline-block;
+      outline: none;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 100%;
+      @include oj-ltr() {
+        right: 3px;
+      }
+      @include oj-rtl() {
+        left: 3px;
+      } 
+    }
+
+    /* end multiselect */
+
+    /* Invalid styling for the widget */
+    .oj-select.oj-invalid .oj-select-choice,
+    .oj-select-native.oj-invalid .oj-select-select {
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+      border-color: $borderColorError;
+    }
+
+    /* Warning styling for the widget */
+    .oj-select.oj-warning .oj-select-choice,
+    .oj-select-native.oj-warning .oj-select-select {
+      @include oj-form-control-border-message-width;
+      border-style: solid;
+      border-color: $borderColorWarning;
+    }
+
+    /* disabled styles  for single-select */
+    .oj-select.oj-disabled .oj-select-choice {
+      @include oj-form-control-content-disabled;
+    }
+    
+    /* 
+     * Disabled styles for multi-select 
+     */
+    .oj-select-multi.oj-disabled .oj-select-choices,
+    .oj-select-multi.oj-disabled .oj-select-selected-choice,
+    .oj-select-multi.oj-disabled .oj-select-selected-choice.oj-focus,
+    .oj-select-multi.oj-disabled input {
+      @include oj-form-control-content-disabled;
+      outline: 0;
+    }
+
+    .oj-select-multi.oj-disabled .oj-select-clear-entry {
+      display: none;
+      background: none; 
+    }
+
+    /* 
+     * Applied to the place holder text
+     */
+    .oj-select-chosen.oj-select-default {
+      color: $formControlPlaceholderColor; 
+      font-style: $formControlPlaceholderFontStyle;
+    }
+
+    /* 
+     * Applied to the selected text
+     */
+    .oj-select-chosen {
+      border: 0;
+      outline: 0;
+      white-space: nowrap;
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      @include oj-box-shadow(none);
+      @include oj-box-sizing-property(border-box);
+
+      @include oj-ltr() {
+        padding-right: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        padding-left: $formControlPaddingHorizontal;
+      }
+    }
+
+
+    /* 
+     * Applied to the dropdown open icon
+     */
+    .oj-select-arrow {
+      display: inline-block;
+      text-align: center;
+      position: absolute;
+      top: 0;
+      line-height: inherit;
+      @include oj-ltr() {
+        right: 0;
+      }
+      @include oj-rtl() {
+        left: 0;
+      }
+    }
+
+
+    // High Contrast
+    //--------------------------------------------
+
+    // a disabled select will have a less prominent border
+    .oj-hicontrast .oj-select.oj-disabled {
+      border-style: dotted;
+    }
+
+    /* 
+     * Applied to the dropdown open icon
+     */
+    .oj-select-open-icon {
+      @extend .oj-fwk-icon-arrow02-s;
+
+      @include oj-rtl() {
+        padding-right: oj-shorthand-property-value-left($selectArrowPadding);
+        padding-left: oj-shorthand-property-value-right($selectArrowPadding);
+      }
+      @include oj-ltr() {
+        padding-left: oj-shorthand-property-value-left($selectArrowPadding);
+        padding-right: oj-shorthand-property-value-right($selectArrowPadding);
+      }
+    }
+    
+    .oj-select-multiple-open-icon {
+      @extend .oj-fwk-icon-dots-vertical !optional;
+
+      font-size: 24px;
+      
+      @include oj-rtl() {
+        padding-right: oj-shorthand-property-value-left($selectMultipleArrowPadding);
+        padding-left: oj-shorthand-property-value-right($selectMultipleArrowPadding);
+      }
+      @include oj-ltr() {
+        padding-left: oj-shorthand-property-value-left($selectMultipleArrowPadding);
+        padding-right: oj-shorthand-property-value-right($selectMultipleArrowPadding);
+      }
+    }
+    
+    /* clear entry icon */
+    .oj-select-clear-entry-icon {
+      @extend .oj-fwk-icon-cross;
+    }
+
+
+    // Native theming
+    //--------------------------------------------
+
+    /* Override default options*/
+    $selectDefaultOptions: ();
+
+    @if ($selectRenderModeOptionDefault)
+    {
+      $selectDefaultOptions: map-merge($selectDefaultOptions, (renderMode: $selectRenderModeOptionDefault));
+    }
+    .oj-select-option-defaults {
+      font-family: oj-json-from-map($selectDefaultOptions);
+    }
+
+    //native theme
+    .oj-select-native .oj-select-arrow {
+      line-height: $formControlTriggerHeight;
+      color: $selectArrowColor;
+      pointer-events: none;
+    }
+    
+    .oj-select-native.oj-disabled .oj-select-arrow {
+      opacity: $formControlOpacityDisabled;
+    }
+    
+    //select tag
+    .oj-select-select {
+      @include oj-form-control-content($formControlTriggerValueColor);
+      @include oj-box-sizing-property(border-box);
+      height: $formControlTriggerHeight;
+      width: 100%;
+      white-space: nowrap;
+      background-clip: padding-box;
+      padding: 0 $formControlPaddingHorizontal;
+    }
+
+    select.oj-select-select.oj-select-default:not([multiple]) {
+      color: $formControlPlaceholderColor; 
+      font-style: $formControlPlaceholderFontStyle;
+    }
+
+
+    .oj-select-select[disabled] {
+      @include oj-form-control-content-disabled;
+    }
+
+    //jet theme
+    // trigger
+    .oj-select-jet.oj-enabled .oj-select-choice:active,
+    .oj-select-native.oj-enabled .oj-select-select:active {      
+      background-color: $formControlTriggerBgColorActive;
+    }
+
+    .oj-select-jet .oj-select-arrow.oj-select-open-icon {
+      color: $selectArrowColor;
+    }
+  }
+}

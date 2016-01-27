@@ -1,0 +1,95 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+// helpers
+@import "../common/helpers/oj.common.helpers";
+
+// tags & text
+@import "widgets/oj.alta.ios.tags.core";
+@import "widgets/oj.alta.ios.tags.typography";
+@import "widgets/oj.alta.ios.tags.lists";
+@import "widgets/oj.alta.ios.utilities";
+
+
+// shared
+@import "widgets/oj.alta.ios.icons";
+@import "widgets/oj.alta.ios.resizable";
+
+// layout & nav
+@import "widgets/oj.alta.ios.panel";
+@import "widgets/oj.alta.ios.collapsible";
+@import "widgets/oj.alta.ios.accordion";
+@import "widgets/oj.alta.ios.conveyorbelt";
+@import "widgets/oj.alta.ios.filmstrip";
+@import "widgets/oj.alta.ios.masonrylayout";
+@import "widgets/oj.alta.ios.tabs";
+@import "widgets/oj.alta.ios.train";
+@import "widgets/oj.alta.ios.navigationlist";
+@import "widgets/oj.alta.ios.offcanvas";
+
+// behavior
+@import "widgets/oj.alta.ios.animation";
+@import "widgets/oj.alta.ios.progressbar";
+@import "widgets/oj.alta.ios.pulltorefresh";
+@import "widgets/oj.alta.ios.swipetoreveal";
+
+// secondary windows
+@import "widgets/oj.alta.ios.dialog";
+@import "widgets/oj.alta.ios.popup";
+
+// button and menu
+@import "widgets/oj.alta.ios.menu";
+@import "widgets/oj.alta.ios.button";
+@import "widgets/oj.alta.ios.buttonset";
+@import "widgets/oj.alta.ios.toolbar";
+
+
+// data collections
+@import "widgets/oj.alta.ios.pagingcontrol";
+@import "widgets/oj.alta.ios.table";
+@import "widgets/oj.alta.ios.tree";
+@import "widgets/oj.alta.ios.datagrid";
+@import "widgets/oj.alta.ios.rowexpander";
+@import "widgets/oj.alta.ios.listview";
+@import "widgets/oj.alta.ios.indexer";
+
+// data visualizations
+@import "widgets/oj.alta.ios.dvt.base";
+@import "widgets/oj.alta.ios.dvt.chart";
+@import "widgets/oj.alta.ios.dvt.diagram";
+@import "widgets/oj.alta.ios.dvt.gauge";
+@import "widgets/oj.alta.ios.dvt.nbox";
+@import "widgets/oj.alta.ios.dvt.pictochart";
+@import "widgets/oj.alta.ios.dvt.tagcloud";
+@import "widgets/oj.alta.ios.dvt.thematicmap";
+@import "widgets/oj.alta.ios.dvt.treemap";
+@import "widgets/oj.alta.ios.dvt.sunburst";
+@import "widgets/oj.alta.ios.dvt.timeline";
+
+// form controls and messaging
+@import "widgets/oj.alta.ios.messaging";
+@import "widgets/oj.alta.ios.formcontrol.label";
+@import "widgets/oj.alta.ios.formcontrol.common";
+@import "widgets/oj.alta.ios.formcontrol.inputtext";
+@import "widgets/oj.alta.ios.formcontrol.inputpassword";
+@import "widgets/oj.alta.ios.formcontrol.textarea";
+@import "widgets/oj.alta.ios.formcontrol.inputnumber";
+@import "widgets/oj.alta.ios.formcontrol.inputdatetime";
+@import "widgets/oj.alta.ios.formcontrol.radioset";
+@import "widgets/oj.alta.ios.formcontrol.checkboxset";
+@import "widgets/oj.alta.ios.formcontrol.listbox";
+@import "widgets/oj.alta.ios.formcontrol.combobox";
+@import "widgets/oj.alta.ios.formcontrol.select";
+@import "widgets/oj.alta.ios.formcontrol.inputsearch";
+@import "widgets/oj.alta.ios.formcontrol.switch";
+@import "widgets/oj.alta.ios.formcontrol.slider";
+
+// responsive
+@import "widgets/oj.alta.ios.flex";
+@import "widgets/oj.alta.ios.grid";
+@import "widgets/oj.alta.ios.responsive.helpers";
+@import "widgets/oj.alta.ios.responsive.mediaqueries";
+@import "widgets/oj.alta.ios.formlayout";
+
+// appplication layout
+@import "widgets/oj.alta.ios.applayout.hybrid";
+@import "widgets/oj.alta.ios.applayout.web";

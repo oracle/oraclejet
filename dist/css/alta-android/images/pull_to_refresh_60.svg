@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px"
+	 height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+<g id="Base">
+	<path id="Shadow" opacity="0.1" fill-rule="evenodd" clip-rule="evenodd" d="M22,4c9.94,0,18,8.06,18,18s-8.06,18-18,18
+		c-9.94,0-18-8.06-18-18S12.06,4,22,4z"/>
+	<path id="Base_1_" fill-rule="evenodd" clip-rule="evenodd" fill="#F5F5F5" d="M20.03,2.01c9.94,0,18,8.06,18,18s-8.06,18-18,18
+		s-18-8.06-18-18S10.09,2.01,20.03,2.01z"/>
+	<path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M20.03,2.01c9.94,0,18,8.06,18,18s-8.06,18-18,18s-18-8.06-18-18
+		S10.09,2.01,20.03,2.01z M20.03,3.01c9.39,0,17,7.61,17,17c0,9.39-7.61,17-17,17c-9.39,0-17-7.61-17-17
+		C3.03,10.62,10.64,3.01,20.03,3.01z"/>
+</g>
+<g id="Still_06">
+	<g>
+		<g>
+			<path fill-rule="evenodd" clip-rule="evenodd" fill="#E85D70" d="M19.96,10.96c-4.97,0-9,4.03-9,9c0,4.97,4.03,9,9,9
+				c4.97,0,9-4.03,9-9C28.96,14.99,24.93,10.96,19.96,10.96z M19.98,26.96c-3.86,0-6.98-3.12-6.98-6.98c0-3.86,3.13-6.98,6.98-6.98
+				c3.85,0,6.98,3.13,6.98,6.98C26.96,23.83,23.84,26.96,19.98,26.96z"/>
+		</g>
+	</g>
+	<path fill-rule="evenodd" clip-rule="evenodd" fill="#E85D70" d="M17.87,23.15l-5.72,4.28c-0.25,0.23-0.26,0.6-0.01,0.83l5.6,4.55
+		c0.25,0.23,1.01,0.24,1.27,0.02l-0.05-9.66C18.7,22.94,18.12,22.93,17.87,23.15z"/>
+	<path fill-rule="evenodd" clip-rule="evenodd" fill="#F5F5F5" d="M8.06,20.99l2.19,5.6c0.13,0.25,1.61,0.93,1.86,0.77l5.04-3.65
+		c0.25-0.15,0.41-0.68,0.28-0.94l-9.09-2.72C8.09,20.21,7.94,20.73,8.06,20.99z"/>
+</g>
+</svg>

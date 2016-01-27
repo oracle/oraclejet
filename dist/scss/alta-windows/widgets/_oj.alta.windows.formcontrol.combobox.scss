@@ -1,0 +1,37 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeComboboxClasses != false {
+  $includeIconClasses:              true !global;
+  $includePopupClasses:        true !global;
+  $includeLabelClasses:             true !global;
+  $includeMessagingClasses:         true !global;
+  $includeFormControlCommonClasses: true !global;
+  $includeListboxClasses:           true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.windows.icons";
+@import "oj.alta.windows.messaging";
+@import "oj.alta.windows.popup";
+@import "oj.alta.windows.formcontrol.label";
+@import "oj.alta.windows.formcontrol.common";
+@import "oj.alta.windows.formcontrol.listbox";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.formcontrol.combobox";
+
+
+@if $includeComboboxClasses != false {
+  @include module-include-once("alta.windows.combobox") {
+    
+  }
+}

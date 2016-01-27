@@ -1,0 +1,80 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeResizableClasses != false {
+  @include module-include-once("common.resizable") {
+
+    /* resizable */
+    /* --------------------------------------------------------------- */
+
+    .oj-resizable { 
+        position: relative;
+    }
+    .oj-resizable-handle { 
+        position: absolute;
+        font-size: 0.1px; 
+        display: block; 
+        z-index: $resizableZindex;
+    }
+    .oj-resizable-disabled .oj-resizable-handle, 
+    .oj-resizable-autohide .oj-resizable-handle { 
+        display: none; 
+    }
+    .oj-resizable-n { 
+        cursor: n-resize; 
+        height: 7px; 
+        width: 100%; 
+        top: -5px; 
+        left: 0; 
+    }
+    .oj-resizable-s { 
+        cursor: s-resize; 
+        height: 7px; 
+        width: 100%; 
+        bottom: -5px; 
+        left: 0; 
+    }
+    .oj-resizable-e { 
+        cursor: e-resize; 
+        width: 7px; 
+        right: -5px; 
+        top: 0; 
+        height: 100%; 
+    }
+    .oj-resizable-w { 
+        cursor: w-resize; 
+        width: 7px; 
+        left: -5px; 
+        top: 0; 
+        height: 100%; 
+    }
+    .oj-resizable-se { 
+        cursor: se-resize; 
+        width: 12px; 
+        height: 12px; 
+        right: 1px; 
+        bottom: 1px; 
+    }
+    .oj-resizable-sw { 
+        cursor: sw-resize; 
+        width: 9px; 
+        height: 9px; 
+        left: -5px; 
+        bottom: -5px; 
+    }
+    .oj-resizable-nw { 
+        cursor: nw-resize; 
+        width: 9px; 
+        height: 9px; 
+        left: -5px; 
+        top: -5px; 
+    }
+    .oj-resizable-ne { 
+        cursor: ne-resize; 
+        width: 9px; 
+        height: 9px; 
+        right: -5px; 
+        top: -5px;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTagsTypographyClasses: $includeTagClasses !default;
+
+@import "../../common/widgets/oj.common.tags.typography";
+
+@if $includeTagsTypographyClasses != false {
+  @include module-include-once("alta.android.tagstypography") {
+  }
+
+}

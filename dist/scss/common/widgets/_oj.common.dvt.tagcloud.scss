@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.tagcloud.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeTagCloudClasses != false {
+  @include module-include-once("common.tagcloud") {
+    .oj-tagcloud{
+      @include oj-user-select-property(none);
+      outline:none;
+      width:100%;
+      height:300px;
+      color: $textColor;
+    }
+  }
+}

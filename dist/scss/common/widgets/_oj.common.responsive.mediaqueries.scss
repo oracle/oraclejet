@@ -1,0 +1,78 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.responsive.mediaqueries.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+
+@mixin oj-media-query-as-text($selector, $query)
+{
+  #{$selector}
+  {
+    @if $query and $query != none {
+        font-family: "/#{$query}/";
+    }
+    @else
+    {
+        font-family: "/null/";
+    }
+  }
+}
+
+@if $includeResponsiveMediaQueryClasses != false {
+  @include module-include-once("common.responsivemediaqueries") {
+
+
+    /**
+     * This idea/code is from zurb foundation, thanks zurb!
+     *
+     * In the jet sass files there are variables for
+     * responsive screen sizes, these look something like
+     *    $screenSmallRange:  0, 767px !default;
+     *    $screenMediumRange: 768px, 1023px !default;
+     *    $screenLargeRange:  1024px, 1280px !default;
+     *    $screenXlargeRange: 1281px, null !default;
+     *
+     * These variables in turn are used to generate responsive media queries in variables like
+     * $responsiveQuerySmallUp, $responsiveQueryMediumUp, etc.
+     *
+     * we send down these media queries as the font family in classes
+     * that look something like this:
+     *
+     * .oj-mq-md {
+     *    font-family: "/screen and (min-width: 768px)/";
+     * }
+     *
+     * This function applies the class and then reads the font family off a dom
+     * element to get the media query string
+     *
+     * example usage:
+     *   var md_media_query = oj.ResponsiveUtils._getMediaQueryFromClass('oj-mq-md');
+     */
+
+    @include oj-media-query-as-text($selector: ".oj-mq-sm-up", $query: $responsiveQuerySmallUp);
+    @include oj-media-query-as-text($selector: ".oj-mq-md-up", $query: $responsiveQueryMediumUp);
+    @include oj-media-query-as-text($selector: ".oj-mq-lg-up", $query: $responsiveQueryLargeUp);
+    @include oj-media-query-as-text($selector: ".oj-mq-xl-up", $query: $responsiveQueryXlargeUp);
+    @include oj-media-query-as-text($selector: ".oj-mq-xxl-up", $query: $responsiveQueryXXlargeUp);
+
+
+    @include oj-media-query-as-text($selector: ".oj-mq-sm-only", $query: $responsiveQuerySmallOnly);
+    @include oj-media-query-as-text($selector: ".oj-mq-md-only", $query: $responsiveQueryMediumOnly);
+    @include oj-media-query-as-text($selector: ".oj-mq-lg-only", $query: $responsiveQueryLargeOnly);
+    @include oj-media-query-as-text($selector: ".oj-mq-xl-only", $query: $responsiveQueryXlargeOnly);
+
+
+    @include oj-media-query-as-text($selector: ".oj-mq-md-down", $query: $responsiveQueryMediumDown);
+    @include oj-media-query-as-text($selector: ".oj-mq-lg-down", $query: $responsiveQueryLargeDown);
+    @include oj-media-query-as-text($selector: ".oj-mq-xl-down", $query: $responsiveQueryXlargeDown);
+
+    .oj-mq-high-resolution {
+      font-family: "/#{oj-icon-hi-res-media-query-string()}/";
+    }
+
+  }
+}

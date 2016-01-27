@@ -1,0 +1,171 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.pulltorefresh.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includePullToRefreshClasses != false {
+  @include module-include-once("common.pulltorefresh") {
+
+    /*
+     * applied to the refresh panel 
+     */
+    .oj-pulltorefresh-panel {
+      overflow: hidden;      
+    }
+
+    /*
+     * applied to the content inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-content {
+      @include oj-display-flex-property();
+      @include oj-flex-direction-property(column);
+      @include oj-align-items-property(center);
+      background-color: $pullToRefreshBgColor;
+    }
+
+    /*
+     * applied animation when the height of the panel changes (during release)
+     */
+    .oj-pulltorefresh-transition {
+        transition: height $pullToRefreshAnimationDuration;
+        @include oj-transition-timing-function-property(ease-in-out);
+    }
+
+    /*
+     * applied to the primary text inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-primary-text {
+        color: $primaryTextColor;
+        text-align: center;
+        margin: 0 0 10px 0;
+    }
+
+    /*
+     * applied to the secondary text inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-secondary-text {
+        color: $secondaryTextColor;
+        font-size: $smallFontSize;
+        text-align: center;
+        margin: 0 0 20px 0;
+    }
+
+    /*
+     * applied to the container of the refresh icon inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-icon-container {
+        margin: 20px 0 20px 0;
+    }
+
+    /*
+     * applied to the refresh icon inside the pull to refresh panel
+     */
+    .oj-pulltorefresh-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    /*
+     * refresh icon at initial state
+     */
+    .oj-pulltorefresh-icon-initial {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_00.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 10% state
+     */
+    .oj-pulltorefresh-icon-10-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_10.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 20% state
+     */
+    .oj-pulltorefresh-icon-20-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_20.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 30% state
+     */
+    .oj-pulltorefresh-icon-30-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_30.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 40% state
+     */
+    .oj-pulltorefresh-icon-40-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_40.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 50% state
+     */
+    .oj-pulltorefresh-icon-50-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_50.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 60% state
+     */
+    .oj-pulltorefresh-icon-60-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_60.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 70% state
+     */
+    .oj-pulltorefresh-icon-70-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_70.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 80% state
+     */
+    .oj-pulltorefresh-icon-80-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_80.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 90% state
+     */
+    .oj-pulltorefresh-icon-90-percent {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_90.svg")
+        ); 
+    }
+
+    /*
+     * refresh icon at 100% state
+     */
+    .oj-pulltorefresh-icon-full {
+        @include oj-icon-content(
+             $icon: oj-image-url("pull_to_refresh_full.gif")
+        ); 
+    }
+  }
+}

@@ -1,0 +1,51 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//-------------------------------------------------------------------------------------------------
+// this module system prevents classes from being ouput more than once regardless
+// of how many times they are included/imported.
+//
+// At the top of our scss files you'll see code like this:
+//   @if $includeButtonClasses != false {
+//     @include module-include-once("button") {
+// 
+// This prevents button classes from getting written out more than once because the 
+// content is ignored if the module has been included before. 
+//-------------------------------------------------------------------------------------------------
+
+// variable to remember the module names that have been loaded.
+$modules: () !default;
+
+@mixin module-include-once($name) {
+  // todo: in sass 3.2 index returned false if the value is not in the list.
+  // so the syntax here used to be 
+  //
+  //   @if (index($modules, $name) == false) {
+  //     $modules: append($modules, $name) !global;
+  //     @content;
+  //   }
+  //
+  //   but in sass 3.3 checking for false gives a deprecation warning
+  //   saying that in future index will return null instead of false.
+  //   Therefore using this weird empty if syntax to remove the deprecation warning.
+  //   When we are on a version of sass where index does return null
+  //   we can go back to the syntax above replacing 'false' with 'null'
+  @if (index($modules, $name)){}
+  @else {
+    $modules: append($modules, $name) !global;
+    @content;
+  }
+}
+
+@function module-included($name) 
+{
+  // todo: in sass 3.2 index returned false if the value is not in the list.
+  // so the syntax here used to be but in sass 3.3 checking for false gives a deprecation warning
+  // saying that in future index will return null instead of false.
+  @if (index($modules, $name)){
+    @return true;
+  }
+  @else {
+    @return false;
+  }
+}
+
+

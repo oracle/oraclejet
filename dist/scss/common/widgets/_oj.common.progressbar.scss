@@ -1,0 +1,62 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeProgressbarClasses != false  {
+  @include module-include-once("common.progressbar") {
+    /* progressbar */
+    /* --------------------------------------------------------------- */
+
+    .oj-progressbar { 
+      @include oj-box-sizing-property(border-box);
+      height: 16px;   
+      overflow: hidden; 
+      background: $progressbarBgColor; 
+      border: 1px $progressbarBorderStyle $progressbarBorderColor;
+      @include oj-border-radius($progressbarBorderRadius);
+    }
+    .oj-progressbar-value {
+      margin: 0; 
+      @include oj-box-sizing-property(border-box);
+      height: 100%; 
+      background: $progressbarValueBgColor; 
+    }
+
+    .oj-progressbar-overlay {
+      height: 100%;
+      opacity: $progressbarIndeterminateOverlayOpacity;
+      @include oj-ltr() {
+        background: oj-image-url("animated-overlay.gif");
+      }
+      @include oj-rtl() {
+        background: oj-image-url("animated-overlay-rtl.gif");
+      }
+    }
+	
+    .oj-progressbar-start-label,
+    .oj-progressbar-end-label {
+      display: inline-block;
+      margin-top: 8px;
+    }	
+	
+    .oj-progressbar-end-label {
+      @include oj-ltr() {
+        float: right;
+      }
+      @include oj-rtl() {
+        float: left;
+      }  
+    }
+  
+    .oj-progressbar-embedded {
+      height: 3px;
+      width: 100%;
+      border-style: none;
+      background-color: transparent;
+    }
+		
+    // Add border for high contrast mode where the background color can't be seen
+    .oj-hicontrast .oj-progressbar-value {
+      border: 1px dashed $progressbarBorderColor;
+    }
+  }
+}

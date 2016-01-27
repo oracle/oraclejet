@@ -1,0 +1,120 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.utilities.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeUtilitiesClasses != false {
+  @include module-include-once("common.utilities") {
+
+    // sizes
+
+    .oj-text-xs {
+      font-size: $smallestFontSize;
+    }
+
+    .oj-text-sm {
+      font-size: $smallFontSize;
+    }
+
+
+
+    //colors
+   
+    .oj-text-primary-color {
+      color: $primaryTextColor;
+    }
+
+    .oj-text-secondary-color {
+      color: $secondaryTextColor;
+    }
+
+
+
+    // margins
+    .oj-margin {
+      margin: $spacingMedium;
+    }
+
+    .oj-margin-horizontal {
+      margin-left: $spacingMedium;
+      margin-right: $spacingMedium;
+    }
+
+    .oj-margin-vertical {
+      margin-top: $spacingMedium;
+      margin-bottom: $spacingMedium;
+    }
+
+    .oj-margin-top {
+      margin-top: $spacingMedium;
+    }
+
+    .oj-margin-bottom {
+      margin-top: $spacingMedium;
+    }
+
+    .oj-margin-start {
+      @include oj-ltr() {
+        margin-left: $spacingMedium;
+      }
+      @include oj-rtl() {
+        margin-right: $spacingMedium;
+      }
+    }
+
+    .oj-margin-end {
+      @include oj-ltr() {
+        margin-right: $spacingMedium;
+      }
+      @include oj-rtl() {
+        margin-left: $spacingMedium;
+      }
+    }
+
+
+    // padding
+    .oj-padding {
+      padding: $spacingMedium;
+    }
+
+    .oj-padding-horizontal {
+      padding-left: $spacingMedium;
+      padding-right: $spacingMedium;
+    }
+
+    .oj-padding-vertical {
+      padding-top: $spacingMedium;
+      padding-bottom: $spacingMedium;
+    }
+
+    .oj-padding-top {
+      padding-top: $spacingMedium;
+    }
+
+    .oj-padding-bottom {
+      padding-top: $spacingMedium;
+    }
+
+    .oj-padding-start {
+      @include oj-ltr() {
+        padding-left: $spacingMedium;
+      }
+      @include oj-rtl() {
+        padding-right: $spacingMedium;
+      }
+    }
+
+    .oj-padding-end {
+      @include oj-ltr() {
+        padding-right: $spacingMedium;
+      }
+      @include oj-rtl() {
+        padding-left: $spacingMedium;
+      }
+    }
+  }
+}

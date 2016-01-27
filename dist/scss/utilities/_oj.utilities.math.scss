@@ -1,0 +1,43 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+//*****************************************************************************
+// returns the lower bound (first item) in a range
+//*****************************************************************************
+@function lower-bound($range){
+  @if length($range) <= 0 {
+    // sass won't let us error here because we're in a function
+    @return "called lower-bound function but the range is empty";
+  }
+  @return nth($range,1);
+}
+
+//*****************************************************************************
+// returns the upper bound (second item) in a range
+//*****************************************************************************
+@function upper-bound($range) {
+  @if length($range) < 2 {
+    // sass won't let us error here because we're in a function
+    @return "called upper-bound function the range is less than 2 items";
+  }
+  @return nth($range, 2);
+}
+
+//*****************************************************************************
+// returns a unitless number
+//*****************************************************************************
+@function oj-strip-unit($number)
+{
+  // The key concept in the treatment of numeric values is that division by 1 
+  // of the same unit will remove the unit.  However, the units must be the same 
+  // for this trick to work.
+
+  @if type-of($number) == 'number' and not unitless($number) 
+  {
+    $devisors: ('em':1em, 'ex:':1ex, 'px':1px, 'in':1in, 'cm':1cm, 'mm':1mm, 'pt':1pt, 'pc':1pc);
+    $unit: unit($number);
+    $devisor: map-get($devisors, $unit);
+    @return $number / $devisor;
+  }
+  @return $number; 
+}
