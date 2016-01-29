@@ -78,6 +78,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    calls.
  * </p>
  *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
  *
  * <h3 id="basemap-section">

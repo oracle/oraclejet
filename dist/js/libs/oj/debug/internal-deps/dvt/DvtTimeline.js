@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtTimelineOverview'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -398,9 +398,9 @@ DvtTimeComponentAxis.prototype.adjustDate = function(date)
   return this._calendar.adjustDate(new Date(date), this._scale);
 };
 
-DvtTimeComponentAxis.prototype.getNextDate = function(date)
+DvtTimeComponentAxis.prototype.getNextDate = function(time)
 {
-  return this._calendar.getNextDate(new Date(date), this._scale);
+  return this._calendar.getNextDate(time, this._scale);
 };
 
 DvtTimeComponentAxis.prototype.formatDate = function(date)
@@ -443,7 +443,6 @@ DvtTimeComponentAxis.prototype.setZoomOrder = function(zoomOrder)
 {
   this._zoomOrder = zoomOrder;
 };
-// todo: use DateJS?
 var DvtTimeComponentAxisFormatter = function(type, locale) 
 {
   this.Init(type, locale);
@@ -485,7 +484,6 @@ DvtTimeComponentAxisFormatter.prototype.Init = function(type, dateFormatStrings)
   this._formats[1]['twoyears'] = 'yy';
 };
 
-
 /**
  * Change the format string for a particular time scale.
  *
@@ -497,128 +495,165 @@ DvtTimeComponentAxisFormatter.prototype.setPattern = function(scale, pattern)
   this._formats[this._type][scale] = pattern;
 };
 
-DvtTimeComponentAxisFormatter.prototype.format = function(date, scale) 
+DvtTimeComponentAxisFormatter.prototype.format = function(date, scale)
 {
-  var format = this._formats[this._type][scale];
-  if (format != null)
-    return date.format(format, null, this._dateFormatStrings);
+  var mask = this._formats[this._type][scale];
+  if (mask != null)
+  {
+    if (mask.indexOf(':') != -1)
+      var separator = ':';
+    else if (mask.indexOf('/') != -1)
+      separator = '/';
+    if (separator)
+    {
+      mask = mask.split(separator);
+      var newString = this.getDateFormatValue(date, mask[0], false);
+      for (var i = 1; i < mask.length; i++)
+      {
+        newString += separator + this.getDateFormatValue(date, mask[i], false);
+      }
+      return newString;
+    }
+    else
+      return this.getDateFormatValue(date, mask, false);
+  }
   else
     return date.toLocaleString();
 };
 
-/*
- * Date Format 1.2.3
- * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
- * MIT license
- *
- * Includes enhancements by Scott Trenda <scott.trenda.net>
- * and Kris Kowal <cixar.com/~kris.kowal/>
- *
- * Accepts a date, a mask, or a date and a mask.
- * Returns a formatted version of the given date.
- * The date defaults to the current date/time.
- * The mask defaults to dateFormat.masks.default.
- * @export
+/**
+ * Gets the formatted date value corresponding to the desired mask.
+ * Valid mask values are: 'ss', 'MM', 'HH', 'dd', 'dddd', 'm',
+ * 'mmm', 'mmmm', 'yy', and 'yyyy'.
+ * @param {Date} date The date object to be formatted.
+ * @param {string} mask The format mask to be used.
+ * @param {boolean} isUTC Whether UTC values should be used.
+ * @return {string} The formatted date value.
  */
+DvtTimeComponentAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
+{
+  if (isUTC)
+  {
+    switch (mask)
+    {
+      case 'ss':
+        var value = date.getUTCSeconds();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
 
-var dateFormat = function(dateFormatStrings) {
-	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
-		timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
-		timezoneClip = /[^-+\dA-Z]/g,
-		pad = function(val, len) {
-			val = String(val);
-			len = len || 2;
-			while (val.length < len) val = '0' + val;
-			return val;
-		};
+      case 'HH':
+        value = date.getUTCHours();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
 
-	// Regexes and supporting functions are cached through closure
-	return function(date, mask, utc, dateFormatStrings) {
-		var dF = dateFormat;
+      case 'MM':
+        value = date.getUTCMinutes();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
 
-		// You can't provide utc if you skip other args (use the "UTC:" mask prefix)
-		if (arguments.length == 1 && Object.prototype.toString.call(date) == '[object String]' && !/\d/.test(date)) {
-			mask = date;
-			date = undefined;
-		}
+      case 'dd':
+        value = date.getUTCDate();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
 
-		// Passing date through Date applies Date.parse, if necessary
-		date = date ? new Date(date) : new Date;
-		if (isNaN(date)) throw SyntaxError('invalid date');
+      case 'dddd':
+        return this._dateFormatStrings.dayNames[date.getUTCDay() + 7];
+        break;
 
-		mask = String(dF.masks[mask] || mask || dF.masks['default']);
+      case 'm':
+        return date.getUTCMonth() + 1;
+        break;
 
-		// Allow setting the utc argument via the mask
-		if (mask.slice(0, 4) == 'UTC:') {
-			mask = mask.slice(4);
-			utc = true;
-		}
+      case 'mmm':
+        return this._dateFormatStrings.monthNames[date.getUTCMonth()];
+        break;
 
-		var	_ = utc ? 'getUTC' : 'get',
-			d = date[_ + 'Date'](),
-			D = date[_ + 'Day'](),
-			m = date[_ + 'Month'](),
-			y = date[_ + 'FullYear'](),
-			H = date[_ + 'Hours'](),
-			M = date[_ + 'Minutes'](),
-			s = date[_ + 'Seconds'](),
-			L = date[_ + 'Milliseconds'](),
-			o = utc ? 0 : date.getTimezoneOffset(),
-			flags = {
-				'd': d,
-				'dd': pad(d),
-				'ddd': dateFormatStrings.dayNames[D],
-				'dddd': dateFormatStrings.dayNames[D + 7],
-				'm': m + 1,
-				'mm': pad(m + 1),
-				'mmm': dateFormatStrings.monthNames[m],
-				'mmmm': dateFormatStrings.monthNames[m + 12],
-				'yy': String(y).slice(2),
-				'yyyy': y,
-				'h': H % 12 || 12,
-				'hh': pad(H % 12 || 12),
-				'H': H,
-				'HH': pad(H),
-				'M': M,
-				'MM': pad(M),
-				's': s,
-				'ss': pad(s),
-				'l': pad(L, 3),
-				'L': pad(L > 99 ? Math.round(L / 10) : L),
-				't': H < 12 ? 'a' : 'p',
-				'tt': H < 12 ? 'am' : 'pm',
-				'T': H < 12 ? 'A' : 'P',
-				'TT': H < 12 ? 'AM' : 'PM',
-				'Z': utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
-				'o': (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-				'S': ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]
-			};
+      case 'mmmm':
+        return this._dateFormatStrings.monthNames[date.getUTCMonth() + 12];
+        break;
 
-		return mask.replace(token, function($0) {
-			return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
-		});
-	};
-}();
+      case 'yy':
+        return date.getUTCFullYear().toString().substring(2, 4);
+        break;
 
-// Some common format strings
-dateFormat.masks = {
-	'default': 'ddd mmm dd yyyy HH:MM:ss',
-	shortDate: 'm/d/yy',
-	mediumDate: 'mmm d, yyyy',
-	longDate: 'mmmm d, yyyy',
-	fullDate: 'dddd, mmmm d, yyyy',
-	shortTime: 'h:MM TT',
-	mediumTime: 'h:MM:ss TT',
-	longTime: 'h:MM:ss TT Z',
-	isoDate: 'yyyy-mm-dd',
-	isoTime: 'HH:MM:ss',
-	isoDateTime: "yyyy-mm-dd'T'HH:MM:ss",
-	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'"
-};
+      default:
+        // 'yyyy' case
+        return date.getUTCFullYear();
+    }
+  }
+  else
+  {
+    switch (mask)
+    {
+      case 'ss':
+        value = date.getSeconds();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
 
-// For convenience...
-Date.prototype.format = function(mask, utc, dateFormatStrings) {
-	return dateFormat(this, mask, utc, dateFormatStrings);
+      case 'HH':
+        value = date.getHours();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
+
+      case 'MM':
+        value = date.getMinutes();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
+
+      case 'dd':
+        value = date.getDate();
+        if (value < 10)
+          return '0' + value;
+        else
+          return value;
+        break;
+
+      case 'dddd':
+        return this._dateFormatStrings.dayNames[date.getDay() + 7];
+        break;
+
+      case 'm':
+        return date.getMonth() + 1;
+        break;
+
+      case 'mmm':
+        return this._dateFormatStrings.monthNames[date.getMonth()];
+        break;
+
+      case 'mmmm':
+        return this._dateFormatStrings.monthNames[date.getMonth() + 12];
+        break;
+
+      case 'yy':
+        return date.getFullYear().toString().substring(2, 4);
+        break;
+
+      default:
+	// 'yyyy' case
+        return date.getFullYear();
+    }
+  }
 };
 // todo: this should be used by Timeline also
 var DvtTimeComponentCalendar = function(options) 
@@ -697,33 +732,34 @@ DvtTimeComponentCalendar.prototype.adjustDate = function(date, scale)
   return _adjustedDate;
 };
 
-DvtTimeComponentCalendar.prototype.getNextDate = function(date, scale)
+DvtTimeComponentCalendar.prototype.getNextDate = function(time, scale)
 {
-  var _nextDate = new Date(date.getTime());
   if (scale == 'seconds')
-    _nextDate.setSeconds(date.getSeconds() + 1);
+    return new Date(time + 1000);
   else if (scale == 'minutes')
-    _nextDate.setMinutes(date.getMinutes() + 1);
+    return new Date(time + 60000);
   else if (scale == 'hours')
-    _nextDate.setHours(date.getHours() + 1);
-  else if (scale == 'days')
-    _nextDate.setDate(date.getDate() + 1);
+    return new Date(time + 3600000);
+  // for larger scales, no set amount of time can be added
+  var _nextDate = new Date(time);
+  if (scale == 'days')
+    _nextDate.setDate(_nextDate.getDate() + 1);
   else if (scale == 'weeks')
-    _nextDate.setDate(date.getDate() + 7);
+    _nextDate.setDate(_nextDate.getDate() + 7);
   else if (scale == 'months')
-    _nextDate.setMonth(date.getMonth() + 1);
+    _nextDate.setMonth(_nextDate.getMonth() + 1);
   else if (scale == 'quarters')
-    _nextDate.setMonth(date.getMonth() + 3);
+    _nextDate.setMonth(_nextDate.getMonth() + 3);
   else if (scale == 'halfyears')
-    _nextDate.setMonth(date.getMonth() + 6);
+    _nextDate.setMonth(_nextDate.getMonth() + 6);
   else if (scale == 'years')
-    _nextDate.setFullYear(date.getFullYear() + 1);
+    _nextDate.setFullYear(_nextDate.getFullYear() + 1);
   else if (scale == 'twoyears')
-    _nextDate.setFullYear(date.getFullYear() + 2);
+    _nextDate.setFullYear(_nextDate.getFullYear() + 2);
   else
   {
     // circuit breaker
-    _nextDate.setYear(date.getYear() + 1);
+    _nextDate.setYear(_nextDate.getYear() + 1);
   }
   return _nextDate;
 };
@@ -853,7 +889,7 @@ DvtTimelineKeyboardHandler.getNextNavigable = function(currentNavigable, event, 
  */
 DvtTimelineKeyboardHandler.getNextItem = function(item, navigableItems, isNext)
 {
-  var nextIndex = navigableItems.indexOf(item) + (isNext ? 1 : -1);
+  var nextIndex = DvtArrayUtils.getIndex(navigableItems, item) + (isNext ? 1 : -1);
   if (nextIndex >= 0 && nextIndex < navigableItems.length)
     return navigableItems[nextIndex];
   else
@@ -1619,11 +1655,11 @@ DvtTimeline.prototype.hasValidSeriesItems = function()
 DvtTimeline.prototype.hasValidOptions = function()
 {
   // TODO: warn user why certain options are invalid
-  var hasValidScale = this._scale && DvtTimeComponentAxis._VALID_SCALES.indexOf(this._scale) != -1;
+  var hasValidScale = this._scale && DvtArrayUtils.getIndex(DvtTimeComponentAxis._VALID_SCALES, this._scale) != -1;
   var hasValidStartAndEnd = this._start && this._end && (this._end > this._start);
   var hasValidSeries = this._series && this._series.length > 0;
   var hasValidSeriesItems = hasValidSeries ? this.hasValidSeriesItems() : false;
-  var hasValidSeriesScale = this._seriesScale ? DvtTimeComponentAxis._VALID_SCALES.indexOf(this._seriesScale) != -1 : true;
+  var hasValidSeriesScale = this._seriesScale ? DvtArrayUtils.getIndex(DvtTimeComponentAxis._VALID_SCALES, this._seriesScale) != -1 : true;
   var hasValidViewport = (this._viewStartTime && this._viewEndTime) ? this._viewEndTime > this._viewStartTime : true;
   var hasValidViewStart = this._viewStartTime ? (this._viewStartTime >= this._start && this._viewStartTime < this._end) : true;
   var hasValidViewEnd = this._viewEndTime ? (this._viewEndTime > this._start && this._viewEndTime <= this._end) : true;
@@ -1843,7 +1879,7 @@ DvtTimeline.prototype.prepareViewportLength = function()
   }
 };
 
-DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startDate, endDate)
+DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startTime, endTime)
 {
   var context = this.getCtx();
   var axisLabelStyle = DvtTimelineStyleUtils.getAxisLabelStyle(this.Options);
@@ -1878,17 +1914,17 @@ DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startDate, en
     var dates = [];
     var labels = [];
 
-    var currentDate = this._timeAxis.adjustDate(startDate).getTime();
-    dates.push(currentDate);
-    while (currentDate < endDate)
+    var currentTime = this._timeAxis.adjustDate(startTime).getTime();
+    dates.push(currentTime);
+    while (currentTime < endTime)
     {
-      var labelText = this._timeAxis.formatDate(this._timeAxis.adjustDate(currentDate));
-      var label = new DvtOutputText(context, labelText, 0, 0, 's_label' + currentDate);
+      var labelText = this._timeAxis.formatDate(new Date(currentTime));
+      var label = new DvtOutputText(context, labelText, 0, 0, 's_label' + currentTime);
       label.setCSSStyle(axisLabelStyle);
       // save the time associated with the element for dynamic resize
-      label.time = currentDate;
+      label.time = currentTime;
       labels.push(label);
-      var nextDate = this._timeAxis.getNextDate(this._timeAxis.adjustDate(currentDate)).getTime();
+      var nextTime = this._timeAxis.getNextDate(currentTime).getTime();
 
       // update maximum label width and height
       axis.addChild(label);
@@ -1905,21 +1941,21 @@ DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startDate, en
         sizeDim = dim.h;
       }
       var labelLength = Math.max(defaultLength, lengthDim + (DvtTimeComponentAxis.DEFAULT_INTERVAL_PADDING * 2));
-      var lengthFactor = (nextDate - currentDate) / labelLength;
+      var lengthFactor = (nextTime - currentTime) / labelLength;
       if (lengthFactor < minLength)
         minLength = lengthFactor;
       if (sizeDim > maxSize)
         maxSize = sizeDim;
 
-      // the last currentDate added in this loop is outside of the time range, but is needed
+      // the last currentTime added in this loop is outside of the time range, but is needed
       // for the last 'next' date when actually creating the time axis in renderTimeAxis
-      currentDate = nextDate;
-      dates.push(currentDate);
+      currentTime = nextTime;
+      dates.push(currentTime);
     }
     this._timeAxis.setContentSize(maxSize + DvtTimeComponentAxis.DEFAULT_INTERVAL_PADDING * 2);
     this._dates.push(dates);
     this._labels.push(labels);
-    var zoomLevelLength = ((endDate - startDate) / minLength);
+    var zoomLevelLength = ((endTime - startTime) / minLength);
     this._zoomLevelLengths.push(zoomLevelLength);
     if (scale == this._scale)
     {
@@ -1932,7 +1968,7 @@ DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startDate, en
         {
           if (this._viewEndTime != null)
           {
-            this._viewStartTime = this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endDate - startDate);
+            this._viewStartTime = this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endTime - startTime);
             if (this._viewStartTime < this._start)
               this._viewStartTime = this._start;
             var viewTime = this._viewEndTime - this._viewStartTime;
@@ -1948,14 +1984,14 @@ DvtTimeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startDate, en
             this._startPos = 0;
             if (this.isRTL() && !this._isVertical)
               this._startPos = this._backgroundWidth - this._contentLength - this._startPos;
-            this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endDate - startDate) + this._viewStartTime;
+            this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
             if (this._viewEndTime > this._end)
               this._viewEndTime = this._end;
           }
         }
         else
         {
-          this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endDate - startDate) + this._viewStartTime;
+          this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
           if (this._viewEndTime > this._end)
             this._viewEndTime = this._end;
           viewTime = this._viewEndTime - this._viewStartTime;
@@ -2083,19 +2119,18 @@ DvtTimeline.prototype._getMajorAxisXml = function()
     var end = this._end;
     var length = this._isVertical ? this.Height : this.Width;
     var startDate = DvtTimeUtils.getPositionDate(start, end, this._fetchStartPos, length);
-    var adjustedStartDate = this._seriesTimeAxis.adjustDate(startDate);
 
-    var current = new Date(adjustedStartDate);
-    var currentPos = DvtTimeUtils.getDatePosition(start, end, adjustedStartDate, length);
+    var currentDate = this._seriesTimeAxis.adjustDate(startDate);
+    var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
     while (currentPos < this._fetchEndPos)
     {
-      var label = this._seriesTimeAxis.formatDate(this._seriesTimeAxis.adjustDate(current));
-      var next = this._seriesTimeAxis.getNextDate(this._seriesTimeAxis.adjustDate(current));
+      var label = this._seriesTimeAxis.formatDate(currentDate);
+      var nextDate = this._seriesTimeAxis.getNextDate(currentDate.getTime());
 
-      var next_time_pos = DvtTimeUtils.getDatePosition(start, end, next, length);
-      xml += '<tick time=\"' + current.getTime() + '\" label=\"' + label + '\"/>';
+      var next_time_pos = DvtTimeUtils.getDatePosition(start, end, nextDate, length);
+      xml += '<tick time=\"' + currentDate.getTime() + '\" label=\"' + label + '\"/>';
 
-      current = next;
+      currentDate = nextDate;
       currentPos = next_time_pos;
     }
   }
@@ -2277,7 +2312,7 @@ DvtTimeline.prototype.handleZoomWheel = function(newLength, time, compLoc, trigg
   else
     this._innerCanvas.setTranslateX(this._startX + this._startPos);
   if (triggerViewportChangeEvent)
-    this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
 };
 
 DvtTimeline.prototype.handleZoom = function(zoomIn)
@@ -2443,7 +2478,7 @@ DvtTimeline.prototype.endPan = function()
   if (this._triggerViewportChange)
   {
     this._triggerViewportChange = false;
-    this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
   }
 };
 
@@ -2456,7 +2491,7 @@ DvtTimeline.prototype.endPinchZoom = function()
   if (this._triggerViewportChange)
   {
     this._triggerViewportChange = false;
-    this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
   }
 };
 
@@ -2546,7 +2581,7 @@ DvtTimeline.prototype.panBy = function(deltaX, deltaY)
       var overviewLength = this._overview.Height;
       this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
     }
-    //this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+    //this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
   }
   else
   {
@@ -2574,7 +2609,7 @@ DvtTimeline.prototype.panBy = function(deltaX, deltaY)
       var overviewLength = this._overview.Width;
       this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
     }
-    //this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+    //this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
     if (this._dragPanSeries)
     {
       var newTranslateY = this._dragPanSeries.getTranslateY() - deltaY;
@@ -2661,7 +2696,7 @@ DvtTimeline.prototype.HandleEvent = function(event, component)
           this._innerCanvas.setTranslateX(this._startX + this._startPos);
       }
       if (subType == 'rangeChange')
-        this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+        this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
     }
     if (subType == 'scrollPos' || subType == 'scrollTime')
     {
@@ -2675,7 +2710,7 @@ DvtTimeline.prototype.HandleEvent = function(event, component)
         this._innerCanvas.setTranslateY(this._startY + this._startPos);
       else
         this._innerCanvas.setTranslateX(this._startX + this._startPos);
-      this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+      this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
     }
   }
   else if (type = 'timeline')
@@ -2785,7 +2820,7 @@ DvtTimeline.prototype.updateScrollForItemSelection = function(item)
     this._innerCanvas.setTranslateY(this._startY + this._startPos);
   else
     this._innerCanvas.setTranslateX(this._startX + this._startPos);
-  this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+  this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
 };
 
 DvtTimeline.prototype.updateScrollForItemNavigation = function(item)
@@ -2836,7 +2871,7 @@ DvtTimeline.prototype.updateScrollForItemNavigation = function(item)
       overviewLength = this._overview.Width;
     this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
   }
-  this.__dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
+  this.dispatchEvent(new DvtTimelineViewportChangeEvent(DvtTimelineViewportChangeEvent.TYPE, this._viewStartTime, this._viewEndTime, this._scale));
 };
 
 DvtTimeline.prototype.handleShapeClick = function(event)
@@ -2877,7 +2912,7 @@ DvtTimeline.prototype.applyInitialSelections = function()
 DvtTimeline.prototype.processEvent = function(event)
 {
   if (event)
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
 };
 
 DvtTimeline.prototype._findSeries = function(target)
@@ -2944,7 +2979,7 @@ DvtTimeline.prototype.getAutomation = function()
 /**
  * @override
  */
-DvtTimeline.prototype.__getEventManager = function()
+DvtTimeline.prototype.getEventManager = function()
 {
   return this.EventManager;
 };
@@ -3049,7 +3084,7 @@ DvtTimelineAutomation.prototype.GetSubIdForDomElement = function(displayable)
     for (var i = 0; i < this._timeline._series.length; i++)
     {
       var series = this._timeline._series[i];
-      var itemIndex = series._items.indexOf(logicalObj);
+      var itemIndex = DvtArrayUtils.getIndex(series._items, logicalObj);
       if (itemIndex != -1)
         return DvtTimelineAutomation.TIMELINE_ITEM_STRING + '[' + i + '][' + itemIndex + ']';
     }
@@ -3746,16 +3781,14 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
     var end = timeline._end;
 
     var startDate = DvtTimeUtils.getPositionDate(start, end, startPos, length);
-    var adjustedStartDate = timeline._seriesTimeAxis.adjustDate(startDate);
-
-    var current = new Date(adjustedStartDate);
-    var currentPos = DvtTimeUtils.getDatePosition(start, end, adjustedStartDate, length);
+    var currentDate = timeline._seriesTimeAxis.adjustDate(startDate);
+    var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
     while (currentPos < endPos)
     {
-      var label = timeline._seriesTimeAxis.formatDate(timeline._seriesTimeAxis.adjustDate(current));
-      var next = timeline._seriesTimeAxis.getNextDate(timeline._seriesTimeAxis.adjustDate(current));
+      var label = timeline._seriesTimeAxis.formatDate(currentDate);
+      var nextDate = timeline._seriesTimeAxis.getNextDate(currentDate.getTime());
 
-      var next_time_pos = DvtTimeUtils.getDatePosition(start, end, next, length);
+      var next_time_pos = DvtTimeUtils.getDatePosition(start, end, nextDate, length);
       var maxLength = next_time_pos - currentPos;
 
       var time_pos = currentPos;
@@ -3774,9 +3807,9 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
         else
           labelElem = timeline.addLabel(container, length - (time_pos + 5), label, maxLength, timeline._seriesSize - 2, DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options), 'o_label' + currentPos + '_s0', true, DvtTimelineStyleUtils.getSeriesAxisLabelPadding(), timeline._majorAxisLabels, isRTL);
       }
-      labelElem.time = current.getTime();
+      labelElem.time = currentDate.getTime();
 
-      current = next;
+      currentDate = nextDate;
       currentPos = next_time_pos;
     }
   }
@@ -6658,7 +6691,7 @@ DvtTimelineSeriesParser.prototype._parseDataNode = function(timeline, seriesInde
           var item = this._findExistingItem(props, oldItems);
           if (item)
           {
-            var index = oldItems.indexOf(item);
+            var index = DvtArrayUtils.getIndex(oldItems, item);
             oldItems.splice(index, 1);
             item.setSpacing(null);
             item.setDurationLevel(null);
@@ -7150,14 +7183,12 @@ DvtTimelineSeriesRenderer._renderSeriesTimeAxis = function(series, startPos, end
   var end = series._end;
 
   var startDate = DvtTimeUtils.getPositionDate(start, end, startPos, series._length);
-  var adjustedStartDate = series._timeAxis.adjustDate(startDate);
-
-  var current = new Date(startDate);
-  var currentPos = DvtTimeUtils.getDatePosition(start, end, adjustedStartDate, series._length);
+  var currentDate = series._timeAxis.adjustDate(startDate);
+  var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, series._length);
   while (currentPos < endPos)
   {
-    var next = series._timeAxis.getNextDate(series._timeAxis.adjustDate(current));
-    var next_time_pos = DvtTimeUtils.getDatePosition(start, end, next, series._length);
+    var nextDate = series._timeAxis.getNextDate(currentDate.getTime());
+    var next_time_pos = DvtTimeUtils.getDatePosition(start, end, nextDate, series._length);
 
     if (!series.isVertical() && isRTL)
       var pos = series._length - currentPos;
@@ -7180,10 +7211,10 @@ DvtTimelineSeriesRenderer._renderSeriesTimeAxis = function(series, startPos, end
 
     var tickElem = series.addTick(container, x1, x2, y1, y2, series._separatorStroke, 'o_tick' + currentPos);
     // save the time associated with the element for dynamic resize
-    tickElem.time = current.getTime();
+    tickElem.time = currentDate.getTime();
     series._seriesTicksArray.push(tickElem);
 
-    current = next;
+    currentDate = nextDate;
     currentPos = next_time_pos;
   }
 };

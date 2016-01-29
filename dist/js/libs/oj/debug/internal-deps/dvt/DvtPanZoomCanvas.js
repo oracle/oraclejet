@@ -1,15 +1,15 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -328,15 +328,13 @@ DvtComboBox.prototype.getSelectedItem = function() {
 
 
 /**
+ * @protected
  * Fire a change event.
- *
- * @param index index of the selected item
- *
- * @return true if event was successfully dispatched, false otherwise
+ * @param {number} index index of the selected item
+ * @return {boolean} true if event was successfully dispatched, false otherwise
  */
 DvtComboBox.prototype.FireChangeEvent = function(index) {
-  var comboBoxEvent = new DvtComboBoxEvent(DvtComboBoxEvent.SUBTYPE_ITEM_CHANGE, index, this._event);
-  this._event = null;
+  var comboBoxEvent = new DvtComboBoxEvent(DvtComboBoxEvent.SUBTYPE_ITEM_CHANGE, index);
   this.FireListener(comboBoxEvent);
 
   return true;
@@ -463,8 +461,22 @@ DvtComboBox.prototype.createDropdown = function() {
   var dim;
   var itemSprite;
   var item;
-
   var content = new DvtContainer(context, '__dd');
+  var thisRef = this;
+  function createProxy(tooltip) {
+    var proxy = {};
+    proxy.HandleClick = function(event) {
+      thisRef.HandleDropdownItemClick(event);
+    };
+    proxy.HandleMouseDown = function(event) {
+      thisRef.HandleButtonDown(event);
+    };
+    proxy.getTooltip = function() {
+      return tooltip;
+    };
+    return proxy;
+  }
+
   for (var i = 0; i < this._items.length; i++) {
     item = this._items[i];
     dim = DvtButtonLAFUtils._getDimForced(context, item);
@@ -481,10 +493,7 @@ DvtComboBox.prototype.createDropdown = function() {
 
     //add event listeners to each item
     if (this._eventManager) {
-      var proxy = new DvtControlPanelEventHandlerProxy(this, this.HandleDropdownItemClick, this.HandleButtonDown,
-          null, null, null,
-          this._tooltips[i]);
-      this._eventManager.associate(item, proxy);
+      this._eventManager.associate(item, createProxy(this._tooltips[i]));
     }
     content.addChild(itemSprite);
   }
@@ -520,17 +529,15 @@ DvtComboBox.prototype.HandleButtonDown = function(event) {
 
 
 /**
+ * @protected
  * Handle a mouse click on an item in the dropdown.
- *
- * @param event MouseEvent
+ * @param {DvtMouseEvent} event MouseEvent
  */
 DvtComboBox.prototype.HandleDropdownItemClick = function(event) {
-  // logEvent(event, "DvtCombo");
   this._dropdownItemClickEvent = true;
 
   //stop the dropdown auto-hide timer
   this._hideDropdownTimer.stop();
-  //   this._hideDropdownTimer = null;
 
   //don't want click to fall through to other components
   DvtEventManager.consumeEvent(event);
@@ -550,14 +557,8 @@ DvtComboBox.prototype.HandleDropdownItemClick = function(event) {
       index = content.getChildIndex(eventTarget);
     }
   }
-
   this.HideDropdown();
-
-  //Note: this._event is clear after firing
-  this._event = event;
-
   this.setSelectedIndex(index);
-
 };
 
 
@@ -769,10 +770,9 @@ DropdownItemSprite.prototype.Init = function(context, x, y, w, h, id) {
  *
  * @param {string} subtype The type of DvtComboBoxEvent
  * @param {number} index The selected index, if this is a SUBTYPE_ITEM_CHANGE event
- * @param {DvtBaseEvent} evt the base event that caused this DvtComboBoxEvent
  */
-var DvtComboBoxEvent = function(subtype, index, evt) {
-  this.Init(subtype, index, evt);
+var DvtComboBoxEvent = function(subtype, index) {
+  this.Init(subtype, index);
 };
 
 
@@ -807,7 +807,7 @@ DvtComboBoxEvent.SUBTYPE_SHOW_DROPDOWN = 'cbShowDropdown';
  */
 DvtComboBoxEvent.SUBTYPE_HIDE_DROPDOWN = 'cbHideDropdown';
 
-DvtObj.createSubclass(DvtComboBoxEvent, DvtBaseEvent, 'DvtComboBoxEvent');
+DvtObj.createSubclass(DvtComboBoxEvent, DvtObj, 'DvtComboBoxEvent');
 
 
 /**
@@ -815,420 +815,25 @@ DvtObj.createSubclass(DvtComboBoxEvent, DvtBaseEvent, 'DvtComboBoxEvent');
  *
  * @param {string} subtype The subtype of DvtComboBoxEvent
  * @param {number} index The selected index, if this is a SUBTYPE_ITEM_CHANGE event
- * @param {DvtBaseEvent} evt the base event that caused this DvtComboBoxEvent
+ * @protected
  */
-DvtComboBoxEvent.prototype.Init = function(subtype, index, evt) {
-  DvtComboBoxEvent.superclass.Init.call(this, DvtComboBoxEvent.TYPE);
+DvtComboBoxEvent.prototype.Init = function(subtype, index) {
+  this.type = DvtComboBoxEvent.TYPE;
 
   if (index === undefined) {
     index = -1;
   }
   this.subtype = subtype;
   this._index = index;
-  this._evt = evt;
 };
 
 
 /**
  * Get the index of the selected item.
- *
- * @return index of the selected item
+ * @return {number} index of the selected item
  */
 DvtComboBoxEvent.prototype.getIndex = function() {
   return this._index;
-};
-/**
- * Creates a DvtBaseControl for control panel buttons
- * @param {DvtContext} context The rendering context
- * @constructor
- */
-var DvtBaseControl = function(context) {
-  this.Init(context);
-};
-
-DvtObj.createSubclass(DvtBaseControl, DvtContainer, 'DvtBaseControl');
-
-/**
- * @param {DvtContext} context The rendering context
- * @protected
- */
-DvtBaseControl.prototype.Init = function(context) {
-  DvtBaseControl.superclass.Init.call(this, context);
-  this._tooltipManager = context.getTooltipManager();
-};
-
-/**
- * Set the tooltip manager to use.
- * @param {DvtTooltipManager} tooltipManager The tooltip manager to use
- */
-DvtBaseControl.prototype.setTooltipManager = function(tooltipManager) {
-  this._tooltipManager = tooltipManager;
-};
-
-
-/**
- * Get the tooltip manager being used.
- * @return {DvtTooltipManager}
- */
-DvtBaseControl.prototype.getTooltipManager = function() {
-  return this._tooltipManager;
-};
-
-/**
- * Show tooltip
- * @param {DvtSvgBaseEvent} event The event that triggered the tooltip
- * @param {string} tooltip The tooltip text to display
- */
-DvtBaseControl.prototype.ShowTooltip = function(event, tooltip) {
-  this.getTooltipManager().showTooltip(event.pageX, event.pageY,
-                                       tooltip, event.target);
-};
-
-/**
- * Hide tooltip
- * @protected
- */
-DvtBaseControl.prototype.HideTooltip = function() {
-  this.getTooltipManager().hideTooltip();
-};
-/**
- * @constructor
- * ZoomInButton for use with Diagram.
- */
-var DvtZoomInButton = function(context, button, panZoomCanvas,  eventManager) {
-  this.Init(context, button, panZoomCanvas, eventManager);
-};
-
-DvtZoomInButton._ZOOM_INCR_TIMER_INTERVAL = 100;//in ms
-DvtZoomInButton._ZOOM_START_TIMER_INTERVAL = 250;//in ms
-
-DvtObj.createSubclass(DvtZoomInButton, DvtBaseControl, 'DvtZoomInButton');
-
-
-/**
- * Helper method called by the constructor to initialize this object.
- * @param {DvtContext} context An object maintaining application specific context, as well as well as providing
- *                             access to platform specific data and objects, such as the factory
- * @param {DvtButton} button A button used by the control
- * @param {DvtPanZoomCanvas} canvas The PanZoomCanvas this control will be associated with
- * @param {DvtEventManager} eventManager An event manager to handle events for the control
- */
-DvtZoomInButton.prototype.Init = function(context, button, panZoomCanvas, eventManager) {
-  DvtZoomInButton.superclass.Init.call(this, context);
-
-  this._bZoomInMouseDown = false;
-  this._panZoomCanvas = panZoomCanvas;
-  this._zoomInTimer = new DvtTimer(context, DvtZoomInButton._ZOOM_INCR_TIMER_INTERVAL,
-                                   this.HandleZoomInTimer, this);
-
-  //BUG FIX #10037201: delay the start of the zoom in timer so that there is
-  //less chance that it will interfere with a slow, regular click
-  this._zoomStartTimer = new DvtTimer(context, DvtZoomInButton._ZOOM_START_TIMER_INTERVAL,
-                                      this.HandleZoomStartTimer, this, 1);
-
-  this._zoomInButton = button;
-  this._zoomInButton.setCallback(this.HandleZoomInClick, this);
-  this._eventManager = eventManager;
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, this.HandleZoomInMouseDown,
-      this.HandleZoomInMouseUp, this.HandleZoomInMouseUp, null,
-      DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMIN'));
-  this._eventManager.associate(this._zoomInButton, proxy);
-  this.addChild(this._zoomInButton);
-};
-
-
-/**
- *this.Handle a mouse click on the zoom in button.
- *
- * @param event MouseEvent
- */
-DvtZoomInButton.prototype.HandleZoomInClick = function(event) {
-  //don't respond to click event if the timer had been
-  //continuously zooming
-  if (this._zoomInTimer.isRunning()) {
-    return;
-  }
-  var currZoom = this._panZoomCanvas.getZoom();
-  var newZoom = this._panZoomCanvas.getNextZoomLevel(currZoom);
-  //trace("zoomIn: " + currZoom + " to " + newZoom);
-
-  var animator = new DvtAnimator(this.getCtx(), this._panZoomCanvas.getAnimationDuration());
-  this._panZoomCanvas.zoomTo(newZoom, undefined, undefined, animator);
-  animator.play();
-};
-
-
-/**
- *this.Handle a mouse down on the zoom in button.
- *
- * @param event MouseEvent
- */
-DvtZoomInButton.prototype.HandleZoomInMouseDown = function(event) {
-  this._bZoomInMouseDown = true;
-
-  //reset the timers and start the initial delay timer
-  //TODO   this._zoomInTimer.reset();
-  this._zoomInTimer.stop();
-
-  //BUG FIX #10037201: delay the start of the zoom in timer so that there is
-  //less chance that it will interfere with a slow, regular click
-  //TODO   this._zoomStartTimer.reset();
-  this._zoomStartTimer.stop();
-  this._zoomStartTimer.start();
-};
-
-
-/**
- *this.Handle a mouse up on the zoom in button.
- *
- * @param event MouseEvent
- */
-DvtZoomInButton.prototype.HandleZoomInMouseUp = function(event) {
-  if (this._bZoomInMouseDown) {
-    this._bZoomInMouseDown = false;
-
-    //stop the timers
-    this._zoomInTimer.stop();
-    this._zoomStartTimer.stop();
-  }
-
-};
-
-
-/**
- *this.Handle an event from the start timer.
- *
- * @param event TimerEvent
- */
-DvtZoomInButton.prototype.HandleZoomStartTimer = function(event) {
-  //start the zoom in timer
-  this._zoomInTimer.start();
-};
-
-
-/**
- *this.Handle a zoom in timer event to zoom in on the view.
- *
- * @param event TimerEvent
- */
-DvtZoomInButton.prototype.HandleZoomInTimer = function(event) {
-  var currZoom = this._panZoomCanvas.getZoom();
-  var newZoom = this._panZoomCanvas.getNextZoomLevel(currZoom);
-
-  this._panZoomCanvas.zoomTo(newZoom);
-};
-
-DvtZoomInButton.prototype._stopTimer = function() {
-  if (this._zoomInTimer) {
-    this._zoomInTimer.stop();
-    this._zoomInTimer = null;
-  }
-  if (this._zoomStartTimer) {
-    this._zoomStartTimer.stop();
-    this._zoomStartTimer = null;
-  }
-};
-
-
-/**
- * Sets button state
- * @param {boolean} enabled True to enable the button
- */
-DvtZoomInButton.prototype.setEnabled = function(enabled) {
-  this._zoomInButton.setEnabled(enabled);
-  this._zoomInButton.initState();
-};
-/**
- * @constructor
- * ZoomOutButton for use with Diagram.
- */
-var DvtZoomOutButton = function(context, button, panZoomCanvas, eventManager) {
-  this.Init(context, button, panZoomCanvas, eventManager);
-};
-
-DvtZoomOutButton._ZOOM_INCR_TIMER_INTERVAL = 100;//in ms
-DvtZoomOutButton._ZOOM_START_TIMER_INTERVAL = 250;//in ms
-
-DvtObj.createSubclass(DvtZoomOutButton, DvtBaseControl, 'DvtZoomOutButton');
-
-
-/**
- * Helper method called by the constructor to initialize this object.
- * @param {DvtContext} context An object maintaining application specific context, as well as well as providing
- *                             access to platform specific data and objects, such as the factory
- * @param {DvtButton} button A button used by the control
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this control will be associated with
- * @param {DvtEventManager} eventManager An event manager to handle events for the control
- */
-DvtZoomOutButton.prototype.Init = function(context, button, panZoomCanvas, eventManager) {
-  DvtZoomOutButton.superclass.Init.call(this, context);
-  this._bZoomOutMouseDown = false;
-  this._panZoomCanvas = panZoomCanvas;
-  this._zoomOutTimer = new DvtTimer(context, DvtZoomOutButton._ZOOM_INCR_TIMER_INTERVAL,
-                                    this.HandleZoomOutTimer, this);
-
-  //BUG FIX #10037201: delay the start of the zoom out timer so that there is
-  //less chance that it will interfere with a slow, regular click
-  this._zoomStartTimer = new DvtTimer(context, DvtZoomOutButton._ZOOM_START_TIMER_INTERVAL,
-                                      this.HandleZoomStartTimer, this, 1);
-  this._zoomOutButton = button;
-  this._zoomOutButton.setCallback(this.HandleZoomOutClick, this);
-  this._eventManager = eventManager;
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, this.HandleZoomOutMouseDown,
-      this.HandleZoomOutMouseUp, this.HandleZoomOutMouseUp, null,
-      DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMOUT'));
-  this._eventManager.associate(this._zoomOutButton, proxy);
-
-  this.addChild(this._zoomOutButton);
-};
-
-
-/**
- *this.Handle a mouse click on the zoom out button.
- *
- * @param event MouseEvent
- */
-DvtZoomOutButton.prototype.HandleZoomOutClick = function(event) {
-  //don't respond to click event if the timer had been
-  //continuously zooming
-  if (this._zoomOutTimer.isRunning()) {
-    return;
-  }
-  var currZoom = this._panZoomCanvas.getZoom();
-  var newZoom = this._panZoomCanvas.getPrevZoomLevel(currZoom);
-  //trace("zoomOut: " + currZoom + " to " + newZoom);
-  var context = this.getCtx();
-  var animator = new DvtAnimator(context, this._panZoomCanvas.getAnimationDuration());
-
-  this._panZoomCanvas.zoomTo(newZoom, undefined, undefined, animator);
-
-  animator.play();
-};
-
-
-/**
- *this.Handle a mouse down on the zoom out button.
- *
- * @param event MouseEvent
- */
-DvtZoomOutButton.prototype.HandleZoomOutMouseDown = function(event) {
-  this._bZoomOutMouseDown = true;
-
-  //reset the timers and start the initial delay timer
-  //   this._zoomOutTimer.reset();
-  this._zoomOutTimer.stop();
-
-  //BUG FIX #10037201: delay the start of the zoom out timer so that there is
-  //less chance that it will interfere with a slow, regular click
-  //   this._zoomStartTimer.reset();
-  this._zoomStartTimer.stop();
-  this._zoomStartTimer.start();
-};
-
-
-/**
- *this.Handle a mouse up on the zoom out button.
- *
- * @param event MouseEvent
- */
-DvtZoomOutButton.prototype.HandleZoomOutMouseUp = function(event) {
-  if (this._bZoomOutMouseDown) {
-    this._bZoomOutMouseDown = false;
-
-    //stop the timers
-    this._zoomOutTimer.stop();
-    this._zoomStartTimer.stop();
-  }
-};
-
-
-/**
- *this.Handle an event from the start timer.
- *
- * @param event TimerEvent
- */
-DvtZoomOutButton.prototype.HandleZoomStartTimer = function(event) {
-  //start the zoom out timer
-  this._zoomOutTimer.start();
-};
-
-
-/**
- *this.Handle a zoom out timer event to zoom out on the view.
- *
- * @param event TimerEvent
- */
-DvtZoomOutButton.prototype.HandleZoomOutTimer = function(event) {
-  var currZoom = this._panZoomCanvas.getZoom();
-  var newZoom = this._panZoomCanvas.getPrevZoomLevel(currZoom);
-
-  this._panZoomCanvas.zoomTo(newZoom);
-};
-
-DvtZoomOutButton.prototype._stopTimer = function() {
-  if (this._zoomOutTimer) {
-    this._zoomOutTimer.stop();
-    this._zoomOutTimer = null;
-  }
-  if (this._zoomStartTimer) {
-    this._zoomStartTimer.stop();
-    this._zoomStartTimer = null;
-  }
-};
-
-
-/**
- * Sets button state
- * @param {boolean} enabled True to enable the button
- */
-DvtZoomOutButton.prototype.setEnabled = function(enabled) {
-  this._zoomOutButton.setEnabled(enabled);
-  this._zoomOutButton.initState();
-};
-/**
- * @constructor
- * ZoomToFitButton for use with Diagram.
- */
-var DvtZoomToFitButton = function(context, button, panZoomCanvas, eventManager) {
-  this.Init(context, button, panZoomCanvas, eventManager);
-};
-
-DvtObj.createSubclass(DvtZoomToFitButton, DvtBaseControl, 'DvtZoomToFitButton');
-
-
-/**
- * Helper method called by the constructor to initialize this object.
- * @param {DvtContext} context An object maintaining application specific context, as well as well as providing
- *                             access to platform specific data and objects, such as the factory
- * @param {DvtButton} button A button used by the control
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this control will be associated with
- * @param {DvtEventManager} eventManager An event manager to handle events for the control
- */
-DvtZoomToFitButton.prototype.Init = function(context, button, panZoomCanvas, eventManager) {
-  DvtZoomToFitButton.superclass.Init.call(this, context);
-
-  this._zoomToFitButton = button;
-  this._panZoomCanvas = panZoomCanvas;
-  this._zoomToFitButton.setCallback(this.HandleZoomToFitClick, this);
-  this._eventManager = eventManager;
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, null,
-      null, null, null,
-      DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMTOFIT'));
-  this._eventManager.associate(this._zoomToFitButton, proxy);
-
-  this.addChild(this._zoomToFitButton);
-};
-
-
-/**
- * Handle a mouse click on the zoom to fit button.
- *
- * @param event MouseEvent
- */
-DvtZoomToFitButton.prototype.HandleZoomToFitClick = function(event) {
-  var animator = new DvtAnimator(this.getCtx(), this._panZoomCanvas.getAnimationDuration());
-  this._panZoomCanvas.zoomToFit(animator);
-  animator.play();
 };
 /**
  * @constructor
@@ -1242,7 +847,7 @@ DvtPanControl.PAN_TIMER_INTERVAL = 50; //in ms
 DvtPanControl.PAN_TIMER_ACCELERATE_COUNT = 2 * //seconds
     (1000 / DvtPanControl.PAN_TIMER_INTERVAL);//iterations per second
 
-DvtObj.createSubclass(DvtPanControl, DvtBaseControl, 'DvtPanControl');
+DvtObj.createSubclass(DvtPanControl, DvtContainer, 'DvtPanControl');
 
 /*--------------------------------------------------------------------*/
 /*  Init()                                                            */
@@ -1262,6 +867,7 @@ DvtPanControl.prototype.Init = function(context, panButton, recenterButton, panZ
 
   this._panTimer = new DvtTimer(context, DvtPanControl.PAN_TIMER_INTERVAL,
                                 this.HandlePanTimer, this);
+  this._tooltipManager = context.getTooltipManager();
   this._bPanMouseDown = false;
   this._panZoomCanvas = panZoomCanvas;
   this._panCenter = new DvtPoint(20, 20);
@@ -1381,7 +987,7 @@ DvtPanControl.prototype.HandlePanMouseUp = function(event) {
 
   this._panButton._mouseOutHandler(event);
 
-  this.HideTooltip();
+  this._tooltipManager.hideTooltip();
 };
 
 
@@ -1395,8 +1001,7 @@ DvtPanControl.prototype.HandlePanRollOver = function(event) {
   if (this._panCenterSprite) {
     this._panCenterSprite.setVisible(true);
   }
-
-  this.ShowTooltip(event, DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_PAN'));
+  this._tooltipManager.showTooltip(event.pageX, event.pageY, DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_PAN'), event.target);
 };
 
 
@@ -1513,9 +1118,7 @@ DvtPanControl.prototype.HandlePanCenterUp = function(event) {
 
   //don't want up to fall through to other components
   DvtEventManager.consumeEvent(event);
-
-  //  this._panCenterSprite._mouseOutHandler(event);
-  this.HideTooltip();
+  this._tooltipManager.hideTooltip();
 };
 
 
@@ -1525,11 +1128,7 @@ DvtPanControl.prototype.HandlePanCenterUp = function(event) {
  * @param event MouseEvent
  */
 DvtPanControl.prototype.HandlePanCenterRollOver = function(event) {
-  //don't want up to fall through to other components
-  // DvtEventManager.consumeEvent(event);
-
-  //  this._panCenterSprite._mouseOverHandler(event);
-  this.ShowTooltip(event, DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMANDCENTER'));
+  this._tooltipManager.showTooltip(event.pageX, event.pageY, DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMANDCENTER'), event.target);
 
   // - Wrong tooltip for pan control center button
   // - pan control rotates when hovering over the re-center button
@@ -1544,11 +1143,7 @@ DvtPanControl.prototype.HandlePanCenterRollOver = function(event) {
  * @param event MouseEvent
  */
 DvtPanControl.prototype.HandlePanCenterRollOut = function(event) {
-  //don't want up to fall through to other components
-  //  DvtEventManager.consumeEvent(event);
-
-  //  this._panCenterSprite._mouseOutHandler(event);
-  this.HideTooltip();
+  this._tooltipManager.hideTooltip();
 
   // - Wrong tooltip for pan control center button
   // - pan control rotates when hovering over the re-center button
@@ -1585,7 +1180,6 @@ DvtPanControl.prototype._rotatePanControlDirectionalArrow = function(localX, loc
   //down to the right at an angle of 45 degrees
   // displayObj.rotation = angleDeg - 45;
   displayObj.setRotation(angleRad - Math.PI / 4);
-
 };
 /**
  * @constructor
@@ -1608,8 +1202,9 @@ DvtControlPanelEvent.prototype.getSubType = function() {
  * A control panel used by DvtPanZoomCanvas for pan and zoom controls.
  * @param {DvtContext} context The rendering context
  * @param {DvtPanZoomComponent} view The component that this control panel belongs to
- * @param {Number} state Whether the initial state is collapsed or expanded
+ * @param {number} state Whether the initial state is collapsed or expanded
  * @constructor
+ * @export
  */
 var DvtControlPanel = function(context, view, state) {
   this.Init(context, view, state);
@@ -1617,15 +1212,23 @@ var DvtControlPanel = function(context, view, state) {
 
 DvtObj.createSubclass(DvtControlPanel, DvtContainer, 'DvtControlPanel');
 
+/** @const **/
 DvtControlPanel.STATE_COLLAPSED = 1;
+/** @const **/
 DvtControlPanel.STATE_EXPANDED = 2;
+/** @const **/
 DvtControlPanel.CONTROLS_ALL = 0xffffff;
+/** @const **/
 DvtControlPanel.CONTROLS_ZOOM_SLIDER = 0x000001;
+/** @const **/
 DvtControlPanel.CONTROLS_CENTER_BUTTON = 0x000010;
+/** @const **/
 DvtControlPanel.CONTROLS_ZOOM_TO_FIT_BUTTON = 0x000100;
+/** @const **/
 DvtControlPanel.CONTROLS_ZOOM = 0x001001; // include CONTROLS_ZOOM_SLIDER
+/** @const **/
 DvtControlPanel.DEFAULT_ZOOM_LEVELS = [0, .25, .5, .75, 1];
-
+/** @const **/
 DvtControlPanel.CONTROL_PANEL_BEHAVIOR_KEY = 'controlPanelBehavior';
 
 
@@ -1774,7 +1377,8 @@ DvtControlPanel.CP_CENTER_BUTTON_DISPLAYED = 'centerButtonDisplayed';
  * Helper method called by the constructor to initialize this object.
  * @param {DvtContext} context The rendering context
  * @param {DvtPanZoomComponent} view The component that this control panel belongs to
- * @param {Number} state Whether the initial state is collapsed or expanded
+ * @param {number} state Whether the initial state is collapsed or expanded
+ * @protected
  */
 DvtControlPanel.prototype.Init = function(context, view, state) {
   DvtControlPanel.superclass.Init.call(this, context);
@@ -1820,8 +1424,7 @@ DvtControlPanel.prototype.Init = function(context, view, state) {
 
 /**
  * Get the state of this control panel.
- *
- * @return STATE_EXPANDED or STATE_COLLAPSED
+ * @return {number} returns STATE_EXPANDED or STATE_COLLAPSED
  */
 DvtControlPanel.prototype.getState = function() {
   return this._state;
@@ -1830,8 +1433,7 @@ DvtControlPanel.prototype.getState = function() {
 
 /**
  * Set the discrete zoom levels that appear in the zoom slider.
- *
- * @param zoomLevels array of discrete zoom levels to show in the zoom slider
+ * @param {Array} zoomLevels array of discrete zoom levels to show in the zoom slider
  */
 DvtControlPanel.prototype.setZoomLevels = function(zoomLevels) {
   if (! zoomLevels) {
@@ -1843,36 +1445,10 @@ DvtControlPanel.prototype.setZoomLevels = function(zoomLevels) {
 
 /**
  * Get the discrete zoom levels that appear in the zoom slider.
- *
- * @return array of discrete zoom levels to show in the zoom slider
+ * @return {Array} array of discrete zoom levels to show in the zoom slider
  */
 DvtControlPanel.prototype.getZoomLevels = function() {
   return this._zoomLevels;
-};
-
-/**
- * Set the tooltip manager to use.
- *
- * @param tooltipManager manager to use
- */
-DvtControlPanel.prototype.setTooltipManager = function(tooltipManager) {
-  this._tooltipManager = tooltipManager;
-  if (this._zoomInButton)
-    this._zoomInButton.setTooltipManager(tooltipManager);
-  if (this._zoomOutButton)
-    this._zoomOutButton.setTooltipManager(tooltipManager);
-  if (this._zoomToFitButton)
-    this._zoomToFitButton.setTooltipManager(tooltipManager);
-};
-
-
-/**
- * Get the tooltip manager being used.
- *
- * @return tooltipManager being used
- */
-DvtControlPanel.prototype.getTooltipManager = function() {
-  return this._tooltipManager;
 };
 
 /**
@@ -1916,7 +1492,7 @@ DvtControlPanel.prototype.mouseDragPanningEnded = function() {
  * Vertically the DisplayObject must be the exact image of itself because it will
  * end up upside down.
  *
- * @param dispObj DisplayObject to rotate
+ * @param {DvtContainer} dispObj DisplayObject to rotate
  */
 DvtControlPanel.prototype.rotateControlPanelDisplayObject = function(dispObj) {
   dispObj.setRotation(Math.PI);
@@ -1932,7 +1508,7 @@ DvtControlPanel.prototype.rotateControlPanelDisplayObject = function(dispObj) {
  * two rows.
  * The default is false, meaning that the control panel shows two rows.
  *
- * @return true if the horizontal arm of the control panel shows a single row
+ * @return {boolean} true if the horizontal arm of the control panel shows a single row
  */
 DvtControlPanel.prototype.isSingleHorzRow = function() {
   return true;
@@ -1968,8 +1544,8 @@ DvtControlPanel.prototype.getViewPanelWidth = function() {
 
 /**
  * Render the collapsed state of the panel.
- *
  * @return {DvtContainer} container representing collapsed state
+ * @protected
  */
 DvtControlPanel.prototype.RenderCollapsed = function() {
   var context = this.getCtx();
@@ -1988,9 +1564,8 @@ DvtControlPanel.prototype.RenderCollapsed = function() {
   this._expandButton = DvtButtonLAFUtils.createExpandButton(this.getCtx(), this._buttonImages, this.getViewPanelHeight(), this._styleMap,
       bR2L ? DvtButtonLAFUtils.DIR_RIGHT : DvtButtonLAFUtils.DIR_LEFT);
   this._expandButton.setCallback(this.HandleExpandClick, this);
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, null,
-      null, null, null, DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL'));
-  this._eventManager.associate(this._expandButton, proxy);
+  this._expandButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL'));
+  this._eventManager.associate(this._expandButton, this._expandButton);
 
   this._frame.addChild(this._expandButton);
 
@@ -2006,6 +1581,7 @@ DvtControlPanel.prototype.RenderCollapsed = function() {
  * @param {DvtContainer} vertContentBar display object representing the vertical bar
  * @param {number} currY current Y coordinate
  * @return {number} updated current Y coordinate
+ * @private
  */
 DvtControlPanel.prototype._addZoomToFitButton = function(vertContentBar, currY) {
 
@@ -2013,10 +1589,11 @@ DvtControlPanel.prototype._addZoomToFitButton = function(vertContentBar, currY) 
   if ((this._controls & DvtControlPanel.CONTROLS_ZOOM_TO_FIT_BUTTON) != 0) {
     var paddingInner = DvtStyleUtils.getStyle(this._styleMap['vbar'], DvtControlPanel.CP_PADDING_INNER, 0);
     var paddingSide = DvtStyleUtils.getStyle(this._styleMap['vbar'], DvtControlPanel.CP_PADDING_LEFT, 0);
-    this._zoomToFitButton = DvtButtonLAFUtils.createZoomToFitButton(this.getCtx(), this._panZoomCanvas,
-        this._eventManager, this._buttonImages,
-        this._styleMap);
+    this._zoomToFitButton = DvtButtonLAFUtils.createZoomToFitButton(this.getCtx(), this._buttonImages, this._styleMap);
     this._zoomToFitButton.setTranslate(paddingSide, this._zoomToFitButton.getTranslateY() + currY);
+    this._zoomToFitButton.setCallback(this.HandleZoomToFitClick, this);
+    this._zoomToFitButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMTOFIT'));
+    this._eventManager.associate(this._zoomToFitButton, this._zoomToFitButton);
 
     var dim = DvtButtonLAFUtils._getDimForced(this.getCtx(), this._zoomToFitButton);
     vertContentBar.addChild(this._zoomToFitButton);
@@ -2032,28 +1609,31 @@ DvtControlPanel.prototype._addZoomToFitButton = function(vertContentBar, currY) 
  * @param {DvtContainer} vertContentBar display object representing the vertical bar
  * @param {number} currY current Y coordinate
  * @return {number} updated current Y coordinate
+ * @private
  */
 DvtControlPanel.prototype._addZoomControls = function(vertContentBar, currY) {
 
-  var dim = null;
   var paddingInner = DvtStyleUtils.getStyle(this._styleMap['vbar'], DvtControlPanel.CP_PADDING_INNER, 0);
   var paddingSide = DvtStyleUtils.getStyle(this._styleMap['vbar'], DvtControlPanel.CP_PADDING_LEFT, 0);
   if ((this._controls & DvtControlPanel.CONTROLS_ZOOM) != 0) {
 
     //create the zoom in button
-    this._zoomInButton = DvtButtonLAFUtils.createZoomInButton(this.getCtx(), this._panZoomCanvas,
-                                                              this._eventManager, this._buttonImages,
-                                                              this._styleMap);
+    this._zoomInButton = DvtButtonLAFUtils.createZoomInButton(this.getCtx(), this._buttonImages, this._styleMap);
     this._zoomInButton.setTranslate(paddingSide, this._zoomInButton.getTranslateY() + currY);
+    this._zoomInButton.setCallback(this.HandleZoomInClick, this);
+    this._zoomInButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMIN'));
+    this._eventManager.associate(this._zoomInButton, this._zoomInButton);
 
-    dim = DvtButtonLAFUtils._getDimForced(this.getCtx(), this._zoomInButton);
+    var dim = DvtButtonLAFUtils._getDimForced(this.getCtx(), this._zoomInButton);
     vertContentBar.addChild(this._zoomInButton);
     currY += (dim.h + paddingInner);
 
     //create the zoom out button
-    this._zoomOutButton = DvtButtonLAFUtils.createZoomOutButton(this.getCtx(), this._panZoomCanvas,
-                                                                this._eventManager, this._buttonImages, this._styleMap);
+    this._zoomOutButton = DvtButtonLAFUtils.createZoomOutButton(this.getCtx(), this._buttonImages, this._styleMap);
     this._zoomOutButton.setTranslate(paddingSide, this._zoomOutButton.getTranslateY() + currY);
+    this._zoomOutButton.setCallback(this.HandleZoomOutClick, this);
+    this._zoomOutButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_ZOOMOUT'));
+    this._eventManager.associate(this._zoomOutButton, this._zoomOutButton);
 
     dim = DvtButtonLAFUtils._getDimForced(this.getCtx(), this._zoomOutButton);
     vertContentBar.addChild(this._zoomOutButton);
@@ -2071,6 +1651,7 @@ DvtControlPanel.prototype._addZoomControls = function(vertContentBar, currY) {
  * @param {number} nHorzContentBarChildren number of child objects on the horizontal bar
  * @param {number} currY current Y coordinate
  * @return {number} updated current Y coordinate
+ * @private
  */
 DvtControlPanel.prototype._createVBarBackground = function(horzContentBar, vertContentBar, nHorzContentBarChildren, currY) {
 
@@ -2121,11 +1702,10 @@ DvtControlPanel.prototype._createVBarBackground = function(horzContentBar, vertC
  * @param {DvtContainer} horzContentBar display object representing the horizontal bar
  * @param {DvtContainer} vertContentBar display object representing the vertical bar
  * @param {number} currY current Y coordinate
- * @return {number} updated current Y coordinate
+ * @private
  */
 DvtControlPanel.prototype._positionVBarElements = function(horzContentBar, vertContentBar, currY) {
 
-  var dim = null;
   var context = this.getCtx();
   var bBiDi = DvtAgent.isRightToLeft(context);
 
@@ -2139,7 +1719,6 @@ DvtControlPanel.prototype._positionVBarElements = function(horzContentBar, vertC
       horzContentBar.setTranslateY(0);
 
       if (vertContentBar) {
-        dim = DvtButtonLAFUtils._getDimForced(context, vertContentBar);
         horzContentBar.setTranslateX(horzContentBar.getTranslateX() - buttonWidth);
         vertContentBar.setTranslateY(0);
       }
@@ -2161,7 +1740,6 @@ DvtControlPanel.prototype._positionVBarElements = function(horzContentBar, vertC
     horzContentBar.setTranslateX(0);
     vertContentBar.setTranslateX(dimHorizontal.w + dimHorizontal.x - barWidth);
   }
-
 };
 
 
@@ -2170,6 +1748,7 @@ DvtControlPanel.prototype._positionVBarElements = function(horzContentBar, vertC
  * @param {DvtContainer} horzContentBar display object representing the horizontal bar
  * @param {number} nHorzContentBarChildren number of child objects on the horizontal bar
  * @return {number} updated number of child objects on the horizontal bar
+ * @private
  */
 DvtControlPanel.prototype._createHBarPanControl = function(horzContentBar, nHorzContentBarChildren) {
 
@@ -2218,6 +1797,7 @@ DvtControlPanel.prototype._createHBarPanControl = function(horzContentBar, nHorz
  * @param {DvtContainer} horzContentBar display object representing the horizontal bar
  * @param {number} nHorzContentBarChildren number of child objects on the horizontal bar
  * @return {number} updated number of child objects on the horizontal bar
+ * @private
  */
 DvtControlPanel.prototype._createHBarAdditionalContent = function(horzContentBar, nHorzContentBarChildren) {
 
@@ -2243,15 +1823,14 @@ DvtControlPanel.prototype._createHBarAdditionalContent = function(horzContentBar
 /**
  * Creates a collapse button for the horizontal bar
  * @param {DvtContainer} horzContentBar display object representing the horizontal bar
+ * @private
  */
 DvtControlPanel.prototype._createHBarCollapseButton = function(horzContentBar) {
   this._collapseButton = DvtButtonLAFUtils.createCollapseButton(this.getCtx(), this._buttonImages, this.getViewPanelHeight(), this._styleMap,
       DvtAgent.isRightToLeft(this.getCtx()) ? DvtButtonLAFUtils.DIR_RIGHT : DvtButtonLAFUtils.DIR_LEFT);
   this._collapseButton.setCallback(this.HandleCollapseClick, this);
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, null,
-      null, null, null,
-      DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL'));
-  this._eventManager.associate(this._collapseButton, proxy);
+  this._collapseButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL'));
+  this._eventManager.associate(this._collapseButton, this._collapseButton);
   horzContentBar.addChild(this._collapseButton);
 };
 
@@ -2261,6 +1840,7 @@ DvtControlPanel.prototype._createHBarCollapseButton = function(horzContentBar) {
  * @param {boolean} bBiDi true if right-to-left, false otherwise
  * @param {number} currX current X coordinate
  * @return {number} updated current X coordinate
+ * @private
  */
 DvtControlPanel.prototype._positionHBarElements = function(bBiDi, currX) {
   var context = this._context;
@@ -2353,6 +1933,7 @@ DvtControlPanel.prototype._positionHBarElements = function(bBiDi, currX) {
  * @param {number} nHorzContentBarChildren number of child objects on the horizontal bar
  * @param {boolean} bBiDi true if right-to-left, false otherwise
  * @param {number} currX current X coordinate
+ * @private
  */
 DvtControlPanel.prototype._createHBarBackground = function(horzContentBar, vertContentBar, nHorzContentBarChildren, bBiDi, currX) {
   var context = this._context;
@@ -2398,8 +1979,8 @@ DvtControlPanel.prototype._createHBarBackground = function(horzContentBar, vertC
 
 /**
  * Render the expanded state of the panel.
- *
  * @return {DvtContainer} display object representing expanded state
+ * @protected
  */
 DvtControlPanel.prototype.RenderExpanded = function() {
 
@@ -2471,8 +2052,8 @@ DvtControlPanel.prototype.RenderExpanded = function() {
  * This implementation does nothing.  Subclasses should override to include
  * custom tools in the control panel.
  *
- * @param contentSprite sprite to contain additional tools that will be
- *        added to the horzContentBar
+ * @param {DvtContainer} contentSprite sprite to contain additional tools that will be
+ *                         added to the horzContentBar
  */
 DvtControlPanel.prototype.PopulateHorzContentBar = function(contentSprite) {
   //do nothing
@@ -2496,13 +2077,16 @@ DvtControlPanel.prototype.toggleExpandCollapse = function() {
 
 /**
  * Get the dimensions of the panel in its collapsed state.
- *
- * @return dimensions of collapsed panel
+ * @return {DvtRectangle} dimensions of collapsed panel
  */
 DvtControlPanel.prototype.getCollapsedDim = function() {
   return this._collapsedDim;
 };
 
+/**
+ * Get the dimensions of the panel in its expanded state.
+ * @return {DvtRectangle} dimensions of expanded panel
+ */
 DvtControlPanel.prototype.getExpandedDim = function() {
   return this._expandedDim;
 };
@@ -2510,8 +2094,8 @@ DvtControlPanel.prototype.getExpandedDim = function() {
 
 /**
  * Handle a mouse click on the expand button.
- *
  * @param {DvtMouseEvent} event MouseEvent
+ * @protected
  */
 DvtControlPanel.prototype.HandleExpandClick = function(event) {
   //don't want click to fall through to other components
@@ -2519,9 +2103,7 @@ DvtControlPanel.prototype.HandleExpandClick = function(event) {
 
   if (!this._bTransition) {
     this._doExpand();
-    if (this.getTooltipManager()) {
-      this.getTooltipManager().hideTooltip();
-    }
+    this._tooltipManager.hideTooltip();
   }
 };
 
@@ -2546,9 +2128,6 @@ DvtControlPanel.prototype._doExpand = function() {
   //transition from the collapsed control panel to the expanded one
   this.transitionExpand(this.getChildAt(0), s);
 
-  //update state
-  this._state = DvtControlPanel.STATE_EXPANDED;
-
   //BUG FIX #8719343: fire expand event
   this.fireExpandEvent();
 };
@@ -2556,6 +2135,7 @@ DvtControlPanel.prototype._doExpand = function() {
 
 /**
  * Apply alphas based on whether the mouse is over the control panel.
+ * @private
  */
 DvtControlPanel.prototype._applyAlphasForMouse = function() {
   //apply alphas based on whether the mouse is over the control panel
@@ -2575,8 +2155,8 @@ DvtControlPanel.prototype._applyAlphasForMouse = function() {
 
 /**
  * Handle a mouse click on the collapse button.
- *
  * @param {DvtMouseEvent} event MouseEvent
+ * @protected
  */
 DvtControlPanel.prototype.HandleCollapseClick = function(event) {
   //don't want click to fall through to other components
@@ -2606,9 +2186,6 @@ DvtControlPanel.prototype._doCollapse = function() {
 
   //transition from the expanded control panel to the collapsed one
   this.transitionCollapse(this.getChildAt(0), s);
-
-  //update state
-  this._state = DvtControlPanel.STATE_COLLAPSED;
 
   //BUG FIX #8719343: fire collapse event
   this.fireCollapseEvent();
@@ -2661,10 +2238,13 @@ DvtControlPanel.prototype.transitionExpand = function(oldContent, newContent) {
       oldContent.getParent().removeChild(oldContent);
       this._bTransition = false;
       this.setMouseEnabled(true);
+      //update state
+      this._state = DvtControlPanel.STATE_EXPANDED;
     }, this);
 
     animator.play();
   } else {
+    this._state = DvtControlPanel.STATE_EXPANDED;
     oldContent.getParent().removeChild(oldContent);
     this.PositionExpanded(newContent);
   }
@@ -2721,6 +2301,8 @@ DvtControlPanel.prototype.transitionCollapse = function(oldContent, newContent) 
   animator.setOnEnd(function() {
     oldContent.getParent().removeChild(oldContent);
     this._bTransition = false;
+    //update state
+    this._state = DvtControlPanel.STATE_COLLAPSED;
   }, this);
 
   animator.play();
@@ -2729,9 +2311,7 @@ DvtControlPanel.prototype.transitionCollapse = function(oldContent, newContent) 
 
 /**
  * Fire expand event.
- *
- * @return true if event was dispatched successfully,
- *         false otherwise
+ * @return {boolean} true if event was dispatched successfully, false otherwise
  */
 DvtControlPanel.prototype.fireExpandEvent = function() {
   var event = new DvtControlPanelEvent(DvtControlPanelEvent.SUBTYPE_SHOW);
@@ -2742,9 +2322,7 @@ DvtControlPanel.prototype.fireExpandEvent = function() {
 
 /**
  * Fire collapse event.
- *
- * @return true if event was dispatched successfully,
- *         false otherwise
+ * @return {boolean} true if event was dispatched successfully, false otherwise
  */
 DvtControlPanel.prototype.fireCollapseEvent = function() {
   var event = new DvtControlPanelEvent(DvtControlPanelEvent.SUBTYPE_HIDE);
@@ -2752,44 +2330,12 @@ DvtControlPanel.prototype.fireCollapseEvent = function() {
   return true;
 };
 
-
-/**
- * Adjust the collapse and expand arrow icons for BiDi.
- *
- * @param dispObjCon display object containing the arrow icon
- * @param offset amount to translate arrow icon
- */
-DvtControlPanel.prototype.adjustArrowsIconForBiDi = function(dispObjCon, offset) {
-  var loader = this.findLoader(dispObjCon);
-  if (loader) {
-    loader.setTranslateX(loader.getTranslateX() + offset);
-  }
-};
-
-
-/**
- * Find a Loader object in the given container.
- *
- * @param dispObjCon container to look for a Loader object in
- *
- * @return Loader object found, or null if none found
- */
-DvtControlPanel.prototype.findLoader = function(dispObjCon) {
-  var childCount = dispObjCon.getNumChildren();
-  var dispObj;
-  for (var i = 0; i < childCount; i++) {
-    dispObj = dispObjCon.getChildAt(i);
-    if (dispObj instanceof DvtImage) {
-      return dispObj;
-    }
-    else if (dispObj instanceof DvtContainer) {
-      return this.findLoader(dispObj);
-    }
-  }
-  return null;
-};
-
 // Mouse event handling
+/**
+ * Handle roll over event
+ * @param {DvtMouseEvent} event mouse event
+ * @protected
+ */
 DvtControlPanel.prototype.HandleRollOver = function(event) {
   this._bMouseOver = true;
   if (!this._bMouseDragPanning)
@@ -2798,6 +2344,11 @@ DvtControlPanel.prototype.HandleRollOver = function(event) {
   }
 };
 
+/**
+ * Handle roll out event
+ * @param {DvtMouseEvent} event mouse event
+ * @protected
+ */
 DvtControlPanel.prototype.HandleRollOut = function(event) {
   this._bMouseOver = false;
   if (!this._bMouseDragPanning)
@@ -2810,6 +2361,7 @@ DvtControlPanel.prototype.HandleRollOut = function(event) {
 /**
  * Apply alphas to the background and frame for when the
  * mouse is over the control panel.
+ * @private
  */
 DvtControlPanel.prototype._applyAlphasRollover = function() {
   this._background.setAlpha(this._styleMap[DvtControlPanel.BG_ROLLOVER_ALPHA]);
@@ -2825,6 +2377,7 @@ DvtControlPanel.prototype._applyAlphasRollover = function() {
 /**
  * Apply alphas to the background and frame for when the
  * mouse is not over the control panel.
+ * @private
  */
 DvtControlPanel.prototype._applyAlphasRollout = function() {
   this._background.setAlpha(this._bgAlpha);
@@ -2836,6 +2389,10 @@ DvtControlPanel.prototype._applyAlphasRollout = function() {
   }
 };
 
+/**
+ * Checks whether Pan control is shown
+ * @return {boolean} true if panel control is shown, false otherwise
+ */
 DvtControlPanel.prototype.isPanControlShown = function() {
   return (this._controls & DvtControlPanel.CONTROLS_CENTER_BUTTON) > 0;
 };
@@ -2867,6 +2424,10 @@ DvtControlPanel.prototype.renderComponent = function() {
   this.addChild(s);
 };
 
+/**
+ * Return button images
+ * @return {object}  The object containing button images
+ */
 DvtControlPanel.prototype.getButtonImages = function() {
   return this._buttonImages;
 };
@@ -2877,6 +2438,7 @@ DvtControlPanel.prototype.getButtonImages = function() {
  * @param {number} nHorzContentBarChildren number of children in horizontal content bar.
  *
  * @return {number} number of pixels specified as top padding for vertical bar
+ * @private
  */
 DvtControlPanel.prototype._getVBarButtonsOffsetY = function(nHorzContentBarChildren) {
   // we need extra room if we have pan control or if this is Alta style and horizontal bar is empty
@@ -2887,7 +2449,9 @@ DvtControlPanel.prototype._getVBarButtonsOffsetY = function(nHorzContentBarChild
     return 0;
 };
 
-
+/**
+ * Enable zoom controls
+ */
 DvtControlPanel.prototype.enableZoomControls = function() {
   var currZoom = this._panZoomCanvas.getZoom();
   var nextZoom = this._panZoomCanvas.getNextZoomLevel(currZoom);
@@ -2898,14 +2462,104 @@ DvtControlPanel.prototype.enableZoomControls = function() {
     this._zoomOutButton.setEnabled(currZoom != prevZoom);
 };
 
+/**
+ * Enable zoom in control
+ * @param {boolean} enabled  true to enable zoom in control, false to disable.
+ */
 DvtControlPanel.prototype.enableZoomInControl = function(enabled) {
   if (this._zoomInButton)
     this._zoomInButton.setEnabled(enabled);
 };
 
+/**
+ * Enable zoom out control
+ * @param {boolean} enabled  true to enable zoom out control, false to disable.
+ */
 DvtControlPanel.prototype.enableZoomOutControl = function(enabled) {
   if (this._zoomOutButton)
     this._zoomOutButton.setEnabled(enabled);
+};
+
+/**
+ * Handles a mouse click on the zoom in button.
+ * @param {DvtMouseEvent} event Mouse event
+ * @protected
+ */
+DvtControlPanel.prototype.HandleZoomInClick = function(event) {
+  var currZoom = this._panZoomCanvas.getZoom();
+  var newZoom = this._panZoomCanvas.getNextZoomLevel(currZoom);
+
+  var animator = new DvtAnimator(this.getCtx(), this._panZoomCanvas.getAnimationDuration());
+  this._panZoomCanvas.zoomTo(newZoom, undefined, undefined, animator);
+  animator.play();
+};
+
+/**
+ * Handles a mouse click on the zoom out button.
+ * @param {DvtMouseEvent} event Mouse event
+ * @protected
+ */
+DvtControlPanel.prototype.HandleZoomOutClick = function(event) {
+  var currZoom = this._panZoomCanvas.getZoom();
+  var newZoom = this._panZoomCanvas.getPrevZoomLevel(currZoom);
+  var context = this.getCtx();
+  var animator = new DvtAnimator(context, this._panZoomCanvas.getAnimationDuration());
+
+  this._panZoomCanvas.zoomTo(newZoom, undefined, undefined, animator);
+
+  animator.play();
+};
+
+/**
+ * Handles a mouse click on the zoom to fit button.
+ * @param {DvtMouseEvent} event Mouse event
+ * @protected
+ */
+DvtControlPanel.prototype.HandleZoomToFitClick = function(event) {
+  var animator = new DvtAnimator(this.getCtx(), this._panZoomCanvas.getAnimationDuration());
+  this._panZoomCanvas.zoomToFit(animator);
+  animator.play();
+};
+
+/**
+ * Returns this control panel event manager
+ * @return {DvtEventManager} event manager
+ */
+DvtControlPanel.prototype.getEventManager = function() {
+  return this._eventManager;
+};
+
+
+/**
+ * @export
+ * Check if the control panel is disclosed
+ * @return {boolean} return true if control panel is disclosed
+ */
+DvtControlPanel.prototype.isDisclosed = function() {
+  return this.getState() == DvtControlPanel.STATE_EXPANDED;
+};
+
+/**
+ * Get the control panel displayable to perform specific action
+ * Used by Automation APIs
+ * @param {string} type  control panel action type
+ * @param {string} stampId  item stamp id if the action is performed on a combo box
+ * @return {DvtDisplayable}  displayable
+ */
+DvtControlPanel.prototype.getActionDisplayable = function(type, stampId) {
+  if (type == 'disclosure')
+    return this.isDisclosed() ? this._collapseButton : this._expandButton;
+
+  if (this.isDisclosed()) {
+    if (type == 'zoomToFit' && this._zoomToFitButton && this._zoomToFitButton.isEnabled()) {
+      return this._zoomToFitButton;
+    } else if (type == 'zoomIn' && this._zoomInButton && this._zoomInButton.isEnabled()) {
+      return this._zoomInButton;
+    } else if (type == 'zoomOut' && this._zoomOutButton && this._zoomOutButton.isEnabled()) {
+      return this._zoomOutButton;
+    }
+  }
+  return null;
 };
 /**
  * Default values and utility functions for PanZoomControlPanel versioning.
@@ -3205,48 +2859,6 @@ DvtControlPanelEventManager.prototype.HandleImmediateTouchStartInternal = functi
   DvtEventManager.consumeEvent(event);
 };
 
-/*
- * DvtControlPanelEventHandlerProxy Utility
- */
-var DvtControlPanelEventHandlerProxy = function(callback, handleClick, handleMouseDown, handleMouseUp, handleMouseOut, handleMouseOver, tooltip) {
-  this.Init(callback, handleClick, handleMouseDown, handleMouseUp, handleMouseOut, handleMouseOver, tooltip);
-};
-
-DvtObj.createSubclass(DvtControlPanelEventHandlerProxy, DvtObj, 'DvtControlPanelEventHandlerProxy');
-
-DvtControlPanelEventHandlerProxy.prototype.Init = function(callbackObj, handleClick, handleMouseDown, handleMouseUp, handleMouseOut, handleMouseOver, tooltip) {
-  this._callbackObj = callbackObj;
-  this._handleClick = handleClick;
-  this._handleMouseUp = handleMouseUp;
-  this._handleMouseDown = handleMouseDown;
-  this._handleMouseOut = handleMouseOut;
-  this._handleMouseOver = handleMouseOver;
-  this._tooltip = tooltip;
-};
-
-DvtControlPanelEventHandlerProxy.prototype.HandleClick = function(event) {
-  if (this._handleClick)
-    this._handleClick.call(this._callbackObj, event);
-};
-DvtControlPanelEventHandlerProxy.prototype.HandleMouseDown = function(event) {
-  if (this._handleMouseDown)
-    this._handleMouseDown.call(this._callbackObj, event);
-};
-DvtControlPanelEventHandlerProxy.prototype.HandleMouseUp = function(event) {
-  if (this._handleMouseUp)
-    this._handleMouseUp.call(this._callbackObj, event);
-};
-DvtControlPanelEventHandlerProxy.prototype.HandleMouseOut = function(event) {
-  if (this._handleMouseOut)
-    this._handleMouseOut.call(this._callbackObj, event);
-};
-DvtControlPanelEventHandlerProxy.prototype.HandleMouseOver = function(event) {
-  if (this._handleMouseOver)
-    this._handleMouseOver.call(this._callbackObj, event);
-};
-DvtControlPanelEventHandlerProxy.prototype.getTooltip = function() {
-  return this._tooltip;
-};
 /*
  * DvtControlPanelLAFUtils Utility class for providing LAF for buttons in the control panel.
  */
@@ -4118,7 +3730,7 @@ DvtPanZoomComponent.prototype._getBackgroundGradient = function(color) {
 DvtPanZoomComponent.prototype._handleControlPanelEvent = function(event) {
   var spEvent = new DvtSetPropertyEvent();
   spEvent.addParam(DvtControlPanel.CONTROL_PANEL_BEHAVIOR_KEY, event.getSubType() == DvtControlPanelEvent.SUBTYPE_SHOW ? DvtPanZoomComponent.CONTROL_PANEL_BEHAVIOR_INIT_EXPANDED : DvtPanZoomComponent.CONTROL_PANEL_BEHAVIOR_INIT_COLLAPSED);
-  this.__dispatchEvent(spEvent);
+  this.dispatchEvent(spEvent);
 };
 
 /**
@@ -4187,16 +3799,14 @@ DvtPanZoomComponent.prototype._getLegendMaxWidthValue = function(rawMaxWidthValu
   maxWidth = isNaN(parseFloat(maxWidth)) ? availableWidth : parseFloat(maxWidth);
   return Math.min(maxWidth, availableWidth);
 };
-// Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
-
-
-
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a canvas that supports panning and zooming.
   *  @extends {DvtContainer}
   *  @class DvtPanZoomCanvas is a platform independent class representing a
   *  pannable, zoomable canvas.
   *  @constructor
+  *  @export
   *  @param {DvtContext} context The context object
   *  @param {number} ww The width of the canvas
   *  @param {number} hh The height of the canvas
@@ -4956,6 +4566,11 @@ DvtPanZoomCanvas.prototype.setControlPanel = function(controlPanel) {
   this._controlPanel = controlPanel;
 };
 
+/**
+ * @export
+ * Returns the Control panel component
+ * @return {DvtControlPanel} Control panel component
+ */
 DvtPanZoomCanvas.prototype.getControlPanel = function() {
   return this._controlPanel;
 };
@@ -5372,7 +4987,7 @@ DvtPanZoomCanvas.prototype.setInteractionEnabled = function(bEnabled) {
   else
     this._eventManager.addListeners(this);
 };
-// Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
  * @param {DvtContext} context The rendering context
@@ -5430,10 +5045,7 @@ DvtPanZoomCanvasEventManager._MOMENTUM_START_TIMER_INTERVAL = 50;
  */
 DvtPanZoomCanvasEventManager.prototype.addListeners = function(displayable) {
   DvtPanZoomCanvasEventManager.superclass.addListeners.call(this, displayable);
-  if (DvtAgent.isPlatformGecko())//Firefox
-    displayable.addEvtListener('DOMMouseScroll', this.OnMouseWheel, false, this);
-  else
-    displayable.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  displayable.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
 };
 
 
@@ -5442,10 +5054,7 @@ DvtPanZoomCanvasEventManager.prototype.addListeners = function(displayable) {
  */
 DvtPanZoomCanvasEventManager.prototype.removeListeners = function(displayable) {
   DvtPanZoomCanvasEventManager.superclass.removeListeners.call(this, displayable);
-  if (DvtAgent.isPlatformGecko())//Firefox
-    displayable.removeEvtListener('DOMMouseScroll', this.OnMouseWheel, false, this);
-  else
-    displayable.removeEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  displayable.removeEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
 };
 
 
@@ -6010,7 +5619,7 @@ DvtPanZoomCanvasEventManager.prototype._handlePanEnd = function() {
     this._momentumXperMS = dx / dt;
     this._momentumYperMS = dy / dt;
     //use timer interval similar to mousemove interval
-    this._momentumTimer.setInterval(Math.ceil(dt / numMoves));
+    this._momentumTimer.setInterval(Math.ceil(dt / numMoves));//@HTMLUpdateOk
     this._momentumIterCount = 1;
     this._momentumDx = 0;
     this._momentumDy = 0;
@@ -6657,7 +6266,7 @@ DvtImageLAFUtils.loadIcon = function(context, uri) {
 
   return image;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -7008,7 +6617,7 @@ DvtButtonLAFUtils.DIR_LEFT = 'left';
  * @param {Object} imageURIs The map containing image URIs for the component
  * @param {number} controls The bit mask specifying which controls to show
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the pan control
+ * @return {DvtPanControl} a container used for the pan control
  */
 DvtButtonLAFUtils.createPanControl = function(context, panZoomCanvas, controls, imageURIs, styleMap)
 {
@@ -7045,15 +6654,11 @@ DvtButtonLAFUtils.createPanControl = function(context, panZoomCanvas, controls, 
 /**
  * Creates a container used for the drill up button.
  * @param {DvtContext} context Platform specific context object
- * @param {function} mapCallback The function that should be called to dispatch component events
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
- * @param {number} btype A button type - DvtMapControlButton.BUTTON_TYPE_DRILLUP,DvtMapControlButton.BUTTON_TYPE_DRILLDOWN or DvtMapControlButton.BUTTON_TYPE_RESET
  * @param {Object} imageURIs The map containing image URIs for the component
- * @param {DvtEventManager} eventManager An event manager for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the drill up button
+ * @return {DvtButton} a container used for the drill up button
  */
-DvtButtonLAFUtils.createDrillUpButton = function(context, mapCallback, panZoomCanvas, btype, imageURIs, eventManager, styleMap) {
+DvtButtonLAFUtils.createDrillUpButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._DRILLUP_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
@@ -7061,23 +6666,19 @@ DvtButtonLAFUtils.createDrillUpButton = function(context, mapCallback, panZoomCa
   var dwn = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_DOWN,
       imageURIs[DvtButtonLAFUtils._DRILLUP_DWN], styleMap);
   var dis = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
-      imageURIs[DvtButtonLAFUtils._DRILLUP_ENA], styleMap);
-  return new DvtMapControlButton(context, new DvtButton(context, ena, ovr, dwn, dis), mapCallback, panZoomCanvas, btype, eventManager);
+      imageURIs[DvtButtonLAFUtils._DRILLUP_ENA], styleMap, null, null, 0.4);
+  return new DvtButton(context, ena, ovr, dwn, dis);
 };
 
 
 /**
  * Creates a container used for the drill down button.
  * @param {DvtContext} context Platform specific context object
- * @param {function} mapCallback The function that should be called to dispatch component events
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
- * @param {number} btype A button type - DvtMapControlButton.BUTTON_TYPE_DRILLUP,DvtMapControlButton.BUTTON_TYPE_DRILLDOWN or DvtMapControlButton.BUTTON_TYPE_RESET
  * @param {Object} imageURIs The map containing image URIs for the component
- * @param {DvtEventManager} eventManager An event manager for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the drill down button
+ * @return {DvtButton} a container used for the drill down button
  */
-DvtButtonLAFUtils.createDrillDownButton = function(context, mapCallback, panZoomCanvas, btype, imageURIs, eventManager, styleMap) {
+DvtButtonLAFUtils.createDrillDownButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._DRILLDOWN_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
@@ -7085,23 +6686,19 @@ DvtButtonLAFUtils.createDrillDownButton = function(context, mapCallback, panZoom
   var dwn = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_DOWN,
       imageURIs[DvtButtonLAFUtils._DRILLDOWN_DWN], styleMap);
   var dis = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
-      imageURIs[DvtButtonLAFUtils._DRILLDOWN_ENA], styleMap);
-  return new DvtMapControlButton(context, new DvtButton(context, ena, ovr, dwn, dis), mapCallback, panZoomCanvas, btype, eventManager);
+      imageURIs[DvtButtonLAFUtils._DRILLDOWN_ENA], styleMap, null, null, 0.4);
+  return new DvtButton(context, ena, ovr, dwn, dis);
 };
 
 
 /**
  * Creates a container used for the reset button.
  * @param {DvtContext} context Platform specific context object
- * @param {function} mapCallback The function that should be called to dispatch component events
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
- * @param {number} btype A button type - DvtMapControlButton.BUTTON_TYPE_DRILLUP,DvtMapControlButton.BUTTON_TYPE_DRILLDOWN or DvtMapControlButton.BUTTON_TYPE_RESET
  * @param {Object} imageURIs The map containing image URIs for the component
- * @param {DvtEventManager} eventManager An event manager for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the reset button
+ * @return {DvtButton} a container used for the reset button
  */
-DvtButtonLAFUtils.createResetButton = function(context, mapCallback, panZoomCanvas, btype, imageURIs, eventManager, styleMap) {
+DvtButtonLAFUtils.createResetButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._RESET_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
@@ -7110,38 +6707,36 @@ DvtButtonLAFUtils.createResetButton = function(context, mapCallback, panZoomCanv
       imageURIs[DvtButtonLAFUtils._RESET_DWN], styleMap);
   var dis = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._RESET_ENA], styleMap);
-  return new DvtMapControlButton(context, new DvtButton(context, ena, ovr, dwn, dis), mapCallback, panZoomCanvas, btype, eventManager);
+  return new DvtButton(context, ena, ovr, dwn, dis);
 };
 
 
 /**
  * Creates a container used for the zoom-to-fit button.
  * @param {DvtContext} context Platform specific context object
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
  * @param {Object} imageURIs The map containing image URIs for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the zoom-to-fit button
+ * @return {DvtButton} a container used for the zoom-to-fit button
  */
-DvtButtonLAFUtils.createZoomToFitButton = function(context, panZoomCanvas, eventManager, imageURIs, styleMap) {
+DvtButtonLAFUtils.createZoomToFitButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._ZOOMTOFIT_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
       imageURIs[DvtButtonLAFUtils._ZOOMTOFIT_OVR], styleMap);
   var dwn = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_DOWN,
       imageURIs[DvtButtonLAFUtils._ZOOMTOFIT_DWN], styleMap);
-  return new DvtZoomToFitButton(context, new DvtButton(context, ena, ovr, dwn), panZoomCanvas, eventManager);
+  return new DvtButton(context, ena, ovr, dwn);
 };
 
 
 /**
  * Creates a container used for the zoom-in button.
  * @param {DvtContext} context Platform specific context object
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
  * @param {Object} imageURIs The map containing image URIs for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the zoom-in button
+ * @return {DvtButton} a container used for the zoom-in button
  */
-DvtButtonLAFUtils.createZoomInButton = function(context, panZoomCanvas, eventManager, imageURIs, styleMap) {
+DvtButtonLAFUtils.createZoomInButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._ZOOMIN_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
@@ -7150,19 +6745,18 @@ DvtButtonLAFUtils.createZoomInButton = function(context, panZoomCanvas, eventMan
       imageURIs[DvtButtonLAFUtils._ZOOMIN_DWN], styleMap);
   var dis = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_DISABLED,
       imageURIs[DvtButtonLAFUtils._ZOOMIN_DISABLED], styleMap);
-  return new DvtZoomInButton(context, new DvtButton(context, ena, ovr, dwn, dis), panZoomCanvas, eventManager);
+  return new DvtButton(context, ena, ovr, dwn, dis);
 };
 
 
 /**
  * Creates a container used for the zoom-out button.
  * @param {DvtContext} context Platform specific context object
- * @param {DvtPanZoomCanvas} panZoomCanvas The PanZoomCanvas this button will be associated with
  * @param {Object} imageURIs The map containing image URIs for the component
  * @param {object} styleMap The object containing style specifications for this component
- * @return {DvtBaseControl} a container used for the zoom-out button
+ * @return {DvtButton} a container used for the zoom-out button
  */
-DvtButtonLAFUtils.createZoomOutButton = function(context, panZoomCanvas, eventManager, imageURIs, styleMap) {
+DvtButtonLAFUtils.createZoomOutButton = function(context, imageURIs, styleMap) {
   var ena = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_ENABLED,
       imageURIs[DvtButtonLAFUtils._ZOOMOUT_ENA], styleMap);
   var ovr = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_OVER,
@@ -7171,7 +6765,7 @@ DvtButtonLAFUtils.createZoomOutButton = function(context, panZoomCanvas, eventMa
       imageURIs[DvtButtonLAFUtils._ZOOMOUT_DWN], styleMap);
   var dis = DvtButtonLAFUtils._createButtonBaseImage(context, DvtButton.STATE_DISABLED,
       imageURIs[DvtButtonLAFUtils._ZOOMOUT_DISABLED], styleMap);
-  return new DvtZoomOutButton(context, new DvtButton(context, ena, ovr, dwn, dis), panZoomCanvas, eventManager);
+  return new DvtButton(context, ena, ovr, dwn, dis);
 };
 
 
@@ -7349,11 +6943,12 @@ DvtButtonLAFUtils.createClearResultsButton = function(context, imageURIs) {
  * @param {number} state Button state - ena, ovr, dwn
  * @param {string} uri Image URL for the button state
  * @param {object} styleMap The object containing style specifications for this component
- * @param {number} w Optional button width
- * @param {number} h Optional button height
+ * @param {number=} w Optional button width
+ * @param {number=} h Optional button height
+ * @param {number=} alpha Optional opacity for the image
  * @return {DvtDisplayable} a shape for the panel card combo box button
  */
-DvtButtonLAFUtils._createButtonBaseImage = function(context, state, uri, styleMap, w, h) {
+DvtButtonLAFUtils._createButtonBaseImage = function(context, state, uri, styleMap, w, h, alpha) {
 
   var r = DvtStyleUtils.getStyle(styleMap, 'buttonRadius', 0);
   if (w === 'undefined' || w == null)
@@ -7363,8 +6958,11 @@ DvtButtonLAFUtils._createButtonBaseImage = function(context, state, uri, styleMa
 
   var base = DvtButtonLAFUtils._drawBaseButton(context, state, r, w, h, styleMap);
   var image = DvtButtonLAFUtils._loadIcon(context, uri, w, h);
-  if (image)
+  if (image) {
+    if (alpha != null)
+      image.setAlpha(alpha);
     base.addChild(image);
+  }
 
   return base;
 };

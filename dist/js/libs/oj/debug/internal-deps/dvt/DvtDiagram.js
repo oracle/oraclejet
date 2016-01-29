@@ -1,14 +1,15 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -120,8 +121,7 @@ DvtDiagramLayoutContext.prototype.getLayoutAttributes = function() {
 /**
  * @protected
  * Add a node context for this layout.
- * @param {DvtDiagramLayoutContextNode} node node context to include in this
- * layout
+ * @param {DvtDiagramLayoutContextNode} node node context to include in this layout
  */
 DvtDiagramLayoutContext.prototype.addNode = function(node) {
   if (!this.getNodeById(node.getId())) {
@@ -135,11 +135,11 @@ DvtDiagramLayoutContext.prototype.addNode = function(node) {
 
 /**
  * @protected
- * Add a read-only node context for this layout.
- * @param {DvtDiagramLayoutContextNode} node read-only node context to
- * provide extra information for this layout
+ * Add a node context to the lookup map. The map contains nodes being laid out and it might also contain
+ * read-only nodes provided to support cross-container links in case of "container" layout.
+ * @param {DvtDiagramLayoutContextNode} node node context to provide extra information for this layout
  */
-DvtDiagramLayoutContext.prototype.addReadOnlyNode = function(node) {
+DvtDiagramLayoutContext.prototype.addNodeToMap = function(node) {
   this._nodes[node.getId()] = node;
 };
 
@@ -181,10 +181,8 @@ DvtDiagramLayoutContext.prototype.getNodeCount = function() {
 
 
 /**
- * @protected
  * Add a link context for this layout.
- * @param {DvtDiagramLayoutContextLink} link link context to include in this
- * layout
+ * @param {DvtDiagramLayoutContextLink} link link context to include in this layout
  */
 DvtDiagramLayoutContext.prototype.addLink = function(link) {
   if (!this.getLinkById(link.getId())) {
@@ -199,7 +197,7 @@ DvtDiagramLayoutContext.prototype.addLink = function(link) {
 /**
  * Get a link context by id.
  * @param {string} id id of link context to get
- * @return {DvtDiagramLayoutContextLink}
+ * @return {DvtDiagramLayoutContextLink} link
  * @export
  */
 DvtDiagramLayoutContext.prototype.getLinkById = function(id) {
@@ -256,8 +254,8 @@ DvtDiagramLayoutContext.prototype.localToGlobal = function(point, node) {
 DvtDiagramLayoutContext.prototype.GetGlobalOffset = function(node) {
   var offset = new DvtDiagramPoint(0, 0);
   while (node) {
-    offset['x'] += node.getPosition()['x'];
-    offset['y'] += node.getPosition()['y'];
+    offset['x'] += node.ContentOffset['x'] + node.getPosition()['x'];
+    offset['y'] += node.ContentOffset['y'] + node.getPosition()['y'];
 
     var containerId = node.getContainerId();
     if (containerId) {
@@ -784,7 +782,7 @@ DvtDiagramLayoutContextLink.prototype.setPromoted = function(bPromoted) {
 DvtDiagramLayoutContextLink.prototype.isPromoted = function() {
   return this._bPromoted;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -828,6 +826,9 @@ DvtDiagramLayoutContextNode.prototype.Init = function(node) {
   this._origBounds = node ? node._origBounds : null;
   this._origContentBounds = node ? node._origContentBounds : null;
   this._bDisclosed = node ? node._bDisclosed : false;
+  this.Component = node ? node.GetDiagram() : null;
+  this.IsRendered = true;
+  this.ContentOffset = new DvtDiagramPoint(0, 0); //used by global layout for nodes inside container
 };
 
 
@@ -871,6 +872,8 @@ DvtDiagramLayoutContextNode.prototype.setBounds = function(bounds) {
  * @export
  */
 DvtDiagramLayoutContextNode.prototype.getBounds = function() {
+  if (!this.IsRendered && this.Component)
+    this.Component.renderNodeFromContext(this);
   return this._bounds;
 };
 
@@ -895,6 +898,8 @@ DvtDiagramLayoutContextNode.prototype.setContentBounds = function(bounds) {
  * @export
  */
 DvtDiagramLayoutContextNode.prototype.getContentBounds = function() {
+  if (!this.IsRendered && this.Component)
+    this.Component.renderNodeFromContext(this);
   return this._contentBounds;
 };
 
@@ -907,8 +912,8 @@ DvtDiagramLayoutContextNode.prototype.getContentBounds = function() {
  */
 DvtDiagramLayoutContextNode.prototype.setPosition = function(pos) {
   this._position = pos;
+  this._updateParentNodes(this);
 };
-
 
 /**
  * Get the position of the node.  The position is in the coordinate system of
@@ -1212,6 +1217,58 @@ DvtDiagramLayoutContextNode.prototype.setDisclosed = function(bDisclosed) {
 DvtDiagramLayoutContextNode.prototype.isDisclosed = function() {
   return this._bDisclosed;
 };
+
+
+/**
+ * @protected
+ * Set child nodes for the container. Child nodes are populated for global layout only.
+ * @param {array} childNodes array of DvtDiagramLayoutContextNode objects
+ */
+DvtDiagramLayoutContextNode.prototype.setChildNodes = function(childNodes) {
+  this._childNodes = childNodes;
+};
+
+/**
+ * Visible child nodes for the disclosed container. Child nodes are populated for global layout only.
+ * @return {array} array of DvtDiagramLayoutContextNode objects
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.getChildNodes = function() {
+  return this._childNodes;
+};
+
+/**
+ * @protected
+ * Set parent node. The member is populated for global layout option
+ * @param {DvtDiagramLayoutContextNode} parentNode parent node
+ */
+DvtDiagramLayoutContextNode.prototype.setParentNode = function(parentNode) {
+  this._parentNode = parentNode;
+};
+
+/**
+ * Get parent node. The member is populated for global layout option.
+ * @return {DvtDiagramLayoutContextNode} parent node
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.getParentNode = function() {
+  return this._parentNode;
+};
+
+/**
+ * Resets IsRendered flag for parent nodes.
+ * Relevant for global layout option, when parent container is already rendered, but a child node changes position
+ * the parent node should be marked as not rendered
+ * @param {DvtDiagramLayoutContextNode} node current node
+ * @private
+ */
+DvtDiagramLayoutContextNode.prototype._updateParentNodes = function(node) {
+  var parent = node.getParentNode();
+  if (parent && parent.IsRendered) {
+    parent.IsRendered = false;
+    this._updateParentNodes(parent);
+  }
+};
 // Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1423,7 +1480,7 @@ DvtBaseDiagram.prototype.RenderComponentInternal = function(animator) {
  * @param {string} id node id
  * @return {DvtBaseDiagramNode} diagram node
  */
-DvtBaseDiagram.prototype.GetNodeById = function(id) {
+DvtBaseDiagram.prototype.getNodeById = function(id) {
   return null;
 };
 
@@ -1432,7 +1489,7 @@ DvtBaseDiagram.prototype.GetNodeById = function(id) {
  * @param {string} id link id
  * @return {DvtBaseDiagramLink} diagram link
  */
-DvtBaseDiagram.prototype.GetLinkById = function(id) {
+DvtBaseDiagram.prototype.getLinkById = function(id) {
   return null;
 };
 
@@ -1507,7 +1564,7 @@ DvtBaseDiagram.prototype.RefreshEmptyText = function(emptyDiagram) {
  */
 DvtBaseDiagram.prototype.CreateEmptyText = function(text) {
   var options = this.getOptions();
-  return DvtTextUtils.renderEmptyText(this, text, new DvtRectangle(0, 0, this.getWidth(), this.getHeight()), this.__getEventManager(), options['_statusMessageStyle']);
+  return DvtTextUtils.renderEmptyText(this, text, new DvtRectangle(0, 0, this.getWidth(), this.getHeight()), this.getEventManager(), options['_statusMessageStyle']);
 };
 
 /**
@@ -1632,7 +1689,7 @@ DvtBaseDiagram.prototype.setSelectionMode = function(selectionMode) {
     this._selectionHandler = null;
 
   // Event Handler delegates to other handlers
-  this.__getEventManager().setSelectionHandler(this._selectionHandler);
+  this.getEventManager().setSelectionHandler(this._selectionHandler);
 };
 
 /**
@@ -1659,7 +1716,7 @@ DvtBaseDiagram.prototype.isSelectionSupported = function() {
 /**
  * @override
  */
-DvtBaseDiagram.prototype.__getEventManager = function() {
+DvtBaseDiagram.prototype.getEventManager = function() {
   return this._eventHandler;
 };
 
@@ -1728,9 +1785,10 @@ DvtBaseDiagram.prototype.CreateEmptyLayoutContext = function() {
  * Creates layout context for the node
  * @param {DvtBaseDiagramNode} node diagram node
  * @param {string} layout layout name
+ * @param {boolean} bRenderAfter flag that indicates that node is not rendered yet, it will be render during layout or after layout is done
  * @return {DvtDiagramLayoutContextNode} layout context for the node
  */
-DvtBaseDiagram.prototype.CreateLayoutContextNode = function(node, layout) {
+DvtBaseDiagram.prototype.CreateLayoutContextNode = function(node, layout, bRenderAfter) {
   var nc = new DvtDiagramLayoutContextNode();
   nc.setId(node.getId ? node.getId() : node.getData().getId());
   //BUG FIX #13381683: set both the content bounds and the overall bounds of
@@ -1747,6 +1805,8 @@ DvtBaseDiagram.prototype.CreateLayoutContextNode = function(node, layout) {
     nc.SetContainerPaddingObj(DvtBaseDiagram.getLayoutContainerPadding(node.getContainerPadding()));
   }
   nc.setContainerId(node.getData().getGroupId ? node.getData().getGroupId() : null);
+  nc.Component = this;
+  nc.IsRendered = !bRenderAfter;
   return nc;
 };
 
@@ -1776,6 +1836,7 @@ DvtBaseDiagram.prototype.CreateLayoutContextLink = function(link, startId, endId
 
 /**
  * @protected
+ * Apply the layout context
  * @param {DvtDiagramLayoutContext} layoutContext The layout context
  * @param {DvtAnimator} animator The animator to animate the changes into
  * @param {boolean} bSaveOffset Flag for saving the layout offset (true for the top level)
@@ -1786,7 +1847,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
   if (topContainerPadding) {
     var containerId = layoutContext.getContainerId();
     if (containerId) {
-      var containerNode = this.GetNodeById(containerId);
+      var containerNode = this.getNodeById(containerId);
       if (containerNode) {
         containerNode.setContainerPadding(DvtBaseDiagram.getContainerPadding(topContainerPadding), animator);
       }
@@ -1798,7 +1859,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
   var miny = Number.MAX_VALUE;
   for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
     var nc = layoutContext.getNodeByIndex(ni);
-    var node = this.GetNodeById(nc.getId());
+    var node = this.getNodeById(nc.getId());
     var pos = nc.getPosition();
     if (pos) {
       minx = Math.min(minx, pos['x']);
@@ -1813,7 +1874,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
   }
   for (var li = 0; li < layoutContext.getLinkCount(); li++) {
     var lc = layoutContext.getLinkByIndex(li);
-    var link = this.GetLinkById(lc.getId());
+    var link = this.getLinkById(lc.getId());
     var points = lc.getPoints();
     if (points) {
       var controlPoints = DvtDiagramLinkUtils.GetControlPoints(points);
@@ -1838,7 +1899,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
 
   for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
     var nc = layoutContext.getNodeByIndex(ni);
-    var node = this.GetNodeById(nc.getId());
+    var node = this.getNodeById(nc.getId());
     var pos = nc.getPosition();
     if (pos) {
       node.SetPosition(pos['x'] + tx, pos['y'] + ty, animator);
@@ -1897,7 +1958,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
   if (!this._bCrossedZoomThreshold) {
     for (var li = 0; li < layoutContext.getLinkCount(); li++) {
       var lc = layoutContext.getLinkByIndex(li);
-      var link = this.GetLinkById(lc.getId());
+      var link = this.getLinkById(lc.getId());
       var points = lc.getPoints();
       if (points) {
         //: turn list of points into path commands compatible for animating
@@ -2008,7 +2069,7 @@ DvtBaseDiagram.prototype.GetLayoutViewport = function(animator) {
     //because that doesn't take into account any positions stored in
     //the animator)
     if (this._layoutViewportContainerId) {
-      var node = this.GetNodeById(this._layoutViewportContainerId);
+      var node = this.getNodeById(this._layoutViewportContainerId);
       while (node) {
         //use the position stored in the animator, if available
         var tx = node.getTranslateX();
@@ -2030,7 +2091,7 @@ DvtBaseDiagram.prototype.GetLayoutViewport = function(animator) {
 
         var containerId = node.getData().getGroupId ? node.getData().getGroupId() : null;
         if (containerId) {
-          node = this.GetNodeById(containerId);
+          node = this.getNodeById(containerId);
         }
         else {
           node = null;
@@ -2153,7 +2214,7 @@ DvtBaseDiagram.prototype.CalcViewBounds = function(animator, arNodeIds, arLinkId
 
   for (var i = 0; i < arNodeIds.length; i++) {
     nodeId = arNodeIds[i];
-    node = this.GetNodeById(nodeId);
+    node = this.getNodeById(nodeId);
     //BUG FIX #16472982: don't take hidden ancestor node into account
     //when calculating view bounds
     if (node && node.getVisible() && !node.isHiddenAncestor()) {
@@ -2210,7 +2271,7 @@ DvtBaseDiagram.prototype.CalcViewBounds = function(animator, arNodeIds, arLinkId
 
   for (var i = 0; i < arLinkIds.length; i++) {
     linkId = arLinkIds[i];
-    link = this.GetLinkById(linkId);
+    link = this.getLinkById(linkId);
     if (link && link.getVisible()) {
       dims = link.GetLinkBounds(animator);
 
@@ -2465,6 +2526,26 @@ DvtBaseDiagram.getLayoutContainerPadding = function(containerPadding)
   return layoutContainerPadding;
 };
 
+/**
+ * Render node and updates corresponding layout context for the node
+ * @param {DvtDiagramLayoutContextNode} nodeContext
+ */
+DvtBaseDiagram.prototype.renderNodeFromContext = function(nodeContext) {
+  //subclasses should override
+};
+
+
+/**
+ * Updates layout context for the node
+ * @param {DvtDiagramLayoutContextNode} nodeContext node context
+ * @param {DvtBaseDiagramNode} node diagram node
+ */
+DvtBaseDiagram.prototype.UpdateNodeLayoutContext = function(nodeContext, node) {
+  nodeContext.setBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds()));
+  nodeContext.setContentBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
+  nodeContext.setLabelBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds()));
+  nodeContext.IsRendered = true;
+};
 // Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -4091,7 +4172,7 @@ DvtDiagram.prototype._onAnimationEnd = function() {
   if (this._animation) {
     this._animation = null;
     // Restore event listeners
-    this.__getEventManager().addListeners(this);
+    this.getEventManager().addListeners(this);
   }
 };
 
@@ -4122,7 +4203,12 @@ DvtDiagram.prototype.RenderComponentInternal = function(animator) {
     this.renderNodes();
     this.renderLinks();
     //check whether nodes were filtered out
-    emptyDiagram = Object.keys(this._nodes).length === 0;
+    //Object.keys is not available on REL13 so we need to generate the keys to array ourselves
+    var keys = [];
+    for (var key in this._nodes) {
+      keys.push(key);
+    }
+    emptyDiagram = keys.length === 0;
     this.getCtx().setKeyboardFocusArray([this]);
     this._renderCount++;
   }
@@ -4199,9 +4285,9 @@ DvtDiagram.prototype._processContent = function(animator, bEmptyDiagram) {
     }
     // If an animation was created, play it
     if (this._animation) {
-      this.__getEventManager().hideTooltip();
+      this.getEventManager().hideTooltip();
       // Disable event listeners temporarily
-      this.__getEventManager().removeListeners(this);
+      this.getEventManager().removeListeners(this);
       this._animation.setOnEnd(this._onAnimationEnd, this);
       this._animation.play();
     } else {
@@ -4328,7 +4414,7 @@ DvtDiagram.prototype.processEvent = function(event, source) {
     this._processHighlighting();
   }
   if (event) {
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 };
 
@@ -4375,8 +4461,8 @@ DvtDiagram.prototype.renderLinks = function() {
     this._arLinkIds.push(linkId);
     this._links[linkId] = link;
 
-    var startNode = this.GetNodeById(link.getStartId());
-    var endNode = this.GetNodeById(link.getEndId());
+    var startNode = this.getNodeById(link.getStartId());
+    var endNode = this.getNodeById(link.getEndId());
     startNode.addOutLinkId(linkId);
     endNode.addInLinkId(linkId);
   }
@@ -4394,13 +4480,13 @@ DvtDiagram.prototype.layout = function(animator) {
   };
   for (var n = 0; n < this._arNodeIds.length; n++) {
     var nodeId = this._arNodeIds[n];
-    if (!this.GetNodeById(nodeId))
+    if (!this.getNodeById(nodeId))
       continue;
     nodeIds[nodeId] = true;
-    layoutContext.addNode(this.CreateLayoutContextNode(this.GetNodeById(nodeId)));
+    layoutContext.addNode(this.CreateLayoutContextNode(this.getNodeById(nodeId)));
   }
   for (var linkId in this._links) {
-    var link = this.GetLinkById(linkId);
+    var link = this.getLinkById(linkId);
     if (!link)
       continue;
     var startId = link.getData()['startNode'];
@@ -4451,14 +4537,14 @@ DvtDiagram.prototype.setAlphas = function(alpha) {
 /**
  * @override
  */
-DvtDiagram.prototype.GetNodeById = function(id) {
+DvtDiagram.prototype.getNodeById = function(id) {
   return this._nodes[id];
 };
 
 /**
  * @override
  */
-DvtDiagram.prototype.GetLinkById = function(id) {
+DvtDiagram.prototype.getLinkById = function(id) {
   return this._links[id];
 };
 
@@ -4528,7 +4614,7 @@ DvtDiagram.prototype.HandleZoomEvent = function(event) {
     case DvtZoomEvent.SUBTYPE_ZOOMED:
       if (this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
         for (var nodeId in this._nodes) {
-          var node = this.GetNodeById(nodeId);
+          var node = this.getNodeById(nodeId);
           node.rerenderOnZoom(event);
         }
       }
@@ -4552,7 +4638,7 @@ DvtDiagram.prototype.prepareForDataChange = function() {
 DvtDiagram.prototype.getNavigableLinksForNodeId = function(nodeId) {
   var links = [];
   for (var linkId in this._links) {
-    var link = this.GetLinkById(linkId);
+    var link = this.getLinkById(linkId);
     var startId = link.getStartId();
     var endId = link.getEndId();
 
@@ -4580,10 +4666,10 @@ DvtDiagram.prototype._processInitialSelections = function() {
   if (this.isSelectionSupported()) {
     var targets = [];
     for (var nodeId in this._nodes) {
-      targets.push(this.GetNodeById(nodeId));
+      targets.push(this.getNodeById(nodeId));
     }
     for (var linkId in this._links) {
-      targets.push(this.GetLinkById(linkId));
+      targets.push(this.getLinkById(linkId));
     }
     this.getSelectionHandler().processInitialSelections(this.Options['selection'], targets);
   }
@@ -4609,7 +4695,7 @@ DvtDiagram.prototype._processHighlighting = function() {
   var highlightedNodes = [];
   //find highlighted nodes
   for (var nodeId in this._nodes) {
-    var node = this.GetNodeById(nodeId);
+    var node = this.getNodeById(nodeId);
     var match = bAnyMatched ? DvtArrayUtils.hasAnyItem(node.getCategories(), categories) :
                 DvtArrayUtils.hasAllItems(node.getCategories(), categories);
     if (match) {
@@ -4622,7 +4708,7 @@ DvtDiagram.prototype._processHighlighting = function() {
   //find highlighted links
   var highlightedLinks = [];
   for (var linkId in this._links) {
-    var link = this.GetLinkById(linkId);
+    var link = this.getLinkById(linkId);
     var match = bAnyMatched ? DvtArrayUtils.hasAnyItem(link.getCategories(), categories) :
                 DvtArrayUtils.hasAllItems(link.getCategories(), categories);
     if (match) {
@@ -4656,8 +4742,8 @@ DvtDiagram.prototype._processNodeConnections = function(highlightedNodes) {
       links = outgoing && node.getOutLinkIds() ? links.concat(node.getOutLinkIds()) : links;
       for (var idx = 0; idx < links.length; idx++) {
         var linkId = links[idx];
-        this._highlightedObjects[linkId] = this.GetLinkById(linkId);
-        highlightedLinks.push(this.GetLinkById(linkId));
+        this._highlightedObjects[linkId] = this.getLinkById(linkId);
+        highlightedLinks.push(this.getLinkById(linkId));
       }
     }
     this._processLinkConnections(highlightedLinks);
@@ -4674,8 +4760,8 @@ DvtDiagram.prototype._processLinkConnections = function(highlightedLinks) {
     var link = highlightedLinks[linkIdx];
     var linkStartId = link.getStartId();
     var linkEndId = link.getEndId();
-    this._highlightedObjects[linkStartId] = this.GetNodeById(linkStartId);
-    this._highlightedObjects[linkEndId] = this.GetNodeById(linkEndId);
+    this._highlightedObjects[linkStartId] = this.getNodeById(linkStartId);
+    this._highlightedObjects[linkEndId] = this.getNodeById(linkEndId);
   }
 };
 
@@ -4768,7 +4854,7 @@ DvtDiagram.prototype.Log = function(message, level) {
  * @export
  */
 DvtDiagram.prototype.processDefaultHoverEffect = function(nodeId, hovered) {
-  var node = this.GetNodeById(nodeId);
+  var node = this.getNodeById(nodeId);
   if (node)
     node.processDefaultHoverEffect(hovered);
 };
@@ -4780,7 +4866,7 @@ DvtDiagram.prototype.processDefaultHoverEffect = function(nodeId, hovered) {
  * @export
  */
 DvtDiagram.prototype.processDefaultSelectionEffect = function(nodeId, selected) {
-  var node = this.GetNodeById(nodeId);
+  var node = this.getNodeById(nodeId);
   if (node)
     node.processDefaultSelectionEffect(selected);
 };
@@ -4792,9 +4878,20 @@ DvtDiagram.prototype.processDefaultSelectionEffect = function(nodeId, selected) 
  * @export
  */
 DvtDiagram.prototype.processDefaultFocusEffect = function(nodeId, focused) {
-  var node = this.GetNodeById(nodeId);
+  var node = this.getNodeById(nodeId);
   if (node)
     node.processDefaultFocusEffect(focused);
+};
+
+/**
+ * @override
+ */
+DvtDiagram.prototype.renderNodeFromContext = function(nodeContext) {
+  var node = this.getNodeById(nodeContext.getId());
+  if (!node.IsRendered()) {
+    node.render(this.getNodesPane());
+    this.UpdateNodeLayoutContext(nodeContext, node);
+  }
 };
 /**
  * Category rollover handler for Diagram
@@ -5089,7 +5186,7 @@ DvtDiagramEventManager.prototype.StoreInfoByEventType = function(key) {
   }
   return DvtDiagramEventManager.superclass.StoreInfoByEventType.call(this, key);
 };
-// Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
  *  @constructor
@@ -5149,7 +5246,7 @@ DvtDiagramKeyboardHandler.prototype.processKeyDown = function(event) {
  * @override
  */
 DvtDiagramKeyboardHandler.prototype.GetVisibleNode = function(nodeId) {
-  return this.GetDiagram().GetNodeById(nodeId);
+  return this.GetDiagram().getNodeById(nodeId);
 };
 // Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
 var DvtDiagramLayoutUtils = {};
@@ -5406,7 +5503,7 @@ DvtDiagramLink.prototype.render = function(container) {
   container.addChild(this);
   this.setAriaRole('img');
   this.UpdateAriaLabel();
-  this._diagram.__getEventManager().associate(this, this);
+  this._diagram.getEventManager().associate(this, this);
 };
 
 /**
@@ -5672,12 +5769,12 @@ DvtDiagramLink.prototype.getNextNavigable = function(event)
     //if the focus was set through mouse click, set start node as a center of navigation
     var node = this.getKeyboardFocusNode();
     if (!node)
-      node = this.GetDiagram().GetNodeById(this.GetDiagram().getLinkStartId(this));
+      node = this.GetDiagram().getNodeById(this.GetDiagram().getLinkStartId(this));
 
     //find next link - if up counter-clockwise, down - clockwise
     var nextLink = this;
     var links = this.GetDiagram().getNavigableLinksForNodeId(node.getId());
-    var keyboardHandler = this.GetDiagram().__getEventManager().getKeyboardHandler();
+    var keyboardHandler = this.GetDiagram().getEventManager().getKeyboardHandler();
     if (keyboardHandler && keyboardHandler.getNextNavigableLink)
       nextLink = keyboardHandler.getNextNavigableLink(node, this, event, links);
 
@@ -5691,7 +5788,7 @@ DvtDiagramLink.prototype.getNextNavigable = function(event)
       nodeId = this.getStartId();
     else
       nodeId = this.getEndId();
-    return this.GetDiagram().GetNodeById(nodeId);
+    return this.GetDiagram().getNodeById(nodeId);
   }
   else if (event.type == DvtMouseEvent.CLICK) {
     return this;
@@ -5756,7 +5853,7 @@ DvtDiagramLink.prototype.isHidden = function() {
   if (hiddenCategories && DvtArrayUtils.hasAnyItem(hiddenCategories, this.getCategories())) {
     return true;
   }
-  if (! (this.GetDiagram().GetNodeById(this.getStartId()) && this.GetDiagram().GetNodeById(this.getEndId()))) {
+  if (! (this.GetDiagram().getNodeById(this.getStartId()) && this.GetDiagram().getNodeById(this.getEndId()))) {
     return true;
   }
   return false;
@@ -6760,7 +6857,7 @@ DvtDiagramNode.prototype.render = function(container) {
   this._contentDims = this._calcContentDims();
   this.setAriaRole('img');
   this.UpdateAriaLabel();
-  this._diagram.__getEventManager().associate(this, this);
+  this._diagram.getEventManager().associate(this, this);
 };
 
 /**
@@ -7150,7 +7247,7 @@ DvtDiagramNode.prototype.getNextNavigable = function(event) {
       event.altKey) {
     //get first navigable link if exists
     var adjLinks = this.GetDiagram().getNavigableLinksForNodeId(this.getId());
-    var keyboardHandler = this.GetDiagram().__getEventManager().getKeyboardHandler();
+    var keyboardHandler = this.GetDiagram().getEventManager().getKeyboardHandler();
     if (keyboardHandler && keyboardHandler.getFirstNavigableLink)
       next = keyboardHandler.getFirstNavigableLink(this, event, adjLinks);
     if (next)
@@ -7400,7 +7497,7 @@ DvtDiagramAutomation.prototype.Init = function(dvtComponent) {
  * @override
  */
 DvtDiagramAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var logicalObj = this._diagram.__getEventManager().GetLogicalObject(displayable);
+  var logicalObj = this._diagram.getEventManager().GetLogicalObject(displayable);
   if (logicalObj && (logicalObj instanceof DvtDiagramNode)) {
     return 'node[' + this._diagram.GetAllNodes().indexOf(logicalObj.getId()) + ']';
   }
@@ -7545,7 +7642,7 @@ DvtDiagramAutomation.prototype._getMarkerData = function(marker) {
  */
 DvtDiagramAutomation.prototype._getNode = function(nodeIndex) {
   var nodeIds = this._diagram.GetAllNodes();
-  return (nodeIndex >= 0 && nodeIndex < nodeIds.length) ? this._diagram.GetNodeById(nodeIds[nodeIndex]) : null;
+  return (nodeIndex >= 0 && nodeIndex < nodeIds.length) ? this._diagram.getNodeById(nodeIds[nodeIndex]) : null;
 };
 
 /**
@@ -7556,7 +7653,7 @@ DvtDiagramAutomation.prototype._getNode = function(nodeIndex) {
  */
 DvtDiagramAutomation.prototype._getLink = function(linkIndex) {
   var linkIds = this._diagram.GetAllLinks();
-  return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._diagram.GetLinkById(linkIds[linkIndex]) : null;
+  return (linkIndex >= 0 && linkIndex < linkIds.length) ? this._diagram.getLinkById(linkIds[linkIndex]) : null;
 };
 
   return D;

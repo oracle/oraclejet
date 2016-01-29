@@ -75,6 +75,13 @@ oj.ArrayTableDataSource = function(data, options)
         (
           function(changes) 
           {
+            if (!self._isDataLoaded())
+            {
+              // don't bother with data change notifications
+              // if the data hasn't even been loaded yet (e.g. initial 
+              // fetch hasn't happened
+              return;
+            }
             var i, j;
             
             // do two passes, first for deletes and the second for adds
@@ -548,11 +555,21 @@ oj.ArrayTableDataSource.prototype._addToRowSet = function(m, index, options)
 
 oj.ArrayTableDataSource.prototype._checkDataLoaded = function()
 {
-  if (this._rows == null || this._rows['data'] == null)
+  if (!this._isDataLoaded())
   {
     this._rows = this._getRowArray(this._data);
     this._totalSize = this._data.length;
   }
+}
+
+oj.ArrayTableDataSource.prototype._isDataLoaded = function()
+{
+  if (this._rows == null || this._rows['data'] == null)
+  {
+    return false;
+  }
+  
+  return true;
 }
 
 oj.ArrayTableDataSource.prototype._fetchInternal = function(options)

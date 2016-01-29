@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtSubcomponent'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -31,7 +31,7 @@ DvtBaseTreeView.prototype.Init = function(context, callback, callbackObj) {
   DvtBaseTreeView.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the event handler and add event listeners
-  this._eventHandler = this.CreateEventManager(this, context, this.__dispatchEvent, this);
+  this._eventHandler = this.CreateEventManager(this, context, this.dispatchEvent, this);
   this._eventHandler.addListeners(this);
 
   // Drag and drop support
@@ -197,6 +197,10 @@ DvtBaseTreeView.prototype.render = function(options, width, height)
     this._processInitialHighlighting();
 
   this.UpdateAriaAttributes();
+
+  if (!this.Animation)
+    // If not animating, that means we're done rendering, so fire the ready event.
+    this.RenderComplete();
 };
 
 
@@ -322,7 +326,7 @@ DvtBaseTreeView.prototype.RenderEmptyText = function(container) {
   if (!emptyText)
     emptyText = DvtBundle.getTranslation(options, 'labelNoData', DvtBundle.UTIL_PREFIX, 'NO_DATA');
 
-  DvtTextUtils.renderEmptyText(container, emptyText, new DvtRectangle(0, 0, this.Width, this.Height), this.__getEventManager(), options['_statusMessageStyle']);
+  DvtTextUtils.renderEmptyText(container, emptyText, new DvtRectangle(0, 0, this.Width, this.Height), this.getEventManager(), options['_statusMessageStyle']);
 };
 
 
@@ -369,12 +373,6 @@ DvtBaseTreeView.prototype.OnAnimationEnd = function() {
     this._oldContainer = null;
   }
 
-  // Reset the animation stopped flag
-  this.AnimationStopped = false;
-
-  // Remove the animation reference
-  this.Animation = null;
-
   // Restore event listeners
   this._eventHandler.addListeners(this);
 
@@ -383,6 +381,15 @@ DvtBaseTreeView.prototype.OnAnimationEnd = function() {
 
   // Process the highlightedCategories
   this._processInitialHighlighting();
+
+  if (!this.AnimationStopped)
+    this.RenderComplete();
+
+  // Reset the animation stopped flag
+  this.AnimationStopped = false;
+
+  // Remove the animation reference
+  this.Animation = null;
 };
 
 
@@ -470,7 +477,7 @@ DvtBaseTreeView.prototype.select = function(selection) {
 /**
  * @override
  */
-DvtBaseTreeView.prototype.__getEventManager = function() {
+DvtBaseTreeView.prototype.getEventManager = function() {
   return this._eventHandler;
 };
 
@@ -822,10 +829,10 @@ DvtBaseTreeView.prototype.__drill = function(id, bDrillUp) {
     this.__setNavigableIdToFocus(id);
 
     // Drill up only supported on the root node
-    this.__dispatchEvent(new DvtDrillReplaceEvent(this._ancestors[0].id));
+    this.dispatchEvent(new DvtDrillReplaceEvent(this._ancestors[0].id));
   }
   else if (!bDrillUp) // Fire the event
-    this.__dispatchEvent(new DvtDrillReplaceEvent(id));
+    this.dispatchEvent(new DvtDrillReplaceEvent(id));
 
   // Hide any tooltips being shown
   this.getCtx().getTooltipManager().hideTooltip();
@@ -2552,7 +2559,7 @@ DvtTreeLegendRenderer.render = function(treeView, availSpace, attrGroups) {
     return;
 
   var context = treeView.getCtx();
-  var eventManager = treeView.__getEventManager();
+  var eventManager = treeView.getEventManager();
 
   // Create the legend container and temporarily add to the component
   var legend = new DvtContainer(context);
@@ -2644,7 +2651,7 @@ DvtTreeLegendRenderer.render = function(treeView, availSpace, attrGroups) {
  */
 DvtTreeLegendRenderer._renderLabels = function(context, treeView, legend, availWidth, sizeValueStr, colorValueStr, attrGroups) {
   var isRTL = DvtAgent.isRightToLeft(context);
-  var eventManager = treeView.__getEventManager();
+  var eventManager = treeView.getEventManager();
   var styleDefaults = treeView.getOptions()['styleDefaults'];
 
   var labelContainer = null;

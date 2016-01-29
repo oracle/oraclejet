@@ -160,18 +160,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojTagCloud
  * @augments oj.dvtBaseComponent
  * @since 1.1.0
- * 
+ *
  * @classdesc
  * <h3 id="tagCloudOverview-section">
  *   JET Tag Cloud Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#tagCloudOverview-section"></a>
  * </h3>
- * 
- * <p>TagClouds are used to display text data with 
+ *
+ * <p>TagClouds are used to display text data with
  * the importance of each tag shown with font size or color.</p>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;div data-bind="ojComponent: {
@@ -183,68 +183,70 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * }"/>
  * </code>
  * </pre>
- * 
+ *
  * {@ojinclude "name":"a11yKeyboard"}
- * 
- * <p>When using font colors as a data dimension for Tag Clouds, the application 
- * needs to ensure that they meet minimum contrast requirements. Not all colors 
- * in the default value ramp provided by oj.ColorAttributeGroupHandler  
+ *
+ * <p>When using font colors as a data dimension for Tag Clouds, the application
+ * needs to ensure that they meet minimum contrast requirements. Not all colors
+ * in the default value ramp provided by oj.ColorAttributeGroupHandler
  * will meet minimum contrast requirements.</p>
- * 
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"touchDoc"}
- * 
+ *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"keyboardDoc"}
- * 
+ *
  * <h3 id="perf-section">
  *   Performance
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
- * 
+ *
  * <h4>Animation</h4>
  * <p>Animation should only be enabled for visualizations of small to medium data sets. Alternate visualizations should
  *    be considered if identifying data changes is important, since all data items will generally move and resize on any data
  *    change.
  * </p>
- * 
+ *
  * <h4>Layout</h4>
  * <p>Rectangular layouts are faster than cloud layouts and are recommended for larger data sets.
  * </p>
- * 
+ *
  * <h4>Style Attributes</h4>
- * <p>Use the highest level options property available. For example, consider using  attributes on 
- *    <code class="prettyprint">styleDefaults.style</code>, instead of attributes on the individual items. The component can 
- *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM 
+ * <p>Use the highest level options property available. For example, consider using  attributes on
+ *    <code class="prettyprint">styleDefaults.style</code>, instead of attributes on the individual items. The component can
+ *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM
  *    calls.
  * </p>
- * 
+ *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
- * 
+ *
  * @desc Creates a JET TagCloud.
  * @example <caption>Initialize the TagCloud:</caption>
  * $(".selector").ojTagCloud({items: [
- *                  {label: 'the', value: 20}, 
- *                  {label: 'cat', value: 17}, 
- *                  {label: 'in', value: 6}, 
+ *                  {label: 'the', value: 20},
+ *                  {label: 'cat', value: 17},
+ *                  {label: 'in', value: 6},
  *                  {label: 'hat', value: 13}]});
  */
-oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'], 
+oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
 {
-  widgetEventPrefix : "oj", 
+  widgetEventPrefix : "oj",
   options: {
     /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic 
+     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
      * intervention. If the new value is the same as the previous value, no event will be fired.
-     * 
+     *
      * @property {Object} data event payload
      * @property {string} data.option the name of the option that changed, i.e. "value"
      * @property {Object} data.previousValue an Object holding the previous value of the option
@@ -252,36 +254,36 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
      * @property {Object} ui.optionMetadata information about the option that is changing
      * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
      *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
      * $(".selector").ojTagCloud({
-     *   'optionChange': function (event, data) {} 
+     *   'optionChange': function (event, data) {}
      * });
-     * 
+     *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
      * $(".selector").on({
      *   'ojoptionchange': function (event, data) {
      *       window.console.log("option changing is: " + data['option']);
      *   };
      * });
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojTagCloud
      * @instance
      */
     optionChange: null
   },
-  
+
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
     return dvt.DvtTagCloud.newInstance(context, callback, callbackObj);
   },
-    
+
   //** @inheritdoc */
   _ConvertLocatorToSubId : function(locator) {
     var subId = locator['subId'];
-    
+
     // Convert the supported locators
     if(subId == 'oj-tagcloud-item') {
       // item[index]
@@ -290,16 +292,16 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
     else if(subId == 'oj-tagcloud-tooltip') {
       subId = 'tooltip';
     }
-  
+
     // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
     // support for the old subId syntax in 1.2.0.
     return subId;
   },
-  
+
   //** @inheritdoc */
   _ConvertSubIdToLocator : function(subId) {
     var locator = {};
-    
+
     if(subId.indexOf('item') == 0) {
       // item[index]
       locator['subId'] = 'oj-tagcloud-item';
@@ -308,40 +310,40 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
     else if(subId == 'tooltip') {
       locator['subId'] = 'oj-tagcloud-tooltip';
     }
-  
+
     return locator;
   },
-  
+
   //** @inheritdoc */
   _GetComponentStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses.push('oj-tagcloud');
     return styleClasses;
   },
-  
+
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses['oj-tagcloud'] = {'path': 'styleDefaults/style', 'property': 'CSS_TEXT_PROPERTIES'};
     return styleClasses;
   },
-    
+
   //** @inheritdoc */
   _GetEventTypes : function() {
     return ['optionChange'];
   },
-  
+
   //** @inheritdoc */
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
-    
+
     // Safe to modify super's map because function guarentees a new map is returned
     var ret = this._super();
     ret['DvtUtilBundle.TAG_CLOUD'] = translations['componentName'];
     return ret;
   },
-  
+
   //** @inheritdoc */
   _HandleEvent : function(event) {
     var type = event && event.getType ? event.getType() : null;
@@ -353,9 +355,9 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
       this._super(event);
     }
   },
-  
+
   /**
-   * Returns an object with the following properties for automation testing verification of the item at the 
+   * Returns an object with the following properties for automation testing verification of the item at the
    * specified index.
 
    * @param {number} index The index.
@@ -383,14 +385,14 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
   getItemCount: function() {
     return this._component.getAutomation().getItemCount();
   },
-    
-  /** 
+
+  /**
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   * 
+   *
    * @example {@ojinclude "name":"nodeContextExample"}
-   * 
+   *
    * @expose
    * @instance
    * @memberof oj.ojTagCloud
@@ -403,7 +405,7 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
 
     return null;
   },
-  
+
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['items']};

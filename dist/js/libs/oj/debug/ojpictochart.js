@@ -69,6 +69,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    change.
  * </p>
  *
+ * {@ojinclude "name":"trackResize"}
+ *
  * <h3 id="layout-section">
  *   Layout
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#layout-section"></a>

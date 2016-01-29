@@ -82,6 +82,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    calls.
  * </p>
  *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
  *
  * @desc Creates a JET NBox.
@@ -166,8 +168,21 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
       subId += locator['groupCategory'] +']';
     }
     else if(subId == 'oj-nbox-node') {
-      // cell[row,column]#node[index]
-      subId = 'cell[' + locator['row'] + ',' + locator['column'] + ']#node[' + locator['index'] +']';
+      var index;
+      subId = '';
+
+      var id = locator['id'];
+      var auto = this._component.getAutomation();
+      if(id && auto)
+        index = auto.getNodeIndexFromId(id);
+      else {
+        index = locator['index'];
+        if(locator['row'] && locator['column']) {
+          // cell[row,column]#node[index]
+          subId = 'cell[' + locator['row'] + ',' + locator['column'] + ']#';
+        }
+      }
+      subId += 'node[' + index + ']';
     }
     else if(subId == 'oj-nbox-overflow') {
       // cell[row,col]#overflow
@@ -186,7 +201,15 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
   _ConvertSubIdToLocator : function(subId) {
     var locator = {};
 
-    if(subId.indexOf('cell') == 0) {
+    if (subId.indexOf('node') == 0) {
+      locator['subId'] = 'oj-nbox-node';
+
+      var index = this._GetFirstIndex(subId);
+      var auto = this._component.getAutomation();
+      if (auto)
+        locator['id'] = auto.getNodeIdFromIndex(index);
+    }
+    else if(subId.indexOf('cell') == 0) {
       // cell[row,column] or cell[row,column]#groupNode[groupCategory] or cell[row,column]#node[index]
       var cellIds = this._GetFirstBracketedString(subId);
       var commaIndex = cellIds.indexOf(',');
@@ -250,6 +273,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 
     styleClasses['oj-nbox-cell'] = {'path': 'styleDefaults/cellDefaults/style', 'property': 'CSS_BACKGROUND_PROPERTIES'};
     styleClasses['oj-nbox-cell oj-minimized'] = {'path': 'styleDefaults/cellDefaults/minimizedStyle', 'property': 'CSS_BACKGROUND_PROPERTIES'};
+    styleClasses['oj-nbox-cell oj-maximized'] = {'path': 'styleDefaults/cellDefaults/maximizedStyle', 'property': 'CSS_BACKGROUND_PROPERTIES'};
 
     styleClasses['oj-nbox-cell-label'] = {'path': 'styleDefaults/cellDefaults/labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-nbox-cell-countlabel'] = {'path': 'styleDefaults/cellDefaults/bodyCountLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
@@ -568,7 +592,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 
     return null;
   },
-  
+
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['cells', 'rows', 'columns', 'nodes']};
@@ -757,7 +781,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * <p>Sub-ID for NBox node at specified index in group node dialog.</p>
+ * <p>Deprecated Sub-ID for NBox node at specified index in group node dialog.</p>
  *
  * @property {number} index The index of the node in the dialog.
  *
@@ -766,6 +790,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  *
  * @example <caption>Get the first node in the group node dialog:</caption>
  * var nodes = $( ".selector" ).ojNBox( "getNodeBySubId", {'subId': 'oj-nbox-dialog-node', index: 0} );
+ * @deprecated Use 'id' based 'oj-nbox-node' Sub-ID below to avoid uncertainty from node reordering.
  */
 
 /**
@@ -797,18 +822,31 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * <p>Sub-ID for NBox node at specified index in specified cell.</p>
+ * <p>Sub-ID for NBox node with specified id.</p>
  *
- * @property {string} row The id of the row of the containing cell.
- * @property {string} column The id of the column of the containing cell.
- * @property {number} index The index of the node in the specified cell.
+ * @property {string} id The id of the node in the specified cell.
  *
  * @ojsubid oj-nbox-node
  * @memberof oj.ojNBox
  *
  * @example <caption>Get the first node in the specified cell:</caption>
- * var nodes = $( ".selector" ).ojNBox( "getNodeBySubId", {'subId': 'oj-nbox-node', row: 'low', column: 'high', index: 0} );
+ * var nodes = $( ".selector" ).ojNBox( "getNodeBySubId", {'subId': 'oj-nbox-node', 'id': 'employee1'} );
  */
+
+ /**
+  * <p>Deprecated sub-ID for NBox node at specified index in specified cell.</p>
+  *
+  * @property {string} row The id of the row of the containing cell.
+  * @property {string} column The id of the column of the containing cell.
+  * @property {number} index The index of the node in the specified cell.
+  *
+  * @ojsubid oj-nbox-node
+  * @memberof oj.ojNBox
+  *
+  * @example <caption>Get the first node in the specified cell:</caption>
+  * var nodes = $( ".selector" ).ojNBox( "getNodeBySubId", {'subId': 'oj-nbox-node', row: 'low', column: 'high', index: 0} );
+  * @deprecated Use 'id' based Sub-ID above to avoid uncertainty from node reordering.
+  */
 
 /**
  * <p>Sub-ID for NBox overflow button in specified cell.</p>
@@ -832,6 +870,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @example <caption>Get the tooltip object of the NBox, if displayed:</caption>
  * var nodes = $( ".selector" ).ojNBox( "getNodeBySubId", {'subId': 'oj-nbox-tooltip'} );
  */
+
 // Node Context Objects ********************************************************
 
 /**
@@ -852,15 +891,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * <p>Context for NBox node at specified index in group node dialog.</p>
- *
- * @property {number} index The index of the node in the dialog.
- *
- * @ojnodecontext oj-nbox-dialog-node
- * @memberof oj.ojNBox
- */
-
-/**
  * <p>Context for NBox group node with specified groupCategory value. When grouping is enabled within cells rather than
  * across cells, the row and column ids of the cell should be provided.</p>
  *
@@ -873,11 +903,9 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * <p>Context for NBox node at specified index in specified cell.</p>
+ * <p>Context for NBox node with specified id.</p>
  *
- * @property {string} row The id of the row of the containing cell.
- * @property {string} column The id of the column of the containing cell.
- * @property {number} index The index of the node in the specified cell.
+ * @property {string} id The id of the node.
  *
  * @ojnodecontext oj-nbox-node
  * @memberof oj.ojNBox

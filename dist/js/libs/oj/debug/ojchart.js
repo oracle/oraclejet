@@ -9,28 +9,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojSparkChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
- *  
+ *
  * @classdesc
  * <h3 id="sparkChartOverview-section">
  *   JET Spark Chart Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sparkChartOverview-section"></a>
  * </h3>
- * 
+ *
  * <p>Spark Chart component for JET with support for bar, line, area, and floating bar subtypes.  Spark Charts are
  * designed to visualize the trend of a data set in a compact form factor.</p>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;div data-bind="ojComponent: {
- *   component: 'ojSparkChart', 
- *   type: 'line', 
+ *   component: 'ojSparkChart',
+ *   type: 'line',
  *   items: [5, 8, 2, 7, 0, 9]
  * }"/>
  * </code>
  * </pre>
- * 
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -42,51 +42,58 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"keyboardDoc"}
  *
+ * <h3 id="perf-section">
+ *   Performance
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"a11y"}
- * 
+ *
  * {@ojinclude "name":"rtl"}
- * 
- * @desc Creates a JET Spark Chart. 
+ *
+ * @desc Creates a JET Spark Chart.
  * @example <caption>Initialize the Chart with no options specified:</caption>
  * $(".selector").ojSparkChart();
- * 
+ *
  * @example <caption>Initialize the Spark Chart with some options:</caption>
  * $(".selector").ojSparkChart({type: 'line', items: [5, 8, 2, 7, 0, 9]});
- * 
+ *
  * @example <caption>Initialize the Spark Chart via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojSparkChart'}">
  */
-oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'], 
+oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 {
-  widgetEventPrefix : "oj", 
+  widgetEventPrefix : "oj",
   options: {},
-  
+
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
     return dvt.DvtSparkChart.newInstance(context, callback, callbackObj);
-  },  
-  
+  },
+
   //** @inheritdoc */
   _GetComponentStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses.push('oj-sparkchart');
     return styleClasses;
   },
-  
+
   //** @inheritdoc */
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
-    
+
     // Safe to modify super's map because function guarentees a new map is returned
     var ret = this._super();
     ret['DvtUtilBundle.CHART'] = translations['componentName'];
     return ret;
   },
-  
+
   //** @inheritdoc */
   _Render : function() {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
@@ -98,11 +105,11 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
     }
     else if (this.element.data('title'))
       this.options['shortDesc'] =  this.element.data('title');
-  
+
     // Call the super to render
     this._super();
-  },  
-  
+  },
+
   /**
    * Returns a SparkChartDataItem object for automation testing verification.
    * @param {String} itemIndex The dataItem index
@@ -115,12 +122,13 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
     var auto = this._component.getAutomation();
     return new oj.SparkChartDataItem(auto.getDataItem(itemIndex));
   },
-  
+
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['items']};
   }
 });
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -603,6 +611,8 @@ oj.SparkChartDataItem.prototype.getValue = function() {
  *    containers, saving expensive DOM calls.
  * </p>
  *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
  *
  * @desc Creates a JET Chart.
@@ -790,8 +800,8 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        *
        * @property {Object} ui event payload
        * @property {string} ui.id the id of the drilled object
-       * @property {string} ui.series the series name of the drilled object, if applicable
-       * @property {string} ui.group the group name of the drilled object, if applicable
+       * @property {string} ui.series the series id of the drilled object, if applicable
+       * @property {string} ui.group the group id of the drilled object, if applicable
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
        * $(".selector").ojChart({
@@ -936,6 +946,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     _GetChildStyleClasses: function() {
       var styleClasses = this._super();
       styleClasses['oj-chart-data-label'] = {'path': 'styleDefaults/dataLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
+      styleClasses['oj-chart-stack-label'] = {'path': 'styleDefaults/stackLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-footnote'] = {'path': 'footnote/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-pie-center-label'] = {'path': 'pieCenterLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-slice-label'] = {'path': 'styleDefaults/sliceLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
@@ -1399,6 +1410,18 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     //** @inheritdoc */
     _GetComponentDeferredDataPaths : function() {
       return {'root': ['groups', 'series']};
+    },
+    
+    /**
+     * Returns a promise that is resolved when the component is finished rendering.
+     * This can be used to determine when it is okay to call automation and other APIs on the component.
+     * @returns {Promise}
+     * @expose
+     * @instance
+     * @memberof oj.ojChart
+     */
+    whenReady : function() {
+      return this._super();
     }
   });
 

@@ -1,14 +1,4776 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * Chart component.
+ * @param {DvtContext} context The rendering context.
+ * @param {function} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
+ * @class
+ * @constructor
+ * @extends {DvtBaseComponent}
+ * @export
+ */
+var DvtChart = function(context, callback, callbackObj) {
+  this.Init(context, callback, callbackObj);
+};
+
+DvtObj.createSubclass(DvtChart, DvtBaseComponent, 'DvtChart');
+
+
+/**
+ * Returns a new instance of DvtChart.
+ * @param {DvtContext} context The rendering context.
+ * @param {string} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
+ * @return {DvtChart}
+ * @export
+ */
+DvtChart.newInstance = function(context, callback, callbackObj) {
+  return new DvtChart(context, callback, callbackObj);
+};
+
+
+/**
+ * Returns a copy of the default options for the specified skin.
+ * @param {string} skin The skin whose defaults are being returned.
+ * @return {object} The object containing defaults for this component.
+ * @export
+ */
+DvtChart.getDefaults = function(skin) {
+  return (new DvtChartDefaults()).getDefaults(skin);
+};
+
+
+/**
+ * @override
+ */
+DvtChart.prototype.Init = function(context, callback, callbackObj) {
+  DvtChart.superclass.Init.call(this, context, callback, callbackObj);
+
+  // Create the defaults object
+  this.Defaults = new DvtChartDefaults();
+
+  // Create the event handler and add event listeners
+  this.EventManager = new DvtChartEventManager(this);
+  this.EventManager.addListeners(this);
+
+  // Set up keyboard handler on non-touch devices
+  if (!DvtAgent.isTouchDevice())
+    this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
+
+  // Make sure the object has an id for clipRect naming
+  this.setId('chart' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
+
+  /**
+   * Reference to animation in progress.
+   * @private
+   */
+  this._animation = null;
+
+  /**
+   * The legend of the chart.  This will be set during render time.
+   * @type {DvtLegend}
+   */
+  this.legend = null;
+  /**
+   * The x axis of the chart.  This will be set during render time.
+   * @type {DvtChartAxis}
+   */
+  this.xAxis = null;
+  /**
+   * The y axis of the chart.  This will be set during render time.
+   * @type {DvtChartAxis}
+   */
+  this.yAxis = null;
+  /**
+   * The y2 axis of the chart.  This will be set during render time for dual-y graphs.
+   * @type {DvtChartAxis}
+   */
+  this.y2Axis = null;
+  /**
+   * The overview scrollbar of the chart.  This will be set during render time.
+   * @type {DvtChartOverview}
+   */
+  this.overview = null;
+  /**
+   * The x-axis simple scrollbar of the chart.  This will be set during render time.
+   * @type {DvtSimpleScrollbar}
+   */
+  this.xScrollbar = null;
+  /**
+   * The y-axis simple scrollbar of the chart.  This will be set during render time.
+   * @type {DvtSimpleScrollbar}
+   */
+  this.yScrollbar = null;
+  /**
+   * The drag mode buttons of the chart.  This will be set during render time.
+   * @type {DvtContainer}
+   */
+  this.dragButtons = null;
+  /**
+   * The pie chart subcomponent.  This will be set during render time for pie graphs.
+   * @type {DvtPieChart}
+   */
+  this.pieChart = null;
+
+  /**
+   * The array of logical objects for this chart.
+   * @protected
+   */
+  this.Peers = [];
+
+  /**
+   * Array to make sure that the styles of the series don't mutate of data change.
+   * @protected
+   */
+  this.SeriesStyleArray = [];
+
+  /**
+   * Cache for storing the results of expensive computations.
+   * @protected
+   */
+  this.Cache = {};
+
+  // Support for changing z-order for selection
+  this._numFrontObjs = 0;
+  this._numSelectedObjsInFront = 0;
+
+  /** @private */
+  this._dataLabels = null;
+
+  /**
+   * Reference to user options before it's processed and used to create the chart.
+   * @private
+   */
+  this._rawOptions = null;
+};
+
+/**
+ * @override
+ */
+DvtChart.prototype.GetComponentDescription = function() 
+{
+  var options = this.getOptions();
+  var compName = DvtBundle.getTranslation(options, 'componentName', DvtBundle.UTIL_PREFIX, 'CHART');
+
+  var compDesc = '';
+  var delimiter = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER');
+  if (options['title']['text']) {
+    compDesc += this.Options['title']['text'];
+    if (options['subtitle']['text'])
+      compDesc += delimiter + this.Options['subtitle']['text'];
+  }
+  if (options['footnote']['text'])
+    compDesc = (compDesc.length == 0) ? this.Options['footnote']['text'] : compDesc.concat(delimiter, this.Options['footnote']['text']);
+
+  if (compDesc.length > 0)
+    return DvtBundle.getTranslation(options, 'labelAndValue', DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [compName, compDesc]);
+  else
+    return compName;
+};
+
+/**
+ * @override
+ */
+DvtChart.prototype.SetOptions = function(options) {
+  if (options) {
+    // Combine the user options with the defaults and store
+    this._rawOptions = options;
+    this.Options = this.Defaults.calcOptions(options);
+
+    // Process "horizontalBar" chart type for backwards compatibility
+    if (this.Options['type'] == 'horizontalBar') {
+      this.Options['type'] = 'bar';
+      this.Options['orientation'] = 'horizontal';
+    }
+
+    // Process the data to add bulletproofing
+    DvtChartDataUtils.processDataObject(this);
+
+    // Disable animation for canvas and xml
+    if (!DvtAgent.isEnvironmentBrowser()) {
+      this.Options['animationOnDisplay'] = 'none';
+      this.Options['animationOnDataChange'] = 'none';
+    }
+  }
+  else if (!this.Options) // No object has ever been provided, copy the defaults
+    this.Options = this.GetDefaults();
+
+  // Initialize the selection handler
+  var selectionMode = this.Options['selectionMode'];
+  if (selectionMode == 'single')
+    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_SINGLE);
+  else if (selectionMode == 'multiple')
+    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_MULTIPLE);
+  else
+    this._selectionHandler = null;
+
+  // Pass to event handler
+  this.EventManager.setSelectionHandler(this._selectionHandler);
+
+  // Popup Support
+  var popupBehaviors = this.Options['_spb'];
+  if (popupBehaviors) {
+    this._popupBehaviors = {};
+
+    // Iterate through the popup behaviors for each parent stamp id
+    for (var stampId in popupBehaviors) {
+      var popupBehaviorArray = popupBehaviors[stampId];
+      for (var i = 0; i < popupBehaviorArray.length; i++) {
+        // Create the array of behaviors for this stampId
+        if (!this._popupBehaviors[stampId])
+          this._popupBehaviors[stampId] = [];
+
+        var popupBehavior = popupBehaviorArray[i];
+        var popupId = popupBehavior['popupId'];
+        var triggerType = popupBehavior['triggerType'];
+        var alignId = popupBehavior['alignId'];
+        var align = popupBehavior['align'];
+        this._popupBehaviors[stampId].push(new DvtShowPopupBehavior(popupId, triggerType, alignId, align));
+      }
+    }
+  }
+};
+
+
+/**
+ * @override
+ * @export
+ */
+DvtChart.prototype.render = function(options, width, height) 
+{
+  var context = this.getCtx();
+
+  var animationOnDataChange = this.Options ? this.Options['animationOnDataChange'] : 'none';
+
+  // Cache and cleanup objects from the previous render
+  var oldChart = (animationOnDataChange != 'none') ? new DvtDCChart(this) : null;
+  var focusState = this.__cacheChartFocus();
+  this.__cleanUp();
+
+  // Update if a new options object has been provided or initialize with defaults if needed. This is done first to
+  // ensure that property access, like DvtChartStyleUtils.getAnimationOnDataChange, do not generate default options.
+  this.SetOptions(options);
+
+  // Update the width and height if provided
+  if (!isNaN(width) && !isNaN(height)) {
+    this.Width = width;
+    this.Height = height;
+  }
+
+
+  // Create a new container and render the component into it
+  var container = new DvtContainer(context);
+  this.addChild(container);
+  DvtChartRenderer.render(this, container, new DvtRectangle(0, 0, this.Width, this.Height));
+
+  // . We don't want the inner chart's listeners to be invoked when it is a spark chart, thus we are removing them.
+  if (DvtChartTypeUtils.isSpark(this))
+    this.EventManager.removeListeners(this);
+
+  // Animation Support
+  // Stop any animation in progress
+  if (this._animation) {
+    this._animationStopped = true;
+    this._animation.stop();
+  }
+
+  // Construct the new animation playable
+  var animationOnDisplay = DvtChartStyleUtils.getAnimationOnDisplay(this);
+  var animationDuration = DvtChartStyleUtils.getAnimationDuration(this);
+  var bounds = new DvtRectangle(0, 0, this.Width, this.Height);
+  var bBlackBoxUpdate = false; // true if this is a black box update animation
+
+  if (! this._container) {
+    if (animationOnDisplay != 'none') {
+      // AnimationOnDisplay
+      this._animation = DvtBlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container,
+          bounds, animationDuration);
+      if (!this._animation && animationOnDisplay == 'auto') {
+        this._animation = DvtAnimOnDisplay.createAnimation(this, animationOnDisplay, animationDuration);
+      }
+    }
+  }
+  else if (animationOnDataChange != 'none' && options) {
+    // AnimationOnDataChange
+    this._animation = DvtBlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange, this._container,
+                                                                       container, bounds, animationDuration);
+    if (this._animation)           // Black Box Animation
+      bBlackBoxUpdate = true;
+    else if (animationOnDataChange == 'auto' && this.getPlotArea()) {
+      var paSpace = this.__getPlotAreaSpace();
+      this._delContainer = DvtPlotAreaRenderer.createClippedGroup(this, this._container, new DvtRectangle(0, 0, paSpace.w, paSpace.h));
+      this._animation = DvtAnimOnDC.createAnimation(oldChart, this, animationOnDataChange,
+          animationDuration, this._delContainer);
+
+      if (this._delContainer.getNumChildren() > 0)
+        this.getPlotArea().addChild(this._delContainer);
+    }
+  }
+
+  // If an animation was created, play it
+  if (this._animation) {
+    // Disable event listeners temporarily
+    this.EventManager.removeListeners(this);
+
+    DvtPlayable.appendOnEnd(this._animation, this._onAnimationEnd, this);
+    this._animation.play();
+  }
+
+  // Clean up the old container.  If doing black box animation, store a pointer and clean
+  // up after animation is complete.  Otherwise, remove immediately.
+  if (bBlackBoxUpdate) {
+    this._oldContainer = this._container;
+  }
+  else if (this._container) {
+    this.removeChild(this._container);  // Not black box animation, so clean up the old contents
+    this._container.destroy();
+    this._container = null;
+  }
+
+  // Update the pointer to the new container
+  this._container = container;
+
+  // Data Cursor
+  this._dataCursor = DvtChartRenderer.renderDataCursor(this);
+
+  this.UpdateAriaAttributes();
+
+  // Restore focus
+  this.__restoreChartFocus(focusState);
+
+  if (!this._animation)
+    // If not animating, that means we're done rendering, so fire the ready event.
+    this.RenderComplete();
+};
+
+/**
+ * Releases all component resources to prevent memory leaks.
+ * @override
+ * @export
+ */
+DvtChart.prototype.destroy = function() {
+  if (this.EventManager) {
+    this.EventManager.removeListeners(this);
+    this.EventManager.destroy();
+    this.EventManager = null;
+  }
+
+  // Call super last during destroy
+  DvtChart.superclass.destroy.call(this);
+};
+
+/**
+ * Performs cleanup of the previously rendered content.  Note that this doesn't cleanup anything needed for animation.
+ * @protected
+ */
+DvtChart.prototype.__cleanUp = function() {
+  // Data cursor cleanup
+  if (this._dataCursor) {
+    this.removeChild(this._dataCursor);
+    this._dataCursor = null;
+  }
+
+  // Tooltip cleanup
+  if (this.EventManager)
+    this.EventManager.hideHoverFeedback();
+
+  // Clear the list of registered peers
+  this.Peers = [];
+
+  // Clear scrollbars, buttons
+  this.xScrollbar = null;
+  this.yScrollbar = null;
+
+  if (this.dragButtons) {
+    this.removeChild(this.dragButtons);
+    this.dragButtons.destroy();
+    this.dragButtons = null;
+    this.EventManager.panButton = null;
+    this.EventManager.zoomButton = null;
+    this.EventManager.selectButton = null;
+  }
+
+  this._plotArea = null;
+  this._areaContainer = null;
+  this._dataLabels = null;
+
+  this.clearCache();
+};
+
+
+/**
+ * Clean up axis and plot area for rerendering (zoom/scroll).
+ */
+DvtChart.prototype.__cleanUpAxisAndPlotArea = function() {
+  // Tooltip cleanup
+  this.EventManager.hideHoverFeedback();
+
+  // Clear the list of registered peers
+  this.Peers = [];
+
+  // Clean up the axis and plot area
+  this._container.removeChild(this.xAxis);
+  this._container.removeChild(this.yAxis);
+  this._container.removeChild(this.y2Axis);
+
+  // Plot area which is a touch target needs to be kept so that subsequent touch events are fired.
+  if (this._plotArea && this._plotArea == this._panZoomTarget)
+    this._plotArea.setVisible(false);
+  else
+    this._container.removeChild(this._plotArea);
+
+  this._plotArea = null;
+
+  this.clearCache();
+};
+
+
+/**
+ * Hook for cleaning up animation behavior at the end of the animation.
+ * @private
+ */
+DvtChart.prototype._onAnimationEnd = function() {
+  // Clean up the old container used by black box updates
+  if (this._oldContainer) {
+    this.removeChild(this._oldContainer);
+    this._oldContainer.destroy();
+    this._oldContainer = null;
+  }
+
+  if (this._delContainer && this._delContainer.getNumChildren() > 0)
+    this.getPlotArea().removeChild(this._delContainer);
+
+  this._delContainer = null;
+
+  // Fire ready event saying animation is finished.
+  if (!this._animationStopped)
+    this.RenderComplete();
+
+  // Reset the animation and reference
+  this._animation = null;
+  this._animationStopped = null;
+
+  // Restore event listeners
+  this.EventManager.addListeners(this);
+};
+
+
+/**
+ * Creates the keyboard handler.
+ * @param {DvtChartEventManager} manager Event manager.
+ * @return {DvtChartKeyboardHandler}
+ * @protected
+ */
+DvtChart.prototype.CreateKeyboardHandler = function(manager) {
+  return new DvtChartKeyboardHandler(manager, this);
+};
+
+
+/**
+ * Returns the automation object for this chart
+ * @return {DvtAutomation} The automation object
+ * @export
+ */
+DvtChart.prototype.getAutomation = function() {
+  return new DvtChartAutomation(this);
+};
+
+/**
+ * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
+ * @param {Number} x The X coordinate relative to the component.
+ * @param {Number} y The Y coordinate relative to the component.
+ * @return {object} An object containing the "x", "y", and "y2" axis values.
+ * @export
+ */
+DvtChart.prototype.getValuesAt = function(x, y) {
+  var paBounds = this.__getPlotAreaSpace();
+  var relX = x - paBounds.x;
+  var relY = y - paBounds.y;
+
+  var isPolar = DvtChartTypeUtils.isPolar(this);
+  var isHoriz = DvtChartTypeUtils.isHorizontal(this);
+
+  if (isPolar) {
+    // Convert cartesian to polar
+    relX -= paBounds.w / 2;
+    relY -= paBounds.h / 2;
+    var r = Math.sqrt(relX * relX + relY * relY);
+    var theta = Math.atan2(relX, -relY);
+    if (theta < 0)
+      theta += 2 * Math.PI;
+
+    return {
+      'x': this.xAxis ? this.xAxis.getValueAt(theta) : null,
+      'y': this.yAxis ? this.yAxis.getValueAt(r) : null
+    };
+  }
+  else {
+    return {
+      'x': this.xAxis ? this.xAxis.getValueAt(isHoriz ? relY : relX) : null,
+      'y': this.yAxis ? this.yAxis.getValueAt(isHoriz ? relX : relY) : null,
+      'y2': this.y2Axis ? this.y2Axis.getValueAt(isHoriz ? relX : relY) : null
+    };
+  }
+};
+
+
+/**
+ * Filters or removes the filter from the specified category.
+ * @param {string} category The category which has been filtered out.
+ * @param {string} type "out" to filter out the specified category, or "in" to remove the filter.
+ * @export
+ */
+DvtChart.prototype.filter = function(category, type) {
+  // Update the component state
+  var visibility = (type == 'out' ? 'hidden' : 'visible');
+  DvtChartEventUtils.setVisibility(this, category, visibility);
+
+  // Rerender the component. Pass the options to cause animation to happen.
+  this.render(this.Options);
+};
+
+/**
+ * @override
+ * @export
+ */
+DvtChart.prototype.highlight = function(categories) {
+  // Update the options
+  this.getOptions()['highlightedCategories'] = DvtJSONUtils.clone(categories);
+
+  // Perform the highlighting and propagate to children
+  DvtCategoryRolloverHandler.highlight(categories, this.getObjects(), this.getOptions()['highlightMatch'] == 'any');
+
+  if (this.legend)
+    this.legend.highlight(categories);
+
+  if (this.pieChart)
+    this.pieChart.highlight(categories);
+
+  if (this.overview)
+    this.overview.getBackgroundChart().highlight(categories);
+};
+
+/**
+ * @override
+ * @export
+ */
+DvtChart.prototype.select = function(selection) {
+  // Update the options
+  var options = this.getOptions();
+  options['selection'] = DvtJSONUtils.clone(selection);
+
+  // Perform the selection
+  var selected = DvtChartDataUtils.getInitialSelection(this);
+  DvtChartEventUtils.setInitialSelection(this, selected);
+
+  // Propagate to children
+  if (this.pieChart)
+    this.pieChart.setInitialSelection();
+};
+
+/**
+ * Positions the data cursor.
+ * @param {object} position The data cursor position, containing x, y, y2. If null, the data cursor will be hidden.
+ * @export
+ */
+DvtChart.prototype.positionDataCursor = function(position) {
+  var handler = this.getEventManager().getDataCursorHandler();
+  if (!handler)
+    return;
+
+  if (position) {
+    var xCoord = (this.xAxis && position['x'] != null) ? this.xAxis.getCoordAt(position['x']) : null;
+    var yCoord = null;
+    if (DvtChartTypeUtils.isBLAC(this)) {
+      // For BLAC use bounded coord for y-axis to enable syncing across charts with different scales
+      if (this.yAxis && position['y'] != null)
+        yCoord = this.yAxis.getBoundedCoordAt(position['y']);
+      else if (this.y2Axis && position['y2'] != null)
+        yCoord = this.yAxis.getBoundedCoordAt(position['y2']);
+    }
+    else
+      yCoord = (this.yAxis && position['y'] != null) ? this.yAxis.getCoordAt(position['y']) : null;
+
+    if (xCoord != null && yCoord != null) {
+      // Convert to stage coords and pass them to data cursor handler
+      var paBounds = this.__getPlotAreaSpace();
+      var paCoords = DvtPlotAreaRenderer.convertAxisCoord(this, new DvtPoint(xCoord, yCoord), paBounds);
+      handler.processMove(new DvtPoint(paBounds.x + paCoords.x, paBounds.y + paCoords.y), true);
+      return;
+    }
+  }
+
+  handler.processEnd(true);
+};
+
+
+/**
+ * @override
+ */
+DvtChart.prototype.getEventManager = function() {
+  return this.EventManager;
+};
+
+
+/**
+ * Initialize/clear the che chart cache.
+ */
+DvtChart.prototype.clearCache = function() {
+  this.Cache = {};
+};
+
+/**
+ * Retrieves the value corresponding to the key from the chart cache.
+ * @param {object} key
+ * @return {object}
+ */
+DvtChart.prototype.getFromCache = function(key) {
+  return this.Cache[key];
+};
+
+/**
+ * Stores the value corresponding to the key in the chart cache.
+ * @param {object} key
+ * @param {object} value
+ */
+DvtChart.prototype.putToCache = function(key, value) {
+  this.Cache[key] = value;
+};
+
+/**
+ * Retrieves the value corresponding to itemKey from the cached map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKey
+ * @return {object}
+ */
+DvtChart.prototype.getFromCachedMap = function(mapKey, itemKey) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = {};
+    this.putToCache(mapKey, map);
+  }
+  return map[itemKey];
+};
+
+/**
+ * Stores the value corresponding to itemKey to the cached map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKey
+ * @param {object} value
+ */
+DvtChart.prototype.putToCachedMap = function(mapKey, itemKey, value) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = {};
+    this.putToCache(mapKey, map);
+  }
+  map[itemKey] = value;
+};
+
+/**
+ * Retrieves the value corresponding to (itemKeyA, itemKeyB) from the cached 2D map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKeyA
+ * @param {object} itemKeyB
+ * @return {object}
+ */
+DvtChart.prototype.getFromCachedMap2D = function(mapKey, itemKeyA, itemKeyB) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = new DvtMap2D();
+    this.putToCache(mapKey, map);
+  }
+  return map.get(itemKeyA, itemKeyB);
+};
+
+/**
+ * Stores the value corresponding to (itemKeyA, itemKeyB) to the cached 2D map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKeyA
+ * @param {object} itemKeyB
+ * @param {object} value
+ */
+DvtChart.prototype.putToCachedMap2D = function(mapKey, itemKeyA, itemKeyB, value) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = new DvtMap2D();
+    this.putToCache(mapKey, map);
+  }
+  map.put(itemKeyA, itemKeyB, value);
+};
+
+
+/**
+ * Processes the specified event.
+ * @param {object} event
+ * @param {object} source The component that is the source of the event, if available.
+ */
+DvtChart.prototype.processEvent = function(event, source) {
+  var type = event.getType();
+  if (type == DvtCategoryHideShowEvent.TYPE_HIDE || type == DvtCategoryHideShowEvent.TYPE_SHOW)
+    this.filter(event.getCategory(), (type == DvtCategoryHideShowEvent.TYPE_HIDE ? 'out' : 'in'));
+
+  else if (type == DvtCategoryRolloverEvent.TYPE_OVER || type == DvtCategoryRolloverEvent.TYPE_OUT) {
+    // If the chart is not the source of the event, perform highlighting.
+    if (this != source)
+      this.highlight(event['categories']);
+
+    if (this.legend && this.legend != source)
+      this.legend.processEvent(event, source);
+  }
+
+  else if (type == DvtSelectionEvent.TYPE)
+    event = this._processSelectionEvent(event);
+
+  else if (type == DvtPanZoomEvent.TYPE)
+    event = this._processPanZoomEvent(event);
+
+  else if (type == DvtMarqueeEvent.TYPE)
+    event = this._processMarqueeEvent(event);
+
+  else if (type == DvtOverviewEvent.TYPE) {
+    var subtype = event.getSubType();
+    if (subtype == DvtOverviewEvent.SUBTYPE_PRE_RANGECHANGE)
+      return;
+    var actionDone = subtype == DvtOverviewEvent.SUBTYPE_SCROLL_TIME ||
+                     subtype == DvtOverviewEvent.SUBTYPE_SCROLL_END ||
+                     subtype == DvtOverviewEvent.SUBTYPE_RANGECHANGE;
+    event = this._processScrollbarEvent(event.getNewStartTime(), event.getNewEndTime(), actionDone, source);
+  }
+
+  else if (type == DvtSimpleScrollbarEvent.TYPE)
+    event = this._processScrollbarEvent(event.getNewMin(), event.getNewMax(), event.getSubtype() == DvtSimpleScrollbarEvent.SUBTYPE_END, source);
+
+  else if (type == DvtShowPopupEvent.TYPE)
+    event = this._processShowPopupEvent(event);
+
+  // For selection events, update the options object and calculate the added/removed arrays
+  if (event instanceof DvtChartSelectionEvent) {
+    // TODO : The calculation of added/removedSet should ideally happen in the selectionHandler, but the code there
+    // was changed such that it doesn't fire the selection event directly anymore.
+    var options = this.getOptions();
+    var oldItems = options['selection'];
+    var newItems = DvtChartDataUtils.getCurrentSelection(this);
+    if (event.getType() != DvtSelectionEvent.TYPE_INPUT) // don't update options on input
+      options['selection'] = newItems;
+
+    // Ensure old and new items are not null
+    oldItems = oldItems ? oldItems : [];
+    newItems = newItems ? newItems : [];
+
+    // Calculate the old and set selection id sets
+    var oldIndex, newIndex;
+
+    var oldSet = {};
+    for (oldIndex = 0; oldIndex < oldItems.length; oldIndex++) {
+      oldSet[oldItems[oldIndex]['id']] = true;
+    }
+
+    var newSet = {};
+    for (newIndex = 0; newIndex < newItems.length; newIndex++) {
+      newSet[newItems[newIndex]['id']] = true;
+    }
+
+    // Calculate the added and remove sets using the old and new
+    var addedSet = {};
+    for (newIndex = 0; newIndex < newItems.length; newIndex++) {
+      var newItemId = newItems[newIndex]['id'];
+      if (!oldSet[newItemId])
+        addedSet[newItemId] = true;
+    }
+
+    var removedSet = {};
+    for (oldIndex = 0; oldIndex < oldItems.length; oldIndex++) {
+      var oldItemId = oldItems[oldIndex]['id'];
+      if (!newSet[oldItemId])
+        removedSet[oldItemId] = true;
+    }
+
+    // Finally add to the selection event
+    event['addedSet'] = addedSet;
+    event['removedSet'] = removedSet;
+  }
+
+  // Dispatch the event to the callback
+  if (event)
+    this.dispatchEvent(event);
+};
+
+
+/**
+ * Processes selection event.
+ * @param {DvtSelectionEvent} event Selection event.
+ * @return {object} Processed event.
+ * @private
+ */
+DvtChart.prototype._processSelectionEvent = function(event) {
+  var selection = DvtChartEventUtils.processIds(this, event.getSelection());
+  this._updateOverviewSelection();
+  return new DvtChartSelectionEvent(selection, DvtSelectionEvent.TYPE);
+};
+
+
+/**
+ * Processes pan/zoom event.
+ * @param {DvtPanZoomEvent} event Pan/zoom event.
+ * @return {object} Processed event.
+ * @private
+ */
+DvtChart.prototype._processPanZoomEvent = function(event) {
+  var subtype = event.getSubtype();
+  var actionDone = subtype == DvtPanZoomEvent.SUBTYPE_PAN_END || subtype == DvtPanZoomEvent.SUBTYPE_ZOOM || subtype == DvtPanZoomEvent.SUBTYPE_PINCH_END;
+  var actionStart = subtype == DvtPanZoomEvent.SUBTYPE_PAN_START || subtype == DvtPanZoomEvent.SUBTYPE_PINCH_START;
+
+  // The initial touch target has to be kept so that the subsequent touch move events are fired
+  if (DvtAgent.isTouchDevice() && actionStart && this._panZoomTarget != this._plotArea) {
+    this._container.removeChild(this._panZoomTarget);
+    this._panZoomTarget = this._plotArea;
+  }
+
+  // Calculate the bounds and update the viewport
+  var bounds;
+  if (DvtChartEventUtils.isLiveScroll(this)) { // live
+    bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMin, event.dxMax, event.dyMin, event.dyMax);
+    if (!actionStart) {
+      this._setViewport(bounds, actionDone);
+      this._setScrollbarViewport(bounds);
+    }
+  }
+  else { // delayed
+    bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMinTotal, event.dxMaxTotal, event.dyMinTotal, event.dyMaxTotal);
+    this._setScrollbarViewport(bounds); // always update the scrollbars
+    if (actionDone)
+      this._setViewport(bounds, actionDone);
+  }
+
+  if (actionDone) {
+    // Event handlers have to be reset because the plot area space may change
+    DvtChartRenderer._setEventHandlers(this);
+
+    // Clear the touch target, if there's one
+    if (this._panZoomTarget != this._plotArea) {
+      this._container.removeChild(this._panZoomTarget);
+      this._panZoomTarget = null;
+    }
+  }
+
+  // Fire viewport change event
+  var eventType = actionDone ? DvtChartViewportChangeEvent.TYPE : DvtChartViewportChangeEvent.TYPE_INPUT;
+  if (DvtChartTypeUtils.isBLAC(this))
+    return new DvtChartViewportChangeEvent(eventType, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
+  else
+    return new DvtChartViewportChangeEvent(eventType, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
+};
+
+
+/**
+ * Processes marquee event.
+ * @param {DvtMarqueeEvent} event Marquee event.
+ * @return {object} Processed event.
+ * @private
+ */
+DvtChart.prototype._processMarqueeEvent = function(event) {
+  var subtype = event.getSubtype();
+  var em = this.EventManager;
+  var bounds; // chart bounds
+  DvtChartEventUtils.adjustBounds(event);
+
+  // Marquee selection
+  if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_SELECT) {
+    var selectionHandler = em.getSelectionHandler();
+
+    if (subtype == DvtMarqueeEvent.SUBTYPE_START) {
+      // If ctrl key is pressed at start of drag, the previous selection should be preserved.
+      this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
+    }
+    else {
+      var targets = DvtChartEventUtils.getBoundedObjects(this, event);
+      selectionHandler.processInitialSelections(this._initSelection, this.getChartObjPeers());
+      selectionHandler.processGroupSelection(targets, true);
+    }
+
+    // Create and populate selection event
+    var selection = DvtChartEventUtils.getSelectedObjects(this, event, selectionHandler);
+    bounds = DvtChartEventUtils.getAxisBounds(this, event, false);
+    var eventType = subtype == DvtMarqueeEvent.SUBTYPE_END ? DvtSelectionEvent.TYPE : DvtSelectionEvent.TYPE_INPUT;
+    var selectionEvent = new DvtChartSelectionEvent(selection, eventType,
+                                                    bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup,
+                                                    bounds.yMin, bounds.yMax, bounds.y2Min, bounds.y2Max);
+
+    // Update the selection in the overview bg chart
+    if (subtype == DvtMarqueeEvent.SUBTYPE_END)
+      this._updateOverviewSelection();
+
+    return selectionEvent;
+  }
+
+  // Marquee zoom
+  else if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_ZOOM) {
+    if (subtype != DvtMarqueeEvent.SUBTYPE_END)
+      return null;
+
+    // Compute and limit the bounds
+    bounds = DvtChartEventUtils.getAxisBounds(this, event, true);
+    this._setViewport(bounds, true);
+    this._setScrollbarViewport(bounds);
+
+    // Event handlers have to be reset because the plot area space may change
+    DvtChartRenderer._setEventHandlers(this);
+
+    if (DvtChartTypeUtils.isBLAC(this))
+      return new DvtChartViewportChangeEvent(DvtChartViewportChangeEvent.TYPE, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
+    else
+      return new DvtChartViewportChangeEvent(DvtChartViewportChangeEvent.TYPE, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
+  }
+
+  return null;
+};
+
+
+/**
+ * Processes scrollbar event (overview or simple scrollbar).
+ * @param {number} start The min value.
+ * @param {number} end The max value.
+ * @param {boolean} actionDone Whether the scrolling has finished.
+ * @param {object} source The component that is the source of the event, if available.
+ * @return {object} Processed event.
+ * @private
+ */
+DvtChart.prototype._processScrollbarEvent = function(start, end, actionDone, source) {
+  var axis = (source == this.yScrollbar) ? this.yAxis : this.xAxis;
+  start = axis.linearToActual(start);
+  end = axis.linearToActual(end);
+
+  if (DvtChartEventUtils.isLiveScroll(this) || actionDone) {
+    if (source == this.yScrollbar)
+      this._setViewport({yMin: start, yMax: end}, actionDone);
+    else
+      this._setViewport({xMin: start, xMax: end}, actionDone);
+  }
+
+  var eventType = actionDone ? DvtChartViewportChangeEvent.TYPE : DvtChartViewportChangeEvent.TYPE_INPUT;
+  if (source == this.yScrollbar)
+    return new DvtChartViewportChangeEvent(eventType, null, null, null, null, start, end, null, null);
+  else {
+    var startEndGroup = DvtChartEventUtils.getAxisStartEndGroup(this.xAxis, start, end);
+    return new DvtChartViewportChangeEvent(eventType, start, end, startEndGroup.startGroup, startEndGroup.endGroup, null, null, null, null);
+  }
+};
+
+
+/**
+ * Processes show popup event.
+ * @param {DvtShowPopupEvent} event Show popup event.
+ * @return {object} Processed event.
+ * @private
+ */
+DvtChart.prototype._processShowPopupEvent = function(event) {
+  // For events other than hover, use the selection context in the popup event
+  if (event['triggerType'] != 'mouseHover' && this.isSelectionSupported() && this.getSelectionHandler().getSelectedCount() > 0) {
+    var selection = DvtChartEventUtils.processIds(this, this.getSelectionHandler().getSelectedIds());
+    event = new DvtShowPopupEvent(event.getShowPopupBehavior(), event.getLauncherBounds(), event.getLauncherId());
+    event.addParam(DvtBaseComponentEvent.CLIENT_ROW_KEY, selection);
+  }
+
+  return event;
+};
+
+/**
+ * Updates the selection in the overview background chart.
+ * @private
+ */
+DvtChart.prototype._updateOverviewSelection = function() {
+  if (this.overview) {
+    var ovChart = this.overview.getBackgroundChart();
+    ovChart.getOptions()['selection'] = DvtChartDataUtils.getCurrentSelection(this);
+    ovChart.render(); // rerender because unselected markers were not rendered
+  }
+};
+
+
+/**
+ * Updates the chart option and fires the optionChange event.
+ * @param {string} key The name of the option to set.
+ * @param {Object} value The value to set for the option.
+ * @param {Object} optionMetadata (optional) The option metadata for the event.
+ */
+DvtChart.prototype.changeOption = function(key, value, optionMetadata) {
+  this.getOptions()[key] = value;
+  this.dispatchEvent(new DvtOptionChangeEvent(key, value, optionMetadata));
+};
+
+
+/**
+ * Registers the object peer with the chart.  The peer must be registered to participate
+ * in interactivity.
+ * @param {DvtChartObjPeer} peer
+ */
+DvtChart.prototype.registerObject = function(peer) {
+  this.Peers.push(peer);
+};
+
+
+/**
+ * Returns the peers for all objects within the chart.
+ * @return {array}
+ */
+DvtChart.prototype.getObjects = function() {
+  return this.Peers;
+};
+
+
+/**
+ * Returns the peers for all chart objects within the chart.
+ * @return {array}
+ */
+DvtChart.prototype.getChartObjPeers = function() {
+  var chartObjPeers = [];
+  for (var i = 0; i < this.Peers.length; i++) {
+    if (this.Peers[i] instanceof DvtChartObjPeer)
+      chartObjPeers.push(this.Peers[i]);
+  }
+  return chartObjPeers;
+};
+
+/**
+ * Returns the peers for all reference objects within the chart.
+ * @return {array}
+ */
+DvtChart.prototype.getRefObjPeers = function() {
+  var refObjPeers = [];
+  for (var i = 0; i < this.Peers.length; i++) {
+    if (this.Peers[i] instanceof DvtRefObjPeer)
+      refObjPeers.push(this.Peers[i]);
+  }
+  return refObjPeers;
+};
+
+
+/**
+ * Returns the peer specified by the seriesIndex and groupIndex.
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @return {DvtChartObjPeer}
+ */
+DvtChart.prototype.getObject = function(seriesIndex, groupIndex) {
+  for (var i = 0; i < this.Peers.length; i++) {
+    if (this.Peers[i] instanceof DvtChartObjPeer && this.Peers[i].getSeriesIndex() == seriesIndex && this.Peers[i].getGroupIndex() == groupIndex)
+      return this.Peers[i];
+  }
+  return null;
+};
+
+/**
+ * @return {number} chart width
+ */
+DvtChart.prototype.getWidth = function() {
+  return this.Width;
+};
+
+
+/**
+ * @return {number} chart height
+ */
+DvtChart.prototype.getHeight = function() {
+  return this.Height;
+};
+
+
+
+/**
+ * Returns the array containing unique series ids.  This array is used
+ * to maintain default styles for each unique series.
+ * @return {array}
+ */
+DvtChart.prototype.getSeriesStyleArray = function() {
+  return this.SeriesStyleArray;
+};
+
+
+/**
+ * Returns the plot area container.
+ * @return {DvtContainer}  the plot area container.
+ */
+DvtChart.prototype.getPlotArea = function() {
+  return this._plotArea;
+};
+
+
+/**
+ * Sets the plot area container.
+ * @param {DvtContainer} plot  the plot area container.
+ */
+DvtChart.prototype.setPlotArea = function(plot) {
+  this._plotArea = plot;
+};
+
+
+/**
+ * Returns the type of this chart, such as "bar" or "scatter".
+ * @return {string}
+ */
+DvtChart.prototype.getType = function() {
+  return this.getOptions()['type'];
+};
+
+
+/**
+ * Returns the skin of this chart.
+ * @return {string}
+ */
+DvtChart.prototype.getSkin = function() {
+  return this.getOptions()['skin'];
+};
+
+
+/**
+ * Returns the scale factor for gap widths on this chart.
+ * @return {number}
+ */
+DvtChart.prototype.getGapWidthRatio = function() {
+  // If defined in the options, use that instead
+  var options = this.getOptions();
+  if (options['layout']['gapWidthRatio'] !== null && !isNaN(options['layout']['gapWidthRatio']))
+    return options['layout']['gapWidthRatio'];
+  else
+    return Math.min(this.Width / 400, 1);
+};
+
+/**
+ * Returns the scale factor for gap heights on this chart.
+ * @return {number}
+ */
+DvtChart.prototype.getGapHeightRatio = function() {
+  // If defined in the options, use that instead
+  var options = this.getOptions();
+  if (options['layout']['gapHeightRatio'] !== null && !isNaN(options['layout']['gapHeightRatio']))
+    return options['layout']['gapHeightRatio'];
+  else
+    return Math.min(this.Height / 300, 1);
+};
+
+
+/**
+ * Returns the selection handler for the graph.
+ * @return {DvtSelectionHandler} The selection handler for the graph
+ */
+DvtChart.prototype.getSelectionHandler = function() {
+  return this._selectionHandler;
+};
+
+
+/**
+ * Returns whether selecton is supported on the graph.
+ * @return {boolean} True if selection is turned on for the graph and false otherwise.
+ */
+DvtChart.prototype.isSelectionSupported = function() {
+  return (this._selectionHandler ? true : false);
+};
+
+
+/**
+ * Returns the array of DvtShowPopupBehaviors for the given stamp id.
+ * @param {string} stampId The id of the stamp containing the showPopupBehaviors.
+ * @return {array} The array of showPopupBehaviors.
+ */
+DvtChart.prototype.getShowPopupBehaviors = function(stampId) {
+  return this._popupBehaviors ? this._popupBehaviors[stampId] : null;
+};
+
+
+//---------------------------------------------------------------------//
+// Ordering Support: ZOrderManager impl                                //
+//---------------------------------------------------------------------//
+
+/**
+ * @override
+ */
+DvtChart.prototype.bringToFrontOfSelection = function(detObj)
+{
+  var par = detObj.getParent();
+  if (par) {
+    var parentChildCount = par.getNumChildren();
+
+    if (parentChildCount - this._numFrontObjs > 1) {
+      par.removeChild(detObj);
+      var newIndex = parentChildCount - this._numFrontObjs - 1;
+      par.addChildAt(detObj, newIndex);
+    }
+  }
+
+  //if the object is not both selected and selecting then
+  //increment the counter (otherwise the object is already
+  //represented in the counter)
+  if (!detObj.isSelected() || !detObj.isHoverEffectShown())
+    this._numSelectedObjsInFront++;
+
+};
+
+/**
+ * @override
+ */
+DvtChart.prototype.pushToBackOfSelection = function(detObj)
+{
+  //decrement the counter
+  if (this._numSelectedObjsInFront > 0)
+    this._numSelectedObjsInFront--;
+
+  //move the object to the first z-index before the selected objects
+  var par = detObj.getParent();
+  if (par) {
+    var parentChildCount = par.getNumChildren();
+    var newIndex = parentChildCount - this._numFrontObjs - 1 - this._numSelectedObjsInFront;
+    if (newIndex >= 0) {
+      par.removeChild(detObj);
+      par.addChildAt(detObj, newIndex);
+    }
+  }
+};
+
+/**
+ * @override
+ */
+DvtChart.prototype.setNumFrontObjs = function(num)
+{
+  this._numFrontObjs = num;
+};
+
+
+/**
+ * @override
+ */
+DvtChart.prototype.getShapesForViewSwitcher = function(bOld) {
+  var shapes = {};
+
+  if (this._currentMarkers && this.Peers) {
+    for (var i = 0; i < this._currentMarkers.length; i++) {
+      var arMarkers = this._currentMarkers[i];
+      if (arMarkers) {
+        for (var j = 0; j < arMarkers.length; j++) {
+          var marker = arMarkers[j];
+          if (!marker) {
+            continue; //j loop
+          }
+          //find the peer associated with this marker in order to get the id
+          for (var k = 0; k < this.Peers.length; k++) {
+            var peer = this.Peers[k];
+            var peerDisplayables = peer.getDisplayables();
+            if (peerDisplayables && peerDisplayables.length > 0) {
+              if (peerDisplayables[0] == marker) {
+                var chartDataItem = peer.getId();
+                if (chartDataItem) {
+                  var id = chartDataItem.getId();
+                  if (id) {
+                    shapes[id] = marker;
+                    break; //out of k loop
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  else if (this.pieChart) {
+    shapes = this.pieChart.getShapesForViewSwitcher(bOld);
+  }
+
+  return shapes;
+};
+
+
+/**
+ * Sets the chart viewport and rerender the axis and plot area.
+ * @param {DvtRectangle} bounds An object containing the xMin, xMax, yMin, yMax of the new viewport.
+ * @param {boolean} actionDone Whether the animation is done, so that the chart should be fully rendered.
+ * @private
+ */
+DvtChart.prototype._setViewport = function(bounds, actionDone) {
+  if (bounds.xMax != null)
+    this.Options['xAxis']['viewportMax'] = bounds.xMax;
+  if (bounds.xMin != null)
+    this.Options['xAxis']['viewportMin'] = bounds.xMin;
+
+  if (DvtChartTypeUtils.isBLAC(this)) {
+    this.Options['xAxis']['viewportStartGroup'] = null;
+    this.Options['xAxis']['viewportEndGroup'] = null;
+
+    // Turn off initial zooming after pan/zoom
+    this.Options['_initialZoomed'] = false;
+  }
+  else {
+    if (bounds.yMax != null)
+      this.Options['yAxis']['viewportMax'] = bounds.yMax;
+    if (bounds.yMin != null)
+      this.Options['yAxis']['viewportMin'] = bounds.yMin;
+  }
+
+  this.Options['_duringAnimation'] = !actionDone;
+  DvtChartRenderer.rerenderAxisAndPlotArea(this, this._container);
+};
+
+
+/**
+ * Sets the scrollbar viewport.
+ * @param {DvtRectangle} bounds An object containing the xMin, xMax, yMin, yMax of the new viewport.
+ * @private
+ */
+DvtChart.prototype._setScrollbarViewport = function(bounds) {
+  if (this.xAxis && bounds.xMin != null && bounds.xMax != null) {
+    var xMin = this.xAxis.actualToLinear(bounds.xMin);
+    var xMax = this.xAxis.actualToLinear(bounds.xMax);
+    if (this.overview)
+      this.overview.setViewportRange(xMin, xMax);
+    if (this.xScrollbar)
+      this.xScrollbar.setViewportRange(xMin, xMax);
+  }
+
+  if (this.yAxis && bounds.yMin != null && bounds.yMax != null) {
+    var yMin = this.yAxis.actualToLinear(bounds.yMin);
+    var yMax = this.yAxis.actualToLinear(bounds.yMax);
+    if (this.yScrollbar)
+      this.yScrollbar.setViewportRange(yMin, yMax);
+  }
+};
+
+
+/**
+ * Sets the space for the axis and the plot area.
+ * @param {DvtRectangle} space
+ */
+DvtChart.prototype.__setAxisSpace = function(space) {
+  this._axisSpace = space;
+
+  // Set the polar chart radius
+  var maxWidth, maxHeight;
+  if (DvtChartAxisUtils.isAxisRendered(this, 'x')) {
+    maxWidth = space.w * 0.8;
+    maxHeight = space.h - 4 * DvtChartAxisUtils.getTickLabelHeight(this, 'x');
+  }
+  else if (DvtChartAxisUtils.isAxisRendered(this, 'y')) {
+    maxWidth = space.w;
+    maxHeight = space.h - DvtChartAxisUtils.getTickLabelHeight(this, 'y');
+  }
+  else {
+    maxWidth = space.w;
+    maxHeight = space.h;
+  }
+  this._radius = Math.min(maxWidth, maxHeight) / 2;
+};
+
+
+/**
+ * Gets the space for the axis and the plot area.
+ * @return {DvtRectangle} space
+ */
+DvtChart.prototype.__getAxisSpace = function() {
+  return this._axisSpace;
+};
+
+
+/**
+ * Sets the space for the plot area.
+ * @param {DvtRectangle} space
+ */
+DvtChart.prototype.__setPlotAreaSpace = function(space) {
+  this._plotAreaSpace = space;
+};
+
+
+/**
+ * Gets the space for the plot area.
+ * @return {DvtRectangle} space
+ */
+DvtChart.prototype.__getPlotAreaSpace = function() {
+  return this._plotAreaSpace;
+};
+
+
+/**
+ * Sets the container of the chart area shapes.
+ * @param {DvtContainer} container
+ */
+DvtChart.prototype.__setAreaContainer = function(container) {
+  this._areaContainer = container;
+};
+
+
+/**
+ * Gets the container of the chart area shapes.
+ * @return {DvtContainer} container
+ */
+DvtChart.prototype.__getAreaContainer = function() {
+  return this._areaContainer;
+};
+
+
+/**
+ * Returns the radius of a polar chart.
+ * @return {number} Polar chart radius.
+ */
+DvtChart.prototype.getRadius = function() {
+  return this._radius;
+};
+
+
+/**
+ * Shows the drag buttons.
+ */
+DvtChart.prototype.showDragButtons = function() {
+  if (this.dragButtons)
+    this.dragButtons.setVisible(true);
+};
+
+/**
+ * Hides the drag buttons.
+ */
+DvtChart.prototype.hideDragButtons = function() {
+  if (this.dragButtons)
+    this.dragButtons.setVisible(false);
+};
+
+/**
+ * Adds a data label to the internal list of labels to help with animation.
+ * @param {DvtOutputText} label
+ */
+DvtChart.prototype.addDataLabel = function(label) {
+  this.getDataLabels().push(label);
+};
+
+/**
+ * Provides the list of data labels so they can be animated.
+ * @return {array} data labels in this chart
+ */
+DvtChart.prototype.getDataLabels = function() {
+  if (!this._dataLabels)
+    this._dataLabels = [];
+  return this._dataLabels;
+};
+
+/**
+ * Cache the chart focus so it's not lost on rerender.
+ * @return {object} Object containing the chart, legend and axis focus
+ */
+DvtChart.prototype.__cacheChartFocus = function() {
+  // Store the current chart and legend keyboard focus.
+  var chartFocus = this.EventManager.getFocus();
+  if (chartFocus)
+    var chartShowingFocusEffect = chartFocus.isShowingKeyboardFocusEffect();
+  if (this.xAxis) {
+    var axisFocus = this.xAxis.getKeyboardFocus();
+    if (axisFocus)
+      var axisShowingFocusEffect = axisFocus.isShowingKeyboardFocusEffect();
+  }
+  if (this.legend) {
+    var legendFocus = this.legend.getKeyboardFocus();
+    if (legendFocus)
+      var legendShowingFocusEffect = legendFocus.isShowingKeyboardFocusEffect();
+  }
+  return {chartFocus: chartFocus, chartShowingFocusEffect: chartShowingFocusEffect, axisFocus: axisFocus, axisShowingFocusEffect: axisShowingFocusEffect,
+    legendFocus: legendFocus, legendShowingFocusEffect: legendShowingFocusEffect};
+};
+
+/**
+ * Restore the chart focus
+ * @param {object} focusState Object containing the chart, legend and axis focus
+ */
+DvtChart.prototype.__restoreChartFocus = function(focusState) {
+  if (DvtChartTypeUtils.isOverview(this) || DvtChartTypeUtils.isSpark(this)) {
+    return;
+  }
+
+  // Initialize the keyboard focus array with the new axis and legend
+  var keyboardArray = [this];
+  if (this.xAxis && this.xAxis.isNavigable())
+    keyboardArray.push(this.xAxis);
+  if (this.legend && this.legend.isNavigable())
+    keyboardArray.push(this.legend);
+  this.getCtx().setKeyboardFocusArray(keyboardArray);
+
+  // Restore the keyboard focus after rerendering.
+  if (focusState.chartFocus) {
+    var navigables = DvtChartEventUtils.getKeyboardNavigables(this);
+    var matchFound = false;
+    for (var i = 0; i < navigables.length; i++) {
+      var id = navigables[i].getId();
+      if (id instanceof DvtChartDataItem && id.equals(focusState.chartFocus.getId())) {
+        this.EventManager.setFocusObj(navigables[i]);
+        if (focusState.chartShowingFocusEffect)
+          navigables[i].showKeyboardFocusEffect();
+        matchFound = true;
+        break;
+      }
+    }
+    if (!matchFound)
+      this.EventManager.setFocusObj(this.EventManager.getKeyboardHandler().getDefaultNavigable(navigables));
+  }
+  if (focusState.axisFocus) {
+    this.xAxis.setKeyboardFocus(focusState.axisFocus, focusState.axisShowingFocusEffect);
+    if (focusState.axisShowingFocusEffect)
+      this.getCtx().setCurrentKeyboardFocus(this.xAxis);
+  }
+  if (focusState.legendFocus) {
+    this.legend.setKeyboardFocus(focusState.legendFocus, focusState.legendShowingFocusEffect);
+    if (focusState.legendShowingFocusEffect)
+      this.getCtx().setCurrentKeyboardFocus(this.legend);
+  }
+};
+
+/**
+ * Returns the user options before being processed and used to create the chart.
+ * @return {object} User options.
+ */
+DvtChart.prototype.getRawOptions = function() {
+  return this._rawOptions;
+};
+// Active Data Support for Charts
+/**
+ * Processes an array of active data changes and updates the component.
+ * @param {array} changes The array of active data changes.
+ * @export
+ */
+DvtChart.prototype.processActiveDataChanges = function(changes) {
+  // Clone the options object to store a copy of the old data
+  var optionsOld = DvtJSONUtils.clone(this.Options);
+  var optionsNew = this.Options;
+
+  // Iterate through the list of changes and apply all of them
+  for (var changeIndex = 0; changeIndex < changes.length; changeIndex++) {
+    this._processActiveDataChange(changes[changeIndex]);
+  }
+
+  // Re-render the component: First restore the old options object so that data change indicators can be calculated.
+  this.Options = optionsOld;
+  this.render(optionsNew);
+};
+
+/**
+ * Processes a single active data change entry and updates the options object with the data change.
+ * @param {object} entry
+ * @private
+ */
+DvtChart.prototype._processActiveDataChange = function(entry) {
+  var type = entry['type'];
+  if (type == 'u')// Update
+    this._processActiveDataUpdate(entry);
+  else if (type == 'ia' || type == 'ib')// Insert After or Insert Before
+    this._processActiveDataInsert(entry);
+  else if (type == 'd')// Delete
+    this._processActiveDataDelete(entry);
+};
+
+/**
+ * Processes a single active data update and updates the options object with the data change.
+ * @param {object} entry
+ * @private
+ */
+DvtChart.prototype._processActiveDataUpdate = function(entry) {
+  var data = entry['data'];
+  for (var i = 0; i < data.length; i++) {
+    var dataItemInfo = this._findDataItemById(entry['id'], data[i]['_id']);
+    if (dataItemInfo) {
+      // Data Item Found: Iterate thorugh and update all properties
+      for (var key in data[i]) {
+        if (key == '_id')
+          continue;
+
+        dataItemInfo.item[key] = data[i][key];
+      }
+    }
+  }
+};
+
+/**
+ * Processes a single active data insert and updates the options object with the data change.
+ * @param {object} entry
+ * @private
+ */
+DvtChart.prototype._processActiveDataInsert = function(entry) {
+  var data = entry['data'];
+  for (var i = 0; i < data.length; i++) {
+    this.clearCache();
+    var insertId = entry['insertId'];
+    var insertedGroup = data[i]['group'];
+    var insertedSeries = data[i]['series'];
+    var seriesCount = DvtChartDataUtils.getSeriesCount(this);
+    var groupCount = DvtChartDataUtils.getGroupCount(this);
+
+    // Group names are required to be unique. If the series and group already exist, overwrite existing data item.
+    var insertedSeriesIndex = DvtChartDataUtils.getSeriesIndex(this, insertedSeries);
+    var insertedGroupIndex = DvtChartDataUtils.getGroupIndex(this, insertedGroup);
+    if (insertedSeriesIndex >= 0 && insertedGroupIndex >= 0) {
+      // Insert into existing series and existing group.
+      var seriesItems = DvtChartDataUtils.getSeriesItem(this, insertedSeriesIndex)['items'];
+      seriesItems[insertedGroupIndex] = {
+        'id': entry['id']
+      };
+      DvtChart._copyActiveDataProperties(data[i], seriesItems[insertedGroupIndex]);
+    }
+    else if (insertedGroupIndex >= 0) {
+      // Insert into existing group, but new series.  The new series is automatically placed at the end, as this is
+      // not a real use case and it's impossible to determine the correct order.
+      var items = new Array(groupCount);
+      items[insertedGroupIndex] = {
+        'id': entry['id']
+      };
+      DvtChart._copyActiveDataProperties(data[i], items[insertedGroupIndex]);
+      this.Options['series'].push({
+        'name' : insertedSeries, 'items' : items
+      });
+    }
+    else {
+      // Insert into new group.  Position based on insertId and type of entry (after or before)
+      var dataItemInfo = this._findDataItemById(insertId);
+      if (dataItemInfo)
+        insertedGroupIndex = (entry['type'] == 'ia') ? dataItemInfo.groupIndex + 1 : dataItemInfo.groupIndex;
+      else
+        insertedGroupIndex = 0;
+
+      // Create the series if needed
+      if (insertedSeriesIndex < 0) {
+        this.Options['series'].push({
+          'name' : insertedSeries, 'items' : new Array(groupCount)
+        });
+        insertedSeriesIndex = seriesCount;
+        seriesCount++;
+      }
+
+      // Insert a placeholder data item for the group for each series
+      for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+        var seriesItems = DvtChartDataUtils.getSeriesItem(this, seriesIndex)['items'];
+        seriesItems.splice(insertedGroupIndex, 0,
+            {
+              'id': entry['id']
+            });
+
+        // Insert the data item into the new series
+        if (seriesIndex == insertedSeriesIndex)
+          DvtChart._copyActiveDataProperties(data[i], seriesItems[insertedGroupIndex]);
+      }
+
+      // Insert the group
+      this.Options['groups'].splice(insertedGroupIndex, 0, insertedGroup);
+    }
+  }
+};
+
+/**
+ * Processes a single active data delete and updates the options object with the data change.
+ * @param {object} entry
+ * @private
+ */
+DvtChart.prototype._processActiveDataDelete = function(entry) {
+  this.clearCache();
+  var dataItemInfo = this._findDataItemById(entry['id']);
+  if (dataItemInfo) {
+    var dataItem;
+
+    // Mark the data item for deletion
+    for (var key in dataItemInfo.item) {
+      dataItemInfo.item[key] = null;
+    }
+    dataItemInfo.item['_deleted'] = true;
+
+    // Check if series or groups should be removed altogether
+    var seriesCount = DvtChartDataUtils.getSeriesCount(this);
+    var groupCount = DvtChartDataUtils.getGroupCount(this);
+
+    // If this is the only undeleted point in the group, then delete the group.
+    var bDeleteGroup = true;
+    for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+      dataItem = DvtChartDataUtils.getDataItem(this, seriesIndex, dataItemInfo.groupIndex);
+      if (dataItem && !dataItem['_deleted']) {
+        bDeleteGroup = false;
+        break;
+      }
+    }
+
+    // If this is the only undeleted point in the group, then delete the group.
+    var bDeleteSeries = true;
+    for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+      dataItem = DvtChartDataUtils.getDataItem(this, dataItemInfo.seriesIndex, groupIndex);
+      if (dataItem && !dataItem['_deleted']) {
+        bDeleteSeries = false;
+        break;
+      }
+    }
+
+    // Delete the group if necessary
+    if (bDeleteGroup) {
+      // Remove the data item for the group from each series
+      for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+        var seriesItems = DvtChartDataUtils.getSeriesItem(this, seriesIndex).items;
+        seriesItems.splice(dataItemInfo.groupIndex, 1);
+      }
+
+      // Remove the group from the groups list
+      this.Options['groups'].splice(dataItemInfo.groupIndex, 1);
+    }
+
+    // Delete the series if necessary
+    if (bDeleteSeries)
+      this.Options['series'].splice(dataItemInfo.seriesIndex, 1);
+
+    // recursively delete item with different stamp ids
+    this._processActiveDataDelete(entry);
+  }
+};
+
+/**
+ * Copies the properties from the active data change entry into the specified data item.
+ * @param {object} entry
+ * @param {object} item
+ * @private
+ */
+DvtChart._copyActiveDataProperties = function(entry, item) {
+  for (var key in entry) {
+    item[key] = entry[key];
+  }
+};
+
+/**
+ * Returns an object with properties item, seriesIndex, and groupIndex corresponding to the specified data item id.
+ * Returns null if no data item with matching id is found.
+ * @param {object} id The id of the data item.
+ * @param {object} stampId The id of the stamp used to generate the data item.
+ * @return {object}
+ * @private
+ */
+DvtChart.prototype._findDataItemById = function(id, stampId) {
+  // No match if id is invalid
+  if (id == null)
+    return null;
+
+  // Loop through all data items until correct id is found.
+  var seriesCount = DvtChartDataUtils.getSeriesCount(this);
+  var groupCount = DvtChartDataUtils.getGroupCount(this);
+  for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+    for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+      var dataItem = DvtChartDataUtils.getDataItem(this, seriesIndex, groupIndex);
+      if (dataItem != null && dataItem['id'] === id && (stampId == null || stampId === dataItem['_id']))
+        return {item: dataItem, seriesIndex: seriesIndex, groupIndex: groupIndex};
+    }
+  }
+
+  // Return null if no match found
+  return null;
+};
+/**
+ * Chart selection event.
+ * @param {array} selection The array of currently selected ids for the component.
+ * @param {string} type
+ * @param {number=} xMin The xMin of the marquee bounds (only applies to marquee selection).
+ * @param {number=} xMax The xMax of the marquee bounds (only applies to marquee selection).
+ * @param {string=} startGroup The first group that is included in the bounds (only applies to marquee selection).
+ * @param {string=} endGroup The last group that is included in the bounds (only applies to marquee selection).
+ * @param {number=} yMin The yMin of the marquee bounds (only applies to marquee selection).
+ * @param {number=} yMax The yMax of the marquee bounds (only applies to marquee selection).
+ * @param {number=} y2Min The y2Min of the marquee bounds (only applies to marquee selection).
+ * @param {number=} y2Max The y2Max of the marquee bounds (only applies to marquee selection).
+ * @class
+ * @constructor
+ * @export
+ */
+var DvtChartSelectionEvent = function(selection, type, xMin, xMax, startGroup, endGroup, yMin, yMax, y2Min, y2Max) {
+  DvtChartSelectionEvent.superclass.Init.call(this, selection, type);
+  this._xMin = xMin;
+  this._xMax = xMax;
+  this._startGroup = startGroup;
+  this._endGroup = endGroup;
+  this._yMin = yMin;
+  this._yMax = yMax;
+  this._y2Min = y2Min;
+  this._y2Max = y2Max;
+  this.addedSet = null;
+  this.removedSet = null;
+};
+
+DvtObj.createSubclass(DvtChartSelectionEvent, DvtSelectionEvent, 'DvtChartSelectionEvent');
+
+
+/**
+ * Returns the xMin of the marquee selection bounds.
+ * @return {number} xMin.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getXMin = function() {
+  return this._xMin;
+};
+
+
+/**
+ * Returns the xMax of the marquee selection bounds.
+ * @return {number} xMax.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getXMax = function() {
+  return this._xMax;
+};
+
+
+/**
+ * Returns the startGroup of the marquee selection bounds.
+ * @return {string} startGroup.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getStartGroup = function() {
+  return this._startGroup;
+};
+
+
+/**
+ * Returns the endGroup of the marquee selection bounds.
+ * @return {string} endGroup.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getEndGroup = function() {
+  return this._endGroup;
+};
+
+
+/**
+ * Returns the yMin of the marquee selection bounds.
+ * @return {number} yMin.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getYMin = function() {
+  return this._yMin;
+};
+
+
+/**
+ * Returns the yMax of the marquee selection bounds.
+ * @return {number} yMax.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getYMax = function() {
+  return this._yMax;
+};
+
+
+/**
+ * Returns the y2Min of the marquee selection bounds.
+ * @return {number} y2Min.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getY2Min = function() {
+  return this._y2Min;
+};
+
+
+/**
+ * Returns the y2Max of the marquee selection bounds.
+ * @return {number} y2Max.
+ * @export
+ */
+DvtChartSelectionEvent.prototype.getY2Max = function() {
+  return this._y2Max;
+};
+/**
+ * Chart viewport change event.
+ * @param {string} type
+ * @param {number=} xMin The xMin of the viewport.
+ * @param {number=} xMax The xMax of the viewport.
+ * @param {string=} startGroup The first group that is included in the viewport.
+ * @param {string=} endGroup The last group that is included in the viewport.
+ * @param {number=} yMin The yMin of the viewport.
+ * @param {number=} yMax The yMax of the viewport.
+ * @class
+ * @constructor
+ * @export
+ */
+var DvtChartViewportChangeEvent = function(type, xMin, xMax, startGroup, endGroup, yMin, yMax) {
+  DvtChartViewportChangeEvent.superclass.Init.call(this, type);
+  this._xMin = xMin;
+  this._xMax = xMax;
+  this._startGroup = startGroup;
+  this._endGroup = endGroup;
+  this._yMin = yMin;
+  this._yMax = yMax;
+};
+
+DvtObj.createSubclass(DvtChartViewportChangeEvent, DvtBaseComponentEvent, 'DvtChartViewportChangeEvent');
+
+/**
+ * @export
+ */
+DvtChartViewportChangeEvent.TYPE = 'viewportChange';
+
+
+/**
+ * @export
+ */
+DvtChartViewportChangeEvent.TYPE_INPUT = 'viewportChangeInput';
+
+/**
+ * Returns the xMin of the viewport.
+ * @return {number} xMin.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getXMin = function() {
+  return this._xMin;
+};
+
+
+/**
+ * Returns the xMax of the viewport.
+ * @return {number} xMax.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getXMax = function() {
+  return this._xMax;
+};
+
+
+/**
+ * Returns the startGroup of the viewport.
+ * @return {string} startGroup.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getStartGroup = function() {
+  return this._startGroup;
+};
+
+
+/**
+ * Returns the endGroup of the viewport.
+ * @return {string} endGroup.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getEndGroup = function() {
+  return this._endGroup;
+};
+
+
+/**
+ * Returns the yMin of the viewport.
+ * @return {number} yMin.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getYMin = function() {
+  return this._yMin;
+};
+
+
+/**
+ * Returns the yMax of the viewport.
+ * @return {number} yMax.
+ * @export
+ */
+DvtChartViewportChangeEvent.prototype.getYMax = function() {
+  return this._yMax;
+};
+/**
+ *  Provides automation services for a DVT component.
+ *  @class DvtChartAutomation
+ *  @param {DvtChart} dvtComponent
+ *  @implements {DvtAutomation}
+ *  @constructor
+ *  @export
+ */
+var DvtChartAutomation = function(dvtComponent) {
+  this._chart = dvtComponent;
+  this._options = this._chart.getOptions();
+  this._legend = this._chart.legend;
+  this._xAxis = this._chart.xAxis;
+  this._yAxis = this._chart.yAxis;
+  this._y2Axis = this._chart.y2Axis;
+
+  this._legendAutomation = this._legend ? this._legend.getAutomation() : null;
+  this._xAxisAutomation = this._xAxis ? this._xAxis.getAutomation() : null;
+  this._yAxisAutomation = this._yAxis ? this._yAxis.getAutomation() : null;
+  this._y2AxisAutomation = this._y2Axis ? this._y2Axis.getAutomation() : null;
+};
+
+DvtObj.createSubclass(DvtChartAutomation, DvtAutomation, 'DvtChartAutomation');
+
+
+/**
+ * Valid subIds inlcude:
+ * <ul>
+ * <li>dataItem[seriesIndex][itemIndex]</li>
+ * <li>series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]</li>
+ * <li>group[groupIndex0]...[groupIndexN]</li>
+ * <li>axis["axisType"]:title</li>
+ * <li>axis["axisType"]:referenceObject[index]</li>
+ * </ul>
+ * @override
+ */
+DvtChartAutomation.prototype.GetSubIdForDomElement = function(displayable) {
+  var axisSubId = null;
+  if (displayable.isDescendantOf(this._xAxis)) {
+    axisSubId = this._xAxisAutomation.GetSubIdForDomElement(displayable);
+    return this._convertAxisSubIdToChartSubId(axisSubId, 'xAxis');
+  }
+  else if (displayable.isDescendantOf(this._yAxis)) {
+    axisSubId = this._yAxisAutomation.GetSubIdForDomElement(displayable);
+    return this._convertAxisSubIdToChartSubId(axisSubId, 'yAxis');
+  }
+  else if (displayable.isDescendantOf(this._y2Axis)) {
+    axisSubId = this._y2AxisAutomation.GetSubIdForDomElement(displayable);
+    return this._convertAxisSubIdToChartSubId(axisSubId, 'y2Axis');
+  }
+  else if (displayable.isDescendantOf(this._legend)) {
+    var legendSubId = this._legendAutomation.GetSubIdForDomElement(displayable);
+    return this._convertLegendSubIdToChartSubId(legendSubId);
+  }
+  else {
+    var logicalObj = this._chart.getEventManager().GetLogicalObject(displayable);
+    if (logicalObj && this._options['type'] == 'pie') // pie charts do not use ChartObjPeer and return only dataItem[seriesIndex]
+      return 'dataItem[' + logicalObj.getSeriesIndex() + ']';
+
+    if (logicalObj instanceof DvtChartObjPeer) { // Chart data items
+      var seriesIndex = logicalObj.getSeriesIndex();
+      var itemIndex = logicalObj.getGroupIndex(); // corresponds to data items position in its series array
+
+      if (seriesIndex != null && itemIndex >= 0 && this._options['type'] != 'funnel')
+        return 'dataItem[' + seriesIndex + '][' + itemIndex + ']';
+      else if (seriesIndex != null && itemIndex == DvtFunnelRenderer._GROUP_INDEX && this._options['type'] == 'funnel')
+        return 'dataItem[' + seriesIndex + ']';  // funnel chart only returns dataItem[seriesIndex]
+      else if (seriesIndex != null && (itemIndex == null || itemIndex < 0)) // displayable represents a seriesItem e.g. line, area
+        return 'series[' + seriesIndex + ']';
+    }
+    else if (logicalObj instanceof DvtRefObjPeer) { // reference objects
+      var axisType = logicalObj.getAxisType();
+      var refObjIndex = logicalObj.getIndex();
+      return (axisType && refObjIndex >= 0) ? axisType + ':referenceObject[' + refObjIndex + ']' : null;
+    }
+  }
+  return null;
+};
+
+
+/**
+ * Takes the subId for a legend item and converts it to a valid subId for chart legends
+ * @param {String} subId for legend
+ * @return {String} series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]
+ * @private
+ */
+DvtChartAutomation.prototype._convertLegendSubIdToChartSubId = function(subId) {
+  // Get the legend item that corresponds to the legend subId
+  var legendOptions = this._legend.getOptions();
+  var legendItem = this._legendAutomation.getLegendItem(legendOptions, subId);
+  if (legendItem) {
+    // Get index of series item that has same name as legend items's text
+    for (var s = 0; s < this._options['series'].length; s++) {
+      var series = this._options['series'][s];
+      if (series['name'] == legendItem['text'])
+        return 'series[' + s + ']';
+    }
+    // legend item is not associated with a series
+    return 'legend:' + subId;
+  }
+  return null;
+};
+
+/**
+ * Takes the subId for an axis item and converts it to a valid subId for chart axes
+ * @param {String} subId for returned by the axis
+ * @param {String=} axisType The axisType
+ * @return {String} group[groupIndex0]...[groupIndexN] or axis["axisType"]:title
+ * @private
+ */
+DvtChartAutomation.prototype._convertAxisSubIdToChartSubId = function(subId, axisType) {
+  if (subId == 'title' && axisType)
+    return axisType + ':' + subId;
+  else {
+    // Take item[groupIndex0]...[groupIndexN] string and return group[groupIndex0]...[groupIndexN]
+    var indexList = subId.substring(subId.indexOf('['));
+    if (indexList)
+      return 'group' + indexList;
+  }
+
+  return null;
+};
+
+
+/**
+ * Valid subIds inlcude:
+ * <ul>
+ * <li>dataItem[seriesIndex][itemIndex]</li>
+ * <li>series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]</li>
+ * <li>group[groupIndex0]...[groupIndexN]</li>
+ * <li>axis["axisType"]:title</li>
+ * <li>axis["axisType"]:referenceObject[index]</li>
+ * </ul>
+ * @override
+ * @export
+ */
+DvtChartAutomation.prototype.getDomElementForSubId = function(subId) {
+  // TOOLTIP
+  if (subId == DvtAutomation.TOOLTIP_SUBID)
+    return this.GetTooltipElement(this._chart, DvtChartTooltipUtils.isDataCursorEnabled(this._chart) ? DvtDataCursor.TOOLTIP_ID : null);
+
+  // CHART ELEMENTS
+  var openParen1 = subId.indexOf('[');
+  var closeParen1 = subId.indexOf(']');
+  var openParen2, closeParen2, logicalObj;
+  var colon = subId.indexOf(':');
+
+  if (openParen1 > 0 && closeParen1 > 0 || colon > 0) {
+
+    var objType = (colon < 0) ? subId.substring(0, openParen1) : subId.substring(0, colon);
+
+    // GROUP AXIS LABELS
+    if (objType == 'group') {
+      return this._xAxisAutomation.getDomElementForSubId(subId);
+    }
+
+    // LEGEND ITEMS
+    if (objType == 'series') {
+      subId = this._convertToLegendSubId(subId);
+      return this._legendAutomation.getDomElementForSubId(subId);
+    }
+    else if (subId.substring(0, colon) == 'legend') {
+      subId = subId.substring(colon + 1);
+      return this._legendAutomation.getDomElementForSubId(subId);
+    }
+
+    var seriesIndex = subId.substring(openParen1 + 1, closeParen1);
+
+    // AXIS TITLE & REFERENCE OBJECTS
+    if (objType == 'xAxis' || objType == 'yAxis' || objType == 'y2Axis') {
+      var axisObjectType = subId.substring(colon + 1);
+      if (axisObjectType == 'title') { // subId for axis title
+        if (objType == 'xAxis')
+          return this._xAxisAutomation.getDomElementForSubId(axisObjectType);
+        else if (objType == 'yAxis')
+          return this._yAxisAutomation.getDomElementForSubId(axisObjectType);
+        else if (objType == 'y2Axis')
+          return this._y2AxisAutomation.getDomElementForSubId(axisObjectType);
+      }
+      else { // subId for axis reference objects
+        openParen2 = axisObjectType.indexOf('[');
+        closeParen2 = axisObjectType.indexOf(']');
+        if (axisObjectType.substring(0, openParen2) == 'referenceObject') {
+          var index = axisObjectType.substring(openParen2 + 1, closeParen2);
+          logicalObj = this._getRefObjPeer(index);
+          if (logicalObj)
+            return logicalObj.getDisplayables()[0].getElem();
+        }
+      }
+    }
+
+    // CHART DATA ITEMS
+    if (this._options['type'] == 'pie') {
+      var pieSlice = this._chart.pieChart.getSliceDisplayable(seriesIndex);
+      if (pieSlice)
+        return pieSlice.getElem();
+    }
+    // If funnel chart set the default itemIndex, else parse it from the given subId
+    if (this._options['type'] == 'funnel') {
+      var itemIndex = DvtFunnelRenderer._GROUP_INDEX;
+    }
+    else {
+      subId = subId.substring(closeParen1 + 1);
+      openParen2 = subId.indexOf('[');
+      closeParen2 = subId.indexOf(']');
+      if (openParen2 >= 0 && closeParen2 >= 0) {
+        itemIndex = subId.substring(openParen2 + 1, closeParen2);
+      }
+    }
+    // Get the logical object and return the dom element of its associated displayable
+    logicalObj = this._getChartObjPeer(seriesIndex, itemIndex);
+    if (logicalObj)
+      return logicalObj.getDisplayables()[0].getElem();
+
+  }
+  return null;
+};
+
+
+/**
+ * Returns the DvtChartObjPeer for the given seriesIndex and itemIndex
+ * @param {String} seriesIndex The seriesIndex for dataItem types
+ * @param {String} itemIndex The itemIndex for dataItem types
+ * @return {DvtChartObjPeer} The DvtChartObjPeer matching the parameters or null if none exists
+ * @private
+ */
+DvtChartAutomation.prototype._getChartObjPeer = function(seriesIndex, itemIndex) {
+  var peers = this._chart.getChartObjPeers();
+  for (var i = 0; i < peers.length; i++) {
+    var series = peers[i].getSeriesIndex();
+    var item = peers[i].getGroupIndex(); // correspinds to the data item's position in its series array
+    if (series == seriesIndex && item == itemIndex)
+      return peers[i];
+  }
+  return null;
+};
+
+
+/**
+ * Returns the DvtRefObjPeer for the given index
+ * @param {String} index The index of the object in the referenceObjects array
+ * @return {DvtChartObjPeer} The DvtRefObjPeer matching the index or null if none exists
+ * @private
+ */
+DvtChartAutomation.prototype._getRefObjPeer = function(index) {
+  var peers = this._chart.getRefObjPeers();
+  for (var i = 0; i < peers.length; i++) {
+    if (index == peers[i].getIndex())
+      return peers[i];
+  }
+  return null;
+};
+
+
+/**
+ * Takes the subId for a chart series and converts it to a valid subId for legend item
+ * @param {String} subId series[seriesIndex]
+ * @return {String} section[sectionIndex0]:item[itemIndex]
+ * @private
+ */
+DvtChartAutomation.prototype._convertToLegendSubId = function(subId) {
+  var openParen = subId.indexOf('[');
+  var closeParen = subId.indexOf(']');
+  var seriesIndex = subId.substring(openParen + 1, closeParen);
+
+  var legendOptions = this._legend.getOptions();
+  var series = this._options['series'][seriesIndex];
+
+  var indices = this._legendAutomation.getIndicesFromSeries(series, legendOptions);
+  return 'section' + indices;
+};
+
+
+/**
+ * Returns an object containing data for a chart data item. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>borderColor</li>
+ * <li>color</li>
+ * <li>label</li>
+ * <li>targetValue</li>
+ * <li>tooltip</li>
+ * <li>value</li>
+ * <li>open</li>
+ * <li>close</li>
+ * <li>high</li>
+ * <li>low</li>
+ * <li>volume</li>
+ * <li>x</li>
+ * <li>y</li>
+ * <li>z</li>
+ * <li>group</li>
+ * <li>series</li>
+ * <li>selected</li>
+ * </ul>
+ * @param {String} seriesIndex The seriesIndex for dataItem and series types, the itemIndex for group types
+ * @param {String} itemIndex The itemIndex for dataItem types
+ * @return {Object} An object containing data for the dataItem
+ * @export
+ */
+DvtChartAutomation.prototype.getDataItem = function(seriesIndex, itemIndex) {
+  if (this._options['type'] == 'pie' || this._options['type'] == 'funnel')
+    itemIndex = 0; //Not sure if neccessary but getDataItem will be null if itemIndex is null
+
+  var dataItem = DvtChartDataUtils.getDataItem(this._chart, seriesIndex, itemIndex);
+
+  if (dataItem) {
+    return {
+      'borderColor' : DvtChartStyleUtils.getBorderColor(this._chart, seriesIndex, itemIndex),
+      'color' : DvtChartStyleUtils.getColor(this._chart, seriesIndex, itemIndex),
+      'label' : DvtChartDataUtils.getDataLabel(this._chart, seriesIndex, itemIndex),
+      'targetValue' : DvtChartDataUtils.getTargetValue(this._chart, seriesIndex, itemIndex),
+      'tooltip' : DvtChartTooltipUtils.getDatatip(this._chart, seriesIndex, itemIndex, false),
+      'value' : DvtChartDataUtils.getValue(this._chart, seriesIndex, itemIndex),
+      'open': dataItem['open'],
+      'close': dataItem['close'],
+      'high': DvtChartDataUtils.getHighValue(this._chart, seriesIndex, itemIndex),
+      'low': DvtChartDataUtils.getLowValue(this._chart, seriesIndex, itemIndex),
+      'volume': dataItem['volume'],
+      'x' : DvtChartDataUtils.getXValue(this._chart, seriesIndex, itemIndex),
+      'y' : dataItem['y'],
+      'z' : dataItem['z'],
+      'min' : dataItem['min'],
+      'max' : dataItem['max'],
+      'group' : DvtChartDataUtils.getGroup(this._chart, itemIndex),
+      'series' : DvtChartDataUtils.getSeries(this._chart, seriesIndex),
+      'selected' : DvtChartDataUtils.isDataSelected(this._chart, seriesIndex, itemIndex)
+    };
+  }
+  return null;
+};
+
+/**
+ * Returns the group corresponding to the given index. Used for verification.
+ * @param {String} itemIndex The index of the desired group
+ * @return {String} The group corresponding to the given index
+ * @export
+ */
+DvtChartAutomation.prototype.getGroup = function(itemIndex) {
+  return DvtChartDataUtils.getGroup(this._chart, itemIndex);
+};
+
+/**
+ * Returns the name of the series corresponding to the given index. Used for verification.
+ * @param {String} seriesIndex The index of the desired series
+ * @return {String} the name of the series corresponding to the given index
+ * @export
+ */
+DvtChartAutomation.prototype.getSeries = function(seriesIndex) {
+  return this._options['series'][seriesIndex]['name'];
+};
+
+/**
+ * Returns the number of groups in the chart data. Used for verification.
+ * @return {Number} The number of groups
+ * @export
+ */
+DvtChartAutomation.prototype.getGroupCount = function() {
+  return DvtChartDataUtils.getGroupCount(this._chart);
+};
+
+/**
+ * Returns the number of series in the chart data. Used for verification.
+ * @return {Number} The number of series
+ * @export
+ */
+DvtChartAutomation.prototype.getSeriesCount = function() {
+  return this._options['series'].length;
+};
+
+/**
+ * Returns the chart title. Used for verification.
+ * @return {String} The chart title
+ * @export
+ */
+DvtChartAutomation.prototype.getTitle = function() {
+  return this._options['title']['text'];
+};
+
+/**
+ * Returns an object that represents the legend data. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>bounds</li>
+ * <li>title</li>
+ * </ul>
+ * @return {Object} An object that represents the legend data
+ * @export
+ */
+DvtChartAutomation.prototype.getLegend = function() {
+  var legendSpace = this._legend.__getBounds();
+  var point = this._chart.localToStage(new DvtPoint(legendSpace.x, legendSpace.y));
+  var legendBounds = {
+    'x' : point.x,
+    'y' : point.y,
+    'width' : legendSpace.w,
+    'height' : legendSpace.h
+  };
+
+  var legend = {
+    'bounds' : legendBounds,
+    'title' : this._legend.getOptions()['title']
+  };
+
+  return legend;
+};
+
+/**
+ * Returns an object that represents the plot area data. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>bounds</li>
+ * </ul>
+ * @return {Object} An object that represents the plot area data
+ * @export
+ */
+DvtChartAutomation.prototype.getPlotArea = function() {
+  var plotAreaSpace = this._chart.__getPlotAreaSpace();
+
+  var plotAreaBounds = {
+    'x' : plotAreaSpace.x,
+    'y' : plotAreaSpace.y,
+    'width' : plotAreaSpace.w,
+    'height' : plotAreaSpace.h
+  };
+
+  var plotArea = {
+    'bounds' : plotAreaBounds
+  };
+
+  return plotArea;
+};
+
+/**
+ * Returns an object that represents the xAxis data. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>bounds</li>
+ * <li>title</li>
+ * </ul>
+ * @return {Object} An object that represents the xAxis data
+ * @export
+ */
+DvtChartAutomation.prototype.getXAxis = function() {
+  return this._getAxis('x');
+};
+
+/**
+ * Returns an object that represents the yAxis data. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>bounds</li>
+ * <li>title</li>
+ * </ul>
+ * @return {Object} An object that represents the yAxis data
+ * @export
+ */
+DvtChartAutomation.prototype.getYAxis = function() {
+  return this._getAxis('y');
+};
+
+/**
+ * Returns an object that represents the y2Axis data. Used for verification.
+ * Valid verification values inlcude:
+ * <ul>
+ * <li>bounds</li>
+ * <li>title</li>
+ * </ul>
+ * @return {Object} An object that represents the y2Axis data
+ * @export
+ */
+DvtChartAutomation.prototype.getY2Axis = function() {
+  return this._getAxis('y2');
+};
+
+/**
+ * Returns an object that represents the axis data.
+ * @param {string} type The axis type: x, y, or y2
+ * @return {object} An object that represents the axis data
+ * @private
+ */
+DvtChartAutomation.prototype._getAxis = function(type) {
+  var axis = (type == 'x') ? this._xAxis : (type == 'y') ? this._yAxis : this._y2Axis;
+  if (axis) {
+    var axisSpace = axis.__getBounds();
+    var stageCoord = axis.localToStage(new DvtPoint(axisSpace.x, axisSpace.y));
+    var axisBounds = {
+      'x' : stageCoord.x,
+      'y' : stageCoord.y,
+      'width' : axisSpace.w,
+      'height' : axisSpace.h
+    };
+
+    var chart = this._chart;
+    var getPreferredSize = function(width, height) {
+      var axisOptions = axis.getOptions();
+      var position = axisOptions['position'];
+      var tickLabelGap = DvtChartAxisUtils.getTickLabelGapSize(chart, type);
+      var outerGap = (DvtChartTypeUtils.isStandaloneXAxis(chart) || DvtChartTypeUtils.isStandaloneYAxis(chart) || DvtChartTypeUtils.isStandaloneY2Axis(chart)) ? 2 : 0;
+
+      // the preferred size computed by the axis excludes tick label gap, so we have to subtract the gap
+      // before passing to the axis, and add it again later
+      var prefSize;
+      if (position == 'top' || position == 'bottom') {
+        prefSize = axis.getPreferredSize(axisOptions, width, height - tickLabelGap - outerGap);
+        prefSize.h = Math.ceil(prefSize.h + tickLabelGap + outerGap);
+      }
+      else {
+        prefSize = axis.getPreferredSize(axisOptions, width - tickLabelGap - outerGap, height);
+        prefSize.w = Math.ceil(prefSize.w + tickLabelGap + outerGap);
+      }
+      return {'width': prefSize.w, 'height': prefSize.h};
+    };
+
+    var axisObj = {
+      'bounds' : axisBounds,
+      'title' : this._options[type + 'Axis']['title'],
+      'getPreferredSize': getPreferredSize
+    };
+    return axisObj;
+  }
+
+  return null;
+};
+
+/**
+ * @override
+ */
+DvtAutomation.prototype.IsTooltipElement = function(domElement) {
+  var id = domElement.getAttribute('id');
+  if (id && (id.indexOf(DvtDataCursor.TOOLTIP_ID) == 0 || id.indexOf(DvtHtmlTooltipManager._TOOLTIP_DIV_ID) == 0))
+    return true;
+  return false;
+};
+
+
+DvtBundle.addDefaultStrings(DvtBundle.CHART_PREFIX, {
+  'DEFAULT_GROUP_NAME': 'Group {0}',
+
+  'LABEL_SERIES': 'Series',
+  'LABEL_GROUP': 'Group',
+  'LABEL_VALUE': 'Value',
+  'LABEL_TARGET_VALUE': 'Target',
+  'LABEL_X': 'X',
+  'LABEL_Y': 'Y',
+  'LABEL_Z': 'Z',
+  'LABEL_PERCENTAGE': 'Percentage',
+  'LABEL_MIN': 'Min',
+  'LABEL_MAX': 'Max',
+  'LABEL_HIGH': 'High',
+  'LABEL_LOW': 'Low',
+  'LABEL_OPEN': 'Open',
+  'LABEL_CLOSE': 'Close',
+  'LABEL_VOLUME': 'Volume',
+
+  'LABEL_OTHER': 'Other',
+  'MARQUEE_SELECT': 'Marquee select',
+  'MARQUEE_ZOOM': 'Marquee zoom',
+  'PAN': 'Pan'
+});
+
+/**
+ * Event Manager for DvtChart.
+ * @param {DvtChart} chart
+ * @class
+ * @extends {DvtEventManager}
+ * @constructor
+ */
+var DvtChartEventManager = function(chart) {
+  DvtChartEventManager.superclass.Init.call(this, chart.getCtx(), chart.processEvent, chart);
+  this._chart = chart;
+
+  this._dragMode = null;
+  this._dragButtonsVisible = DvtAgent.isTouchDevice();
+
+  /**
+   * The pan button
+   * @type {DvtButton}
+   */
+  this.panButton = null;
+  /**
+   * The marquee zoom button
+   * @type {DvtButton}
+   */
+  this.zoomButton = null;
+  /**
+   * The marquee select button
+   * @type {DvtButton}
+   */
+  this.selectButton = null;
+
+  // Event handlers
+  this._dataCursorHandler = null;
+  this._panZoomHandler = null;
+  this._marqueeZoomHandler = null;
+  this._marqueeSelectHandler = null;
+
+  // Cached stage absolute position
+  this._stageAbsolutePosition = null;
+};
+
+DvtObj.createSubclass(DvtChartEventManager, DvtEventManager, 'DvtChartEventManager');
+
+/** @const */
+DvtChartEventManager.DRAG_MODE_PAN = 'pan';
+/** @const */
+DvtChartEventManager.DRAG_MODE_ZOOM = 'zoom';
+/** @const */
+DvtChartEventManager.DRAG_MODE_SELECT = 'select';
+/** @const */
+DvtChartEventManager.DRAG_MODE_OFF = 'off';
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.addListeners = function(displayable) {
+  DvtSvgDocumentUtils.addDragListeners(this._chart, this._onDragStart, this._onDragMove, this._onDragEnd, this);
+  DvtChartEventManager.superclass.addListeners.call(this, displayable);
+
+  if (!DvtAgent.isTouchDevice()) {
+    displayable.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  }
+
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.removeListeners = function(displayable) {
+  DvtChartEventManager.superclass.removeListeners.call(this, displayable);
+  if (!DvtAgent.isTouchDevice()) {
+    displayable.removeEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  }
+};
+
+/**
+ * Returns the logical object corresponding to the specified DvtDisplayable.  All high level event handlers,
+ * such as the selection and popup handlers, are designed to react to the logical objects.
+ * @param {DvtDisplayable} target The displayable.
+ * @return {object} The logical object corresponding to the target.
+ */
+DvtChartEventManager.prototype.getLogicalObject = function(target) {
+  return this.GetLogicalObject(target, true);
+};
+
+
+/**
+ * Return the relative position relative to the stage, based on the cached stage absolute position.
+ * @param {number} pageX
+ * @param {number} pageY
+ * @return {DvtPoint} The relative position.
+ * @private
+ */
+DvtChartEventManager.prototype._getRelativePosition = function(pageX, pageY) {
+  if (!this._stageAbsolutePosition)
+    this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
+
+  return new DvtPoint(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
+};
+
+
+/**
+ * Returns an event handler for the current drag mode.
+ * @param {DvtPoint} relPos (optional) The current cursor position relative to the stage. If provided, the relPos will
+ *    be considered in choosing the drag handler.
+ * @return {DvtMarqueeHandler or DvtPanZoomHandler} Drag handler.
+ * @private
+ */
+DvtChartEventManager.prototype._getDragHandler = function(relPos) {
+  if (relPos && this._chart.getOptions()['dragMode'] == 'user' && DvtChartTypeUtils.isBLAC(this._chart) &&
+      (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN || this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)) {
+    // For BLAC chart on desktop, the pan and zoom modes are combined.
+    // If the drag starts inside the plot area, it's a pan. If the drag starts inside the axis, it's a marquee zoom.
+    if (this._panZoomHandler.isWithinBounds(relPos))
+      this._dragMode = DvtChartEventManager.DRAG_MODE_PAN;
+    else
+      this._dragMode = DvtChartEventManager.DRAG_MODE_ZOOM;
+  }
+
+  if (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN)
+    return this._panZoomHandler;
+  if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)
+    return this._marqueeZoomHandler;
+  if (this._dragMode == DvtChartEventManager.DRAG_MODE_SELECT)
+    return this._marqueeSelectHandler;
+  return null;
+};
+
+
+/**
+ * Drag start callback.
+ * @param {DvtBaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+DvtChartEventManager.prototype._onDragStart = function(event) {
+  if (DvtAgent.isTouchDevice())
+    return this._onTouchDragStart(event);
+  else
+    return this._onMouseDragStart(event);
+};
+
+
+/**
+ * Drag move callback.
+ * @param {DvtBaseEvent} event
+ * @return {boolean}
+ * @private
+ */
+DvtChartEventManager.prototype._onDragMove = function(event) {
+  if (DvtAgent.isTouchDevice())
+    return this._onTouchDragMove(event);
+  else
+    return this._onMouseDragMove(event);
+};
+
+
+/**
+ * Drag end callback.
+ * @param {DvtBaseEvent} event
+ * @return {boolean}
+ * @private
+ */
+DvtChartEventManager.prototype._onDragEnd = function(event) {
+  if (DvtAgent.isTouchDevice())
+    return this._onTouchDragEnd(event);
+  else
+    return this._onMouseDragEnd(event);
+};
+
+
+/**
+ * Mouse drag start callback.
+ * @param {DvtBaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+DvtChartEventManager.prototype._onMouseDragStart = function(event) {
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var dragHandler = this._getDragHandler(relPos);
+  var chartEvent;
+
+  // Do not initiate drag if the target is selectable. Drag only on left click.
+  var obj = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
+  var selectable = obj && obj.isSelectable && obj.isSelectable();
+  if (!selectable && event.button == 0 && dragHandler) {
+    chartEvent = dragHandler.processDragStart(relPos, event.ctrlKey);
+    if (chartEvent)
+      this._callback.call(this._callbackObj, chartEvent);
+
+    this._chart.setCursor(dragHandler.getCursor(relPos));
+    this.setDragButtonsVisible(false); // hide drag buttons on drag
+
+    // Ensure the chart is currently focused so that it can accept cancel events
+    if (this._chart != this.getCtx().getCurrentKeyboardFocus())
+      this.getCtx().setCurrentKeyboardFocus(this._chart);
+  }
+
+  if (chartEvent) {
+    if (this._dataCursorHandler)
+      this._dataCursorHandler.processEnd();
+    return true;
+  }
+  return false;
+};
+
+
+/**
+ * Mouse drag move callback.
+ * @param {DvtBaseEvent} event
+ * @private
+ */
+DvtChartEventManager.prototype._onMouseDragMove = function(event) {
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
+  var chartEvent;
+
+  if (dragHandler) {
+    chartEvent = dragHandler.processDragMove(relPos, event.ctrlKey);
+    if (chartEvent) {
+      this._callback.call(this._callbackObj, chartEvent);
+      this.setDragButtonsVisible(false); // hide drag buttons on drag
+    }
+  }
+
+  if (chartEvent)
+    event.stopPropagation(); // prevent data cursor from appearing
+};
+
+
+/**
+ * Mouse drag end callback.
+ * @param {DvtBaseEvent} event
+ * @private
+ */
+DvtChartEventManager.prototype._onMouseDragEnd = function(event) {
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
+  var chartEvent;
+
+  if (dragHandler) {
+    chartEvent = dragHandler.processDragEnd(relPos, event.ctrlKey);
+    if (chartEvent) {
+      this._callback.call(this._callbackObj, chartEvent);
+      this.autoToggleZoomButton();
+    }
+
+    this._chart.setCursor(dragHandler.getCursor(relPos));
+
+    // Show the drag buttons
+    var axisSpace = this._chart.__getAxisSpace();
+    if (axisSpace)
+      this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
+  }
+
+  // Clear the stage absolute position cache
+  this._stageAbsolutePosition = null;
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnMouseMove = function(event) {
+  DvtChartEventManager.superclass.OnMouseMove.call(this, event);
+
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  if (this._dataCursorHandler) {
+    if (this.GetCurrentTargetForEvent(event) instanceof DvtButton) // don't show DC over buttons
+      this._dataCursorHandler.processEnd();
+    else
+      this._dataCursorHandler.processMove(relPos);
+  }
+
+  // Update the cursor
+  var dragHandler = this._getDragHandler(relPos);
+  if (dragHandler)
+    this._chart.setCursor(dragHandler.getCursor(relPos));
+  else
+    this._chart.setCursor('inherit');
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnMouseOut = function(event) {
+  DvtChartEventManager.superclass.OnMouseOut.call(this, event);
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+
+  // Hide the drag buttons
+  var axisSpace = this._chart.__getAxisSpace();
+  if (axisSpace)
+    this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
+
+  if (this._dataCursorHandler)
+    this._dataCursorHandler.processOut(relPos);
+
+  // Clear the stage absolute position cache
+  this._stageAbsolutePosition = null;
+
+  var obj = this.GetLogicalObject(event.target);
+  if (!obj)
+    return;
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnMouseWheel = function(event) {
+  if (!DvtChartEventUtils.isZoomable(this._chart))
+    return;
+
+  var delta = event.wheelDelta != null ? event.wheelDelta : 0;
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+
+  if (this._panZoomHandler) {
+    var panZoomEvent = this._panZoomHandler.processMouseWheel(relPos, delta);
+    if (panZoomEvent) {
+      event.preventDefault();
+      event.stopPropagation();
+      this._callback.call(this._callbackObj, panZoomEvent);
+
+      // Update the data cursor since the viewport has changed
+      if (this._dataCursorHandler)
+        this._dataCursorHandler.processMove(relPos);
+    }
+  }
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.ShowFocusEffect = function(event, navigable) {
+  if (this._dataCursorHandler) {
+    var pos = navigable.getDataPosition();
+    if (pos) {
+      var plotAreaBounds = this._chart.__getPlotAreaSpace();
+      this._dataCursorHandler.processMove(new DvtPoint(pos.x + plotAreaBounds.x, pos.y + plotAreaBounds.y));
+    }
+  }
+  DvtChartEventManager.superclass.ShowFocusEffect.call(this, event, navigable);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnBlur = function(event)
+{
+  if (this._dataCursorHandler)
+    this._dataCursorHandler.processEnd();
+  DvtChartEventManager.superclass.OnBlur.call(this, event);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnClickInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
+  var pos = this._getRelativePosition(event.pageX, event.pageY);
+  if (this.SeriesFocusHandler)
+    this.SeriesFocusHandler.processSeriesFocus(pos, obj);
+
+  if (!obj)
+    return;
+
+  this.processActionEvent(obj);
+
+  // Only drill if not selectable. If selectable, drill with double click.
+  if (!(obj.isSelectable && obj.isSelectable()))
+    this.processDrillEvent(obj);
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.OnDblClickInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
+  if (!obj)
+    return;
+
+  // Only double click to drill if selectable. Otherwise, drill with single click.
+  if (obj.isSelectable && obj.isSelectable())
+    this.processDrillEvent(obj);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.HandleTouchHoverStartInternal = function(event) {
+  var dlo = this.GetLogicalObject(event.target);
+  this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
+  return false;
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.HandleTouchHoverMoveInternal = function(event) {
+  var dlo = this.GetLogicalObject(event.target);
+  this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
+  return false;
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
+  if (!obj)
+    return;
+
+  this.processActionEvent(obj);
+
+  // Only drill if not selectable. If selectable, drill using double click.
+  if (!(obj.isSelectable && obj.isSelectable()))
+    this.processDrillEvent(obj);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.HandleTouchClickInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
+  if (!obj)
+    return;
+
+  this.processActionEvent(obj);
+
+  // Only drill if not selectable. If selectable, drill using double click.
+  if (!(obj.isSelectable && obj.isSelectable()))
+    this.processDrillEvent(obj);
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.HandleTouchDblClickInternal = function(event) {
+  var obj = this.GetLogicalObject(event.target);
+  if (!obj)
+    return;
+
+  // Only double click to drill if selectable. Otherwise, drill with single click.
+  if (obj.isSelectable && obj.isSelectable()) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.processDrillEvent(obj);
+  }
+};
+
+
+/**
+ * Processes an action on the specified chart item.
+ * @param {DvtChartObjPeer} obj The chart item that was clicked.
+ */
+DvtChartEventManager.prototype.processActionEvent = function(obj) {
+  if (obj && obj.getAction && obj.getAction())
+    this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()));
+};
+
+/**
+ * Processes an drill on the specified chart item.
+ * @param {DvtChartObjPeer} obj The chart item that was clicked.
+ */
+DvtChartEventManager.prototype.processDrillEvent = function(obj) {
+  if (obj && obj.isDrillable && obj.isDrillable()) {
+    var id = obj.getId();
+    if (obj instanceof DvtChartObjPeer)
+      this.FireEvent(new DvtDrillEvent(id.getId ? id.getId() : id, obj.getSeries(), obj.getGroup()));
+    else if (obj instanceof DvtPieSlice)
+      this.FireEvent(new DvtDrillEvent(id.getId(), id.getSeries(), id.getGroup()));
+  }
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver) {
+  // Don't continue if not enabled
+  var options = this._chart.getOptions();
+  if (DvtChartEventUtils.getHoverBehavior(this._chart) != 'dim')
+    return;
+
+  // Compute the new highlighted categories and update the options
+  var categories = obj.getCategories ? obj.getCategories() : [];
+  options['highlightedCategories'] = bOver ? categories.slice() : null;
+
+  // Fire the event to the rollover handler, who will fire to the component callback.
+  var type = bOver ? DvtCategoryRolloverEvent.TYPE_OVER : DvtCategoryRolloverEvent.TYPE_OUT;
+  var rolloverEvent = new DvtCategoryRolloverEvent(type, options['highlightedCategories']);
+  var hoverBehaviorDelay = DvtChartStyleUtils.getHoverBehaviorDelay(this._chart);
+
+  // Find all the objects that may need to be highlighted
+  var objs = this._chart.getObjects();
+  if (this._chart.pieChart)
+    objs = objs.concat(this._chart.pieChart.__getSlices());
+
+  this.RolloverHandler.processEvent(rolloverEvent, objs, hoverBehaviorDelay, options['highlightMatch'] == 'any');
+};
+
+/**
+ * Touch drag start callback.
+ * @param {DvtBaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+DvtChartEventManager.prototype._onTouchDragStart = function(event) {
+  var touches = event.touches;
+  var chartEvent, dataCursorOn;
+
+  if (touches.length == 1) {
+    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var dragHandler = this._getDragHandler();
+    if (dragHandler)
+      chartEvent = dragHandler.processDragStart(relPos, true);
+    else if (this._dataCursorHandler) {
+      this._dataCursorHandler.processMove(relPos);
+      dataCursorOn = true;
+    }
+  }
+  else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
+    this.endDrag(); // clean 1-finger events before starting pinch zoom
+    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    chartEvent = this._panZoomHandler.processPinchStart(relPos1, relPos2);
+  }
+
+  if (chartEvent) {
+    this._callback.call(this._callbackObj, chartEvent);
+    this.getCtx().getTooltipManager().hideTooltip();
+  }
+
+  if (chartEvent || dataCursorOn) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.setDragButtonsVisible(false); // hide drag buttons on drag
+    return true;
+  }
+
+  return false;
+};
+
+
+/**
+ * Touch drag move callback.
+ * @param {DvtBaseEvent} event
+ * @private
+ */
+DvtChartEventManager.prototype._onTouchDragMove = function(event) {
+  var touches = event.touches;
+  var chartEvent, dataCursorOn;
+
+  if (touches.length == 1) {
+    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var dragHandler = this._getDragHandler();
+    if (dragHandler)
+      chartEvent = dragHandler.processDragMove(relPos, true);
+    else if (this._dataCursorHandler) {
+      this._dataCursorHandler.processMove(relPos);
+      dataCursorOn = true;
+    }
+  }
+  else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
+    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    chartEvent = this._panZoomHandler.processPinchMove(relPos1, relPos2);
+  }
+
+  if (chartEvent || dataCursorOn) {
+    event.preventDefault();
+  }
+
+  if (chartEvent) {
+    this._callback.call(this._callbackObj, chartEvent);
+    this.getCtx().getTooltipManager().hideTooltip();
+  }
+};
+
+
+/**
+ * Touch drag end callback.
+ * @param {DvtBaseEvent} event
+ * @private
+ */
+DvtChartEventManager.prototype._onTouchDragEnd = function(event) {
+  // End 1-finger event
+  var chartEvent1 = this.endDrag();
+
+  // End 2-finger event
+  var chartEvent2;
+  if (this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
+    chartEvent2 = this._panZoomHandler.processPinchEnd();
+    if (chartEvent2)
+      this._callback.call(this._callbackObj, chartEvent2);
+  }
+
+  if (chartEvent1 || chartEvent2) {
+    event.preventDefault();
+    this.getCtx().getTooltipManager().hideTooltip();
+  }
+
+  this._stageAbsolutePosition = null; // Clear the stage absolute position cache
+  this.setDragButtonsVisible(true);
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.endDrag = function() {
+  var dragHandler = this._getDragHandler();
+  var chartEvent;
+
+  if (dragHandler) {
+    chartEvent = dragHandler.processDragEnd(null, true);
+    if (chartEvent)
+      this._callback.call(this._callbackObj, chartEvent);
+  }
+  if (this._dataCursorHandler)
+    this._dataCursorHandler.processEnd();
+
+  if (chartEvent)
+    this._callback.call(this._callbackObj, chartEvent);
+
+  return chartEvent;
+};
+
+/**
+ * Zooms by the specified amount.
+ * @param {number} dz A number specifying the zoom ratio. dz = 1 means no zoom.
+ */
+DvtChartEventManager.prototype.zoomBy = function(dz) {
+  if (this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
+    var chartEvent = this._panZoomHandler.zoomBy(dz);
+    if (chartEvent)
+      this._callback.call(this._callbackObj, chartEvent);
+  }
+};
+
+/**
+ * Pans by the specified amount.
+ * @param {number} dx A number from specifying the pan ratio in the x direction, e.g. dx = 0.5 means pan end by 50%..
+ * @param {number} dy A number from specifying the pan ratio in the y direction, e.g. dy = 0.5 means pan down by 50%.
+ */
+DvtChartEventManager.prototype.panBy = function(dx, dy) {
+  if (this._panZoomHandler && DvtChartEventUtils.isScrollable(this._chart)) {
+    var chartEvent = this._panZoomHandler.panBy(dx, dy);
+    if (chartEvent)
+      this._callback.call(this._callbackObj, chartEvent);
+  }
+};
+
+/**
+ * Helper function to hide tooltips and data cursor, generally in preparation for render or removal of the chart. This
+ * is not done in hideTooltip to avoid interactions with the superclass, which would cause problems with the data cursor.
+ */
+DvtChartEventManager.prototype.hideHoverFeedback = function() {
+  // Hide tooltip and data cursor
+  this.hideTooltip();
+
+  // Hide the data cursor. This is necessary to hide the data cursor line when the user mouses over the tooltip div in
+  // IE9, which does not support pointer-events.
+  if (this._dataCursorHandler)
+    this._dataCursorHandler.processEnd();
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.hideTooltip = function() {
+  // Don't hide the tooltip if data cursor is shown on a touch device
+  if (!this._dataCursorHandler || !this._dataCursorHandler.isDataCursorShown())
+    DvtChartEventManager.superclass.hideTooltip.call(this);
+};
+
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.getTooltipsEnabled = function(logicalObj) {
+  // Don't allow tooltips to conflict with the data cursor
+  if (this._dataCursorHandler && (logicalObj instanceof DvtChartObjPeer || logicalObj instanceof DvtRefObjPeer || this._dataCursorHandler.isDataCursorShown()))
+    return false;
+  else
+    return DvtChartEventManager.superclass.getTooltipsEnabled.call(this);
+};
+
+
+/**
+ * Gets the data cursor handler.
+ * @return {DvtDataCursorHandler} The data cursor handler.
+ */
+DvtChartEventManager.prototype.getDataCursorHandler = function() {
+  return this._dataCursorHandler;
+};
+
+/**
+ * Sets the data cursor handler.
+ * @param {DvtDataCursorHandler} handler The data cursor handler.
+ */
+DvtChartEventManager.prototype.setDataCursorHandler = function(handler) {
+  this._dataCursorHandler = handler;
+};
+
+
+/**
+ * Sets the pan zoom handler.
+ * @param {DvtPanZoomHandler} handler The pan zoom handler.
+ */
+DvtChartEventManager.prototype.setPanZoomHandler = function(handler) {
+  this._panZoomHandler = handler;
+};
+
+/**
+ * Sets the marquee zoom handler.
+ * @param {DvtMarqueeHandler} handler The marquee zoom handler.
+ */
+DvtChartEventManager.prototype.setMarqueeZoomHandler = function(handler) {
+  this._marqueeZoomHandler = handler;
+};
+
+
+/**
+ * Sets the marquee select handler.
+ * @param {DvtMarqueeHandler} handler The marquee select handler.
+ */
+DvtChartEventManager.prototype.setMarqueeSelectHandler = function(handler) {
+  this._marqueeSelectHandler = handler;
+};
+
+
+/**
+ * Cancels marquee zoom/select.
+ * @param {DvtBaseEvent} event The event
+ */
+DvtChartEventManager.prototype.cancelMarquee = function(event) {
+  if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM) {
+    if (this._marqueeZoomHandler.cancelMarquee())
+      event.preventDefault();
+  }
+  else if (this._dragMode == DvtChartEventManager.DRAG_MODE_SELECT) {
+    // If marquee is in progress, re-render from the options obj, which has the old selection
+    if (this._marqueeSelectHandler && this._marqueeSelectHandler.cancelMarquee())
+      this._chart.render();
+  }
+};
+
+
+/**
+ * Gets the current drag mode.
+ * @return {string} The drag mode.
+ */
+DvtChartEventManager.prototype.getDragMode = function() {
+  return this._dragMode;
+};
+
+
+/**
+ * Sets the drag mode. If set to null, the drag mode will become the default one.
+ * @param {string} dragMode The drag mode, or null.
+ */
+DvtChartEventManager.prototype.setDragMode = function(dragMode) {
+  if (dragMode == null)
+    this._dragMode = this._getDefaultDragMode();
+  else
+    this._dragMode = dragMode;
+
+  // If the chart is fully zoomed out, the pan mode should fall back to the zoom mode on desktop
+  if (this._chart.xAxis.isFullViewport() && (!this._chart.yAxis || this._chart.yAxis.isFullViewport()))
+    this.autoToggleZoomButton();
+};
+
+
+/**
+ * Returns the default drag mode for the chart.
+ * @return {string} The default drag mode.
+ * @private
+ */
+DvtChartEventManager.prototype._getDefaultDragMode = function() {
+  if (DvtAgent.isTouchDevice())
+    return DvtChartEventManager.DRAG_MODE_OFF;
+  else if (DvtChartEventUtils.isScrollable(this._chart))
+    return DvtChartEventManager.DRAG_MODE_PAN;
+  else if (this._chart.getOptions()['selectionMode'] == 'multiple')
+    return DvtChartEventManager.DRAG_MODE_SELECT;
+  else
+    return null;
+};
+
+
+/**
+ * Handles the zoom button click event.
+ * @param {object} event
+ */
+DvtChartEventManager.prototype.onZoomButtonClick = function(event) {
+  if (this.zoomButton.isToggled()) {
+    if (this.selectButton)
+      this.selectButton.setToggled(false);
+    this.setDragMode(DvtChartEventManager.DRAG_MODE_ZOOM);
+  }
+  else
+    this.setDragMode(null);
+};
+
+
+/**
+ * Handles the pan button click event.
+ * @param {object} event
+ */
+DvtChartEventManager.prototype.onPanButtonClick = function(event) {
+  if (this.panButton.isToggled()) {
+    if (this.selectButton)
+      this.selectButton.setToggled(false);
+    this.setDragMode(DvtChartEventManager.DRAG_MODE_PAN);
+  }
+  else
+    this.setDragMode(null);
+};
+
+
+/**
+ * Handles the select button click event.
+ * @param {object} event
+ */
+DvtChartEventManager.prototype.onSelectButtonClick = function(event) {
+  if (this.selectButton.isToggled()) {
+    if (this.zoomButton)
+      this.zoomButton.setToggled(false);
+    if (this.panButton)
+      this.panButton.setToggled(false);
+    this.setDragMode(DvtChartEventManager.DRAG_MODE_SELECT);
+  }
+  else
+    this.setDragMode(null);
+};
+
+
+/**
+ * Sets the visibility of the drag buttons.
+ * @param {boolean} visible The visibility.
+ */
+DvtChartEventManager.prototype.setDragButtonsVisible = function(visible) {
+  if (visible && !this._dragButtonsVisible) {
+    this._chart.showDragButtons();
+    this._dragButtonsVisible = true;
+  }
+  else if (!visible && this._dragButtonsVisible) {
+    this._chart.hideDragButtons();
+    this._dragButtonsVisible = false;
+  }
+};
+
+
+/**
+ * Returns whether the drag buttons are visible.
+ * @return {boolean}
+ */
+DvtChartEventManager.prototype.areDragButtonsVisible = function() {
+  return this._dragButtonsVisible;
+};
+
+
+/**
+ * Toggles the marquee zoom button automatically:
+ * - Marquee select button is unaffected.
+ * - If the chart is fully zoomed out, turn on the marquee zoom mode; otherwise, turn it off.
+ * Doesn't apply to touch devices.
+ */
+DvtChartEventManager.prototype.autoToggleZoomButton = function() {
+  if (DvtAgent.isTouchDevice() || !this.zoomButton)
+    return;
+
+  if (this._chart.xAxis.isFullViewport() && this._chart.yAxis.isFullViewport()) {
+    if (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN) {
+      this.zoomButton.setToggled(true);
+      this.onZoomButtonClick(null);
+    }
+  }
+  else {
+    if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM) {
+      this.zoomButton.setToggled(false);
+      this.onZoomButtonClick(null);
+    }
+  }
+};
+
+/**
+ * @override
+ */
+DvtChartEventManager.prototype.GetTouchResponse = function() {
+  if (this._dragMode && this._dragMode != DvtChartEventManager.DRAG_MODE_OFF) {
+    return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+  }
+  else
+    return this._chart.getOptions()['touchResponse'];
+};
+/*---------------------------------------------------------------------------------*/
+/*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
+/*---------------------------------------------------------------------------------*/
+/**
+  *  @param {DvtEventManager} manager The owning DvtEventManager
+  *  @param {DvtChart} chart
+  *  @class DvtChartKeyboardHandler
+  *  @extends {DvtKeyboardHandler}
+  *  @constructor
+  */
+var DvtChartKeyboardHandler = function(manager, chart)
+{
+  this.Init(manager, chart);
+};
+
+DvtObj.createSubclass(DvtChartKeyboardHandler, DvtKeyboardHandler, 'DvtChartKeyboardHandler');
+
+
+/**
+ * @override
+ */
+DvtChartKeyboardHandler.prototype.Init = function(manager, chart) {
+  DvtChartKeyboardHandler.superclass.Init.call(this, manager);
+  this._chart = chart;
+};
+
+
+/**
+ * @override
+ */
+DvtChartKeyboardHandler.prototype.isSelectionEvent = function(event)
+{
+  return this.isNavigationEvent(event) && !event.ctrlKey;
+};
+
+
+/**
+ * @override
+ */
+DvtChartKeyboardHandler.prototype.isMultiSelectEvent = function(event)
+{
+  return event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey;
+};
+
+
+/**
+ * @override
+ */
+DvtChartKeyboardHandler.prototype.processKeyDown = function(event) {
+  var keyCode = event.keyCode;
+  if (keyCode == DvtKeyboardEvent.TAB) {
+    var currentNavigable = this._eventManager.getFocus();
+    if (currentNavigable) {
+      DvtEventManager.consumeEvent(event);
+      return currentNavigable;
+    }
+
+    // navigate to the default
+    var navigables = DvtChartEventUtils.getKeyboardNavigables(this._chart);
+    if (navigables.length > 0) {
+      DvtEventManager.consumeEvent(event);
+      return this.getDefaultNavigable(navigables);
+    }
+  }
+  else if (keyCode == DvtKeyboardEvent.ENTER) {
+    var currentNavigable = this._eventManager.getFocus();
+    if (currentNavigable) {
+      this._eventManager.processActionEvent(currentNavigable);
+      this._eventManager.processDrillEvent(currentNavigable);
+      DvtEventManager.consumeEvent(event);
+      return currentNavigable;
+    }
+  }
+  else if (keyCode == DvtKeyboardEvent.ESCAPE) {
+    this._eventManager.cancelMarquee(event);
+  }
+  else if (keyCode == DvtKeyboardEvent.PAGE_UP) {
+    if ((event.ctrlKey || event.shiftKey || DvtChartTypeUtils.isBLAC(this._chart)) && DvtChartTypeUtils.isVertical(this._chart)) { // pan left
+      this._eventManager.panBy(-0.25, 0);
+    }
+    else { // pan up. Also used for horizontal bar charts
+      this._eventManager.panBy(0, -0.25);
+    }
+    DvtEventManager.consumeEvent(event);
+  }
+  else if (keyCode == DvtKeyboardEvent.PAGE_DOWN) {
+    if ((event.ctrlKey || event.shiftKey || DvtChartTypeUtils.isBLAC(this._chart)) && DvtChartTypeUtils.isVertical(this._chart)) { // pan right
+      this._eventManager.panBy(0.25, 0);
+    }
+    else { // pan down. Also used for horizontal bar charts
+      this._eventManager.panBy(0, 0.25);
+    }
+    DvtEventManager.consumeEvent(event);
+  }
+  else if (DvtKeyboardEvent.isEquals(event) || DvtKeyboardEvent.isPlus(event)) { // zoom in
+    this._eventManager.zoomBy(1.5);
+  }
+  else if (DvtKeyboardEvent.isMinus(event) || DvtKeyboardEvent.isUnderscore(event)) { // zoom out
+    this._eventManager.zoomBy(1 / 1.5);
+  }
+
+  return DvtChartKeyboardHandler.superclass.processKeyDown.call(this, event);
+};
+
+/**
+ * @override
+ */
+DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems) 
+{
+  if (!navigableItems || navigableItems.length <= 0)
+    return null;
+
+  var isPie = DvtChartTypeUtils.isPie(this._chart);
+  var defaultNavigable, defaultSeries, defaultGroup;
+  var navigable;
+
+  // Pick the first group in the first series
+  for (var i = 0; i < navigableItems.length; i++) {
+    navigable = navigableItems[i];
+
+    if (!defaultNavigable || navigable.getSeriesIndex() < defaultSeries) {
+      defaultNavigable = navigable;
+      defaultSeries = navigable.getSeriesIndex();
+      if (!isPie)
+        defaultGroup = navigable.getGroupIndex();
+      continue;
+    }
+
+    if (!isPie && navigable.getGroupIndex() < defaultGroup) {
+      defaultNavigable = navigable;
+      defaultSeries = navigable.getSeriesIndex();
+      defaultGroup = navigable.getGroupIndex();
+    }
+  }
+
+  return defaultNavigable;
+};
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * Logical object for chart data object displayables.
+ * @param {DvtChart} chart The owning chart instance.
+ * @param {array} displayables The array of associated DvtDisplayables.
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
+ * @class
+ * @constructor
+ * @implements {DvtCategoricalObject}
+ * @implements {DvtLogicalObject}
+ * @implements {DvtPopupSource}
+ * @implements {DvtSelectable}
+ * @implements {DvtTooltipSource}
+ */
+var DvtChartObjPeer = function(chart, displayables, seriesIndex, groupIndex, dataPos) {
+  this.Init(chart, displayables, seriesIndex, groupIndex, dataPos);
+};
+
+DvtObj.createSubclass(DvtChartObjPeer, DvtObj, 'DvtChartObjPeer');
+
+
+/**
+ * @param {DvtChart} chart The owning chart instance.
+ * @param {array} displayables The array of associated DvtDisplayables.
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
+ */
+DvtChartObjPeer.prototype.Init = function(chart, displayables, seriesIndex, groupIndex, dataPos) {
+  this._chart = chart;
+  this._displayables = displayables;
+  this._seriesIndex = !isNaN(seriesIndex) ? seriesIndex : -1;
+  this._groupIndex = !isNaN(groupIndex) ? groupIndex : -1;
+  this._dataPos = dataPos;
+  this._isSelected = false;
+  this._isShowingKeyboardFocusEffect = false;
+
+  // . Need to evaluate these up front because the series and group are used for animation
+  if (seriesIndex >= 0)
+    this._series = DvtChartDataUtils.getSeries(chart, seriesIndex);
+  if (groupIndex >= 0)
+    this._group = DvtChartDataUtils.getGroup(chart, groupIndex);
+
+  var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
+  if (seriesItem) {
+    this._action = seriesItem['action'];
+    this._drillable = DvtChartEventUtils.isSeriesDrillable(chart, seriesIndex);
+
+    // Popup Support: Store the stamp id for this series item, which is used to look up the popup behaviors
+    this._stampId = seriesItem['_id'];
+  }
+
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+
+  // Create the array specifying all categories that this data item or series belongs to
+  this._categories = DvtChartDataUtils.getDataItemCategories(chart, seriesIndex, groupIndex);
+
+  if (dataItem) {
+    this._dataItemId = dataItem['id'];
+    this._action = dataItem['action']; // override the series action
+    this._drillable = DvtChartEventUtils.isDataItemDrillable(chart, seriesIndex, groupIndex);
+
+    // Popup Support: Override the series stamp id
+    this._stampId = dataItem['_id'];
+  }
+
+  // Apply the cursor for the action if specified
+  if (this._action || this._drillable) {
+    for (var i = 0; i < this._displayables.length; i++) {
+      this._displayables[i].setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    }
+  }
+
+  // Apply the aria properties
+  for (var index = 0; index < displayables.length; index++) {
+    var displayable = displayables[index];
+    // lines are not interactive so we shouldn't add wai-aria attributes
+    if (!(displayable instanceof DvtChartLineArea))
+      displayable.setAriaRole('img');
+    this._updateAriaLabel(displayable);
+  }
+};
+
+
+/**
+ * Creates a data item to identify the specified displayable and registers it with the chart.
+ * @param {DvtDisplayable} displayable The displayable to associate.
+ * @param {DvtChart} chart The owning chart instance.
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
+ */
+DvtChartObjPeer.associate = function(displayable, chart, seriesIndex, groupIndex, dataPos) {
+  if (!displayable)
+    return;
+
+  // Create the logical object.
+  var identObj = new DvtChartObjPeer(chart, [displayable], seriesIndex, groupIndex, dataPos);
+
+  // Register with the chart
+  chart.registerObject(identObj);
+
+  // Finally associate using the event manager
+  chart.getEventManager().associate(displayable, identObj);
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getId = function() {
+  if (this._seriesIndex >= 0 && this._groupIndex >= 0)
+    return new DvtChartDataItem(this._dataItemId, this.getSeries(), this.getGroup());
+  else if (this._seriesIndex >= 0)
+    return this.getSeries();
+  else
+    return null;
+};
+
+
+/**
+ * Return the peer's data item id.  This is an optional id that is provided to simplifying
+ * row key support for ADF and AMX.
+ * @return {string} the peer's row key.
+ */
+DvtChartObjPeer.prototype.getDataItemId = function() {
+  return this._dataItemId;
+};
+
+
+/**
+ * Return the peer's series.
+ * @return {string} the peer's series.
+ */
+DvtChartObjPeer.prototype.getSeries = function() {
+  return this._series;
+};
+
+
+/**
+ * Return the peer's series index.
+ * @return {Number} the peer's series index.
+ */
+DvtChartObjPeer.prototype.getSeriesIndex = function() {
+  return this._seriesIndex;
+};
+
+
+/**
+ * Return the peer's group.
+ * @return {string} the peer's group.
+ */
+DvtChartObjPeer.prototype.getGroup = function() {
+  return this._group;
+};
+
+
+/**
+ * Return the peer's group index.
+ * @return {Number} the peer's group index.
+ */
+DvtChartObjPeer.prototype.getGroupIndex = function() {
+  return this._groupIndex;
+};
+
+
+/**
+ * Return the action string for the data item, if any exists.
+ * @return {string} the action outcome for the data item.
+ */
+DvtChartObjPeer.prototype.getAction = function() {
+  return this._action;
+};
+
+
+/**
+ * Returns whether the chart object is drillable
+ * @return {boolean}
+ */
+DvtChartObjPeer.prototype.isDrillable = function() {
+  return this._drillable;
+};
+
+
+/**
+ * Returns whether the chart object is double clickable.
+ * @return {boolean}
+ */
+DvtChartObjPeer.prototype.isDoubleClickable = function() {
+  // : IE double clicking workaround in DvtEventManager.
+  return this.isSelectable() && this.isDrillable();
+};
+
+
+/**
+ * Convenience function to return the peer's chart.
+ * @return {DvtChart} the associated chart object.
+ */
+DvtChartObjPeer.prototype.getChart = function() {
+  return this._chart;
+};
+
+
+/**
+ * Return the peer's series type.
+ * @return {string} the peer's series type.
+ */
+DvtChartObjPeer.prototype.getSeriesType = function() {
+  return DvtChartStyleUtils.getSeriesType(this._chart, this._seriesIndex);
+};
+
+
+/**
+ * Return the peer's series item.
+ * @return {object} the peer's series item.
+ */
+DvtChartObjPeer.prototype.getSeriesItem = function() {
+  return DvtChartDataUtils.getSeriesItem(this._chart, this._seriesIndex);
+};
+
+//---------------------------------------------------------------------//
+// Tooltip Support: DvtTooltipSource impl                              //
+//---------------------------------------------------------------------//
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getDatatip = function(target) {
+  return DvtChartTooltipUtils.getDatatip(this._chart, this._seriesIndex, this._groupIndex, true);
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getDatatipColor = function() {
+  return DvtChartTooltipUtils.getDatatipColor(this._chart, this._seriesIndex, this._groupIndex);
+};
+
+//---------------------------------------------------------------------//
+// Selection Support: DvtSelectable impl                               //
+//---------------------------------------------------------------------//
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.isSelectable = function() {
+  return DvtChartStyleUtils.isSelectable(this.getChart(), this.getSeriesIndex(), this.getGroupIndex());
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.isSelected = function() {
+  return this._isSelected;
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.setSelected = function(bSelected) {
+  this._isSelected = bSelected;
+  for (var i = 0; i < this._displayables.length; i++) {
+    if (this._displayables[i].setSelected) {
+      this._displayables[i].setSelected(bSelected);
+      this._updateAriaLabel(this._displayables[i]);
+    }
+  }
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.showHoverEffect = function() {
+  for (var i = 0; i < this._displayables.length; i++) {
+    if (this._displayables[i].showHoverEffect)
+      this._displayables[i].showHoverEffect();
+  }
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.hideHoverEffect = function() {
+  for (var i = 0; i < this._displayables.length; i++) {
+    if (this._displayables[i].hideHoverEffect)
+      this._displayables[i].hideHoverEffect();
+  }
+};
+
+//---------------------------------------------------------------------//
+// Popup Support: DvtPopupSource impl                                  //
+//---------------------------------------------------------------------//
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getShowPopupBehaviors = function() {
+  return this._chart.getShowPopupBehaviors(this._stampId);
+};
+
+//---------------------------------------------------------------------//
+// Rollover and Hide/Show Support: DvtLogicalObject impl               //
+//---------------------------------------------------------------------//
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getDisplayables = function() {
+  return this._displayables;
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getAriaLabel = function() {
+  var states = [];
+  var options = this.getChart().getOptions();
+  if (this.isSelectable())
+    states.push(DvtBundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', DvtBundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
+  if (this.isDrillable())
+    states.push(DvtBundle.getTranslation(options, 'stateDrillable', DvtBundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+
+  var shortDesc = DvtChartTooltipUtils.getDatatip(this._chart, this._seriesIndex, this._groupIndex, false);
+  if (shortDesc == null && this._groupIndex < 0 && states.length > 0)
+    shortDesc = DvtChartDataUtils.getSeriesLabel(this._chart, this._seriesIndex);
+
+  return DvtDisplayable.generateAriaLabel(shortDesc, states);
+};
+
+/**
+ * Updates the aria-label as needed. On desktop, we can defer the aria creation, and the aria-label will be updated
+ * when the activeElement is set.
+ * @param {DvtDisplayable} displayable The displayable object.
+ * @private
+ */
+DvtChartObjPeer.prototype._updateAriaLabel = function(displayable) {
+  if (!DvtAgent.deferAriaCreation())
+    displayable.setAriaProperty('label', this.getAriaLabel());
+};
+
+
+//---------------------------------------------------------------------//
+// Rollover and Hide/Show Support: DvtCategoricalObject impl           //
+//---------------------------------------------------------------------//
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getCategories = function(category) {
+  return this._categories;
+};
+
+
+/**
+ * @return {DvtPoint} The coordinate of the data point relative to the plot area
+ */
+DvtChartObjPeer.prototype.getDataPosition = function() {
+  return this._dataPos;
+};
+
+
+//---------------------------------------------------------------------//
+// Keyboard Support: DvtKeyboardNavigable impl                        //
+//---------------------------------------------------------------------//
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getNextNavigable = function(event) {
+  var keyCode;
+  var next;
+
+  keyCode = event.keyCode;
+  if (event.type == DvtMouseEvent.CLICK) {
+    return this;
+  }
+  else if (keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey) {
+    // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
+    // care of the selection
+    return this;
+  }
+
+  var chart = this._chart;
+  var chartObjs = chart.getChartObjPeers();
+
+  var navigables = [];
+  for (var i = 0; i < chartObjs.length; i++) {
+    if (chartObjs[i].isNavigable())
+      navigables.push(chartObjs[i]);
+  }
+
+  if (DvtChartTypeUtils.isScatterBubble(chart)) {
+    next = DvtKeyboardHandler.getNextAdjacentNavigable(this, event, navigables);
+  }
+  // Polar bars should be treated the same way as line/area charts
+  else if (DvtChartTypeUtils.isLineArea(chart) || DvtChartTypeUtils.isStacked(chart) || DvtChartTypeUtils.isPolar(chart)) {
+    next = this._findNextNavigable(event);
+  }
+  else if (DvtChartTypeUtils.isFunnel(chart) && (event.keyCode == DvtKeyboardEvent.UP_ARROW || event.keyCode == DvtKeyboardEvent.DOWN_ARROW)) {
+    event.keyCode = event.keyCode - 1;
+    next = DvtKeyboardHandler.getNextNavigable(this, event, navigables);
+  }
+  else {
+    // : ignoreBounds for the case of range bars or bars with negative values that don't overlap with the adjacent series.
+    next = DvtKeyboardHandler.getNextNavigable(this, event, navigables, true);
+  }
+  return next;
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) {
+  if (this._displayables[0])
+    return this._displayables[0].getDimensions(targetCoordinateSpace);
+  else
+    return new DvtRectangle(0, 0, 0, 0);
+};
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.getTargetElem = function() {
+  if (this._displayables[0])
+    return this._displayables[0].getElem();
+  return null;
+};
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.showKeyboardFocusEffect = function() {
+  if (this.isNavigable()) {
+    this._isShowingKeyboardFocusEffect = true;
+    this.showHoverEffect();
+  }
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.hideKeyboardFocusEffect = function() {
+  if (this.isNavigable()) {
+    this._isShowingKeyboardFocusEffect = false;
+    this.hideHoverEffect();
+  }
+};
+
+
+/**
+ * @override
+ */
+DvtChartObjPeer.prototype.isShowingKeyboardFocusEffect = function() {
+  return this._isShowingKeyboardFocusEffect;
+};
+
+
+/**
+ * Returns true if the object is navigable
+ * @return {boolean}
+ */
+DvtChartObjPeer.prototype.isNavigable = function() {
+  return this.getGroupIndex() != -1 && this.getSeriesIndex() != -1;
+};
+
+
+/**
+ * Returns the next navigable object in the direction of the arrow for line/area
+ * @param {DvtBaseEvent} event
+ * @return {DvtChartObjPeer}
+ * @private
+ */
+DvtChartObjPeer.prototype._findNextNavigable = function(event) {
+  var keyCode = event.keyCode;
+  var chart = this._chart;
+  var context = chart.getCtx();
+
+  var seriesIndex = this.getSeriesIndex();
+  var groupIndex = this.getGroupIndex();
+  var groupCount = DvtChartDataUtils.getGroupCount(chart);
+  var nextSeriesIndex;
+  var nextGroupIndex;
+
+  var isHoriz = DvtChartTypeUtils.isHorizontal(chart);
+  var isPolar = DvtChartTypeUtils.isPolar(chart);
+  var isRTL = DvtAgent.isRightToLeft(context);
+  var isUp = isHoriz ? (isRTL ? keyCode == DvtKeyboardEvent.LEFT_ARROW : keyCode == DvtKeyboardEvent.RIGHT_ARROW) : keyCode == DvtKeyboardEvent.UP_ARROW;
+  var isDown = isHoriz ? (isRTL ? keyCode == DvtKeyboardEvent.RIGHT_ARROW : keyCode == DvtKeyboardEvent.LEFT_ARROW) : keyCode == DvtKeyboardEvent.DOWN_ARROW;
+  var isLeft = isHoriz ? keyCode == DvtKeyboardEvent.UP_ARROW : (isRTL ? keyCode == DvtKeyboardEvent.RIGHT_ARROW : keyCode == DvtKeyboardEvent.LEFT_ARROW);
+  var isRight = isHoriz ? keyCode == DvtKeyboardEvent.DOWN_ARROW : (isRTL ? keyCode == DvtKeyboardEvent.LEFT_ARROW : keyCode == DvtKeyboardEvent.RIGHT_ARROW);
+
+  if (isUp) {
+    nextGroupIndex = groupIndex;
+    nextSeriesIndex = this._findNextUpSeries(chart, seriesIndex, groupIndex);
+  }
+  else if (isDown) {
+    nextGroupIndex = groupIndex;
+    nextSeriesIndex = this._findNextDownSeries(chart, seriesIndex, groupIndex);
+  }
+  else if (isRight) {
+    nextSeriesIndex = seriesIndex;
+    nextGroupIndex = groupIndex;
+    do {
+      nextGroupIndex++;
+      if (isPolar && nextGroupIndex >= groupCount)
+        nextGroupIndex = 0;
+    } while (chart.getObject(nextSeriesIndex, nextGroupIndex) == null && nextGroupIndex < groupCount);
+  }
+  else if (isLeft) {
+    nextSeriesIndex = seriesIndex;
+    nextGroupIndex = groupIndex;
+    do {
+      nextGroupIndex--;
+      if (isPolar && nextGroupIndex < 0)
+        nextGroupIndex = groupCount - 1;
+    } while (chart.getObject(nextSeriesIndex, nextGroupIndex) == null && nextGroupIndex > -1);
+  }
+
+  var nextObj = chart.getObject(nextSeriesIndex, nextGroupIndex);
+  return nextObj && nextObj.isNavigable() ? nextObj : this;
+};
+
+
+/**
+ * Returns the index of the next up series
+ * @param {DvtChart} chart
+ * @param {number} seriesIndex Current series index.
+ * @param {number} groupIndex Current group index.
+ * @return {number} Next up series index.
+ * @private
+ */
+DvtChartObjPeer.prototype._findNextUpSeries = function(chart, seriesIndex, groupIndex) {
+  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+  var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
+  var nextValue = null;
+  var nextSeriesIndex = null;
+  for (var i = 0; i < seriesCount; i++) {
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
+      continue;
+    var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
+    if (itemValue > currentValue || (itemValue == currentValue && i > seriesIndex)) {
+      if ((nextValue !== null && itemValue < nextValue) || (nextValue == null)) {
+        nextValue = itemValue;
+        nextSeriesIndex = i;
+      }
+    }
+  }
+  return nextSeriesIndex;
+};
+
+
+/**
+ * Returns the index of the next down series.
+ * @param {DvtChart} chart
+ * @param {number} seriesIndex Current series index.
+ * @param {number} groupIndex Current group index.
+ * @return {number} Next down series index.
+ * @private
+ */
+DvtChartObjPeer.prototype._findNextDownSeries = function(chart, seriesIndex, groupIndex) {
+  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
+  var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
+  var nextValue = null;
+  var nextSeriesIndex = null;
+  for (var i = seriesCount - 1; i >= 0; i--) {
+    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
+      continue;
+    var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
+    if (itemValue < currentValue || (itemValue == currentValue && i < seriesIndex)) {
+      if ((nextValue !== null && itemValue > nextValue) || (nextValue == null)) {
+        nextValue = itemValue;
+        nextSeriesIndex = i;
+      }
+    }
+  }
+  return nextSeriesIndex;
+};
+/**
+ * Logical object for reference object displayables.
+ * @param {DvtChart} chart
+ * @param {array} displayables The array of associated DvtDisplayables.
+ * @param {object} refObj reference object
+ * @param {number} index The reference objects position in the reference object array
+ * @param {string} axisType The axis the reference object is on
+ * @class
+ * @constructor
+ * @implements {DvtCategoricalObject}
+ * @implements {DvtLogicalObject}
+ * @implements {DvtTooltipSource}
+ */
+var DvtRefObjPeer = function(chart, displayables, refObj, index, axisType) {
+  this.Init(chart, displayables, refObj, index, axisType);
+};
+
+DvtObj.createSubclass(DvtRefObjPeer, DvtObj, 'DvtRefObjPeer');
+
+/**
+ * @param {DvtChart} chart
+ * @param {array} displayables The array of associated DvtDisplayables.
+ * @param {object} refObj reference object
+ * @param {number} index The reference objects position in the reference object array
+ * @param {string} axisType The axis the reference object is on
+ */
+DvtRefObjPeer.prototype.Init = function(chart, displayables, refObj, index, axisType) {
+  this._chart = chart;
+  this._displayables = displayables;
+  this._refObj = refObj;
+  this._categories = DvtChartRefObjUtils.getRefObjCategories(this._refObj);
+
+  // used for automation
+  this._index = index;
+  this._axisType = axisType;
+
+  // WAI-ARIA
+  for (var i = 0; i < displayables.length; i++) {
+    var displayable = displayables[i];
+    displayable.setAriaRole('img');
+    displayable.setAriaProperty('label', refObj['shortDesc']);
+  }
+};
+
+/**
+ * @override
+ */
+DvtRefObjPeer.prototype.getCategories = function() {
+  return this._categories;
+};
+
+/**
+ * @override
+ */
+DvtRefObjPeer.prototype.getDisplayables = function() {
+  return this._displayables;
+};
+
+/**
+ * Returns the position of the reference object in the referenceObjects array.
+ * @return {number} The position of this reference object.
+ */
+DvtRefObjPeer.prototype.getIndex = function() {
+  return this._index;
+};
+
+/**
+ * Returns which axis this reference object belongs to.
+ * @return {string} x, y, or y2
+ */
+DvtRefObjPeer.prototype.getAxisType = function() {
+  return this._axisType;
+};
+
+/**
+ * @override
+ */
+DvtRefObjPeer.prototype.getDatatip = function(target) {
+  return DvtChartTooltipUtils.getRefObjTooltip(this._chart, this._refObj);
+};
+
+/**
+ * @override
+ */
+DvtRefObjPeer.prototype.getDatatipColor = function() {
+  return DvtChartRefObjUtils.getColor(this._refObj);
+};
+/**
+  * Creates an object representing the ID of a chart data item.
+  * @constructor
+  * @param {string} id The ID for the data item, if available.
+  * @param {string} series The series ID for the chart data item.
+  * @param {string} group The group ID for the chart data item.
+  * @export
+  */
+var DvtChartDataItem = function(id, series, group) {
+  this.Init(id, series, group);
+};
+
+DvtObj.createSubclass(DvtChartDataItem, DvtObj, 'DvtChartDataItem');
+
+
+/**
+ * Initializes the component.
+ * @param {string} id The ID for the data item, if available.
+ * @param {string} series The series ID.
+ * @param {string} group The group ID.
+ * @protected
+ */
+DvtChartDataItem.prototype.Init = function(id, series, group) {
+  this._id = id;
+  this._series = series;
+  this._group = group;
+};
+
+
+/**
+ * Returns the ID for the data item, if available.
+ * @return {string} The data item ID.
+ * @export
+ */
+DvtChartDataItem.prototype.getId = function() {
+  return this._id;
+};
+
+
+/**
+ * Returns the series ID for a chart data item.
+ * @return {string} The series ID.
+ * @export
+ */
+DvtChartDataItem.prototype.getSeries = function() {
+  return this._series;
+};
+
+
+/**
+ * Returns the group ID for a chart data item.
+ * @return {string} The group ID.
+ * @export
+ */
+DvtChartDataItem.prototype.getGroup = function() {
+  return this._group;
+};
+
+
+/**
+ * Determines if two DvtChartDataItem objects are equal.
+ *
+ * @param {DvtChartDataItem} dataItem The data item that will be used to test for equality.
+ * @return {boolean} True if the two DvtChartDataItem objects are equal
+ */
+DvtChartDataItem.prototype.equals = function(dataItem) {
+  // Note that the id is not compared, because the series and group ids are considered the primary identifiers.
+  if (dataItem instanceof DvtChartDataItem) {
+    var group = dataItem.getGroup();
+    if (this._group instanceof Array && group instanceof Array)
+      return DvtArrayUtils.equals(this._group, group) && this._series === dataItem.getSeries();
+    else
+      return this._group === group && this._series === dataItem.getSeries();
+  }
+  else
+    return false;
+};
+/**
+ * Default values and utility functions for component versioning.
+ * @class
+ * @constructor
+ * @extends {DvtBaseComponentDefaults}
+ */
+var DvtChartDefaults = function() {
+  this.Init({'skyros': DvtChartDefaults.VERSION_1, 'alta': DvtChartDefaults.SKIN_ALTA, 'next': DvtChartDefaults.SKIN_NEXT});
+};
+
+DvtObj.createSubclass(DvtChartDefaults, DvtBaseComponentDefaults, 'DvtChartDefaults');
+
+
+/**
+ * Contains overrides for the next generation skin.
+ * @const
+ */
+DvtChartDefaults.SKIN_NEXT = {
+  'skin': DvtCSSStyle.SKIN_NEXT,
+
+  'styleDefaults': {
+    'dataItemGaps': 'auto',
+    'markerSize': 10,
+    'marqueeColor': 'rgba(255,255,255,0.4)', 'marqueeBorderColor': '#0572ce'
+  },
+  'yAxis': {
+    'axisLine': {'rendered': 'auto'}
+  },
+  'y2Axis': {
+    'axisLine': {'rendered': 'auto'}
+  },
+  'layout': {
+    'titlePlotAreaGap': 16, 'footnoteGap': 10,
+    'legendGapWidth': 15, 'legendGapHeight': 10,
+    'tickLabelGapHeight': 8, 'tickLabelGapWidth': 9
+  }
+};
+
+/**
+ * Contains overrides for the 'alta' skin.
+ * @const
+ */
+DvtChartDefaults.SKIN_ALTA = {
+  'skin': DvtCSSStyle.SKIN_ALTA,
+  'title': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;")},
+  'subtitle': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #252525;")},
+  'footnote': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px;")},
+  '_statusMessageStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;"),
+
+  'styleDefaults': {
+    'seriesEffect': 'color',
+    'colors': DvtCSSStyle.COLORS_ALTA,
+    'pieCenterLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
+    'dataLabelStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"),
+    'stackLabelStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"),
+    'stockRisingColor': '#6b6f74',
+    'stockFallingColor': '#ED6647'
+  }
+};
+
+/**
+ * Defaults for version 1.
+ * @const
+ */
+DvtChartDefaults.VERSION_1 = {
+  'skin': DvtCSSStyle.SKIN_SKYROS, 'emptyText': null,
+  'type': 'bar', 'stack': 'off', 'stackLabel': 'off', 'orientation': 'vertical', 'polarGridShape': 'circle',
+  'selectionMode': 'none', 'hideAndShowBehavior': 'none', 'hoverBehavior': 'none',
+  'zoomAndScroll': 'off', 'zoomDirection': 'auto', 'initialZooming': 'none', 'dragMode': 'user',
+  'sorting': 'off', 'otherThreshold': 0,
+  'animationOnDataChange': 'none', 'animationOnDisplay': 'none',
+  '__sparkBarSpacing': 'subpixel', '__spark': false,
+  'dataCursor': 'auto', 'dataCursorBehavior': 'auto',
+  'drilling': 'off',
+  'highlightMatch' : 'all',
+  'series': [],
+  'groups': [],
+  'title': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b; font-weight: bold'), 'halign': 'start'},
+  'subtitle': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b;')},
+  'footnote': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 10px; color: #333333;'), 'halign': 'start'},
+  'titleSeparator': { 'upperColor': '#74779A', 'lowerColor': '#FFFFFF', 'rendered': 'off'},
+  'touchResponse': 'auto',
+  '_statusMessageStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b; font-weight: bold'),
+
+  'xAxis': {
+    'tickLabel': {'rendered': 'on'},
+    'majorTick': {'rendered': 'auto'},
+    'minorTick': {'rendered': 'auto'},
+    'axisLine': {'rendered': 'on'},
+    'scale': 'linear',
+    'maxSize': 0.33
+  },
+  'yAxis': {
+    'tickLabel': {'rendered': 'on'},
+    'majorTick': {'rendered': 'auto'},
+    'minorTick': {'rendered': 'auto'},
+    'axisLine': {'rendered': 'on'},
+    'scale': 'linear',
+    'maxSize': 0.33
+  },
+  'y2Axis': {
+    'tickLabel': {'rendered': 'on'},
+    'majorTick': {'rendered': 'auto'},
+    'minorTick': {'rendered': 'auto'},
+    'axisLine': {'rendered': 'on'},
+    'scale': 'linear',
+    'maxSize': 0.33,
+    'alignTickMarks': 'on'
+  },
+
+  'plotArea': {'backgroundColor': null},
+
+  'legend': {
+    'position': 'auto',
+    'rendered': 'on',
+    'maxSize': 0.3,
+    'layout': {'gapRatio': 1.0},
+    'seriesSection': {},
+    'referenceObjectSection': {},
+    'sections': []
+  },
+
+  'overview': {
+    'rendered': 'off'
+  },
+
+  'styleDefaults': {
+    'colors': DvtCSSStyle.COLORS_SKYROS, 'borderColor': 'auto', 'borderWidth': 'auto',
+    'patterns': ['smallDiagonalRight', 'smallChecker', 'smallDiagonalLeft', 'smallTriangle', 'smallCrosshatch', 'smallDiamond',
+                 'largeDiagonalRight', 'largeChecker', 'largeDiagonalLeft', 'largeTriangle', 'largeCrosshatch', 'largeDiamond'],
+    'shapes': ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp'],
+    'seriesEffect': 'gradient', 'threeDEffect': 'off', 'selectionEffect': 'highlight',
+    'animationDuration': 1000, 'animationIndicators': 'all',
+    'animationUpColor': '#0099FF', 'animationDownColor': '#FF3300',
+    'lineStyle': 'solid', 'lineType': 'auto', 'markerDisplayed': 'auto',
+    'markerColor': null, 'markerShape': 'auto', 'markerSize': 8,
+    'marqueeColor': 'rgba(255,255,255,0.5)', 'marqueeBorderColor': 'rgba(0,0,0,0.2)',
+    'pieFeelerColor': '#BAC5D6', 'pieInnerRadius': 0,
+    'selectedInnerColor': '#ffffff', 'selectedOuterColor': '#5a5a5a',
+    'pieCenterLabel': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif;')},
+    'sliceLabelType': 'percent',
+    'otherColor': '#4b4b4b',
+    'stockRisingColor': '#006666',
+    'stockFallingColor': '#CC3300',
+    'stockRangeColor': '#B8B8B8',
+    'dataItemGaps': '0%',
+    'dataLabelStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px;'),
+    'dataLabelPosition': 'auto',
+    'funnelBackgroundColor': '#EDEDED',
+    'x1Format': {}, 'y1Format': {}, 'y2Format': {}, 'zFormat': {},
+    '_defaultSliceLabelColor': '#333333',
+    '_scrollbarHeight': 3, '_scrollbarTrackColor': '#F0F0F0', '_scrollbarHandleColor': '#9E9E9E',
+    'hoverBehaviorDelay' : 200,
+    'dataCursor': {'markerSize': 8, 'markerDisplayed': 'on', 'lineColor': '#5a5a5a', 'lineWidth': 2, 'lineStyle': 'solid'},
+    'groupSeparators' : {'rendered' : 'on', color: 'rgba(138,141,172,0.4)'},
+    'padding': 'auto',
+    '_tooltipStyle': new DvtCSSStyle('border-collapse: separate; border-spacing: 2px'),
+    'tooltipLabelStyle': new DvtCSSStyle('color: #737373; padding: 0px 2px'),
+    'tooltipValueStyle': new DvtCSSStyle('color: #333333; padding: 0px 2px'),
+    'stackLabelStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px;')
+  },
+
+  'layout': {
+    'gapWidthRatio': null, 'gapHeightRatio': null, // gap ratio is dynamic based on the component size
+    // TODO, the following are internal and should be moved to a _layout object
+    'outerGapWidth': 10, 'outerGapHeight': 8,
+    'titleSubtitleGapWidth': 14, 'titleSubtitleGapHeight': 4,
+    'titleSeparatorGap': 6, 'titlePlotAreaGap': 10, 'footnoteGap': 7, 'verticalAxisGap': 6,
+    'legendGapWidth': 10, 'legendGapHeight': 10, 'tickLabelGapHeight': 5, 'tickLabelGapWidth': 7
+  },
+
+  '_locale': 'en-us', '_resources': {}
+};
+
+
+/**
+ * Scales down gap widths based on the width of the component.
+ * @param {DvtChart} chart The chart that is being rendered.
+ * @param {Number} defaultWidth The default gap width.
+ * @return {Number}
+ */
+DvtChartDefaults.getGapWidth = function(chart, defaultWidth) {
+  return Math.ceil(defaultWidth * chart.getGapWidthRatio());
+};
+
+/**
+ * Scales down gap heights based on the height of the component.
+ * @param {DvtChart} chart The chart that is being rendered.
+ * @param {Number} defaultHeight The default gap height.
+ * @return {Number}
+ */
+DvtChartDefaults.getGapHeight = function(chart, defaultHeight) {
+  return Math.ceil(defaultHeight * chart.getGapHeightRatio());
+};
+
+/**
+ * Returns true if the skyros skin effects should be used.
+ * @param {DvtChart} chart
+ * @return {boolean}
+ */
+DvtChartDefaults.isSkyrosSkin = function(chart) {
+  return chart.getSkin() == DvtCSSStyle.SKIN_SKYROS;
+};
+
+/**
+ * Returns true if the post-Alta skin effects should be used.
+ * @param {DvtChart} chart
+ * @return {boolean}
+ */
+DvtChartDefaults.isPostAltaSkin = function(chart) {
+  return chart.getSkin() != DvtCSSStyle.SKIN_SKYROS && chart.getSkin() != DvtCSSStyle.SKIN_ALTA;
+};
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/*---------------------------------------------------------------------*/
+/*  DvtDataCursorHandler                 Data Cursor Event Handler                  */
+/*---------------------------------------------------------------------*/
+/**
+ *  @class  DvtDataCursorHandler
+ *  @extends {DvtObj}
+ *  @constructor
+ */
+var DvtDataCursorHandler = function(chart, dataCursor) {
+  this.Init(chart, dataCursor);
+};
+
+DvtObj.createSubclass(DvtDataCursorHandler, DvtObj, 'DvtDataCursorHandler');
+
+// TODO CLEANUP: Major cleanup needed
+
+DvtDataCursorHandler.prototype.Init = function(chart, dataCursor) {
+  this._context = chart.getCtx();
+  this._dataCursorShown = false;
+  this._dataCursor = dataCursor;
+  this._chart = chart;
+};
+
+// Show/hide the data cursor based on the global page coordinates of the action
+// Returns whether or not data cursor is shown
+DvtDataCursorHandler.prototype.processMove = function(pos, bSuppressEvent) {
+  var plotRect = this._chart.__getPlotAreaSpace();
+  if (plotRect.containsPoint(pos.x, pos.y)) {
+    // Show the data cursor only if the current point is within the plot area
+    this._showDataCursor(plotRect, pos.x, pos.y, bSuppressEvent);
+    return true;
+  }
+  else {
+    this._removeDataCursor(bSuppressEvent);
+  }
+  return false;
+};
+
+DvtDataCursorHandler.prototype.processEnd = function(bSuppressEvent) {
+  this._removeDataCursor(bSuppressEvent);
+};
+
+DvtDataCursorHandler.prototype.processOut = function(pos, bSuppressEvent) {
+  var plotRect = this._chart.__getPlotAreaSpace();
+  if (!plotRect.containsPoint(pos.x, pos.y)) {
+    this._removeDataCursor(bSuppressEvent);
+  }
+};
+
+/**
+ * Displays the data cursor.
+ * @param {DvtRectangle} plotRect The bounds of the plot area
+ * @param {number} x
+ * @param {number} y
+ * @param {object} targetObj
+ * @private
+ */
+DvtDataCursorHandler.prototype._showDataCursor = function(plotRect, x, y, bSuppressEvent) {
+  if (this._context.isOffscreen()) {
+    this._removeDataCursor(bSuppressEvent);
+    return;
+  }
+
+  var dataCursor = this._dataCursor;
+
+  // Find the closest data point
+  var closestMatch = this._getClosestMatch(x, y);
+  if (closestMatch == null) {
+    this._removeDataCursor(bSuppressEvent);
+    return;
+  }
+
+  // Find the center of the data item
+  var centerPoint = DvtGeomUtils.getCenterPoint(closestMatch.matchRegion);
+
+  var dcX = x;
+  var dcY = y;
+  // Adjust for snap behavior
+  if (dataCursor.getBehavior() == DvtDataCursor.BEHAVIOR_SNAP) {
+    if (dataCursor.isHorizontal())
+      dcY = Math.min(Math.max(centerPoint.y, plotRect.y), plotRect.y + plotRect.h);
+    else
+      dcX = Math.min(Math.max(centerPoint.x, plotRect.x), plotRect.x + plotRect.w);
+  }
+
+  // If "dataCursor" attr is "auto", don't show the data cursor if tooltip text is null. Otherwise, always show the cursor.
+  var tooltipText = DvtChartTooltipUtils.getDatatip(this._chart, closestMatch.sidx, closestMatch.gidx, true);
+  if (tooltipText == null) {
+    dataCursor.setVisible(false);
+    return;
+  }
+  else
+    dataCursor.setVisible(true);
+
+  var seriesColor = DvtChartTooltipUtils.getDatatipColor(this._chart, closestMatch.sidx, closestMatch.gidx);
+  var lineCoord = dataCursor.isHorizontal() ? dcY : dcX;
+  dataCursor.render(plotRect, centerPoint.x, centerPoint.y, lineCoord, tooltipText, seriesColor);
+
+  this._dataCursorShown = true;
+
+  // fire optionChange event
+  if (!bSuppressEvent) {
+    var values = this._chart.getValuesAt(x, y);
+    this._chart.changeOption('dataCursorPosition', values);
+  }
+};
+
+// Remove the data cursor
+DvtDataCursorHandler.prototype._removeDataCursor = function(bSuppressEvent) {
+  if (this._dataCursor.getVisible())
+    this._dataCursor.setVisible(false);
+
+  this._context.getTooltipManager(DvtDataCursor.TOOLTIP_ID).hideTooltip();
+
+  this._dataCursorShown = false;
+
+  // fire optionChange event
+  if (!bSuppressEvent)
+    this._chart.changeOption('dataCursorPosition', null);
+};
+
+DvtDataCursorHandler.prototype.isDataCursorShown = function() {
+  return this._dataCursorShown;
+};
+
+DvtDataCursorHandler._getClosestMatchSecondDirection = function(matchesInBounds, horizontal, x, y) {
+  var closestMatch = null;
+  var minDiff = Infinity;
+  for (var i = 0; i < matchesInBounds.length; i++) {
+    var match = matchesInBounds[i];
+    var lowerBound = (horizontal) ? match.matchRegion.x : match.matchRegion.y;
+    var higherBound = (horizontal) ? match.matchRegion.x + match.matchRegion.w : match.matchRegion.y + match.matchRegion.h;
+    var value = (horizontal) ? x : y;
+    var midPoint = (lowerBound + higherBound) / 2;
+    var diffValue = Math.round(Math.abs(midPoint - value));
+    if (diffValue < minDiff) {
+      minDiff = diffValue;
+      closestMatch = match;
+    }
+  }
+  return closestMatch;
+};
+
+DvtDataCursorHandler._getClosestMatchesFirstDirection = function(matches, horizontal, x, y) {
+  var minDiff = Infinity;
+  var closestFirstDirectionMatches = new Array();
+  // Get closest matches
+  for (var i = 0; i < matches.length; i++) {
+    var matchObj = matches[i];
+    var lowerBound = (horizontal) ? matchObj.matchRegion.y : matchObj.matchRegion.x;
+    var higherBound = (horizontal) ? matchObj.matchRegion.y + matchObj.matchRegion.h : matchObj.matchRegion.x + matchObj.matchRegion.w;
+    var value = (horizontal) ? y : x;
+
+    var midPoint = (lowerBound + higherBound) / 2;
+    var diffValue = Math.round(Math.abs(midPoint - value));
+    if (diffValue <= minDiff) {
+      if (diffValue < minDiff) {
+        closestFirstDirectionMatches = new Array();
+      }
+      closestFirstDirectionMatches.push(matchObj);
+      minDiff = diffValue;
+    }
+  }
+  return closestFirstDirectionMatches;
+};
+
+// TODO JSDOC: This class needs to be rewritten to not access private properties and get rid of these implicit object returns.
+DvtDataCursorHandler.prototype._findMatches = function() {
+  var stage = this._context.getStage();
+  var eventManager = this._chart.getEventManager();
+  var matches = [];
+
+  if (!this._chart._currentMarkers)
+    return null;
+
+  for (var i = 0; i < this._chart._currentMarkers.length; i++) {
+    var markers = this._chart._currentMarkers[i];
+    var numMarkers = markers.length;
+
+    for (var idx = 0; idx < numMarkers; idx++) {
+      var item = markers[idx];
+      var logicalObject = eventManager.GetLogicalObject(item);
+
+      // Find the bounding box of the item.  We use getDimensionsSelf, an optimized version of getDimensions, where
+      // possible.  It's safe to use either API since chart data objects do not have children.
+      var dims = item.getDimensionsSelf ? item.getDimensionsSelf(stage) : item.getDimensions(stage);
+
+      var match = { obj: item, matchRegion: dims, gidx: logicalObject.getGroupIndex(), sidx: logicalObject.getSeriesIndex(), marker: null };
+      matches.push(match);
+    }
+  }
+  return matches;
+};
+
+DvtDataCursorHandler.prototype._getClosestMatch = function(x, y) {
+  var horizontal = DvtChartTypeUtils.isHorizontal(this._chart);
+  var useAllInGroup = DvtChartTypeUtils.isLineArea(this._chart) && !DvtChartAxisUtils.isMixedFrequency(this._chart);
+
+  var matches = this._findMatches();
+
+  var matchesInBounds = DvtDataCursorHandler._getClosestMatchesFirstDirection(matches, horizontal, x, y);
+
+  // Non-numerical x axis
+  if (!DvtChartTypeUtils.isScatterBubble(this._chart)) {
+    var closestLowerBound = Infinity;
+    var closestHigherBound = -Infinity;
+    var closestGroup = null;
+
+    for (var i = 0; i < matchesInBounds.length; i++) {
+      var closestFirstDirectionMatch = matchesInBounds[i];
+      closestLowerBound = Math.min(closestLowerBound, (horizontal) ? closestFirstDirectionMatch.matchRegion.y : closestFirstDirectionMatch.matchRegion.x);
+      closestHigherBound = Math.max(closestHigherBound, (horizontal) ? closestFirstDirectionMatch.matchRegion.y + closestFirstDirectionMatch.matchRegion.h : closestFirstDirectionMatch.matchRegion.x + closestFirstDirectionMatch.matchRegion.w);
+      closestGroup = closestFirstDirectionMatch.gidx;
+    }
+
+    for (var i = 0; i < matches.length; i++) {
+      var match = matches[i];
+      var itemGroup = match.gidx;
+      if (useAllInGroup) {
+        if (closestGroup == itemGroup) {
+          matchesInBounds.push(match);
+        }
+      }
+      else {
+        var lowerBound = (horizontal) ? match.matchRegion.y : match.matchRegion.x;
+        var higherBound = (horizontal) ? match.matchRegion.y + match.matchRegion.h : match.matchRegion.x + match.matchRegion.w;
+        var midPoint = (lowerBound + higherBound) / 2;
+        if (closestHigherBound >= midPoint && closestLowerBound <= midPoint) {
+          matchesInBounds.push(match);
+        }
+
+      }
+    }
+  }
+  return DvtDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
+};
 // Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a selectable shape using SVG path commands.
@@ -1561,9 +6323,8 @@ DvtChartLineArea.prototype._getPointArrays = function(coords, type) {
         }
       }
 
-      if (this._chart.getSkin() == DvtCSSStyle.SKIN_NEXT || !DvtChartAxisUtils.isMixedFrequency(this._chart)) {
+      if (this._chart.getOptions()['_environment'] == 'jet' || !DvtChartAxisUtils.isMixedFrequency(this._chart)) {
         // Start a new list of points, except in ADF and MAF mixed freq where we want to connect points across nulls.
-        // TODO: Currently assumes that only JET is on NEXT skin. Need to use a proper JET flag.
         points = [];
         pointsArrays.push(points);
         lastCoord = null;
@@ -1925,7 +6686,7 @@ DvtChartLineArea._coordsToAnimationParams = function(coords, otherCoords, baseli
       var group, groupIdx, dummyCoord;
       for (var g = otherGroups.length - 1; g >= 0; g--) {
         group = otherGroups[g];
-        groupIdx = groups.indexOf(group);
+        groupIdx = DvtArrayUtils.getIndex(groups, group);
         if (groupIdx == -1) { // Group not found -- insert dummy coord
           if (idx == 0) {
             dummyCoord = coords[0].clone(); // copy coord after it
@@ -2198,9 +6959,8 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
   this._chartContainer = new DvtContainer(this.getCtx());
   this.addChild(this._chartContainer);
 
-  // Set the options override for the overview background chart
-  var optionsOverride = {
-    'zoomAndScroll': 'off',
+  // Set the default options override for the overview background chart
+  var defaultOptions = {
     'legend': {'rendered': 'off', 'size': null},
     'xAxis': {
       'viewportMin': null, 'viewportMax': null, 'viewportStartGroup': null, 'viewportEndGroup': null,
@@ -2217,7 +6977,7 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
     'layout': {'outerGapWidth': 0, 'outerGapHeight': 0},
     '_isOverview': true
   };
-  options = DvtJSONUtils.merge(optionsOverride, options);
+  options = DvtJSONUtils.merge(defaultOptions, options);
 
   if (DvtChartAxisUtils.hasGroupAxis(this._parentChart))
     options['xAxis']['tickLabel']['rendered'] = 'off';
@@ -2227,7 +6987,15 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
     options['series'][0]['type'] = 'lineWithArea';
   }
 
-  // render the chart
+  // Set the user options override
+  var userOptions = this._parentChart.getOptions()['overview']['content'];
+  options = DvtJSONUtils.merge(userOptions, options);
+
+  // Turn off zoomAndScroll to prevent scrollbar/overview from appearing inside the overview
+  // This has to be done after setting userOptions to prevent users from overriding it
+  options['zoomAndScroll'] = 'off';
+
+  // Render the chart
   if (!this._chart) {
     this._chart = DvtChart.newInstance(this.getCtx());
     this._chart.setId(this._id); // Set the id to prevent randomly generated one from breaking tests
@@ -2235,11 +7003,11 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
   this._chartContainer.addChild(this._chart);
   this._chart.render(options, width, height);
 
-  // cover the chart with a glass pane and remove the keyboard handler to prevent interaction
+  // Cover the chart with a glass pane and remove the keyboard handler to prevent interaction
   var glassPane = new DvtRect(this.getCtx(), 0, 0, width, height);
   glassPane.setInvisibleFill();
   this._chartContainer.addChild(glassPane);
-  this._chart.__getEventManager().setKeyboardHandler(null);
+  this._chart.getEventManager().setKeyboardHandler(null);
 
   return this._chart.__getPlotAreaSpace().h;
 };
@@ -4078,7 +8846,7 @@ DvtPieChart.prototype.getSkin = function() {
   return this._options['skin'];
 };
 
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtPieSlice                                                       */
 /*---------------------------------------------------------------------*/
@@ -4189,7 +8957,7 @@ DvtPieSlice.prototype.Init = function(pieChart, seriesIndex) {
     this._showPopupBehaviors = this._chart.getShowPopupBehaviors(dataItem['_id']);
     this._id = DvtPieChartUtils.getSliceId(this._chart, seriesIndex);
     this._seriesIndex = seriesIndex;
-    this._categories = dataItem['categories'] ? dataItem['categories'] : DvtChartDataUtils.getSeriesItem(this._chart, seriesIndex)['categories'];
+    this._categories = DvtChartDataUtils.getDataItemCategories(this._chart, seriesIndex, 0);
   }
   else { // "Other" slice
     this._value = DvtPieChartUtils.getOtherValue(this._chart);
@@ -5152,7 +9920,7 @@ DvtPieSlice.prototype.getNextNavigable = function(event)
 
   var rtl = DvtAgent.isRightToLeft(this._chart.getCtx());
   var slices = this._pieChart.__getSlices();
-  var idx = slices.indexOf(this);
+  var idx = DvtArrayUtils.getIndex(slices, this);
   var next = null;
 
   if (keyCode == DvtKeyboardEvent.RIGHT_ARROW || (keyCode == DvtKeyboardEvent.DOWN_ARROW && !rtl) || (keyCode == DvtKeyboardEvent.UP_ARROW && rtl)) {
@@ -5366,4971 +10134,6 @@ DvtPieSlice.createFillerSlice = function(pieChart, value) {
   slice._strokeColor = 'rgba(255,255,255,0)';
   slice._id = new DvtChartDataItem(null, null, null);
   return slice;
-};
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
-
-/**
- * Chart component.
- * @param {DvtContext} context The rendering context.
- * @param {function} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @class
- * @constructor
- * @extends {DvtBaseComponent}
- * @export
- */
-var DvtChart = function(context, callback, callbackObj) {
-  this.Init(context, callback, callbackObj);
-};
-
-DvtObj.createSubclass(DvtChart, DvtBaseComponent, 'DvtChart');
-
-
-/**
- * Returns a new instance of DvtChart.
- * @param {DvtContext} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtChart}
- * @export
- */
-DvtChart.newInstance = function(context, callback, callbackObj) {
-  return new DvtChart(context, callback, callbackObj);
-};
-
-
-/**
- * Returns a copy of the default options for the specified skin.
- * @param {string} skin The skin whose defaults are being returned.
- * @return {object} The object containing defaults for this component.
- * @export
- */
-DvtChart.getDefaults = function(skin) {
-  return (new DvtChartDefaults()).getDefaults(skin);
-};
-
-
-/**
- * @override
- */
-DvtChart.prototype.Init = function(context, callback, callbackObj) {
-  DvtChart.superclass.Init.call(this, context, callback, callbackObj);
-
-  // Create the defaults object
-  this.Defaults = new DvtChartDefaults();
-
-  // Create the event handler and add event listeners
-  this.EventManager = new DvtChartEventManager(this);
-  this.EventManager.addListeners(this);
-
-  // Set up keyboard handler on non-touch devices
-  if (!DvtAgent.isTouchDevice())
-    this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
-
-  // Make sure the object has an id for clipRect naming
-  this.setId('chart' + 1000 + Math.floor(Math.random() * 1000000000));
-
-  /**
-   * Reference to animation in progress.
-   * @private
-   */
-  this._animation = null;
-
-  /**
-   * The legend of the chart.  This will be set during render time.
-   * @type {DvtLegend}
-   */
-  this.legend = null;
-  /**
-   * The x axis of the chart.  This will be set during render time.
-   * @type {DvtChartAxis}
-   */
-  this.xAxis = null;
-  /**
-   * The y axis of the chart.  This will be set during render time.
-   * @type {DvtChartAxis}
-   */
-  this.yAxis = null;
-  /**
-   * The y2 axis of the chart.  This will be set during render time for dual-y graphs.
-   * @type {DvtChartAxis}
-   */
-  this.y2Axis = null;
-  /**
-   * The overview scrollbar of the chart.  This will be set during render time.
-   * @type {DvtChartOverview}
-   */
-  this.overview = null;
-  /**
-   * The x-axis simple scrollbar of the chart.  This will be set during render time.
-   * @type {DvtSimpleScrollbar}
-   */
-  this.xScrollbar = null;
-  /**
-   * The y-axis simple scrollbar of the chart.  This will be set during render time.
-   * @type {DvtSimpleScrollbar}
-   */
-  this.yScrollbar = null;
-  /**
-   * The drag mode buttons of the chart.  This will be set during render time.
-   * @type {DvtContainer}
-   */
-  this.dragButtons = null;
-  /**
-   * The pie chart subcomponent.  This will be set during render time for pie graphs.
-   * @type {DvtPieChart}
-   */
-  this.pieChart = null;
-
-  /**
-   * The array of logical objects for this chart.
-   * @protected
-   */
-  this.Peers = [];
-
-  /**
-   * Array to make sure that the styles of the series don't mutate of data change.
-   * @protected
-   */
-  this.SeriesStyleArray = [];
-
-  /**
-   * Cache for storing the results of expensive computations.
-   * @protected
-   */
-  this.Cache = {};
-
-  // Support for changing z-order for selection
-  this._numFrontObjs = 0;
-  this._numSelectedObjsInFront = 0;
-
-  /** @private */
-  this._dataLabels = null;
-};
-
-/**
- * @override
- */
-DvtChart.prototype.GetComponentDescription = function() 
-{
-  var options = this.getOptions();
-  var compName = DvtBundle.getTranslation(options, 'componentName', DvtBundle.UTIL_PREFIX, 'CHART');
-
-  var compDesc = '';
-  var delimiter = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER');
-  if (options['title']['text']) {
-    compDesc += this.Options['title']['text'];
-    if (options['subtitle']['text'])
-      compDesc += delimiter + this.Options['subtitle']['text'];
-  }
-  if (options['footnote']['text'])
-    compDesc = (compDesc.length == 0) ? this.Options['footnote']['text'] : compDesc.concat(delimiter, this.Options['footnote']['text']);
-
-  if (compDesc.length > 0)
-    return DvtBundle.getTranslation(options, 'labelAndValue', DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [compName, compDesc]);
-  else
-    return compName;
-};
-
-/**
- * @override
- */
-DvtChart.prototype.SetOptions = function(options) {
-  if (options) {
-    // Combine the user options with the defaults and store
-    this.Options = this.Defaults.calcOptions(options);
-
-    // Process "horizontalBar" chart type for backwards compatibility
-    if (this.Options['type'] == 'horizontalBar') {
-      this.Options['type'] = 'bar';
-      this.Options['orientation'] = 'horizontal';
-    }
-
-    // Process the data to add bulletproofing
-    DvtChartDataUtils.processDataObject(this);
-
-    // Disable animation for canvas and xml
-    if (!DvtAgent.isEnvironmentBrowser()) {
-      this.Options['animationOnDisplay'] = 'none';
-      this.Options['animationOnDataChange'] = 'none';
-    }
-  }
-  else if (!this.Options) // No object has ever been provided, copy the defaults
-    this.Options = this.GetDefaults();
-
-  // Initialize the selection handler
-  var selectionMode = this.Options['selectionMode'];
-  if (selectionMode == 'single')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_SINGLE);
-  else if (selectionMode == 'multiple')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_MULTIPLE);
-  else
-    this._selectionHandler = null;
-
-  // Pass to event handler
-  this.EventManager.setSelectionHandler(this._selectionHandler);
-
-  // Popup Support
-  var popupBehaviors = this.Options['_spb'];
-  if (popupBehaviors) {
-    this._popupBehaviors = {};
-
-    // Iterate through the popup behaviors for each parent stamp id
-    for (var stampId in popupBehaviors) {
-      var popupBehaviorArray = popupBehaviors[stampId];
-      for (var i = 0; i < popupBehaviorArray.length; i++) {
-        // Create the array of behaviors for this stampId
-        if (!this._popupBehaviors[stampId])
-          this._popupBehaviors[stampId] = [];
-
-        var popupBehavior = popupBehaviorArray[i];
-        var popupId = popupBehavior['popupId'];
-        var triggerType = popupBehavior['triggerType'];
-        var alignId = popupBehavior['alignId'];
-        var align = popupBehavior['align'];
-        this._popupBehaviors[stampId].push(new DvtShowPopupBehavior(popupId, triggerType, alignId, align));
-      }
-    }
-  }
-};
-
-
-/**
- * @override
- * @export
- */
-DvtChart.prototype.render = function(options, width, height) 
-{
-  var context = this.getCtx();
-
-  var animationOnDataChange = this.Options ? this.Options['animationOnDataChange'] : 'none';
-
-  // Cache and cleanup objects from the previous render
-  var oldChart = (animationOnDataChange != 'none') ? new DvtDCChart(this) : null;
-  var focusState = this.__cacheChartFocus();
-  this.__cleanUp();
-
-  // Update if a new options object has been provided or initialize with defaults if needed. This is done first to
-  // ensure that property access, like DvtChartStyleUtils.getAnimationOnDataChange, do not generate default options.
-  this.SetOptions(options);
-
-  // Update the width and height if provided
-  if (!isNaN(width) && !isNaN(height)) {
-    this.Width = width;
-    this.Height = height;
-  }
-
-
-  // Create a new container and render the component into it
-  var container = new DvtContainer(context);
-  this.addChild(container);
-  DvtChartRenderer.render(this, container, new DvtRectangle(0, 0, this.Width, this.Height));
-
-  // . We don't want the inner chart's listeners to be invoked when it is a spark chart, thus we are removing them.
-  if (DvtChartTypeUtils.isSpark(this))
-    this.EventManager.removeListeners(this);
-
-  // Animation Support
-  // Stop any animation in progress
-  if (this._animation)
-    this._animation.stop();
-
-  // Construct the new animation playable
-  var animationOnDisplay = DvtChartStyleUtils.getAnimationOnDisplay(this);
-  var animationDuration = DvtChartStyleUtils.getAnimationDuration(this);
-  var bounds = new DvtRectangle(0, 0, this.Width, this.Height);
-  var bBlackBoxUpdate = false; // true if this is a black box update animation
-
-  if (! this._container) {
-    if (animationOnDisplay != 'none') {
-      // AnimationOnDisplay
-      this._animation = DvtBlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container,
-          bounds, animationDuration);
-      if (!this._animation && animationOnDisplay == 'auto') {
-        this._animation = DvtAnimOnDisplay.createAnimation(this, animationOnDisplay, animationDuration);
-      }
-    }
-  }
-  else if (animationOnDataChange != 'none' && options) {
-    // AnimationOnDataChange
-    this._animation = DvtBlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange, this._container,
-                                                                       container, bounds, animationDuration);
-    if (this._animation)           // Black Box Animation
-      bBlackBoxUpdate = true;
-    else if (animationOnDataChange == 'auto' && this.getPlotArea()) {
-      var paSpace = this.__getPlotAreaSpace();
-      this._delContainer = DvtPlotAreaRenderer.createClippedGroup(this, this._container, new DvtRectangle(0, 0, paSpace.w, paSpace.h));
-      this._animation = DvtAnimOnDC.createAnimation(oldChart, this, animationOnDataChange,
-          animationDuration, this._delContainer);
-
-      if (this._delContainer.getNumChildren() > 0)
-        this.getPlotArea().addChild(this._delContainer);
-    }
-  }
-
-  // If an animation was created, play it
-  if (this._animation) {
-    this._animation.play();
-    DvtPlayable.appendOnEnd(this._animation, this._onAnimationEnd, this);
-  }
-
-  // Clean up the old container.  If doing black box animation, store a pointer and clean
-  // up after animation is complete.  Otherwise, remove immediately.
-  if (bBlackBoxUpdate) {
-    this._oldContainer = this._container;
-  }
-  else if (this._container) {
-    this.removeChild(this._container);  // Not black box animation, so clean up the old contents
-    this._container.destroy();
-    this._container = null;
-  }
-
-  // Update the pointer to the new container
-  this._container = container;
-
-  // Data Cursor
-  this._dataCursor = DvtChartRenderer.renderDataCursor(this);
-
-  this.UpdateAriaAttributes();
-
-  // Restore focus
-  this.__restoreChartFocus(focusState);
-};
-
-/**
- * Releases all component resources to prevent memory leaks.
- * @override
- * @export
- */
-DvtChart.prototype.destroy = function() {
-  if (this.EventManager) {
-    this.EventManager.removeListeners(this);
-    this.EventManager.destroy();
-    this.EventManager = null;
-  }
-
-  // Call super last during destroy
-  DvtChart.superclass.destroy.call(this);
-};
-
-/**
- * Performs cleanup of the previously rendered content.  Note that this doesn't cleanup anything needed for animation.
- * @protected
- */
-DvtChart.prototype.__cleanUp = function() {
-  // Data cursor cleanup
-  if (this._dataCursor) {
-    this.removeChild(this._dataCursor);
-    this._dataCursor = null;
-  }
-
-  // Tooltip cleanup
-  if (this.EventManager)
-    this.EventManager.hideHoverFeedback();
-
-  // Clear the list of registered peers
-  this.Peers = [];
-
-  // Clear scrollbars, buttons
-  this.xScrollbar = null;
-  this.yScrollbar = null;
-
-  if (this.dragButtons) {
-    this.removeChild(this.dragButtons);
-    this.dragButtons.destroy();
-    this.dragButtons = null;
-    this.EventManager.panButton = null;
-    this.EventManager.zoomButton = null;
-    this.EventManager.selectButton = null;
-  }
-
-  this._plotArea = null;
-  this._areaContainer = null;
-  this._dataLabels = null;
-
-  this.clearCache();
-};
-
-
-/**
- * Clean up axis and plot area for rerendering (zoom/scroll).
- */
-DvtChart.prototype.__cleanUpAxisAndPlotArea = function() {
-  // Tooltip cleanup
-  this.EventManager.hideHoverFeedback();
-
-  // Clear the list of registered peers
-  this.Peers = [];
-
-  // Clean up the axis and plot area
-  this._container.removeChild(this.xAxis);
-  this._container.removeChild(this.yAxis);
-  this._container.removeChild(this.y2Axis);
-
-  // Plot area which is a touch target needs to be kept so that subsequent touch events are fired.
-  if (this._plotArea && this._plotArea == this._panZoomTarget)
-    this._plotArea.setVisible(false);
-  else
-    this._container.removeChild(this._plotArea);
-
-  this._plotArea = null;
-
-  this.clearCache();
-};
-
-
-/**
- * Hook for cleaning up animation behavior at the end of the animation.
- * @private
- */
-DvtChart.prototype._onAnimationEnd = function() {
-  // Clean up the old container used by black box updates
-  if (this._oldContainer) {
-    this.removeChild(this._oldContainer);
-    this._oldContainer.destroy();
-    this._oldContainer = null;
-  }
-
-  if (this._delContainer && this._delContainer.getNumChildren() > 0)
-    this.getPlotArea().removeChild(this._delContainer);
-
-  this._delContainer = null;
-
-  // Reset the animation and reference
-  this._animation = null;
-};
-
-
-/**
- * Creates the keyboard handler.
- * @param {DvtChartEventManager} manager Event manager.
- * @return {DvtChartKeyboardHandler}
- * @protected
- */
-DvtChart.prototype.CreateKeyboardHandler = function(manager) {
-  return new DvtChartKeyboardHandler(manager, this);
-};
-
-
-/**
- * Returns the automation object for this chart
- * @return {DvtAutomation} The automation object
- * @export
- */
-DvtChart.prototype.getAutomation = function() {
-  return new DvtChartAutomation(this);
-};
-
-/**
- * Returns the x, y, and y2 axis values at the specified X and Y coordinate.
- * @param {Number} x The X coordinate relative to the component.
- * @param {Number} y The Y coordinate relative to the component.
- * @return {object} An object containing the "x", "y", and "y2" axis values.
- * @export
- */
-DvtChart.prototype.getValuesAt = function(x, y) {
-  var paBounds = this.__getPlotAreaSpace();
-  var relX = x - paBounds.x;
-  var relY = y - paBounds.y;
-
-  var isPolar = DvtChartTypeUtils.isPolar(this);
-  var isHoriz = DvtChartTypeUtils.isHorizontal(this);
-
-  if (isPolar) {
-    // Convert cartesian to polar
-    relX -= paBounds.w / 2;
-    relY -= paBounds.h / 2;
-    var r = Math.sqrt(relX * relX + relY * relY);
-    var theta = Math.atan2(relX, -relY);
-    if (theta < 0)
-      theta += 2 * Math.PI;
-
-    return {
-      'x': this.xAxis ? this.xAxis.getValueAt(theta) : null,
-      'y': this.yAxis ? this.yAxis.getValueAt(r) : null
-    };
-  }
-  else {
-    return {
-      'x': this.xAxis ? this.xAxis.getValueAt(isHoriz ? relY : relX) : null,
-      'y': this.yAxis ? this.yAxis.getValueAt(isHoriz ? relX : relY) : null,
-      'y2': this.y2Axis ? this.y2Axis.getValueAt(isHoriz ? relX : relY) : null
-    };
-  }
-};
-
-
-/**
- * Filters or removes the filter from the specified category.
- * @param {string} category The category which has been filtered out.
- * @param {string} type "out" to filter out the specified category, or "in" to remove the filter.
- * @export
- */
-DvtChart.prototype.filter = function(category, type) {
-  // Update the component state
-  var visibility = (type == 'out' ? 'hidden' : 'visible');
-  DvtChartEventUtils.setVisibility(this, category, visibility);
-
-  // Rerender the component. Pass the options to cause animation to happen.
-  this.render(this.Options);
-};
-
-/**
- * @override
- * @export
- */
-DvtChart.prototype.highlight = function(categories) {
-  // Update the options
-  this.getOptions()['highlightedCategories'] = DvtJSONUtils.clone(categories);
-
-  // Perform the highlighting and propagate to children
-  DvtCategoryRolloverHandler.highlight(categories, this.getObjects(), this.getOptions()['highlightMatch'] == 'any');
-
-  if (this.legend)
-    this.legend.highlight(categories);
-
-  if (this.pieChart)
-    this.pieChart.highlight(categories);
-
-  if (this.overview)
-    this.overview.getBackgroundChart().highlight(categories);
-};
-
-/**
- * @override
- * @export
- */
-DvtChart.prototype.select = function(selection) {
-  // Update the options
-  var options = this.getOptions();
-  options['selection'] = DvtJSONUtils.clone(selection);
-
-  // Perform the selection
-  var selected = DvtChartDataUtils.getInitialSelection(this);
-  DvtChartEventUtils.setInitialSelection(this, selected);
-
-  // Propagate to children
-  if (this.pieChart)
-    this.pieChart.setInitialSelection();
-};
-
-/**
- * Positions the data cursor.
- * @param {object} position The data cursor position, containing x, y, y2. If null, the data cursor will be hidden.
- * @export
- */
-DvtChart.prototype.positionDataCursor = function(position) {
-  var handler = this.__getEventManager().getDataCursorHandler();
-  if (!handler)
-    return;
-
-  if (position) {
-    var xCoord = (this.xAxis && position['x'] != null) ? this.xAxis.getCoordAt(position['x']) : null;
-    var yCoord = null;
-    if (DvtChartTypeUtils.isBLAC(this)) {
-      // For BLAC use bounded coord for y-axis to enable syncing across charts with different scales
-      if (this.yAxis && position['y'] != null)
-        yCoord = this.yAxis.getBoundedCoordAt(position['y']);
-      else if (this.y2Axis && position['y2'] != null)
-        yCoord = this.yAxis.getBoundedCoordAt(position['y2']);
-    }
-    else
-      yCoord = (this.yAxis && position['y'] != null) ? this.yAxis.getCoordAt(position['y']) : null;
-
-    if (xCoord != null && yCoord != null) {
-      // Convert to stage coords and pass them to data cursor handler
-      var paBounds = this.__getPlotAreaSpace();
-      var paCoords = DvtPlotAreaRenderer.convertAxisCoord(this, new DvtPoint(xCoord, yCoord), paBounds);
-      handler.processMove(new DvtPoint(paBounds.x + paCoords.x, paBounds.y + paCoords.y), true);
-      return;
-    }
-  }
-
-  handler.processEnd(true);
-};
-
-
-/**
- * @override
- */
-DvtChart.prototype.__getEventManager = function() {
-  return this.EventManager;
-};
-
-
-/**
- * Initialize/clear the che chart cache.
- */
-DvtChart.prototype.clearCache = function() {
-  this.Cache = {};
-};
-
-/**
- * Retrieves the value corresponding to the key from the chart cache.
- * @param {object} key
- * @return {object}
- */
-DvtChart.prototype.getFromCache = function(key) {
-  return this.Cache[key];
-};
-
-/**
- * Stores the value corresponding to the key in the chart cache.
- * @param {object} key
- * @param {object} value
- */
-DvtChart.prototype.putToCache = function(key, value) {
-  this.Cache[key] = value;
-};
-
-/**
- * Retrieves the value corresponding to itemKey from the cached map corresponding to mapKey.
- * @param {object} mapKey
- * @param {object} itemKey
- * @return {object}
- */
-DvtChart.prototype.getFromCachedMap = function(mapKey, itemKey) {
-  var map = this.getFromCache(mapKey);
-  if (!map) {
-    map = {};
-    this.putToCache(mapKey, map);
-  }
-  return map[itemKey];
-};
-
-/**
- * Stores the value corresponding to itemKey to the cached map corresponding to mapKey.
- * @param {object} mapKey
- * @param {object} itemKey
- * @param {object} value
- */
-DvtChart.prototype.putToCachedMap = function(mapKey, itemKey, value) {
-  var map = this.getFromCache(mapKey);
-  if (!map) {
-    map = {};
-    this.putToCache(mapKey, map);
-  }
-  map[itemKey] = value;
-};
-
-/**
- * Retrieves the value corresponding to (itemKeyA, itemKeyB) from the cached 2D map corresponding to mapKey.
- * @param {object} mapKey
- * @param {object} itemKeyA
- * @param {object} itemKeyB
- * @return {object}
- */
-DvtChart.prototype.getFromCachedMap2D = function(mapKey, itemKeyA, itemKeyB) {
-  var map = this.getFromCache(mapKey);
-  if (!map) {
-    map = new DvtMap2D();
-    this.putToCache(mapKey, map);
-  }
-  return map.get(itemKeyA, itemKeyB);
-};
-
-/**
- * Stores the value corresponding to (itemKeyA, itemKeyB) to the cached 2D map corresponding to mapKey.
- * @param {object} mapKey
- * @param {object} itemKeyA
- * @param {object} itemKeyB
- * @param {object} value
- */
-DvtChart.prototype.putToCachedMap2D = function(mapKey, itemKeyA, itemKeyB, value) {
-  var map = this.getFromCache(mapKey);
-  if (!map) {
-    map = new DvtMap2D();
-    this.putToCache(mapKey, map);
-  }
-  map.put(itemKeyA, itemKeyB, value);
-};
-
-
-/**
- * Processes the specified event.
- * @param {object} event
- * @param {object} source The component that is the source of the event, if available.
- */
-DvtChart.prototype.processEvent = function(event, source) {
-  var type = event.getType();
-  if (type == DvtCategoryHideShowEvent.TYPE_HIDE || type == DvtCategoryHideShowEvent.TYPE_SHOW)
-    this.filter(event.getCategory(), (type == DvtCategoryHideShowEvent.TYPE_HIDE ? 'out' : 'in'));
-
-  else if (type == DvtCategoryRolloverEvent.TYPE_OVER || type == DvtCategoryRolloverEvent.TYPE_OUT) {
-    // If the chart is not the source of the event, perform highlighting.
-    if (this != source)
-      this.highlight(event['categories']);
-
-    if (this.legend && this.legend != source)
-      this.legend.processEvent(event, source);
-  }
-
-  else if (type == DvtSelectionEvent.TYPE)
-    event = this._processSelectionEvent(event);
-
-  else if (type == DvtPanZoomEvent.TYPE)
-    event = this._processPanZoomEvent(event);
-
-  else if (type == DvtMarqueeEvent.TYPE)
-    event = this._processMarqueeEvent(event);
-
-  else if (type == DvtOverviewEvent.TYPE) {
-    var subtype = event.getSubType();
-    if (subtype == DvtOverviewEvent.SUBTYPE_PRE_RANGECHANGE)
-      return;
-    var actionDone = subtype == DvtOverviewEvent.SUBTYPE_SCROLL_TIME ||
-                     subtype == DvtOverviewEvent.SUBTYPE_SCROLL_END ||
-                     subtype == DvtOverviewEvent.SUBTYPE_RANGECHANGE;
-    event = this._processScrollbarEvent(event.getNewStartTime(), event.getNewEndTime(), actionDone, source);
-  }
-
-  else if (type == DvtSimpleScrollbarEvent.TYPE)
-    event = this._processScrollbarEvent(event.getNewMin(), event.getNewMax(), event.getSubtype() == DvtSimpleScrollbarEvent.SUBTYPE_END, source);
-
-  else if (type == DvtShowPopupEvent.TYPE)
-    event = this._processShowPopupEvent(event);
-
-  else if (event instanceof DvtComponentUIEvent)
-    event = this._processComponentUIEvent(event, source);
-
-  // For selection events, update the options object and calculate the added/removed arrays
-  if (event instanceof DvtChartSelectionEvent) {
-    // TODO : The calculation of added/removedSet should ideally happen in the selectionHandler, but the code there
-    // was changed such that it doesn't fire the selection event directly anymore.
-    var options = this.getOptions();
-    var oldItems = options['selection'];
-    var newItems = DvtChartDataUtils.getCurrentSelection(this);
-    if (event.getType() != DvtSelectionEvent.TYPE_INPUT) // don't update options on input
-      options['selection'] = newItems;
-
-    // Ensure old and new items are not null
-    oldItems = oldItems ? oldItems : [];
-    newItems = newItems ? newItems : [];
-
-    // Calculate the old and set selection id sets
-    var oldIndex, newIndex;
-
-    var oldSet = {};
-    for (oldIndex = 0; oldIndex < oldItems.length; oldIndex++) {
-      oldSet[oldItems[oldIndex]['id']] = true;
-    }
-
-    var newSet = {};
-    for (newIndex = 0; newIndex < newItems.length; newIndex++) {
-      newSet[newItems[newIndex]['id']] = true;
-    }
-
-    // Calculate the added and remove sets using the old and new
-    var addedSet = {};
-    for (newIndex = 0; newIndex < newItems.length; newIndex++) {
-      var newItemId = newItems[newIndex]['id'];
-      if (!oldSet[newItemId])
-        addedSet[newItemId] = true;
-    }
-
-    var removedSet = {};
-    for (oldIndex = 0; oldIndex < oldItems.length; oldIndex++) {
-      var oldItemId = oldItems[oldIndex]['id'];
-      if (!newSet[oldItemId])
-        removedSet[oldItemId] = true;
-    }
-
-    // Finally add to the selection event
-    event['addedSet'] = addedSet;
-    event['removedSet'] = removedSet;
-  }
-
-  // Dispatch the event to the callback
-  if (event)
-    this.__dispatchEvent(event);
-};
-
-
-/**
- * Processes selection event.
- * @param {DvtSelectionEvent} event Selection event.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processSelectionEvent = function(event) {
-  var selection = DvtChartEventUtils.processIds(this, event.getSelection());
-  this._updateOverviewSelection();
-  return new DvtChartSelectionEvent(selection, DvtSelectionEvent.TYPE);
-};
-
-
-/**
- * Processes pan/zoom event.
- * @param {DvtPanZoomEvent} event Pan/zoom event.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processPanZoomEvent = function(event) {
-  var subtype = event.getSubtype();
-  var actionDone = subtype == DvtPanZoomEvent.SUBTYPE_PAN_END || subtype == DvtPanZoomEvent.SUBTYPE_ZOOM || subtype == DvtPanZoomEvent.SUBTYPE_PINCH_END;
-  var actionStart = subtype == DvtPanZoomEvent.SUBTYPE_PAN_START || subtype == DvtPanZoomEvent.SUBTYPE_PINCH_START;
-
-  // The initial touch target has to be kept so that the subsequent touch move events are fired
-  if (DvtAgent.isTouchDevice() && actionStart && this._panZoomTarget != this._plotArea) {
-    this._container.removeChild(this._panZoomTarget);
-    this._panZoomTarget = this._plotArea;
-  }
-
-  // Calculate the bounds and update the viewport
-  var bounds;
-  if (DvtChartEventUtils.isLiveScroll(this)) { // live
-    bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMin, event.dxMax, event.dyMin, event.dyMax);
-    if (!actionStart) {
-      this._setViewport(bounds, actionDone);
-      this._setScrollbarViewport(bounds);
-    }
-  }
-  else { // delayed
-    bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMinTotal, event.dxMaxTotal, event.dyMinTotal, event.dyMaxTotal);
-    this._setScrollbarViewport(bounds); // always update the scrollbars
-    if (actionDone)
-      this._setViewport(bounds, actionDone);
-  }
-
-  if (actionDone) {
-    // Event handlers have to be reset because the plot area space may change
-    DvtChartRenderer._setEventHandlers(this);
-
-    // Clear the touch target, if there's one
-    if (this._panZoomTarget != this._plotArea) {
-      this._container.removeChild(this._panZoomTarget);
-      this._panZoomTarget = null;
-    }
-  }
-
-  // Fire viewport change event
-  var eventType = actionDone ? DvtChartViewportChangeEvent.TYPE : DvtChartViewportChangeEvent.TYPE_INPUT;
-  if (DvtChartTypeUtils.isBLAC(this))
-    return new DvtChartViewportChangeEvent(eventType, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
-  else
-    return new DvtChartViewportChangeEvent(eventType, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
-};
-
-
-/**
- * Processes marquee event.
- * @param {DvtMarqueeEvent} event Marquee event.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processMarqueeEvent = function(event) {
-  var subtype = event.getSubtype();
-  var em = this.EventManager;
-  var bounds; // chart bounds
-  DvtChartEventUtils.adjustBounds(event);
-
-  // Marquee selection
-  if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_SELECT) {
-    var selectionHandler = em.getSelectionHandler();
-
-    if (subtype == DvtMarqueeEvent.SUBTYPE_START) {
-      // If ctrl key is pressed at start of drag, the previous selection should be preserved.
-      this._initSelection = event.ctrlKey ? selectionHandler.getSelectedIds() : [];
-    }
-    else {
-      var targets = DvtChartEventUtils.getBoundedObjects(this, event);
-      selectionHandler.processInitialSelections(this._initSelection, this.getChartObjPeers());
-      selectionHandler.processGroupSelection(targets, true);
-    }
-
-    // Create and populate selection event
-    var selection = DvtChartEventUtils.getSelectedObjects(this, event, selectionHandler);
-    bounds = DvtChartEventUtils.getAxisBounds(this, event, false);
-    var eventType = subtype == DvtMarqueeEvent.SUBTYPE_END ? DvtSelectionEvent.TYPE : DvtSelectionEvent.TYPE_INPUT;
-    var selectionEvent = new DvtChartSelectionEvent(selection, eventType,
-                                                    bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup,
-                                                    bounds.yMin, bounds.yMax, bounds.y2Min, bounds.y2Max);
-
-    // Update the selection in the overview bg chart
-    if (subtype == DvtMarqueeEvent.SUBTYPE_END)
-      this._updateOverviewSelection();
-
-    return selectionEvent;
-  }
-
-  // Marquee zoom
-  else if (em.getDragMode() == DvtChartEventManager.DRAG_MODE_ZOOM) {
-    if (subtype != DvtMarqueeEvent.SUBTYPE_END)
-      return null;
-
-    // Compute and limit the bounds
-    bounds = DvtChartEventUtils.getAxisBounds(this, event, true);
-    this._setViewport(bounds, true);
-    this._setScrollbarViewport(bounds);
-
-    // Event handlers have to be reset because the plot area space may change
-    DvtChartRenderer._setEventHandlers(this);
-
-    if (DvtChartTypeUtils.isBLAC(this))
-      return new DvtChartViewportChangeEvent(DvtChartViewportChangeEvent.TYPE, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
-    else
-      return new DvtChartViewportChangeEvent(DvtChartViewportChangeEvent.TYPE, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
-  }
-
-  return null;
-};
-
-
-/**
- * Processes scrollbar event (overview or simple scrollbar).
- * @param {number} start The min value.
- * @param {number} end The max value.
- * @param {boolean} actionDone Whether the scrolling has finished.
- * @param {object} source The component that is the source of the event, if available.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processScrollbarEvent = function(start, end, actionDone, source) {
-  var axis = (source == this.yScrollbar) ? this.yAxis : this.xAxis;
-  start = axis.linearToActual(start);
-  end = axis.linearToActual(end);
-
-  if (DvtChartEventUtils.isLiveScroll(this) || actionDone) {
-    if (source == this.yScrollbar)
-      this._setViewport({yMin: start, yMax: end}, actionDone);
-    else
-      this._setViewport({xMin: start, xMax: end}, actionDone);
-  }
-
-  var eventType = actionDone ? DvtChartViewportChangeEvent.TYPE : DvtChartViewportChangeEvent.TYPE_INPUT;
-  if (source == this.yScrollbar)
-    return new DvtChartViewportChangeEvent(eventType, null, null, null, null, start, end, null, null);
-  else {
-    var startEndGroup = DvtChartEventUtils.getAxisStartEndGroup(this.xAxis, start, end);
-    return new DvtChartViewportChangeEvent(eventType, start, end, startEndGroup.startGroup, startEndGroup.endGroup, null, null, null, null);
-  }
-};
-
-
-/**
- * Processes show popup event.
- * @param {DvtShowPopupEvent} event Show popup event.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processShowPopupEvent = function(event) {
-  // For events other than hover, use the selection context in the popup event
-  if (event['triggerType'] != 'mouseHover' && this.isSelectionSupported() && this.getSelectionHandler().getSelectedCount() > 0) {
-    var selection = DvtChartEventUtils.processIds(this, this.getSelectionHandler().getSelectedIds());
-    event = new DvtShowPopupEvent(event.getShowPopupBehavior(), event.getLauncherBounds(), event.getLauncherId());
-    event.addParam(DvtBaseComponentEvent.CLIENT_ROW_KEY, selection);
-  }
-
-  return event;
-};
-
-
-/**
- * Processes component UI event.
- * @param {DvtComponentUIEvent} event Component UI event.
- * @param {object} source The component that is the source of the event, if available.
- * @return {object} Processed event.
- * @private
- */
-DvtChart.prototype._processComponentUIEvent = function(event, source) {
-  // Convert event based on source
-  var params = event['params'];
-  var chartObjType = params['type'];
-  if (source === this.legend) {
-    if (chartObjType == DvtLegendConstants.LEGEND_ITEM)
-      chartObjType = DvtChartConstants.LEGEND_ITEM;
-    else if (chartObjType == DvtLegendConstants.TITLE)
-      chartObjType = DvtChartConstants.LEGEND_TITLE;
-    else if (chartObjType == DvtLegendConstants.BACKGROUND)
-      chartObjType = DvtChartConstants.LEGEND;
-
-    return new DvtComponentUIEvent(event.getType(), DvtChartEventManager.getUIEventParams(chartObjType, null, params['id']));
-  }
-  else if (source === this.xAxis) {
-    if (chartObjType == DvtAxisConstants.TICK_LABEL)
-      chartObjType = DvtChartConstants.X_AXIS_LABEL;
-    else if (chartObjType == DvtAxisConstants.TITLE)
-      chartObjType = DvtChartConstants.X_AXIS_TITLE;
-
-    return new DvtComponentUIEvent(event.getType(), DvtChartEventManager.getUIEventParams(chartObjType, params['id']));
-  }
-  else if (source === this.yAxis) {
-    if (chartObjType == DvtAxisConstants.TICK_LABEL)
-      chartObjType = DvtChartConstants.Y_AXIS_LABEL;
-    else if (chartObjType == DvtAxisConstants.TITLE)
-      chartObjType = DvtChartConstants.Y_AXIS_TITLE;
-
-    return new DvtComponentUIEvent(event.getType(), DvtChartEventManager.getUIEventParams(chartObjType, params['id']));
-  }
-  else if (source === this.y2Axis) {
-    if (chartObjType == DvtAxisConstants.TICK_LABEL)
-      chartObjType = DvtChartConstants.Y2_AXIS_LABEL;
-    else if (chartObjType == DvtAxisConstants.TITLE)
-      chartObjType = DvtChartConstants.Y2_AXIS_TITLE;
-
-    return new DvtComponentUIEvent(event.getType(), DvtChartEventManager.getUIEventParams(chartObjType, params['id']));
-  }
-  else // Don't need to modify the event.  Generally this means the source is the chart itself.
-    return event;
-};
-
-/**
- * Updates the selection in the overview background chart.
- * @private
- */
-DvtChart.prototype._updateOverviewSelection = function() {
-  if (this.overview) {
-    var ovChart = this.overview.getBackgroundChart();
-    ovChart.getOptions()['selection'] = DvtChartDataUtils.getCurrentSelection(this);
-    ovChart.render(); // rerender because unselected markers were not rendered
-  }
-};
-
-
-/**
- * Updates the chart option and fires the optionChange event.
- * @param {string} key The name of the option to set.
- * @param {Object} value The value to set for the option.
- * @param {Object} optionMetadata (optional) The option metadata for the event.
- */
-DvtChart.prototype.changeOption = function(key, value, optionMetadata) {
-  this.getOptions()[key] = value;
-  this.__dispatchEvent(new DvtOptionChangeEvent(key, value, optionMetadata));
-};
-
-
-/**
- * Registers the object peer with the chart.  The peer must be registered to participate
- * in interactivity.
- * @param {DvtChartObjPeer} peer
- */
-DvtChart.prototype.registerObject = function(peer) {
-  this.Peers.push(peer);
-};
-
-
-/**
- * Returns the peers for all objects within the chart.
- * @return {array}
- */
-DvtChart.prototype.getObjects = function() {
-  return this.Peers;
-};
-
-
-/**
- * Returns the peers for all chart objects within the chart.
- * @return {array}
- */
-DvtChart.prototype.getChartObjPeers = function() {
-  var chartObjPeers = [];
-  for (var i = 0; i < this.Peers.length; i++) {
-    if (this.Peers[i] instanceof DvtChartObjPeer)
-      chartObjPeers.push(this.Peers[i]);
-  }
-  return chartObjPeers;
-};
-
-/**
- * Returns the peers for all reference objects within the chart.
- * @return {array}
- */
-DvtChart.prototype.getRefObjPeers = function() {
-  var refObjPeers = [];
-  for (var i = 0; i < this.Peers.length; i++) {
-    if (this.Peers[i] instanceof DvtRefObjPeer)
-      refObjPeers.push(this.Peers[i]);
-  }
-  return refObjPeers;
-};
-
-
-/**
- * Returns the peer specified by the seriesIndex and groupIndex.
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @return {DvtChartObjPeer}
- */
-DvtChart.prototype.getObject = function(seriesIndex, groupIndex) {
-  for (var i = 0; i < this.Peers.length; i++) {
-    if (this.Peers[i] instanceof DvtChartObjPeer && this.Peers[i].getSeriesIndex() == seriesIndex && this.Peers[i].getGroupIndex() == groupIndex)
-      return this.Peers[i];
-  }
-  return null;
-};
-
-/**
- * @return {number} chart width
- */
-DvtChart.prototype.getWidth = function() {
-  return this.Width;
-};
-
-
-/**
- * @return {number} chart height
- */
-DvtChart.prototype.getHeight = function() {
-  return this.Height;
-};
-
-
-
-/**
- * Returns the array containing unique series ids.  This array is used
- * to maintain default styles for each unique series.
- * @return {array}
- */
-DvtChart.prototype.getSeriesStyleArray = function() {
-  return this.SeriesStyleArray;
-};
-
-
-/**
- * Returns the plot area container.
- * @return {DvtContainer}  the plot area container.
- */
-DvtChart.prototype.getPlotArea = function() {
-  return this._plotArea;
-};
-
-
-/**
- * Sets the plot area container.
- * @param {DvtContainer} plot  the plot area container.
- */
-DvtChart.prototype.setPlotArea = function(plot) {
-  this._plotArea = plot;
-};
-
-
-/**
- * Returns the type of this chart, such as "bar" or "scatter".
- * @return {string}
- */
-DvtChart.prototype.getType = function() {
-  return this.getOptions()['type'];
-};
-
-
-/**
- * Returns the skin of this chart.
- * @return {string}
- */
-DvtChart.prototype.getSkin = function() {
-  return this.getOptions()['skin'];
-};
-
-
-/**
- * Returns the scale factor for gap widths on this chart.
- * @return {number}
- */
-DvtChart.prototype.getGapWidthRatio = function() {
-  // If defined in the options, use that instead
-  var options = this.getOptions();
-  if (options['layout']['gapWidthRatio'] !== null && !isNaN(options['layout']['gapWidthRatio']))
-    return options['layout']['gapWidthRatio'];
-  else
-    return Math.min(this.Width / 400, 1);
-};
-
-/**
- * Returns the scale factor for gap heights on this chart.
- * @return {number}
- */
-DvtChart.prototype.getGapHeightRatio = function() {
-  // If defined in the options, use that instead
-  var options = this.getOptions();
-  if (options['layout']['gapHeightRatio'] !== null && !isNaN(options['layout']['gapHeightRatio']))
-    return options['layout']['gapHeightRatio'];
-  else
-    return Math.min(this.Height / 300, 1);
-};
-
-
-/**
- * Returns the selection handler for the graph.
- * @return {DvtSelectionHandler} The selection handler for the graph
- */
-DvtChart.prototype.getSelectionHandler = function() {
-  return this._selectionHandler;
-};
-
-
-/**
- * Returns whether selecton is supported on the graph.
- * @return {boolean} True if selection is turned on for the graph and false otherwise.
- */
-DvtChart.prototype.isSelectionSupported = function() {
-  return (this._selectionHandler ? true : false);
-};
-
-
-/**
- * Returns the array of DvtShowPopupBehaviors for the given stamp id.
- * @param {string} stampId The id of the stamp containing the showPopupBehaviors.
- * @return {array} The array of showPopupBehaviors.
- */
-DvtChart.prototype.getShowPopupBehaviors = function(stampId) {
-  return this._popupBehaviors ? this._popupBehaviors[stampId] : null;
-};
-
-
-//---------------------------------------------------------------------//
-// Ordering Support: ZOrderManager impl                                //
-//---------------------------------------------------------------------//
-
-/**
- * @override
- */
-DvtChart.prototype.bringToFrontOfSelection = function(detObj)
-{
-  var par = detObj.getParent();
-  if (par) {
-    var parentChildCount = par.getNumChildren();
-
-    if (parentChildCount - this._numFrontObjs > 1) {
-      par.removeChild(detObj);
-      var newIndex = parentChildCount - this._numFrontObjs - 1;
-      par.addChildAt(detObj, newIndex);
-    }
-  }
-
-  //if the object is not both selected and selecting then
-  //increment the counter (otherwise the object is already
-  //represented in the counter)
-  if (!detObj.isSelected() || !detObj.isHoverEffectShown())
-    this._numSelectedObjsInFront++;
-
-};
-
-/**
- * @override
- */
-DvtChart.prototype.pushToBackOfSelection = function(detObj)
-{
-  //decrement the counter
-  if (this._numSelectedObjsInFront > 0)
-    this._numSelectedObjsInFront--;
-
-  //move the object to the first z-index before the selected objects
-  var par = detObj.getParent();
-  if (par) {
-    var parentChildCount = par.getNumChildren();
-    var newIndex = parentChildCount - this._numFrontObjs - 1 - this._numSelectedObjsInFront;
-    if (newIndex >= 0) {
-      par.removeChild(detObj);
-      par.addChildAt(detObj, newIndex);
-    }
-  }
-};
-
-/**
- * @override
- */
-DvtChart.prototype.setNumFrontObjs = function(num)
-{
-  this._numFrontObjs = num;
-};
-
-
-/**
- * @override
- */
-DvtChart.prototype.getShapesForViewSwitcher = function(bOld) {
-  var shapes = {};
-
-  if (this._currentMarkers && this.Peers) {
-    for (var i = 0; i < this._currentMarkers.length; i++) {
-      var arMarkers = this._currentMarkers[i];
-      if (arMarkers) {
-        for (var j = 0; j < arMarkers.length; j++) {
-          var marker = arMarkers[j];
-          if (!marker) {
-            continue; //j loop
-          }
-          //find the peer associated with this marker in order to get the id
-          for (var k = 0; k < this.Peers.length; k++) {
-            var peer = this.Peers[k];
-            var peerDisplayables = peer.getDisplayables();
-            if (peerDisplayables && peerDisplayables.length > 0) {
-              if (peerDisplayables[0] == marker) {
-                var chartDataItem = peer.getId();
-                if (chartDataItem) {
-                  var id = chartDataItem.getId();
-                  if (id) {
-                    shapes[id] = marker;
-                    break; //out of k loop
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  else if (this.pieChart) {
-    shapes = this.pieChart.getShapesForViewSwitcher(bOld);
-  }
-
-  return shapes;
-};
-
-
-/**
- * Sets the chart viewport and rerender the axis and plot area.
- * @param {DvtRectangle} bounds An object containing the xMin, xMax, yMin, yMax of the new viewport.
- * @param {boolean} actionDone Whether the animation is done, so that the chart should be fully rendered.
- * @private
- */
-DvtChart.prototype._setViewport = function(bounds, actionDone) {
-  var zoomDirection = DvtChartEventUtils.getZoomDirection(this);
-
-  if (zoomDirection != 'y') {
-    if (bounds.xMax != null)
-      this.Options['xAxis']['viewportMax'] = bounds.xMax;
-    if (bounds.xMin != null)
-      this.Options['xAxis']['viewportMin'] = bounds.xMin;
-  }
-
-  if (DvtChartTypeUtils.isBLAC(this)) {
-    this.Options['xAxis']['viewportStartGroup'] = null;
-    this.Options['xAxis']['viewportEndGroup'] = null;
-
-    // Turn off initial zooming after pan/zoom
-    this.Options['_initialZoomed'] = false;
-  }
-  else if (zoomDirection != 'x') {
-    if (bounds.yMax != null)
-      this.Options['yAxis']['viewportMax'] = bounds.yMax;
-    if (bounds.yMin != null)
-      this.Options['yAxis']['viewportMin'] = bounds.yMin;
-  }
-
-  this.Options['_duringAnimation'] = !actionDone;
-  DvtChartRenderer.rerenderAxisAndPlotArea(this, this._container);
-};
-
-
-/**
- * Sets the scrollbar viewport.
- * @param {DvtRectangle} bounds An object containing the xMin, xMax, yMin, yMax of the new viewport.
- * @private
- */
-DvtChart.prototype._setScrollbarViewport = function(bounds) {
-  if (this.xAxis && bounds.xMin != null && bounds.xMax != null) {
-    var xMin = this.xAxis.actualToLinear(bounds.xMin);
-    var xMax = this.xAxis.actualToLinear(bounds.xMax);
-    if (this.overview)
-      this.overview.setViewportRange(xMin, xMax);
-    if (this.xScrollbar)
-      this.xScrollbar.setViewportRange(xMin, xMax);
-  }
-
-  if (this.yAxis && bounds.yMin != null && bounds.yMax != null) {
-    var yMin = this.yAxis.actualToLinear(bounds.yMin);
-    var yMax = this.yAxis.actualToLinear(bounds.yMax);
-    if (this.yScrollbar)
-      this.yScrollbar.setViewportRange(yMin, yMax);
-  }
-};
-
-
-/**
- * Sets the space for the axis and the plot area.
- * @param {DvtRectangle} space
- */
-DvtChart.prototype.__setAxisSpace = function(space) {
-  this._axisSpace = space;
-
-  // Set the polar chart radius
-  var maxWidth, maxHeight;
-  if (DvtChartAxisUtils.isAxisRendered(this, 'x')) {
-    maxWidth = space.w * 0.8;
-    maxHeight = space.h - 5 * DvtChartAxisUtils.getTickLabelFontSize(this, 'x');
-  }
-  else if (DvtChartAxisUtils.isAxisRendered(this, 'y')) {
-    maxWidth = space.w;
-    maxHeight = space.h - DvtChartAxisUtils.getTickLabelFontSize(this, 'y');
-  }
-  else {
-    maxWidth = space.w;
-    maxHeight = space.h;
-  }
-  this._radius = Math.min(maxWidth, maxHeight) / 2;
-};
-
-
-/**
- * Gets the space for the axis and the plot area.
- * @return {DvtRectangle} space
- */
-DvtChart.prototype.__getAxisSpace = function() {
-  return this._axisSpace;
-};
-
-
-/**
- * Sets the space for the plot area.
- * @param {DvtRectangle} space
- */
-DvtChart.prototype.__setPlotAreaSpace = function(space) {
-  this._plotAreaSpace = space;
-};
-
-
-/**
- * Gets the space for the plot area.
- * @return {DvtRectangle} space
- */
-DvtChart.prototype.__getPlotAreaSpace = function() {
-  return this._plotAreaSpace;
-};
-
-
-/**
- * Sets the container of the chart area shapes.
- * @param {DvtContainer} container
- */
-DvtChart.prototype.__setAreaContainer = function(container) {
-  this._areaContainer = container;
-};
-
-
-/**
- * Gets the container of the chart area shapes.
- * @return {DvtContainer} container
- */
-DvtChart.prototype.__getAreaContainer = function() {
-  return this._areaContainer;
-};
-
-
-/**
- * Returns the radius of a polar chart.
- * @return {number} Polar chart radius.
- */
-DvtChart.prototype.getRadius = function() {
-  return this._radius;
-};
-
-
-/**
- * Shows the drag buttons.
- */
-DvtChart.prototype.showDragButtons = function() {
-  if (this.dragButtons)
-    this.dragButtons.setVisible(true);
-};
-
-/**
- * Hides the drag buttons.
- */
-DvtChart.prototype.hideDragButtons = function() {
-  if (this.dragButtons)
-    this.dragButtons.setVisible(false);
-};
-
-/**
- * Adds a data label to the internal list of labels to help with animation.
- * @param {DvtOutputText} label
- */
-DvtChart.prototype.addDataLabel = function(label) {
-  this.getDataLabels().push(label);
-};
-
-/**
- * Provides the list of data labels so they can be animated.
- * @return {array} data labels in this chart
- */
-DvtChart.prototype.getDataLabels = function() {
-  if (!this._dataLabels)
-    this._dataLabels = [];
-  return this._dataLabels;
-};
-
-/**
- * Cache the chart focus so it's not lost on rerender.
- * @return {object} Object containing the chart, legend and axis focus
- */
-DvtChart.prototype.__cacheChartFocus = function() {
-  // Store the current chart and legend keyboard focus.
-  var chartFocus = this.EventManager.getFocus();
-  if (chartFocus)
-    var chartShowingFocusEffect = chartFocus.isShowingKeyboardFocusEffect();
-  if (this.xAxis) {
-    var axisFocus = this.xAxis.getKeyboardFocus();
-    if (axisFocus)
-      var axisShowingFocusEffect = axisFocus.isShowingKeyboardFocusEffect();
-  }
-  if (this.legend) {
-    var legendFocus = this.legend.getKeyboardFocus();
-    if (legendFocus)
-      var legendShowingFocusEffect = legendFocus.isShowingKeyboardFocusEffect();
-  }
-  return {chartFocus: chartFocus, chartShowingFocusEffect: chartShowingFocusEffect, axisFocus: axisFocus, axisShowingFocusEffect: axisShowingFocusEffect,
-    legendFocus: legendFocus, legendShowingFocusEffect: legendShowingFocusEffect};
-};
-
-/**
- * Restore the chart focus
- * @param {object} focusState Object containing the chart, legend and axis focus
- */
-DvtChart.prototype.__restoreChartFocus = function(focusState) {
-  if (DvtChartTypeUtils.isOverview(this) || DvtChartTypeUtils.isSpark(this)) {
-    return;
-  }
-
-  // Initialize the keyboard focus array with the new axis and legend
-  var keyboardArray = [this];
-  if (this.xAxis && this.xAxis.isNavigable())
-    keyboardArray.push(this.xAxis);
-  if (this.legend && this.legend.isNavigable())
-    keyboardArray.push(this.legend);
-  this.getCtx().setKeyboardFocusArray(keyboardArray);
-
-  // Restore the keyboard focus after rerendering.
-  if (focusState.chartFocus) {
-    var navigables = DvtChartEventUtils.getKeyboardNavigables(this);
-    var matchFound = false;
-    for (var i = 0; i < navigables.length; i++) {
-      var id = navigables[i].getId();
-      if (id instanceof DvtChartDataItem && id.equals(focusState.chartFocus.getId())) {
-        this.EventManager.setFocusObj(navigables[i]);
-        if (focusState.chartShowingFocusEffect)
-          navigables[i].showKeyboardFocusEffect();
-        matchFound = true;
-        break;
-      }
-    }
-    if (!matchFound)
-      this.EventManager.setFocusObj(this.EventManager.getKeyboardHandler().getDefaultNavigable(navigables));
-  }
-  if (focusState.axisFocus) {
-    this.xAxis.setKeyboardFocus(focusState.axisFocus, focusState.axisShowingFocusEffect);
-    if (focusState.axisShowingFocusEffect)
-      this.getCtx().setCurrentKeyboardFocus(this.xAxis);
-  }
-  if (focusState.legendFocus) {
-    this.legend.setKeyboardFocus(focusState.legendFocus, focusState.legendShowingFocusEffect);
-    if (focusState.legendShowingFocusEffect)
-      this.getCtx().setCurrentKeyboardFocus(this.legend);
-  }
-};
-// Active Data Support for Charts
-/**
- * Processes an array of active data changes and updates the component.
- * @param {array} changes The array of active data changes.
- * @export
- */
-DvtChart.prototype.processActiveDataChanges = function(changes) {
-  // Clone the options object to store a copy of the old data
-  var optionsOld = DvtJSONUtils.clone(this.Options);
-  var optionsNew = this.Options;
-
-  // Iterate through the list of changes and apply all of them
-  for (var changeIndex = 0; changeIndex < changes.length; changeIndex++) {
-    this._processActiveDataChange(changes[changeIndex]);
-  }
-
-  // Re-render the component: First restore the old options object so that data change indicators can be calculated.
-  this.Options = optionsOld;
-  this.render(optionsNew);
-};
-
-/**
- * Processes a single active data change entry and updates the options object with the data change.
- * @param {object} entry
- * @private
- */
-DvtChart.prototype._processActiveDataChange = function(entry) {
-  var type = entry['type'];
-  if (type == 'u')// Update
-    this._processActiveDataUpdate(entry);
-  else if (type == 'ia' || type == 'ib')// Insert After or Insert Before
-    this._processActiveDataInsert(entry);
-  else if (type == 'd')// Delete
-    this._processActiveDataDelete(entry);
-};
-
-/**
- * Processes a single active data update and updates the options object with the data change.
- * @param {object} entry
- * @private
- */
-DvtChart.prototype._processActiveDataUpdate = function(entry) {
-  var data = entry['data'];
-  for (var i = 0; i < data.length; i++) {
-    var dataItemInfo = this._findDataItemById(entry['id'], data[i]['_id']);
-    if (dataItemInfo) {
-      // Data Item Found: Iterate thorugh and update all properties
-      for (var key in data[i]) {
-        if (key == '_id')
-          continue;
-
-        dataItemInfo.item[key] = data[i][key];
-      }
-    }
-  }
-};
-
-/**
- * Processes a single active data insert and updates the options object with the data change.
- * @param {object} entry
- * @private
- */
-DvtChart.prototype._processActiveDataInsert = function(entry) {
-  var data = entry['data'];
-  for (var i = 0; i < data.length; i++) {
-    this.clearCache();
-    var insertId = entry['insertId'];
-    var insertedGroup = data[i]['group'];
-    var insertedSeries = data[i]['series'];
-    var seriesCount = DvtChartDataUtils.getSeriesCount(this);
-    var groupCount = DvtChartDataUtils.getGroupCount(this);
-
-    // Group names are required to be unique. If the series and group already exist, overwrite existing data item.
-    var insertedSeriesIndex = DvtChartDataUtils.getSeriesIndex(this, insertedSeries);
-    var insertedGroupIndex = DvtChartDataUtils.getGroupIndex(this, insertedGroup);
-    if (insertedSeriesIndex >= 0 && insertedGroupIndex >= 0) {
-      // Insert into existing series and existing group.
-      var seriesItems = DvtChartDataUtils.getSeriesItem(this, insertedSeriesIndex)['items'];
-      seriesItems[insertedGroupIndex] = {
-        'id': entry['id']
-      };
-      DvtChart._copyActiveDataProperties(data[i], seriesItems[insertedGroupIndex]);
-    }
-    else if (insertedGroupIndex >= 0) {
-      // Insert into existing group, but new series.  The new series is automatically placed at the end, as this is
-      // not a real use case and it's impossible to determine the correct order.
-      var items = new Array(groupCount);
-      items[insertedGroupIndex] = {
-        'id': entry['id']
-      };
-      DvtChart._copyActiveDataProperties(data[i], items[insertedGroupIndex]);
-      this.Options['series'].push({
-        'name' : insertedSeries, 'items' : items
-      });
-    }
-    else {
-      // Insert into new group.  Position based on insertId and type of entry (after or before)
-      var dataItemInfo = this._findDataItemById(insertId);
-      if (dataItemInfo)
-        insertedGroupIndex = (entry['type'] == 'ia') ? dataItemInfo.groupIndex + 1 : dataItemInfo.groupIndex;
-      else
-        insertedGroupIndex = 0;
-
-      // Create the series if needed
-      if (insertedSeriesIndex < 0) {
-        this.Options['series'].push({
-          'name' : insertedSeries, 'items' : new Array(groupCount)
-        });
-        insertedSeriesIndex = seriesCount;
-        seriesCount++;
-      }
-
-      // Insert a placeholder data item for the group for each series
-      for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
-        var seriesItems = DvtChartDataUtils.getSeriesItem(this, seriesIndex)['items'];
-        seriesItems.splice(insertedGroupIndex, 0,
-            {
-              'id': entry['id']
-            });
-
-        // Insert the data item into the new series
-        if (seriesIndex == insertedSeriesIndex)
-          DvtChart._copyActiveDataProperties(data[i], seriesItems[insertedGroupIndex]);
-      }
-
-      // Insert the group
-      this.Options['groups'].splice(insertedGroupIndex, 0, insertedGroup);
-    }
-  }
-};
-
-/**
- * Processes a single active data delete and updates the options object with the data change.
- * @param {object} entry
- * @private
- */
-DvtChart.prototype._processActiveDataDelete = function(entry) {
-  this.clearCache();
-  var dataItemInfo = this._findDataItemById(entry['id']);
-  if (dataItemInfo) {
-    var dataItem;
-
-    // Mark the data item for deletion
-    for (var key in dataItemInfo.item) {
-      dataItemInfo.item[key] = null;
-    }
-    dataItemInfo.item['_deleted'] = true;
-
-    // Check if series or groups should be removed altogether
-    var seriesCount = DvtChartDataUtils.getSeriesCount(this);
-    var groupCount = DvtChartDataUtils.getGroupCount(this);
-
-    // If this is the only undeleted point in the group, then delete the group.
-    var bDeleteGroup = true;
-    for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
-      dataItem = DvtChartDataUtils.getDataItem(this, seriesIndex, dataItemInfo.groupIndex);
-      if (dataItem && !dataItem['_deleted']) {
-        bDeleteGroup = false;
-        break;
-      }
-    }
-
-    // If this is the only undeleted point in the group, then delete the group.
-    var bDeleteSeries = true;
-    for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
-      dataItem = DvtChartDataUtils.getDataItem(this, dataItemInfo.seriesIndex, groupIndex);
-      if (dataItem && !dataItem['_deleted']) {
-        bDeleteSeries = false;
-        break;
-      }
-    }
-
-    // Delete the group if necessary
-    if (bDeleteGroup) {
-      // Remove the data item for the group from each series
-      for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
-        var seriesItems = DvtChartDataUtils.getSeriesItem(this, seriesIndex).items;
-        seriesItems.splice(dataItemInfo.groupIndex, 1);
-      }
-
-      // Remove the group from the groups list
-      this.Options['groups'].splice(dataItemInfo.groupIndex, 1);
-    }
-
-    // Delete the series if necessary
-    if (bDeleteSeries)
-      this.Options['series'].splice(dataItemInfo.seriesIndex, 1);
-
-    // recursively delete item with different stamp ids
-    this._processActiveDataDelete(entry);
-  }
-};
-
-/**
- * Copies the properties from the active data change entry into the specified data item.
- * @param {object} entry
- * @param {object} item
- * @private
- */
-DvtChart._copyActiveDataProperties = function(entry, item) {
-  for (var key in entry) {
-    item[key] = entry[key];
-  }
-};
-
-/**
- * Returns an object with properties item, seriesIndex, and groupIndex corresponding to the specified data item id.
- * Returns null if no data item with matching id is found.
- * @param {object} id The id of the data item.
- * @param {object} stampId The id of the stamp used to generate the data item.
- * @return {object}
- * @private
- */
-DvtChart.prototype._findDataItemById = function(id, stampId) {
-  // No match if id is invalid
-  if (id == null)
-    return null;
-
-  // Loop through all data items until correct id is found.
-  var seriesCount = DvtChartDataUtils.getSeriesCount(this);
-  var groupCount = DvtChartDataUtils.getGroupCount(this);
-  for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
-    for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
-      var dataItem = DvtChartDataUtils.getDataItem(this, seriesIndex, groupIndex);
-      if (dataItem != null && dataItem['id'] === id && (stampId == null || stampId === dataItem['_id']))
-        return {item: dataItem, seriesIndex: seriesIndex, groupIndex: groupIndex};
-    }
-  }
-
-  // Return null if no match found
-  return null;
-};
-/**
- * Chart Constants
- * @class
- * @export
- */
-var DvtChartConstants = {};
-
-DvtObj.createSubclass(DvtChartConstants, DvtObj, 'DvtChartConstants');
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.BACKGROUND = 'background';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.DATA_ITEM = 'dataItem';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.DATA_ITEM_OTHER = 'dataItemOther';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.FOOTNOTE = 'footnote';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.LEGEND = 'legend';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.LEGEND_ITEM = 'legendItem';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.LEGEND_TITLE = 'legendTitle';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.PLOT_AREA = 'plotArea';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.SERIES = 'series';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.SUBTITLE = 'subtitle';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.TITLE = 'title';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.X_AXIS_LABEL = 'xAxisLabel';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.X_AXIS_TITLE = 'xAxisTitle';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.Y_AXIS_LABEL = 'yAxisLabel';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.Y_AXIS_TITLE = 'yAxisTitle';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.Y2_AXIS_LABEL = 'y2AxisLabel';
-
-
-/**
- * @const
- * @export
- */
-DvtChartConstants.Y2_AXIS_TITLE = 'y2AxisTitle';
-/**
- * Chart selection event.
- * @param {array} selection The array of currently selected ids for the component.
- * @param {string} type
- * @param {number=} xMin The xMin of the marquee bounds (only applies to marquee selection).
- * @param {number=} xMax The xMax of the marquee bounds (only applies to marquee selection).
- * @param {string=} startGroup The first group that is included in the bounds (only applies to marquee selection).
- * @param {string=} endGroup The last group that is included in the bounds (only applies to marquee selection).
- * @param {number=} yMin The yMin of the marquee bounds (only applies to marquee selection).
- * @param {number=} yMax The yMax of the marquee bounds (only applies to marquee selection).
- * @param {number=} y2Min The y2Min of the marquee bounds (only applies to marquee selection).
- * @param {number=} y2Max The y2Max of the marquee bounds (only applies to marquee selection).
- * @class
- * @constructor
- * @export
- */
-var DvtChartSelectionEvent = function(selection, type, xMin, xMax, startGroup, endGroup, yMin, yMax, y2Min, y2Max) {
-  DvtChartSelectionEvent.superclass.Init.call(this, selection, type);
-  this._xMin = xMin;
-  this._xMax = xMax;
-  this._startGroup = startGroup;
-  this._endGroup = endGroup;
-  this._yMin = yMin;
-  this._yMax = yMax;
-  this._y2Min = y2Min;
-  this._y2Max = y2Max;
-  this.addedSet = null;
-  this.removedSet = null;
-};
-
-DvtObj.createSubclass(DvtChartSelectionEvent, DvtSelectionEvent, 'DvtChartSelectionEvent');
-
-
-/**
- * Returns the xMin of the marquee selection bounds.
- * @return {number} xMin.
- * @export
- */
-DvtChartSelectionEvent.prototype.getXMin = function() {
-  return this._xMin;
-};
-
-
-/**
- * Returns the xMax of the marquee selection bounds.
- * @return {number} xMax.
- * @export
- */
-DvtChartSelectionEvent.prototype.getXMax = function() {
-  return this._xMax;
-};
-
-
-/**
- * Returns the startGroup of the marquee selection bounds.
- * @return {string} startGroup.
- * @export
- */
-DvtChartSelectionEvent.prototype.getStartGroup = function() {
-  return this._startGroup;
-};
-
-
-/**
- * Returns the endGroup of the marquee selection bounds.
- * @return {string} endGroup.
- * @export
- */
-DvtChartSelectionEvent.prototype.getEndGroup = function() {
-  return this._endGroup;
-};
-
-
-/**
- * Returns the yMin of the marquee selection bounds.
- * @return {number} yMin.
- * @export
- */
-DvtChartSelectionEvent.prototype.getYMin = function() {
-  return this._yMin;
-};
-
-
-/**
- * Returns the yMax of the marquee selection bounds.
- * @return {number} yMax.
- * @export
- */
-DvtChartSelectionEvent.prototype.getYMax = function() {
-  return this._yMax;
-};
-
-
-/**
- * Returns the y2Min of the marquee selection bounds.
- * @return {number} y2Min.
- * @export
- */
-DvtChartSelectionEvent.prototype.getY2Min = function() {
-  return this._y2Min;
-};
-
-
-/**
- * Returns the y2Max of the marquee selection bounds.
- * @return {number} y2Max.
- * @export
- */
-DvtChartSelectionEvent.prototype.getY2Max = function() {
-  return this._y2Max;
-};
-/**
- * Chart viewport change event.
- * @param {string} type
- * @param {number=} xMin The xMin of the viewport.
- * @param {number=} xMax The xMax of the viewport.
- * @param {string=} startGroup The first group that is included in the viewport.
- * @param {string=} endGroup The last group that is included in the viewport.
- * @param {number=} yMin The yMin of the viewport.
- * @param {number=} yMax The yMax of the viewport.
- * @class
- * @constructor
- * @export
- */
-var DvtChartViewportChangeEvent = function(type, xMin, xMax, startGroup, endGroup, yMin, yMax) {
-  DvtChartViewportChangeEvent.superclass.Init.call(this, type);
-  this._xMin = xMin;
-  this._xMax = xMax;
-  this._startGroup = startGroup;
-  this._endGroup = endGroup;
-  this._yMin = yMin;
-  this._yMax = yMax;
-};
-
-DvtObj.createSubclass(DvtChartViewportChangeEvent, DvtBaseComponentEvent, 'DvtChartViewportChangeEvent');
-
-/**
- * @export
- */
-DvtChartViewportChangeEvent.TYPE = 'viewportChange';
-
-
-/**
- * @export
- */
-DvtChartViewportChangeEvent.TYPE_INPUT = 'viewportChangeInput';
-
-/**
- * Returns the xMin of the viewport.
- * @return {number} xMin.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getXMin = function() {
-  return this._xMin;
-};
-
-
-/**
- * Returns the xMax of the viewport.
- * @return {number} xMax.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getXMax = function() {
-  return this._xMax;
-};
-
-
-/**
- * Returns the startGroup of the viewport.
- * @return {string} startGroup.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getStartGroup = function() {
-  return this._startGroup;
-};
-
-
-/**
- * Returns the endGroup of the viewport.
- * @return {string} endGroup.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getEndGroup = function() {
-  return this._endGroup;
-};
-
-
-/**
- * Returns the yMin of the viewport.
- * @return {number} yMin.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getYMin = function() {
-  return this._yMin;
-};
-
-
-/**
- * Returns the yMax of the viewport.
- * @return {number} yMax.
- * @export
- */
-DvtChartViewportChangeEvent.prototype.getYMax = function() {
-  return this._yMax;
-};
-/**
- *  Provides automation services for a DVT component.
- *  @class DvtChartAutomation
- *  @param {DvtChart} dvtComponent
- *  @implements {DvtAutomation}
- *  @constructor
- *  @export
- */
-var DvtChartAutomation = function(dvtComponent) {
-  this._chart = dvtComponent;
-  this._options = this._chart.getOptions();
-  this._legend = this._chart.legend;
-  this._xAxis = this._chart.xAxis;
-  this._yAxis = this._chart.yAxis;
-  this._y2Axis = this._chart.y2Axis;
-
-  this._legendAutomation = this._legend ? this._legend.getAutomation() : null;
-  this._xAxisAutomation = this._xAxis ? this._xAxis.getAutomation() : null;
-  this._yAxisAutomation = this._yAxis ? this._yAxis.getAutomation() : null;
-  this._y2AxisAutomation = this._y2Axis ? this._y2Axis.getAutomation() : null;
-};
-
-DvtObj.createSubclass(DvtChartAutomation, DvtAutomation, 'DvtChartAutomation');
-
-
-/**
- * Valid subIds inlcude:
- * <ul>
- * <li>dataItem[seriesIndex][itemIndex]</li>
- * <li>series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]</li>
- * <li>group[groupIndex0]...[groupIndexN]</li>
- * <li>axis["axisType"]:title</li>
- * <li>axis["axisType"]:referenceObject[index]</li>
- * </ul>
- * @override
- */
-DvtChartAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var axisSubId = null;
-  if (displayable.isDescendantOf(this._xAxis)) {
-    axisSubId = this._xAxisAutomation.GetSubIdForDomElement(displayable);
-    return this._convertAxisSubIdToChartSubId(axisSubId, 'xAxis');
-  }
-  else if (displayable.isDescendantOf(this._yAxis)) {
-    axisSubId = this._yAxisAutomation.GetSubIdForDomElement(displayable);
-    return this._convertAxisSubIdToChartSubId(axisSubId, 'yAxis');
-  }
-  else if (displayable.isDescendantOf(this._y2Axis)) {
-    axisSubId = this._y2AxisAutomation.GetSubIdForDomElement(displayable);
-    return this._convertAxisSubIdToChartSubId(axisSubId, 'y2Axis');
-  }
-  else if (displayable.isDescendantOf(this._legend)) {
-    var legendSubId = this._legendAutomation.GetSubIdForDomElement(displayable);
-    return this._convertLegendSubIdToChartSubId(legendSubId);
-  }
-  else {
-    var logicalObj = this._chart.__getEventManager().GetLogicalObject(displayable);
-    if (logicalObj && this._options['type'] == 'pie') // pie charts do not use ChartObjPeer and return only dataItem[seriesIndex]
-      return 'dataItem[' + logicalObj.getSeriesIndex() + ']';
-
-    if (logicalObj instanceof DvtChartObjPeer) { // Chart data items
-      var seriesIndex = logicalObj.getSeriesIndex();
-      var itemIndex = logicalObj.getGroupIndex(); // corresponds to data items position in its series array
-
-      if (seriesIndex != null && itemIndex >= 0 && this._options['type'] != 'funnel')
-        return 'dataItem[' + seriesIndex + '][' + itemIndex + ']';
-      else if (seriesIndex != null && itemIndex == DvtFunnelRenderer._GROUP_INDEX && this._options['type'] == 'funnel')
-        return 'dataItem[' + seriesIndex + ']';  // funnel chart only returns dataItem[seriesIndex]
-      else if (seriesIndex != null && (itemIndex == null || itemIndex < 0)) // displayable represents a seriesItem e.g. line, area
-        return 'series[' + seriesIndex + ']';
-    }
-    else if (logicalObj instanceof DvtRefObjPeer) { // reference objects
-      var axisType = logicalObj.getAxisType();
-      var refObjIndex = logicalObj.getIndex();
-      return (axisType && refObjIndex >= 0) ? axisType + ':referenceObject[' + refObjIndex + ']' : null;
-    }
-  }
-  return null;
-};
-
-
-/**
- * Takes the subId for a legend item and converts it to a valid subId for chart legends
- * @param {String} subId for legend
- * @return {String} series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]
- * @private
- */
-DvtChartAutomation.prototype._convertLegendSubIdToChartSubId = function(subId) {
-  // Get the legend item that corresponds to the legend subId
-  var legendOptions = this._legend.getOptions();
-  var legendItem = this._legendAutomation.getLegendItem(legendOptions, subId);
-  if (legendItem) {
-    // Get index of series item that has same name as legend items's text
-    for (var s = 0; s < this._options['series'].length; s++) {
-      var series = this._options['series'][s];
-      if (series['name'] == legendItem['text'])
-        return 'series[' + s + ']';
-    }
-    // legend item is not associated with a series
-    return 'legend:' + subId;
-  }
-  return null;
-};
-
-/**
- * Takes the subId for an axis item and converts it to a valid subId for chart axes
- * @param {String} subId for returned by the axis
- * @param {String=} axisType The axisType
- * @return {String} group[groupIndex0]...[groupIndexN] or axis["axisType"]:title
- * @private
- */
-DvtChartAutomation.prototype._convertAxisSubIdToChartSubId = function(subId, axisType) {
-  if (subId == 'title' && axisType)
-    return axisType + ':' + subId;
-  else {
-    // Take item[groupIndex0]...[groupIndexN] string and return group[groupIndex0]...[groupIndexN]
-    var indexList = subId.substring(subId.indexOf('['));
-    if (indexList)
-      return 'group' + indexList;
-  }
-
-  return null;
-};
-
-
-/**
- * Valid subIds inlcude:
- * <ul>
- * <li>dataItem[seriesIndex][itemIndex]</li>
- * <li>series[seriesIndex] / legend:section[sectionIndex]:item[itemIndex]</li>
- * <li>group[groupIndex0]...[groupIndexN]</li>
- * <li>axis["axisType"]:title</li>
- * <li>axis["axisType"]:referenceObject[index]</li>
- * </ul>
- * @override
- * @export
- */
-DvtChartAutomation.prototype.getDomElementForSubId = function(subId) {
-  // TOOLTIP
-  if (subId == DvtAutomation.TOOLTIP_SUBID)
-    return this.GetTooltipElement(this._chart, DvtChartTooltipUtils.isDataCursorEnabled(this._chart) ? DvtDataCursor.TOOLTIP_ID : null);
-
-  // CHART ELEMENTS
-  var openParen1 = subId.indexOf('[');
-  var closeParen1 = subId.indexOf(']');
-  var openParen2, closeParen2, logicalObj;
-  var colon = subId.indexOf(':');
-
-  if (openParen1 > 0 && closeParen1 > 0 || colon > 0) {
-
-    var objType = (colon < 0) ? subId.substring(0, openParen1) : subId.substring(0, colon);
-
-    // GROUP AXIS LABELS
-    if (objType == 'group') {
-      return this._xAxisAutomation.getDomElementForSubId(subId);
-    }
-
-    // LEGEND ITEMS
-    if (objType == 'series') {
-      subId = this._convertToLegendSubId(subId);
-      return this._legendAutomation.getDomElementForSubId(subId);
-    }
-    else if (subId.substring(0, colon) == 'legend') {
-      subId = subId.substring(colon + 1);
-      return this._legendAutomation.getDomElementForSubId(subId);
-    }
-
-    var seriesIndex = subId.substring(openParen1 + 1, closeParen1);
-
-    // AXIS TITLE & REFERENCE OBJECTS
-    if (objType == 'xAxis' || objType == 'yAxis' || objType == 'y2Axis') {
-      var axisObjectType = subId.substring(colon + 1);
-      if (axisObjectType == 'title') { // subId for axis title
-        if (objType == 'xAxis')
-          return this._xAxisAutomation.getDomElementForSubId(axisObjectType);
-        else if (objType == 'yAxis')
-          return this._yAxisAutomation.getDomElementForSubId(axisObjectType);
-        else if (objType == 'y2Axis')
-          return this._y2AxisAutomation.getDomElementForSubId(axisObjectType);
-      }
-      else { // subId for axis reference objects
-        openParen2 = axisObjectType.indexOf('[');
-        closeParen2 = axisObjectType.indexOf(']');
-        if (axisObjectType.substring(0, openParen2) == 'referenceObject') {
-          var index = axisObjectType.substring(openParen2 + 1, closeParen2);
-          logicalObj = this._getRefObjPeer(index);
-          if (logicalObj)
-            return logicalObj.getDisplayables()[0].getElem();
-        }
-      }
-    }
-
-    // CHART DATA ITEMS
-    if (this._options['type'] == 'pie') {
-      var pieSlice = this._chart.pieChart.getSliceDisplayable(seriesIndex);
-      if (pieSlice)
-        return pieSlice.getElem();
-    }
-    // If funnel chart set the default itemIndex, else parse it from the given subId
-    if (this._options['type'] == 'funnel') {
-      var itemIndex = DvtFunnelRenderer._GROUP_INDEX;
-    }
-    else {
-      subId = subId.substring(closeParen1 + 1);
-      openParen2 = subId.indexOf('[');
-      closeParen2 = subId.indexOf(']');
-      if (openParen2 >= 0 && closeParen2 >= 0) {
-        itemIndex = subId.substring(openParen2 + 1, closeParen2);
-      }
-    }
-    // Get the logical object and return the dom element of its associated displayable
-    logicalObj = this._getChartObjPeer(seriesIndex, itemIndex);
-    if (logicalObj)
-      return logicalObj.getDisplayables()[0].getElem();
-
-  }
-  return null;
-};
-
-
-/**
- * Returns the DvtChartObjPeer for the given seriesIndex and itemIndex
- * @param {String} seriesIndex The seriesIndex for dataItem types
- * @param {String} itemIndex The itemIndex for dataItem types
- * @return {DvtChartObjPeer} The DvtChartObjPeer matching the parameters or null if none exists
- * @private
- */
-DvtChartAutomation.prototype._getChartObjPeer = function(seriesIndex, itemIndex) {
-  var peers = this._chart.getChartObjPeers();
-  for (var i = 0; i < peers.length; i++) {
-    var series = peers[i].getSeriesIndex();
-    var item = peers[i].getGroupIndex(); // correspinds to the data item's position in its series array
-    if (series == seriesIndex && item == itemIndex)
-      return peers[i];
-  }
-  return null;
-};
-
-
-/**
- * Returns the DvtRefObjPeer for the given index
- * @param {String} index The index of the object in the referenceObjects array
- * @return {DvtChartObjPeer} The DvtRefObjPeer matching the index or null if none exists
- * @private
- */
-DvtChartAutomation.prototype._getRefObjPeer = function(index) {
-  var peers = this._chart.getRefObjPeers();
-  for (var i = 0; i < peers.length; i++) {
-    if (index == peers[i].getIndex())
-      return peers[i];
-  }
-  return null;
-};
-
-
-/**
- * Takes the subId for a chart series and converts it to a valid subId for legend item
- * @param {String} subId series[seriesIndex]
- * @return {String} section[sectionIndex0]:item[itemIndex]
- * @private
- */
-DvtChartAutomation.prototype._convertToLegendSubId = function(subId) {
-  var openParen = subId.indexOf('[');
-  var closeParen = subId.indexOf(']');
-  var seriesIndex = subId.substring(openParen + 1, closeParen);
-
-  var legendOptions = this._legend.getOptions();
-  var series = this._options['series'][seriesIndex];
-
-  var indices = this._legendAutomation.getIndicesFromSeries(series, legendOptions);
-  return 'section' + indices;
-};
-
-
-/**
- * Returns an object containing data for a chart data item. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>borderColor</li>
- * <li>color</li>
- * <li>label</li>
- * <li>targetValue</li>
- * <li>tooltip</li>
- * <li>value</li>
- * <li>open</li>
- * <li>close</li>
- * <li>high</li>
- * <li>low</li>
- * <li>volume</li>
- * <li>x</li>
- * <li>y</li>
- * <li>z</li>
- * <li>group</li>
- * <li>series</li>
- * <li>selected</li>
- * </ul>
- * @param {String} seriesIndex The seriesIndex for dataItem and series types, the itemIndex for group types
- * @param {String} itemIndex The itemIndex for dataItem types
- * @return {Object} An object containing data for the dataItem
- * @export
- */
-DvtChartAutomation.prototype.getDataItem = function(seriesIndex, itemIndex) {
-  if (this._options['type'] == 'pie' || this._options['type'] == 'funnel')
-    itemIndex = 0; //Not sure if neccessary but getDataItem will be null if itemIndex is null
-
-  var dataItem = DvtChartDataUtils.getDataItem(this._chart, seriesIndex, itemIndex);
-
-  if (dataItem) {
-    return {
-      'borderColor' : DvtChartStyleUtils.getBorderColor(this._chart, seriesIndex, itemIndex),
-      'color' : DvtChartStyleUtils.getColor(this._chart, seriesIndex, itemIndex),
-      'label' : DvtChartDataUtils.getDataLabel(this._chart, seriesIndex, itemIndex),
-      'targetValue' : DvtChartDataUtils.getTargetValue(this._chart, seriesIndex, itemIndex),
-      'tooltip' : DvtChartTooltipUtils.getDatatip(this._chart, seriesIndex, itemIndex, false),
-      'value' : DvtChartDataUtils.getValue(this._chart, seriesIndex, itemIndex),
-      'open': dataItem['open'],
-      'close': dataItem['close'],
-      'high': DvtChartDataUtils.getHighValue(this._chart, seriesIndex, itemIndex),
-      'low': DvtChartDataUtils.getLowValue(this._chart, seriesIndex, itemIndex),
-      'volume': dataItem['volume'],
-      'x' : DvtChartDataUtils.getXValue(this._chart, seriesIndex, itemIndex),
-      'y' : dataItem['y'],
-      'z' : dataItem['z'],
-      'min' : dataItem['min'],
-      'max' : dataItem['max'],
-      'group' : DvtChartDataUtils.getGroup(this._chart, itemIndex),
-      'series' : DvtChartDataUtils.getSeries(this._chart, seriesIndex),
-      'selected' : DvtChartDataUtils.isDataSelected(this._chart, seriesIndex, itemIndex)
-    };
-  }
-  return null;
-};
-
-/**
- * Returns the group corresponding to the given index. Used for verification.
- * @param {String} itemIndex The index of the desired group
- * @return {String} The group corresponding to the given index
- * @export
- */
-DvtChartAutomation.prototype.getGroup = function(itemIndex) {
-  return DvtChartDataUtils.getGroup(this._chart, itemIndex);
-};
-
-/**
- * Returns the name of the series corresponding to the given index. Used for verification.
- * @param {String} seriesIndex The index of the desired series
- * @return {String} the name of the series corresponding to the given index
- * @export
- */
-DvtChartAutomation.prototype.getSeries = function(seriesIndex) {
-  return this._options['series'][seriesIndex]['name'];
-};
-
-/**
- * Returns the number of groups in the chart data. Used for verification.
- * @return {Number} The number of groups
- * @export
- */
-DvtChartAutomation.prototype.getGroupCount = function() {
-  return DvtChartDataUtils.getGroupCount(this._chart);
-};
-
-/**
- * Returns the number of series in the chart data. Used for verification.
- * @return {Number} The number of series
- * @export
- */
-DvtChartAutomation.prototype.getSeriesCount = function() {
-  return this._options['series'].length;
-};
-
-/**
- * Returns the chart title. Used for verification.
- * @return {String} The chart title
- * @export
- */
-DvtChartAutomation.prototype.getTitle = function() {
-  return this._options['title']['text'];
-};
-
-/**
- * Returns an object that represents the legend data. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>bounds</li>
- * <li>title</li>
- * </ul>
- * @return {Object} An object that represents the legend data
- * @export
- */
-DvtChartAutomation.prototype.getLegend = function() {
-  var legendSpace = this._legend.__getBounds();
-  var point = this._chart.localToStage(new DvtPoint(legendSpace.x, legendSpace.y));
-  var legendBounds = {
-    'x' : point.x,
-    'y' : point.y,
-    'width' : legendSpace.w,
-    'height' : legendSpace.h
-  };
-
-  var legend = {
-    'bounds' : legendBounds,
-    'title' : this._legend.getOptions()['title']
-  };
-
-  return legend;
-};
-
-/**
- * Returns an object that represents the plot area data. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>bounds</li>
- * </ul>
- * @return {Object} An object that represents the plot area data
- * @export
- */
-DvtChartAutomation.prototype.getPlotArea = function() {
-  var plotAreaSpace = this._chart.__getPlotAreaSpace();
-
-  var plotAreaBounds = {
-    'x' : plotAreaSpace.x,
-    'y' : plotAreaSpace.y,
-    'width' : plotAreaSpace.w,
-    'height' : plotAreaSpace.h
-  };
-
-  var plotArea = {
-    'bounds' : plotAreaBounds
-  };
-
-  return plotArea;
-};
-
-/**
- * Returns an object that represents the xAxis data. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>bounds</li>
- * <li>title</li>
- * </ul>
- * @return {Object} An object that represents the xAxis data
- * @export
- */
-DvtChartAutomation.prototype.getXAxis = function() {
-  return this._getAxis('x');
-};
-
-/**
- * Returns an object that represents the yAxis data. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>bounds</li>
- * <li>title</li>
- * </ul>
- * @return {Object} An object that represents the yAxis data
- * @export
- */
-DvtChartAutomation.prototype.getYAxis = function() {
-  return this._getAxis('y');
-};
-
-/**
- * Returns an object that represents the y2Axis data. Used for verification.
- * Valid verification values inlcude:
- * <ul>
- * <li>bounds</li>
- * <li>title</li>
- * </ul>
- * @return {Object} An object that represents the y2Axis data
- * @export
- */
-DvtChartAutomation.prototype.getY2Axis = function() {
-  return this._getAxis('y2');
-};
-
-/**
- * Returns an object that represents the axis data.
- * @param {string} type The axis type: x, y, or y2
- * @return {object} An object that represents the axis data
- * @private
- */
-DvtChartAutomation.prototype._getAxis = function(type) {
-  var axis = (type == 'x') ? this._xAxis : (type == 'y') ? this._yAxis : this._y2Axis;
-  if (axis) {
-    var axisSpace = axis.__getBounds();
-    var stageCoord = axis.localToStage(new DvtPoint(axisSpace.x, axisSpace.y));
-    var axisBounds = {
-      'x' : stageCoord.x,
-      'y' : stageCoord.y,
-      'width' : axisSpace.w,
-      'height' : axisSpace.h
-    };
-
-    var chart = this._chart;
-    var getPreferredSize = function(width, height) {
-      var axisOptions = axis.getOptions();
-      var position = axisOptions['position'];
-      var tickLabelGap = DvtChartAxisUtils.getTickLabelGapSize(chart, type);
-      var outerGap = (DvtChartTypeUtils.isStandaloneXAxis(chart) || DvtChartTypeUtils.isStandaloneYAxis(chart) || DvtChartTypeUtils.isStandaloneY2Axis(chart)) ? 2 : 0;
-
-      // the preferred size computed by the axis excludes tick label gap, so we have to subtract the gap
-      // before passing to the axis, and add it again later
-      var prefSize;
-      if (position == 'top' || position == 'bottom') {
-        prefSize = axis.getPreferredSize(axisOptions, width, height - tickLabelGap - outerGap);
-        prefSize.h = Math.ceil(prefSize.h + tickLabelGap + outerGap);
-      }
-      else {
-        prefSize = axis.getPreferredSize(axisOptions, width - tickLabelGap - outerGap, height);
-        prefSize.w = Math.ceil(prefSize.w + tickLabelGap + outerGap);
-      }
-      return {'width': prefSize.w, 'height': prefSize.h};
-    };
-
-    var axisObj = {
-      'bounds' : axisBounds,
-      'title' : this._options[type + 'Axis']['title'],
-      'getPreferredSize': getPreferredSize
-    };
-    return axisObj;
-  }
-
-  return null;
-};
-
-/**
- * @override
- */
-DvtAutomation.prototype.IsTooltipElement = function(domElement) {
-  var id = domElement.getAttribute('id');
-  if (id && (id.indexOf(DvtDataCursor.TOOLTIP_ID) == 0 || id.indexOf(DvtHtmlTooltipManager._TOOLTIP_DIV_ID) == 0))
-    return true;
-  return false;
-};
-
-
-DvtBundle.addDefaultStrings(DvtBundle.CHART_PREFIX, {
-  'DEFAULT_GROUP_NAME': 'Group {0}',
-
-  'LABEL_SERIES': 'Series',
-  'LABEL_GROUP': 'Group',
-  'LABEL_VALUE': 'Value',
-  'LABEL_TARGET_VALUE': 'Target',
-  'LABEL_X': 'X',
-  'LABEL_Y': 'Y',
-  'LABEL_Z': 'Z',
-  'LABEL_PERCENTAGE': 'Percentage',
-  'LABEL_MIN': 'Min',
-  'LABEL_MAX': 'Max',
-  'LABEL_HIGH': 'High',
-  'LABEL_LOW': 'Low',
-  'LABEL_OPEN': 'Open',
-  'LABEL_CLOSE': 'Close',
-  'LABEL_VOLUME': 'Volume',
-
-  'LABEL_OTHER': 'Other',
-  'MARQUEE_SELECT': 'Marquee select',
-  'MARQUEE_ZOOM': 'Marquee zoom',
-  'PAN': 'Pan'
-});
-
-/**
- * Event Manager for DvtChart.
- * @param {DvtChart} chart
- * @class
- * @extends {DvtEventManager}
- * @constructor
- */
-var DvtChartEventManager = function(chart) {
-  DvtChartEventManager.superclass.Init.call(this, chart.getCtx(), chart.processEvent, chart);
-  this._chart = chart;
-
-  this._dragMode = null;
-  this._dragButtonsVisible = DvtAgent.isTouchDevice();
-
-  /**
-   * The pan button
-   * @type {DvtButton}
-   */
-  this.panButton = null;
-  /**
-   * The marquee zoom button
-   * @type {DvtButton}
-   */
-  this.zoomButton = null;
-  /**
-   * The marquee select button
-   * @type {DvtButton}
-   */
-  this.selectButton = null;
-
-  // Event handlers
-  this._dataCursorHandler = null;
-  this._panZoomHandler = null;
-  this._marqueeZoomHandler = null;
-  this._marqueeSelectHandler = null;
-
-  // Cached stage absolute position
-  this._stageAbsolutePosition = null;
-};
-
-DvtObj.createSubclass(DvtChartEventManager, DvtEventManager, 'DvtChartEventManager');
-
-/** @const */
-DvtChartEventManager.DRAG_MODE_PAN = 'pan';
-/** @const */
-DvtChartEventManager.DRAG_MODE_ZOOM = 'zoom';
-/** @const */
-DvtChartEventManager.DRAG_MODE_SELECT = 'select';
-/** @const */
-DvtChartEventManager.DRAG_MODE_OFF = 'off';
-
-
-/**
- * Returns the parameters for the DvtComponentUIEvent for an object with the specified arguments.
- * @param {string} type The type of object that was the target of the event.
- * @param {object=} id The id of the object, if one exists.
- * @param {string=} series The series for the object, if one exists.
- * @param {string=} group The group for the object, if one exists.
- * @return {object}
- */
-DvtChartEventManager.getUIEventParams = function(type, id, series, group) {
-  return {'type': type, 'id': id, 'series': series, 'group': group};
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.addListeners = function(displayable) {
-  DvtSvgDocumentUtils.addDragListeners(this._chart, this._onDragStart, this._onDragMove, this._onDragEnd, this);
-  DvtChartEventManager.superclass.addListeners.call(this, displayable);
-
-  if (!DvtAgent.isTouchDevice()) {
-    if (DvtAgent.isPlatformGecko()) // Firefox
-      displayable.addEvtListener('wheel', this.OnMouseWheel, false, this);
-    else
-      displayable.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
-  }
-
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.removeListeners = function(displayable) {
-  DvtChartEventManager.superclass.removeListeners.call(this, displayable);
-  if (!DvtAgent.isTouchDevice()) {
-    if (DvtAgent.isPlatformGecko()) //Firefox
-      displayable.removeEvtListener('DOMMouseScroll', this.OnMouseWheel, false, this);
-    else
-      displayable.removeEvtListener(DvtMouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
-  }
-};
-
-
-/**
- * Creates and fires an instance of DvtComponentUIEvent for the specified object.
- * @param {string} type The type of DvtComponentUIEvent.
- * @param {object} logicalObj The logical object corresponding to the target of the event.
- * @protected
- */
-DvtChartEventManager.prototype.FireUIEvent = function(type, logicalObj) {
-  //  var params = null;
-  //  if (logicalObj instanceof DvtSimpleObjPeer && logicalObj.getParams() != null)
-  //    params = logicalObj.getParams();
-  //  else if (logicalObj instanceof DvtPieSlice) {
-  //    var sliceId = logicalObj.getId();
-  //    if (sliceId.getSeries() == DvtPieChartUtils.OTHER_SLICE_SERIES_ID)
-  //      params = DvtChartEventManager.getUIEventParams(DvtChartConstants.DATA_ITEM_OTHER);
-  //    else
-  //      params = DvtChartEventManager.getUIEventParams(DvtChartConstants.DATA_ITEM, sliceId.getId(), sliceId.getSeries(), sliceId.getGroup());
-  //  }
-  //  else if (logicalObj instanceof DvtChartObjPeer) {
-  //    var objectType;
-  //    if (logicalObj.getSeriesIndex() >= 0 && logicalObj.getGroupIndex() >= 0)
-  //      objectType = DvtChartConstants.DATA_ITEM;
-  //    else if (logicalObj.getSeriesIndex() >= 0)
-  //      objectType = DvtChartConstants.SERIES;
-  //
-  //    params = DvtChartEventManager.getUIEventParams(objectType, logicalObj.getDataItemId(), logicalObj.getSeries(), logicalObj.getGroup());
-  //  }
-  //
-  //  if(params)
-  //    this.FireEvent(new DvtComponentUIEvent(type, params));
-};
-
-
-/**
- * Returns the logical object corresponding to the specified DvtDisplayable.  All high level event handlers,
- * such as the selection and popup handlers, are designed to react to the logical objects.
- * @param {DvtDisplayable} target The displayable.
- * @return {object} The logical object corresponding to the target.
- */
-DvtChartEventManager.prototype.getLogicalObject = function(target) {
-  return this.GetLogicalObject(target, true);
-};
-
-
-/**
- * Return the relative position relative to the stage, based on the cached stage absolute position.
- * @param {number} pageX
- * @param {number} pageY
- * @return {DvtPoint} The relative position.
- * @private
- */
-DvtChartEventManager.prototype._getRelativePosition = function(pageX, pageY) {
-  if (!this._stageAbsolutePosition)
-    this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
-
-  return new DvtPoint(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
-};
-
-
-/**
- * Returns an event handler for the current drag mode.
- * @param {DvtPoint} relPos (optional) The current cursor position relative to the stage. If provided, the relPos will
- *    be considered in choosing the drag handler.
- * @return {DvtMarqueeHandler or DvtPanZoomHandler} Drag handler.
- * @private
- */
-DvtChartEventManager.prototype._getDragHandler = function(relPos) {
-  if (relPos && this._chart.getOptions()['dragMode'] == 'user' && DvtChartTypeUtils.isBLAC(this._chart) &&
-      (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN || this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)) {
-    // For BLAC chart on desktop, the pan and zoom modes are combined.
-    // If the drag starts inside the plot area, it's a pan. If the drag starts inside the axis, it's a marquee zoom.
-    if (this._panZoomHandler.isWithinBounds(relPos))
-      this._dragMode = DvtChartEventManager.DRAG_MODE_PAN;
-    else
-      this._dragMode = DvtChartEventManager.DRAG_MODE_ZOOM;
-  }
-
-  if (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN)
-    return this._panZoomHandler;
-  if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM)
-    return this._marqueeZoomHandler;
-  if (this._dragMode == DvtChartEventManager.DRAG_MODE_SELECT)
-    return this._marqueeSelectHandler;
-  return null;
-};
-
-
-/**
- * Drag start callback.
- * @param {DvtBaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtChartEventManager.prototype._onDragStart = function(event) {
-  if (DvtAgent.isTouchDevice())
-    return this._onTouchDragStart(event);
-  else
-    return this._onMouseDragStart(event);
-};
-
-
-/**
- * Drag move callback.
- * @param {DvtBaseEvent} event
- * @return {boolean}
- * @private
- */
-DvtChartEventManager.prototype._onDragMove = function(event) {
-  if (DvtAgent.isTouchDevice())
-    return this._onTouchDragMove(event);
-  else
-    return this._onMouseDragMove(event);
-};
-
-
-/**
- * Drag end callback.
- * @param {DvtBaseEvent} event
- * @return {boolean}
- * @private
- */
-DvtChartEventManager.prototype._onDragEnd = function(event) {
-  if (DvtAgent.isTouchDevice())
-    return this._onTouchDragEnd(event);
-  else
-    return this._onMouseDragEnd(event);
-};
-
-
-/**
- * Mouse drag start callback.
- * @param {DvtBaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtChartEventManager.prototype._onMouseDragStart = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  var dragHandler = this._getDragHandler(relPos);
-  var chartEvent;
-
-  // Do not initiate drag if the target is selectable. Drag only on left click.
-  var obj = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
-  var selectable = obj && obj.isSelectable && obj.isSelectable();
-  if (!selectable && event.button == 0 && dragHandler) {
-    chartEvent = dragHandler.processDragStart(relPos, event.ctrlKey);
-    if (chartEvent)
-      this._callback.call(this._callbackObj, chartEvent);
-
-    this._chart.setCursor(dragHandler.getCursor(relPos));
-    this.setDragButtonsVisible(false); // hide drag buttons on drag
-
-    // Ensure the chart is currently focused so that it can accept cancel events
-    if (this._chart != this.getCtx().getCurrentKeyboardFocus())
-      this.getCtx().setCurrentKeyboardFocus(this._chart);
-  }
-
-  if (chartEvent) {
-    if (this._dataCursorHandler)
-      this._dataCursorHandler.processEnd();
-    return true;
-  }
-  return false;
-};
-
-
-/**
- * Mouse drag move callback.
- * @param {DvtBaseEvent} event
- * @private
- */
-DvtChartEventManager.prototype._onMouseDragMove = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
-  var chartEvent;
-
-  if (dragHandler) {
-    chartEvent = dragHandler.processDragMove(relPos, event.ctrlKey);
-    if (chartEvent) {
-      this._callback.call(this._callbackObj, chartEvent);
-      this.setDragButtonsVisible(false); // hide drag buttons on drag
-    }
-  }
-
-  if (chartEvent)
-    event.stopPropagation(); // prevent data cursor from appearing
-};
-
-
-/**
- * Mouse drag end callback.
- * @param {DvtBaseEvent} event
- * @private
- */
-DvtChartEventManager.prototype._onMouseDragEnd = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
-  var chartEvent;
-
-  if (dragHandler) {
-    chartEvent = dragHandler.processDragEnd(relPos, event.ctrlKey);
-    if (chartEvent) {
-      this._callback.call(this._callbackObj, chartEvent);
-      this.autoToggleZoomButton();
-    }
-
-    this._chart.setCursor(dragHandler.getCursor(relPos));
-
-    // Show the drag buttons
-    var axisSpace = this._chart.__getAxisSpace();
-    if (axisSpace)
-      this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
-  }
-
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnMouseMove = function(event) {
-  DvtChartEventManager.superclass.OnMouseMove.call(this, event);
-
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  if (this._dataCursorHandler) {
-    if (this.GetCurrentTargetForEvent(event) instanceof DvtButton) // don't show DC over buttons
-      this._dataCursorHandler.processEnd();
-    else
-      this._dataCursorHandler.processMove(relPos);
-  }
-
-  // Update the cursor
-  var dragHandler = this._getDragHandler(relPos);
-  if (dragHandler)
-    this._chart.setCursor(dragHandler.getCursor(relPos));
-  else
-    this._chart.setCursor('inherit');
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnMouseOut = function(event) {
-  DvtChartEventManager.superclass.OnMouseOut.call(this, event);
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-
-  // Hide the drag buttons
-  var axisSpace = this._chart.__getAxisSpace();
-  if (axisSpace)
-    this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
-
-  if (this._dataCursorHandler)
-    this._dataCursorHandler.processOut(relPos);
-
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
-
-  var obj = this.GetLogicalObject(event.target);
-  if (!obj)
-    return;
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnMouseWheel = function(event) {
-  if (!DvtChartEventUtils.isZoomable(this._chart))
-    return;
-
-  var delta = event.wheelDelta != null ? event.wheelDelta : 0;
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-
-  if (this._panZoomHandler) {
-    var panZoomEvent = this._panZoomHandler.processMouseWheel(relPos, delta);
-    if (panZoomEvent) {
-      event.preventDefault();
-      event.stopPropagation();
-      this._callback.call(this._callbackObj, panZoomEvent);
-
-      // Update the data cursor since the viewport has changed
-      if (this._dataCursorHandler)
-        this._dataCursorHandler.processMove(relPos);
-    }
-  }
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.ShowFocusEffect = function(event, navigable) {
-  if (this._dataCursorHandler) {
-    var pos = navigable.getDataPosition();
-    if (pos) {
-      var plotAreaBounds = this._chart.__getPlotAreaSpace();
-      this._dataCursorHandler.processMove(new DvtPoint(pos.x + plotAreaBounds.x, pos.y + plotAreaBounds.y));
-    }
-  }
-  DvtChartEventManager.superclass.ShowFocusEffect.call(this, event, navigable);
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnBlur = function(event)
-{
-  if (this._dataCursorHandler)
-    this._dataCursorHandler.processEnd();
-  DvtChartEventManager.superclass.OnBlur.call(this, event);
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnClickInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  var pos = this._getRelativePosition(event.pageX, event.pageY);
-  if (this.SeriesFocusHandler)
-    this.SeriesFocusHandler.processSeriesFocus(pos, obj);
-
-  if (!obj)
-    return;
-
-  this.processActionEvent(obj);
-
-  // Only drill if not selectable. If selectable, drill with double click.
-  if (!(obj.isSelectable && obj.isSelectable()))
-    this.processDrillEvent(obj);
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.OnDblClickInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  if (!obj)
-    return;
-
-  // Only double click to drill if selectable. Otherwise, drill with single click.
-  if (obj.isSelectable && obj.isSelectable())
-    this.processDrillEvent(obj);
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.HandleTouchHoverStartInternal = function(event) {
-  var dlo = this.GetLogicalObject(event.target);
-  this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
-  return false;
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.HandleTouchHoverMoveInternal = function(event) {
-  var dlo = this.GetLogicalObject(event.target);
-  this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
-  return false;
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  if (!obj)
-    return;
-
-  this.processActionEvent(obj);
-
-  // Only drill if not selectable. If selectable, drill using double click.
-  if (!(obj.isSelectable && obj.isSelectable()))
-    this.processDrillEvent(obj);
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.HandleTouchClickInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  if (!obj)
-    return;
-
-  this.processActionEvent(obj);
-
-  // Only drill if not selectable. If selectable, drill using double click.
-  if (!(obj.isSelectable && obj.isSelectable()))
-    this.processDrillEvent(obj);
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.HandleTouchDblClickInternal = function(event) {
-  var obj = this.GetLogicalObject(event.target);
-  if (!obj)
-    return;
-
-  // Only double click to drill if selectable. Otherwise, drill with single click.
-  if (obj.isSelectable && obj.isSelectable())
-    this.processDrillEvent(obj);
-};
-
-
-/**
- * Processes an action on the specified chart item.
- * @param {DvtChartObjPeer} obj The chart item that was clicked.
- */
-DvtChartEventManager.prototype.processActionEvent = function(obj) {
-  if (obj && obj.getAction && obj.getAction())
-    this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()));
-};
-
-/**
- * Processes an drill on the specified chart item.
- * @param {DvtChartObjPeer} obj The chart item that was clicked.
- */
-DvtChartEventManager.prototype.processDrillEvent = function(obj) {
-  if (obj && obj.isDrillable && obj.isDrillable()) {
-    var id = obj.getId();
-    if (obj instanceof DvtChartObjPeer)
-      this.FireEvent(new DvtDrillEvent(id.getId ? id.getId() : id, obj.getSeries(), obj.getGroup()));
-    else if (obj instanceof DvtPieSlice)
-      this.FireEvent(new DvtDrillEvent(id.getId(), id.getSeries(), id.getGroup()));
-  }
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver) {
-  // Don't continue if not enabled
-  var options = this._chart.getOptions();
-  if (DvtChartEventUtils.getHoverBehavior(this._chart) != 'dim')
-    return;
-
-  // Compute the new highlighted categories and update the options
-  var categories = obj.getCategories ? obj.getCategories() : [];
-  options['highlightedCategories'] = bOver ? categories.slice() : null;
-
-  // Fire the event to the rollover handler, who will fire to the component callback.
-  var type = bOver ? DvtCategoryRolloverEvent.TYPE_OVER : DvtCategoryRolloverEvent.TYPE_OUT;
-  var rolloverEvent = new DvtCategoryRolloverEvent(type, options['highlightedCategories']);
-  var hoverBehaviorDelay = DvtChartStyleUtils.getHoverBehaviorDelay(this._chart);
-
-  // Find all the objects that may need to be highlighted
-  var objs = this._chart.getObjects();
-  if (this._chart.pieChart)
-    objs = objs.concat(this._chart.pieChart.__getSlices());
-
-  this.RolloverHandler.processEvent(rolloverEvent, objs, hoverBehaviorDelay, options['highlightMatch'] == 'any');
-};
-
-/**
- * Touch drag start callback.
- * @param {DvtBaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtChartEventManager.prototype._onTouchDragStart = function(event) {
-  var touches = event.touches;
-  var chartEvent, dataCursorOn;
-
-  if (touches.length == 1) {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var dragHandler = this._getDragHandler();
-    if (dragHandler)
-      chartEvent = dragHandler.processDragStart(relPos, true);
-    else if (this._dataCursorHandler) {
-      this._dataCursorHandler.processMove(relPos);
-      dataCursorOn = true;
-    }
-  }
-  else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
-    this.endDrag(); // clean 1-finger events before starting pinch zoom
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
-    chartEvent = this._panZoomHandler.processPinchStart(relPos1, relPos2);
-  }
-
-  if (chartEvent) {
-    this._callback.call(this._callbackObj, chartEvent);
-    this.getCtx().getTooltipManager().hideTooltip();
-  }
-
-  if (chartEvent || dataCursorOn) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.setDragButtonsVisible(false); // hide drag buttons on drag
-    return true;
-  }
-
-  return false;
-};
-
-
-/**
- * Touch drag move callback.
- * @param {DvtBaseEvent} event
- * @private
- */
-DvtChartEventManager.prototype._onTouchDragMove = function(event) {
-  var touches = event.touches;
-  var chartEvent, dataCursorOn;
-
-  if (touches.length == 1) {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var dragHandler = this._getDragHandler();
-    if (dragHandler)
-      chartEvent = dragHandler.processDragMove(relPos, true);
-    else if (this._dataCursorHandler) {
-      this._dataCursorHandler.processMove(relPos);
-      dataCursorOn = true;
-    }
-  }
-  else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
-    chartEvent = this._panZoomHandler.processPinchMove(relPos1, relPos2);
-  }
-
-  if (chartEvent || dataCursorOn) {
-    event.preventDefault();
-  }
-
-  if (chartEvent) {
-    this._callback.call(this._callbackObj, chartEvent);
-    this.getCtx().getTooltipManager().hideTooltip();
-  }
-};
-
-
-/**
- * Touch drag end callback.
- * @param {DvtBaseEvent} event
- * @private
- */
-DvtChartEventManager.prototype._onTouchDragEnd = function(event) {
-  // End 1-finger event
-  var chartEvent1 = this.endDrag();
-
-  // End 2-finger event
-  var chartEvent2;
-  if (this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
-    chartEvent2 = this._panZoomHandler.processPinchEnd();
-    if (chartEvent2)
-      this._callback.call(this._callbackObj, chartEvent2);
-  }
-
-  if (chartEvent1 || chartEvent2) {
-    event.preventDefault();
-    this.getCtx().getTooltipManager().hideTooltip();
-  }
-
-  this._stageAbsolutePosition = null; // Clear the stage absolute position cache
-  this.setDragButtonsVisible(true);
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.endDrag = function() {
-  var dragHandler = this._getDragHandler();
-  var chartEvent;
-
-  if (dragHandler) {
-    chartEvent = dragHandler.processDragEnd(null, true);
-    if (chartEvent)
-      this._callback.call(this._callbackObj, chartEvent);
-  }
-  if (this._dataCursorHandler)
-    this._dataCursorHandler.processEnd();
-
-  if (chartEvent)
-    this._callback.call(this._callbackObj, chartEvent);
-
-  return chartEvent;
-};
-
-/**
- * Zooms by the specified amount.
- * @param {number} dz A number specifying the zoom ratio. dz = 1 means no zoom.
- */
-DvtChartEventManager.prototype.zoomBy = function(dz) {
-  if (this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
-    var chartEvent = this._panZoomHandler.zoomBy(dz);
-    if (chartEvent)
-      this._callback.call(this._callbackObj, chartEvent);
-  }
-};
-
-/**
- * Pans by the specified amount.
- * @param {number} dx A number from specifying the pan ratio in the x direction, e.g. dx = 0.5 means pan end by 50%..
- * @param {number} dy A number from specifying the pan ratio in the y direction, e.g. dy = 0.5 means pan down by 50%.
- */
-DvtChartEventManager.prototype.panBy = function(dx, dy) {
-  if (this._panZoomHandler && DvtChartEventUtils.isScrollable(this._chart)) {
-    var chartEvent = this._panZoomHandler.panBy(dx, dy);
-    if (chartEvent)
-      this._callback.call(this._callbackObj, chartEvent);
-  }
-};
-
-/**
- * Helper function to hide tooltips and data cursor, generally in preparation for render or removal of the chart. This
- * is not done in hideTooltip to avoid interactions with the superclass, which would cause problems with the data cursor.
- */
-DvtChartEventManager.prototype.hideHoverFeedback = function() {
-  // Hide tooltip and data cursor
-  this.hideTooltip();
-
-  // Hide the data cursor. This is necessary to hide the data cursor line when the user mouses over the tooltip div in
-  // IE9, which does not support pointer-events.
-  if (this._dataCursorHandler)
-    this._dataCursorHandler.processEnd();
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.hideTooltip = function() {
-  // Don't hide the tooltip if data cursor is shown on a touch device
-  if (!this._dataCursorHandler || !this._dataCursorHandler.isDataCursorShown())
-    DvtChartEventManager.superclass.hideTooltip.call(this);
-};
-
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.getTooltipsEnabled = function(logicalObj) {
-  // Don't allow tooltips to conflict with the data cursor
-  if (this._dataCursorHandler && (logicalObj instanceof DvtChartObjPeer || logicalObj instanceof DvtRefObjPeer || this._dataCursorHandler.isDataCursorShown()))
-    return false;
-  else
-    return DvtChartEventManager.superclass.getTooltipsEnabled.call(this);
-};
-
-
-/**
- * Gets the data cursor handler.
- * @return {DvtDataCursorHandler} The data cursor handler.
- */
-DvtChartEventManager.prototype.getDataCursorHandler = function() {
-  return this._dataCursorHandler;
-};
-
-/**
- * Sets the data cursor handler.
- * @param {DvtDataCursorHandler} handler The data cursor handler.
- */
-DvtChartEventManager.prototype.setDataCursorHandler = function(handler) {
-  this._dataCursorHandler = handler;
-};
-
-
-/**
- * Sets the pan zoom handler.
- * @param {DvtPanZoomHandler} handler The pan zoom handler.
- */
-DvtChartEventManager.prototype.setPanZoomHandler = function(handler) {
-  this._panZoomHandler = handler;
-};
-
-/**
- * Sets the marquee zoom handler.
- * @param {DvtMarqueeHandler} handler The marquee zoom handler.
- */
-DvtChartEventManager.prototype.setMarqueeZoomHandler = function(handler) {
-  this._marqueeZoomHandler = handler;
-};
-
-
-/**
- * Sets the marquee select handler.
- * @param {DvtMarqueeHandler} handler The marquee select handler.
- */
-DvtChartEventManager.prototype.setMarqueeSelectHandler = function(handler) {
-  this._marqueeSelectHandler = handler;
-};
-
-
-/**
- * Cancels marquee zoom/select.
- * @param {DvtBaseEvent} event The event
- */
-DvtChartEventManager.prototype.cancelMarquee = function(event) {
-  if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM) {
-    if (this._marqueeZoomHandler.cancelMarquee())
-      event.preventDefault();
-  }
-  else if (this._dragMode == DvtChartEventManager.DRAG_MODE_SELECT) {
-    // If marquee is in progress, re-render from the options obj, which has the old selection
-    if (this._marqueeSelectHandler && this._marqueeSelectHandler.cancelMarquee())
-      this._chart.render();
-  }
-};
-
-
-/**
- * Gets the current drag mode.
- * @return {string} The drag mode.
- */
-DvtChartEventManager.prototype.getDragMode = function() {
-  return this._dragMode;
-};
-
-
-/**
- * Sets the drag mode. If set to null, the drag mode will become the default one.
- * @param {string} dragMode The drag mode, or null.
- */
-DvtChartEventManager.prototype.setDragMode = function(dragMode) {
-  if (dragMode == null)
-    this._dragMode = this._getDefaultDragMode();
-  else
-    this._dragMode = dragMode;
-
-  // If the chart is fully zoomed out, the pan mode should fall back to the zoom mode on desktop
-  if (this._chart.xAxis.isFullViewport() && (!this._chart.yAxis || this._chart.yAxis.isFullViewport()))
-    this.autoToggleZoomButton();
-};
-
-
-/**
- * Returns the default drag mode for the chart.
- * @return {string} The default drag mode.
- * @private
- */
-DvtChartEventManager.prototype._getDefaultDragMode = function() {
-  if (DvtAgent.isTouchDevice())
-    return DvtChartEventManager.DRAG_MODE_OFF;
-  else if (DvtChartEventUtils.isScrollable(this._chart))
-    return DvtChartEventManager.DRAG_MODE_PAN;
-  else if (this._chart.getOptions()['selectionMode'] == 'multiple')
-    return DvtChartEventManager.DRAG_MODE_SELECT;
-  else
-    return null;
-};
-
-
-/**
- * Handles the zoom button click event.
- * @param {object} event
- */
-DvtChartEventManager.prototype.onZoomButtonClick = function(event) {
-  if (this.zoomButton.isToggled()) {
-    if (this.selectButton)
-      this.selectButton.setToggled(false);
-    this.setDragMode(DvtChartEventManager.DRAG_MODE_ZOOM);
-  }
-  else
-    this.setDragMode(null);
-};
-
-
-/**
- * Handles the pan button click event.
- * @param {object} event
- */
-DvtChartEventManager.prototype.onPanButtonClick = function(event) {
-  if (this.panButton.isToggled()) {
-    if (this.selectButton)
-      this.selectButton.setToggled(false);
-    this.setDragMode(DvtChartEventManager.DRAG_MODE_PAN);
-  }
-  else
-    this.setDragMode(null);
-};
-
-
-/**
- * Handles the select button click event.
- * @param {object} event
- */
-DvtChartEventManager.prototype.onSelectButtonClick = function(event) {
-  if (this.selectButton.isToggled()) {
-    if (this.zoomButton)
-      this.zoomButton.setToggled(false);
-    if (this.panButton)
-      this.panButton.setToggled(false);
-    this.setDragMode(DvtChartEventManager.DRAG_MODE_SELECT);
-  }
-  else
-    this.setDragMode(null);
-};
-
-
-/**
- * Sets the visibility of the drag buttons.
- * @param {boolean} visible The visibility.
- */
-DvtChartEventManager.prototype.setDragButtonsVisible = function(visible) {
-  if (visible && !this._dragButtonsVisible) {
-    this._chart.showDragButtons();
-    this._dragButtonsVisible = true;
-  }
-  else if (!visible && this._dragButtonsVisible) {
-    this._chart.hideDragButtons();
-    this._dragButtonsVisible = false;
-  }
-};
-
-
-/**
- * Returns whether the drag buttons are visible.
- * @return {boolean}
- */
-DvtChartEventManager.prototype.areDragButtonsVisible = function() {
-  return this._dragButtonsVisible;
-};
-
-
-/**
- * Toggles the marquee zoom button automatically:
- * - Marquee select button is unaffected.
- * - If the chart is fully zoomed out, turn on the marquee zoom mode; otherwise, turn it off.
- * Doesn't apply to touch devices.
- */
-DvtChartEventManager.prototype.autoToggleZoomButton = function() {
-  if (DvtAgent.isTouchDevice() || !this.zoomButton)
-    return;
-
-  if (this._chart.xAxis.isFullViewport() && this._chart.yAxis.isFullViewport()) {
-    if (this._dragMode == DvtChartEventManager.DRAG_MODE_PAN) {
-      this.zoomButton.setToggled(true);
-      this.onZoomButtonClick(null);
-    }
-  }
-  else {
-    if (this._dragMode == DvtChartEventManager.DRAG_MODE_ZOOM) {
-      this.zoomButton.setToggled(false);
-      this.onZoomButtonClick(null);
-    }
-  }
-};
-
-/**
- * @override
- */
-DvtChartEventManager.prototype.GetTouchResponse = function() {
-  if (this._dragMode && this._dragMode != DvtChartEventManager.DRAG_MODE_OFF) {
-    return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
-  }
-  else
-    return this._chart.getOptions()['touchResponse'];
-};
-/*---------------------------------------------------------------------------------*/
-/*  DvtChartKeyboardHandler     Keyboard handler for Chart                         */
-/*---------------------------------------------------------------------------------*/
-/**
-  *  @param {DvtEventManager} manager The owning DvtEventManager
-  *  @param {DvtChart} chart
-  *  @class DvtChartKeyboardHandler
-  *  @extends {DvtKeyboardHandler}
-  *  @constructor
-  */
-var DvtChartKeyboardHandler = function(manager, chart)
-{
-  this.Init(manager, chart);
-};
-
-DvtObj.createSubclass(DvtChartKeyboardHandler, DvtKeyboardHandler, 'DvtChartKeyboardHandler');
-
-
-/**
- * @override
- */
-DvtChartKeyboardHandler.prototype.Init = function(manager, chart) {
-  DvtChartKeyboardHandler.superclass.Init.call(this, manager);
-  this._chart = chart;
-};
-
-
-/**
- * @override
- */
-DvtChartKeyboardHandler.prototype.isSelectionEvent = function(event)
-{
-  return this.isNavigationEvent(event) && !event.ctrlKey;
-};
-
-
-/**
- * @override
- */
-DvtChartKeyboardHandler.prototype.isMultiSelectEvent = function(event)
-{
-  return event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey;
-};
-
-
-/**
- * @override
- */
-DvtChartKeyboardHandler.prototype.processKeyDown = function(event) {
-  var keyCode = event.keyCode;
-  if (keyCode == DvtKeyboardEvent.TAB) {
-    var currentNavigable = this._eventManager.getFocus();
-    if (currentNavigable) {
-      DvtEventManager.consumeEvent(event);
-      return currentNavigable;
-    }
-
-    // navigate to the default
-    var navigables = DvtChartEventUtils.getKeyboardNavigables(this._chart);
-    if (navigables.length > 0) {
-      DvtEventManager.consumeEvent(event);
-      return this.getDefaultNavigable(navigables);
-    }
-  }
-  else if (keyCode == DvtKeyboardEvent.ENTER) {
-    var currentNavigable = this._eventManager.getFocus();
-    if (currentNavigable) {
-      this._eventManager.processActionEvent(currentNavigable);
-      this._eventManager.processDrillEvent(currentNavigable);
-      DvtEventManager.consumeEvent(event);
-      return currentNavigable;
-    }
-  }
-  else if (keyCode == DvtKeyboardEvent.ESCAPE) {
-    this._eventManager.cancelMarquee(event);
-  }
-  else if (keyCode == DvtKeyboardEvent.PAGE_UP) {
-    if ((event.ctrlKey || event.shiftKey || DvtChartTypeUtils.isBLAC(this._chart)) && DvtChartTypeUtils.isVertical(this._chart)) { // pan left
-      this._eventManager.panBy(-0.25, 0);
-    }
-    else { // pan up. Also used for horizontal bar charts
-      this._eventManager.panBy(0, -0.25);
-    }
-    DvtEventManager.consumeEvent(event);
-  }
-  else if (keyCode == DvtKeyboardEvent.PAGE_DOWN) {
-    if ((event.ctrlKey || event.shiftKey || DvtChartTypeUtils.isBLAC(this._chart)) && DvtChartTypeUtils.isVertical(this._chart)) { // pan right
-      this._eventManager.panBy(0.25, 0);
-    }
-    else { // pan down. Also used for horizontal bar charts
-      this._eventManager.panBy(0, 0.25);
-    }
-    DvtEventManager.consumeEvent(event);
-  }
-  else if (DvtKeyboardEvent.isEquals(event) || DvtKeyboardEvent.isPlus(event)) { // zoom in
-    this._eventManager.zoomBy(1.5);
-  }
-  else if (DvtKeyboardEvent.isMinus(event) || DvtKeyboardEvent.isUnderscore(event)) { // zoom out
-    this._eventManager.zoomBy(1 / 1.5);
-  }
-
-  return DvtChartKeyboardHandler.superclass.processKeyDown.call(this, event);
-};
-
-/**
- * @override
- */
-DvtChartKeyboardHandler.prototype.getDefaultNavigable = function(navigableItems) 
-{
-  if (!navigableItems || navigableItems.length <= 0)
-    return null;
-
-  var isPie = DvtChartTypeUtils.isPie(this._chart);
-  var defaultNavigable, defaultSeries, defaultGroup;
-  var navigable;
-
-  // Pick the first group in the first series
-  for (var i = 0; i < navigableItems.length; i++) {
-    navigable = navigableItems[i];
-
-    if (!defaultNavigable || navigable.getSeriesIndex() < defaultSeries) {
-      defaultNavigable = navigable;
-      defaultSeries = navigable.getSeriesIndex();
-      if (!isPie)
-        defaultGroup = navigable.getGroupIndex();
-      continue;
-    }
-
-    if (!isPie && navigable.getGroupIndex() < defaultGroup) {
-      defaultNavigable = navigable;
-      defaultSeries = navigable.getSeriesIndex();
-      defaultGroup = navigable.getGroupIndex();
-    }
-  }
-
-  return defaultNavigable;
-};
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
-/**
- * Logical object for chart data object displayables.
- * @param {DvtChart} chart The owning chart instance.
- * @param {array} displayables The array of associated DvtDisplayables.
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
- * @class
- * @constructor
- * @implements {DvtCategoricalObject}
- * @implements {DvtLogicalObject}
- * @implements {DvtPopupSource}
- * @implements {DvtSelectable}
- * @implements {DvtTooltipSource}
- */
-var DvtChartObjPeer = function(chart, displayables, seriesIndex, groupIndex, dataPos) {
-  this.Init(chart, displayables, seriesIndex, groupIndex, dataPos);
-};
-
-DvtObj.createSubclass(DvtChartObjPeer, DvtObj, 'DvtChartObjPeer');
-
-
-/**
- * @param {DvtChart} chart The owning chart instance.
- * @param {array} displayables The array of associated DvtDisplayables.
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
- */
-DvtChartObjPeer.prototype.Init = function(chart, displayables, seriesIndex, groupIndex, dataPos) {
-  this._chart = chart;
-  this._displayables = displayables;
-  this._seriesIndex = !isNaN(seriesIndex) ? seriesIndex : -1;
-  this._groupIndex = !isNaN(groupIndex) ? groupIndex : -1;
-  this._dataPos = dataPos;
-  this._isSelected = false;
-  this._isShowingKeyboardFocusEffect = false;
-
-  // . Need to evaluate these up front because the series and group are used for animation
-  if (seriesIndex >= 0)
-    this._series = DvtChartDataUtils.getSeries(chart, seriesIndex);
-  if (groupIndex >= 0)
-    this._group = DvtChartDataUtils.getGroup(chart, groupIndex);
-
-  var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem) {
-    this._action = seriesItem['action'];
-    this._drillable = DvtChartEventUtils.isSeriesDrillable(chart, seriesIndex);
-
-    // Popup Support: Store the stamp id for this series item, which is used to look up the popup behaviors
-    this._stampId = seriesItem['_id'];
-  }
-
-  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-
-  // Create the array specifying all categories that this data item or series belongs to
-  // If categories array is not defined on the data item, then it will use the series categories
-  if (dataItem && dataItem['categories'] != null)
-    this._categories = dataItem['categories'];
-  else
-    this._categories = seriesItem['categories'] ? seriesItem['categories'] : (seriesItem['name'] ? [seriesItem['name']] : []);
-
-  if (dataItem) {
-    this._dataItemId = dataItem['id'];
-    this._action = dataItem['action']; // override the series action
-    this._drillable = DvtChartEventUtils.isDataItemDrillable(chart, seriesIndex, groupIndex);
-
-    // Popup Support: Override the series stamp id
-    this._stampId = dataItem['_id'];
-  }
-
-  // Apply the cursor for the action if specified
-  if (this._action || this._drillable) {
-    for (var i = 0; i < this._displayables.length; i++) {
-      this._displayables[i].setCursor(DvtSelectionEffectUtils.getSelectingCursor());
-    }
-  }
-
-  // Apply the aria properties
-  for (var index = 0; index < displayables.length; index++) {
-    var displayable = displayables[index];
-    // lines are not interactive so we shouldn't add wai-aria attributes
-    if (!(displayable instanceof DvtChartLineArea))
-      displayable.setAriaRole('img');
-    this._updateAriaLabel(displayable);
-  }
-};
-
-
-/**
- * Creates a data item to identify the specified displayable and registers it with the chart.
- * @param {DvtDisplayable} displayable The displayable to associate.
- * @param {DvtChart} chart The owning chart instance.
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @param {DvtPoint} dataPos The coordinate of the data point relative to the plot area
- */
-DvtChartObjPeer.associate = function(displayable, chart, seriesIndex, groupIndex, dataPos) {
-  if (!displayable)
-    return;
-
-  // Create the logical object.
-  var identObj = new DvtChartObjPeer(chart, [displayable], seriesIndex, groupIndex, dataPos);
-
-  // Register with the chart
-  chart.registerObject(identObj);
-
-  // Finally associate using the event manager
-  chart.__getEventManager().associate(displayable, identObj);
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getId = function() {
-  if (this._seriesIndex >= 0 && this._groupIndex >= 0)
-    return new DvtChartDataItem(this._dataItemId, this.getSeries(), this.getGroup());
-  else if (this._seriesIndex >= 0)
-    return this.getSeries();
-  else
-    return null;
-};
-
-
-/**
- * Return the peer's data item id.  This is an optional id that is provided to simplifying
- * row key support for ADF and AMX.
- * @return {string} the peer's row key.
- */
-DvtChartObjPeer.prototype.getDataItemId = function() {
-  return this._dataItemId;
-};
-
-
-/**
- * Return the peer's series.
- * @return {string} the peer's series.
- */
-DvtChartObjPeer.prototype.getSeries = function() {
-  return this._series;
-};
-
-
-/**
- * Return the peer's series index.
- * @return {Number} the peer's series index.
- */
-DvtChartObjPeer.prototype.getSeriesIndex = function() {
-  return this._seriesIndex;
-};
-
-
-/**
- * Return the peer's group.
- * @return {string} the peer's group.
- */
-DvtChartObjPeer.prototype.getGroup = function() {
-  return this._group;
-};
-
-
-/**
- * Return the peer's group index.
- * @return {Number} the peer's group index.
- */
-DvtChartObjPeer.prototype.getGroupIndex = function() {
-  return this._groupIndex;
-};
-
-
-/**
- * Return the action string for the data item, if any exists.
- * @return {string} the action outcome for the data item.
- */
-DvtChartObjPeer.prototype.getAction = function() {
-  return this._action;
-};
-
-
-/**
- * Returns whether the chart object is drillable
- * @return {boolean}
- */
-DvtChartObjPeer.prototype.isDrillable = function() {
-  return this._drillable;
-};
-
-
-/**
- * Returns whether the chart object is double clickable.
- * @return {boolean}
- */
-DvtChartObjPeer.prototype.isDoubleClickable = function() {
-  // : IE double clicking workaround in DvtEventManager.
-  return this.isSelectable() && this.isDrillable();
-};
-
-
-/**
- * Convenience function to return the peer's chart.
- * @return {DvtChart} the associated chart object.
- */
-DvtChartObjPeer.prototype.getChart = function() {
-  return this._chart;
-};
-
-
-/**
- * Return the peer's series type.
- * @return {string} the peer's series type.
- */
-DvtChartObjPeer.prototype.getSeriesType = function() {
-  return DvtChartStyleUtils.getSeriesType(this._chart, this._seriesIndex);
-};
-
-
-/**
- * Return the peer's series item.
- * @return {object} the peer's series item.
- */
-DvtChartObjPeer.prototype.getSeriesItem = function() {
-  return DvtChartDataUtils.getSeriesItem(this._chart, this._seriesIndex);
-};
-
-//---------------------------------------------------------------------//
-// Tooltip Support: DvtTooltipSource impl                              //
-//---------------------------------------------------------------------//
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getDatatip = function(target) {
-  return DvtChartTooltipUtils.getDatatip(this._chart, this._seriesIndex, this._groupIndex, true);
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getDatatipColor = function() {
-  return DvtChartTooltipUtils.getDatatipColor(this._chart, this._seriesIndex, this._groupIndex);
-};
-
-//---------------------------------------------------------------------//
-// Selection Support: DvtSelectable impl                               //
-//---------------------------------------------------------------------//
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.isSelectable = function() {
-  return DvtChartStyleUtils.isSelectable(this.getChart(), this.getSeriesIndex(), this.getGroupIndex());
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.isSelected = function() {
-  return this._isSelected;
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.setSelected = function(bSelected) {
-  this._isSelected = bSelected;
-  for (var i = 0; i < this._displayables.length; i++) {
-    if (this._displayables[i].setSelected) {
-      this._displayables[i].setSelected(bSelected);
-      this._updateAriaLabel(this._displayables[i]);
-    }
-  }
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.showHoverEffect = function() {
-  for (var i = 0; i < this._displayables.length; i++) {
-    if (this._displayables[i].showHoverEffect)
-      this._displayables[i].showHoverEffect();
-  }
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.hideHoverEffect = function() {
-  for (var i = 0; i < this._displayables.length; i++) {
-    if (this._displayables[i].hideHoverEffect)
-      this._displayables[i].hideHoverEffect();
-  }
-};
-
-//---------------------------------------------------------------------//
-// Popup Support: DvtPopupSource impl                                  //
-//---------------------------------------------------------------------//
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getShowPopupBehaviors = function() {
-  return this._chart.getShowPopupBehaviors(this._stampId);
-};
-
-//---------------------------------------------------------------------//
-// Rollover and Hide/Show Support: DvtLogicalObject impl               //
-//---------------------------------------------------------------------//
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getDisplayables = function() {
-  return this._displayables;
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getAriaLabel = function() {
-  var states = [];
-  var options = this.getChart().getOptions();
-  if (this.isSelectable())
-    states.push(DvtBundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', DvtBundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
-  if (this.isDrillable())
-    states.push(DvtBundle.getTranslation(options, 'stateDrillable', DvtBundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
-
-  var shortDesc = DvtChartTooltipUtils.getDatatip(this._chart, this._seriesIndex, this._groupIndex, false);
-  if (shortDesc == null && this._groupIndex < 0 && states.length > 0)
-    shortDesc = DvtChartDataUtils.getSeriesLabel(this._chart, this._seriesIndex);
-
-  return DvtDisplayable.generateAriaLabel(shortDesc, states);
-};
-
-/**
- * Updates the aria-label as needed. On desktop, we can defer the aria creation, and the aria-label will be updated
- * when the activeElement is set.
- * @param {DvtDisplayable} displayable The displayable object.
- * @private
- */
-DvtChartObjPeer.prototype._updateAriaLabel = function(displayable) {
-  if (!DvtAgent.deferAriaCreation())
-    displayable.setAriaProperty('label', this.getAriaLabel());
-};
-
-
-//---------------------------------------------------------------------//
-// Rollover and Hide/Show Support: DvtCategoricalObject impl           //
-//---------------------------------------------------------------------//
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getCategories = function(category) {
-  return this._categories;
-};
-
-
-/**
- * @return {DvtPoint} The coordinate of the data point relative to the plot area
- */
-DvtChartObjPeer.prototype.getDataPosition = function() {
-  return this._dataPos;
-};
-
-
-//---------------------------------------------------------------------//
-// Keyboard Support: DvtKeyboardNavigable impl                        //
-//---------------------------------------------------------------------//
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getNextNavigable = function(event) {
-  var keyCode;
-  var next;
-
-  keyCode = event.keyCode;
-  if (event.type == DvtMouseEvent.CLICK) {
-    return this;
-  }
-  else if (keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey) {
-    // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
-    // care of the selection
-    return this;
-  }
-
-  var chart = this._chart;
-  var chartObjs = chart.getChartObjPeers();
-
-  var navigables = [];
-  for (var i = 0; i < chartObjs.length; i++) {
-    if (chartObjs[i].isNavigable())
-      navigables.push(chartObjs[i]);
-  }
-
-  if (DvtChartTypeUtils.isScatterBubble(chart)) {
-    next = DvtKeyboardHandler.getNextAdjacentNavigable(this, event, navigables);
-  }
-  // Polar bars should be treated the same way as line/area charts
-  else if (DvtChartTypeUtils.isLineArea(chart) || DvtChartTypeUtils.isStacked(chart) || DvtChartTypeUtils.isPolar(chart)) {
-    next = this._findNextNavigable(event);
-  }
-  else if (DvtChartTypeUtils.isFunnel(chart) && (event.keyCode == DvtKeyboardEvent.UP_ARROW || event.keyCode == DvtKeyboardEvent.DOWN_ARROW)) {
-    event.keyCode = event.keyCode - 1;
-    next = DvtKeyboardHandler.getNextNavigable(this, event, navigables);
-  }
-  else {
-    // : ignoreBounds for the case of range bars or bars with negative values that don't overlap with the adjacent series.
-    next = DvtKeyboardHandler.getNextNavigable(this, event, navigables, true);
-  }
-  return next;
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) {
-  if (this._displayables[0])
-    return this._displayables[0].getDimensions(targetCoordinateSpace);
-  else
-    return new DvtRectangle(0, 0, 0, 0);
-};
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.getTargetElem = function() {
-  if (this._displayables[0])
-    return this._displayables[0].getElem();
-  return null;
-};
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.showKeyboardFocusEffect = function() {
-  if (this.isNavigable()) {
-    this._isShowingKeyboardFocusEffect = true;
-    this.showHoverEffect();
-  }
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.hideKeyboardFocusEffect = function() {
-  if (this.isNavigable()) {
-    this._isShowingKeyboardFocusEffect = false;
-    this.hideHoverEffect();
-  }
-};
-
-
-/**
- * @override
- */
-DvtChartObjPeer.prototype.isShowingKeyboardFocusEffect = function() {
-  return this._isShowingKeyboardFocusEffect;
-};
-
-
-/**
- * Returns true if the object is navigable
- * @return {boolean}
- */
-DvtChartObjPeer.prototype.isNavigable = function() {
-  return this.getGroupIndex() != -1 && this.getSeriesIndex() != -1;
-};
-
-
-/**
- * Returns the next navigable object in the direction of the arrow for line/area
- * @param {DvtBaseEvent} event
- * @return {DvtChartObjPeer}
- * @private
- */
-DvtChartObjPeer.prototype._findNextNavigable = function(event) {
-  var keyCode = event.keyCode;
-  var chart = this._chart;
-  var context = chart.getCtx();
-
-  var seriesIndex = this.getSeriesIndex();
-  var groupIndex = this.getGroupIndex();
-  var groupCount = DvtChartDataUtils.getGroupCount(chart);
-  var nextSeriesIndex;
-  var nextGroupIndex;
-
-  var isHoriz = DvtChartTypeUtils.isHorizontal(chart);
-  var isPolar = DvtChartTypeUtils.isPolar(chart);
-  var isRTL = DvtAgent.isRightToLeft(context);
-  var isUp = isHoriz ? (isRTL ? keyCode == DvtKeyboardEvent.LEFT_ARROW : keyCode == DvtKeyboardEvent.RIGHT_ARROW) : keyCode == DvtKeyboardEvent.UP_ARROW;
-  var isDown = isHoriz ? (isRTL ? keyCode == DvtKeyboardEvent.RIGHT_ARROW : keyCode == DvtKeyboardEvent.LEFT_ARROW) : keyCode == DvtKeyboardEvent.DOWN_ARROW;
-  var isLeft = isHoriz ? keyCode == DvtKeyboardEvent.UP_ARROW : (isRTL ? keyCode == DvtKeyboardEvent.RIGHT_ARROW : keyCode == DvtKeyboardEvent.LEFT_ARROW);
-  var isRight = isHoriz ? keyCode == DvtKeyboardEvent.DOWN_ARROW : (isRTL ? keyCode == DvtKeyboardEvent.LEFT_ARROW : keyCode == DvtKeyboardEvent.RIGHT_ARROW);
-
-  if (isUp) {
-    nextGroupIndex = groupIndex;
-    nextSeriesIndex = this._findNextUpSeries(chart, seriesIndex, groupIndex);
-  }
-  else if (isDown) {
-    nextGroupIndex = groupIndex;
-    nextSeriesIndex = this._findNextDownSeries(chart, seriesIndex, groupIndex);
-  }
-  else if (isRight) {
-    nextSeriesIndex = seriesIndex;
-    nextGroupIndex = groupIndex;
-    do {
-      nextGroupIndex++;
-      if (isPolar && nextGroupIndex >= groupCount)
-        nextGroupIndex = 0;
-    } while (chart.getObject(nextSeriesIndex, nextGroupIndex) == null && nextGroupIndex < groupCount);
-  }
-  else if (isLeft) {
-    nextSeriesIndex = seriesIndex;
-    nextGroupIndex = groupIndex;
-    do {
-      nextGroupIndex--;
-      if (isPolar && nextGroupIndex < 0)
-        nextGroupIndex = groupCount - 1;
-    } while (chart.getObject(nextSeriesIndex, nextGroupIndex) == null && nextGroupIndex > -1);
-  }
-
-  var nextObj = chart.getObject(nextSeriesIndex, nextGroupIndex);
-  return nextObj && nextObj.isNavigable() ? nextObj : this;
-};
-
-
-/**
- * Returns the index of the next up series
- * @param {DvtChart} chart
- * @param {number} seriesIndex Current series index.
- * @param {number} groupIndex Current group index.
- * @return {number} Next up series index.
- * @private
- */
-DvtChartObjPeer.prototype._findNextUpSeries = function(chart, seriesIndex, groupIndex) {
-  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
-  var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
-  var nextValue = null;
-  var nextSeriesIndex = null;
-  for (var i = 0; i < seriesCount; i++) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
-      continue;
-    var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
-    if (itemValue > currentValue || (itemValue == currentValue && i > seriesIndex)) {
-      if ((nextValue !== null && itemValue < nextValue) || (nextValue == null)) {
-        nextValue = itemValue;
-        nextSeriesIndex = i;
-      }
-    }
-  }
-  return nextSeriesIndex;
-};
-
-
-/**
- * Returns the index of the next down series.
- * @param {DvtChart} chart
- * @param {number} seriesIndex Current series index.
- * @param {number} groupIndex Current group index.
- * @return {number} Next down series index.
- * @private
- */
-DvtChartObjPeer.prototype._findNextDownSeries = function(chart, seriesIndex, groupIndex) {
-  var seriesCount = DvtChartDataUtils.getSeriesCount(chart);
-  var currentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
-  var nextValue = null;
-  var nextSeriesIndex = null;
-  for (var i = seriesCount - 1; i >= 0; i--) {
-    if (!DvtChartStyleUtils.isSeriesRendered(chart, i))
-      continue;
-    var itemValue = DvtChartDataUtils.getCumulativeValue(chart, i, groupIndex);
-    if (itemValue < currentValue || (itemValue == currentValue && i < seriesIndex)) {
-      if ((nextValue !== null && itemValue > nextValue) || (nextValue == null)) {
-        nextValue = itemValue;
-        nextSeriesIndex = i;
-      }
-    }
-  }
-  return nextSeriesIndex;
-};
-/**
- * Logical object for reference object displayables.
- * @param {DvtChart} chart
- * @param {array} displayables The array of associated DvtDisplayables.
- * @param {object} refObj reference object
- * @param {number} index The reference objects position in the reference object array
- * @param {string} axisType The axis the reference object is on
- * @class
- * @constructor
- * @implements {DvtCategoricalObject}
- * @implements {DvtLogicalObject}
- * @implements {DvtTooltipSource}
- */
-var DvtRefObjPeer = function(chart, displayables, refObj, index, axisType) {
-  this.Init(chart, displayables, refObj, index, axisType);
-};
-
-DvtObj.createSubclass(DvtRefObjPeer, DvtObj, 'DvtRefObjPeer');
-
-/**
- * @param {DvtChart} chart
- * @param {array} displayables The array of associated DvtDisplayables.
- * @param {object} refObj reference object
- * @param {number} index The reference objects position in the reference object array
- * @param {string} axisType The axis the reference object is on
- */
-DvtRefObjPeer.prototype.Init = function(chart, displayables, refObj, index, axisType) {
-  this._chart = chart;
-  this._displayables = displayables;
-  this._refObj = refObj;
-
-  // used for automation
-  this._index = index;
-  this._axisType = axisType;
-
-  // WAI-ARIA
-  for (var i = 0; i < displayables.length; i++) {
-    var displayable = displayables[i];
-    displayable.setAriaRole('img');
-    displayable.setAriaProperty('label', refObj['shortDesc']);
-  }
-};
-
-/**
- * @override
- */
-DvtRefObjPeer.prototype.getCategories = function() {
-  return [DvtChartRefObjUtils.getId(this._refObj)];
-};
-
-/**
- * @override
- */
-DvtRefObjPeer.prototype.getDisplayables = function() {
-  return this._displayables;
-};
-
-/**
- * Returns the position of the reference object in the referenceObjects array.
- * @return {number} The position of this reference object.
- */
-DvtRefObjPeer.prototype.getIndex = function() {
-  return this._index;
-};
-
-/**
- * Returns which axis this reference object belongs to.
- * @return {string} x, y, or y2
- */
-DvtRefObjPeer.prototype.getAxisType = function() {
-  return this._axisType;
-};
-
-/**
- * @override
- */
-DvtRefObjPeer.prototype.getDatatip = function(target) {
-  return DvtChartTooltipUtils.getRefObjTooltip(this._chart, this._refObj);
-};
-
-/**
- * @override
- */
-DvtRefObjPeer.prototype.getDatatipColor = function() {
-  return DvtChartRefObjUtils.getColor(this._refObj);
-};
-/**
-  * Creates an object representing the ID of a chart data item.
-  * @constructor
-  * @param {string} id The ID for the data item, if available.
-  * @param {string} series The series ID for the chart data item.
-  * @param {string} group The group ID for the chart data item.
-  * @export
-  */
-var DvtChartDataItem = function(id, series, group) {
-  this.Init(id, series, group);
-};
-
-DvtObj.createSubclass(DvtChartDataItem, DvtObj, 'DvtChartDataItem');
-
-
-/**
- * Initializes the component.
- * @param {string} id The ID for the data item, if available.
- * @param {string} series The series ID.
- * @param {string} group The group ID.
- * @protected
- */
-DvtChartDataItem.prototype.Init = function(id, series, group) {
-  this._id = id;
-  this._series = series;
-  this._group = group;
-};
-
-
-/**
- * Returns the ID for the data item, if available.
- * @return {string} The data item ID.
- * @export
- */
-DvtChartDataItem.prototype.getId = function() {
-  return this._id;
-};
-
-
-/**
- * Returns the series ID for a chart data item.
- * @return {string} The series ID.
- * @export
- */
-DvtChartDataItem.prototype.getSeries = function() {
-  return this._series;
-};
-
-
-/**
- * Returns the group ID for a chart data item.
- * @return {string} The group ID.
- * @export
- */
-DvtChartDataItem.prototype.getGroup = function() {
-  return this._group;
-};
-
-
-/**
- * Determines if two DvtChartDataItem objects are equal.
- *
- * @param {DvtChartDataItem} dataItem The data item that will be used to test for equality.
- * @return {boolean} True if the two DvtChartDataItem objects are equal
- */
-DvtChartDataItem.prototype.equals = function(dataItem) {
-  // Note that the id is not compared, because the series and group ids are considered the primary identifiers.
-  if (dataItem instanceof DvtChartDataItem) {
-    var group = dataItem.getGroup();
-    if (this._group instanceof Array && group instanceof Array)
-      return DvtArrayUtils.equals(this._group, group) && this._series === dataItem.getSeries();
-    else
-      return this._group === group && this._series === dataItem.getSeries();
-  }
-  else
-    return false;
-};
-/**
- * Default values and utility functions for component versioning.
- * @class
- * @constructor
- * @extends {DvtBaseComponentDefaults}
- */
-var DvtChartDefaults = function() {
-  this.Init({'skyros': DvtChartDefaults.VERSION_1, 'alta': DvtChartDefaults.SKIN_ALTA, 'next': DvtChartDefaults.SKIN_NEXT});
-};
-
-DvtObj.createSubclass(DvtChartDefaults, DvtBaseComponentDefaults, 'DvtChartDefaults');
-
-
-/**
- * Contains overrides for the next generation skin.
- * @const
- */
-DvtChartDefaults.SKIN_NEXT = {
-  'skin': DvtCSSStyle.SKIN_NEXT,
-
-  'styleDefaults': {
-    'dataItemGaps': 'auto',
-    'markerSize': 10,
-    'marqueeColor': 'rgba(255,255,255,0.4)', 'marqueeBorderColor': '#0572ce'
-  },
-  'yAxis': {
-    'axisLine': {'rendered': 'auto'}
-  },
-  'y2Axis': {
-    'axisLine': {'rendered': 'auto'}
-  },
-  'layout': {
-    'titlePlotAreaGap': 16, 'footnoteGap': 10,
-    'legendGapWidth': 15, 'legendGapHeight': 10,
-    'tickLabelGapHeight': 8, 'tickLabelGapWidth': 9
-  }
-};
-
-/**
- * Contains overrides for the 'alta' skin.
- * @const
- */
-DvtChartDefaults.SKIN_ALTA = {
-  'skin': DvtCSSStyle.SKIN_ALTA,
-  'title': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;")},
-  'subtitle': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #252525;")},
-  'footnote': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px;")},
-  '_statusMessageStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;"),
-
-  'styleDefaults': {
-    'seriesEffect': 'color',
-    'colors': DvtCSSStyle.COLORS_ALTA,
-    'pieCenterLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
-    'dataLabelStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"),
-    'stockRisingColor': '#6b6f74',
-    'stockFallingColor': '#ED6647'
-  }
-};
-
-/**
- * Defaults for version 1.
- * @const
- */
-DvtChartDefaults.VERSION_1 = {
-  'skin': DvtCSSStyle.SKIN_SKYROS, 'emptyText': null,
-  'type': 'bar', 'stack': 'off', 'orientation': 'vertical', 'polarGridShape': 'circle',
-  'selectionMode': 'none', 'hideAndShowBehavior': 'none', 'hoverBehavior': 'none',
-  'zoomAndScroll': 'off', 'zoomDirection': 'auto', 'initialZooming': 'none', 'dragMode': 'user',
-  'sorting': 'off', 'otherThreshold': 0,
-  'animationOnDataChange': 'none', 'animationOnDisplay': 'none',
-  '__sparkBarSpacing': 'subpixel', '__spark': false,
-  'dataCursor': 'auto', 'dataCursorBehavior': 'auto',
-  'drilling': 'off',
-  'highlightMatch' : 'all',
-  'series': [],
-  'groups': [],
-  'title': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b; font-weight: bold'), 'halign': 'start'},
-  'subtitle': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b;')},
-  'footnote': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 10px; color: #333333;'), 'halign': 'start'},
-  'titleSeparator': { 'upperColor': '#74779A', 'lowerColor': '#FFFFFF', 'rendered': 'off'},
-  'touchResponse': 'auto',
-  '_statusMessageStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b; font-weight: bold'),
-
-  'xAxis': {
-    'tickLabel': {'rendered': 'on'},
-    'majorTick': {'rendered': 'auto'},
-    'minorTick': {'rendered': 'auto'},
-    'axisLine': {'rendered': 'on'},
-    'scale': 'linear',
-    'maxSize': 0.33
-  },
-  'yAxis': {
-    'tickLabel': {'rendered': 'on'},
-    'majorTick': {'rendered': 'auto'},
-    'minorTick': {'rendered': 'auto'},
-    'axisLine': {'rendered': 'on'},
-    'scale': 'linear',
-    'maxSize': 0.33
-  },
-  'y2Axis': {
-    'tickLabel': {'rendered': 'on'},
-    'majorTick': {'rendered': 'auto'},
-    'minorTick': {'rendered': 'auto'},
-    'axisLine': {'rendered': 'on'},
-    'scale': 'linear',
-    'maxSize': 0.33,
-    'alignTickMarks': 'on'
-  },
-
-  'plotArea': {'backgroundColor': null},
-
-  'legend': {
-    'position': 'auto',
-    'rendered': 'on',
-    'maxSize': 0.3,
-    'layout': {'gapRatio': 1.0},
-    'seriesSection': {},
-    'referenceObjectSection': {},
-    'sections': []
-  },
-
-  'overview': {
-    'rendered': 'off'
-  },
-
-  'styleDefaults': {
-    'colors': DvtCSSStyle.COLORS_SKYROS, 'borderColor': 'auto', 'borderWidth': 'auto',
-    'patterns': ['smallDiagonalRight', 'smallChecker', 'smallDiagonalLeft', 'smallTriangle', 'smallCrosshatch', 'smallDiamond',
-                 'largeDiagonalRight', 'largeChecker', 'largeDiagonalLeft', 'largeTriangle', 'largeCrosshatch', 'largeDiamond'],
-    'shapes': ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp'],
-    'seriesEffect': 'gradient', 'threeDEffect': 'off', 'selectionEffect': 'highlight',
-    'animationDuration': 1000, 'animationIndicators': 'all',
-    'animationUpColor': '#0099FF', 'animationDownColor': '#FF3300',
-    'lineStyle': 'solid', 'lineType': 'auto', 'markerDisplayed': 'auto',
-    'markerColor': null, 'markerShape': 'auto', 'markerSize': 8,
-    'marqueeColor': 'rgba(255,255,255,0.5)', 'marqueeBorderColor': 'rgba(0,0,0,0.2)',
-    'pieFeelerColor': '#BAC5D6', 'pieInnerRadius': 0,
-    'selectedInnerColor': '#ffffff', 'selectedOuterColor': '#5a5a5a',
-    'pieCenterLabel': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif;')},
-    'sliceLabelType': 'percent',
-    'otherColor': '#4b4b4b',
-    'stockRisingColor': '#006666',
-    'stockFallingColor': '#CC3300',
-    'stockRangeColor': '#B8B8B8',
-    'dataItemGaps': '0%',
-    'dataLabelStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px;'),
-    'dataLabelPosition': 'auto',
-    'funnelBackgroundColor': '#EDEDED',
-    'x1Format': {}, 'y1Format': {}, 'y2Format': {}, 'zFormat': {},
-    '_defaultSliceLabelColor': '#333333',
-    '_scrollbarHeight': 3, '_scrollbarTrackColor': '#F0F0F0', '_scrollbarHandleColor': '#9E9E9E',
-    'hoverBehaviorDelay' : 200,
-    'dataCursor': {'markerSize': 8, 'markerDisplayed': 'on', 'lineColor': '#5a5a5a', 'lineWidth': 2, 'lineStyle': 'solid'},
-    'groupSeparators' : {'rendered' : 'on', color: 'rgba(138,141,172,0.4)'},
-    'padding': 'auto',
-    '_tooltipStyle': new DvtCSSStyle('border-collapse: separate; border-spacing: 2px'),
-    'tooltipLabelStyle': new DvtCSSStyle('color: #737373; padding: 0px 2px'),
-    'tooltipValueStyle': new DvtCSSStyle('color: #333333; padding: 0px 2px')
-  },
-
-  'layout': {
-    'gapWidthRatio': null, 'gapHeightRatio': null, // gap ratio is dynamic based on the component size
-    // TODO, the following are internal and should be moved to a _layout object
-    'outerGapWidth': 10, 'outerGapHeight': 8,
-    'titleSubtitleGapWidth': 14, 'titleSubtitleGapHeight': 4,
-    'titleSeparatorGap': 6, 'titlePlotAreaGap': 10, 'footnoteGap': 7, 'verticalAxisGap': 6,
-    'legendGapWidth': 10, 'legendGapHeight': 10, 'tickLabelGapHeight': 5, 'tickLabelGapWidth': 7
-  },
-
-  '_locale': 'en-us', '_resources': {}
-};
-
-
-/**
- * Scales down gap widths based on the width of the component.
- * @param {DvtChart} chart The chart that is being rendered.
- * @param {Number} defaultWidth The default gap width.
- * @return {Number}
- */
-DvtChartDefaults.getGapWidth = function(chart, defaultWidth) {
-  return Math.ceil(defaultWidth * chart.getGapWidthRatio());
-};
-
-/**
- * Scales down gap heights based on the height of the component.
- * @param {DvtChart} chart The chart that is being rendered.
- * @param {Number} defaultHeight The default gap height.
- * @return {Number}
- */
-DvtChartDefaults.getGapHeight = function(chart, defaultHeight) {
-  return Math.ceil(defaultHeight * chart.getGapHeightRatio());
-};
-
-/**
- * Returns true if the skyros skin effects should be used.
- * @param {DvtChart} chart
- * @return {boolean}
- */
-DvtChartDefaults.isSkyrosSkin = function(chart) {
-  return chart.getSkin() == DvtCSSStyle.SKIN_SKYROS;
-};
-
-/**
- * Returns true if the post-Alta skin effects should be used.
- * @param {DvtChart} chart
- * @return {boolean}
- */
-DvtChartDefaults.isPostAltaSkin = function(chart) {
-  return chart.getSkin() != DvtCSSStyle.SKIN_SKYROS && chart.getSkin() != DvtCSSStyle.SKIN_ALTA;
-};
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
-/*---------------------------------------------------------------------*/
-/*  DvtDataCursorHandler                 Data Cursor Event Handler                  */
-/*---------------------------------------------------------------------*/
-/**
- *  @class  DvtDataCursorHandler
- *  @extends {DvtObj}
- *  @constructor
- */
-var DvtDataCursorHandler = function(chart, dataCursor) {
-  this.Init(chart, dataCursor);
-};
-
-DvtObj.createSubclass(DvtDataCursorHandler, DvtObj, 'DvtDataCursorHandler');
-
-// TODO CLEANUP: Major cleanup needed
-
-DvtDataCursorHandler.prototype.Init = function(chart, dataCursor) {
-  this._context = chart.getCtx();
-  this._dataCursorShown = false;
-  this._dataCursor = dataCursor;
-  this._chart = chart;
-};
-
-// Show/hide the data cursor based on the global page coordinates of the action
-// Returns whether or not data cursor is shown
-DvtDataCursorHandler.prototype.processMove = function(pos, bSuppressEvent) {
-  var plotRect = this._chart.__getPlotAreaSpace();
-  if (plotRect.containsPoint(pos.x, pos.y)) {
-    // Show the data cursor only if the current point is within the plot area
-    this._showDataCursor(plotRect, pos.x, pos.y, bSuppressEvent);
-    return true;
-  }
-  else {
-    this._removeDataCursor(bSuppressEvent);
-  }
-  return false;
-};
-
-DvtDataCursorHandler.prototype.processEnd = function(bSuppressEvent) {
-  this._removeDataCursor(bSuppressEvent);
-};
-
-DvtDataCursorHandler.prototype.processOut = function(pos, bSuppressEvent) {
-  var plotRect = this._chart.__getPlotAreaSpace();
-  if (!plotRect.containsPoint(pos.x, pos.y)) {
-    this._removeDataCursor(bSuppressEvent);
-  }
-};
-
-/**
- * Displays the data cursor.
- * @param {DvtRectangle} plotRect The bounds of the plot area
- * @param {number} x
- * @param {number} y
- * @param {object} targetObj
- * @private
- */
-DvtDataCursorHandler.prototype._showDataCursor = function(plotRect, x, y, bSuppressEvent) {
-  if (this._context.isOffscreen()) {
-    this._removeDataCursor(bSuppressEvent);
-    return;
-  }
-
-  var dataCursor = this._dataCursor;
-
-  // Find the closest data point
-  var closestMatch = this._getClosestMatch(x, y);
-  if (closestMatch == null) {
-    this._removeDataCursor(bSuppressEvent);
-    return;
-  }
-
-  // Find the center of the data item
-  var centerPoint = DvtGeomUtils.getCenterPoint(closestMatch.matchRegion);
-
-  var dcX = x;
-  var dcY = y;
-  // Adjust for snap behavior
-  if (dataCursor.getBehavior() == DvtDataCursor.BEHAVIOR_SNAP) {
-    if (dataCursor.isHorizontal())
-      dcY = Math.min(Math.max(centerPoint.y, plotRect.y), plotRect.y + plotRect.h);
-    else
-      dcX = Math.min(Math.max(centerPoint.x, plotRect.x), plotRect.x + plotRect.w);
-  }
-
-  // If "dataCursor" attr is "auto", don't show the data cursor if tooltip text is null. Otherwise, always show the cursor.
-  var tooltipText = DvtChartTooltipUtils.getDatatip(this._chart, closestMatch.sidx, closestMatch.gidx, true);
-  if (tooltipText == null) {
-    dataCursor.setVisible(false);
-    return;
-  }
-  else
-    dataCursor.setVisible(true);
-
-  var seriesColor = DvtChartTooltipUtils.getDatatipColor(this._chart, closestMatch.sidx, closestMatch.gidx);
-  var lineCoord = dataCursor.isHorizontal() ? dcY : dcX;
-  dataCursor.render(plotRect, centerPoint.x, centerPoint.y, lineCoord, tooltipText, seriesColor);
-
-  this._dataCursorShown = true;
-
-  // fire optionChange event
-  if (!bSuppressEvent) {
-    var values = this._chart.getValuesAt(x, y);
-    this._chart.changeOption('dataCursorPosition', values);
-  }
-};
-
-// Remove the data cursor
-DvtDataCursorHandler.prototype._removeDataCursor = function(bSuppressEvent) {
-  if (this._dataCursor.getVisible())
-    this._dataCursor.setVisible(false);
-
-  this._context.getTooltipManager(DvtDataCursor.TOOLTIP_ID).hideTooltip();
-
-  this._dataCursorShown = false;
-
-  // fire optionChange event
-  if (!bSuppressEvent)
-    this._chart.changeOption('dataCursorPosition', null);
-};
-
-DvtDataCursorHandler.prototype.isDataCursorShown = function() {
-  return this._dataCursorShown;
-};
-
-DvtDataCursorHandler._getClosestMatchSecondDirection = function(matchesInBounds, horizontal, x, y) {
-  var closestMatch = null;
-  var minDiff = Infinity;
-  for (var i = 0; i < matchesInBounds.length; i++) {
-    var match = matchesInBounds[i];
-    var lowerBound = (horizontal) ? match.matchRegion.x : match.matchRegion.y;
-    var higherBound = (horizontal) ? match.matchRegion.x + match.matchRegion.w : match.matchRegion.y + match.matchRegion.h;
-    var value = (horizontal) ? x : y;
-    var midPoint = (lowerBound + higherBound) / 2;
-    var diffValue = Math.round(Math.abs(midPoint - value));
-    if (diffValue < minDiff) {
-      minDiff = diffValue;
-      closestMatch = match;
-    }
-  }
-  return closestMatch;
-};
-
-DvtDataCursorHandler._getClosestMatchesFirstDirection = function(matches, horizontal, x, y) {
-  var minDiff = Infinity;
-  var closestFirstDirectionMatches = new Array();
-  // Get closest matches
-  for (var i = 0; i < matches.length; i++) {
-    var matchObj = matches[i];
-    var lowerBound = (horizontal) ? matchObj.matchRegion.y : matchObj.matchRegion.x;
-    var higherBound = (horizontal) ? matchObj.matchRegion.y + matchObj.matchRegion.h : matchObj.matchRegion.x + matchObj.matchRegion.w;
-    var value = (horizontal) ? y : x;
-
-    var midPoint = (lowerBound + higherBound) / 2;
-    var diffValue = Math.round(Math.abs(midPoint - value));
-    if (diffValue <= minDiff) {
-      if (diffValue < minDiff) {
-        closestFirstDirectionMatches = new Array();
-      }
-      closestFirstDirectionMatches.push(matchObj);
-      minDiff = diffValue;
-    }
-  }
-  return closestFirstDirectionMatches;
-};
-
-// TODO JSDOC: This class needs to be rewritten to not access private properties and get rid of these implicit object returns.
-DvtDataCursorHandler.prototype._findMatches = function() {
-  var stage = this._context.getStage();
-  var eventManager = this._chart.__getEventManager();
-  var matches = [];
-
-  if (!this._chart._currentMarkers)
-    return null;
-
-  for (var i = 0; i < this._chart._currentMarkers.length; i++) {
-    var markers = this._chart._currentMarkers[i];
-    var numMarkers = markers.length;
-
-    for (var idx = 0; idx < numMarkers; idx++) {
-      var item = markers[idx];
-      var logicalObject = eventManager.GetLogicalObject(item);
-
-      // Find the bounding box of the item.  We use getDimensionsSelf, an optimized version of getDimensions, where
-      // possible.  It's safe to use either API since chart data objects do not have children.
-      var dims = item.getDimensionsSelf ? item.getDimensionsSelf(stage) : item.getDimensions(stage);
-
-      var match = { obj: item, matchRegion: dims, gidx: logicalObject.getGroupIndex(), sidx: logicalObject.getSeriesIndex(), marker: null };
-      matches.push(match);
-    }
-  }
-  return matches;
-};
-
-DvtDataCursorHandler.prototype._getClosestMatch = function(x, y) {
-  var horizontal = DvtChartTypeUtils.isHorizontal(this._chart);
-  var useAllInGroup = DvtChartTypeUtils.isLineArea(this._chart) && !DvtChartAxisUtils.isMixedFrequency(this._chart);
-
-  var matches = this._findMatches();
-
-  var matchesInBounds = DvtDataCursorHandler._getClosestMatchesFirstDirection(matches, horizontal, x, y);
-
-  // Non-numerical x axis
-  if (!DvtChartTypeUtils.isScatterBubble(this._chart)) {
-    var closestLowerBound = Infinity;
-    var closestHigherBound = -Infinity;
-    var closestGroup = null;
-
-    for (var i = 0; i < matchesInBounds.length; i++) {
-      var closestFirstDirectionMatch = matchesInBounds[i];
-      closestLowerBound = Math.min(closestLowerBound, (horizontal) ? closestFirstDirectionMatch.matchRegion.y : closestFirstDirectionMatch.matchRegion.x);
-      closestHigherBound = Math.max(closestHigherBound, (horizontal) ? closestFirstDirectionMatch.matchRegion.y + closestFirstDirectionMatch.matchRegion.h : closestFirstDirectionMatch.matchRegion.x + closestFirstDirectionMatch.matchRegion.w);
-      closestGroup = closestFirstDirectionMatch.gidx;
-    }
-
-    for (var i = 0; i < matches.length; i++) {
-      var match = matches[i];
-      var itemGroup = match.gidx;
-      if (useAllInGroup) {
-        if (closestGroup == itemGroup) {
-          matchesInBounds.push(match);
-        }
-      }
-      else {
-        var lowerBound = (horizontal) ? match.matchRegion.y : match.matchRegion.x;
-        var higherBound = (horizontal) ? match.matchRegion.y + match.matchRegion.h : match.matchRegion.x + match.matchRegion.w;
-        var midPoint = (lowerBound + higherBound) / 2;
-        if (closestHigherBound >= midPoint && closestLowerBound <= midPoint) {
-          matchesInBounds.push(match);
-        }
-
-      }
-    }
-  }
-  return DvtDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
 };
 // Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -11886,12 +11689,12 @@ DvtChartAxisUtils.isLog = function(chart, type) {
 
 
 /**
- * Returns the font size of the axis tick label
+ * Returns the height of the axis tick label
  * @param {DvtChart} chart
  * @param {string} type The axis type: x, y, or y2
- * @return {number} font size
+ * @return {number} Height in px
  */
-DvtChartAxisUtils.getTickLabelFontSize = function(chart, type) {
+DvtChartAxisUtils.getTickLabelHeight = function(chart, type) {
   var options = chart.getOptions();
   var axisOptions = options[type + 'Axis'];
 
@@ -11901,9 +11704,7 @@ DvtChartAxisUtils.getTickLabelFontSize = function(chart, type) {
     tickLabelStyle = new DvtCSSStyle(tickLabelStyle);
   tickLabelStyle.mergeUnder(DvtAxis.getDefaults(options['skin'])['tickLabel']['style']); // merge with the default
 
-  // Use getTextStringHeight() to account for non-pixel font sizes.
-  // The multiplication factor at the end came from the fact that 11px font size has 14px height.
-  return DvtTextUtils.getTextStringHeight(chart.getCtx(), tickLabelStyle) * (11 / 14);
+  return DvtTextUtils.getTextStringHeight(chart.getCtx(), tickLabelStyle);
 };
 
 
@@ -11939,7 +11740,7 @@ DvtChartAxisUtils.getTickLabelGapSize = function(chart, type) {
  */
 DvtChartAxisUtils.getGapScalingFactor = function(chart, type) {
   if (DvtChartAxisUtils.isAxisRendered(chart, type))
-    return DvtChartAxisUtils.getTickLabelFontSize(chart, type) / 11; // 11px is the default font size
+    return DvtChartAxisUtils.getTickLabelHeight(chart, type) / 14; // 14px is the default label height, assuming 11px font size
   else
     return 0;
 };
@@ -12056,7 +11857,7 @@ DvtChartAxisUtils.applyInitialZooming = function(chart, availSpace) {
     return;
 
   var axisWidth = DvtChartTypeUtils.isHorizontal(chart) ? availSpace.h : availSpace.w; // estimated
-  var maxNumGroups = Math.floor(axisWidth / (2.5 * DvtChartAxisUtils.getTickLabelFontSize(chart, 'x'))) + DvtChartAxisUtils.getAxisOffset(chart);
+  var maxNumGroups = Math.floor(axisWidth / (2 * DvtChartAxisUtils.getTickLabelHeight(chart, 'x'))) + DvtChartAxisUtils.getAxisOffset(chart);
   var numGroups = DvtChartDataUtils.getGroupCount(chart) - 1; // -1 because we count the number of group gaps
   if (numGroups <= maxNumGroups)
     return;
@@ -12126,13 +11927,13 @@ DvtChartAxisUtils.getGroupWidthRatios = function(chart) {
     barWidths.push(isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width);
   }
 
-  var barWidthSum = barWidths.reduce(function(prev, cur) {
+  var barWidthSum = DvtArrayUtils.reduce(barWidths, function(prev, cur) {
     return prev + cur;
   });
 
   // The gap size is the same for all groups, regardless of the bar width.
   var gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
-  var groupWidths = barWidths.map(function(barWidth) {
+  var groupWidths = DvtArrayUtils.map(barWidths, function(barWidth) {
     // divide the gaps evenly
     return barWidth + gapWidthSum / numGroups;
   });
@@ -12346,7 +12147,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
     var volumeSeries = DvtJSONUtils.clone(DvtChartDataUtils.getSeriesItem(chart, 0));
     volumeSeries['assignedToY2'] = 'on';
     volumeSeries['type'] = 'bar';
-    volumeSeries['categories'] = seriesItem['categories'] || [DvtChartDataUtils.getSeries(chart, 0)];
+    volumeSeries['categories'] = DvtChartDataUtils.getSeriesCategories(chart, 0);
     volumeSeries['id'] = '_volume';
     volumeSeries['_selectable'] = 'off';
     volumeSeries['items'] = [];
@@ -12840,33 +12641,33 @@ DvtChartDataUtils._getGroupsArray = function(chart) {
 
 /**
  * Returns a structure containing the ids and names associated with each innermost group item.
- * @param {Object} groupObject A list of chart groups
+ * @param {Array} groups An array of chart groups
  * @param {Array} groupsArray The array of objects associated with each group item
  * @return {Array} An array of objects containing the ids and names associated with each innermost group item.
  * @private
  */
-DvtChartDataUtils._getNestedGroups = function(groupObject, groupsArray) {
-  if (!groupObject)
+DvtChartDataUtils._getNestedGroups = function(groups, groupsArray) {
+  if (!groups)
     return;
 
-  for (var i = 0; i < groupObject.length; i++) {
-    var groupElement = groupObject[i];
-    var elementId = groupElement['id'] ? groupElement['id'] : (groupElement['name'] ? groupElement['name'] : groupElement);
-    var elementName = groupElement['name'] ? groupElement['name'] : groupElement;
+  for (var i = 0; i < groups.length; i++) {
+    var group = groups[i];
+    var elementId = group['id'] ? group['id'] : (group['name'] ? group['name'] : group);
+    var elementName = group['name'] ? group['name'] : group;
     if (typeof elementId == 'object')
       elementId = null;
     if (typeof elementName == 'object')
       elementName = null;
 
-    if (groupElement['groups']) {
-      var array = DvtChartDataUtils._getNestedGroups(groupElement['groups'], []);
-      if (!array)
-        array = [{'id': [], 'name': []}];
-      for (var j = 0; j < array.length; j++) {
-        array[j]['id'].unshift(elementId);
-        array[j]['name'].unshift(elementName);
+    if (group['groups']) {
+      var innerGroupArray = DvtChartDataUtils._getNestedGroups(group['groups'], []);
+      if (!innerGroupArray)
+        innerGroupArray = [{'id': [], 'name': []}];
+      for (var j = 0; j < innerGroupArray.length; j++) {
+        innerGroupArray[j]['id'].unshift(elementId);
+        innerGroupArray[j]['name'].unshift(elementName);
       }
-      groupsArray = groupsArray.concat(array);
+      groupsArray = groupsArray.concat(innerGroupArray);
     }
     else
       groupsArray.push({'id': [elementId], 'name': [elementName]});
@@ -13108,6 +12909,30 @@ DvtChartDataUtils.isStockValueRising = function(chart, seriesIndex, groupIndex) 
   return dataItem ? dataItem['open'] <= dataItem['close'] : true;
 };
 
+/**
+ * Returns the categories of the series item.
+ * @param {DvtChart} chart
+ * @param {number} seriesIndex
+ * @return {string}
+ */
+DvtChartDataUtils.getSeriesCategories = function(chart, seriesIndex) {
+  var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
+  var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
+  return seriesItem && seriesItem['categories'] ? seriesItem['categories'] : series ? [series] : [];
+};
+
+/**
+ * Returns the categories of the series item.
+ * @param {DvtChart} chart
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @return {string}
+ */
+DvtChartDataUtils.getDataItemCategories = function(chart, seriesIndex, groupIndex) {
+  // If categories array is not defined on the data item, then it will use the series categories
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+  return dataItem && dataItem['categories'] ? dataItem['categories'] : DvtChartDataUtils.getSeriesCategories(chart, seriesIndex);
+};
 
 /**
  * Retuns whether the xValue is inside the viewport
@@ -13606,19 +13431,49 @@ DvtChartDataUtils.isDataSelected = function(chart, seriesIndex, groupIndex) {
  * @param {Number} seriesIndex The series index.
  * @param {Number} groupIndex The group index.
  * @param {number} type (optional) Data label type: low, high, or value.
+ * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
  * @return {string} The data label, null if the index is invalid.
  */
-DvtChartDataUtils.getDataLabel = function(chart, seriesIndex, groupIndex, type) {
-  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (!dataItem)
-    return null;
+DvtChartDataUtils.getDataLabel = function(chart, seriesIndex, groupIndex, type, isStackLabel) {
+  var funcLabel;
+  var defaultLabel = DvtChartDataUtils.getDefaultDataLabel(chart, seriesIndex, groupIndex, type, isStackLabel);
 
-  var label = dataItem['label'];
-  // Range series data label support
-  if (type == 'low')
-    label = (label instanceof Array) ? label[0] : label;
-  else if (type == 'high')
-    label = (label instanceof Array) ? label[1] : null;
+  // Use data Label function if there is one
+  var dataLabelFunc = chart.getOptions()['dataLabel'];
+  if (dataLabelFunc && !isStackLabel) {
+    var dataContext = DvtChartDataUtils.getDataContext(chart, seriesIndex, groupIndex);
+    dataContext['label'] = defaultLabel;
+    funcLabel = dataLabelFunc(dataContext);
+  }
+
+  return funcLabel ? funcLabel : defaultLabel;
+};
+
+/**
+ * Returns the default data label for the specified data point. It ignores the dataLabel function
+ * @param {DvtChart} chart
+ * @param {Number} seriesIndex The series index.
+ * @param {Number} groupIndex The group index.
+ * @param {number} type (optional) Data label type: low, high, or value.
+ * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
+ * @return {string} The default data label, null if the index is invalid.
+ */
+DvtChartDataUtils.getDefaultDataLabel = function(chart, seriesIndex, groupIndex, type, isStackLabel) {
+  var label;
+  if (isStackLabel)
+    label = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
+  else {
+    var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+    if (!dataItem)
+      return null;
+
+    label = dataItem['label'];
+    // Range series data label support
+    if (type == 'low')
+      label = (label instanceof Array) ? label[0] : label;
+    else if (type == 'high')
+      label = (label instanceof Array) ? label[1] : null;
+  }
 
   if (label != null) {
     // Numbers will be formatted, while all other labels will be treated as strings
@@ -13643,6 +13498,7 @@ DvtChartDataUtils.getDataLabel = function(chart, seriesIndex, groupIndex, type) 
   }
   return null;
 };
+
 
 
 /**
@@ -13683,10 +13539,10 @@ DvtChartDataUtils.getStackCategories = function(chart, type, bIncludeHiddenSerie
 
     var category = DvtChartDataUtils.getStackCategory(chart, s);
     if (DvtChartDataUtils.isAssignedToY2(chart, s)) {
-      if (y2Categories.indexOf(category) == -1)
+      if (DvtArrayUtils.getIndex(y2Categories, category) == -1)
         y2Categories.push(category);
     }
-    else if (yCategories.indexOf(category) == -1)
+    else if (DvtArrayUtils.getIndex(yCategories, category) == -1)
       yCategories.push(category);
   }
   return {'y': yCategories, 'y2': y2Categories};
@@ -13866,7 +13722,113 @@ DvtChartDataUtils.isSeriesNegative = function(chart, seriesIndex) {
   return true;
 };
 
+/**
+ * Returns an object containing information about the data item used by tooltip and dataLabel callbacks.
+ * @param {DvtChart} chart
+ * @param {Number} seriesIndex The series index.
+ * @param {Number} groupIndex The group index.
+ * @return {object} An object containing information about the data item.
+ */
+DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex) {
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+  var rawOptions = chart.getRawOptions();
 
+  var dataContext = {
+    'id': dataItem['id'],
+    'series': DvtChartDataUtils.getSeries(chart, seriesIndex),
+    'group': DvtChartDataUtils.getGroup(chart, groupIndex),
+    'data' : rawOptions['series'][seriesIndex]['items'][groupIndex],
+    'seriesData': rawOptions['series'][seriesIndex],
+    'groupData': DvtChartDataUtils._getGroupsDataArray(chart)[groupIndex],
+    'component': chart.getOptions()['_widgetConstructor'],
+    'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+    'targetValue': DvtChartDataUtils.getTargetValue(chart, seriesIndex, groupIndex),
+    'x': DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex),
+    'y': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
+    'z': DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex),
+    'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
+    'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
+    'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex),
+    'open': dataItem['open'],
+    'close': dataItem['close'],
+    'volume': dataItem['volume'],
+    'totalValue': DvtChartTypeUtils.isPie(chart) ? chart.pieChart.getTotalValue() : null
+  };
+  return dataContext;
+};
+
+/**
+ * Returns an array containing the hierarchical groups  associated with each innermost group item.
+ * @param {DvtChart} chart
+ * @return {Array} An array containing the hierarchical groups  associated with each innermost group item in chart.
+ * @private
+ */
+DvtChartDataUtils._getGroupsDataArray = function(chart) {
+  var cacheKey = 'groupsDataArray';
+  var groupsDataArray = chart.getFromCache(cacheKey);
+
+  if (!groupsDataArray) {
+    var rawOptions = chart.getRawOptions();
+    groupsDataArray = DvtChartDataUtils._getNestedGroupsData(rawOptions['groups']);
+    chart.putToCache(cacheKey, groupsDataArray);
+  }
+
+  return groupsDataArray;
+};
+
+/**
+ * Returns a structure containing the hierarchical groups  associated with each innermost group item.
+ * @param {Array} groups An array of chart groups
+ * @return {Array} An array of objects containing the hierarchical groups associated with each innermost group items in groups.
+ * @private
+ */
+DvtChartDataUtils._getNestedGroupsData = function(groups) {
+  if (!groups)
+    return [];
+  var groupsDataArray = [];
+
+  for (var i = 0; i < groups.length; i++) {
+    var group = groups[i];
+
+    if (group['groups']) {
+      var innerGroupData = DvtChartDataUtils._getNestedGroupsData(group['groups']);
+      for (var j = 0; j < innerGroupData.length; j++) {
+        innerGroupData[j].unshift(group);
+      }
+      groupsDataArray = groupsDataArray.concat(innerGroupData);
+    }
+    else
+      groupsDataArray.push([group]);
+  }
+  return groupsDataArray;
+};
+
+/**
+ * Whether or not a stack label should be rendered around the data item specified by the group and series index.
+ * @param {DvtChart} chart
+ * @param {Number} seriesIndex The series index.
+ * @param {Number} groupIndex The group index.
+ * @return {boolean}  true if a stack label should be rendered around the data item, otherwise false.
+ */
+DvtChartDataUtils.isBarStackLabeled = function(chart, seriesIndex, groupIndex) {
+  var stackCategory = DvtChartDataUtils.getStackCategory(chart, seriesIndex);
+  var isNegative = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex) < 0;
+  var numSeries = DvtChartDataUtils.getSeriesCount(chart);
+
+  // Checking only higher series
+  for (var s = seriesIndex + 1; s < numSeries; s++) {
+    if (stackCategory != DvtChartDataUtils.getStackCategory(chart, s))
+      continue;
+    if (isNegative != (DvtChartDataUtils.getValue(chart, s, groupIndex) < 0))
+      continue;
+    if (DvtChartStyleUtils.getSeriesType(chart, s) != 'bar')
+      continue;
+    if (!DvtChartDataUtils.isBLACItemInViewport(chart, s, groupIndex)) // Skip hidden data items
+      continue;
+    return false;
+  }
+  return true;
+};
 /**
  * Utility functions for DvtChart eventing and interactivity.
  * @class
@@ -13911,29 +13873,26 @@ DvtChartEventUtils.setVisibility = function(chart, category, visibility) {
   var refObj = DvtChartRefObjUtils.getRefObj(chart, category);
   if (refObj != null) {
     refObj['visibility'] = visibility;
-    return true;
   }
-  else {
-    // Update the categories list
-    var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
-    var index = DvtArrayUtils.getIndex(hiddenCategories, category);
-    if (visibility == 'hidden' && index < 0)
-      hiddenCategories.push(category);
-    else if (visibility == 'visible' && index >= 0)
-      hiddenCategories.splice(index, 1);
+  // Update the categories list
+  var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
+  var index = DvtArrayUtils.getIndex(hiddenCategories, category);
+  if (visibility == 'hidden' && index < 0)
+    hiddenCategories.push(category);
+  else if (visibility == 'visible' && index >= 0)
+    hiddenCategories.splice(index, 1);
 
-    // Update the legend
-    var options = chart.getOptions();
-    if (options && options['legend'] && options['legend']['sections']) {
-      // Iterate through any sections defined
-      for (var i = 0; i < options['legend']['sections'].length; i++) {
-        var dataSection = options['legend']['sections'][i];
-        if (dataSection && dataSection['items']) {
-          // Find the matching item and apply visibility
-          for (var j = 0; j < dataSection['items'].length; j++) {
-            if (dataSection['items'][j]['id'] == category)
-              dataSection['items'][j]['categoryVisibility'] = visibility;
-          }
+  // Update the legend
+  var options = chart.getOptions();
+  if (options && options['legend'] && options['legend']['sections']) {
+    // Iterate through any sections defined
+    for (var i = 0; i < options['legend']['sections'].length; i++) {
+      var dataSection = options['legend']['sections'][i];
+      if (dataSection && dataSection['items']) {
+        // Find the matching item and apply visibility
+        for (var j = 0; j < dataSection['items'].length; j++) {
+          if (dataSection['items'][j]['id'] == category)
+            dataSection['items'][j]['categoryVisibility'] = visibility;
         }
       }
     }
@@ -14207,14 +14166,15 @@ DvtChartEventUtils._getAxisMinMax = function(axis, minCoord, maxCoord, limitExte
 DvtChartEventUtils.getAxisBoundsByDelta = function(chart, xMinDelta, xMaxDelta, yMinDelta, yMaxDelta) {
   // Convert the deltas to the axis coordinates
   var deltas = DvtChartEventUtils._convertToAxisCoord(chart, xMinDelta, xMaxDelta, yMinDelta, yMaxDelta);
+  var zoomDirection = DvtChartEventUtils.getZoomDirection(chart);
 
   // Compute the axis bounds.
   var xMinMax = {}, yMinMax = {}, y2MinMax = {}, startEndGroup = {};
-  if (chart.xAxis) {
+  if (chart.xAxis && zoomDirection != 'y') {
     xMinMax = DvtChartEventUtils._getAxisMinMaxByDelta(chart.xAxis, deltas.xMin, deltas.xMax);
     startEndGroup = DvtChartEventUtils.getAxisStartEndGroup(chart.xAxis, xMinMax.min, xMinMax.max);
   }
-  if (chart.yAxis)
+  if (chart.yAxis && zoomDirection != 'x')
     yMinMax = DvtChartEventUtils._getAxisMinMaxByDelta(chart.yAxis, deltas.yMin, deltas.yMax);
   if (chart.y2Axis)
     y2MinMax = DvtChartEventUtils._getAxisMinMaxByDelta(chart.y2Axis, deltas.yMin, deltas.yMax);
@@ -14544,10 +14504,18 @@ DvtChartRefObjUtils.getLineType = function(refObj) {
 
 /**
  * Returns true if the specified reference object should be rendered.
+ * @param {DvtChart} chart
  * @param {object} refObj
  * @return {boolean}
  */
-DvtChartRefObjUtils.isObjectRendered = function(refObj) {
+DvtChartRefObjUtils.isObjectRendered = function(chart, refObj) {
+  var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
+  if (hiddenCategories.length > 0) {
+    var categories = DvtChartRefObjUtils.getRefObjCategories(refObj);
+    if (categories && DvtArrayUtils.hasAnyItem(hiddenCategories, categories)) {
+      return false;
+    }
+  }
   return !(refObj['visibility'] == 'hidden');
 };
 
@@ -14561,6 +14529,14 @@ DvtChartRefObjUtils.getId = function(refObj) {
   return refObj['id'] != null ? refObj['id'] : refObj['text'];
 };
 
+/**
+ * Returns the categories of the reference object.
+ * @param {object} refObj
+ * @return {string}
+ */
+DvtChartRefObjUtils.getRefObjCategories = function(refObj) {
+  return refObj['categories'] ? refObj['categories'] : [DvtChartRefObjUtils.getId(refObj)];
+};
 
 /**
  * Returns reference object based on id.
@@ -15574,20 +15550,12 @@ DvtChartStyleUtils.isSelectable = function(chart, seriesIndex, groupIndex) {
  * @return {boolean} True if the series should be rendered.
  */
 DvtChartStyleUtils.isSeriesRendered = function(chart, seriesIndex) {
-
   // Check if any category is hidden
   var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
-  var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (hiddenCategories.length > 0 && seriesItem) {
-    if (seriesItem['categories']) {
-      for (var i = 0; i < seriesItem['categories'].length; i++) {
-        var category = seriesItem['categories'][i];
-        if (DvtArrayUtils.getIndex(hiddenCategories, category) >= 0)
-          return false;
-      }
-    }
-    else if (DvtArrayUtils.getIndex(hiddenCategories, DvtChartDataUtils.getSeries(chart, seriesIndex)) >= 0)
+  if (hiddenCategories.length > 0) {
+    if (DvtArrayUtils.hasAnyItem(hiddenCategories, DvtChartDataUtils.getSeriesCategories(chart, seriesIndex))) {
       return false;
+    }
   }
 
   return true;
@@ -15606,27 +15574,19 @@ DvtChartStyleUtils.isDataItemRendered = function(chart, seriesIndex, groupIndex)
   if (!DvtChartStyleUtils.isSeriesRendered(chart, seriesIndex))
     return false;
   else {
-    // Check if any category is hidden
-    var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
-
     if (DvtChartTypeUtils.isPie(chart) || DvtChartTypeUtils.isFunnel(chart))
       groupIndex = 0;
-    var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
 
-    if (hiddenCategories.length > 0 && dataItem) {
-      if (dataItem['categories']) {
-        for (var i = 0; i < dataItem['categories'].length; i++) {
-          var category = dataItem['categories'][i];
-          if (DvtArrayUtils.getIndex(hiddenCategories, category) >= 0)
-            return false;
-        }
-      }
-      else if (DvtArrayUtils.getIndex(hiddenCategories, DvtChartDataUtils.getSeries(chart, seriesIndex)) >= 0)
+    // Check if any category is hidden
+    var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
+    if (hiddenCategories.length > 0) {
+      if (DvtArrayUtils.hasAnyItem(hiddenCategories, DvtChartDataUtils.getDataItemCategories(chart, seriesIndex, groupIndex))) {
         return false;
+      }
     }
-
-    return true;
   }
+
+  return true;
 };
 
 
@@ -15795,19 +15755,26 @@ DvtChartStyleUtils.getDataLabelStyle = function(chart, seriesIndex, groupIndex, 
  * @param {Number} seriesIndex The series index.
  * @param {Number} groupIndex The group index.
  * @param {number} type (optional) Data label type: low, high, or value.
+ * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
  * @return {string} The data label position. Uses an internal list different from the API values.
  * Possible values are: center, inLeft, inRight, inTop, inBottom, left, right, top, bottom, none
  */
-DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupIndex, type) {
+DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupIndex, type, isStackLabel) {
   var data = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  var position = data['labelPosition'];
+  var position;
 
-  if (!position)
-    position = chart.getOptions()['styleDefaults']['dataLabelPosition'];
-  position = DvtChartStyleUtils._parseLowHighArray(position, type);
+  if (isStackLabel)
+    position = 'outsideBarEdge';
+  else {
+    position = data['labelPosition'];
 
-  if (position == 'none')
-    return 'none';
+    if (!position)
+      position = chart.getOptions()['styleDefaults']['dataLabelPosition'];
+    position = DvtChartStyleUtils._parseLowHighArray(position, type);
+
+    if (position == 'none')
+      return 'none';
+  }
 
   var bRTL = DvtAgent.isRightToLeft(chart.getCtx());
   var bHorizontal = DvtChartTypeUtils.isHorizontal(chart);
@@ -15827,7 +15794,7 @@ DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupInde
     // outsideBarEdge is not supported for stacked because it'll be covered by the bar above.
     var isStacked = DvtChartTypeUtils.isStacked(chart);
     if (position != 'insideBarEdge') {
-      if (isStacked)
+      if (isStacked && !isStackLabel)
         return 'center';
       else if (position != 'outsideBarEdge')
         position = 'insideBarEdge';
@@ -16037,6 +16004,20 @@ DvtChartStyleUtils.getGroupWidth = function(chart) {
   }
   return width;
 };
+
+/**
+ * Returns true if the chart is bar and stack label is enabled.
+ * @param {DvtChart} chart
+ * @return {boolean}
+ */
+DvtChartStyleUtils.isStackLabelRendered = function(chart) {
+  // To have stack labels, the attribute must be set and the chart must be a supporting type.
+  var options = chart.getOptions();
+  if (DvtChartTypeUtils.isStacked(chart) && options['stackLabel'] == 'on')
+    return true;
+
+  return false;
+};
 /**
  * Text related utility functions.
  * @class
@@ -16056,16 +16037,15 @@ DvtObj.createSubclass(DvtChartTextUtils, DvtObj, 'DvtChartTextUtils');
  * @param {number} y The y coordinate of the text object.
  * @param {number} width The width of available text space.
  * @param {number} height The height of the available text space.
- * @param {object} params Additional parameters that will be passed to the logical object.
  * @return {DvtText} The created text object. Can be null if no text object could be created in the given space.
  */
-DvtChartTextUtils.createText = function(eventManager, container, textString, cssStyle, x, y, width, height, params) {
+DvtChartTextUtils.createText = function(eventManager, container, textString, cssStyle, x, y, width, height) {
   var text = new DvtOutputText(container.getCtx(), textString, x, y);
   text.setCSSStyle(cssStyle);
 
   if (DvtTextUtils.fitText(text, width, height, container)) {
-    // Associate with logical object to support DvtComponentUIEvent and truncation
-    eventManager.associate(text, new DvtSimpleObjPeer(text.getUntruncatedTextString(), null, null, params));
+    // Associate with logical object to support truncation
+    eventManager.associate(text, new DvtSimpleObjPeer(text.getUntruncatedTextString()));
     return text;
   }
   else
@@ -16127,25 +16107,20 @@ DvtChartTooltipUtils.getDatatip = function(chart, seriesIndex, groupIndex, isTab
 
   // Custom Tooltip via Function
   var tooltipFunc = chart.getOptions()['tooltip'];
+
   if (isTabular && tooltipFunc) {
     var tooltipManager = chart.getCtx().getTooltipManager(DvtChartTooltipUtils.isDataCursorEnabled(chart) ? DvtDataCursor.TOOLTIP_ID : null);
-    var dataContext = {
-      'id': dataItem['id'],
-      'label': dataItem['label'],
-      'series': DvtChartDataUtils.getSeries(chart, seriesIndex),
-      'group': DvtChartDataUtils.getGroup(chart, groupIndex),
-      'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
-      'targetValue': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
-      'x': DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex),
-      'y': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
-      'z': DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex),
-      'low': DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex),
-      'high': DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex),
-      'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex),
-      'open': dataItem['open'],
-      'close': dataItem['close'],
-      'volume': dataItem['volume']
-    };
+    var dataContext = DvtChartDataUtils.getDataContext(chart, seriesIndex, groupIndex);
+
+    // Get customized labels
+    if (DvtChartTypeUtils.isPie(chart)) {
+      var slice = chart.pieChart.__getSlices()[seriesIndex];
+      dataContext['label'] = slice.getSliceLabelString();
+    }
+    else {
+      dataContext['label'] = DvtChartDataUtils.getDataLabel(chart, seriesIndex, groupIndex);
+    }
+
     return tooltipManager.getCustomTooltip(tooltipFunc, dataContext);
   }
 
@@ -16410,8 +16385,8 @@ DvtChartTooltipUtils._addDatatipRow = function(datatip, chart, type, defaultLabe
   var tooltipLabel;
   if (typeof valueFormat['tooltipLabel'] === 'string')
     tooltipLabel = valueFormat['tooltipLabel'];
-  else if (valueFormat['tooltipLabel'] && index != null)
-    tooltipLabel = valueFormat['tooltipLabel'][index];
+  else if (DvtArrayUtils.isArray(valueFormat['tooltipLabel']))
+    tooltipLabel = valueFormat['tooltipLabel'][index ? index : 0];
 
   if (tooltipLabel == null) {
     if (defaultLabel == null) // non-innermost hierarchical group labels
@@ -16587,7 +16562,7 @@ DvtChartTypeUtils._SUPPORTED_TYPES = ['bar', 'line', 'area', 'lineWithArea', 'co
  * @return {boolean}
  */
 DvtChartTypeUtils.isValidType = function(chart) {
-  return DvtChartTypeUtils._SUPPORTED_TYPES.indexOf(chart.getType()) >= 0;
+  return DvtArrayUtils.getIndex(DvtChartTypeUtils._SUPPORTED_TYPES, chart.getType()) >= 0;
 };
 
 /**
@@ -17133,9 +17108,9 @@ DvtChartMarkerUtils.calcBubbleSizes = function(chart, width, height) {
   }
   else {
     // At this point, we still don't know the actual dimensions of the axes since they're not rendered yet, so we
-    // approximate based on the tick label font size
-    axisWidth = width - 3 * DvtChartAxisUtils.getTickLabelFontSize(chart, 'y');
-    axisHeight = height - 2 * DvtChartAxisUtils.getTickLabelFontSize(chart, 'x');
+    // approximate based on the tick label height
+    axisWidth = width - 2.4 * DvtChartAxisUtils.getTickLabelHeight(chart, 'y');
+    axisHeight = height - 1.6 * DvtChartAxisUtils.getTickLabelHeight(chart, 'x');
   }
 
   // Calculate the max allowed bubble sizes
@@ -17742,7 +17717,7 @@ DvtPieChartUtils.getOtherSliceShowPopupBehaviors = function(chart) {
     return chart.getShowPopupBehaviors(stampId);
   }
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @class DvtPieRenderUtils
  */
@@ -17956,7 +17931,7 @@ DvtPieRenderUtils.associate = function(slice, displayables) {
     return;
 
   for (var i = 0; i < displayables.length; i++)
-    slice.getPieChart().chart.__getEventManager().associate(displayables[i], slice);
+    slice.getPieChart().chart.getEventManager().associate(displayables[i], slice);
 };
 
 
@@ -18508,7 +18483,7 @@ DvtPieLabelInfo.prototype.getY = function() {
 DvtPieLabelInfo.prototype.setY = function(y) {
   this._y = y;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtPieLabelUtils                                                  */
 /*---------------------------------------------------------------------*/
@@ -18746,10 +18721,12 @@ DvtPieLabelUtils._createLabel = function(slice, isInside) {
 DvtPieLabelUtils.createPieCenterLabel = function(pieChart) {
   var options = pieChart.getOptions();
   var pieCenterLabel = options['pieCenterLabel'];
-
+  var dataLabelPosition = pieChart.getLabelPosition();
   if (pieCenterLabel) {
     var centerStyle = pieCenterLabel['style'];
-    var ir = pieChart.getInnerRadius() > 0 ? pieChart.getInnerRadius() : .5 * pieChart.getRadiusX();
+    var radiusX = pieChart.getRadiusX();
+    var ir = pieChart.getInnerRadius() > 0 ? pieChart.getInnerRadius() :
+             (dataLabelPosition == 'outsideSlice' ? .9 * radiusX : .5 * radiusX);
     var center = pieChart.getCenter();
     var centerLabel = new DvtMultilineText(pieChart.getCtx());
     var availSpace = new DvtRectangle(center.x, center.y, ir * Math.sqrt(2), ir * Math.sqrt(2));
@@ -18763,7 +18740,7 @@ DvtPieLabelUtils.createPieCenterLabel = function(pieChart) {
       centerLabel.alignCenter();
 
       if (centerLabel.isTruncated())
-        pieChart.chart.__getEventManager().associate(centerLabel, new DvtSimpleObjPeer(centerLabel.getTextString()));
+        pieChart.chart.getEventManager().associate(centerLabel, new DvtSimpleObjPeer(centerLabel.getTextString()));
       pieChart.addChild(centerLabel);
     }
   }
@@ -18776,6 +18753,28 @@ DvtPieLabelUtils.createPieCenterLabel = function(pieChart) {
  * @return {string} The full, untruncated label string, or null if the slice's pie chart is configured to not display labels
  */
 DvtPieLabelUtils.generateSliceLabelString = function(slice, labelType) {
+  var functionLabel;
+  var defaultLabel = DvtPieLabelUtils.getDefaultSliceLabelString(slice, labelType);
+
+  // Use data Label function if there is one
+  var dataLabelFunc = slice.getPieChart().getOptions()['dataLabel'];
+
+  if (dataLabelFunc) {
+    var dataContext = DvtChartDataUtils.getDataContext(slice._chart, slice.getSeriesIndex(), 0);
+    dataContext['label'] = defaultLabel;
+    functionLabel = dataLabelFunc(dataContext);
+  }
+
+  return functionLabel ? functionLabel : defaultLabel;
+};
+
+/**
+ * Returns the default label text for a given pie slice and ignores the dataLabel function
+ * @param {DvtPieSlice} slice
+ * @param {string} labelType The label type.
+ * @return {string} The full, default label string, or null if the slice's pie chart is configured to not display labels
+ */
+DvtPieLabelUtils.getDefaultSliceLabelString = function(slice, labelType) {
   var pieChart = slice.getPieChart();
 
   // If customLabel exists it will be the slice label. If a converter is set, apply converter to customLabel
@@ -18830,6 +18829,7 @@ DvtPieLabelUtils.generateSliceLabelString = function(slice, labelType) {
   else
     return null;
 };
+
 
 
 /**
@@ -19587,7 +19587,7 @@ DvtChartRenderer.render = function(chart, container, availSpace) {
  */
 DvtChartRenderer._setEventHandlers = function(chart) {
   var options = chart.getOptions();
-  var em = chart.__getEventManager();
+  var em = chart.getEventManager();
 
   if (!DvtChartTypeUtils.hasAxes(chart) || DvtChartTypeUtils.isOverview(chart))
     return;
@@ -19659,7 +19659,7 @@ DvtChartRenderer.rerenderAxisAndPlotArea = function(chart, container) {
   if (selectionHandler)
     selectionHandler.processInitialSelections(selectedIds, chart.getChartObjPeers());
 
-  chart.__getEventManager().autoToggleZoomButton();
+  chart.getEventManager().autoToggleZoomButton();
   DvtChartRenderer.positionDragButtons(chart); //reposition because the plot area dims may have changed
 
   // Restore focus and reapply highlight
@@ -19680,10 +19680,6 @@ DvtChartRenderer._renderBackground = function(chart, container, availSpace) {
   var rect = new DvtRect(chart.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
   rect.setInvisibleFill();
   container.addChild(rect);
-
-  // Associate with logical object to support DvtComponentUIEvent
-  var params = DvtChartEventManager.getUIEventParams(DvtChartConstants.BACKGROUND);
-  chart.__getEventManager().associate(rect, new DvtSimpleObjPeer(null, null, null, params));
 };
 
 
@@ -19724,9 +19720,8 @@ DvtChartRenderer._renderTitles = function(chart, container, availSpace) {
 
   // Title
   if (options['title']['text']) {
-    var titleObj = DvtChartTextUtils.createText(chart.__getEventManager(), container, options['title']['text'], options['title']['style'],
-                                                availSpace.x, availSpace.y, availSpace.w, availSpace.h,
-                                                DvtChartEventManager.getUIEventParams(DvtChartConstants.TITLE));
+    var titleObj = DvtChartTextUtils.createText(chart.getEventManager(), container, options['title']['text'], options['title']['style'],
+                                                availSpace.x, availSpace.y, availSpace.w, availSpace.h);
 
     var titleHeight;
     var titleDims;
@@ -19790,8 +19785,8 @@ DvtChartRenderer._renderTitles = function(chart, container, availSpace) {
         // WAI-ARIA
         subtitleObj.setAriaProperty('hidden', null);
 
-        // Associate with logical object to support DvtComponentUIEvent and truncation
-        chart.__getEventManager().associate(subtitleObj, new DvtSimpleObjPeer(subtitleObj.getUntruncatedTextString(), null, null, DvtChartEventManager.getUIEventParams(DvtChartConstants.SUBTITLE)));
+        // Associate with logical object to support truncation
+        chart.getEventManager().associate(subtitleObj, new DvtSimpleObjPeer(subtitleObj.getUntruncatedTextString()));
       }
     }
     else {
@@ -19827,9 +19822,8 @@ DvtChartRenderer._renderTitles = function(chart, container, availSpace) {
 
   // Footnote
   if (options['footnote']['text']) {
-    var footnoteObj = DvtChartTextUtils.createText(chart.__getEventManager(), container, options['footnote']['text'], options['footnote']['style'],
-                                                   availSpace.x, 0, availSpace.w, availSpace.h,
-                                                   DvtChartEventManager.getUIEventParams(DvtChartConstants.FOOTNOTE));
+    var footnoteObj = DvtChartTextUtils.createText(chart.getEventManager(), container, options['footnote']['text'], options['footnote']['style'],
+                                                   availSpace.x, 0, availSpace.w, availSpace.h);
 
     var footnoteAlign = options['footnote']['hAlign'] != null ? options['footnote']['hAlign'] : options['footnote']['halign'];
     var alignFootnoteToPlotArea = footnoteAlign.substring(0, 8) == 'plotArea';
@@ -19974,7 +19968,7 @@ DvtChartRenderer.renderEmptyText = function(chart, container, availSpace) {
 
   DvtTextUtils.renderEmptyText(container, emptyTextStr,
       new DvtRectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
-      chart.__getEventManager(), options['_statusMessageStyle']);
+      chart.getEventManager(), options['_statusMessageStyle']);
 };
 
 
@@ -20139,7 +20133,7 @@ DvtChartRenderer._positionLegend = function(legend, availSpace) {
  */
 DvtChartRenderer._renderDragButtons = function(chart, container) {
   var options = chart.getOptions();
-  var em = chart.__getEventManager();
+  var em = chart.getEventManager();
   var dragMode = options['dragMode'];
 
   // If drag mode is specified by app, simply set the drag mode and don't draw the buttons
@@ -20171,9 +20165,8 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
     em.selectButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
         resources['selectUp'], resources['selectDown'], em.onSelectButtonClick, em, position);
     tooltip = DvtBundle.getTranslation(options, 'tooltipSelect', DvtBundle.CHART_PREFIX, 'MARQUEE_SELECT');
-    em.selectButton.setAriaRole('button');
-    em.selectButton.setAriaProperty('label', tooltip);
-    em.associate(em.selectButton, new DvtSimpleObjPeer(tooltip));
+    em.selectButton.setTooltip(tooltip);
+    em.associate(em.selectButton, em.selectButton);
   }
 
   if (isScrollable) {
@@ -20182,15 +20175,15 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
       em.panButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
           resources['panUp'], resources['panDown'], em.onPanButtonClick, em, position);
       tooltip = DvtBundle.getTranslation(options, 'tooltipPan', DvtBundle.CHART_PREFIX, 'PAN');
-      em.panButton.setAriaRole('button');
-      em.panButton.setAriaProperty('label', tooltip);
-      em.associate(em.panButton, new DvtSimpleObjPeer(tooltip));
+      em.panButton.setTooltip(tooltip);
+      em.associate(em.panButton, em.panButton);
     }
     else if (DvtChartEventUtils.isZoomable(chart) && DvtChartTypeUtils.isScatterBubble(chart)) {
       em.zoomButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
           resources['zoomUp'], resources['zoomDown'], em.onZoomButtonClick, em, position);
       tooltip = DvtBundle.getTranslation(options, 'tooltipZoom', DvtBundle.CHART_PREFIX, 'MARQUEE_ZOOM');
-      em.associate(em.zoomButton, new DvtSimpleObjPeer(tooltip));
+      em.zoomButton.setTooltip(tooltip);
+      em.associate(em.zoomButton, em.zoomButton);
     }
   }
 
@@ -20249,7 +20242,7 @@ DvtChartRenderer.positionDragButtons = function(chart) {
   availSpace.w -= 2 * DvtChartRenderer._BUTTON_CORNER_DIST;
   availSpace.y += DvtChartRenderer._BUTTON_CORNER_DIST;
 
-  var em = chart.__getEventManager();
+  var em = chart.getEventManager();
   if (em.selectButton)
     DvtChartRenderer._positionDragButton(chart, em.selectButton, availSpace);
   if (em.panButton)
@@ -20382,7 +20375,7 @@ DvtChartRenderer._adjustAvailSpace = function(availSpace) {
 DvtChartRenderer.renderDataCursor = function(chart) {
   var dataCursor = null;
   var options = chart.getOptions();
-  var eventManager = chart.__getEventManager();
+  var eventManager = chart.getEventManager();
 
   if (DvtChartTooltipUtils.isDataCursorEnabled(chart)) {
     dataCursor = new DvtDataCursor(chart.getCtx(), options['styleDefaults']['dataCursor'], DvtChartTypeUtils.isHorizontal(chart));
@@ -20701,7 +20694,7 @@ DvtChartAxisRenderer._createYAxis = function(chart, container, availSpace, total
   container.addChild(axis);
   var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.yAxis, axisOptions, 'y', availSpace, totalAvailSpace);
 
-  DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart);
+  DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart, 'y');
 
   // Store the axis min/max for zoom & scroll
   options['yAxis']['min'] = axisOptions['min'];
@@ -20740,7 +20733,7 @@ DvtChartAxisRenderer._createY2Axis = function(chart, container, availSpace, tota
   container.addChild(axis);
   var preferredSize = DvtChartAxisRenderer._getPreferredSize(chart, axis, chart.y2Axis, axisOptions, 'y2', availSpace, totalAvailSpace);
 
-  DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart);
+  DvtChartAxisRenderer._adjustYAxisForLabels(axis, axisOptions, chart, 'y2');
 
   // Store the axis min/max for zoom & scroll
   options['y2Axis']['min'] = axisOptions['min'];
@@ -20819,26 +20812,33 @@ DvtChartAxisRenderer._addCommonYAxisAttributes = function(axisOptions, chart) {
  * @param {object} axis The axis object.
  * @param {object} axisOptions The axis options object to be filled in.
  * @param {DvtChart} chart
+ * @param {string} type The y axis type: y, or y2
  * @private
  */
-DvtChartAxisRenderer._adjustYAxisForLabels = function(axis, axisOptions, chart) {
+DvtChartAxisRenderer._adjustYAxisForLabels = function(axis, axisOptions, chart, type) {
   var options = chart.getOptions();
   // 
   // Increase the data max/min to cause an extra interval to be added if max/min label will be hidden or covered
   var dataLabelPosition = options['styleDefaults']['dataLabelPosition'];
-  if (DvtChartTypeUtils.hasBarSeries(chart) && dataLabelPosition == 'outsideBarEdge') {
-    var style = options['styleDefaults']['dataLabelStyle'];
+  var isStackLabelRendered = DvtChartStyleUtils.isStackLabelRendered(chart);
+  if (DvtChartTypeUtils.hasBarSeries(chart) && (dataLabelPosition == 'outsideBarEdge' || isStackLabelRendered)) {
+    var dataLabelStyle = options['styleDefaults']['dataLabelStyle'];
+    var stackLabelStyle = options['styleDefaults']['stackLabelStyle'];
     var axisInfo = axis.getInfo();
-    var textHeight = DvtTextUtils.getTextStringHeight(chart.getCtx(), style);
+    var textHeight = DvtTextUtils.getTextStringHeight(chart.getCtx(), isStackLabelRendered ? stackLabelStyle : dataLabelStyle);
     var buffer = 0;
-
     if (axisOptions['scale'] == 'log') {
       // Only consider max since min can't go below 0
       var requiredMaxValue = axis.getUnboundedValueAt(axis.getUnboundedCoordAt(axisInfo.getDataMax()) - textHeight);
       buffer = requiredMaxValue - axisInfo.getDataMax();
     }
     else {
-      buffer = Math.abs(axisInfo.getViewportMax() - axisInfo.getViewportMin()) / Math.abs(axisInfo.getEndCoord() - axisInfo.getStartCoord()) * textHeight;
+      var splitYFactor = 1;
+      if (DvtChartTypeUtils.isSplitDualY(chart)) {
+        splitYFactor = type == 'y' ? DvtChartStyleUtils.getSplitterPosition(chart) : (1 - DvtChartStyleUtils.getSplitterPosition(chart));
+      }
+      var yAxisHeight = Math.abs(axisInfo.getEndCoord() - axisInfo.getStartCoord()) * splitYFactor;
+      buffer = Math.abs(axisInfo.getViewportMax() - axisInfo.getViewportMin()) / yAxisHeight * textHeight;
     }
 
     if (DvtChartTypeUtils.isHorizontal(chart))
@@ -21336,16 +21336,14 @@ DvtChartLegendRenderer._createLegendItem = function(chart, seriesIndex) {
 
   // Skip if displayInLegend is auto and series label is an empty string
   var seriesLabel = DvtChartDataUtils.getSeriesLabel(chart, seriesIndex);
-  if (displayInLegend != 'on' && (!seriesLabel || seriesLabel.trim().length <= 0))
+  if (displayInLegend != 'on' && (!seriesLabel || DvtStringUtils.trim(seriesLabel).length <= 0))
     return null;
 
   // Create the legend item and add the properties for this series
-  var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
-  var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
-  var index = DvtArrayUtils.getIndex(hiddenCategories, series);
-  var legendItem = {'id': series,
+  var legendItem = {'id': DvtChartDataUtils.getSeries(chart, seriesIndex),
     'text': seriesLabel,
-    'categoryVisibility': (index >= 0) ? 'hidden' : 'visible'};
+    'categories': DvtChartDataUtils.getSeriesCategories(chart, seriesIndex),
+    'categoryVisibility': DvtChartStyleUtils.isSeriesRendered(chart, seriesIndex) ? 'visible' : 'hidden'};
 
   // Shape varies by chart type
   if (seriesType == 'line' || seriesType == 'lineWithArea' || chartType == 'scatter' || chartType == 'bubble') {
@@ -21407,7 +21405,8 @@ DvtChartLegendRenderer._getRefObjItems = function(chart) {
       'color': DvtChartRefObjUtils.getColor(refObj),
       'lineStyle': refObj['lineStyle'],
       'lineWidth': DvtChartRefObjUtils.getLineWidth(refObj),
-      'categoryVisibility': refObj['visibility'],
+      'categories': DvtChartRefObjUtils.getRefObjCategories(refObj),
+      'categoryVisibility': DvtChartRefObjUtils.isObjectRendered(chart, refObj) ? 'visible' : 'hidden',
       'shortDesc': refObj['shortDesc']
     });
   }
@@ -21470,7 +21469,42 @@ DvtPlotAreaRenderer.render = function(chart, container, availSpace) {
 DvtPlotAreaRenderer._renderBackgroundObjects = function(chart, container, availSpace) {
   // Chart background
   var options = chart.getOptions();
+  var background = DvtPlotAreaRenderer._getBackgroundShape(chart, availSpace);
 
+  var backgroundColor = DvtChartStyleUtils.getBackgroundColor(chart);
+  if (backgroundColor)
+    background.setSolidFill(backgroundColor);
+  else
+    background.setInvisibleFill(); // Always render a background plot area rectangle and save for interactivity
+
+  container.addChild(background);
+
+  // Reference Objects
+  if (options['xAxis']['referenceObjects'] || options['yAxis']['referenceObjects'] || options['y2Axis']['referenceObjects']) {
+    var clipGroup = DvtPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
+    DvtRefObjRenderer.renderBackgroundObjects(chart, clipGroup, availSpace);
+  }
+
+  // Draw area series behind the gridlines (because they would obscure the grids)
+  if (DvtChartTypeUtils.isBLAC(chart)) {
+    // Create area container for all BLAC types to allow delete animation from a chart with area to a chart without area
+    var areaContainer = new DvtContainer(chart.getCtx());
+    container.addChild(areaContainer);
+    chart.__setAreaContainer(areaContainer);
+
+    if (DvtChartTypeUtils.hasAreaSeries(chart))
+      DvtPlotAreaRenderer._renderAreas(chart, areaContainer, availSpace, false);
+  }
+};
+
+/**
+ * Helper function to create the background shape.
+ * @param {DvtChart} chart The chart being rendered.
+ * @param {DvtRectangle} availSpace The available space.
+ * @return {DvtShape} The background shape
+ * @private
+ */
+DvtPlotAreaRenderer._getBackgroundShape = function(chart, availSpace) {
   var background;
   var context = chart.getCtx();
   if (DvtChartTypeUtils.isPolar(chart)) {
@@ -21485,37 +21519,8 @@ DvtPlotAreaRenderer._renderBackgroundObjects = function(chart, container, availS
   }
   else
     background = new DvtRect(context, availSpace.x, availSpace.y, availSpace.w, availSpace.h);
-
-  var backgroundColor = DvtChartStyleUtils.getBackgroundColor(chart);
-  if (backgroundColor)
-    background.setSolidFill(backgroundColor);
-  else
-    background.setInvisibleFill(); // Always render a background plot area rectangle and save for interactivity
-
-  container.addChild(background);
-
-  // Associate with logical object to support DvtComponentUIEvent
-  var params = DvtChartEventManager.getUIEventParams(DvtChartConstants.PLOT_AREA);
-  chart.__getEventManager().associate(background, new DvtSimpleObjPeer(null, null, null, params));
-
-  // Reference Objects
-  if (options['xAxis']['referenceObjects'] || options['yAxis']['referenceObjects'] || options['y2Axis']['referenceObjects']) {
-    var clipGroup = DvtPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
-    DvtRefObjRenderer.renderBackgroundObjects(chart, clipGroup, availSpace);
-  }
-
-  // Draw area series behind the gridlines (because they would obscure the grids)
-  if (DvtChartTypeUtils.isBLAC(chart)) {
-    // Create area container for all BLAC types to allow delete animation from a chart with area to a chart without area
-    var areaContainer = new DvtContainer(context);
-    container.addChild(areaContainer);
-    chart.__setAreaContainer(areaContainer);
-
-    if (DvtChartTypeUtils.hasAreaSeries(chart))
-      DvtPlotAreaRenderer._renderAreas(chart, areaContainer, availSpace, false);
-  }
+  return background;
 };
-
 
 /**
  * Renders the major and minor ticks for the chart.
@@ -21710,19 +21715,31 @@ DvtPlotAreaRenderer._renderForegroundObjects = function(chart, container, availS
   // : Axis lines are generally rendered in the back of the foreground, but we render them after the
   // bars if only bar series are present.  We can't apply this fix with lines/areas, since the markers must appear over
   // the axis lines.
+  var options = chart.getOptions();
   var bBLAC = DvtChartTypeUtils.isBLAC(chart);
   var bBarSeries = DvtChartTypeUtils.hasBarSeries(chart);
   var bLineSeries = DvtChartTypeUtils.hasLineSeries(chart);
   var bStockSeries = DvtChartTypeUtils.hasCandlestickSeries(chart);
   var bLineWithAreaSeries = DvtChartTypeUtils.hasLineWithAreaSeries(chart);
-  var bAxisLinesInForeground = bBLAC && bBarSeries && !bLineSeries && !bLineWithAreaSeries && !DvtChartTypeUtils.isPolar(chart);
-  if (!bAxisLinesInForeground)
-    DvtPlotAreaRenderer._renderAxisLines(chart, container, availSpace);
 
   // Get container for clipping
   var clipGroup = DvtPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
 
-  // Data Objects
+  // Render axis lines after the clipGroup
+  DvtPlotAreaRenderer._renderAxisLines(chart, container, availSpace);
+
+  // plotArea border. We add it here to be above the clipGroup, but below the other foreground items
+  var plotAreaBorderColor = options['plotArea']['borderColor'];
+  var plotAreaBorderWidth = options['plotArea']['borderWidth'];
+  if (plotAreaBorderColor && plotAreaBorderWidth != 0) {
+    var plotAreaBorder = DvtPlotAreaRenderer._getBackgroundShape(chart, availSpace);
+    plotAreaBorder.setInvisibleFill();
+    plotAreaBorder.setSolidStroke(plotAreaBorderColor, null, plotAreaBorderWidth);
+    plotAreaBorder.setMouseEnabled(false);
+    container.addChild(plotAreaBorder);
+  }
+
+  // Data Objects for BLAC
   if (bBLAC) {
     // Areas were drawn in the background. Draw lineWithAreas, bars, and lines
     if (bLineWithAreaSeries)
@@ -21737,16 +21754,11 @@ DvtPlotAreaRenderer._renderForegroundObjects = function(chart, container, availS
     if (bStockSeries)
       DvtPlotAreaRenderer._renderStock(chart, clipGroup, availSpace);
 
-    // Render axis lines if not done previously
-    if (bAxisLinesInForeground)
-      DvtPlotAreaRenderer._renderAxisLines(chart, container, availSpace);
-  }
-  else if (DvtChartTypeUtils.isScatterBubble(chart)) {
+  } else if (DvtChartTypeUtils.isScatterBubble(chart)) {
     DvtPlotAreaRenderer._renderScatterBubble(chart, container, clipGroup, true, availSpace);
   }
 
   // Reference Objects
-  var options = chart.getOptions();
   if (options['xAxis']['referenceObjects'] || options['yAxis']['referenceObjects'] || options['y2Axis']['referenceObjects']) {
     clipGroup = DvtPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
     DvtRefObjRenderer.renderForegroundObjects(chart, clipGroup, availSpace);
@@ -21770,24 +21782,26 @@ DvtPlotAreaRenderer._renderForegroundObjects = function(chart, container, availS
  * @param {number} groupIndex The group of this data label.
  * @param {Color} dataColor The color of the data item this label is associated with.
  * @param {number} type (optional) Data label type: low, high, or value.
+ * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
  * @private
  */
-DvtPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds, seriesIndex, groupIndex, dataColor, type) {
+DvtPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds, seriesIndex, groupIndex, dataColor, type, isStackLabel) {
   if (DvtChartTypeUtils.isOverview(chart)) // no data label in overview
     return;
 
-  var labelString = DvtChartDataUtils.getDataLabel(chart, seriesIndex, groupIndex, type);
+  var labelString = DvtChartDataUtils.getDataLabel(chart, seriesIndex, groupIndex, type, isStackLabel);
+
   if (labelString == null)
     return;
 
-  var position = DvtChartStyleUtils.getDataLabelPosition(chart, seriesIndex, groupIndex, type);
+  var position = DvtChartStyleUtils.getDataLabelPosition(chart, seriesIndex, groupIndex, type, isStackLabel);
   if (position == 'none')
     return;
 
   var label = new DvtOutputText(chart.getCtx(), labelString, 0, 0);
   label.setMouseEnabled(false);
 
-  var style = DvtChartStyleUtils.getDataLabelStyle(chart, seriesIndex, groupIndex, dataColor, position, type);
+  var style = isStackLabel ? chart.getOptions()['styleDefaults']['stackLabelStyle'] : DvtChartStyleUtils.getDataLabelStyle(chart, seriesIndex, groupIndex, dataColor, position, type);
   label.setCSSStyle(style);
 
   label.setY(dataItemBounds.y + dataItemBounds.h / 2);
@@ -21866,7 +21880,7 @@ DvtPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds
  * @private
  */
 DvtPlotAreaRenderer._renderDataLabelForMarker = function(chart, container, marker) {
-  var logicalObject = chart.__getEventManager().getLogicalObject(marker);
+  var logicalObject = chart.getEventManager().getLogicalObject(marker);
   var seriesIndex = logicalObject.getSeriesIndex();
   var groupIndex = logicalObject.getGroupIndex();
 
@@ -22003,10 +22017,9 @@ DvtPlotAreaRenderer._getMarkerInfo = function(chart, seriesIndex, groupIndex, av
   var numGroups = DvtChartDataUtils.getGroupCount(chart);
   var bMarkerDisplayed = DvtChartStyleUtils.isMarkerDisplayed(chart, seriesIndex, groupIndex);
   if (!bMarkerDisplayed) {
-    if (chart.getSkin() != DvtCSSStyle.SKIN_NEXT && DvtChartAxisUtils.isMixedFrequency(chart)) {
+    if (options['_environment'] != 'jet' && DvtChartAxisUtils.isMixedFrequency(chart)) {
       // For mixed frequency in ADF and MAF, points are connected across nulls.
       // Markers only need to be drawn if there's only a single point.
-      // TODO: Currently assumes that only JET is on NEXT skin. Need to use a proper JET flag.
       if (numGroups < 2)
         bMarkerDisplayed = true;
     }
@@ -22285,6 +22298,7 @@ DvtPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
   var bStock = DvtChartTypeUtils.isStock(chart);
   var bPixelSpacing = (DvtChartStyleUtils.getBarSpacing(chart) == 'pixel');
   var isR2L = DvtAgent.isRightToLeft(chart.getCtx());
+  var hasStackLabel = DvtChartStyleUtils.isStackLabelRendered(chart);
 
   // Iterate through the data
   for (var groupIndex = 0; groupIndex < DvtChartDataUtils.getGroupCount(chart); groupIndex++) {
@@ -22372,6 +22386,11 @@ DvtPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
       if (!(bStock && seriesIndex != 0)) {
         // TODO: change to formal location for displayed data
         chart._currentMarkers.push(markers);
+      }
+
+      // Render stack cumulative labels
+      if (hasStackLabel && DvtChartDataUtils.isBarStackLabeled(chart, seriesIndex, groupIndex)) {
+        DvtPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, null, true);
       }
     }
   }
@@ -23245,7 +23264,7 @@ DvtRefObjRenderer._renderObjectsForAxis = function(chart, container, plotAreaBou
   for (var i = 0; i < objects.length; i++) {
     var refObj = objects[i];
 
-    if (!DvtChartRefObjUtils.isObjectRendered(refObj)) {
+    if (!DvtChartRefObjUtils.isObjectRendered(chart, refObj)) {
       continue;
     }
 
@@ -23270,7 +23289,7 @@ DvtRefObjRenderer._renderObjectsForAxis = function(chart, container, plotAreaBou
     var axisType = (axis == chart.xAxis) ? 'xAxis' : ((axis == chart.yAxis) ? 'yAxis' : 'y2Axis');
     var refObjPeer = new DvtRefObjPeer(chart, [shape], refObj, i, axisType);
     chart.registerObject(refObjPeer);
-    chart.__getEventManager().associate(shape, refObjPeer);
+    chart.getEventManager().associate(shape, refObjPeer);
 
     // Add the shape to the container
     container.addChild(shape);
@@ -23524,7 +23543,7 @@ DvtRefObjRenderer._getAxisCoord = function(chart, axis, value) {
 
   return null;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -23582,7 +23601,7 @@ DvtSparkChart.prototype.Init = function(context, callback, callbackObj) {
   this._eventManager.addListeners(this);
 
   // Create the underlying chart instance for the component
-  this._chart = DvtChart.newInstance(context);
+  this._chart = DvtChart.newInstance(context, this._onRenderEnd, this);
   this.addChild(this._chart);
 
   // Set up keyboard handler on non-touch devices
@@ -23596,7 +23615,7 @@ DvtSparkChart.prototype.Init = function(context, callback, callbackObj) {
   this.addChild(this._tooltipMask);
 
   // Make sure the object has an id for clipRect naming
-  this.setId('sparkChart' + 1000 + Math.floor(Math.random() * 1000000000));
+  this.setId('sparkChart' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 };
 
 
@@ -23643,6 +23662,8 @@ DvtSparkChart.prototype.render = function(options, width, height)
     this.Width = width;
     this.Height = height;
   }
+  this._eventReceived = false;
+  this._isDoneRendering = false;
 
   // Render the spark chart
   DvtSparkChartRenderer.render(this, this.Width, this.Height);
@@ -23664,8 +23685,25 @@ DvtSparkChart.prototype.render = function(options, width, height)
   }
 
   this.UpdateAriaAttributes();
+
+  if (this._eventReceived) {
+    this.RenderComplete();
+  }
+  this._isDoneRendering = true;
 };
 
+/**
+ * Sending the ready event at the end of a render.
+ * @param {DvtBaseEvent} event
+ * @private
+ */
+DvtSparkChart.prototype._onRenderEnd = function(event) {
+  this._eventReceived = true;
+
+  if (event.getType() == DvtReadyEvent.TYPE && this._isDoneRendering) {
+    this.RenderComplete();
+  }
+};
 
 /**
  * Returns the underlying chart instance for the component.
@@ -23713,7 +23751,7 @@ DvtSparkChart.prototype.UpdateAriaAttributes = function() {
 /**
  * @override
  */
-DvtSparkChart.prototype.__getEventManager = function() {
+DvtSparkChart.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
@@ -23828,7 +23866,7 @@ DvtSparkChartDefaults.VERSION_1 = {
  * @constructor
  */
 var DvtSparkChartEventManager = function(sparkChart) {
-  this.Init(sparkChart.getCtx(), sparkChart.__dispatchEvent, sparkChart);
+  this.Init(sparkChart.getCtx(), sparkChart.dispatchEvent, sparkChart);
   this._sparkChart = sparkChart;
 };
 

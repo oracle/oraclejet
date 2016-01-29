@@ -7108,6 +7108,10 @@ html[dir="rtl"] .oj-legend-section-close-icon.oj-active {
   color: #252525;
   font-weight: bold; }
 
+.oj-chart-stack-label {
+  font-size: 0.857rem;
+  font-weight: bold; }
+
 .oj-chart-pie-center-label,
 .oj-chart-xaxis-title,
 .oj-chart-yaxis-title,
@@ -7207,10 +7211,13 @@ html[dir="rtl"] .oj-legend-section-close-icon.oj-active {
   font-size: 0.857rem; }
 
 .oj-nbox-cell {
-  background-color: #e5e5e5; }
+  background-color: #e9e9e9; }
+
+.oj-nbox-cell.oj-maximized {
+  background-color: #dddddd; }
 
 .oj-nbox-cell.oj-minimized {
-  background-color: #f0f0f0; }
+  background-color: #e9e9e9; }
 
 .oj-nbox-cell-label {
   color: #333333;
@@ -7239,8 +7246,8 @@ html[dir="rtl"] .oj-legend-section-close-icon.oj-active {
   font-size: 0.857rem; }
 
 .oj-nbox-dialog {
-  background-color: #e5e5e5;
-  border-color: #c4ced7; }
+  background-color: #e9e9e9;
+  border-color: #bcc7d2; }
 
 .oj-nbox-dialog-label {
   color: #333333;

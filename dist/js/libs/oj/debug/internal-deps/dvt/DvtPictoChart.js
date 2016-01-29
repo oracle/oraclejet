@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -105,8 +105,10 @@ DvtPictoChart.prototype.render = function(options, width, height) {
     this._container.removeChild(this._emptyText);
     this._emptyText = null;
   }
-  if (this._animation)
+  if (this._animation) {
+    this._animationStopped = true;
     this._animation.stop();
+  }
 
   // Update if a new options object has been provided or initialize with defaults if needed
   this.SetOptions(options);
@@ -189,8 +191,6 @@ DvtPictoChart.prototype.render = function(options, width, height) {
   }
   else
     this._onRenderEnd();
-
-  this.UpdateAriaAttributes();
 };
 
 /**
@@ -256,6 +256,12 @@ DvtPictoChart.prototype._onRenderEnd = function() {
 
   // Set initial highlighting
   DvtCategoryRolloverHandler.highlight(this.Options['highlightedCategories'], this._items, this.Options['highlightMatch'] == 'any');
+
+  this.UpdateAriaAttributes();
+
+  if (!this._animationStopped)
+    this.RenderComplete();
+  this._animationStopped = null;
 };
 
 /**
@@ -528,7 +534,7 @@ DvtPictoChartAutomation.prototype.getItemCount = function() {
  * @constructor
  */
 var DvtPictoChartEventManager = function(picto) {
-  this.Init(picto.getCtx(), picto.__dispatchEvent, picto);
+  this.Init(picto.getCtx(), picto.dispatchEvent, picto);
   this._picto = picto;
 };
 
@@ -616,8 +622,11 @@ DvtPictoChartEventManager.prototype.HandleTouchDblClickInternal = function(event
     return;
 
   // Only double click to drill if selectable. Otherwise, drill with single click.
-  if (obj.isSelectable && obj.isSelectable())
+  if (obj.isSelectable && obj.isSelectable()) {
+    event.preventDefault();
+    event.stopPropagation();
     this.processDrillEvent(obj);
+  }
 };
 
 /**
@@ -1228,7 +1237,7 @@ DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable
       (event.keyCode == DvtKeyboardEvent.DOWN_ARROW && !isOriginBottom);
 
   var navigableItems = picto.getItems();
-  var nextIdx = navigableItems.indexOf(currentNavigable) + (isForward ? 1 : -1);
+  var nextIdx = DvtArrayUtils.getIndex(navigableItems, currentNavigable) + (isForward ? 1 : -1);
   if (nextIdx < navigableItems.length && nextIdx >= 0)
     return navigableItems[nextIdx];
   else

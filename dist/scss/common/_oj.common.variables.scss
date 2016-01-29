@@ -239,7 +239,7 @@ $fontFamily: null !default;
 // you can still use rem's if you can set the font size on
 // the html element with your own class or inline style.
 //
-// The browser default font size is 16px 
+// The browser default font size is 16px
 $rootFontSize:    null !default;
 
 $fontSize:         null !default;
@@ -292,7 +292,7 @@ $iconColorDisabled: $iconColorDefault !default;
 //----------------------------------
 $borderColorError:   #dd6666 !default;
 $borderColorWarning: #ffd699 !default;
-$helpBorderColor: lighten($formControlLabelColor, 1%) !default; 
+$helpBorderColor: lighten($formControlLabelColor, 1%) !default;
 
 
 // messaging
@@ -377,7 +377,7 @@ $wrappableMarginBottom:  4px !default;
 // general padding and margin
 //----------------------------------
 // these are general variables to separate
-// content on the page, for example panels. 
+// content on the page, for example panels.
 // They are generally used to set margin or padding
 $spacingSmall:   5px !default;
 $spacingMedium:  10px !default;
@@ -396,8 +396,8 @@ $animationDurationLong: .5s !default;
 
 // Default animation types for the oj.ModuleAnimations.drillIn and drillOut implementations,
 // which can be specified on the "animation" option of ojModule binding.
-// These variables can be overriden in theme files to provide different 
-// animation types.  Valid values are the names of specific animation 
+// These variables can be overriden in theme files to provide different
+// animation types.  Valid values are the names of specific animation
 // implementations in oj.ModuleAnimations such as coverStart, coverUp,
 // revealEnd, revealDown, zoomIn, zoomOut.
 $animationDrillInDefault:   coverStart  !default;
@@ -974,11 +974,11 @@ $formControlLabelInlineMarginTop:  .55em !default;
 // form control dimensions
 //----------------------------------
 
-// $formControlInput* variables apply to 
+// $formControlInput* variables apply to
 // input style form controls, like input text
 $formControlInputHeight:      $buttonHeight !default; // make the form controls and buttons the same height so they line up nicely
 
-// $formControlTrigger* variables apply to 
+// $formControlTrigger* variables apply to
 // trigger style form controls, which triggers some type of picker, like a select or date
 $formControlTriggerHeight: $formControlInputHeight !default;
 
@@ -1013,12 +1013,12 @@ $formControlTextAlign: null !default;
 $formControlBgColor:             $background1Color !default;
 $formControlBorderColor:         $border4Color !default;
 
-// $formControlInput* variables apply to 
+// $formControlInput* variables apply to
 // input style form controls, like input text
 $formControlInputValueColor:          $textColor !default;
 $formControlInputFontSize:            $fontSize !default;
 
-// $formControlTrigger* variables apply to 
+// $formControlTrigger* variables apply to
 // trigger style form controls, triggers some type of picker, like a select or date
 $formControlTriggerValueColor: $formControlInputValueColor !default;
 $formControlTriggerFontSize:  $fontSize !default;
@@ -1455,7 +1455,7 @@ $dataGridSelectionAffordanceBorder:         $interaction1Color !default;
 $tableRowHeight:                            2.75em !default;
 // Table Headers
 $tableHeaderPadding:                        1em !default;
-$tableHeaderBorderColor:                    $border4Color !default;
+$tableHeaderBorderColor:                    $border4Color !default; 
 // Table Cells
 $tableCellPadding:                          $tableHeaderPadding;
 // Table Display Option Default
@@ -1611,9 +1611,9 @@ $navigationListIconOnlyIconColorSelected:   $interaction1Color !default;
 
 //----------Start of NavigationList(vertical) icon only variables
 // values could be "circle"(alta default) or "none"(for android/windows/ios)
-$navigationListIconOnlyStyle:       none !default;
+$navigationListIconOnlyStyle:               none !default;
 //Padding between items
-$navigationListIconOnlyItemPadding: null !default;
+$navigationListIconOnlyItemPadding:         null !default;
 //Only applicable when icon only style is "none".
 $navigationListIconOnlyIconStartEndPadding: 16px !default;
 
@@ -1684,8 +1684,8 @@ $navigationBarItemIconColorDefault: $navigationListIconColorDefault !default;
 $navigationBarItemDividerColor: $border2Color !default;
 
 // Selected
-$navigationBarItemBgColorSelected: null !default;
-$navigationBarItemBorderColorSelected: $interaction1Color !default;
+$navigationBarItemBgColorSelected:      null !default;
+$navigationBarItemBorderColorSelected:  $interaction1Color !default;
 
 //Sizing
 $navigationBarFontSize: 0.812rem !default;// 10px when root font is 16px
@@ -1881,9 +1881,10 @@ $dvtDiagramLinkColor: #9bb2c7 !default;
 
 // nbox
 //----------------------------------
-$dvtNBoxCellBgColor: #e5e5e5 !default;
-$dvtNBoxCellBgColorMinimized: $background4Color !default;
-$dvtNBoxDialogBorderColor: $border3Color !default;
+$dvtNBoxCellBgColor: #e9e9e9 !default;
+$dvtNBoxCellBgColorMinimized: $dvtNBoxCellBgColor !default;
+$dvtNBoxCellBgColorMaximized: $dvtComponentBg2Color !default;
+$dvtNBoxDialogBorderColor: #bcc7d2 !default;
 
 // pictochart
 //----------------------------------
@@ -1953,22 +1954,22 @@ $dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 // css property. In browsers where we feel the performance is unacceptably slow
 // we will put the following classes on the html element.
 //
-//   - oj-slow-borderradius
-//   - oj-slow-boxshadow,
-//   - oj-slow-cssgradients
+//       - oj-slow-borderradius
+//       - oj-slow-boxshadow,
+//       - oj-slow-cssgradients
 //
-// This is similar to what modernizr does with classes like no-borderradius
+//     This is similar to what modernizr does with classes like no-borderradius
 // browsers that don't support border radius.
 //
 // In the CSS you may see code like this:
 //
-//  .oj-button {
-//      border-radius: 2px;
-//  }
+//      .oj-button {
+//          border-radius: 2px;
+//      }
 //
-//  html.oj-slow-borderradius .oj-button {
-//      border-radius: 0;
-//  }
+//      html.oj-slow-borderradius .oj-button {
+//          border-radius: 0;
+//      }
 //
 //
 // The main reason we need this is that IE has two rendering modes,

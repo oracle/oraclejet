@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
 //          for example alta/widgets/_oj.alta.dvt.nbox.scss
 // !!!
 @import "../../utilities/oj.utilities";
@@ -34,6 +34,10 @@
       background-color: $dvtNBoxCellBgColor;
     }
 
+    .oj-nbox-cell.oj-maximized {
+      background-color: $dvtNBoxCellBgColorMaximized;
+    }
+
     // Cells are shown in minimized state when any other node is maximized
     .oj-nbox-cell.oj-minimized {
       background-color: $dvtNBoxCellBgColorMinimized;
@@ -41,20 +45,20 @@
 
     .oj-nbox-cell-label {
       color: $textColor;
-      font-size: $fontSize;    
+      font-size: $fontSize;
       font-weight: $headerFontWeight;
     }
 
     // Cell node count in the body of the cell.  Shown when nbox is too
     // small to show all of the nodes.
     .oj-nbox-cell-countlabel {
-      color: $textColor;  
+      color: $textColor;
     }
 
     // Cell node count in the header of the cell.  Shown when specified
     // in the nbox options.
     .oj-nbox-cell-countlabel.oj-nbox-cell-header {
-      font-size: $fontSize;          
+      font-size: $fontSize;
     }
 
     .oj-nbox-node {
@@ -74,7 +78,7 @@
     }
 
     .oj-nbox-node-secondarylabel {
-      font-size: $smallFontSize;    
+      font-size: $smallFontSize;
     }
 
     // Group node label
@@ -83,7 +87,7 @@
 
     // Dialog is shown when inspecting a group node
     .oj-nbox-dialog {
-      background-color: $dvtNBoxCellBgColor;    
+      background-color: $dvtNBoxCellBgColor;
       border-color: $dvtNBoxDialogBorderColor;
     }
 
@@ -96,7 +100,7 @@
     // Dialog node count in the header of the dialog.  Shown by default.
     .oj-nbox-dialog-countlabel {
       font-size: $fontSize;
-      font-weight: $headerFontWeight;    
+      font-weight: $headerFontWeight;
     }
   }
 }

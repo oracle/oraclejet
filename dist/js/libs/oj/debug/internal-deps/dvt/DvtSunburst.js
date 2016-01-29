@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtBaseTreeView'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -181,7 +181,7 @@ DvtSunburst.prototype.Render = function(container, bounds) {
     container.addChild(rotationShape);
 
     // Associate for event handling
-    this.__getEventManager().associate(rotationShape, new DvtBaseTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
+    this.getEventManager().associate(rotationShape, new DvtBaseTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
   }
 
   // Create a node container, which will contain all nodes.
@@ -358,7 +358,7 @@ DvtSunburst.prototype.__setRotationAnchor = function(angle) {
   this.addChild(this._rotationMask);
 
   // Associate for event handling
-  this.__getEventManager().associate(this._rotationMask, new DvtBaseTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
+  this.getEventManager().associate(this._rotationMask, new DvtBaseTreePeer(null, DvtSunburstEventManager.ROTATION_ID));
 };
 
 
@@ -384,7 +384,7 @@ DvtSunburst.prototype.__rotate = function(newAngle) {
 
   // Fire the intermediate rotation event
   var degrees = 360 - Math.round(this._startAngle * 180 / Math.PI);
-  this.__dispatchEvent(new DvtSunburstRotationEvent(degrees, false));
+  this.dispatchEvent(new DvtSunburstRotationEvent(degrees, false));
 };
 
 
@@ -401,8 +401,8 @@ DvtSunburst.prototype.__endRotation = function() {
 
   // Fire events to update ADF state, convert to degrees API (reversed from SVG)
   var degrees = 360 - Math.round(this._startAngle * 180 / Math.PI);
-  this.__dispatchEvent(new DvtSunburstRotationEvent(degrees, false));
-  this.__dispatchEvent(new DvtSunburstRotationEvent(degrees, true));
+  this.dispatchEvent(new DvtSunburstRotationEvent(degrees, false));
+  this.dispatchEvent(new DvtSunburstRotationEvent(degrees, true));
 };
 
 
@@ -421,14 +421,14 @@ DvtSunburst.prototype.__expandCollapseNode = function(node, bDisclosed) {
     var nodeOptions = node.getOptions();
     if (nodeOptions['nodes'] && nodeOptions['nodes'].length > 0)
       this.render(this.getOptions());
-    this.__dispatchEvent(new DvtSunburstExpandCollapseEvent(DvtSunburstExpandCollapseEvent.TYPE_EXPAND, node.getId()));
+    this.dispatchEvent(new DvtSunburstExpandCollapseEvent(DvtSunburstExpandCollapseEvent.TYPE_EXPAND, node.getId()));
   }
   else {
     // Collapse: Collapse is handled within the component by updating the options and
     // re-rendering.  The event is fired to the peer, which will keep track of the
     // state and send a server event if a listener is registered.
     this.render(this.getOptions());
-    this.__dispatchEvent(new DvtSunburstExpandCollapseEvent(DvtSunburstExpandCollapseEvent.TYPE_COLLAPSE, node.getId()));
+    this.dispatchEvent(new DvtSunburstExpandCollapseEvent(DvtSunburstExpandCollapseEvent.TYPE_COLLAPSE, node.getId()));
   }
 };
 
@@ -1180,7 +1180,7 @@ DvtSunburstNode.prototype._createShapeNode = function() {
   var shape = new DvtPath(this.getView().getCtx(), cmd);
 
   // Add pointers between this node and the shape
-  this.getView().__getEventManager().associate(shape, this);
+  this.getView().getEventManager().associate(shape, this);
 
   // Apply style properties
   shape.setAlpha(this.getAlpha());
@@ -1286,7 +1286,7 @@ DvtSunburstNode.prototype._createExpandCollapseButton = function(container) {
 
   // Associate a blank peer so the button is not treated as part of the node
   var tooltip = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, this.isDisclosed() ? 'COLLAPSE' : 'EXPAND');
-  this.getView().__getEventManager().associate(button, new DvtBaseTreePeer(this, this.getId(), tooltip));
+  this.getView().getEventManager().associate(button, new DvtBaseTreePeer(this, this.getId(), tooltip));
 
   return button;
 };

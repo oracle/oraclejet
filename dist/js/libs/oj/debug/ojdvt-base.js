@@ -105,9 +105,24 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
   return oj.ShapeAttributeGroupHandler._attributeValues.slice();
 }
 /**
- * <p>This component should be bound to an HTML div element, and the SVG DOM that it generates should be treated as a 
+ * Defines whether the component will automatically render in response to
+ * changes in size. If set to <code class="prettyprint">off</code>, then the
+ * application is responsible for calling <code class="prettyprint">refresh</code>
+ * to render the component at the new size.
+ * @expose
+ * @name trackResize
+ * @memberof oj.dvtBaseComponent
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "on"
+ * @ojvalue {string} "off"
+ * @default <code class="prettyprint">"on"</code>
+ */
+
+/**
+ * <p>This component should be bound to an HTML div element, and the SVG DOM that it generates should be treated as a
  * black box, as it is subject to change.  This component should not be extended.</p>
- * 
+ *
  * @ojfragment warning
  * @memberof oj.dvtBaseComponent
  */
@@ -117,11 +132,11 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
- * 
- * <p>The application is responsible for populating the shortDesc value in the 
- * component options object with meaningful descriptors when the component does 
+ *
+ * <p>The application is responsible for populating the shortDesc value in the
+ * component options object with meaningful descriptors when the component does
  * not provide a default descriptor.</p>
- * 
+ *
  * @ojfragment a11y
  * @memberof oj.ojChart
  */
@@ -131,14 +146,14 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
- * 
- * <p>The application is responsible for populating the shortDesc value in the 
- * component options object with meaningful descriptors when the component does 
- * not provide a default descriptor.  Since component terminology for keyboard 
- * and touch shortcuts can conflict with those of the application, it is the 
- * application's responsibility to provide these shortcuts, possibly via a help 
+ *
+ * <p>The application is responsible for populating the shortDesc value in the
+ * component options object with meaningful descriptors when the component does
+ * not provide a default descriptor.  Since component terminology for keyboard
+ * and touch shortcuts can conflict with those of the application, it is the
+ * application's responsibility to provide these shortcuts, possibly via a help
  * popup.</p>
- * 
+ *
  * @ojfragment a11yKeyboard
  * @memberof oj.dvtBaseComponent
  */
@@ -148,13 +163,26 @@ oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
  *   Reading direction
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#rtl-section"></a>
  * </h3>
- * 
+ *
  * <p>
- *   As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the 
+ *   As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the
  *   component must be <code class="prettyprint">refresh()</code>ed.
  * </p>
- * 
+ *
  * @ojfragment rtl
+ * @memberof oj.dvtBaseComponent
+ */
+
+/**
+ * <h4>Tracking Resize</h4>
+ * <p>By default, the component will track resizes and render at the new size. This functionality adds a small
+ * overhead to the initial render for simple components like gauges or spark charts, which become noticable when
+ * using large numbers of these simple components. To disable resize tracking, set <code class="prettyprint">trackResize</code>
+ * to <code class="prettyprint">off</code>. The application can manually request a re-render at any time by calling
+ * the <code class="prettyprint">refresh</code> function.
+ * </p>
+ *
+ * @ojfragment trackResize
  * @memberof oj.dvtBaseComponent
  */
 
@@ -554,8 +582,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Load component resources
     this._LoadResources();
 
-    // Pass the environment through the options for JET specific behavior
+    // Pass the environment and widget constructor through the options for JET specific behavior
     this.options['_environment'] = 'jet';
+    this.options['_widgetConstructor'] = oj.Components.getWidgetConstructor(this.element);
   },
 
   //** @inheritdoc */
@@ -569,9 +598,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Render the component
     this._Render();
 
-    // Add resize listener with 250ms delay
-    this._resizeListener = this._handleResize.bind(this);
-    oj.DomUtils.addResizeListener(this.element[0], this._resizeListener, 250);
+    // Resize Listener Support
+    if(this.options['trackResize'] != 'off') {
+      this._addResizeListener();
+    }
   },
 
   //** @inheritdoc */
@@ -674,7 +704,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _GetChildStyleClasses : function() {
     var styleClasses = {};
-    styleClasses['oj-dvt-status-message'] = {'path': '_statusMessageStyle', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-dvt-no-data-message'] = {'path': '_statusMessageStyle', 'property': 'CSS_TEXT_PROPERTIES'};
     return styleClasses;
   },
 
@@ -793,7 +823,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this._component.destroy();
 
     // Remove DOM resize listener
-    oj.DomUtils.removeResizeListener(this.element[0], this._resizeListener);
+    this._removeResizeListener();
 
     // Remove children and clean up DOM changes
     this.element.children().remove();
@@ -813,6 +843,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   _setOptions : function(options, flags) {
     // Call the super to update the property values
     this._superApply(arguments);
+
+    // Add or remove the resize tracking if changed.
+    var trackResize = this.options['trackResize'];
+    if(trackResize == 'off' && this._resizeListener)
+      this._removeResizeListener();
+    else if(trackResize != 'off' && !this._resizeListener)
+      this._addResizeListener();
 
     // Render the component with the updated options.
     if(this._bUserDrivenChange) {
@@ -884,6 +921,40 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else if (this.options['contextMenu'] && type === dvt.DvtComponentTouchEvent.TOUCH_HOVER_END_TYPE) {
       this._OpenContextMenu($.Event(event.getNativeEvent()), 'touch');
     }
+    else if (type === 'ready' && this._numDeferredObjs === 0) {
+      if (this._promiseResolve) {
+        this._promiseResolve(true);
+      }
+      this._ready = true;
+      this._promiseResolve = null;
+      this._promise = null;
+    }
+  },
+
+  /**
+   * Adds a resize listener for this component.
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _addResizeListener : function() {
+    if(!this._resizeListener) {
+      this._resizeListener = this._handleResize.bind(this);
+      oj.DomUtils.addResizeListener(this.element[0], this._resizeListener, 250);
+    }
+  },
+
+  /**
+   * Removes the resize listener for this component.
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _removeResizeListener : function() {
+    if(this._resizeListener) {
+      oj.DomUtils.removeResizeListener(this.element[0], this._resizeListener);
+      this._resizeListener = null;
+    }
   },
 
   /**
@@ -920,6 +991,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _Render : function(isResize) {
+    // Starting a new render- no longer ready	
+    this._ready = false;
+    
     // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
     // getBBox calls will not return the correct values.
     // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
@@ -1299,12 +1373,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Thus we should remove the resize listener temporarily.
     var bRemoveResizeListener = this._IsFlowingLayoutSupported() && this._resizeListener;
     if (bRemoveResizeListener)
-      oj.DomUtils.removeResizeListener(this.element[0], this._resizeListener);
+      this._removeResizeListener();
 
     this._component.render(options, this._width, this._height);
 
     if (bRemoveResizeListener)
-      oj.DomUtils.addResizeListener(this.element[0], this._resizeListener, 250);
+      this._addResizeListener();
   },
 
   /**
@@ -1332,6 +1406,27 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _IsFlowingLayoutSupported : function() {
     return false;
+  },
+
+  /**
+   * Returns a promise that is resolved when the component is finished rendering.
+   * This can be used to determine when it is okay to call automation and other APIs on the component.
+   * @returns {Promise}
+   * @private
+   * @expose
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  whenReady : function() {
+    if (this._ready)
+      return Promise.resolve(true);
+    if (!this._promise) {
+      var self = this;
+      this._promise = new Promise(function(resolve) {
+        self._promiseResolve = resolve;
+      });
+    }
+    return this._promise;
   }
 
 }, true);

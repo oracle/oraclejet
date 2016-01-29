@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -55,7 +55,7 @@ DvtLegend.getDefaults = function(skin)
  */
 DvtLegend.prototype.Init = function(context, callback, callbackObj) {
   DvtLegend.superclass.Init.call(this, context, callback, callbackObj);
-  this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));
+  this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
   // Create the defaults object
   this.Defaults = new DvtLegendDefaults();
@@ -212,14 +212,14 @@ DvtLegend.prototype.processEvent = function(event, source) {
 
   // Dispatch the event to the callback if it originated from this component or it is a popup/rollover event.
   if (this == source || type == DvtShowPopupEvent.TYPE || type == DvtHidePopupEvent.TYPE) {
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 };
 
 /**
  * @override
  */
-DvtLegend.prototype.__getEventManager = function() {
+DvtLegend.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
@@ -447,35 +447,6 @@ DvtLegend.prototype.isNavigable = function() {
   return this._navigablePeers.length > 0;
 };
 /**
- * Legend Constants
- * @class
- * @export
- */
-var DvtLegendConstants = {};
-
-DvtObj.createSubclass(DvtLegendConstants, DvtObj, 'DvtLegendConstants');
-
-
-/**
- * @const
- * @export
- */
-DvtLegendConstants.BACKGROUND = 'background';
-
-
-/**
- * @const
- * @export
- */
-DvtLegendConstants.LEGEND_ITEM = 'legendItem';
-
-
-/**
- * @const
- * @export
- */
-DvtLegendConstants.TITLE = 'title';
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtLegendAutomation
  *  @param {DvtLegend} dvtComponent
@@ -498,7 +469,7 @@ DvtObj.createSubclass(DvtLegendAutomation, DvtAutomation, 'DvtLegendAutomation')
  * @override
  */
 DvtLegendAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var logicalObj = this._legend.__getEventManager().GetLogicalObject(displayable);
+  var logicalObj = this._legend.getEventManager().GetLogicalObject(displayable);
   if (logicalObj && (logicalObj instanceof DvtLegendObjPeer)) {
     var item = logicalObj.getData();
     var indexList = this._getIndicesFromItem(item, this._options);
@@ -830,32 +801,6 @@ var DvtLegendEventManager = function(legend) {
 
 DvtObj.createSubclass(DvtLegendEventManager, DvtEventManager, 'DvtLegendEventManager');
 
-
-/**
- * Returns the parameters for the DvtComponentUIEvent for an object with the specified arguments.
- * @param {string} type The type of object that was the target of the event.
- * @param {object=} id The id of the object, if one exists.
- * @return {object}
- */
-DvtLegendEventManager.getUIEventParams = function(type, id) {
-  return {'type': type, 'id': id};
-};
-
-
-/**
- * @override
- */
-DvtLegendEventManager.prototype.FireUIEvent = function(type, logicalObj) {
-  var params = null;
-  if (logicalObj instanceof DvtSimpleObjPeer && logicalObj.getParams() != null)
-    params = logicalObj.getParams();
-  else if (logicalObj instanceof DvtLegendObjPeer)
-    params = DvtLegendEventManager.getUIEventParams(DvtLegendConstants.LEGEND_ITEM, logicalObj.getId());
-
-  this.FireEvent(new DvtComponentUIEvent(type, params), this._legend);
-};
-
-
 /**
  * @override
  */
@@ -867,7 +812,7 @@ DvtLegendEventManager.prototype.OnClick = function(event) {
     return;
 
   var hideShow = this.processHideShowEvent(obj);
-  var action = this.processActionEvent(obj);
+  var action = this.handleClick(obj, event);
 
   // If a hide/show or action occurs, the event should not bubble.
   if (hideShow || action)
@@ -911,10 +856,11 @@ DvtLegendEventManager.prototype.HandleTouchClickInternal = function(evt) {
     return;
 
   // : if hideAndShow/action is enabled, it takes precedence over series highlighting
+  // action is handled in handleClick
   var touchEvent = evt.touchEvent;
   var hideShow = this.processHideShowEvent(obj);
-  var action = this.processActionEvent(obj);
-  if ((hideShow || action) && touchEvent)
+  var processEvt = this.handleClick(obj, event);
+  if ((hideShow || processEvt) && touchEvent)
     touchEvent.preventDefault();
 };
 
@@ -952,7 +898,7 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
   var id = categories[0];
   var event;
   if (DvtLegendRenderer.isCategoryHidden(category, this._legend)) {
-    hiddenCategories.splice(hiddenCategories.indexOf(category), 1);
+    hiddenCategories.splice(DvtArrayUtils.getIndex(hiddenCategories, category), 1);
     event = new DvtCategoryHideShowEvent(DvtCategoryHideShowEvent.TYPE_SHOW, id);
   } else {
     hiddenCategories.push(category);
@@ -970,11 +916,12 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
 
 
 /**
- * Processes an action on the specified legend item.  Returns true if an action event is fired.
+ * Helper for processing click event. Handles action, drilling and section collapse.  Returns true if click is handled.
  * @param {DvtLegendObjPeer} obj The legend item that was clicked.
+ * @param {DvtBaseEvent} event
  * @return {boolean} True if an event was fired.
  */
-DvtLegendEventManager.prototype.processActionEvent = function(obj) {
+DvtLegendEventManager.prototype.handleClick = function(obj, event) {
   if (obj && obj.getAction && obj.getAction()) {
     this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()), this._legend);
     return true;
@@ -984,6 +931,12 @@ DvtLegendEventManager.prototype.processActionEvent = function(obj) {
   if (obj instanceof DvtLegendObjPeer && obj.isDrillable()) {
     var id = obj.getId();
     this.FireEvent(new DvtDrillEvent(id, id, null), this._legend);
+    return true;
+  }
+
+  var params = obj instanceof DvtSimpleObjPeer ? obj.getParams() : null;
+  if (params && params['type'] == 'title' && params['isCollapsible']) {
+    this.toggleSectionCollapse(event, params['id']);
     return true;
   }
 
@@ -1012,16 +965,25 @@ DvtLegendEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOve
 };
 
 /**
- * Collapses or expands a legend section.
+ * Collapses or expands a legend section when collapse button is clicked.
  * @param {DvtBaseEvent} event
  * @param {DvtButton} button The button that calls the method.
  */
 DvtLegendEventManager.prototype.onCollapseButtonClick = function(event, button) {
   // Find the section based on the buttonId, which is an array of section indices
   var buttonId = button.getId();
+  this.toggleSectionCollapse(event, buttonId);
+};
+
+/**
+ * Collapses or expands a legend section.
+ * @param {DvtBaseEvent} event
+ * @param {Number} sectionIdArray The id of the section.
+ */
+DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionIdArray) {
   var section = this._legend.getOptions();
-  for (var i = 0; i < buttonId.length; i++)
-    section = section['sections'][buttonId[i]];
+  for (var i = 0; i < sectionIdArray.length; i++)
+    section = section['sections'][sectionIdArray[i]];
 
   // Expand or collapse the section
   section['expanded'] = (section['expanded'] == 'off') ? 'on' : 'off';
@@ -1029,7 +991,8 @@ DvtLegendEventManager.prototype.onCollapseButtonClick = function(event, button) 
   // Set the keyboard focus on a mouse click
   if (event.type == DvtMouseEvent.CLICK) {
     var peer = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
-    this.setFocusObj(peer.getNextNavigable(event));
+    if (peer.getNextNavigable)
+      this.setFocusObj(peer.getNextNavigable(event));
   }
 
   // Stores the current keyboard focus
@@ -1110,7 +1073,7 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
     else if (keyCode == DvtKeyboardEvent.ENTER || keyCode == DvtKeyboardEvent.SPACE) {
       // Process driling and action events if enter
       if (keyCode == DvtKeyboardEvent.ENTER) {
-        this._eventManager.processActionEvent(currentNavigable);
+        this._eventManager.handleClick(currentNavigable, event);
       }
 
       if (isButton)
@@ -1206,7 +1169,7 @@ DvtLegendObjPeer.associate = function(displayables, legend, item, tooltip, datat
 
   // Finally associate using the event manager
   for (var i = 0; i < displayables.length; i++)
-    legend.__getEventManager().associate(displayables[i], identObj);
+    legend.getEventManager().associate(displayables[i], identObj);
 
   return identObj;
 };
@@ -1581,10 +1544,6 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
       rect.setPixelHinting(true);
     }
 
-    // Associate with logical object to support DvtComponentUIEvent
-    var params = DvtLegendEventManager.getUIEventParams(DvtLegendConstants.BACKGROUND);
-    legend.__getEventManager().associate(rect, new DvtSimpleObjPeer(null, null, null, params));
-
     legend.addChild(rect);
   }
 };
@@ -1598,10 +1557,11 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
  * @param {DvtRectangle} availSpace The available space.
  * @param {object} section The section attributes, if this is a section
  * @param {boolean} isAligned Whether the title supports halign (done at the end of render call).
+ * @param {number} id The id of the section, if this is a section.
  * @return {DvtRectangle} The dimension of the title.
  * @private
  */
-DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpace, section, isAligned) {
+DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpace, section, isAligned, id) {
   var options = legend.getOptions();
   var context = container.getCtx();
   var isRTL = DvtAgent.isRightToLeft(context);
@@ -1624,9 +1584,10 @@ DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpac
       title.setX(availSpace.x + availSpace.w - title.measureDimensions().w);
 
     if (!options['isLayout']) {
-      // Associate with logical object to support DvtComponentUIEvent and tooltips
-      var params = DvtLegendEventManager.getUIEventParams(DvtLegendConstants.TITLE);
-      legend.__getEventManager().associate(title, new DvtSimpleObjPeer(title.getUntruncatedTextString(), null, null, params));
+      // Associate with logical object to support tooltips
+      var params = {};
+      params['isCollapsible'] = section && (section['collapsible'] == 'on' || section['collapsible'] == true);
+      legend.getEventManager().associate(title, new DvtSimpleObjPeer(title.getUntruncatedTextString(), null, null, params));
 
       if (isAligned) {
         // title alignment will be deferred until we know the total width of the legend content
@@ -1810,7 +1771,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
       var isCollapsed = section['expanded'] == 'off' || section['expanded'] == false;
       var buttonType = isCollapsed ? 'closed' : 'open';
       var buttonTooltip = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, isCollapsed ? 'EXPAND' : 'COLLAPSE', null);
-      var em = legend.__getEventManager();
+      var em = legend.getEventManager();
 
       var button = DvtLegendRenderer._createButton(context, legend, section, options['_resources'], buttonType,
           buttonX, sectionSpace.y, buttonTooltip, id, em.onCollapseButtonClick, em);
@@ -1826,7 +1787,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   }
 
   // Render legend section title. Only support titleHalign if the section is not collapsible and not nested.
-  var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], sectionSpace, section, !isCollapsible && id.length <= 1);
+  var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], sectionSpace, section, !isCollapsible && id.length <= 1, id);
   var titleDim = title ? title.measureDimensions() : new DvtRectangle(isRTL ? sectionSpace.x + sectionSpace.w : sectionSpace.x, sectionSpace.y, 0, 0);
   var sectionDim = buttonDim ? titleDim.getUnion(buttonDim) : titleDim;
 
@@ -2335,7 +2296,7 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
   if (!hiddenCategories || hiddenCategories.length <= 0)
     return false;
 
-  return hiddenCategories.indexOf(category) !== -1;
+  return DvtArrayUtils.getIndex(hiddenCategories, category) !== -1;
 };
 
 

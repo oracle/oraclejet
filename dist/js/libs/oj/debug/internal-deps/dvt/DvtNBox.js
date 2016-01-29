@@ -1,15 +1,15 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -78,7 +78,7 @@ DvtNBox.prototype.Init = function(context, callback, callbackObj) {
     this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
   // Make sure the object has an id for clipRect naming
-  this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));
+  this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
   /**
    * Reference to animation in progress.
@@ -372,7 +372,7 @@ DvtNBox.prototype._updateKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBox.prototype.__getEventManager = function() {
+DvtNBox.prototype.getEventManager = function() {
   return this.EventManager;
 };
 
@@ -403,7 +403,7 @@ DvtNBox.prototype.processEvent = function(event, source) {
   }
 
   if (event) {
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 };
 
@@ -1369,7 +1369,7 @@ DvtBundle.addDefaultStrings(DvtBundle.NBOX_PREFIX, {
   'ADDITIONAL_DATA': 'Additional Data',
   'SIZE': 'Size'
 });
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -1412,21 +1412,22 @@ DvtNBoxDefaults.VERSION_1 = {
     'rowLabelStyle': new DvtCSSStyle('font-size: 12px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
     'columnsTitleStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
     'rowsTitleStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-    'cellDefaults': {'style': new DvtCSSStyle('background-color:#e5e5e5'),
-      'minimizedStyle': new DvtCSSStyle('background-color:#f0f0f0'),
+    'cellDefaults': {'style': new DvtCSSStyle('background-color:#e9e9e9'),
+      'maximizedStyle': new DvtCSSStyle('background-color:#dddddd'),
+      'minimizedStyle': new DvtCSSStyle('background-color:#e9e9e9'),
       'labelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-weight:bold'),
       'countLabelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
       'bodyCountLabelStyle': new DvtCSSStyle('color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
       'dropTargetStyle': new DvtCSSStyle('background-color:rgba(217, 244, 250, .75);border-color:#ccf6ff'),
-      'showCount': 'off',
+      'showCount': 'auto',
       'showMaximize': 'on'},
     '__scrollbar': {'scrollbarBackground': 'linear-gradient(bottom, #dce2e7 0%, #f8f8f8 8%)',
       'scrollbarBorderColor': '#dce2e7',
       'scrollbarHandleColor': '#abb0b4',
       'scrollbarHandleHoverColor' : '#333333',
       'scrollbarHandleActiveColor' : '#333333'},
-    '__drawerDefaults': {'background': '#e5e5e5',
-      'borderColor': '#c4ced7',
+    '__drawerDefaults': {'background': '#e9e9e9',
+      'borderColor': '#bcc7d2',
       'borderRadius': 1,
       'headerBackground': 'linear-gradient(to bottom, #f5f5f5 0%, #f0f0f0 100%)',
       'labelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-weight:bold'),
@@ -1481,15 +1482,16 @@ DvtNBoxDefaults.VERSION_1 = {
     'cellTopGap': 6,
     'cellBottomGap': 6,
     'cellLabelGap': 6,
+    'cellCloseGap': 6,
     'countLabelGap': 10,
     'markerGap': 3,
     'minimumLabelWidth': 55,
     'maximumLabelWidth': 148,
-    'drawerButtonGap': 10,
+    'drawerButtonGap': 6,
     'drawerCountHorizontalGap': 5,
     'drawerCountVerticalGap': 3,
-    'drawerStartGap': 10,
-    'drawerLabelGap': 7,
+    'drawerStartGap': 6,
+    'drawerLabelGap': 6,
     'drawerHeaderHeight': 31,
     'legendBottomGap': 10
   }
@@ -1625,10 +1627,9 @@ DvtNBoxCell.prototype.handleDoubleClick = function() {
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
   var options = this._nbox.getSanitizedOptions();
   var event = new DvtSetPropertyEvent();
-  var drawer = options[DvtNBoxConstants.DRAWER];
   options[DvtNBoxConstants.DRAWER] = null;
   event.addParam(DvtNBoxConstants.DRAWER, null);
-  if (!drawer && (maximizedRow == this._data[DvtNBoxConstants.ROW] && maximizedColumn == this._data[DvtNBoxConstants.COLUMN])) {
+  if (maximizedRow == this._data[DvtNBoxConstants.ROW] && maximizedColumn == this._data[DvtNBoxConstants.COLUMN]) {
     options[DvtNBoxConstants.MAXIMIZED_ROW] = null;
     event.addParam(DvtNBoxConstants.MAXIMIZED_ROW, null);
     options[DvtNBoxConstants.MAXIMIZED_COLUMN] = null;
@@ -1918,6 +1919,16 @@ DvtNBoxCell.prototype.getNode = function(index) {
     }
   }
   return null;
+};
+
+
+/**
+ * Returns the cell displayable (itself)
+ *
+ * @return {DvtDisplayable} displayable
+ */
+DvtNBoxCell.prototype.getDisplayable = function() {
+  return this;
 };
 
 /**
@@ -2383,6 +2394,17 @@ DvtNBoxNode.prototype.HandleKeyboardEvent = function(event) {
   }
 };
 
+
+/**
+ * Returns the node displayable (itself).
+ *
+ * @return {DvtDisplayable} displayable
+ */
+DvtNBoxNode.prototype.getDisplayable = function() {
+  return this;
+};
+
+
 /**
  * Returns the displayable that should receive the keyboard focus
  *
@@ -2664,6 +2686,17 @@ DvtNBoxNodeOverflow.prototype.getNextNavigable = function(event)
   }
   return next;
 };
+
+
+/**
+ * Returns the node overflow displayable (itself).
+ *
+ * @return {DvtDisplayable} displayable
+ */
+DvtNBoxNodeOverflow.prototype.getDisplayable = function() {
+  return this;
+};
+
 
 /**
  * Returns the displayable that should receive the keyboard focus
@@ -3137,6 +3170,17 @@ DvtNBoxCategoryNode.prototype.getNextNavigable = function(event)
   return next;
 };
 
+
+/**
+ * Returns the category node displayable (itself).
+ *
+ * @return {DvtDisplayable} displayable
+ */
+DvtNBoxCategoryNode.prototype.getDisplayable = function() {
+  return this;
+};
+
+
 /**
  * Returns the displayable that should receive the keyboard focus
  *
@@ -3438,6 +3482,17 @@ DvtNBoxDrawer.prototype.getNextNavigable = function(event)
   return next;
 };
 
+
+/**
+ * Returns the drawer displayable (itself).
+ *
+ * @return {DvtDisplayable} displayable
+ */
+DvtNBoxDrawer.prototype.getDisplayable = function() {
+  return this;
+};
+
+
 /**
  * Returns the displayable that should receive the keyboard focus
  *
@@ -3572,7 +3627,7 @@ DvtNBoxDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   else
     return null;
 };
-// Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Event Manager for DvtNBox.
  * @param {DvtNBox} nbox NBox component
@@ -3709,8 +3764,15 @@ DvtNBoxEventManager.prototype._processActionEvent = function(obj) {
  * @override
  */
 DvtNBoxEventManager.prototype.GetTouchResponse = function() {
-  // TODO IMPLEMENT TOUCH RESPONSE AUTO
-  return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+  var options = this._nbox.getOptions();
+  var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
+  var cellData = DvtNBoxDataUtils.getCell(this._nbox, DvtNBoxDataUtils.getMaximizedCellIndex(this._nbox));
+  if ((drawerData && DvtNBoxDataUtils.getDisplayable(this._nbox, drawerData).getChildContainer().hasScrollingContent()) ||
+      (cellData && DvtNBoxDataUtils.getDisplayable(this._nbox, cellData).getChildContainer().hasScrollingContent()))
+    return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+  else if (options['touchResponse'] === DvtEventManager.TOUCH_RESPONSE_TOUCH_START)
+    return DvtEventManager.TOUCH_RESPONSE_TOUCH_START;
+  return DvtEventManager.TOUCH_RESPONSE_AUTO;
 };
 /**
  * Keyboard handler for the NBox component
@@ -3893,11 +3955,13 @@ DvtNBoxAutomation.prototype.Init = function(dvtComponent) {
 /**
  * Valid subIds:
  * <ul>
+ * <li>node[index]</li>
  * <li>cell[row,col]</li>
  * <li>cell[row,col]#overflow</li>
  * <li>cell[row,col]#node[index]</li>
  * <li>cell[row,col]#groupNode{id1:val1,...,idN:valN}</li>
  * <li>cell[row,col]#groupNode[groupCategory]</li>
+ * <li>cell[row,col]#closeButton</li>
  * <li>groupNode{id1:val1,...,idN:valN}</li>
  * <li>groupNode[groupCategory]</li>
  * <li>dialog</li>
@@ -3921,10 +3985,20 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
     var action;
     var values;
 
+    if (displayable instanceof DvtNBoxNode) {
+      var index = DvtNBoxDataUtils.getNodeIndex(nBox, displayable.getData()['id']);
+      values = this._createBrackets([index]);
+      component = 'node' + values;
+      return this._createSubId(component, action);
+    }
+
     if (cell) {
       var r = cell.getData()['row'];
       var c = cell.getData()['column'];
       var container = cell.getChildContainer();
+      if (container.getScrollingPane) {
+        container = container.getScrollingPane();
+      }
       values = this._createBrackets([r, c]);
       component = 'cell' + values;
 
@@ -3934,28 +4008,20 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
       }
 
       // cell#overflow
+      // cell#closeButton
       if (displayable instanceof DvtButton) {
         if (this._getParentObject(displayable, 'DvtNBoxNodeOverflow')) {
           action = 'overflow';
           return this._createSubId(component, action);
         }
+        if (displayable == DvtNBoxDataUtils.getDisplayable(nBox, cell.getData(), 'closeButton')) {
+          action = 'closeButton';
+          return this._createSubId(component, action);
+        }
       }
 
       // cell#node
-      if (displayable instanceof DvtNBoxNode) {
-        var index = 0;
-        var node = DvtNBoxDataUtils.getFirstNavigableNode(nBox, container);
-        while (node) {
-          if (node == displayable) {
-            action = 'node' + this._createBrackets([index]);
-            return this._createSubId(component, action);
-          }
-          else {
-            node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
-            index += 1;
-          }
-        }
-      }
+      // nodes always return node[index] form subId
 
       //cell#groupNode
       if (displayable instanceof DvtNBoxCategoryNode) {
@@ -3983,20 +4049,8 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
       }
 
       // dialog#node
-      if (displayable instanceof DvtNBoxNode) {
-        var categoryNode = DvtNBoxDataUtils.getCategoryNode(nBox, drawer.getData()['id']);
-        var indices = categoryNode['nodeIndices'];
-        var data;
-        var node;
-        for (var i = 0; i < indices.length; i++) {
-          data = DvtNBoxDataUtils.getNode(nBox, indices[i]);
-          node = DvtNBoxDataUtils.getDisplayable(nBox, data);
-          if (node == displayable) {
-            action = 'node' + this._createBrackets([i]);
-            return this._createSubId(component, action);
-          }
-        }
-      }
+      // nodes always return node[index] form subId
+
     }
 
     // groupNode
@@ -4034,11 +4088,13 @@ DvtNBoxAutomation.prototype._createSubId = function(component, action) {
 /**
  * Valid subIds
  * <ul>
+ * <li>node[index]</li>
  * <li>cell[row,col]</li>
  * <li>cell[row,col]#overflow</li>
  * <li>cell[row,col]#node[index]</li>
  * <li>cell[row,col]#groupNode{id1:val1,...,idN:valN}</li>
  * <li>cell[row,col]#groupNode[groupCategory]</li>
+ * <li>cell[row,col]#closeButton</li>
  * <li>groupNode{id1:val1,...,idN:valN}</li>
  * <li>groupNode[groupCategory]</li>
  * <li>dialog</li>
@@ -4065,6 +4121,12 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
   var container = null;
   var displayable = null;
 
+  if (component.lastIndexOf('node', 0) === 0) {
+    values = this._parseBrackets(component, true);
+    var data = DvtNBoxDataUtils.getNode(nBox, values[0]);
+    displayable = DvtNBoxDataUtils.getDisplayable(nBox, data);
+  }
+
   if (component.lastIndexOf('cell', 0) === 0) {
     values = this._parseBrackets(component);
     var index = this._getCellIndexFromValues(values);
@@ -4076,6 +4138,9 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
 
     if (action) {
       container = cell.getChildContainer();
+      if (container.getScrollingPane) {
+        container = container.getScrollingPane();
+      }
 
       // cell#overflow
       if (action == 'overflow') {
@@ -4087,6 +4152,11 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
         }
       }
 
+      // cell#closeButton
+      if (action == 'closeButton') {
+        displayable = DvtNBoxDataUtils.getDisplayable(nBox, cell.getData(), 'closeButton');
+      }
+
       // cell#node
       if (action.lastIndexOf('node', 0) === 0) {
         values = this._parseBrackets(action, true);
@@ -4096,14 +4166,14 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
         }
         var node = DvtNBoxDataUtils.getFirstNavigableNode(nBox, container);
         var count = 0;
-        while (count < nodeIndex) {
-          node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
-          count += 1;
-          if (node.getTypeName() != 'DvtNBoxNode') {
-            return null;
+        while (node && node.getTypeName() == 'DvtNBoxNode') {
+          if (count == nodeIndex) {
+            displayable = node;
+            break;
           }
+          node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
+          count++;
         }
-        displayable = node;
       }
 
       // cell#groupNode
@@ -4185,15 +4255,21 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
 
             // dialog#node
             if (action.lastIndexOf('node', 0) === 0) {
+              var dialogContainer = dialog.getChildContainer().getScrollingPane();
               values = this._parseBrackets(action, true);
-              var nodeIdx = values[0];
-              var categoryNode = DvtNBoxDataUtils.getCategoryNode(nBox, dialog.getData()['id']);
-              if (categoryNode) {
-                var node = DvtNBoxDataUtils.getNode(nBox, categoryNode['nodeIndices'][nodeIdx]);
-                if (!node) {
-                  return null;
+              var nodeIndex = values[0];
+              if (nodeIndex < 0) {
+                return null;
+              }
+              var node = DvtNBoxDataUtils.getFirstNavigableNode(nBox, dialogContainer);
+              var count = 0;
+              while (node && node.getTypeName() == 'DvtNBoxNode') {
+                if (count == nodeIndex) {
+                  displayable = node;
+                  break;
                 }
-                displayable = DvtNBoxDataUtils.getDisplayable(nBox, node);
+                node = DvtNBoxDataUtils.getDisplayable(nBox, node.getData()['__next']);
+                count++;
               }
             }
           }
@@ -4507,6 +4583,19 @@ DvtNBoxAutomation.prototype.getCellNode = function(cellData, nodeIndex) {
   return null;
 };
 
+
+/**
+ * @export
+ * Get node at given index in node collection
+ * @param {Number} nodeIndex  node index
+ * @return {Object} node data object
+ */
+DvtNBoxAutomation.prototype.getNode = function(nodeIndex) {
+  var nodeData = DvtNBoxDataUtils.getNode(this._nBox, nodeIndex);
+  return this._getNode(nodeData);
+};
+
+
 /**
  * @private
  * Get automation node data object
@@ -4625,7 +4714,28 @@ DvtNBoxAutomation.prototype.getDialogNode = function(nodeIndex) {
   }
   return null;
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+
+
+/**
+ * @export
+ * Get node id from index
+ * @param {Number} index node index
+ * @return {string} node id
+ */
+DvtNBoxAutomation.prototype.getNodeIdFromIndex = function(index) {
+  return DvtNBoxDataUtils.getNode(this._nBox, index)['id'];
+};
+
+/**
+ * @export
+ * Get node index from id
+ * @param {string} id node id
+ * @return {Number} node index
+ */
+DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
+  return DvtNBoxDataUtils.getNodeIndex(this._nBox, id);
+};
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -4999,17 +5109,10 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
 
   var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
 
-  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeLayout(nbox);
-  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
-  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
+  // If no nodes are highlighted/selected, make a single pass through the nodes for ordering
+  // If some nodes are highlighted/selected, make additional passes, ensuring highlighted/selected nodes come first in render order
 
-  var nodeCount = DvtNBoxDataUtils.getNodeCount(nbox);
-
-  var gridPos = [];
-
-  // If no nodes are highlighted, make a single pass through the nodes for rendering
-  // If some nodes are highlighted, make two passes, first rendering the highlighted nodes, then the unhighlighted nodes
-  var renderPasses = ['normal'];
+  var orderPasses = ['normal'];
   var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
   var highlightedMap = {};
@@ -5017,54 +5120,95 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
     for (var i = 0; i < highlightedItems.length; i++) {
       highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
     }
-    renderPasses = ['highlighted', 'unhighlighted'];
   }
-  for (var p = 0; p < renderPasses.length; p++) {
+
+  var selectedItems = DvtNBoxDataUtils.getSelectedItems(nbox);
+  var selectedMap = {};
+  if (selectedItems) {
+    for (var i = 0; i < selectedItems.length; i++) {
+      selectedMap[selectedItems[i]] = true;
+    }
+  }
+
+  if (highlightedItems) {
+    if (selectedItems)
+      orderPasses = ['highlighted-selected', 'highlighted-unselected', 'unhighlighted-selected', 'unhighlighted-unselected'];
+    else
+      orderPasses = ['highlighted-unselected', 'unhighlighted-unselected'];
+  }
+  else if (selectedItems) {
+    orderPasses = ['unhighlighted-selected', 'unhighlighted-unselected'];
+  }
+
+  // calculate rendering order of nodes in each cell
+  var cellNodes = {};
+  var nodeCount = DvtNBoxDataUtils.getNodeCount(nbox);
+  for (var p = 0; p < orderPasses.length; p++) {
     for (var n = 0; n < nodeCount; n++) {
       var node = DvtNBoxDataUtils.getNode(nbox, n);
       if (!DvtNBoxDataUtils.isNodeHidden(nbox, node)) {
-        if (renderPasses[p] == 'normal' ||
-            (renderPasses[p] == 'highlighted' && highlightedMap[node[DvtNBoxConstants.ID]]) ||
-            (renderPasses[p] == 'unhighlighted' && !highlightedMap[node[DvtNBoxConstants.ID]])) {
+        if (orderPasses[p] == 'normal' ||
+            (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
+            (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]]) ||
+            (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
+            (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]])) {
           var cellIndex = DvtNBoxDataUtils.getCellIndex(nbox, node);
           if (!DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
-            var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-            if (isNaN(gridPos[cellIndex])) {
-              gridPos[cellIndex] = 0;
+            if (!cellNodes[cellIndex]) {
+              cellNodes[cellIndex] = [];
             }
-            var cellLayout = nodeLayout['cellLayouts'][cellIndex];
-            var cellRows = cellLayout['cellRows'];
-            var cellColumns = cellLayout['cellColumns'];
-            var skipNodes = cellRows == 0 || cellColumns == 0 || (cellRows == 1 && cellColumns == 1 && cellLayout['overflow']);
-            if (!skipNodes) {
-              var maxNodes = cellRows * cellColumns - (cellLayout['overflow'] ? 1 : 0);
-              if (maxNodes < 0 || gridPos[cellIndex] < maxNodes) {
-                var cellContainer = DvtNBoxDataUtils.getDisplayable(nbox, cell).getChildContainer();
-                var scrolling = cellContainer instanceof DvtSimpleScrollableContainer;
-                var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
-                var gridXOrigin = cell['__childArea'].x + (cell['__childArea'].w - cellLayout['cellColumns'] * hGridSize + gridGap) / 2;
-                var gridYOrigin = scrolling ? gridGap : cell['__childArea'].y;
-                var gridColumn = gridPos[cellIndex] % cellColumns;
-                if (rtl) {
-                  gridColumn = cellColumns - gridColumn - 1;
-                }
-                var gridRow = Math.floor(gridPos[cellIndex] / cellColumns);
-                nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn,
-                    gridYOrigin + vGridSize * gridRow);
-                gridPos[cellIndex]++;
-                nodeContainer.render(scrolling ? cellContainer.getScrollingPane() : cellContainer, nodeLayout);
-                if (renderPasses[p] == 'unhighlighted') {
-                  nodeContainer.setAlpha(alphaFade);
-                }
+            cellNodes[cellIndex].push(node);
+          }
+        }
+      }
+    }
+  }
 
-                //keyboard navigation
-                var prevNode = n > 0 ? DvtNBoxDataUtils.getNode(nbox, n - 1) : null;
-                var prevNodeCellIndex = prevNode ? DvtNBoxDataUtils.getCellIndex(nbox, prevNode) : -1;
-                if (prevNode && prevNodeCellIndex == cellIndex) {
-                  node['__prev'] = prevNode;
-                  prevNode['__next'] = node;
-                }
-              }
+  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeLayout(nbox, cellNodes);
+  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
+  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
+
+  var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
+  var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
+  for (var r = 0; r < rowCount; r++) {
+    for (var c = 0; c < columnCount; c++) {
+      var cellIndex = r * columnCount + c;
+      var nodes = cellNodes[cellIndex];
+      if (!nodes || !nodes.length) {
+        continue;
+      }
+      var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
+      var cellLayout = nodeLayout['cellLayouts'][cellIndex];
+      var cellRows = cellLayout['cellRows'];
+      var cellColumns = cellLayout['cellColumns'];
+      var skipNodes = cellRows == 0 || cellColumns == 0 || (cellRows == 1 && cellColumns == 1 && cellLayout['overflow']);
+      if (!skipNodes) {
+        var maxNodes = cellRows * cellColumns - (cellLayout['overflow'] ? 1 : 0);
+        for (var n = 0; n < nodes.length; n++) {
+          var node = nodes[n];
+          if (maxNodes < 0 || n < maxNodes) {
+            var cellContainer = DvtNBoxDataUtils.getDisplayable(nbox, cell).getChildContainer();
+            var scrolling = cellContainer instanceof DvtSimpleScrollableContainer;
+            var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
+            var gridXOrigin = cell['__childArea'].x + (cell['__childArea'].w - cellLayout['cellColumns'] * hGridSize + gridGap) / 2;
+            var gridYOrigin = scrolling ? gridGap : cell['__childArea'].y;
+            var gridColumn = n % cellColumns;
+            if (rtl) {
+              gridColumn = cellColumns - gridColumn - 1;
+            }
+            var gridRow = Math.floor(n / cellColumns);
+            nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn,
+                gridYOrigin + vGridSize * gridRow);
+            nodeContainer.render(scrolling ? cellContainer.getScrollingPane() : cellContainer, nodeLayout);
+            if (highlightedItems && !highlightedMap[node[DvtNBoxConstants.ID]]) {
+              nodeContainer.setAlpha(alphaFade);
+            }
+
+            //keyboard navigation
+            var prevNode = n > 0 ? nodes[n - 1] : null;
+            if (prevNode) {
+              node['__prev'] = prevNode;
+              prevNode['__next'] = node;
             }
           }
         }
@@ -5099,11 +5243,11 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
 
             var gridXOrigin = cellData['__childArea'].x + (cellData['__childArea'].w - cellLayout['cellColumns'] * hGridSize + gridGap) / 2;
             var gridYOrigin = cellData['__childArea'].y;
-            var gridColumn = gridPos[ci] % cellLayout['cellColumns'];
+            var gridColumn = cellLayout['cellColumns'] - 1;
             if (rtl) {
-              gridColumn = cellLayout['cellColumns'] - gridColumn - 1;
+              gridColumn = 0;
             }
-            var gridRow = Math.floor(gridPos[ci] / cellLayout['cellColumns']);
+            var gridRow = cellLayout['cellRows'] - 1;
             overflowContainer.setTranslate(gridXOrigin + hGridSize * gridColumn,
                 gridYOrigin + vGridSize * gridRow);
             overflowContainer.render(cell.getChildContainer(), hGridSize - gridGap, vGridSize - gridGap);
@@ -5560,15 +5704,12 @@ DvtNBoxRenderer.getGlobalMatrix = function(displayable) {
  */
 DvtNBoxRenderer.animateUpdate = function(animationHandler, oldNBox, newNBox) {
   DvtNBoxRenderer._animateCells(animationHandler, oldNBox, newNBox);
+  DvtNBoxRenderer._animateNodes(animationHandler, oldNBox, newNBox);
   var oldDrawer = DvtNBoxDataUtils.getDrawer(oldNBox);
   oldDrawer = oldDrawer ? oldDrawer['id'] : null;
   var newDrawer = DvtNBoxDataUtils.getDrawer(newNBox);
   newDrawer = newDrawer ? newDrawer['id'] : null;
-  // No need to animate nodes if we're opening/closing a drawer (which can only happen when we're grouped)
-  if (oldDrawer == newDrawer) {
-    DvtNBoxRenderer._animateNodes(animationHandler, oldNBox, newNBox);
-  }
-  else {
+  if (oldDrawer != newDrawer) {
     DvtNBoxRenderer._animateDrawer(animationHandler, oldNBox, newNBox);
   }
   //DvtNBoxRenderer._animateTitles(animationHandler, oldNBox, newNBox);
@@ -5649,13 +5790,35 @@ DvtNBoxRenderer._animateNodes = function(animationHandler, oldNBox, newNBox) {
   }
   animationHandler.constructAnimation(oldNodes, newNodes);
 
-  // If the drawer is open, no reason to animate the category nodes as they're obscured
+  var oldDrawer = DvtNBoxDataUtils.getDrawer(oldNBox);
   var newDrawer = DvtNBoxDataUtils.getDrawer(newNBox);
+  // If drawer open, don't animate any category nodes since they will be covered by it
   if (!newDrawer) {
     var oldGroupNodes = DvtNBoxRenderer._getSortedGroups(oldNBox);
     var newGroupNodes = DvtNBoxRenderer._getSortedGroups(newNBox);
+
+    // Drawer is closing
+    if (oldDrawer) {
+      // Cell is de-maximizing
+      if (DvtNBoxDataUtils.getMaximizedCellIndex(oldNBox) != DvtNBoxDataUtils.getMaximizedCellIndex(newNBox)) {
+        // Don't animate nodes in the maximized cell since those nodes were covered by drawer
+        // Other nodes were not covered and should run animateInsert
+        oldGroupNodes = oldGroupNodes.filter(function(node) {
+          return node.getData()['cell'] != DvtNBoxDataUtils.getMaximizedCellIndex(oldNBox);
+        });
+        newGroupNodes = newGroupNodes.filter(function(node) {
+          return node.getData()['cell'] != DvtNBoxDataUtils.getMaximizedCellIndex(oldNBox);
+        });
+      }
+      // Don't animate any nodes since they were all covered by drawer
+      else {
+        oldGroupNodes = null;
+        newGroupNodes = null;
+      }
+    }
     animationHandler.constructAnimation(oldGroupNodes, newGroupNodes);
   }
+
 };
 
 
@@ -5764,7 +5927,7 @@ DvtNBoxRenderer._fixZOrder = function(nbox) {
     }
   }
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -5859,124 +6022,160 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
     oldCountLabel.getParent().removeChild(oldCountLabel);
     DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, 'countLabel');
   }
+  var oldClose = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'closeButton');
+  if (oldClose) {
+    oldClose.getParent().removeChild(oldClose);
+    DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, 'closeButton');
+  }
   var addedHeader = false;
-  if (cellData && cellData[DvtNBoxConstants.LABEL]) {
+  if (cellData) {
     var options = nbox.getOptions();
     var countLabelGap = options['__layout']['countLabelGap'];
+    var cellCloseGap = options['__layout']['cellCloseGap'];
     var cellStartGap = options['__layout']['cellStartGap'];
     var cellEndGap = options['__layout']['cellEndGap'];
     var cellTopGap = options['__layout']['cellTopGap'];
-
     var cellLayout = options['__layout']['__cellLayout'];
+
+    var cellRect = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'background');
 
     var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData[DvtNBoxConstants.ROW]);
     var c = DvtNBoxDataUtils.getColumnIndex(nbox, cellData[DvtNBoxConstants.COLUMN]);
     var cellIndex = r * DvtNBoxDataUtils.getColumnCount(nbox) + c; // cells are in sorted row-major order
 
-    var cellRect = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'background');
-
     var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
 
-    var labelHeight = cellLayout['labelHeight'];
-    var skipLabel = false;
-    var halign = DvtNBoxStyleUtils.getLabelHalign(nbox, cellData);
-    var countLabelWidth = 0;
-    var countLabelWidthWithGap = 0;
-    var countLabel = null;
-    var countLabelX = 0;
-    var countLabelY = 0;
-    var countText = null;
-    if (!noCount && DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
-      countText = '' + cellCounts['total'][cellIndex];
-      if (cellCounts['highlighted']) {
-        countText = DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'HIGHLIGHTED_COUNT', [cellCounts['highlighted'][cellIndex], countText]);
-      }
-    }
-    if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-      // Vertical Label
-      if (countText) {
-        countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-        if (DvtTextUtils.fitText(countLabel, cellRect.getHeight() - cellStartGap - cellEndGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
-          DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
-          addedHeader = true;
-          countLabelWidth = countLabel.getDimensions().w;
-          countLabelWidthWithGap = countLabelWidth + countLabelGap;
-          // Count label will get offset after rendering the cell label
-          countLabelY = cellRect.getHeight() / 2;
-          countLabelX = cellTopGap + labelHeight / 2;
-        }
-        else {
-          skipLabel = true;
-        }
-      }
-      var countLabelOffset = 0;
-      if (!skipLabel) {
-        var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-        if (DvtTextUtils.fitText(label, cellRect.getHeight() - cellStartGap - cellEndGap - countLabelWidthWithGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
-          DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
-          var labelWidth = label.getDimensions().w;
-          addedHeader = true;
-          DvtNBoxRenderer.positionText(label, cellTopGap + labelHeight / 2, (cellRect.getHeight() + countLabelWidthWithGap) / 2, rtl ? Math.PI / 2 : -Math.PI / 2);
-          countLabelOffset = (labelWidth + countLabelGap) / 2;
-        }
-      }
-      if (countLabel) {
-        countLabelY -= countLabelOffset;
-        DvtNBoxRenderer.positionText(countLabel, countLabelX, countLabelY, rtl ? Math.PI / 2 : -Math.PI / 2);
-      }
-    }
-    else {
-      if (countText) {
-        countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
-        if (DvtTextUtils.fitText(countLabel, cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
-          DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
-          addedHeader = true;
-          countLabelWidth = countLabel.getDimensions().w;
-          countLabelWidthWithGap = countLabelWidth + countLabelGap;
-          // Count label will get offset after rendering the cell label
-          if (halign == DvtOutputText.H_ALIGN_CENTER) {
-            countLabelX = cellRect.getWidth() / 2;
-          }
-          else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
-            countLabelX = cellRect.getWidth() - cellEndGap;
-          }
-          else { // halign == DvtOutputText.H_ALIGN_LEFT
-            countLabelX = cellStartGap;
-          }
-          countLabelY = cellTopGap + labelHeight / 2;
-          DvtNBoxRenderer.positionText(countLabel, countLabelX, countLabelY);
-        }
-        else {
-          skipLabel = true;
-        }
-      }
-      var countLabelOffset = 0;
-      if (!skipLabel) {
+    var cellCloseWidthWithGap = 0;
+    if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
+      var closeEna = options['_resources']['close_ena'];
+      var closeWidth = closeEna['width'];
+      if (cellRect.getWidth() - cellStartGap - cellEndGap > closeWidth) {
+        var closeOvr = options['_resources']['close_ovr'];
+        var closeDwn = options['_resources']['close_dwn'];
+        var closeEnaImg = new DvtImage(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
+        var closeOvrImg = new DvtImage(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
+        var closeDwnImg = new DvtImage(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
+        var closeButton = new DvtButton(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, cellContainer.handleDoubleClick, cellContainer);
 
-        var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), halign, DvtOutputText.V_ALIGN_MIDDLE);
-        if (DvtTextUtils.fitText(label, cellRect.getWidth() - cellStartGap - cellEndGap - countLabelWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
-          DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
-          var labelWidth = label.getDimensions().w;
-          addedHeader = true;
-          var labelX;
-          if (halign == DvtOutputText.H_ALIGN_CENTER) {
-            labelX = (cellRect.getWidth() - (rtl ? -1 : 1) * countLabelWidthWithGap) / 2;
-            countLabelOffset = (rtl ? -1 : 1) * (labelWidth + countLabelGap) / 2;
+        // Center/hide close button if cell too thin for normal rendering
+        var closeButtonX = rtl ? Math.min((cellRect.getWidth() - closeWidth) / 2, cellEndGap) : Math.max((cellRect.getWidth() - closeWidth) / 2, cellRect.getWidth() - cellEndGap - closeWidth);
+        closeButton.setTranslate(closeButtonX,
+                                 cellTopGap);
+        cellContainer.addChild(closeButton);
+        cellCloseWidthWithGap = closeWidth + cellCloseGap;
+        DvtNBoxDataUtils.setDisplayable(nbox, cellData, closeButton, 'closeButton');
+        addedHeader = true;
+      }
+    }
+    if (cellData[DvtNBoxConstants.LABEL]) {
+      var labelHeight = cellLayout['labelHeight'];
+      var skipLabel = false;
+      var halign = DvtNBoxStyleUtils.getLabelHalign(nbox, cellData);
+      var countLabelWidth = 0;
+      var countLabelWidthWithGap = 0;
+      var countLabel = null;
+      var countLabelX = 0;
+      var countLabelY = 0;
+      var countText = null;
+      var showCount = DvtNBoxStyleUtils.getCellShowCount(nbox, cellData);
+      var cellCountLabel = cellData['countLabel'];
+      if (!noCount) {
+        if (cellCountLabel && showCount != 'off') {
+          countText = cellCountLabel;
+        }
+        else if (showCount == 'on') {
+          countText = '' + cellCounts['total'][cellIndex];
+          if (cellCounts['highlighted']) {
+            countText = DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'HIGHLIGHTED_COUNT', [cellCounts['highlighted'][cellIndex], countText]);
           }
-          else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
-            labelX = cellRect.getWidth() - cellEndGap - (rtl ? 0 : 1) * countLabelWidthWithGap;
-            countLabelOffset = (rtl ? -1 : 0) * (labelWidth + countLabelGap);
-          }
-          else { // halign == DvtOutputText.H_ALIGN_LEFT
-            labelX = cellStartGap + (rtl ? 1 : 0) * countLabelWidthWithGap;
-            countLabelOffset = (rtl ? 0 : 1) * (labelWidth + countLabelGap);
-          }
-          var labelY = cellTopGap + labelHeight / 2;
-          DvtNBoxRenderer.positionText(label, labelX, labelY);
         }
       }
-      if (countLabel && countLabelOffset) {
-        DvtNBoxRenderer.positionText(countLabel, countLabelX + countLabelOffset, countLabelY);
+      if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
+        // Vertical Label
+        if (countText) {
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+          if (DvtTextUtils.fitText(countLabel, cellRect.getHeight() - cellStartGap - cellEndGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
+            addedHeader = true;
+            countLabelWidth = countLabel.getDimensions().w;
+            countLabelWidthWithGap = countLabelWidth + countLabelGap;
+            // Count label will get offset after rendering the cell label
+            countLabelY = cellRect.getHeight() / 2;
+            countLabelX = cellTopGap + labelHeight / 2;
+          }
+          else {
+            skipLabel = true;
+          }
+        }
+        var countLabelOffset = 0;
+        if (!skipLabel) {
+          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+          if (DvtTextUtils.fitText(label, cellRect.getHeight() - cellStartGap - cellEndGap - countLabelWidthWithGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
+            var labelWidth = label.getDimensions().w;
+            addedHeader = true;
+            DvtNBoxRenderer.positionText(label, cellTopGap + labelHeight / 2, (cellRect.getHeight() + countLabelWidthWithGap) / 2, rtl ? Math.PI / 2 : -Math.PI / 2);
+            countLabelOffset = (labelWidth + countLabelGap) / 2;
+          }
+        }
+        if (countLabel) {
+          countLabelY -= countLabelOffset;
+          DvtNBoxRenderer.positionText(countLabel, countLabelX, countLabelY, rtl ? Math.PI / 2 : -Math.PI / 2);
+        }
+      }
+      else {
+        if (countText) {
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
+          if (DvtTextUtils.fitText(countLabel, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
+            addedHeader = true;
+            countLabelWidth = countLabel.getDimensions().w;
+            countLabelWidthWithGap = countLabelWidth + countLabelGap;
+            // Count label will get offset after rendering the cell label
+            if (halign == DvtOutputText.H_ALIGN_CENTER) {
+              countLabelX = cellRect.getWidth() / 2;
+            }
+            else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
+              countLabelX = cellRect.getWidth() - cellEndGap;
+            }
+            else { // halign == DvtOutputText.H_ALIGN_LEFT
+              countLabelX = cellStartGap;
+            }
+            countLabelY = cellTopGap + labelHeight / 2;
+            DvtNBoxRenderer.positionText(countLabel, countLabelX, countLabelY);
+          }
+          else {
+            skipLabel = true;
+          }
+        }
+        var countLabelOffset = 0;
+        if (!skipLabel) {
+
+          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), halign, DvtOutputText.V_ALIGN_MIDDLE);
+          if (DvtTextUtils.fitText(label, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap - countLabelWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
+            var labelWidth = label.getDimensions().w;
+            addedHeader = true;
+            var labelX;
+            if (halign == DvtOutputText.H_ALIGN_CENTER) {
+              labelX = (cellRect.getWidth() - (rtl ? -1 : 1) * countLabelWidthWithGap) / 2;
+              countLabelOffset = (rtl ? -1 : 1) * (labelWidth + countLabelGap) / 2;
+            }
+            else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
+              labelX = cellRect.getWidth() - cellEndGap - (rtl ? 0 : 1) * countLabelWidthWithGap;
+              countLabelOffset = (rtl ? -1 : 0) * (labelWidth + countLabelGap);
+            }
+            else { // halign == DvtOutputText.H_ALIGN_LEFT
+              labelX = cellStartGap + (rtl ? 1 : 0) * countLabelWidthWithGap;
+              countLabelOffset = (rtl ? 0 : 1) * (labelWidth + countLabelGap);
+            }
+            var labelY = cellTopGap + labelHeight / 2;
+            DvtNBoxRenderer.positionText(label, labelX, labelY);
+          }
+        }
+        if (countLabel && countLabelOffset) {
+          DvtNBoxRenderer.positionText(countLabel, countLabelX + countLabelOffset, countLabelY);
+        }
       }
     }
   }
@@ -6247,6 +6446,10 @@ DvtNBoxCellRenderer.calculateCellLayout = function(nbox, cellCounts) {
       labelHeight = Math.max(labelHeight, countLabelHeight);
     }
   }
+  if (DvtNBoxDataUtils.getMaximizedRow(nbox) && DvtNBoxDataUtils.getMaximizedColumn(nbox)) {
+    labelHeight = Math.max(labelHeight, options['_resources']['close_ena']['height']);
+  }
+
   var minimizedHeaderSize = labelHeight + cellTopGap + cellBottomGap;
   var headerSize = labelHeight + cellTopGap + cellLabelGap;
   minimumCellSize = Math.max(minimizedHeaderSize, minimumCellSize);
@@ -6271,6 +6474,10 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   var cellParent = newCell.getParent();
   cellParent.addChildAt(childContainer, cellParent.getChildIndex(newCell) + 1);
 
+  // Grab cell translation
+  var cellTx = newCell.getTranslateX();
+  var cellTy = newCell.getTranslateY();
+
   // Position
   playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newCell, newCell.getMatrix, newCell.setMatrix, newCell.getMatrix());
   newCell.setMatrix(oldCell.getMatrix());
@@ -6278,6 +6485,10 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   // Background
   var oldBackground = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell.getData(), 'background');
   var newBackground = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'background');
+
+  var rtl = DvtAgent.isRightToLeft(newNBox.getCtx());
+  var widthDiff = rtl ? 0 : newBackground.getWidth() - oldBackground.getWidth();
+
   playable.getAnimator().addProp(DvtAnimator.TYPE_FILL, newBackground, newBackground.getFill, newBackground.setFill, newBackground.getFill());
   newBackground.setFill(oldBackground.getFill());
   playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newBackground, newBackground.getWidth, newBackground.setWidth, newBackground.getWidth());
@@ -6285,7 +6496,8 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newBackground, newBackground.getHeight, newBackground.setHeight, newBackground.getHeight());
   newBackground.setHeight(oldBackground.getHeight());
 
-  //keyboard focus effect
+
+  // Keyboard focus effect
   if (newCell.isShowingKeyboardFocusEffect()) {
     var effect = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'focusEffect').getEffect();
     if (effect) {
@@ -6296,8 +6508,35 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
     }
   }
 
+  // Labels
   DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'countLabel');
   DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, DvtNBoxConstants.LABEL);
+
+  // Close button
+  var oldClose = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell.getData(), 'closeButton');
+  var newClose = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'closeButton');
+  if (oldClose) {
+    if (newClose) {
+      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
+      newClose.setMatrix(oldClose.getMatrix());
+    }
+    else {
+      var oldCloseStart = DvtNBoxRenderer.getGlobalMatrix(oldClose);
+      oldClose.setTranslate(oldClose.getTranslateX() + widthDiff + cellTx, oldClose.getTranslateY() + cellTy);
+
+      animationHandler.add(new DvtAnimFadeOut(newNBox.getCtx(), oldClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, oldClose, oldClose.getMatrix, oldClose.setMatrix, oldClose.getMatrix());
+      oldClose.setMatrix(oldCloseStart);
+      newNBox.getDeleteContainer().addChild(oldClose);
+    }
+  }
+  else if (newClose) {
+    animationHandler.add(new DvtAnimFadeIn(newNBox.getCtx(), newClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+    playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
+    newClose.setTranslate(newClose.getTranslateX() - widthDiff, newClose.getTranslateY());
+    newClose.setAlpha(0);
+
+  }
 
   DvtPlayable.appendOnEnd(playable, function() {newCell.addChild(childContainer); childContainer.setMatrix(childMatrix)});
   animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
@@ -6455,7 +6694,7 @@ DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellC
       object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
   }
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -6487,15 +6726,17 @@ DvtNBoxNodeRenderer.render = function(nbox, nodeData, nodeContainer, nodeLayout)
  * Calculates sizes related to node layout, based upon the first specified node
  * (Assumes that the nodes are specified homogeneously)
  * @param {DvtNBox} nbox the nbox component
+ * @param {object} cellNodes object containing node rendering order for each cell
  * @return {object} an object containing the calculated sizes
  */
-DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
+DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox, cellNodes) {
   var options = nbox.getOptions();
   var gridGap = options['__layout']['gridGap'];
   var nodeStartLabelGap = options['__layout']['nodeStartLabelGap'];
   var nodeLabelOnlyStartLabelGap = options['__layout']['nodeLabelOnlyStartLabelGap'];
   var nodeEndLabelGap = options['__layout']['nodeEndLabelGap'];
   var nodeSwatchSize = options['__layout']['nodeSwatchSize'];
+  var maximumLabelWidth = options['__layout']['maximumLabelWidth'];
 
   var simpleLayout = DvtNBoxNodeRenderer._calculateSimpleNodeLayout(nbox);
   var nodeHeight = simpleLayout['nodeHeight'];
@@ -6522,10 +6763,10 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
   }
   var nodeCounts = [];
   var nodeCount = DvtNBoxDataUtils.getNodeCount(nbox);
-  for (var n = 0; n < nodeCount; n++) {
-    var node = DvtNBoxDataUtils.getNode(nbox, n);
-    if (!DvtNBoxDataUtils.isNodeHidden(nbox, node)) {
-      var nodeCellIndex = DvtNBoxDataUtils.getCellIndex(nbox, node);
+  for (var i = 0; i < nodeCount; i++) {
+    var n = DvtNBoxDataUtils.getNode(nbox, i);
+    if (!DvtNBoxDataUtils.isNodeHidden(nbox, n)) {
+      var nodeCellIndex = DvtNBoxDataUtils.getCellIndex(nbox, n);
       if (isNaN(nodeCounts[nodeCellIndex])) {
         nodeCounts[nodeCellIndex] = 0;
       }
@@ -6533,44 +6774,53 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
     }
   }
   if (maximizedRow && maximizedColumn) {
-    labelSectionWidth = simpleLayout['labelSectionWidth'] != null ? simpleLayout['labelSectionWidth'] : (options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap);
     var maximizedCellIndex = DvtNBoxDataUtils.getColumnIndex(nbox, maximizedColumn) + columnCount * DvtNBoxDataUtils.getRowIndex(nbox, maximizedRow);
     var cellData = DvtNBoxDataUtils.getCell(nbox, maximizedCellIndex);
     var cellArea = cellData['__childArea'];
-    var cellColumns = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
-    if (cellColumns == 0 && simpleLayout['labelSectionWidth'] == null) {
-      // Can't fit maximum label size, choose the biggest size that will fit
-      labelSectionWidth = Math.max(0, cellArea.w - indicatorSectionWidth - iconSectionWidth);
 
-      if (node[DvtNBoxConstants.LABEL]) {
-        // dummy container used to check if labels are still visible at this width
-        var container = new DvtContainer();
-        var labelVisible = false;
-        var label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
-        var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
-        if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+    labelSectionWidth = simpleLayout['labelSectionWidth'];
+    if (labelSectionWidth == null) {
+      if (options['labelTruncation'] != 'ifRequired') {
+        labelSectionWidth = maximumLabelWidth + startLabelGap + nodeEndLabelGap;
+      }
+      else {
+        var nodes = cellNodes[maximizedCellIndex];
+        labelSectionWidth = Math.max(maximumLabelWidth, DvtNBoxNodeRenderer._getMaxLabelWidth(nbox, nodes)) + startLabelGap + nodeEndLabelGap;
+      }
+      labelSectionWidth = Math.min(labelSectionWidth, cellArea.w - indicatorSectionWidth - iconSectionWidth);
+    }
+    cellColumns = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
+
+    // check if labels are visible at calculated width
+    if (node[DvtNBoxConstants.LABEL]) {
+      // temp container for checking if labels are visible
+      var container = new DvtContainer();
+      var labelVisible = false;
+      var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
+      var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
+      if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+        labelVisible = true;
+      }
+      if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+        var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
+        var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
+        if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
           labelVisible = true;
         }
-        if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
-          var secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
-          var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
-          if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
-            labelVisible = true;
-          }
-        }
-        if (!labelVisible) {
-          labelSectionWidth = 0;
-          if (node[DvtNBoxConstants.COLOR]) {
-            if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
-                (!icon || icon[DvtNBoxConstants.SOURCE])) {
-              // Swatch needed
-              labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, cellArea.w - indicatorSectionWidth - iconSectionWidth));
-            }
+      }
+      if (!labelVisible) {
+        labelSectionWidth = 0;
+        if (node[DvtNBoxConstants.COLOR]) {
+          if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
+              (!icon || icon[DvtNBoxConstants.SOURCE])) {
+            // Swatch needed
+            labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, cellArea.w - indicatorSectionWidth - iconSectionWidth));
           }
         }
       }
-      cellColumns = 1;
     }
+
+    // calculate how much of the node indicator and node icon we have space for. limit if necessary
     if (cellArea.w - indicatorSectionWidth - iconSectionWidth < 0) {
       var iconWidth = iconSectionWidth;
       iconSectionWidth = Math.max(0, cellArea.w - indicatorSectionWidth);
@@ -6581,6 +6831,7 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
     cellLayouts[maximizedCellIndex] = {'cellRows': -1, 'cellColumns': cellColumns, 'overflow': false};
   }
   else {
+    // gather non-minimized cells
     var cellIndices = [];
     if (maximizedRow) {
       var maximizedRowIndex = DvtNBoxDataUtils.getRowIndex(nbox, maximizedRow);
@@ -6600,9 +6851,9 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
       }
     }
 
+    // if node size is fixed, calculate cellRows and cellColumns
     if (simpleLayout['labelSectionWidth'] != null) {
       labelSectionWidth = simpleLayout['labelSectionWidth'];
-      // Node size is fixed, just need to calculate cellRows and cellColumns
       var cell = DvtNBoxDataUtils.getCell(nbox, cellIndices[0]);
       var cellArea = cell['__childArea'];
       cellRows = Math.floor((cellArea.h + gridGap) / (nodeHeight + gridGap));
@@ -6610,35 +6861,125 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
     }
     else {
       var maxCellIndex = 0;
-      // Use the most populated non-minimized cell to calculate node size
+      // find most populated non-minimized cell to calculate node size
       for (var ci = 0; ci < cellIndices.length; ci++) {
         if (!isNaN(nodeCounts[cellIndices[ci]]) && nodeCounts[cellIndices[ci]] > nodeCounts[maxCellIndex]) {
           maxCellIndex = cellIndices[ci];
         }
       }
-      var cell = DvtNBoxDataUtils.getCell(nbox, maxCellIndex);
-      var cellArea = cell['__childArea'];
-      var maxRows = Math.floor((cellArea.h + gridGap) / (nodeHeight + gridGap));
-      var maxCols = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + options['__layout']['minimumLabelWidth'] + startLabelGap + nodeEndLabelGap + gridGap));
-      if (maxRows * maxCols < nodeCounts[maxCellIndex]) {
-        labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / maxCols - (indicatorSectionWidth + iconSectionWidth + gridGap)));
-        cellRows = maxRows;
-        cellColumns = maxCols;
+      if (options['labelTruncation'] != 'ifRequired') {
+
+        var cell = DvtNBoxDataUtils.getCell(nbox, maxCellIndex);
+        var cellArea = cell['__childArea'];
+        var maxRows = Math.floor((cellArea.h + gridGap) / (nodeHeight + gridGap));
+        var maxColumns = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + options['__layout']['minimumLabelWidth'] + startLabelGap + nodeEndLabelGap + gridGap));
+        if (maxRows * maxColumns < nodeCounts[maxCellIndex]) {
+          labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / maxColumns - (indicatorSectionWidth + iconSectionWidth + gridGap)));
+          cellRows = maxRows;
+          cellColumns = maxColumns;
+        }
+        else {
+          var columnsPerRow = maxColumns;
+          labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / columnsPerRow - (indicatorSectionWidth + iconSectionWidth + gridGap)));
+          while (labelSectionWidth < (options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap)) {
+            if ((columnsPerRow - 1) * maxRows >= nodeCounts[maxCellIndex]) {
+              columnsPerRow--;
+              labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / columnsPerRow - (indicatorSectionWidth + iconSectionWidth + gridGap)));
+            }
+            else {
+              break;
+            }
+          }
+          cellRows = maxRows;
+          cellColumns = columnsPerRow;
+        }
       }
       else {
-        var columnsPerRow = maxCols;
-        labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / columnsPerRow - (indicatorSectionWidth + iconSectionWidth + gridGap)));
-        while (labelSectionWidth < (options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap)) {
-          if ((columnsPerRow - 1) * maxRows >= nodeCounts[maxCellIndex]) {
-            columnsPerRow--;
-            labelSectionWidth = Math.floor(Math.min(options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap, (cellArea.w + gridGap) / columnsPerRow - (indicatorSectionWidth + iconSectionWidth + gridGap)));
-          }
-          else {
+        // with label truncation off, need to find width that fully displays all labels
+
+        var cell = DvtNBoxDataUtils.getCell(nbox, cellIndices[0]);
+        var cellArea = cell['__childArea'];
+        var maxRows = Math.floor((cellArea.h + gridGap) / (nodeHeight + gridGap));
+        var maxColumns = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + options['__layout']['minimumLabelWidth'] + startLabelGap + nodeEndLabelGap + gridGap));
+
+        // use all vertical space to allow more horizontal space for labels
+        cellRows = maxRows;
+        cellColumns = 0;
+
+        // keep track of widest label encountered
+        var widestLabel = 0;
+
+        // keep track of how many nodes we've checked for each cell
+        var startIndex = 0;
+
+        // find number of columns we can show without truncating.  start at 1, build up.
+        while (cellColumns <= maxColumns) {
+          cellColumns++;
+
+          // max label width for given # of columns
+          var maxLabelWidth = Math.floor((cellArea.w + gridGap) / cellColumns - (indicatorSectionWidth + iconSectionWidth + gridGap));
+          // if a wider label has already been found, previous # of columns is all we can fit
+          if (widestLabel > maxLabelWidth) {
+            cellColumns = Math.max(cellColumns - 1, 1);
             break;
           }
+
+          // number of nodes that can be displayed in each cell for given # of columns
+          var maxNodes = cellColumns * cellRows;
+
+          var nodeArray = [];
+          for (var r = 0; r < rowCount; r++) {
+            for (var c = 0; c < columnCount; c++) {
+              var cellIndex = DvtNBoxDataUtils.getColumnIndex(nbox, c) + columnCount * DvtNBoxDataUtils.getRowIndex(nbox, r);
+              var nodes = cellNodes[cellIndex];
+              // skip cell if no nodes
+              if (!nodes || !nodes.length) {
+                continue;
+              }
+
+
+              // number of nodes displayed in this cell given # of columns
+              var numNodes = Math.min(nodes.length, maxNodes);
+              // subtract 1 for overflow
+              if (nodes.length > maxNodes)
+                numNodes--;
+
+              for (var n = startIndex; n < numNodes; n++) {
+                nodeArray.push(nodes[n]);
+              }
+            }
+          }
+
+          widestLabel = Math.max(widestLabel, Math.ceil(DvtNBoxNodeRenderer._getMaxLabelWidth(nbox, nodeArray) + startLabelGap + nodeEndLabelGap));
+
+          if (widestLabel > maxLabelWidth) {
+            cellColumns = Math.max(cellColumns - 1, 1);
+            break;
+          }
+
+          // stop increasing columns if we can already fit all nodes
+          if (maxNodes >= nodeCounts[maxCellIndex]) {
+            break;
+          }
+
+          // update start index to avoid checking same labels
+          startIndex = maxNodes;
         }
-        cellRows = maxRows;
-        cellColumns = columnsPerRow;
+
+        // recalculate max width for final # of columns
+        maxLabelWidth = Math.floor((cellArea.w + gridGap) / cellColumns - (indicatorSectionWidth + iconSectionWidth + gridGap));
+        // if widest label can't fit, use maximum
+        if (widestLabel > maxLabelWidth) {
+          labelSectionWidth = maxLabelWidth;
+        }
+        // otherwise extend label, up to maximumLabelWidth
+        else {
+          labelSectionWidth = Math.max(widestLabel, Math.min(maxLabelWidth, maximumLabelWidth + startLabelGap + nodeEndLabelGap));
+        }
+
+        if (labelSectionWidth < options['__layout']['minimumLabelWidth']) {
+          cellColumns = 0;
+        }
       }
     }
     for (var ci = 0; ci < cellIndices.length; ci++) {
@@ -6650,6 +6991,8 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
       cellLayouts[cellIndex] = {'cellRows': cellRows, 'cellColumns': cellColumns, 'overflow': overflow};
     }
   }
+
+
   var nodeLayout = {'nodeHeight': nodeHeight,
     'indicatorSectionWidth': indicatorSectionWidth,
     'iconSectionWidth': iconSectionWidth,
@@ -6666,15 +7009,18 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox) {
  * (Assumes that the nodes are specified homogeneously)
  * @param {DvtNBox} nbox the nbox component
  * @param {object} data the drawer data
+ * @param {array} nodes drawer nodes
  * @return {object} an object containing the calculated sizes
  */
-DvtNBoxNodeRenderer.calculateNodeDrawerLayout = function(nbox, data) {
+DvtNBoxNodeRenderer.calculateNodeDrawerLayout = function(nbox, data, nodes) {
   var options = nbox.getOptions();
   var gridGap = options['__layout']['gridGap'];
   var nodeStartLabelGap = options['__layout']['nodeStartLabelGap'];
   var nodeLabelOnlyStartLabelGap = options['__layout']['nodeLabelOnlyStartLabelGap'];
   var nodeEndLabelGap = options['__layout']['nodeEndLabelGap'];
   var nodeSwatchSize = options['__layout']['nodeSwatchSize'];
+  var maximumLabelWidth = options['__layout']['maximumLabelWidth'];
+
 
   var node = DvtNBoxDataUtils.getNode(nbox, 0);
   var indicatorIcon = DvtNBoxDataUtils.getIndicatorIcon(nbox, node);
@@ -6685,50 +7031,51 @@ DvtNBoxNodeRenderer.calculateNodeDrawerLayout = function(nbox, data) {
   var indicatorSectionWidth = simpleLayout['indicatorSectionWidth'];
   var iconSectionWidth = simpleLayout['iconSectionWidth'];
   var startLabelGap = (indicatorSectionWidth || iconSectionWidth) ? nodeStartLabelGap : nodeLabelOnlyStartLabelGap;
-  var labelSectionWidth = simpleLayout['labelSectionWidth'] != null ? simpleLayout['labelSectionWidth'] : options['__layout']['maximumLabelWidth'] + startLabelGap + nodeEndLabelGap;
+  var labelSectionWidth;
   var childArea = data['__childArea'];
-  var columns = Math.floor((childArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
-  if (columns == 0 && simpleLayout['labelSectionWidth'] == null) {
-    // Can't fit maximum label size, choose the biggest size that will fit (but not smaller than the minimum)
-    var labelWidth = childArea.w - indicatorSectionWidth - iconSectionWidth;
-    if (labelWidth >= options['__layout']['minimumLabelWidth']) {
-      labelSectionWidth = labelWidth;
-      columns = Math.floor((childArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
-    }
-  }
-  if (columns == 0 && simpleLayout['labelSectionWidth'] == null) {
-    // Can't fit maximum label size, choose the biggest size that will fit
-    labelSectionWidth = Math.max(0, childArea.w - indicatorSectionWidth - iconSectionWidth);
 
-    if (node[DvtNBoxConstants.LABEL]) {
-      // dummy container used to check if labels are still visible at this width
-      var container = new DvtContainer();
-      var labelVisible = false;
-      var label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
-      var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
-      if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+  labelSectionWidth = simpleLayout['labelSectionWidth'];
+  if (labelSectionWidth == null) {
+    if (options['labelTruncation'] != 'ifRequired') {
+      labelSectionWidth = maximumLabelWidth + startLabelGap + nodeEndLabelGap;
+    }
+    else {
+      labelSectionWidth = Math.max(maximumLabelWidth, DvtNBoxNodeRenderer._getMaxLabelWidth(nbox, nodes)) + startLabelGap + nodeEndLabelGap;
+    }
+    labelSectionWidth = Math.min(labelSectionWidth, childArea.w - indicatorSectionWidth - iconSectionWidth);
+  }
+  var columns = Math.floor((childArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
+
+  // check if labels are visible at calculated width
+  if (node[DvtNBoxConstants.LABEL]) {
+    // temp container for checking if labels are visible
+    var container = new DvtContainer();
+    var labelVisible = false;
+    var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
+    var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
+    if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+      labelVisible = true;
+    }
+    if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+      var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
+      var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
+      if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
         labelVisible = true;
       }
-      if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
-        var secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
-        var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
-        if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
-          labelVisible = true;
-        }
-      }
-      if (!labelVisible) {
-        labelSectionWidth = 0;
-        if (node[DvtNBoxConstants.COLOR]) {
-          if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
-              (!icon || icon[DvtNBoxConstants.SOURCE])) {
-            // Swatch needed
-            labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, childArea.w - indicatorSectionWidth - iconSectionWidth));
-          }
+    }
+    if (!labelVisible) {
+      labelSectionWidth = 0;
+      if (node[DvtNBoxConstants.COLOR]) {
+        if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
+            (!icon || icon[DvtNBoxConstants.SOURCE])) {
+          // Swatch needed
+          labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, childArea.w - indicatorSectionWidth - iconSectionWidth));
         }
       }
     }
-    columns = 1;
   }
+
+  // calculate how much of the node indicator and node icon we have space for. limit if necessary
   if (childArea.w - indicatorSectionWidth - iconSectionWidth < 0) {
     var iconWidth = iconSectionWidth;
     iconSectionWidth = Math.max(0, childArea.w - indicatorSectionWidth); }
@@ -6779,11 +7126,11 @@ DvtNBoxNodeRenderer._calculateSimpleNodeLayout = function(nbox) {
     indicatorSectionWidth = nodeSwatchSize;
   }
   if (node[DvtNBoxConstants.LABEL]) {
-    var label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
+    var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
     var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
     nodeHeight = Math.max(nodeHeight, labelHeight + 2 * nodeSingleLabelGap);
     if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
-      var secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), DvtOutputText.H_ALIGN_LEFT, DvtOutputText.V_ALIGN_MIDDLE);
+      var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
       var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
       nodeHeight = Math.max(nodeHeight, labelHeight + secondaryLabelHeight + 2 * nodeDualLabelGap + nodeInterLabelGap);
     }
@@ -6823,6 +7170,7 @@ DvtNBoxNodeRenderer._calculateSimpleNodeLayout = function(nbox) {
  */
 DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, nodeLayout) {
   var width = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'];
+
   var height = nodeLayout['nodeHeight'];
   var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
   var hoverColor = DvtNBoxStyleUtils.getNodeHoverColor(nbox);
@@ -6996,11 +7344,10 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
   var contrastColor = DvtColorUtils.getContrastingTextColor(color);
 
   var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
-  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
   var labelX = rtl ? nodeLayout['labelSectionWidth'] - startLabelGap : nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + startLabelGap;
 
   if (node[DvtNBoxConstants.LABEL]) {
-    var label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+    var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
     var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
     if (DvtTextUtils.fitText(label, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, labelHeight, nodeContainer)) {
       DvtNBoxRenderer.positionText(label, labelX, nodeLayout['nodeHeight'] / 2);
@@ -7009,7 +7356,7 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
       DvtNBoxDataUtils.setDisplayable(nbox, node, label, DvtNBoxConstants.LABEL);
     }
     if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
-      var secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+      var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
       var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
       if (DvtTextUtils.fitText(secondaryLabel, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, nodeContainer)) {
         var yOffset = (nodeLayout['nodeHeight'] - labelHeight - secondaryLabelHeight - nodeInterLabelGap) / 2;
@@ -7023,6 +7370,34 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
   }
 };
 
+
+/**
+ * @private
+ * Returns max label width of given nodes
+ * @param {DvtNBox} nbox
+ * @param {array} nodes the array of DvtNBoxNodes to check labels for
+ *
+ * @return {nnumber} max label width
+ */
+DvtNBoxNodeRenderer._getMaxLabelWidth = function(nbox, nodes) {
+  // create and add labels to temporary container
+  var container = new DvtContainer();
+  for (var n = 0; n < nodes.length; n++) {
+    var node = nodes[n];
+    container.addChild(DvtNBoxDataUtils.getNodeLabel(nbox, node));
+    container.addChild(DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node));
+  }
+  nbox.addChild(container);
+  var width = container.getDimensions().w;
+
+  // clean up container
+  while (container.getNumChildren() > 0) {
+    container.removeChild(container.getChildAt(0));
+  }
+  nbox.removeChild(container);
+
+  return width;
+};
 
 /**
  * Conditionally adds a clip path to the specified displayable if a border radius has been specified.
@@ -7058,6 +7433,7 @@ DvtNBoxNodeRenderer.animateUpdate = function(animationHandler, oldNode, newNode)
   animationHandler.getNewNBox().addChild(newNode);
   newNode.setMatrix(oldGlobalMatrix);
 
+
   var oldScrollContainer = DvtNBoxDataUtils.getNodeScrollableContainer(oldNBox, oldNode);
   var newScrollContainer = DvtNBoxDataUtils.getNodeScrollableContainer(newNBox, newNode);
   if (oldScrollContainer || newScrollContainer) {
@@ -7065,13 +7441,28 @@ DvtNBoxNodeRenderer.animateUpdate = function(animationHandler, oldNode, newNode)
     var rect;
     if (oldScrollContainer) {
       var oldScrollMatrix = DvtNBoxRenderer.getGlobalMatrix(oldScrollContainer);
-      var oldRect = new DvtRectangle(oldScrollMatrix.getTx(), oldScrollMatrix.getTy(), oldScrollContainer.getWidth(), oldScrollContainer.getHeight());
-      rect = oldRect;
+      var oldScrollRect = new DvtRectangle(oldScrollMatrix.getTx(), oldScrollMatrix.getTy(), oldScrollContainer.getWidth(), oldScrollContainer.getHeight());
+
+      var oldCellIndex = DvtNBoxDataUtils.getCellIndex(oldNBox, oldNode.getData());
+      var oldCell = DvtNBoxDataUtils.getCell(oldNBox, oldCellIndex);
+      var oldCellBackground = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell, 'background');
+      var oldCellMatrix = DvtNBoxRenderer.getGlobalMatrix(oldCellBackground);
+      var oldCellRect = new DvtRectangle(oldCellMatrix.getTx(), oldCellMatrix.getTy(), oldCellBackground.getWidth(), oldCellBackground.getHeight());
+
+      rect = oldScrollRect.getUnion(oldCellRect);
     }
 
     if (newScrollContainer) {
       var newScrollMatrix = DvtNBoxRenderer.getGlobalMatrix(newScrollContainer);
-      var newRect = new DvtRectangle(newScrollMatrix.getTx(), newScrollMatrix.getTy(), newScrollContainer.getWidth(), newScrollContainer.getHeight());
+      var newScrollRect = new DvtRectangle(newScrollMatrix.getTx(), newScrollMatrix.getTy(), newScrollContainer.getWidth(), newScrollContainer.getHeight());
+
+      var newCellIndex = DvtNBoxDataUtils.getCellIndex(newNBox, newNode.getData());
+      var newCell = DvtNBoxDataUtils.getCell(newNBox, newCellIndex);
+      var newCellBackground = DvtNBoxDataUtils.getDisplayable(newNBox, newCell, 'background');
+      var newCellMatrix = DvtNBoxRenderer.getGlobalMatrix(newCellBackground);
+      var newCellRect = new DvtRectangle(newCellMatrix.getTx(), newCellMatrix.getTy(), newCellBackground.getWidth(), newCellBackground.getHeight());
+
+      var newRect = newScrollRect.getUnion(newCellRect);
       rect = rect ? rect.getUnion(newRect) : newRect;
     }
 
@@ -7126,6 +7517,11 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
   var oldNBox = animationHandler.getOldNBox();
   var newNBox = animationHandler.getNewNBox();
 
+  var nodeLayout = oldNBox.getOptions()['__layout']['__nodeLayout'];
+  if (!nodeLayout) {
+    return;
+  }
+
   var oldData = oldNode.getData();
   var id = oldData[DvtNBoxConstants.ID];
   var newNodeIndex = DvtNBoxDataUtils.getNodeIndex(newNBox, id);
@@ -7147,7 +7543,6 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
           var groupNode = DvtNBoxDataUtils.getDisplayable(newNBox, group);
           if (groupNode) {
             var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-            var nodeLayout = oldNBox.getOptions()['__layout']['__nodeLayout'];
             var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
             animationHandler.add(new DvtAnimMoveTo(newNBox.getCtx(), oldNode, new DvtPoint(centerMatrix.getTx() - centerOffset.x, centerMatrix.getTy() - centerOffset.y), animationHandler.getAnimationDuration()), animationPhase);
           }
@@ -7171,7 +7566,6 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
         else {
           var cellMatrix = DvtNBoxRenderer.getGlobalMatrix(newCell);
           var cellDimensions = newCell.getDimensions();
-          var nodeLayout = oldNBox.getOptions()['__layout']['__nodeLayout'];
           var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
           animationHandler.add(new DvtAnimMoveTo(newNBox.getCtx(), oldNode, new DvtPoint(cellMatrix.getTx() + cellDimensions.w / 2 - centerOffset.x, cellMatrix.getTy() + cellDimensions.h / 2 - centerOffset.y), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
         }
@@ -7213,6 +7607,11 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
   var oldNBox = animationHandler.getOldNBox();
   var newNBox = animationHandler.getNewNBox();
 
+  var nodeLayout = newNBox.getOptions()['__layout']['__nodeLayout'];
+  if (!nodeLayout) {
+    return;
+  }
+
   var id = newNode.getData()[DvtNBoxConstants.ID];
   var oldNodeIndex = DvtNBoxDataUtils.getNodeIndex(oldNBox, id);
   if (!isNaN(oldNodeIndex)) {
@@ -7235,7 +7634,6 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
             var parent = newNode.getParent();
             var finalMatrix = DvtNBoxRenderer.getGlobalMatrix(newNode);
             var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-            var nodeLayout = newNBox.getOptions()['__layout']['__nodeLayout'];
             var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
             centerMatrix.translate(-centerOffset.x, -centerOffset.y);
             newNBox.addChild(newNode);
@@ -7269,7 +7667,7 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
       object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
   }
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -7308,7 +7706,7 @@ DvtNBoxCategoryNodeRenderer.render = function(nbox, nodeData, nodeContainer, sca
 DvtNBoxCategoryNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, scale, gap) {
   node['__scale'] = scale;
   node['__gap'] = gap;
-  var side = DvtNBoxCategoryNodeRenderer.getSideLength(node);
+  var side = Math.max(0, DvtNBoxCategoryNodeRenderer.getSideLength(node));
   var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
   var hoverColor = DvtNBoxStyleUtils.getNodeHoverColor(nbox);
   var selectionColor = DvtNBoxStyleUtils.getNodeSelectionColor(nbox);
@@ -7606,7 +8004,7 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
       object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
   }
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -7633,8 +8031,8 @@ DvtNBoxDrawerRenderer.render = function(nbox, data, drawerContainer, availSpace)
   var keyboardFocusEffect = new DvtKeyboardFocusEffect(nbox.getCtx(), drawerContainer, new DvtRectangle(-1, -1, drawerBounds.w + 2, drawerBounds.h + 2));
   DvtNBoxDataUtils.setDisplayable(nbox, data, keyboardFocusEffect, 'focusEffect');
 
-  DvtNBoxDrawerRenderer._renderHeader(nbox, data, drawerContainer);
   DvtNBoxDrawerRenderer._renderBody(nbox, data, drawerContainer);
+  DvtNBoxDrawerRenderer._renderHeader(nbox, data, drawerContainer);
   DvtNBoxDrawerRenderer._addAccessibilityAttributes(nbox, data, drawerContainer);
 };
 
@@ -7663,16 +8061,6 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var nodeCount = categoryNode['nodeIndices'].length;
 
   var drawerBounds = data['__drawerBounds'];
-
-  // Render the header shape
-  var borderRadius = DvtNBoxStyleUtils.getDrawerBorderRadius(nbox);
-  var borderColor = DvtNBoxStyleUtils.getDrawerBorderColor(nbox);
-  var headerPath = DvtPathUtils.roundedRectangle(0, 0, drawerBounds.w, drawerHeaderHeight, borderRadius, borderRadius, 0, 0);
-  var header = new DvtPath(nbox.getCtx(), headerPath);
-  header.setSolidStroke(borderColor);
-  var headerBackground = DvtNBoxStyleUtils.getDrawerHeaderBackground(nbox);
-  DvtNBoxRenderer.setFill(header, headerBackground);
-  drawerContainer.addChild(header);
 
   // Render the close button
   var closeEna = options['_resources']['close_ena'];
@@ -7722,7 +8110,7 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var countLabelSectionWidth = countLabelWidth + 2 * drawerCountHGap;
   var countIndicatorWidth = countIndicatorSectionWidth + countLabelSectionWidth;
   var countIndicatorShape;
-  if (drawerBounds.w - closeWidth - 2 * drawerButtonGap > countIndicatorWidth) {
+  if (drawerBounds.w - closeWidth - 2 * drawerButtonGap - drawerStartGap > countIndicatorWidth) {
     var countIndicatorPath = DvtPathUtils.roundedRectangle(0, 0, countIndicatorWidth, countIndicatorHeight, countBorderRadius, countBorderRadius, countBorderRadius, countBorderRadius);
     countIndicatorShape = new DvtPath(nbox.getCtx(), countIndicatorPath);
     countIndicatorShape.setSolidFill(countColor);
@@ -7771,7 +8159,7 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var categoryText = DvtNBoxDataUtils.getDisplayable(nbox, categoryNode).getLabel();
   var categoryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), categoryText, DvtNBoxStyleUtils.getDrawerLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
   var labelOffset = 0;
-  if (DvtTextUtils.fitText(categoryLabel, drawerBounds.w - drawerStartGap - drawerLabelGap - countIndicatorWidth - drawerButtonGap - closeWidth, drawerHeaderHeight, drawerContainer)) {
+  if (DvtTextUtils.fitText(categoryLabel, drawerBounds.w - drawerStartGap - drawerLabelGap - countIndicatorWidth - 2 * drawerButtonGap - closeWidth, drawerHeaderHeight, drawerContainer)) {
     var labelX = rtl ? drawerBounds.w - drawerStartGap : drawerStartGap;
     DvtNBoxRenderer.positionText(categoryLabel, labelX, drawerHeaderHeight / 2);
     var categoryLabelDims = categoryLabel.measureDimensions();
@@ -7805,10 +8193,12 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
   // Render the body shape
   var borderRadius = DvtNBoxStyleUtils.getDrawerBorderRadius(nbox);
   var borderColor = DvtNBoxStyleUtils.getDrawerBorderColor(nbox);
-  var bodyPath = DvtPathUtils.roundedRectangle(0, drawerHeaderHeight, drawerBounds.w, drawerBounds.h - drawerHeaderHeight, 0, 0, borderRadius, borderRadius);
+
+  var bodyPath = DvtPathUtils.roundedRectangle(0, 0, drawerBounds.w, drawerBounds.h, borderRadius, borderRadius, borderRadius, borderRadius);
   var body = new DvtPath(nbox.getCtx(), bodyPath);
   DvtNBoxRenderer.setFill(body, DvtNBoxStyleUtils.getDrawerBackground(nbox));
   body.setSolidStroke(borderColor);
+  body.setPixelHinting(true);
   drawerContainer.addChild(body);
   DvtNBoxDataUtils.setDisplayable(nbox, data, body, 'background');
 
@@ -7819,15 +8209,9 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
   drawerContainer.addChild(scrollContainer);
   drawerContainer.setChildContainer(scrollContainer);
 
-  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeDrawerLayout(nbox, data);
-  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
-  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
-
-  var gridPos = 0;
-
   // If no nodes are highlighted, make a single pass through the nodes for rendering
   // If some nodes are highlighted, make two passes, first rendering the highlighted nodes, then the unhighlighted nodes
-  var renderPasses = ['normal'];
+  var orderPasses = ['normal'];
   var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
   var highlightedMap = {};
@@ -7835,41 +8219,69 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
     for (var i = 0; i < highlightedItems.length; i++) {
       highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
     }
-    renderPasses = ['highlighted', 'unhighlighted'];
   }
-  var container = DvtNBoxDataUtils.getDisplayable(nbox, data).getChildContainer();
+
+  var selectedItems = DvtNBoxDataUtils.getSelectedItems(nbox);
+  var selectedMap = {};
+  if (selectedItems) {
+    for (var i = 0; i < selectedItems.length; i++) {
+      selectedMap[selectedItems[i]] = true;
+    }
+  }
+
+  if (highlightedItems) {
+    if (selectedItems)
+      orderPasses = ['highlighted-selected', 'highlighted-unselected', 'unhighlighted-selected', 'unhighlighted-unselected'];
+    else
+      orderPasses = ['highlighted-unselected', 'unhighlighted-unselected'];
+  }
+  else if (selectedItems) {
+    orderPasses = ['unhighlighted-selected', 'unhighlighted-unselected'];
+  }
+
+  var nodes = [];
   var categoryNode = DvtNBoxDataUtils.getCategoryNode(nbox, data[DvtNBoxConstants.ID]);
   var nodeCount = categoryNode['nodeIndices'].length;
-  for (var p = 0; p < renderPasses.length; p++) {
+  for (var p = 0; p < orderPasses.length; p++) {
     for (var n = 0; n < nodeCount; n++) {
       var node = DvtNBoxDataUtils.getNode(nbox, categoryNode['nodeIndices'][n]);
-      if (renderPasses[p] == 'normal' ||
-          (renderPasses[p] == 'highlighted' && highlightedMap[node[DvtNBoxConstants.ID]]) ||
-          (renderPasses[p] == 'unhighlighted' && !highlightedMap[node[DvtNBoxConstants.ID]])) {
-        if (nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] != 0 && nodeLayout['drawerLayout'][DvtNBoxConstants.ROWS] != 0) {
-          var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
-          var gridXOrigin = data['__childArea'].x + (data['__childArea'].w - nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] * hGridSize + gridGap) / 2;
-          var gridYOrigin = gridGap;
-          var gridColumn = (gridPos % nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]);
-          if (rtl) {
-            gridColumn = nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] - gridColumn - 1;
-          }
-          var gridRow = Math.floor((gridPos / nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]));
-          nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn,
-              gridYOrigin + vGridSize * gridRow);
-          gridPos++;
-          nodeContainer.render(container.getScrollingPane(), nodeLayout);
-          if (renderPasses[p] == 'unhighlighted') {
-            nodeContainer.setAlpha(alphaFade);
-          }
+      if (orderPasses[p] == 'normal' ||
+          (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
+          (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]]) ||
+          (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
+          (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]])) {
+        nodes.push(node);
+      }
+    }
+  }
 
-          //keyboard navigation
-          var prevNode = n > 0 ? DvtNBoxDataUtils.getNode(nbox, categoryNode['nodeIndices'][n - 1]) : null;
-          if (prevNode) {
-            node['__prev'] = prevNode;
-            prevNode['__next'] = node;
-          }
-        }
+  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeDrawerLayout(nbox, data, nodes);
+  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
+  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
+
+  var container = DvtNBoxDataUtils.getDisplayable(nbox, data).getChildContainer();
+  for (var n = 0; n < nodes.length; n++) {
+    var node = nodes[n];
+    if (nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] != 0 && nodeLayout['drawerLayout'][DvtNBoxConstants.ROWS] != 0) {
+      var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
+      var gridXOrigin = data['__childArea'].x + (data['__childArea'].w - nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] * hGridSize + gridGap) / 2;
+      var gridYOrigin = gridGap;
+      var gridColumn = (n % nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]);
+      if (rtl) {
+        gridColumn = nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] - gridColumn - 1;
+      }
+      var gridRow = Math.floor((n / nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]));
+      nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn, gridYOrigin + vGridSize * gridRow);
+      nodeContainer.render(container.getScrollingPane(), nodeLayout);
+      if (highlightedItems && !highlightedMap[node[DvtNBoxConstants.ID]]) {
+        nodeContainer.setAlpha(alphaFade);
+      }
+
+      //keyboard navigation
+      var prevNode = n > 0 ? nodes[n - 1] : null;
+      if (prevNode) {
+        node['__prev'] = prevNode;
+        prevNode['__next'] = node;
       }
     }
   }
@@ -7890,7 +8302,7 @@ DvtNBoxDrawerRenderer.getDrawerBounds = function(nbox, data, availSpace) {
   var options = nbox.getOptions();
   var gridGap = options['__layout']['gridGap'];
   var cellLayout = options['__layout']['__cellLayout'];
-  var drawerBounds = new DvtRectangle(availSpace.x + gridGap / 2, availSpace.y + gridGap / 2, Math.max(availSpace.w - gridGap, 0), Math.max(availSpace.h - gridGap, 0));
+  var drawerBounds = new DvtRectangle(availSpace.x + gridGap, availSpace.y + gridGap, Math.max(availSpace.w - 2 * gridGap, 0), Math.max(availSpace.h - 2 * gridGap, 0));
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(nbox);
   if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     var cellIndex = parseInt(data['id'].substring(0, data[DvtNBoxConstants.ID].indexOf(':')));
@@ -7899,7 +8311,7 @@ DvtNBoxDrawerRenderer.getDrawerBounds = function(nbox, data, availSpace) {
       var r = DvtNBoxDataUtils.getRowIndex(nbox, cell[DvtNBoxConstants.ROW]);
       var c = DvtNBoxDataUtils.getColumnIndex(nbox, cell[DvtNBoxConstants.COLUMN]);
       var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, cellLayout, availSpace);
-      drawerBounds = new DvtRectangle(cellDims.x + gridGap / 2, cellDims.y + gridGap / 2 + cellLayout['headerSize'], Math.max(cellDims.w - gridGap, 0), Math.max(cellDims.h - cellLayout['headerSize'] - gridGap, 0));
+      drawerBounds = new DvtRectangle(cellDims.x + gridGap, cellDims.y + gridGap + cellLayout['headerSize'], Math.max(cellDims.w - 2 * gridGap, 0), Math.max(cellDims.h - cellLayout['headerSize'] - 2 * gridGap, 0));
     }
   }
   return drawerBounds;
@@ -8761,6 +9173,57 @@ DvtNBoxDataUtils.getNodeScrollableContainer = function(nbox, node) {
 
 
 /**
+ * Returns the DvtOutputText node label
+ * Creates it if it does not already exist
+ *
+ * @param {DvtNBox} nbox the nbox component
+ * @param {object} node the node data object
+ * @return {DvtOutputText} label
+ */
+DvtNBoxDataUtils.getNodeLabel = function(nbox, node) {
+  if (!node[DvtNBoxConstants.LABEL]) {
+    return null;
+  }
+  var label = DvtNBoxDataUtils.getDisplayable(nbox, node, DvtNBoxConstants.LABEL);
+  if (label) {
+    return label;
+  }
+
+  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
+  label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+
+  DvtNBoxDataUtils.setDisplayable(nbox, node, label, DvtNBoxConstants.LABEL);
+  return label;
+};
+
+
+/**
+ * Returns the DvtOutputText node secondary label
+ * Creates it if it does not already exist
+ *
+ * @param {DvtNBox} nbox the nbox component
+ * @param {object} node the node data object
+ * @return {DvtOutputText} secondary label
+ */
+DvtNBoxDataUtils.getNodeSecondaryLabel = function(nbox, node) {
+  if (!node[DvtNBoxConstants.SECONDARY_LABEL]) {
+    return null;
+  }
+  var secondaryLabel = DvtNBoxDataUtils.getDisplayable(nbox, node, DvtNBoxConstants.SECONDARY_LABEL);
+  if (secondaryLabel) {
+    return secondaryLabel;
+  }
+
+  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
+  secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+
+  DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, DvtNBoxConstants.SECONDARY_LABEL);
+  return secondaryLabel;
+};
+
+/**
  * Fires a DvtSetPropertyEvent to the nbox
  *
  * @param {DvtNBox} nbox the nbox component
@@ -8928,7 +9391,7 @@ DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
 };
 
 
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -9022,7 +9485,15 @@ DvtNBoxStyleUtils.getRowLabelStyle = function(nbox, rowIndex) {
  */
 DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
-  var styleKey = DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex) ? 'minimizedStyle' : DvtNBoxConstants.STYLE;
+  var styleKey = DvtNBoxConstants.STYLE;
+  var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
+  var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
+  if (DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
+    styleKey = 'minimizedStyle';
+  }
+  else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
+    styleKey = 'maximizedStyle';
+  }
   var defaults = options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS][styleKey];
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
   if (cell[styleKey]) {

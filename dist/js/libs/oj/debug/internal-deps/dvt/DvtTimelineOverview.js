@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtOverview'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -1765,7 +1765,7 @@ DvtTimelineOverviewEvent.prototype.isMultiSelect = function()
 
   return false;
 };
-// Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  DvtTimelineOverviewAutomation                                      */
 /*---------------------------------------------------------------------*/
@@ -1817,7 +1817,7 @@ DvtTimelineOverviewAutomation.prototype.GetSubIdForDomElement = function(display
     var seriesIds = this._overview.getSeriesIds();
     if (seriesIds != null)
     {
-      var seriesIndex = seriesIds.indexOf(arr[1]);
+      var seriesIndex = DvtArrayUtils.getIndex(seriesIds, arr[1]);
       if (seriesIndex > -1)
         return 'marker[' + seriesIndex + '][' + arr[2] + ']';
     }

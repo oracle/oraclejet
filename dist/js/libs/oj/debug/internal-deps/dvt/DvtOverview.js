@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -186,7 +186,7 @@ DvtOverview.prototype.isFeatureOff = function(feature)
   if (this._featuresOff == null)
     return false;
 
-  return (this._featuresOff.indexOf(feature) != -1);
+  return (DvtArrayUtils.getIndex(this._featuresOff, feature) != -1);
 };
 
 

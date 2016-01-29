@@ -1,16 +1,17 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define([], function() {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Create DvtObj so that it will be able to export the classes as needed.
   var D = window;
   var DvtObj = function(){};
   DvtObj['owner'] = D;
   D['DvtObj'] = DvtObj;
+
 // Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -161,7 +162,7 @@ DvtObj.createCallback = function(thisPtr, func) {
 DvtObj.defineConstant = function(constValue) {
   return constValue;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   DvtArrayUtils         Miscellaneous array utility functions           */
 /*-------------------------------------------------------------------------*/
@@ -356,9 +357,12 @@ DvtArrayUtils.copy = function(ar)
   *  @param {Object} item  The item to be found.
   *  @type {number}
   */
-DvtArrayUtils.getIndex = function(array, item)
+DvtArrayUtils.getIndex = function(array, item) 
 {
   if (array) {
+    if (array.indexOf)
+      return array.indexOf(item);
+
     for (var i = 0; i < array.length; i++) {
       if (array[i] === item) {
         return i;
@@ -368,15 +372,17 @@ DvtArrayUtils.getIndex = function(array, item)
   return -1;
 };
 
-
 /**
   *  Returns the index of the last occurrence of an item in an array.
   *  @param {Array} array  The array to be searched.
   *  @param {Object} item  The item to be found.
   *  @type {number}
   */
-DvtArrayUtils.getLastIndex = function(array, item)
+DvtArrayUtils.getLastIndex = function(array, item) 
 {
+  if (array.lastIndexOf)
+    return array.lastIndexOf(item);
+
   for (var i = array.length - 1; i >= 0; i--) {
     if (array[i] === item) {
       return i;
@@ -384,68 +390,6 @@ DvtArrayUtils.getLastIndex = function(array, item)
   }
   return -1;
 };
-
-
-/*--------------------------------------------------------------------*/
-/*   getMinIndex(), getMaxIndex()                                     */
-/*--------------------------------------------------------------------*/
-/**
-  *  Returns the index to the array entry containg the minimum value.
-  *  Array entries with undefined or null values are ignored.
-  *  @param {Array} ar the array to be searched.
-  *  @type {number}
-  *  @return The index of the array entry containing the minimum value.
-  *           If the array length is zero, or all entries are undefined
-  *           or null, a value of -1 is returned.
-  */
-DvtArrayUtils.getMinIndex = function(ar)
-{
-  var nRet = -1;
-  var len = ar.length;
-  var minVal = Number.MAX_VALUE;
-  var val;
-
-  for (var i = 0; i < len; i++) {
-    val = ar[i];
-
-    if (val && (typeof val === 'number') && (val < minVal)) {
-      minVal = val;
-      nRet = i;
-    }
-  }
-
-  return nRet;
-};
-
-
-/**
-  *  Returns the index to the array entry containg the maximum value.
-  *  Array entries with undefined or null values are ignored.
-  *  @param {Array} ar the array to be searched.
-  *  @type {number}
-  *  @return The index of the array entry containing the maximum value.
-  *           If the array length is zero, or all entries are undefined
-  *           or null, a value of -1 is returned.
-  */
-DvtArrayUtils.getMaxIndex = function(ar)
-{
-  var nRet = -1;
-  var len = ar.length;
-  var maxVal = Number.MIN_VALUE;
-  var val;
-
-  for (var i = 0; i < len; i++) {
-    val = ar[i];
-
-    if (val && (typeof val === 'number') && (val > maxVal)) {
-      maxVal = val;
-      nRet = i;
-    }
-  }
-
-  return nRet;
-};
-
 
 /**
  * Returns true if the two arrays have the same contents.
@@ -553,6 +497,56 @@ DvtArrayUtils.createBooleanMap = function(array) {
   }
   return ret;
 };
+
+/**
+ * Applies a function against an accumulator and each value of the array (from left-to-right) to reduce it to a single value.
+ * @param {array} array The array to apply reduce function to
+ * @param {function} callback The function to apply
+ * @return {Object}
+ */
+DvtArrayUtils.reduce = function(array, callback) {
+  if (array.reduce)
+    return array.reduce(callback);
+
+  var len = array.length;
+  var val = array[0];
+  for (var i = 1; i < len; i++)
+    val = callback(val, array[i], i, array);
+  return val;
+};
+
+/**
+ * Creates a new array with the results of calling a provided function on every element in this array.
+ * @param {array} array The array to apply map function to
+ * @param {function} callback The function to apply
+ * @return {array}
+ */
+DvtArrayUtils.map = function(array, callback) {
+  if (array.map)
+    return array.map(callback);
+
+  var len = array.length;
+  var ar = [];
+  for (var i = 0; i < len; i++)
+    ar[i] = callback(array[i], i, array);
+
+  return ar;
+};
+
+/**
+ * Executes a provided function once per array element
+ * @param {array} array The array to apply map function to
+ * @param {function} callback The function to apply
+ */
+DvtArrayUtils.forEach = function(array, callback) {
+  if (array.map) {
+    array.forEach(callback);
+  } else {
+    var len = array.length;
+    for (var i = 0; i < len; i++)
+      callback(array[i], i, array);
+  }
+};
 // Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   DvtStringUtils         Miscellaneous string utility functions         */
@@ -631,7 +625,7 @@ DvtStringUtils.processAriaLabel = function(label) {
 
   return ret;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Context object corresponding to an SVG document. The constructor creates a SVG document inside the specified
  * container.
@@ -648,7 +642,7 @@ var DvtContext = function(container, id, referenceDiv) {
   // Create the SVG document and add to the container
   var svgId = id ? id + '_svg' : null;
   this._root = DvtToolkitUtils.createSvgDocument(svgId);
-  container.appendChild(this._root);
+  container.appendChild(this._root);//@HTMLUpdateOK
 
   // Save a reference to the svg element's parent div for updating the active descendent needed for accessibility
   this._parentDiv = container;
@@ -1106,7 +1100,7 @@ DvtContext.resetCaches = function() {
   DvtTextUtils._cachedTextDimensions = {};
   DvtMarkerUtils._cache = {};
 
-  if (DvtLedGaugeRenderer)
+  if (typeof(DvtLedGaugeRenderer) != 'undefined')
     DvtLedGaugeRenderer._cache = null;
 };
 
@@ -2110,7 +2104,7 @@ DvtScheduler.prototype.pause = function()
     }
   }
 };
-// Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Class representing an animator that animates a property change.
  * @extends {DvtScheduled}
@@ -2304,7 +2298,7 @@ DvtAnimator.prototype.GetPropItem = function(obj, getter) {
  */
 DvtAnimator.GetKey = function(obj) {
   if (!obj._dvtAnimPropMapKey) {
-    obj._dvtAnimPropMapKey = DvtAnimator._KEY_PREFIX + Math.random();
+    obj._dvtAnimPropMapKey = DvtAnimator._KEY_PREFIX + Math.random();//@RandomNumberOk
   }
   return obj._dvtAnimPropMapKey;
 };
@@ -7193,7 +7187,7 @@ DvtCombinedAnimScaleFade.prototype.Init = function(context, outObjs, inObjs, bou
 
   DvtCombinedAnimScaleFade.superclass.Init.call(this, context, [fadeOut, fadeIn]);
 };
-// Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate a set of display objects popping into the display
   * at staggered times.
@@ -7244,7 +7238,7 @@ DvtCombinedAnimPopIn.prototype.Init = function(context, objs, bCenter, popDurati
     var dispObj = dispObjArray[i];
     //if (dispObj instanceof DvtDisplayable)
     //{
-    var individualDelay = delay + (Math.random() * (totalDuration - popDuration));
+    var individualDelay = delay + (Math.random() * (totalDuration - popDuration));//Randomize the delay @RandomNumberReview
     var popIn = new DvtAnimPopIn(context, dispObj, bCenter, popDuration, individualDelay);
     array.push(popIn);
     //}
@@ -7252,7 +7246,7 @@ DvtCombinedAnimPopIn.prototype.Init = function(context, objs, bCenter, popDurati
 
   DvtCombinedAnimPopIn.superclass.Init.call(this, context, array);
 };
-// Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class used to animate a set of display objects popping out of the display
   * at staggered times.
@@ -7304,7 +7298,7 @@ DvtCombinedAnimPopOut.prototype.Init = function(context, objs, bCenter, popDurat
     var dispObj = dispObjArray[i];
     //if (dispObj instanceof DvtDisplayable)
     //{
-    var individualDelay = delay + (Math.random() * (totalDuration - popDuration));
+    var individualDelay = delay + (Math.random() * (totalDuration - popDuration));//Randomize the delay @RandomNumberReview
     var popIn = new DvtAnimPopOut(context, dispObj, bCenter, popDuration, individualDelay);
     array.push(popIn);
     //}
@@ -7365,7 +7359,7 @@ DvtBaseDrawEffect.prototype.setId = function(id) {
 DvtBaseDrawEffect.prototype.mergeProps = function(obj) {
   obj.setId(this._id);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*   DvtColorUtils       A static class for css color manipulation         */
 /*-------------------------------------------------------------------------*/
@@ -7413,35 +7407,147 @@ DvtColorUtils.getColorFromName = function(name)
 {
   if (! DvtColorUtils._names) {
     var ar = [];
-    ar['aqua'] = '#00FFFF';
+    ar['aliceblue'] = '#f0f8ff';
+    ar['antiquewhite'] = '#faEbd7';
+    ar['aqua'] = '#00ffff';
+    ar['aquamarine'] = '#7fffd4';
+    ar['azure'] = '#f0ffff';
+    ar['beige'] = '#f5f5dc';
+    ar['bisque'] = '#ffE4c4';
     ar['black'] = '#000000';
-    ar['blue'] = '#0000FF';
-    ar['white'] = '#FFFFFF';
-    ar['fuchsia'] = '#FF00FF';
-    ar['gray'] = '#848284';
-    ar['lime'] = '#00FF00';
-    ar['maroon'] = '#840000';
-    ar['green'] = '#008200';
-    ar['navy'] = '#000084';
-    ar['olive'] = '#848200';
-    ar['red'] = '#FF0000';
-    ar['silver'] = '#C6C3C6';
-    ar['teal'] = '#008284';
-    ar['yellow'] = '#FFFF00';
+    ar['blanchedalmond'] = '#ffEbcd';
+    ar['blue'] = '#0000ff';
+    ar['blueviolet'] = '#8a2bE2';
+    ar['brown'] = '#a52a2a';
+    ar['burlywood'] = '#dEb887';
+    ar['cadetblue'] = '#5f9Ea0';
+    ar['chartreuse'] = '#7fff00';
+    ar['chocolate'] = '#d2691E';
+    ar['coral'] = '#ff7f50';
+    ar['cornflowerblue'] = '#6495Ed';
+    ar['cornsilk'] = '#fff8dc';
+    ar['crimson'] = '#dc143c';
+    ar['cyan'] = '#00ffff';
+    ar['darkblue'] = '#00008b';
+    ar['darkcyan'] = '#008b8b';
+    ar['darkgoldenrod'] = '#b8860b';
+    ar['darkgray'] = '#a9a9a9';
+    ar['darkgreen'] = '#006400';
+    ar['darkkhaki'] = '#bdb76b';
+    ar['darkmagenta'] = '#8b008b';
+    ar['darkolivegreen'] = '#556b2f';
+    ar['darkorange'] = '#ff8c00';
+    ar['darkorchid'] = '#9932cc';
+    ar['darkred'] = '#8b0000';
+    ar['darksalmon'] = '#E9967a';
+    ar['darkseagreen'] = '#8fbc8f';
+    ar['darkslateblue'] = '#483d8b';
+    ar['darkslategray'] = '#2f4f4f';
+    ar['darkturquoise'] = '#00cEd1';
+    ar['darkviolet'] = '#9400d3';
+    ar['deeppink'] = '#ff1493';
+    ar['deepskyblue'] = '#00bfff';
+    ar['dimgray'] = '#696969';
+    ar['dodgerblue'] = '#1E90ff';
+    ar['firebrick'] = '#b22222';
+    ar['floralwhite'] = '#fffaf0';
+    ar['forestgreen'] = '#228b22';
+    ar['fuchsia'] = '#ff00ff';
+    ar['gainsboro'] = '#dcdcdc';
+    ar['ghostwhite'] = '#f8f8ff';
+    ar['gold'] = '#ffd700';
+    ar['goldenrod'] = '#daa520';
+    ar['gray'] = '#808080';
+    ar['green'] = '#008000';
+    ar['greenyellow'] = '#adff2f';
+    ar['honeydew'] = '#f0fff0';
+    ar['hotpink'] = '#ff69b4';
+    ar['indianred '] = '#cd5c5c';
+    ar['indigo '] = '#4b0082';
+    ar['ivory'] = '#fffff0';
+    ar['khaki'] = '#f0E68c';
+    ar['lavender'] = '#E6E6fa';
+    ar['lavenderblush'] = '#fff0f5';
+    ar['lawngreen'] = '#7cfc00';
+    ar['lemonchiffon'] = '#fffacd';
+    ar['lightblue'] = '#add8E6';
+    ar['lightcoral'] = '#f08080';
+    ar['lightcyan'] = '#E0ffff';
+    ar['lightgoldenrodyellow'] = '#fafad2';
+    ar['lightgray'] = '#d3d3d3';
+    ar['lightgreen'] = '#90EE90';
+    ar['lightpink'] = '#ffb6c1';
+    ar['lightsalmon'] = '#ffa07a';
+    ar['lightseagreen'] = '#20b2aa';
+    ar['lightskyblue'] = '#87cEfa';
+    ar['lightslategray'] = '#778899';
+    ar['lightsteelblue'] = '#b0c4dE';
+    ar['lightyellow'] = '#ffffE0';
+    ar['lime'] = '#00ff00';
+    ar['limegreen'] = '#32cd32';
+    ar['linen'] = '#faf0E6';
+    ar['magenta'] = '#ff00ff';
+    ar['maroon'] = '#800000';
+    ar['mediumaquamarine'] = '#66cdaa';
+    ar['mediumblue'] = '#0000cd';
+    ar['mediumorchid'] = '#ba55d3';
+    ar['mediumpurple'] = '#9370db';
+    ar['mediumseagreen'] = '#3cb371';
+    ar['mediumslateblue'] = '#7b68EE';
+    ar['mediumspringgreen'] = '#00fa9a';
+    ar['mediumturquoise'] = '#48d1cc';
+    ar['mediumvioletred'] = '#c71585';
+    ar['midnightblue'] = '#191970';
+    ar['mintcream'] = '#f5fffa';
+    ar['mistyrose'] = '#ffE4E1';
+    ar['moccasin'] = '#ffE4b5';
+    ar['navajowhite'] = '#ffdEad';
+    ar['navy'] = '#000080';
+    ar['oldlace'] = '#fdf5E6';
+    ar['olive'] = '#808000';
+    ar['olivedrab'] = '#6b8E23';
+    ar['orange'] = '#ffa500';
+    ar['orangered'] = '#ff4500';
+    ar['orchid'] = '#da70d6';
+    ar['palegoldenrod'] = '#EEE8aa';
+    ar['palegreen'] = '#98fb98';
+    ar['paleturquoise'] = '#afEEEE';
+    ar['palevioletred'] = '#db7093';
+    ar['papayawhip'] = '#ffEfd5';
+    ar['peachpuff'] = '#ffdab9';
+    ar['peru'] = '#cd853f';
+    ar['pink'] = '#ffc0cb';
+    ar['plum'] = '#dda0dd';
+    ar['powderblue'] = '#b0E0E6';
     ar['purple'] = '#800080';
-
-    // name colors for testing
-    ar['cyan'] = '#D2B48C';
-    ar['goldenrod'] = '#DAA520';
-    ar['lightblue'] = '#ADD8E6';
-    ar['lightyellow'] = '#FFFFE0';
-    ar['orange'] = '#FFA500';
-    ar['paleGoldenRod'] = '#EEE8AA';
-    ar['paleturquoise'] = '#AFEEEE';
-    ar['peachpuff'] = '#FFDAB9';
-    ar['pink'] = '#FFC0CB';
-    ar['tan'] = '#D2B48C';
-    ar['thistle'] = '#D8BFD8';
+    ar['rebeccapurple'] = '#663399';
+    ar['red'] = '#ff0000';
+    ar['rosybrown'] = '#bc8f8f';
+    ar['royalblue'] = '#4169E1';
+    ar['saddlebrown'] = '#8b4513';
+    ar['salmon'] = '#fa8072';
+    ar['sandybrown'] = '#f4a460';
+    ar['seagreen'] = '#2E8b57';
+    ar['seashell'] = '#fff5EE';
+    ar['sienna'] = '#a0522d';
+    ar['silver'] = '#c0c0c0';
+    ar['skyblue'] = '#87cEEb';
+    ar['slateblue'] = '#6a5acd';
+    ar['slategray'] = '#708090';
+    ar['snow'] = '#fffafa';
+    ar['springgreen'] = '#00ff7f';
+    ar['steelblue'] = '#4682b4';
+    ar['tan'] = '#d2b48c';
+    ar['teal'] = '#008080';
+    ar['thistle'] = '#d8bfd8';
+    ar['tomato'] = '#ff6347';
+    ar['turquoise'] = '#40E0d0';
+    ar['violet'] = '#EE82EE';
+    ar['wheat'] = '#f5dEb3';
+    ar['white'] = '#ffffff';
+    ar['whitesmoke'] = '#f5f5f5';
+    ar['yellow'] = '#ffff00';
+    ar['yellowgreen'] = '#9acd32';
 
     ar['transparent'] = 'rgba(255,255,255,0)';
 
@@ -12363,7 +12469,7 @@ DvtImageLoader.loadImage = function(context, src, onComplete) {
 };
 
 
-// Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
@@ -12412,7 +12518,7 @@ DvtJSONUtils.clone = function(obj, keyFunc) {
     for (var key in obj) {
       if (!keyFunc || keyFunc(key)) {
         var value = obj[key];
-        if (DvtJSONUtils._isDeepClonable(value)) // deep clone objects
+        if (DvtJSONUtils._isDeepClonable(value) && key != '_widgetConstructor') // deep clone objects
           ret[key] = DvtJSONUtils.clone(value, keyFunc);
         else // copy values
           ret[key] = value;
@@ -12456,8 +12562,9 @@ DvtJSONUtils.merge = function(a, b) {
 DvtJSONUtils._copy = function(a, b) {
   for (var key in a) {
     var value = a[key];
-    if (value && (value instanceof Array)) {
+    if ((value && (value instanceof Array)) || key == '_widgetConstructor') {
       // Copy the array over, since we don't want arrays to be merged
+      // We also don't want the widget constructor to be copied/cloned
       b[key] = value;
     }
     else if (b[key] && (b[key] instanceof DvtCSSStyle)) {
@@ -12493,14 +12600,9 @@ DvtJSONUtils._isDeepClonable = function(obj) {
     return (obj instanceof Object) && !(obj instanceof Boolean) && !(obj instanceof String) && !(obj instanceof Number) && !(obj instanceof Function) && !(obj.then);
 };
 /**
- * Abstract class for Events.
- *
- * <p>The supported fields are:
- * <ul>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
+ * Abstract class for wrapper classes for native DOM events.
+ * Internal events like DvtScrollEvent/DvtResizeEvent that do not wrap native DOM events should not extend this class.
+ * @constructor
  */
 var DvtBaseEvent = function() {};
 
@@ -12509,14 +12611,16 @@ DvtObj.createSubclass(DvtBaseEvent, DvtObj, 'DvtBaseEvent');
 
 /**
  * Object initializer
- *
- * @param {String} type
- * @param {String} target
+ * @param {Object} event The native event
+ * @protected
  */
-DvtBaseEvent.prototype.Init = function(type, target)
+DvtBaseEvent.prototype.Init = function(event)
 {
-  this.type = type;
-  this.target = target;
+  this.type = event.type;
+  // Find the DvtObj corresponding to the event target
+  this.target = DvtBaseEvent.FindDisplayable(event.target);
+  this._isPropagationStopped = false;
+  this._event = event;
 };
 
 
@@ -12525,7 +12629,7 @@ DvtBaseEvent.prototype.Init = function(type, target)
  * @return {Object} The native event that we are wrapping
  */
 DvtBaseEvent.prototype.getNativeEvent = function() {
-  return null; // subclasses should override
+  return this._event;
 };
 
 
@@ -12533,7 +12637,8 @@ DvtBaseEvent.prototype.getNativeEvent = function() {
  * Prevents the default browser action that the native event would have triggered
  */
 DvtBaseEvent.prototype.preventDefault = function() {
-  // subclasses should override
+  if (this._event.cancelable)
+    this._event.preventDefault();
 };
 
 
@@ -12541,16 +12646,21 @@ DvtBaseEvent.prototype.preventDefault = function() {
  * Stops propagation of the native event in the browser's event bubbling phase.
  */
 DvtBaseEvent.prototype.stopPropagation = function() {
-  // subclasses should override
+  if (this._event.stopPropagation)
+    this._event.stopPropagation();
+  this._event.cancelBubble = true;
+  this._event.cancel = true;
+  this._event.returnValue = false;
+  this._isPropagationStopped = true;
 };
 
 
 /**
  * Checks whether event propagation was stopped
+ * @return {boolean}
  */
 DvtBaseEvent.prototype.isPropagationStopped = function() {
-  // subclasses should override
-  return false;
+  return this._isPropagationStopped;
 };
 
 
@@ -12563,14 +12673,22 @@ DvtBaseEvent.prototype.getType = function() {
   return this.type;
 };
 
-
 /**
- * Returns the event target for this event.
- * @return {string} The event target for this event.
- * @export
+ * Given an SVG DOM target, returns the corresponding DvtDisplayable.
+ * @param {DOMElement} target The original DOM element target
+ * @return {DvtDisplayable} The corresponding displayable, if any.
+ * @protected
  */
-DvtBaseEvent.prototype.getTarget = function() {
-  return this.target;
+DvtBaseEvent.FindDisplayable = function(target) {
+  while (target) {
+    // If this object has a displayable, return it
+    if (target._obj && target._obj.getObj && target._obj.getObj())
+      return target._obj.getObj();
+    else // Otherwise look at the parent
+      target = target.parentNode;
+  }
+
+  return null;
 };
 /**
  * Base class for component level events.
@@ -12669,20 +12787,15 @@ DvtBaseComponentEvent.prototype.getParamValue = function(paramKey) {
 
 
 
-// Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
  * Platform independent class for Focus Events. This class roughly follows the DOM Level 3 API.
- * @param {string} type
- * @param {boolean} bubbles
- * @param {boolean} cancelable
- * @param {object} view
- * @param {object} target
- * @param {object} relatedTarget
+ * @param {FocusEvent} event The native FocusEvent
  */
-var DvtFocusEvent = function(type, bubbles, cancelable, view, target, relatedTarget) 
+var DvtFocusEvent = function(event) 
 {
-  this.Init(type, bubbles, cancelable, view, target, relatedTarget);
+  this.Init(event);
 };
 
 DvtObj.createSubclass(DvtFocusEvent, DvtBaseEvent, 'DvtFocusEvent');
@@ -12706,51 +12819,27 @@ DvtFocusEvent.BLUR = DvtObj.defineConstant('blur');
 
 /**
  * Object initializer.
- * @param {string} type
- * @param {boolean} bubbles
- * @param {boolean} cancelable
- * @param {object} view
- * @param {object} target
- * @param {object} relatedTarget
+ * @param {FocusEvent} event The native FocusEvent
  * @protected
  */
-DvtFocusEvent.prototype.Init = function(type, bubbles, cancelable, view, target, relatedTarget)
+DvtFocusEvent.prototype.Init = function(event)
 {
-  DvtFocusEvent.superclass.Init.call(this, type, target);
-  this.bubbles = bubbles;
-  this.cancelable = cancelable;
-  this.view = view;
-  this.relatedTarget = relatedTarget;
+  DvtFocusEvent.superclass.Init.call(this, event);
+  this.bubbles = event.bubbles;
+  this.cancelable = event.cancelable;
+  this.view = event.view;
+  // Find the DvtObj corresponding to the event target
+  if (event.relatedTarget != null)
+    this.relatedTarget = DvtBaseEvent.FindDisplayable(event.relatedTarget);
 };
 /**
  * Platform independent class for Keyboard Events.
- *
- * <p>The supported fields are:
- * <ul>
- * <li>altKey</li>
- * <li>ctrlKey</li>
- * <li>shiftKey</li>
- * <li>charCode</li>
- * <li>keyCode</li>
- * </ul>
- *
  * @constructor
- * @param {String} type
- * @param {boolean} bubbles
- * @param {boolean} cancelable
- * @param {Object} view
- * @param {Number} charCode
- * @param {Number} keyCode
- * @param {Number} location
- * @param {Boolean} ctrlKey
- * @param {Boolean} altKey
- * @param {Boolean} shiftKey
- * @param {Boolean} repeat
- * @param {String} locale
+ * @param {KeyboardEvent} event The DOM KeyboardEvent
  */
-var DvtKeyboardEvent = function(type, bubbles, cancelable, view, charCode, keyCode, location, ctrlKey, altKey, shiftKey, repeat, locale)
+var DvtKeyboardEvent = function(event)
 {
-  this.Init(type, bubbles, cancelable, view, charCode, keyCode, location, ctrlKey, altKey, shiftKey, repeat, locale);
+  this.Init(event);
 };
 
 DvtObj.createSubclass(DvtKeyboardEvent, DvtBaseEvent, 'DvtKeyboardEvent');
@@ -12875,33 +12964,22 @@ DvtKeyboardEvent.GRAVE_ACCENT = 192;
 
 /**
  * Object initializer.  This essentially mirrors the DOM initKeyboardEvent() API
- * @param {String} type
- * @param {boolean} bubbles
- * @param {boolean} cancelable
- * @param {Object} view
- * @param {Number} charCode
- * @param {Number} keyCode
- * @param {Number} location
- * @param {Boolean} ctrlKey
- * @param {Boolean} altKey
- * @param {Boolean} shiftKey
- * @param {Boolean} repeat
- * @param {String} locale
+ * @param {KeyboardEvent} event The DOM KeyboardEvent
+ * @protected
  */
-DvtKeyboardEvent.prototype.Init = function(type, bubbles, cancelable, view, charCode, keyCode, location, ctrlKey, altKey, shiftKey, repeat, locale)
-{
-  DvtKeyboardEvent.superclass.Init.call(this, type, null);
-  this.bubbles = bubbles;
-  this.cancelable = cancelable;
-  this.view = view;
-  this.charCode = charCode;
-  this.keyCode = keyCode;
-  this.location = location;
-  this.ctrlKey = ctrlKey;
-  this.altKey = altKey;
-  this.shiftKey = shiftKey;
-  this.repeat = repeat;
-  this.locale = locale;
+DvtKeyboardEvent.prototype.Init = function(event) {
+  DvtKeyboardEvent.superclass.Init.call(this, event);
+  this.bubbles = event.bubbles;
+  this.cancelable = event.cancelable;
+  this.view = event.view;
+  this.charCode = event.charCode;
+  this.keyCode = event.keyCode;
+  this.location = event.location;
+  this.ctrlKey = event.ctrlKey || event.metaKey; //treat the meat key same as ctrl;
+  this.altKey = event.altKey;
+  this.shiftKey = event.shiftKey;
+  this.repeat = event.repeat;
+  this.locale = event.locale;
 };
 
 
@@ -13045,101 +13123,187 @@ DvtKeyboardEvent.isSemicolon = function(event)
 };
 /**
  * @constructor
- * Abstract class for Mouse Events.  This class roughly follows the DOM Level 2 API.
- *
- * <p>The supported fields are:
- * <ul>
- * <li>ctrlKey</li>
- * <li>relatedTarget</li>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
+ * Wrapper class for Mouse Events.  This class roughly follows the DOM Level 2 API.
+ * @param {MouseEvent} event The DOM MouseEvent
  */
-var DvtMouseEvent = function(type, target, relatedTarget, button, ctrlKey, metaKey, shiftKey, pageX, pageY) 
+var DvtMouseEvent = function(event) 
 {
-  this.Init(type, target, relatedTarget, button, ctrlKey, metaKey, shiftKey, pageX, pageY);
+  this.Init(event);
 };
 
 DvtObj.createSubclass(DvtMouseEvent, DvtBaseEvent, 'DvtMouseEvent');
 
 // Constants for mouse event types
 //: indirectly assign the value so the closure compiler will abbreviate references to the constant
+/** @const **/
 DvtMouseEvent.CLICK = DvtObj.defineConstant('click');
+/** @const **/
 DvtMouseEvent.DBLCLICK = DvtObj.defineConstant('dblclick');
+/** @const **/
 DvtMouseEvent.MOUSEOVER = DvtObj.defineConstant('mouseover');
+/** @const **/
 DvtMouseEvent.MOUSEOUT = DvtObj.defineConstant('mouseout');
+/** @const **/
 DvtMouseEvent.MOUSEDOWN = DvtObj.defineConstant('mousedown');
+/** @const **/
 DvtMouseEvent.MOUSEUP = DvtObj.defineConstant('mouseup');
+/** @const **/
 DvtMouseEvent.MOUSEMOVE = DvtObj.defineConstant('mousemove');
-DvtMouseEvent.MOUSEWHEEL = DvtObj.defineConstant('mousewheel');
+/** @const **/
+DvtMouseEvent.MOUSEWHEEL = DvtObj.defineConstant('wheel');
 
+/** @const **/
 DvtMouseEvent.RIGHT_CLICK_BUTTON = 2;
 
 
 /**
  * Object initializer. This essentially mirrors the DOM initMouseEvent() API
- * @param {String} type
- * @param {Boolean} bubbles
- * @param {Boolean} cancelable
- * @param {Object} view
- * @param {Number} detail
- * @param {Number} pageX
- * @param {Number} pageY
- * @param {Number} clientX
- * @param {Number} clientY
- * @param {Boolean} ctrlKey
- * @param {Boolean} altKey
- * @param {Boolean} shiftKey
- * @param {Boolean} metaKey
- * @param {Number} button
- * @param {Object} relatedTarget
+ * @param {MouseEvent} event The DOM MouseEvent
+ * @protected
  */
-DvtMouseEvent.prototype.Init = function(type, bubbles, cancelable, view, detail, pageX, pageY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget)
-{
-  DvtMouseEvent.superclass.Init.call(this, type, null);
-  this.bubbles = bubbles;
-  this.cancelable = cancelable;
-  this.view = view;
-  this.detail = detail;
-  this.pageX = pageX;
-  this.pageY = pageY;
-  this.clientX = clientX;
-  this.clientY = clientY;
-  this.ctrlKey = ctrlKey || metaKey;
-  this.altKey = altKey;
-  this.shiftKey = shiftKey;
-  this.metaKey = metaKey;
-  this.button = button;
-  this.relatedTarget = relatedTarget;
+DvtMouseEvent.prototype.Init = function(event) {
+  DvtMouseEvent.superclass.Init.call(this, event);
+  // Find the DvtObj corresponding to the event target
+  if (event.relatedTarget != null)
+    this.relatedTarget = DvtBaseEvent.FindDisplayable(event.relatedTarget);
+
+  // Copy the remaining information
+  this.button = event.button;
+  this.ctrlKey = event.ctrlKey || event.metaKey;
+  this.shiftKey = event.shiftKey;
+  this.pageX = event.pageX;
+  this.pageY = event.pageY;
+  //: Flag indicates if the event is modified for Internet Explorer
+  this._isEventModifiedForIE = false;
+
+  if (event.wheelDeltaY != null)
+    this.wheelDelta = event.wheelDeltaY / 40;
+  else if (event.deltaY != null) {
+    this.deltaMode = event.deltaMode;
+    this.deltaY = event.deltaY;
+
+    // Approximate the wheel delta from the deltaY and deltaMode
+    if (event.deltaMode == event.DOM_DELTA_LINE)
+      this.wheelDelta = -event.deltaY;
+    else if (event.deltaMode == event.DOM_DELTA_PIXEL)
+      this.wheelDelta = -event.deltaY / 15;
+  }
+  else if (event.wheelDelta != null)
+    this.wheelDelta = event.wheelDelta / 40;
+  else
+    this.wheelDelta = event.detail;
 };
 
 /**
- * Abstract class for Touch Events.
- *
- * <p>The supported fields are:
- * <ul>
- * <li>touches</li>
- * <li>targetTouches</li>
- * <li>changedTouches</li>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
+ * Modify the event for IE with the new event type and new target element
+ * @param {string} newType  New MouseEvent type
+ * @param {DOMElement} newTargetElement  New SVG DOM Target Element
  */
-var DvtTouchEvent = function() {};
+DvtMouseEvent.prototype.modifyEventForIE = function(newType, newTargetElement) {
+  //: Set the event type as newType, relatedTarget as current target and target as displayable of newTargetElement
+  //This will target the event to newTargetElement and change the event type
+  //Modify the event target only once because every DvtMouseEvent instance has unique native event.
+  //Doing this more than once will make relatedTarget and target same as displayable of newTargetElement
+  if (!this._isEventModifiedForIE) {
+    this.type = newType;
+    this.relatedTarget = this.target;
+    this.target = DvtBaseEvent.FindDisplayable(newTargetElement);
+    this._isEventModifiedForIE = true;
+  }
+};
+/**
+ * Wrapper class for Touch Events.
+ * @param {TouchEvent} event The DOM TouchEvent
+ * @constructor
+ */
+var DvtTouchEvent = function(event) {
+  this.Init(event);
+};
 
 DvtObj.createSubclass(DvtTouchEvent, DvtBaseEvent, 'DvtTouchEvent');
 
 // Constants for touch event types
 //: indirectly assign the value so the closure compiler will abbreviate references to the constant
+/** @const **/
 DvtTouchEvent.TOUCHSTART = DvtObj.defineConstant('touchstart');
+/** @const **/
 DvtTouchEvent.TOUCHMOVE = DvtObj.defineConstant('touchmove');
+/** @const **/
 DvtTouchEvent.TOUCHEND = DvtObj.defineConstant('touchend');
+/** @const **/
 DvtTouchEvent.TOUCHCANCEL = DvtObj.defineConstant('touchcancel');
 
-DvtTouchEvent.prototype.Init = function()
-{
+/**
+ * @param {TouchEvent} event The DOM TouchEvent
+ * @protected
+ */
+DvtTouchEvent.prototype.Init = function(event) {
+  DvtTouchEvent.superclass.Init.call(this, event);
+  // Convert touchcancel to touchend
+  if (event.type == DvtTouchEvent.TOUCHCANCEL) {
+    this.type = DvtTouchEvent.TOUCHEND;
+  }
+  this.touches = DvtTouchEvent.createTouchArray(event.touches);
+  this.targetTouches = DvtTouchEvent.createTouchArray(event.targetTouches);
+  this.changedTouches = DvtTouchEvent.createTouchArray(event.changedTouches);
+
+  this._touchManager = null;
+};
+
+/**
+ * Blocks a touch hold event
+ */
+DvtTouchEvent.prototype.blockTouchHold = function() {
+  this.getNativeEvent()._touchHoldBlocked = true;
+};
+
+/**
+ * Returns true if this is the initial touch event
+ * @return {boolean}
+ */
+DvtTouchEvent.prototype.isInitialTouch = function() {
+  return (this.touches.length - this.changedTouches.length) == 0;
+};
+
+/**
+ * Returns true if a touch hold event has been blocked and false otherwise.
+ * @return {boolean}
+ */
+DvtTouchEvent.prototype.isTouchHoldBlocked = function() {
+  return (this.getNativeEvent()._touchHoldBlocked) ? true : false;
+};
+
+/**
+ * Creates an array of DvtTouchEvents from native TouchEvents
+ * @param {Array} nativeTouchArray The array of native touch events
+ * @return {Array}
+ */
+DvtTouchEvent.createTouchArray = function(nativeTouchArray) {
+  var touches = new Array();
+  for (var i = 0; i < nativeTouchArray.length; i++) {
+    var nativeTouch = nativeTouchArray[i];
+    var touch = new DvtTouch(nativeTouch);
+    touches.push(touch);
+  }
+  return touches;
+};
+
+/**
+ * Prevents further propagation of the current event
+ */
+DvtTouchEvent.prototype.stopPropagation = function() {
+  DvtTouchEvent.superclass.stopPropagation.call(this);
+  if (this._touchManager)
+    this._touchManager.postEventBubble(this);
+};
+
+
+/**
+ * Sets a touch manager object
+ * @param {DvtTouchManager} touchManager The touch manager object for the event
+ */
+DvtTouchEvent.prototype.setTouchManager = function(touchManager) {
+  this._touchManager = touchManager;
 };
 /**
  * @constructor
@@ -13445,7 +13609,7 @@ DvtTouchManager.prototype.startTouchHold = function(evt) {
 /**
  * Execute listeners for logical events.
  * Note that there is no way to bubble logical events in the framework at the moment
- * @param {DvtSvgTouchEvent} touchEvent  Dvt touch event
+ * @param {DvtTouchEvent} touchEvent  Dvt touch event
  */
 DvtTouchManager.prototype.fireLogicalEvents = function(touchEvent) {
   var type = touchEvent.type;
@@ -13938,7 +14102,7 @@ DvtTouchManager.prototype._getStoredTouches = function(touches) {
 
 /**
  * Process touch move event
- * @param {DvtSvgTouchEvent} touchEvent Dvt touch move event
+ * @param {DvtTouchEvent} touchEvent Dvt touch move event
  * @return {boolean} true if the touch move event is processed successfully
  */
 DvtTouchManager.prototype.processTouchMove = function(touchEvent) {
@@ -14597,77 +14761,131 @@ DvtComponentTouchEvent.prototype.isPropagationStopped = function() {
 DvtComponentTouchEvent.prototype.getNativeEvent = function() {
   return this._nativeEvent;
 };
-// Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
+ * @param {number} ww The width of the resize
+ * @param {number} hh The height of the resize
+ * @param {number} xx The x coordinate of the resize
+ * @param {number} yy The y coordinate of the resize
  * @constructor
  */
 var DvtResizeEvent = function(ww, hh, xx, yy) {
-  this.Init(DvtResizeEvent.RESIZE_EVENT, ww, hh, xx, yy);
+  this.Init(ww, hh, xx, yy);
 };
 
-DvtObj.createSubclass(DvtResizeEvent, DvtBaseEvent, 'DvtResizeEvent');
+DvtObj.createSubclass(DvtResizeEvent, DvtObj, 'DvtResizeEvent');
 
+/** @const **/
 DvtResizeEvent.RESIZE_EVENT = 'dvtResizeEvent';
 
-DvtResizeEvent.prototype.Init = function(type, ww, hh, xx, yy) {
-  DvtResizeEvent.superclass.Init.call(this, type);
-
+/**
+ * Helper initiailizer method
+ * @param {number} ww The width of the resize
+ * @param {number} hh The height of the resize
+ * @param {number} xx The x coordinate of the resize
+ * @param {number} yy The y coordinate of the resize
+ * @protected
+ */
+DvtResizeEvent.prototype.Init = function(ww, hh, xx, yy) {
+  this.type = DvtResizeEvent.RESIZE_EVENT;
   this._ww = ww;
   this._hh = hh;
   this._xx = xx;
   this._yy = yy;
 };
 
+/**
+ * Returns the width of the resize event
+ * @return {number}
+ */
 DvtResizeEvent.prototype.getWidth = function() {
   return this._ww;
 };
 
+/**
+ * Returns the height of the resize event
+ * @return {number}
+ */
 DvtResizeEvent.prototype.getHeight = function() {
   return this._hh;
 };
 
+/**
+ * Returns the x coordinate of the resize event
+ * @return {number}
+ */
 DvtResizeEvent.prototype.getX = function() {
   return this._xx;
 };
 
+/**
+ * Returns the y coordinate of the resize event
+ * @return {number}
+ */
 DvtResizeEvent.prototype.getY = function() {
   return this._yy;
 };
-// Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+
 /**
+ * Returns the event type for this event.
+ * @return {string} The event type for this event.
+ * @export
+ */
+DvtResizeEvent.prototype.getType = function() {
+  return this.type;
+};
+// Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * @param {number} x The x coordinate of the scroll
+ * @param {number} y The y coordinate of the scroll
  * @constructor
  */
 var DvtScrollEvent = function(x, y) {
-  this.Init(DvtScrollEvent.SCROLL_EVENT, x, y);
+  this.Init(x, y);
 };
 
-DvtObj.createSubclass(DvtScrollEvent, DvtBaseEvent, 'DvtScrollEvent');
+DvtObj.createSubclass(DvtScrollEvent, DvtObj, 'DvtScrollEvent');
 
+/** @const **/
 DvtScrollEvent.SCROLL_EVENT = 'dvtScrollEvent';
 
 
 /**
  * Initializer
+ * @param {number} x The x coordinate of the scroll
+ * @param {number} y The y coordinate of the scroll
  * @protected
  */
-DvtScrollEvent.prototype.Init = function(type, x, y) {
-  DvtScrollEvent.superclass.Init.call(this, type);
-
+DvtScrollEvent.prototype.Init = function(x, y) {
+  this.type = DvtScrollEvent.SCROLL_EVENT;
   this._x = x;
   this._y = y;
 };
 
+/**
+ * Returns the x coordinate of the scroll event
+ * @return {number}
+ */
 DvtScrollEvent.prototype.getX = function() {
   return this._x;
 };
 
+/**
+ * Returns the y coordinate of the scroll event
+ * @return {number}
+ */
 DvtScrollEvent.prototype.getY = function() {
   return this._y;
 };
 
-
-
-
+/**
+ * Returns the event type for this event.
+ * @return {string} The event type for this event.
+ * @export
+ */
+DvtScrollEvent.prototype.getType = function() {
+  return this.type;
+};
 /**
  * @constructor
  * @param {string} type Event type.
@@ -14790,6 +15008,80 @@ DvtSimpleScrollbarEvent.prototype.getNewMin = function() {
  */
 DvtSimpleScrollbarEvent.prototype.getNewMax = function() {
   return this._newMax;
+};
+var DvtEventFactory = new Object();
+
+DvtObj.createSubclass(DvtEventFactory, DvtObj, 'DvtEventFactory');
+
+// Note: this doesn't need to live in the factory because it will always be called
+// by impl specific code looking to wrap the event.
+/**
+ * Creates a DVT wrapper for a mouse, keyboard, focus or touch event
+ * @param {MouseEvent|KeyboardEvent|TouchEvent|FocusEvent} nativeEvent native event
+ * @param {DvtContext} context rendering context
+ * @return {DvtBaseEvent} a wrapper for a mouse, keyboard, focus or touch event
+ */
+DvtEventFactory.newEvent = function(nativeEvent, context) {
+  // TODO detect the event type and perform wrapping as needed
+  var eventType = nativeEvent.type;
+  if (eventType == DvtTouchEvent.TOUCHSTART || eventType == DvtTouchEvent.TOUCHMOVE || eventType == DvtTouchEvent.TOUCHEND || eventType == DvtTouchEvent.TOUCHCANCEL) {
+    return new DvtTouchEvent(nativeEvent);
+  }
+  else if (eventType == DvtKeyboardEvent.KEYDOWN || eventType == DvtKeyboardEvent.KEYUP || eventType == DvtKeyboardEvent.KEYPRESS) {
+    return new DvtKeyboardEvent(nativeEvent);
+  }
+  else {
+    //: if the native event is the same as the last one, return the stored logical event,
+    //otherwise create a new logical event and store the pair of events
+    if (context._nativeEvent != nativeEvent) {
+      context._nativeEvent = nativeEvent;
+      if (eventType == DvtFocusEvent.FOCUS || eventType == DvtFocusEvent.FOCUSIN || eventType == DvtFocusEvent.FOCUSOUT || eventType == DvtFocusEvent.BLUR) {
+        context._logicalEvent = new DvtFocusEvent(nativeEvent);
+      }
+      else { // default to mouse event
+        context._logicalEvent = new DvtMouseEvent(nativeEvent);
+      }
+    }
+    return context._logicalEvent;
+  }
+};
+
+
+/**
+ * Returns a DvtMouseEvent that wraps the given keyboard event.  The given stageX and stageY coordinates are used to
+ * compute the DvtMouseEvent's pageX and pageY fields
+ *
+ * @param {DvtKeyboardEvent} keyboardEvent
+ * @param {DvtContext} context
+ * @param {String} eventType
+ * @param {DvtStage} stage
+ * @param {Number} stageX
+ * @param {Number} stageY
+ * @return {DvtMouseEvent}
+ */
+DvtEventFactory.generateMouseEventFromKeyboardEvent = function(keyboardEvent, context, eventType, stage, stageX, stageY)
+{
+  var nativeEvent = null;
+
+  if (document.createEvent)
+  {
+    nativeEvent = document.createEvent('MouseEvents');
+
+    var pageCoord = context.stageToPageCoords(stageX, stageY);
+
+    nativeEvent.initMouseEvent(eventType, true, true, window, 1, pageCoord.x, pageCoord.y, pageCoord.x, pageCoord.y,
+        keyboardEvent.ctrlKey, keyboardEvent.altKey, keyboardEvent.shiftKey, keyboardEvent.metaKey,
+        0, null);
+  }
+
+  if (nativeEvent)
+  {
+    var mouseEvent = DvtEventFactory.newEvent(nativeEvent, context);
+    mouseEvent.target = keyboardEvent.target;
+    return mouseEvent;
+  }
+  else
+    return null;
 };
 // Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------------------------------*/
@@ -18446,14 +18738,14 @@ DvtDisplayable.prototype.dispatchDisplayableEvent = function(eventType, params) 
            the event with the right keycode; it is always 0.  This is a known bug tracked in Chromium and at Webkit
            see http://code.google.com/p/chromium/issues/detail?id=27048 (Chromium) and
            https://bugs.webkit.org/show_bug.cgi?id=16735 (Webkit)
-        2. since the native event doesn't work, I tried dispatching a DvtSvgKeyboardEvent to the wrapping div.
+        2. since the native event doesn't work, I tried dispatching a DvtKeyboardEvent to the wrapping div.
            however, this generates a DOM EventException of type UNSPECIFIED_EVENT_TYPE_ERR, even though the
-           type of the DvtSvgKeyboardEvent was specified.
+           type of the DvtKeyboardEvent was specified.
 
         So, instead, we will directly call the bubble listener that we attach to the wrapping div
         */
 
-      var svgKeyboardEvent = DvtSvgEventFactory.newEvent(keyboardEvent);
+      var svgKeyboardEvent = DvtEventFactory.newEvent(keyboardEvent);
       svgKeyboardEvent.keyCode = keycode;
       svgKeyboardEvent.ctrlKey = this._ctrlKeyPressed;
       svgKeyboardEvent.shiftKey = this._shiftKeyPressed;
@@ -18652,7 +18944,7 @@ DvtDisplayable.prototype._bubbleListener = function(event) {
           //During the subsequent MOUSEOVER event if the event target is different than _bubbleHoverItem,
           //that indicates the browser have missed to fire MOUSEOUT event for previous DOM element stored in _bubbleHoverItem.
           //So building a new MOUSEOUT event for _bubbleHoverItem.
-          var dvtEvent = DvtSvgEventFactory.newEvent(event, this.getCtx());
+          var dvtEvent = DvtEventFactory.newEvent(event, this.getCtx());
           //: Set the event as MOUSEOUT event, target as _bubbleHoverItem, relatedTarget as event.target
           //This is equivalent to firing new MOUSEOUT event for _bubbleHoverItem
           dvtEvent.modifyEventForIE(DvtMouseEvent.MOUSEOUT, this._bubbleHoverItem);
@@ -18666,7 +18958,7 @@ DvtDisplayable.prototype._bubbleListener = function(event) {
     }
   }
 
-  var dvtEvent = DvtSvgEventFactory.newEvent(event, this.getCtx());
+  var dvtEvent = DvtEventFactory.newEvent(event, this.getCtx());
   this.FireListener(dvtEvent, false);
 };
 
@@ -18694,7 +18986,7 @@ DvtDisplayable.prototype._captureListener = function(event) {
           //During the subsequent MOUSEOVER event if the event target is different than _captureHoverItem,
           //that indicates the browser have missed to fire MOUSEOUT event for previous DOM element stored in _captureHoverItem.
           //So building a new MOUSEOUT event for _captureHoverItem.
-          var dvtEvent = DvtSvgEventFactory.newEvent(event, this.getCtx());
+          var dvtEvent = DvtEventFactory.newEvent(event, this.getCtx());
           //: Set the event as MOUSEOUT event, target as _captureHoverItem, relatedTarget as event.target
           //This is equivalent to firing new MOUSEOUT event for _captureHoverItem
           dvtEvent.modifyEventForIE(DvtMouseEvent.MOUSEOUT, this._captureHoverItem);
@@ -18707,7 +18999,7 @@ DvtDisplayable.prototype._captureListener = function(event) {
       this._captureHoverItem = null;
     }
   }
-  var dvtEvent = DvtSvgEventFactory.newEvent(event, this.getCtx());
+  var dvtEvent = DvtEventFactory.newEvent(event, this.getCtx());
   this.FireListener(dvtEvent, true);
 };
 // File containing all paint (fill and stroke) related functions defined on DvtDisplayable.
@@ -19177,7 +19469,7 @@ DvtDisplayable.prototype.setMatrix = function(mat) {
     }
   }
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Container for displayable objects.
  * @extends {DvtDisplayable}
@@ -19321,7 +19613,7 @@ DvtContainer.prototype.AddChildAt = function(obj, index) {
     // : IE9 cannot handle a value of undefined in insertBefore.  Set to null in such a case.
     if (!existingNode)
       existingNode = null;
-    containerElem.insertBefore(obj.getOuterElem(), existingNode);
+    containerElem.insertBefore(obj.getOuterElem(), existingNode);//@HTMLUpdateOK
 
     if (!this._arList) {
       this._arList = [];
@@ -19672,7 +19964,7 @@ DvtContainer._reparentChildren = function(target, source) {
     for (var i = childNodes.length - 1; i >= 0; i--) {
       node = childNodes[i];
       if (lastNode) {
-        target.insertBefore(node, lastNode);
+        target.insertBefore(node, lastNode);//@HTMLUpdateOK
       }
       else {
         DvtToolkitUtils.appendChildElem(target, node);
@@ -23885,7 +24177,7 @@ DvtRect.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new DvtRectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of DvtOutputText.
  * @extends {DvtShape}
@@ -23998,7 +24290,7 @@ DvtOutputText.prototype.setTextString = function(textString) {
   // Update the text node if it is already created
   var textNode = this.getElem().firstChild;
   if (textNode !== null) {
-    textNode.nodeValue = textString;
+    textNode.nodeValue = textString;//@HtmlUpdateOK
   }
   else {
     // Otherwise create it
@@ -24509,7 +24801,7 @@ DvtOutputText.prototype.GetSvgDimensions = function() { // TODO  target coord sp
     bbox.y += this._getBaselineTranslation();
 
   //  - Japanese group label doesn't display in IE11
-  if (!this._isRepresentativeText() && DvtAgent.isPlatformIE())
+  if (!this._isRepresentativeText())
     bbox.h = DvtTextUtils.getTextStringHeight(this.getCtx(), this.getCSSStyle());
 
   return bbox;
@@ -24734,7 +25026,7 @@ DvtOutputText.getCachedDimensions = function(textString, cssStyle) {
   // Look for the value in the cache and return it if found or null otherwise.
   return DvtOutputText._cache ? DvtOutputText._cache.get(cacheKey) : null;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Creates an instance of DvtBackgroundOutputText.
  * @extends {DvtContainer}
@@ -24771,12 +25063,9 @@ DvtBackgroundOutputText.prototype.Init = function(context, textStr, x, y, style,
   DvtBackgroundOutputText.superclass.Init.call(this, context, 'g', id);
 
   this.TextInstance = this.CreateTextInstance(context, textStr, x, y, id);
+  this._backgroundRect = null;
   if (style)
     this.setCSSStyle(style);
-
-  this._backgroundRect = this.CreateBackground(context, this.TextInstance);
-
-  this.addChild(this._backgroundRect);
   this.addChild(this.TextInstance);
 };
 
@@ -24996,8 +25285,13 @@ DvtBackgroundOutputText.prototype.setCSSStyle = function(style) {
   if (this.TextInstance)
     this.TextInstance.setCSSStyle(style);
 
-  if (this._backgroundRect)
+  if (this._backgroundRect || DvtBackgroundOutputText._hasBackgroundStyles(style)) {
+    if (!this._backgroundRect) {
+      this._backgroundRect = this.CreateBackground(this.getCtx(), this.TextInstance);
+      this.addChildAt(this._backgroundRect, 0);
+    }
     this._setBackgroundCSSStyle(this._backgroundRect, style);
+  }
 
   this._style = style;
 };
@@ -25126,11 +25420,7 @@ DvtBackgroundOutputText.prototype.CreateTextInstance = function(context, textStr
 DvtBackgroundOutputText.prototype.CreateBackground = function(context, text) {
   var bboxDims = text.getDimensions();
   var padding = bboxDims.h * DvtBackgroundOutputText._PADDING;
-
-  var rect = new DvtRect(context, bboxDims.x - padding, bboxDims.y, bboxDims.w + (2 * padding), bboxDims.h);
-  this._setBackgroundCSSStyle(rect, this._style);
-
-  return rect;
+  return new DvtRect(context, bboxDims.x - padding, bboxDims.y, bboxDims.w + (2 * padding), bboxDims.h);
 };
 
 /**
@@ -25224,7 +25514,24 @@ DvtBackgroundOutputText.prototype._setBackgroundCSSStyle = function(rect, style)
 DvtBackgroundOutputText.prototype.GetTextDimensionsForRealign = function(dims) {
   return dims.h;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * returns true if style has any of the background styles
+ * set by DvtBackgroundOutputText.prototype._setBackgroundCSSStyle
+ * @private
+ * @param {DvtCSSStyle} style the styles of the background text
+ * @return {boolean} true if style has any of the background styles
+ */
+DvtBackgroundOutputText._hasBackgroundStyles = function(style) {
+  if (!style) {
+    return false;
+  }
+  if (style.getStyle(DvtCSSStyle.BORDER_COLOR) || style.getStyle(DvtCSSStyle.BORDER_WIDTH) ||
+      style.getStyle(DvtCSSStyle.BORDER_RADIUS) || style.getStyle(DvtCSSStyle.BACKGROUND_COLOR))
+    return true;
+  return false;
+};
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Read-only text object that supports wrapping.
  * @extends {DvtContainer}
@@ -25381,7 +25688,7 @@ DvtMultilineText.prototype.getX = function() {
  * @return {DvtMultilineText}
  */
 DvtMultilineText.prototype.setX = function(x) {
-  this._getTextLines().forEach(function(entry) { entry.setX(x)});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.setX(x)});
   return this;
 };
 
@@ -25414,7 +25721,7 @@ DvtMultilineText.prototype.setY = function(y) {
     var yChange = y - this._textInstance.getY();
     if (!yChange)
       yChange = y;
-    this._getTextLines().forEach(function(entry) { var yLine = entry.getY(); entry.setY(yLine ? yLine + yChange : yChange)});
+    DvtArrayUtils.forEach(this._getTextLines(), function(entry) { var yLine = entry.getY(); entry.setY(yLine ? yLine + yChange : yChange)});
   }
   else // Align each entry in reference to the yCoord based on it's alignment
     this._alignVerticalText();
@@ -25468,7 +25775,7 @@ DvtMultilineText.prototype.getHorizAlignment = function() {
  * @return {DvtMultilineText}
  */
 DvtMultilineText.prototype.setHorizAlignment = function(align) {
-  this._getTextLines().forEach(function(entry) { entry.setHorizAlignment(align)});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.setHorizAlignment(align)});
   return this;
 };
 
@@ -25484,7 +25791,7 @@ DvtMultilineText.prototype.alignLeft = function() {
 
   this._horizAlign = DvtMultilineText.H_ALIGN_LEFT;
 
-  this._getTextLines().forEach(function(entry) { entry.alignLeft()});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.alignLeft()});
 };
 
 
@@ -25498,7 +25805,7 @@ DvtMultilineText.prototype.alignCenter = function() {
 
   this._horizAlign = DvtMultilineText.H_ALIGN_CENTER;
 
-  this._getTextLines().forEach(function(entry) { entry.alignCenter()});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.alignCenter()});
 };
 
 
@@ -25513,7 +25820,7 @@ DvtMultilineText.prototype.alignRight = function() {
 
   this._horizAlign = DvtMultilineText.H_ALIGN_RIGHT;
 
-  this._getTextLines().forEach(function(entry) { entry.alignRight()});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.alignRight()});
 };
 
 /**
@@ -25527,7 +25834,7 @@ DvtMultilineText.prototype.alignTop = function() {
   this._vertAlign = DvtMultilineText.V_ALIGN_TOP;
 
   this._alignVerticalText();
-  this._getTextLines().forEach(function(entry) {
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) {
     entry.alignTop();
   });
 
@@ -25546,7 +25853,7 @@ DvtMultilineText.prototype.alignMiddle = function() {
   this._vertAlign = DvtMultilineText.V_ALIGN_MIDDLE;
 
   this._alignVerticalText();
-  this._getTextLines().forEach(function(entry) {
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) {
     entry.alignMiddle();
   });
 
@@ -25564,7 +25871,7 @@ DvtMultilineText.prototype.alignBottom = function() {
   this._vertAlign = DvtMultilineText.V_ALIGN_BOTTOM;
 
   this._alignVerticalText();
-  this._getTextLines().forEach(function(entry) {
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) {
     entry.alignBottom();
   });
 
@@ -25616,7 +25923,7 @@ DvtMultilineText.prototype.getCSSStyle = function() {
  * @return {DvtMultilineText}
  */
 DvtMultilineText.prototype.setCSSStyle = function(style) {
-  this._getTextLines().forEach(function(entry) { entry.setCSSStyle(style)});
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) { entry.setCSSStyle(style)});
   return this;
 };
 
@@ -25757,7 +26064,7 @@ DvtMultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, br
  */
 DvtMultilineText.prototype.GetSvgDimensions = function() {
   var dimensions;
-  this._getTextLines().forEach(function(entry) {
+  DvtArrayUtils.forEach(this._getTextLines(), function(entry) {
     dimensions = dimensions ? dimensions.getUnion(entry.measureDimensions()) : entry.measureDimensions();
   });
   return dimensions ? dimensions : new DvtRectangle(0, 0, 0, 0);
@@ -28117,6 +28424,15 @@ DvtBaseComponent.prototype.render = function(options, width, height)
 };
 
 /**
+ * Fires the ready event to notify the component owner that the render is complete. Should be called by component when it's ready.
+ * @protected
+ */
+DvtBaseComponent.prototype.RenderComplete = function() 
+{
+  this.dispatchEvent(new DvtReadyEvent());
+};
+
+/**
  * Returns the width of this component
  * @return {number}
  */
@@ -28157,7 +28473,7 @@ DvtBaseComponent.prototype.select = function(selection) {
  * Dispatches the event to the callback function.
  * @param {object} event The event to be dispatched.
  */
-DvtBaseComponent.prototype.__dispatchEvent = function(event) {
+DvtBaseComponent.prototype.dispatchEvent = function(event) {
   DvtEventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, event);
 };
 
@@ -28172,7 +28488,7 @@ DvtBaseComponent.prototype.getDimensionsWithStroke = function(targetCoordinateSp
  * Returns this component's event manager
  * @return {DvtEventManager}
  */
-DvtBaseComponent.prototype.__getEventManager = function() {
+DvtBaseComponent.prototype.getEventManager = function() {
   // subclasses should override
   return null;
 };
@@ -28183,7 +28499,7 @@ DvtBaseComponent.prototype.__getEventManager = function() {
  * @export
  */
 DvtBaseComponent.prototype.getKeyboardFocus = function() {
-  var eventManager = this.__getEventManager();
+  var eventManager = this.getEventManager();
   if (eventManager)
     return eventManager.getFocus() ? eventManager.getFocus().getTargetElem() : null;
   return null;
@@ -28262,7 +28578,7 @@ DvtBaseComponentDefaults.prototype.getDefaults = function(skin) {
     return DvtJSONUtils.clone(this.constructor.defaultsCache[skin]);
   else {
     // Note: Subsequent default objects are deltas on top of previous objects
-    var skinIndex = Math.max(DvtBaseComponentDefaults._SKINS.indexOf(skin), 0);
+    var skinIndex = Math.max(DvtArrayUtils.getIndex(DvtBaseComponentDefaults._SKINS, skin), 0);
     var ret = DvtJSONUtils.clone(this._defaults[DvtBaseComponentDefaults._SKINS[0]]);
     for (var i = 1; i <= skinIndex; i++) {
       ret = DvtJSONUtils.merge(this._defaults[DvtBaseComponentDefaults._SKINS[i]], ret);
@@ -28756,7 +29072,7 @@ DvtSimpleScrollbar.prototype._setViewportRange = function(min, max, eventSubtype
  * @param {DvtContext} context
  * @param {number} width The width of the scrollable container
  * @param {number} height The height of the scrollable container
- * @param {boolean} isHorizontalScrolling True if this container scrolls hoirzontally
+ * @param {boolean} isHorizontalScrolling True if this container scrolls horizontally
  */
 var DvtSimpleScrollableContainer = function(context, width, height, isHorizontalScrolling) {
   DvtSimpleScrollableContainer.superclass.Init.call(this, context);
@@ -28775,10 +29091,7 @@ var DvtSimpleScrollableContainer = function(context, width, height, isHorizontal
   this._isScrollbarVisible = false;
 
   if (!DvtAgent.isTouchDevice()) {
-    if (DvtAgent.isPlatformGecko()) //Firefox
-      this.addEvtListener('DOMMouseScroll', this._onMouseWheel, false, this);
-    else
-      this.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this._onMouseWheel, false, this);
+    this.addEvtListener(DvtMouseEvent.MOUSEWHEEL, this._onMouseWheel, false, this);
   }
 };
 
@@ -28811,7 +29124,7 @@ DvtSimpleScrollableContainer.prototype.prepareContentPane = function() {
   // TODO 
   // - Support customization of scrollbar color, width, etc.
 
-  if (this._contentSize > this._getAvailSize()) {
+  if (this.hasScrollingContent()) {
     // add padding to bottom to match top when scrolling
     if (this._isHorizontalScrolling)
       this._contentSize += size.x;
@@ -28940,7 +29253,7 @@ DvtSimpleScrollableContainer.prototype._updateFade = function(translate) {
  * @private
  */
 DvtSimpleScrollableContainer.prototype._onMouseWheel = function(event) {
-  if (this._contentSize <= this._getAvailSize())
+  if (!this.hasScrollingContent())
     return;
 
   this._showScrollbar();
@@ -29002,7 +29315,7 @@ DvtSimpleScrollableContainer.prototype.getHeight = function() {
  * @param {DvtDisplayable} displayable The displayable to view.
  */
 DvtSimpleScrollableContainer.prototype.scrollIntoView = function(displayable) {
-  if (this._contentSize <= this._getAvailSize())
+  if (!this.hasScrollingContent())
     return;
 
   var dim = displayable.getDimensions(displayable.getParent());
@@ -29041,6 +29354,14 @@ DvtSimpleScrollableContainer.prototype.scrollIntoView = function(displayable) {
   }
   if (translate != undefined)
     this._updateFade(translate);
+};
+
+/**
+ * Returns whether or not content will scroll based on available space.
+ * @return {boolean} true if content will scroll
+ */
+DvtSimpleScrollableContainer.prototype.hasScrollingContent = function() {
+  return this._contentSize > this._getAvailSize();
 };
 /**
  * Drag recognizer
@@ -29329,7 +29650,7 @@ DvtDropTarget.prototype.dragExit = function() {
 DvtDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   return null; // subclasses should override
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -29440,6 +29761,8 @@ DvtButton.prototype.setEnabled = function(bEnabled)
       this.removeEvtListener(clickEvent, this._clickHandler, false, this);
       this.setCursor(null);
     }
+    // render disabled state
+    this.initState();
   }
 };
 
@@ -29735,6 +30058,13 @@ DvtButton.prototype.setCallback = function(callback, callbackObj) {
 
 DvtButton.prototype.setTooltip = function(tooltip) {
   this._tooltip = tooltip;
+
+  // Assume that if using DvtButton's tooltip getter/setter that we should set wai-aria properties
+  // Otherwise, assume that button owner has separate logical object that will handle accessibility
+  if (tooltip) {
+    this.setAriaRole('button');
+    this.setAriaProperty('label', tooltip);
+  }
 };
 
 DvtButton.prototype.getTooltip = function() {
@@ -31040,7 +31370,7 @@ DvtAgent.getFocusColor = function() {
     if (DvtAgent.isPlatformWebkit() && !DvtAgent.isEnvironmentTest()) {
       var body = document.getElementsByTagName('body')[0];
       var tempDiv = document.createElement('div');
-      body.appendChild(tempDiv);
+      body.appendChild(tempDiv);//@HTMLUpdateOK
       tempDiv.style.outline = '-webkit-focus-ring-color';
       focusColor = window.getComputedStyle(tempDiv).getPropertyValue('outline-color');
       body.removeChild(tempDiv);
@@ -31418,7 +31748,7 @@ DvtPopupBehaviorHandler.prototype.processPopupHelper = function(target, behavior
   if (target && behaviors && behaviors.length > 0) {
     for (var i = 0; i < behaviors.length; i++) {
       var behavior = behaviors[i];
-      if (behavior && triggers.indexOf(behavior.getTriggerType()) != -1) {
+      if (behavior && DvtArrayUtils.getIndex(triggers, behavior.getTriggerType()) != -1) {
         //: hide an existing popup before showing a new one
         this.HidePopup(event);
         this._behavior = behavior;
@@ -31638,7 +31968,7 @@ DvtPopupBehaviorHandler.prototype.hasPopup = function(obj, triggers) {
   if (behaviors) {
     for (var i = 0; i < behaviors.length; i++) {
       var behavior = behaviors[i];
-      if (behavior && triggers.indexOf(behavior.getTriggerType()) != -1) {
+      if (behavior && DvtArrayUtils.getIndex(triggers, behavior.getTriggerType()) != -1) {
         return true;
       }
     }
@@ -33217,7 +33547,7 @@ DvtCategoryRolloverHandler.prototype.processEvent = function(event, objs, initia
   if (type == DvtCategoryRolloverEvent.TYPE_OVER) {
     // Highlight after the appropriate delay, based on whether we're already in highlight mode.
     var hoverDelay = this._bHighlightMode ? this._hoverDelay : initialHoverDelay;
-    this._hoverDelayCallback = setTimeout(this.GetRolloverCallback(event, objs, bAnyMatched, customAlpha), hoverDelay);
+    this._hoverDelayCallback = setTimeout(this.GetRolloverCallback(event, objs, bAnyMatched, customAlpha), hoverDelay);//@HTMLUpdateOK
 
     // If the highlight mode timeout has been started, cancel it.
     if (this._highlightModeTimeout) {
@@ -33376,7 +33706,7 @@ DvtCategoryRolloverHandler.prototype.SetHighlightMode = function(bMode) {
 DvtCategoryRolloverHandler.prototype.SetHighlightModeTimeout = function() {
   // First create the callback to cancel highlight mode after the given timeout.
   var highlightTimeout = DvtObj.createCallback(this, function() {this.SetHighlightMode(false);});
-  this._highlightModeTimeout = setTimeout(highlightTimeout, DvtCategoryRolloverHandler._HOVER_TIMEOUT);
+  this._highlightModeTimeout = setTimeout(highlightTimeout, DvtCategoryRolloverHandler._HOVER_TIMEOUT);//@HTMLUpdateOK
 };
 
 /**
@@ -33999,17 +34329,6 @@ DvtEventManager.prototype.FireEvent = function(event, source) {
 
 
 /**
- * Creates and fires an instance of DvtComponentUIEvent for the specified object.
- * @param {string} type The type of DvtComponentUIEvent.
- * @param {object} logicalObj The logical object corresponding to the target of the event.
- * @protected
- */
-DvtEventManager.prototype.FireUIEvent = function(type, logicalObj) {
-  // subclasses must override if the event is to be fired
-};
-
-
-/**
  * Fires a selection event with the current selection state.
  * @param {object} logicalObj Logical object used to retrieve the correct selection handler.
  * @private
@@ -34041,6 +34360,7 @@ DvtEventManager.prototype.PreOnClick = function(event) {
     if (this._clickTimer && this._clickTimer.isRunning()) {
       var clickEvent = this._savedClickEvent;
       if (event.pageX == clickEvent.pageX && event.pageY == clickEvent.pageY) {
+        this._savedClickCount++;
         // Same coords, this is a double click, so ignore second click event
         return;
       }
@@ -34051,6 +34371,7 @@ DvtEventManager.prototype.PreOnClick = function(event) {
       }
     }
     this._savedClickEvent = event;
+    this._savedClickCount = 1;
     if (!this._clickTimer) {
       this._clickTimer = new DvtTimer(this._context, 250, this._onClickTimerEnd, this, 1);
     }
@@ -34065,6 +34386,7 @@ DvtEventManager.prototype.PreOnClick = function(event) {
 DvtEventManager.prototype._onClickTimerEnd = function() {
   var clickEvent = this._savedClickEvent;
   this._savedClickEvent = null;
+  this._savedClickCount = 0;
   if (clickEvent) {
     this._propagateEvent(DvtMouseEvent.CLICK, clickEvent, this.OnClick);
   }
@@ -34131,9 +34453,6 @@ DvtEventManager.prototype.OnClick = function(event) {
     // fire the action event
     this._callback.call(this._callbackObj, event);
   }
-
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_CLICK, obj);
 };
 
 DvtEventManager.prototype.IsDoubleClickable = function(event) {
@@ -34174,7 +34493,12 @@ DvtEventManager.prototype.ProcessSelectionEventHelper = function(logicalObj, isM
 };
 
 DvtEventManager.prototype.PreOnDblClick = function(event) {
-  this._propagateEvent(DvtMouseEvent.DBLCLICK, event, this.OnDblClick);
+  // Check whether we've received 2 clicks before the double click event to prevent falsely triggering a double click
+  // on a DvtDisplayable when the target of the first click was different.
+  var isDblClickable = this.IsDoubleClickable(event);
+  if (isDblClickable && this._savedClickCount === 2 || !isDblClickable)
+    this._propagateEvent(DvtMouseEvent.DBLCLICK, event, this.OnDblClick);
+  this._savedClickCount = 0;
 };
 
 
@@ -34189,7 +34513,7 @@ DvtEventManager.prototype.OnDblClick = function(event) {
     this._savedClickEvent = null;
   }
   else {
-    if (DvtAgent.isPlatformIE()) {
+    if (DvtAgent.isPlatformIE() && DvtAgent.getVersion() < 11) {
       if (!obj) {
         return;
       }
@@ -34487,7 +34811,10 @@ DvtEventManager.prototype.ProcessKeyboardEvent = function(event)
         contextMenuLocation = new DvtPoint(bounds.x + bounds.w, bounds.y);
     }
 
-    var mouseEvent = this.GenerateMouseEventFromKeyboardEvent(event, this._context.getStage(), contextMenuLocation.x, contextMenuLocation.y);
+    var mouseEvent = DvtEventFactory.generateMouseEventFromKeyboardEvent(event, this._context, DvtMouseEvent.CLICK,
+        this._context.getStage(),
+        contextMenuLocation.x, contextMenuLocation.y);
+
     // OnContextMenu checks for ctrlKey to perform multi-select before showing context menu
     // However, the keystroke combination for showing the context menu is Ctrl+Alt+M
     // CLEAR the ctrlKey field so that multi-select isn't performed, and send OnContextMenu
@@ -34539,23 +34866,6 @@ DvtEventManager.prototype.ShowFocusEffect = function(event, navigable) {
   this.ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, navigable, navigable.getTargetElem());
   this.UpdateActiveElement(navigable);
 };
-
-/**
- * Returns a DvtMouseEvent that wraps the given keyboard event.  The given stageX and stageY coordinates are used to
- * compute the DvtMouseEvent's pageX and pageY fields
- *
- * @param {DvtKeyboardEvent} event
- * @param {DvtStage} stage
- * @param {Number} stageX
- * @param {Number} stageY
- * @return {DvtMouseEvent}
- * @protected
- */
-DvtEventManager.prototype.GenerateMouseEventFromKeyboardEvent = function(event, stage, stageX, stageY)
-{
-  return DvtSvgEventFactory.generateMouseEventFromKeyboardEvent(event, this._context, DvtMouseEvent.CLICK, stage, stageX, stageY);
-};
-
 
 /**
  * Keypress up event handler.
@@ -34675,7 +34985,7 @@ DvtEventManager.prototype.addRolloverType = function(type) {
 };
 
 DvtEventManager.prototype.removeRolloverType = function(type) {
-  var index = this._rolloverTypes.indexOf(type);
+  var index = DvtArrayUtils.getIndex(this._rolloverTypes, type);
   if (index != -1) {
     this._rolloverTypes.splice(index, 1);
   }
@@ -34711,9 +35021,6 @@ DvtEventManager.prototype.OnMouseOver = function(event) {
 
   // Category Rollover Support
   this.ProcessRolloverEvent(event, obj, true);
-
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_ROLL_OVER, obj);
 
   if (!this.GetEventInfo(event, DvtEventManager._EVENT_INFO_POPUP_DISPLAYED_KEY)) {
     // Popup Support for triggerType="over" or "hover"
@@ -34761,9 +35068,6 @@ DvtEventManager.prototype.OnMouseOut = function(event) {
 
   // Category Rollover Support
   this.ProcessRolloverEvent(event, obj, false);
-
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_ROLL_OUT, obj);
 
   // : If the mouse has moved off the component, hide the tooltip
   this.hideTooltip();
@@ -35197,9 +35501,6 @@ DvtEventManager.prototype.OnComponentTouchClick = function(event) {
       this.ProcessClientBehaviorForTouch(dlo, clientBehaviors);
     }
   }
-
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_CLICK, dlo);
 
   var done = this.HandleTouchClickInternal(event);
   if (done)
@@ -35823,7 +36124,7 @@ DvtEventManager.prototype.IsDragCandidate = function(obj) {
  */
 DvtEventManager._getActiveElementId = function() {
   var ariaIdPrefix = '_dvtActiveElement';
-  return ariaIdPrefix + Math.floor(Math.random() * 1000000000);
+  return ariaIdPrefix + Math.floor(Math.random() * 1000000000);//@RandomNumberOk
 };
 
 
@@ -36386,9 +36687,6 @@ DvtEventManager.prototype.HandleTouchActionsEnd = function(event, touch) {
 
   this._processActionPopup(targetObj, new DvtPoint(touchX, touchY));
 
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_ROLL_OUT, obj);
-
   if (!this.GetEventInfo(event, DvtEventManager._EVENT_INFO_POPUP_DISPLAYED_KEY)) {
     var position = new DvtPoint(touchX, touchY);
     var logObjAndDisp = this.GetLogicalObjectAndDisplayable(targetObj);
@@ -36420,9 +36718,6 @@ DvtEventManager.prototype.HandleTouchActionsOver = function(event) {
   if (selectionHandler)
     selectionHandler.processMouseOver(obj);
 
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_ROLL_OVER, obj);
-
   // Popup Support for triggerType="hover"
   var logObjAndDisp = this.GetLogicalObjectAndDisplayable(targetObj);
   if (logObjAndDisp) {
@@ -36453,9 +36748,6 @@ DvtEventManager.prototype.HandleTouchActionsOut = function(event, touch) {
   var selectionHandler = this.getSelectionHandler(obj);
   if (selectionHandler)
     selectionHandler.processMouseOut(obj);
-
-  // DvtComponentUIEvent Support
-  this.FireUIEvent(DvtComponentUIEvent.TYPE_ROLL_OUT, obj);
 
   if (!this.GetEventInfo(event, DvtEventManager._EVENT_INFO_POPUP_DISPLAYED_KEY)) {
     var position = new DvtPoint(touch.pageX, touch.pageY);
@@ -37460,7 +37752,7 @@ DvtHtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, borde
     tooltipElem.style.height = null;
 
     // Set the text
-    tooltipElem.innerHTML = text;
+    tooltipElem.innerHTML = text;//@HtmlUpdateOk
   }
   // true means that we are not to modify the tooltip contents
   else if (text != true)
@@ -37483,7 +37775,7 @@ DvtHtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, borde
   outerElem.style.zIndex = 2147483647;
 
   if (tooltipElem != null)  // only add content if the elem has not already been populated
-    outerElem.appendChild(tooltipElem);
+    outerElem.appendChild(tooltipElem);//@HTMLUpdateOK
 
   this.PostElement(outerElem, x, y, true, useOffset);
 };
@@ -37571,7 +37863,7 @@ DvtHtmlTooltipManager.prototype.InitializeTooltipElem = function() {
   var tooltip = document.createElement('div');
   tooltip.id = this._domElementId;
   tooltip.style.visibility = 'hidden';
-  document.body.appendChild(tooltip);
+  document.body.appendChild(tooltip);//@HTMLUpdateOK
   this.InitContent(tooltip);
   return tooltip;
 };
@@ -37606,7 +37898,7 @@ DvtHtmlTooltipManager.prototype.showTooltip = function(x, y, text, shape, bTrack
 
   var tooltipElem = document.createElement('span');
   tooltipElem.className = 'OraDVTTooltipText';
-  tooltipElem.innerHTML = text;
+  tooltipElem.innerHTML = text;//@HtmlUpdateOK
   tooltipElem.style.color = DvtHtmlTooltipManager._FONT_COLOR;
 
   if (!borderColor) {
@@ -37620,7 +37912,7 @@ DvtHtmlTooltipManager.prototype.showTooltip = function(x, y, text, shape, bTrack
   } else {
     // Tooltips fade-in and remove themselves after a delay.
     this._timerIsRunning = true;
-    this._showTimerId = window.setTimeout(DvtObj.createCallback(this, this._handleShowTimer), DvtHtmlTooltipManager._SHOW_DELAY);
+    this._showTimerId = window.setTimeout(DvtObj.createCallback(this, this._handleShowTimer), DvtHtmlTooltipManager._SHOW_DELAY);//@HTMLUpdateOK
   }
 };
 
@@ -37868,7 +38160,7 @@ DvtHtmlKeyboardListenerUtils._bubbleListener = function(event)
 
   var dvtEvent;
   if (this._currentObj) { // fire to the current listener only
-    dvtEvent = DvtSvgEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
+    dvtEvent = DvtEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
     this._currentObj.getObj().FireListener(dvtEvent, false);
   }
   else if (this._obj && this._obj instanceof Array) { // fire to all listeners
@@ -37877,7 +38169,7 @@ DvtHtmlKeyboardListenerUtils._bubbleListener = function(event)
     var length = this._obj.length;
     for (i = 0; i < length; i++) {
       svgObj = this._obj[i];
-      dvtEvent = DvtSvgEventFactory.newEvent(event, svgObj.getObj().getCtx());
+      dvtEvent = DvtEventFactory.newEvent(event, svgObj.getObj().getCtx());
       svgObj.getObj().FireListener(dvtEvent, false);
     }
   }
@@ -37900,7 +38192,7 @@ DvtHtmlKeyboardListenerUtils._captureListener = function(event)
 
   var dvtEvent;
   if (this._currentObj) { // fire to the current listener only
-    dvtEvent = DvtSvgEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
+    dvtEvent = DvtEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
     this._currentObj.getObj().FireListener(dvtEvent, true);
   }
   if (this._obj && this._obj instanceof Array) { // fire to all listeners
@@ -37909,7 +38201,7 @@ DvtHtmlKeyboardListenerUtils._captureListener = function(event)
     var length = this._obj.length;
     for (i = 0; i < length; i++) {
       svgObj = this._obj[i];
-      dvtEvent = DvtSvgEventFactory.newEvent(event, svgObj.getObj().getCtx());
+      dvtEvent = DvtEventFactory.newEvent(event, svgObj.getObj().getCtx());
       svgObj.getObj().FireListener(dvtEvent, true);
     }
   }
@@ -38329,47 +38621,6 @@ DvtClientBehaviorEvent.TYPE = 'clientBehavior';
 DvtClientBehaviorEvent.prototype.getClientBehavior = function() {
   return this._clientBehavior;
 };
-/**
- * Event that is fired when interacting with a component.  This event provides context about the objects that were the
- * target of the interaction.
- * @param {string} eventType
- * @param {object} params A component specific object map describing the target of the event.
- * @class
- * @constructor
- * @export
- */
-var DvtComponentUIEvent = function(eventType, params) {
-  DvtComponentUIEvent.superclass.Init.call(this, eventType);
-
-  /**
-   * The object describing the target of the event.
-   * @type {object}
-   */
-  this['params'] = params ? params : {};
-};
-
-DvtObj.createSubclass(DvtComponentUIEvent, DvtBaseComponentEvent, 'DvtComponentUIEvent');
-
-
-/**
- * @const
- * @export
- */
-DvtComponentUIEvent.TYPE_CLICK = 'click';
-
-
-/**
- * @const
- * @export
- */
-DvtComponentUIEvent.TYPE_ROLL_OUT = 'rollOut';
-
-
-/**
- * @const
- * @export
- */
-DvtComponentUIEvent.TYPE_ROLL_OVER = 'rollOver';
 /**
  * A component level context menu event.
  * @param {object} nativeEvent The native event that triggered the context menu.
@@ -39025,6 +39276,22 @@ DvtLogEvent.prototype.getMessage = function() {
   return this._message;
 };
 /**
+ * A component level ready event.
+ * @class
+ * @constructor
+ * @export
+ */
+var DvtReadyEvent = function() {
+  this.Init(DvtReadyEvent.TYPE);
+};
+
+DvtObj.createSubclass(DvtReadyEvent, DvtBaseComponentEvent, 'DvtReadyEvent');
+
+/**
+ * @export
+ */
+DvtReadyEvent.TYPE = 'ready';
+/**
  * A component level set property event.
  * @class
  * @constructor
@@ -39041,7 +39308,7 @@ DvtObj.createSubclass(DvtSetPropertyEvent, DvtBaseComponentEvent, 'DvtSetPropert
  * @export
  */
 DvtSetPropertyEvent.TYPE = 'dvtSetPropertyEvent';
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /*-------------------------------------------------------------------------*/
 /*  DvtToolkitUtils()                                                          */
 /*-------------------------------------------------------------------------*/
@@ -39199,7 +39466,7 @@ DvtToolkitUtils.removeDomEventListener = function(elem, type, listener, useCaptu
  * @return {object} the appended element (child)
  */
 DvtToolkitUtils.appendChildElem = function(parent, child) {
-  return parent.appendChild(child);
+  return parent.appendChild(child);//@HTMLUpdateOk
 };
 
 
@@ -39480,7 +39747,7 @@ DvtBundle.addDefaultStrings(DvtBundle.UTIL_PREFIX, {
   'TIMELINE_SERIES': 'Series',
   'TREEMAP': 'Treemap'
 });
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Document APIs.
  * @class DvtSvgDocumentUtils
@@ -39632,7 +39899,7 @@ DvtSvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback, 
 
   var dragMoveStaticCallback = function(event) {
     // Convert the native event and call the callback
-    var dvtEvent = DvtSvgEventFactory.newEvent(event, context);
+    var dvtEvent = DvtEventFactory.newEvent(event, context);
     dragMoveCallback.call(callbackObj, dvtEvent);
   };
 
@@ -39659,7 +39926,7 @@ DvtSvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback, 
     bodyStyle.MozUserSelect = DvtSvgDocumentUtils._mozUserSelect;
 
     // Convert the native event and call the callback
-    var dvtEvent = DvtSvgEventFactory.newEvent(event, context);
+    var dvtEvent = DvtEventFactory.newEvent(event, context);
     dragEndCallback.call(callbackObj, dvtEvent);
   };
 
@@ -39832,425 +40099,6 @@ DvtSvgImageLoader._addListenerToQueue = function(queue, listener) {
   }
 };
 
-/**
- * @constructor
- * Wrapper class providing access to SVG Events.
- * @extends {DvtObj}
- * @class DvtSvgBaseEvent
- * <p>The supported fields are:
- * <ul>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
- */
-var DvtSvgBaseEvent = function(event) {
-  this.Init(event);
-};
-
-DvtObj.createSubclass(DvtSvgBaseEvent, DvtObj, 'DvtSvgBaseEvent');
-
-
-/**
- * @protected
- * @param {MouseEvent} the DOM Mouse Event
- */
-DvtSvgBaseEvent.prototype.Init = function(event) {
-  // Save the event
-  this._event = event;
-  this._isPropagationStopped = false;
-
-  // Find the DvtObj corresponding to the event target
-  this.target = DvtSvgBaseEvent.FindDisplayable(event.target);
-
-  this.type = event.type;
-};
-
-// TODO JSDoc
-DvtSvgBaseEvent.prototype.getNativeEvent = function() {
-  return this._event;
-};
-
-DvtSvgBaseEvent.prototype.preventDefault = function() {
-  if (this._event.cancelable)
-    this._event.preventDefault();
-};
-
-DvtSvgBaseEvent.prototype.stopPropagation = function() {
-  if (this._event.stopPropagation)
-    this._event.stopPropagation();
-  this._event.cancelBubble = true;
-  this._event.cancel = true;
-  this._event.returnValue = false;
-  this._isPropagationStopped = true;
-};
-
-DvtSvgBaseEvent.prototype.isPropagationStopped = function() {
-  return this._isPropagationStopped;
-};
-
-
-/**
- * Given an SVG DOM target, returns the corresponding DvtDisplayable.
- * @return {DvtDisplayable} The corresponding displayable, if any.
- */
-DvtSvgBaseEvent.FindDisplayable = function(target) {
-  while (target) {
-    // If this object has a displayable, return it
-    if (target._obj && target._obj.getObj && target._obj.getObj())
-      return target._obj.getObj();
-    else // Otherwise look at the parent
-      target = target.parentNode;
-  }
-
-  // Displayable not found, return null
-  return null;
-};
-var DvtSvgEventFactory = new Object();
-
-DvtObj.createSubclass(DvtSvgEventFactory, DvtObj, 'DvtSvgEventFactory');
-
-// Note: this doesn't need to live in the factory because it will always be called
-// by impl specific code looking to wrap the event.
-/**
- * Creates a DVT wrapper for a mouse, keyboard, focus or touch event
- * @param {MouseEvent|KeyboardEvent|TouchEvent|FocusEvent} nativeEvent native event
- * @param {DvtContext} context rendering context
- * @return {DvtSvgBaseEvent} a wrapper for a mouse, keyboard, focus or touch event
- */
-DvtSvgEventFactory.newEvent = function(nativeEvent, context) {
-  // TODO detect the event type and perform wrapping as needed
-  var eventType = nativeEvent.type;
-  if (eventType == DvtTouchEvent.TOUCHSTART || eventType == DvtTouchEvent.TOUCHMOVE || eventType == DvtTouchEvent.TOUCHEND || eventType == DvtTouchEvent.TOUCHCANCEL) {
-    return new DvtSvgTouchEvent(nativeEvent, context);
-  }
-  else if (eventType == DvtKeyboardEvent.KEYDOWN || eventType == DvtKeyboardEvent.KEYUP || eventType == DvtKeyboardEvent.KEYPRESS) {
-    return new DvtSvgKeyboardEvent(nativeEvent);
-  }
-  else {
-    //: if the native event is the same as the last one, return the stored logical event,
-    //otherwise create a new logical event and store the pair of events
-    if (context._nativeEvent != nativeEvent) {
-      context._nativeEvent = nativeEvent;
-      if (eventType == DvtFocusEvent.FOCUS || eventType == DvtFocusEvent.FOCUSIN || eventType == DvtFocusEvent.FOCUSOUT || eventType == DvtFocusEvent.BLUR) {
-        context._logicalEvent = new DvtSvgFocusEvent(nativeEvent);
-      }
-      else { // default to mouse event
-        context._logicalEvent = new DvtSvgMouseEvent(nativeEvent);
-      }
-    }
-    return context._logicalEvent;
-  }
-};
-
-
-/**
- * Returns a DvtSvgMouseEvent that wraps the given keyboard event.  The given stageX and stageY coordinates are used to
- * compute the DvtSvgMouseEvent's pageX and pageY fields
- *
- * @param {DvtKeyboardEvent} keyboardEvent
- * @param {DvtContext} context
- * @param {String} eventType
- * @param {DvtStage} stage
- * @param {Number} stageX
- * @param {Number} stageY
- * @return {DvtSvgMouseEvent}
- */
-DvtSvgEventFactory.generateMouseEventFromKeyboardEvent = function(keyboardEvent, context, eventType, stage, stageX, stageY)
-{
-  var nativeEvent = null;
-
-  if (document.createEvent)
-  {
-    nativeEvent = document.createEvent('MouseEvents');
-
-    var pageCoord = context.stageToPageCoords(stageX, stageY);
-
-    nativeEvent.initMouseEvent(eventType, true, true, window, 1, pageCoord.x, pageCoord.y, pageCoord.x, pageCoord.y,
-        keyboardEvent.ctrlKey, keyboardEvent.altKey, keyboardEvent.shiftKey, keyboardEvent.metaKey,
-        0, null);
-  }
-
-  if (nativeEvent)
-  {
-    var mouseEvent = DvtSvgEventFactory.newEvent(nativeEvent, context);
-    mouseEvent.target = keyboardEvent.target;
-    return mouseEvent;
-  }
-  else
-    return null;
-};
-// Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
-/**
- * @constructor
- * Wrapper class providing access to SVG Focus Events.
- * @extends {DvtFocusEvent}
- * @param {FocusEvent} event native focus event
- * @class DvtSvgFocusEvent
- */
-var DvtSvgFocusEvent = function(event) {
-  this.Init(event);
-};
-
-DvtObj.createSubclass(DvtSvgFocusEvent, DvtSvgBaseEvent, 'DvtSvgFocusEvent');
-
-
-/**
- * @protected
- * @param {FocusEvent} event native focus event
- */
-DvtSvgFocusEvent.prototype.Init = function(event) {
-  DvtSvgFocusEvent.superclass.Init.call(this, event);
-
-  // Find the DvtObj corresponding to the event target
-  if (event.relatedTarget != null)
-    this.relatedTarget = DvtSvgBaseEvent.FindDisplayable(event.relatedTarget);
-
-  // Copy the remaining information
-  this.bubbles = event.bubbles;
-  this.cancelable = event.cancelable;
-  this.view = event.view;
-};
-/**
- * Wrapper class providing access to SVG Keyboard Events.
- * <p>The supported fields are:
- * <ul>
- * <li>altKey</li>
- * <li>ctrlKey</li>
- * <li>shiftKey</li>
- * <li>charCode</li>
- * <li>keyCode</li>
- * </ul>
- * <p>
- * @constructor
- * @extends {DvtKeyboardEvent}
- * @class DvtSvgKeyboardEvent
- * @param {KeyboardEvent} event The DOM Keyboard Event
- */
-// TODO: add support for a source and target fields
-var DvtSvgKeyboardEvent = function(event) {
-  this.Init(event);
-};
-
-DvtObj.createSubclass(DvtSvgKeyboardEvent, DvtKeyboardEvent, 'DvtSvgKeyboardEvent');
-
-
-/**
- * @protected
- * @param {KeyboardEvent} event The DOM Keyboard Event
- */
-DvtSvgKeyboardEvent.prototype.Init = function(event) {
-  DvtSvgKeyboardEvent.superclass.Init.call(this,
-      event.type,
-      event.bubbles,
-      event.cancelable,
-      event.view,
-      event.charCode,
-      event.keyCode,
-      event.location,
-      event.ctrlKey || event.metaKey, // treat the meta key same as ctrl
-      event.altKey,
-      event.shiftKey,
-      event.repeat,
-      event.locale);
-
-  // TODO - what about event.target?
-  this._event = event;
-};
-
-
-/**
- * @override
- */
-DvtSvgKeyboardEvent.prototype.getNativeEvent = function()
-{
-  return this._event;
-};
-
-
-/**
- * @override
- */
-DvtSvgKeyboardEvent.prototype.preventDefault = function() {
-  this._event.preventDefault();
-};
-
-
-/**
- * @override
- */
-DvtSvgKeyboardEvent.prototype.stopPropagation = function() {
-  if (this._event.stopPropagation)
-    this._event.stopPropagation();
-  this._event.cancelBubble = true;
-  this._event.cancel = true;
-  this._event.returnValue = false;
-};
-/**
- * @constructor
- * Wrapper class providing access to SVG Mouse Events.
- * @extends {DvtSvgBaseEvent}
- * @class DvtSvgMouseEvent
- * <p>The supported fields are:
- * <ul>
- * <li>ctrlKey</li>
- * <li>relatedTarget</li>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
- */
-var DvtSvgMouseEvent = function(event) {
-  this.Init(event);
-};
-
-DvtObj.createSubclass(DvtSvgMouseEvent, DvtSvgBaseEvent, 'DvtSvgMouseEvent');
-
-
-/**
- * @protected
- * @param {MouseEvent} the DOM Mouse Event
- */
-DvtSvgMouseEvent.prototype.Init = function(event) {
-
-  DvtSvgMouseEvent.superclass.Init.call(this, event);
-
-  // Find the DvtObj corresponding to the event target
-  if (event.relatedTarget != null)
-    this.relatedTarget = DvtSvgBaseEvent.FindDisplayable(event.relatedTarget);
-
-  // Copy the remaining information
-  this.button = event.button;
-  this.ctrlKey = event.ctrlKey || event.metaKey;
-  this.shiftKey = event.shiftKey;
-  this.pageX = event.pageX;
-  this.pageY = event.pageY;
-  //: Flag indicates if the event is modified for Internet Explorer
-  this._isEventModifiedForIE = false;
-
-  if (event.wheelDeltaY != null)
-    this.wheelDelta = event.wheelDeltaY / 40;
-  else if (event.deltaY != null) {
-    this.deltaMode = event.deltaMode;
-    this.deltaY = event.deltaY;
-
-    // Approximate the wheel delta from the deltaY and deltaMode
-    if (event.deltaMode == event.DOM_DELTA_LINE)
-      this.wheelDelta = -event.deltaY;
-    else if (event.deltaMode == event.DOM_DELTA_PIXEL)
-      this.wheelDelta = -event.deltaY / 15;
-  }
-  else if (event.wheelDelta != null)
-    this.wheelDelta = event.wheelDelta / 40;
-  else
-    this.wheelDelta = event.detail;
-};
-
-
-/**
- * Modify the event for IE with the new event type and new target element
- *
- * @public
- * @param {string} newType  New Mouse Event type
- * @param {DOMElement} newTargetElement  New SVG DOM Target Element
- */
-DvtSvgMouseEvent.prototype.modifyEventForIE = function(newType, newTargetElement) {
-  //: Set the event type as newType, relatedTarget as current target and target as displayable of newTargetElement
-  //This will target the event to newTargetElement and change the event type
-  //Modify the event target only once because every DvtSvgMouseEvent instance has unique native event.
-  //Doing this more than once will make relatedTarget and target same as displayable of newTargetElement
-  if (!this._isEventModifiedForIE) {
-    this.type = newType;
-    this.relatedTarget = this.target;
-    this.target = DvtSvgBaseEvent.FindDisplayable(newTargetElement);
-    this._isEventModifiedForIE = true;
-  }
-};
-
-/**
- * @constructor
- * Wrapper class providing access to SVG Touch Events.
- * @extends {DvtSvgBaseEvent}
- * @class DvtSvgTouchEvent
- * <p>The supported fields are:
- * <ul>
- * <li>touches</li>
- * <li>targetTouches</li>
- * <li>changedTouches</li>
- * <li>target</li>
- * <li>type</li>
- * </ul>
- * <p>
- */
-var DvtSvgTouchEvent = function(event, context) {
-  this.Init(event, context);
-};
-
-DvtObj.createSubclass(DvtSvgTouchEvent, DvtSvgBaseEvent, 'DvtSvgTouchEvent');
-
-
-/**
- * @protected
- * @param {TouchEvent} the DOM Touch Event
- * @param {DvtContext} context
- */
-DvtSvgTouchEvent.prototype.Init = function(event, context) {
-
-  DvtSvgTouchEvent.superclass.Init.call(this, event);
-  // Convert touchcancel to touchend
-  if (event.type == DvtTouchEvent.TOUCHCANCEL) {
-    this.type = DvtTouchEvent.TOUCHEND;
-  }
-  this._nativeTouches = event.touches;
-  this._nativeTargetTouches = event.targetTouches;
-  this._nativeChangedTouches = event.changedTouches;
-  this.touches = DvtSvgTouchEvent.createTouchArray(event.touches);
-  this.targetTouches = DvtSvgTouchEvent.createTouchArray(event.targetTouches);
-  this.changedTouches = DvtSvgTouchEvent.createTouchArray(event.changedTouches);
-  this._context = context;
-  this._touchManager = null;
-};
-
-DvtSvgTouchEvent.prototype.blockTouchHold = function() {
-  this._event._touchHoldBlocked = true;
-};
-
-DvtSvgTouchEvent.prototype.isInitialTouch = function() {
-  return (this.touches.length - this.changedTouches.length) == 0;
-};
-
-DvtSvgTouchEvent.prototype.isTouchHoldBlocked = function() {
-  return (this._event._touchHoldBlocked) ? true : false;
-};
-
-DvtSvgTouchEvent.createTouchArray = function(nativeTouchArray) {
-  var touches = new Array();
-  for (var i = 0; i < nativeTouchArray.length; i++) {
-    var nativeTouch = nativeTouchArray[i];
-    var touch = new DvtTouch(nativeTouch);
-    touches.push(touch);
-  }
-  return touches;
-};
-
-
-/**
- * Prevents further propagation of the current event
- */
-DvtSvgTouchEvent.prototype.stopPropagation = function() {
-  DvtSvgTouchEvent.superclass.stopPropagation.call(this);
-  if (this._touchManager)
-    this._touchManager.postEventBubble(this);
-};
-
-
-/**
- * Sets a touch manager object
- * @param {DvtTouchManager} touch manager object for the event
- */
-DvtSvgTouchEvent.prototype.setTouchManager = function(touchManager) {
-  this._touchManager = touchManager;
-};
 // Used for rendering SVG content in to an HTML div wrapper
 /**
  * @param {DvtContext} context

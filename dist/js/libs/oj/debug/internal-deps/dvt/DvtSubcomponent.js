@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -356,7 +356,7 @@ DvtBreadcrumbsDrillEvent.TYPE = 'breadcrumbsDrill';
 DvtBreadcrumbsDrillEvent.prototype.getId = function() {
   return this._id;
 };
-// Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -395,7 +395,7 @@ DvtBreadcrumbs.prototype.Init = function(context, callback, callbackObj, options
   this._eventHandler.addListeners(this);
 
   // Make sure the object has an id for clipRect naming
-  this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));
+  this.setId('breadcrumbs' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
   // index of the breadcrumb with keyboard focus. index is used to find the
   // Object stored in the _data object's item field
@@ -2457,7 +2457,7 @@ DvtPanelDrawer.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
-// Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
  * Panel drawer tab
@@ -2497,13 +2497,16 @@ DvtPanelDrawerTab.prototype.Init = function(context, cmds, id, panelDrawer) {
 /**
  * Handler for the keyboard event
  * @param {DvtKeyboardEvent} event keyboard event
+ * @protected
  */
 DvtPanelDrawerTab.prototype.HandleKeyboardEvent = function(event) {
   var keyCode = event.keyCode;
   if (keyCode == DvtKeyboardEvent.ENTER || keyCode == DvtKeyboardEvent.SPACE) {
     var eventManager = this._panelDrawer.getEventManager();
     var point = this.localToStage(new DvtPoint(0, 0));
-    var mouseEvent = eventManager.GenerateMouseEventFromKeyboardEvent(event, this._context.getStage(), point.x, point.y);
+    var mouseEvent = DvtEventFactory.generateMouseEventFromKeyboardEvent(event, this._context, DvtMouseEvent.CLICK,
+        this._context.getStage(),
+        point.x, point.y);
     mouseEvent.target = this;
     eventManager.PreOnClick(mouseEvent);
   }
@@ -2890,7 +2893,7 @@ DvtAccordion.prototype.Init = function(context, id, w, h, eventManager, images, 
  */
 DvtAccordion.prototype.addSection = function(title, sectionContent, isActive, isCollapsible, id) {
   if (!id)
-    id = 'accordion_' + title.replace(/ /g, '_') + Math.floor(Math.random() * 1000000000);
+    id = 'accordion_' + title.replace(/ /g, '_') + Math.floor(Math.random() * 1000000000);//@RandomNumberOk
   var accordionSection = new DvtAccordionSection(this.getCtx(), sectionContent, title, isActive, isCollapsible, this, this._eventManager, id, this._images, this._styleMap);
   this._sections[id] = accordionSection;
   this._sectionOrder.push(id);

@@ -14,80 +14,82 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojTreemap
  * @augments oj.dvtBaseComponent
  * @since 0.7
- * 
+ *
  * @classdesc
  * <h3 id="treemapOverview-section">
  *   JET Treemap Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#treemapOverview-section"></a>
  * </h3>
- * 
- * <p>Treemap component for JET. Treemaps are used to display hierarchical data across two dimensions, represented by 
+ *
+ * <p>Treemap component for JET. Treemaps are used to display hierarchical data across two dimensions, represented by
  * the size and color of the treemap nodes. Treemaps are generally preferred over sunbursts when emphasizing the data
  * for the leaf nodes.</p>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;div data-bind="ojComponent: {
  *   component: 'ojTreemap',
- *   nodes: [{value: 100, color: "#FFFF00", label: "Total Sales", 
+ *   nodes: [{value: 100, color: "#FFFF00", label: "Total Sales",
  *            nodes: [{value: 75, color: "#00FF00", label: "Candy"},
  *                    {value: 20, color: "#FFFF00", label: "Fruit"},
  *                    {value: 15, color: "#FF0000", label: "Vegetables"}]}]
  * }"/>
  * </code>
  * </pre>
- * 
+ *
  * {@ojinclude "name":"a11yKeyboard"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"touchDoc"}
- * 
+ *
  * <h3 id="keyboard-section">
  *   Gesture End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"keyboardDoc"}
- * 
+ *
  * <h3 id="perf-section">
  *   Performance
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
- * 
+ *
  * <h4>Animation</h4>
  * <p>Animation should only be enabled for visualizations of small to medium data sets. Alternate visualizations should
  *    be considered if identifying data changes is important, since all nodes will generally move and resize on any data
  *    change.
  * </p>
- * 
+ *
  * <h4>Data Set Size</h4>
- * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this component. 
- *    Applications can enable progressive reveal of data through drilling or aggregate small nodes to reduce the 
+ * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this component.
+ *    Applications can enable progressive reveal of data through drilling or aggregate small nodes to reduce the
  *    displayed data set size.
  * </p>
- * 
+ *
  * <h4>Style Attributes</h4>
- * <p>Use the highest level options property available. For example, consider using  attributes on 
- *    <code class="prettyprint">nodeDefaults</code>, instead of attributes on the individual nodes. The component can 
- *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM 
+ * <p>Use the highest level options property available. For example, consider using  attributes on
+ *    <code class="prettyprint">nodeDefaults</code>, instead of attributes on the individual nodes. The component can
+ *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM
  *    calls.
  * </p>
  * 
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
- * 
+ *
  * @desc Creates a JET Treemap.
  * @example <caption>Initialize the Treemap with no options specified:</caption>
  * $(".selector").ojTreemap();
- * 
+ *
  * @example <caption>Initialize the Treemap with some options:</caption>
  * $(".selector").ojTreemap({nodes: [{value: 75, color: "#00FF00", label: "Candy"}, {value: 20, color: "#FFFF00", label: "Fruit"}, {value: 15, color: "#FF0000", label: "Vegetables"}]});
- * 
+ *
  * @example <caption>Initialize the Treemap via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojTreemap'}">
  */
@@ -96,9 +98,9 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
     widgetEventPrefix: "oj",
     options: {
       /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic 
+       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
        * intervention. If the new value is the same as the previous value, no event will be fired.
-       * 
+       *
        * @property {Object} data event payload
        * @property {string} data.option the name of the option that changed, i.e. "value"
        * @property {Object} data.previousValue an Object holding the previous value of the option
@@ -106,36 +108,36 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
        * @property {Object} ui.optionMetadata information about the option that is changing
        * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
        *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       * 
+       *
        * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
        * $(".selector").ojTreemap({
-       *   'optionChange': function (event, data) {} 
+       *   'optionChange': function (event, data) {}
        * });
-       * 
+       *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
        * $(".selector").on({
        *   'ojoptionchange': function (event, data) {
        *       window.console.log("option changing is: " + data['option']);
        *   };
        * });
-       * 
-       * @expose 
-       * @event 
+       *
+       * @expose
+       * @event
        * @memberof oj.ojTreemap
        * @instance
        */
       optionChange: null
     },
-    
+
     //** @inheritdoc */
     _CreateDvtComponent: function(context, callback, callbackObj) {
       return dvt.DvtTreemap.newInstance(context, callback, callbackObj);
     },
-  
+
     //** @inheritdoc */
     _ConvertLocatorToSubId : function(locator) {
       var subId = locator['subId'];
-      
+
       // Convert the supported locators
       if(subId == 'oj-treemap-node') {
         // node[index0][index1]...[indexN]
@@ -144,12 +146,12 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       else if(subId == 'oj-treemap-tooltip') {
         subId = 'tooltip';
       }
-      
+
       // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
       // support for the old subId syntax in 1.2.0.
       return subId;
     },
-    
+
     //** @inheritdoc */
     _ConvertSubIdToLocator : function(subId) {
       var locator = {};
@@ -163,14 +165,14 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       }
       return locator;
     },
-    
+
     //** @inheritdoc */
     _GetComponentStyleClasses: function() {
       var styleClasses = this._super();
       styleClasses.push('oj-treemap');
       return styleClasses;
     },
-    
+
     //** @inheritdoc */
     _GetChildStyleClasses: function() {
       var styleClasses = this._super();
@@ -211,17 +213,17 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       ];
       return styleClasses;
     },
-    
+
     //** @inheritdoc */
     _GetEventTypes : function() {
       return ['optionChange'];
     },
-    
+
     //** @inheritdoc */
     _GetTranslationMap: function() {
       // The translations are stored on the options object.
       var translations = this.options['translations'];
-    
+
       // Safe to modify super's map because function guarentees a new map is returned
       var ret = this._super();
       ret['DvtTreemapBundle.COLOR'] = translations['labelColor'];
@@ -231,7 +233,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       ret['DvtUtilBundle.TREEMAP'] = translations['componentName'];
       return ret;
     },
-    
+
     //** @inheritdoc */
     _HandleEvent: function(event) {
       var type = event && event.getType ? event.getType() : null, isolatedNodes, isolatedNode, isolateType;
@@ -247,7 +249,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
           isolatedNodes = this.options._isolatedNodes;
         }
 
-        // If event has id, it's an isolate.  If null id, then restore.      
+        // If event has id, it's an isolate.  If null id, then restore.
         isolatedNode = event.getId();
         if (isolatedNode) {
           isolateType = "on";
@@ -264,11 +266,11 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
         this._super(event);
       }
     },
-    
+
     /**
      * Returns an object with the following properties for automation testing verification of the node with
      * the specified subid path.
-     * 
+     *
      * @param {Array} subIdPath The array of indices in the subId for the desired node
      * @property {string} color
      * @property {string} label
@@ -284,43 +286,43 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @expose
      * @instance
      * @memberof oj.ojTreemap
-     */     
+     */
     getNode: function(subIdPath) {
       var ret = this._component.getAutomation().getNode(subIdPath);
-    
+
       // : Provide backwards compatibility for getters until 1.2.0.
       this._AddAutomationGetters(ret);
-      
+
       return ret;
     },
-    
-    /** 
+
+    /**
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     * 
+     *
      * @example {@ojinclude "name":"nodeContextExample"}
-     * 
+     *
      * @expose
      * @instance
      * @memberof oj.ojTreemap
      */
     getContextByNode: function(node)
     {
-      // context objects are documented with @ojnodecontext 
+      // context objects are documented with @ojnodecontext
       var context = this.getSubIdByNode(node);
       if (context && context['subId'] !== 'oj-treemap-tooltip')
         return context;
-    
+
       return null;
     },
-  
+
     //** @inheritdoc */
     _GetComponentDeferredDataPaths : function() {
       return {'root': ['nodes']};
     }
   });
-  
+
 /**
  * <table class="keyboard-table">
  *   <thead>

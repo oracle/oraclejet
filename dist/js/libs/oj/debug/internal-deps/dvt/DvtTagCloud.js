@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -296,7 +296,7 @@ DvtTagCloud.prototype.__cleanUp = function() {
 /**
  * @override
  */
-DvtTagCloud.prototype.__getEventManager = function() {
+DvtTagCloud.prototype.getEventManager = function() {
   return this.EventManager;
 };
 
@@ -309,7 +309,7 @@ DvtTagCloud.prototype.processEvent = function(event, source) {
   var type = event.getType();
   if (type == DvtCategoryHideShowEvent.TYPE_HIDE || type == DvtCategoryHideShowEvent.TYPE_SHOW) {
     var category = event.getCategory();
-    var index = this.Options['hiddenCategories'].indexOf(category);
+    var index = DvtArrayUtils.getIndex(this.Options['hiddenCategories'], category);
 
     if (type == DvtCategoryHideShowEvent.TYPE_HIDE && index < 0)
       this.Options['hiddenCategories'].push(category);
@@ -327,7 +327,7 @@ DvtTagCloud.prototype.processEvent = function(event, source) {
   }
   // Dispatch the event to the callback
   if (event)
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
 };
 
 /**
@@ -629,18 +629,9 @@ DvtTagCloudItem.ANIMATION_INSERT_PRIORITY = 2;
 DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, id) {
   DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style, id);
   this._tagCloud = tagCloud;
+  this.alignAuto();
   if (style)
     this._createFeedbackStyles(style);
-};
-
-/**
- * @override
- */
-DvtTagCloudItem.prototype.CreateBackground = function(context, text) {
-  // Calls getBBox on the text element and cahces its dimensions. Since vertical text alignment dimensions are cached
-  // seperately, we want to make sure we align before the first caching otherwise getBBox will be called twice
-  this.alignAuto();
-  return DvtTagCloudItem.superclass.CreateBackground.call(this, context, text);
 };
 
 /**
@@ -1765,7 +1756,7 @@ DvtTagCloudKeyboardHandler.prototype.isMultiSelectEvent = function(event) {
  */
 DvtTagCloudKeyboardHandler.getNextNavigable = function(currentNavigable, event, navigableItems) {
   var bNext = (event.keyCode == DvtKeyboardEvent.RIGHT_ARROW || event.keyCode == DvtKeyboardEvent.DOWN_ARROW) ? true : false;
-  var nextIdx = navigableItems.indexOf(currentNavigable) + (bNext ? 1 : -1);
+  var nextIdx = DvtArrayUtils.getIndex(navigableItems, currentNavigable) + (bNext ? 1 : -1);
   if (nextIdx < navigableItems.length && nextIdx >= 0)
     return navigableItems[nextIdx];
   else

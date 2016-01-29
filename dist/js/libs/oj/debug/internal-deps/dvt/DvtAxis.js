@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -221,14 +221,14 @@ DvtAxis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
 DvtAxis.prototype.processEvent = function(event, source) {
   // Dispatch the event to the callback if it originated from within this component.
   if (this === source) {
-    this.__dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 };
 
 /**
  * @override
  */
-DvtAxis.prototype.__getEventManager = function() {
+DvtAxis.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
@@ -310,23 +310,18 @@ DvtAxis.prototype.getAutomation = function() {
 /**
  * Axis Constants
  * @class
- * @export
  */
 var DvtAxisConstants = {};
 
 DvtObj.createSubclass(DvtAxisConstants, DvtObj, 'DvtAxisConstants');
 
-
 /**
  * @const
- * @export
  */
 DvtAxisConstants.TICK_LABEL = 'tickLabel';
 
-
 /**
  * @const
- * @export
  */
 DvtAxisConstants.TITLE = 'title';
 /**
@@ -375,7 +370,7 @@ DvtObj.createSubclass(DvtAxisAutomation, DvtAutomation, 'DvtAxisAutomation');
  * @override
  */
 DvtAxisAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var logicalObj = this._axis.__getEventManager().GetLogicalObject(displayable);
+  var logicalObj = this._axis.getEventManager().GetLogicalObject(displayable);
   if (logicalObj && (logicalObj instanceof DvtSimpleObjPeer)) {
     if (logicalObj.getParams()['type'] == DvtAxisConstants.TITLE) // return chart axis title subId
       return 'title';
@@ -548,18 +543,8 @@ DvtObj.createSubclass(DvtAxisEventManager, DvtEventManager, 'DvtAxisEventManager
  * @param {number=} level The level of the axis label, if one is specified.
  * @return {object} the parameters for the DvtComponentUIEvent
  */
-DvtAxisEventManager.getUIEventParams = function(type, id, index, level) {
+DvtAxisEventManager.getUIParams = function(type, id, index, level) {
   return {'type': type, 'id': id, 'index': index, 'level': level};
-};
-
-
-/**
- * @override
- */
-DvtAxisEventManager.prototype.FireUIEvent = function(type, logicalObj) {
-  if (logicalObj instanceof DvtSimpleObjPeer && logicalObj.getParams() != null) {
-    this.FireEvent(new DvtComponentUIEvent(type, logicalObj.getParams()), this._axis);
-  }
 };
 
 /**
@@ -810,9 +795,9 @@ DvtAxisRenderer._renderTitle = function(axis, axisInfo, availSpace) {
   var bHoriz = (options['position'] == 'top' || options['position'] == 'bottom');
   var maxLabelWidth = bHoriz ? availSpace.w : availSpace.h;
   var maxLabelHeight = bHoriz ? availSpace.h : availSpace.w;
-  var title = DvtAxisRenderer._createText(axis.__getEventManager(), axis, options['title'], options['titleStyle'],
+  var title = DvtAxisRenderer._createText(axis.getEventManager(), axis, options['title'], options['titleStyle'],
                                           0, 0, maxLabelWidth, maxLabelHeight,
-                                          DvtAxisEventManager.getUIEventParams(DvtAxisConstants.TITLE));
+                                          DvtAxisEventManager.getUIParams(DvtAxisConstants.TITLE));
 
   if (title) {
     // Position the title based on text size and axis position
@@ -976,10 +961,10 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
       var drillable = axisInfo.isDrillable(index, levelIdx);
       var group = axisInfo.getGroup(index, levelIdx);
 
-      // Associate with logical object to support DvtComponentUIEvent and tooltips
-      var params = DvtAxisEventManager.getUIEventParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index, levelIdx);
+      // Associate with logical object to support automation and tooltips
+      var params = DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index, levelIdx);
 
-      axis.__getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
+      axis.getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
 
       if (!isHierarchical)
         maxLvlHeight = Math.max(maxLvlHeight, DvtTextUtils.guessTextDimensions(label).h);
@@ -1032,8 +1017,8 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
         if (DvtTextUtils.guessTextDimensions(label).h - 1 > availSpace.h) // -1 to prevent rounding error ()
           continue;
 
-        // Associate with logical object to support DvtComponentUIEvent and tooltips
-        axis.__getEventManager().associate(label, new DvtSimpleObjPeer(null, null, null, DvtAxisEventManager.getUIEventParams(DvtAxisConstants.TICK_LABEL, label.getTextString())));
+        // Associate with logical object to support automation and tooltips
+        axis.getEventManager().associate(label, new DvtSimpleObjPeer(null, null, null, DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString())));
 
         // align with level 1 label
         var overflow1 = 0;
@@ -1152,10 +1137,10 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
     var drillable = axisInfo.isDrillable(index, levelIdx);
     var group = axisInfo.getGroup(index, levelIdx);
 
-    // Associate with logical object to support DvtComponentUIEvent and tooltips
-    var params = DvtAxisEventManager.getUIEventParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index, levelIdx);
+    // Associate with logical object to support automation and tooltips
+    var params = DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index, levelIdx);
 
-    axis.__getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
+    axis.getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
 
     if (!isHierarchical) {
       label.setX(labelX);
@@ -1256,9 +1241,9 @@ DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
       var drillable = axisInfo.isDrillable(index);
       var group = axisInfo.getGroup(index);
 
-      // Associate with logical object to support DvtComponentUIEvent and tooltips
-      var params = DvtAxisEventManager.getUIEventParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index);
-      axis.__getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
+      // Associate with logical object to support automation and tooltips
+      var params = DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString(), index);
+      axis.getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
 
       label.setTranslateX(availSpace.x + availSpace.w / 2);
       label.setTranslateY(availSpace.y + availSpace.h / 2);
@@ -1286,7 +1271,7 @@ DvtAxisRenderer._createText = function(eventManager, container, textString, cssS
   var text = new DvtOutputText(container.getCtx(), textString, x, y);
   text.setCSSStyle(cssStyle);
   if (DvtTextUtils.fitText(text, width, height, container)) {
-    // Associate with logical object to support DvtComponentUIEvent and truncation
+    // Associate with logical object to support automation and truncation
     eventManager.associate(text, new DvtSimpleObjPeer(text.getUntruncatedTextString(), null, null, params));
     return text;
   }
@@ -1871,7 +1856,7 @@ DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMult
     var vTol = 16 / 180 * Math.PI; // the mid area (15 degrees) where labels will be middle aligned.
     var hTol = 1 / 180 * Math.PI; // the tolerance (1 degree) where labels will be center aligned.
 
-    var offset = 0.5 * this.getTickLabelFontSize();
+    var offset = 0.5 * this.getTickLabelHeight();
     var dist = this._radius + offset;
     if (coord < hTol || coord > 2 * Math.PI - hTol)
       dist += offset; // avoild collision with radial label
@@ -2008,24 +1993,22 @@ DvtAxisInfo.prototype.IsOverlappingDims = function(labelDims1, labelDims2) {
  * @protected
  */
 DvtAxisInfo.prototype.GetTickLabelGapSize = function() {
-  // Get font-size of label and create gap based on font-size
+  // Create gap based on tick label height
   // GroupAxis and TimeAxis have smaller gaps since these axes become less useable as more labels are dropped
-  var fontSize = this.getTickLabelFontSize();
-  var gapHoriz = (this instanceof DvtGroupAxisInfo) ? fontSize * 0.3 : fontSize * 1.0;
-  var gapVert = (this instanceof DvtGroupAxisInfo) ? fontSize * 0.1 : fontSize * 0.35;
+  var labelHeight = this.getTickLabelHeight();
+  var gapHoriz = (this instanceof DvtGroupAxisInfo) ? labelHeight * 0.24 : labelHeight * 0.79;
+  var gapVert = (this instanceof DvtGroupAxisInfo) ? labelHeight * 0.08 : labelHeight * 0.28;
 
   var isVert = (this.Position == 'left' || this.Position == 'right' || this.Position == 'radial');
   return (isVert || this.isLabelRotated()) ? gapVert : gapHoriz;
 };
 
 /**
- * Returns the tick label font size.
+ * Returns the tick label height in px.
  * @return {number}
  */
-DvtAxisInfo.prototype.getTickLabelFontSize = function() {
-  // Use getTextStringHeight() to account for non-pixel font sizes.
-  // The multiplication factor at the end came from the fact that 11px font size has 14px height.
-  return DvtTextUtils.getTextStringHeight(this.getCtx(), this.Options['tickLabel']['style']) * (11 / 14);
+DvtAxisInfo.prototype.getTickLabelHeight = function() {
+  return DvtTextUtils.getTextStringHeight(this.getCtx(), this.Options['tickLabel']['style']);
 };
 
 
@@ -2468,7 +2451,7 @@ DvtDataAxisInfo.prototype.getLabels = function(context, levelIdx) {
     if (this.Options['_skipHighestTick']) {
       if (value == this._maxValue)
         continue;
-      if (this.Position != 'tangential' && Math.abs(coord - this._maxCoord) < this.getTickLabelFontSize())
+      if (this.Position != 'tangential' && Math.abs(coord - this._maxCoord) < this.getTickLabelHeight())
         continue;
     }
 
@@ -3028,7 +3011,7 @@ DvtGroupAxisInfo.prototype._processGroupWidthRatios = function() {
 
   // Divide the total viewport length (in pixels) proportionally based on the group width ratios.
   var totalWidth = this.EndCoord - this.StartCoord;
-  this._groupWidths = this._groupWidthRatios.map(function(ratio) {return ratio * totalWidth / sum;});
+  this._groupWidths = DvtArrayUtils.map(this._groupWidthRatios, function(ratio) {return ratio * totalWidth / sum;});
 
   // Construct borderValues array which stores the the value location of the group boundaries.
   this._borderValues = [];
@@ -3295,10 +3278,16 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
   var isHierarchical = this._numLevels > 1;
   var groupWidth = this.getGroupWidth();
   var availSize = this._maxSpace;
-  var wrapping = this.Options['tickLabel']['style'].getStyle(DvtCSSStyle.WHITE_SPACE) == 'normal' && this.Position != 'tangential';
   var gapName = isHoriz ? 'hierarchicalLabelGapHeight' : 'hierarchicalLabelGapWidth';
   var gap = isHierarchical ? DvtAxisDefaults.getGapSize(context, this.Options, this.Options['layout'][gapName]) : 0;
   var rotationEnabled = this.Options['tickLabel']['rotation'] == 'auto' && isHoriz;
+
+  // Attempt text wrapping if:
+  // 1. white-space = 'normal'
+  // 2. vertical or horizontal axis
+  // 3. groupWidth > textHeight -> wrapping is only necessary when more than one text line can tentatively fit in the groupWidth
+  var tickLabelStyle = this.Options['tickLabel']['style'];
+  var wrapping = tickLabelStyle.getStyle(DvtCSSStyle.WHITE_SPACE) == 'normal' && this.Position != 'tangential' && groupWidth > DvtTextUtils.getTextStringHeight(context, tickLabelStyle);
 
   // Iterate and create the labels
   var label, firstLabel, lastLabel;
@@ -5138,7 +5127,7 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
   //  : On Chrome, creating a gap value to be used for spacing level1 labels and level2 labels
   var levelsGap = 0;
   if (isVert && DvtAgent.isBrowserChrome()) {
-    levelsGap = this.getTickLabelFontSize() * .2;
+    levelsGap = this.getTickLabelHeight() * 0.16;
   }
 
   // Find the time positions where labels are located
@@ -5312,8 +5301,8 @@ DvtTimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStar
     return false;
 
   var isVert = (this.Position == 'left' || this.Position == 'right');
-  var fontSize = this.getTickLabelFontSize();
-  var gap = isVert ? fontSize * 0.1 : fontSize * 0.3;
+  var labelHeight = this.getTickLabelHeight();
+  var gap = isVert ? labelHeight * 0.08 : labelHeight * 0.24;
 
   var count = 0;// the number of non-null labels
   var pointA1, pointA2, pointB1, pointB2;
@@ -5462,7 +5451,7 @@ DvtTimeAxisInfo.prototype._skipLabelsUniform = function(labelInfos, labels, cont
  * @private
  */
 DvtTimeAxisInfo.prototype._skipVertLabels = function(labels1, labels2, container) {
-  var gap = this.getTickLabelFontSize() * .1;
+  var gap = this.getTickLabelHeight() * 0.08;
 
   // returns if two rectangles (dimsA and dimsB) overlap vertically
   var isOverlapping = function(dimsA, dimsB) {

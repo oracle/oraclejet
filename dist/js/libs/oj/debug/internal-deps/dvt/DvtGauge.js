@@ -1,15 +1,15 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtAxis'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -51,7 +51,7 @@ DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRender
       this._eventManager.setKeyboardHandler(this.CreateKeyboardHandler(this._eventManager));
 
     // Make sure the object has an id for clipRect naming
-    this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));
+    this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
     // Create an editing overlay to prevent touch conflicts
     this._editingOverlay = new DvtRect(context, 0, 0);
@@ -121,7 +121,7 @@ DvtGauge.prototype.render = function(options, width, height)
     this._editingOverlay.setHeight(this.Height);
 
     // Tooltip support
-    this.__getEventManager().associate(this._editingOverlay, this.__getLogicalObject(), true);
+    this.getEventManager().associate(this._editingOverlay, this.__getLogicalObject(), true);
   }
 
   if (!this._bStaticRendering && !this.Options['readOnly']) {
@@ -154,6 +154,10 @@ DvtGauge.prototype.render = function(options, width, height)
     this.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
   }
   this.UpdateAriaAttributes();
+
+  if (!this._animation)
+    // If not animating, that means we're done rendering, so fire the ready event.
+    this.RenderComplete();
 };
 
 /**
@@ -190,8 +194,10 @@ DvtGauge.prototype.Render = function(container, width, height)
  */
 DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, height) {
   // Stop any animation in progress before starting new animation
-  if (this._animation)
+  if (this._animation) {
+    this._animationStopped = true;
     this._animation.stop();
+  }
 
   var bBlackBoxUpdate = false;
   var animationOnDataChange = this._bEditing ? 'none' : this.getOptions()['animationOnDataChange'];
@@ -316,14 +322,19 @@ DvtGauge.prototype._onAnimationEnd = function() {
     this._oldContainer = null;
   }
 
+  // Fire ready event saying animation is finished.
+  if (!this._animationStopped)
+    this.RenderComplete();
+
   // Reset the animation reference
   this._animation = null;
+  this._animationStopped = null;
 };
 
 /**
  * @override
  */
-DvtGauge.prototype.__getEventManager = function() {
+DvtGauge.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
@@ -353,7 +364,7 @@ DvtGauge.prototype.__processValueChangeMove = function(x, y) {
     this.renderUpdate();
 
     // Fire the value change input event
-    this.__dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], false));
+    this.dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], false));
   }
 };
 
@@ -378,7 +389,7 @@ DvtGauge.prototype.__processValueChangeEnd = function(x, y) {
   }
 
   // Fire the event and reset
-  this.__dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], true));
+  this.dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], true));
   this._bEditing = false;
   this._oldValue = null;
 };
@@ -404,7 +415,7 @@ DvtGauge.prototype.__increaseValue = function() {
   this.render();
 
   // Fire the value change input event
-  this.__dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 
@@ -429,7 +440,7 @@ DvtGauge.prototype.__decreaseValue = function() {
   this.render();
 
   // Fire the value change input event
-  this.__dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 
@@ -732,7 +743,7 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
  * @constructor
  */
 var DvtGaugeEventManager = function(gauge) {
-  this.Init(gauge.getCtx(), gauge.__dispatchEvent, gauge);
+  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge);
   this._gauge = gauge;
   this.IsMouseEditing = false;
 };
@@ -1121,6 +1132,22 @@ DvtGaugeStyleUtils.getPlotAreaColor = function(gauge) {
   return options['plotArea']['color'];
 };
 
+/**
+ * Returns the color, taking into account the thresholds if specified.
+ * @param {DvtGauge} gauge
+ * @return {string} The border color of the gauge.
+ */
+DvtGaugeStyleUtils.getPlotAreaBorderColor = function(gauge) {
+  // Options Object
+  var options = gauge.getOptions();
+  var borderColor = options['plotArea']['borderColor'];
+  if ((gauge instanceof DvtStatusMeterGauge) && options['orientation'] != 'circular' &&
+      borderColor == null) {
+    return options['skin'] == 'skyros' ? '#C6C6C6' : '#D6DFE6';
+  }
+
+  return borderColor;
+};
 
 /**
  * Returns the defined threshold color or gets it from the threshold color ramp
@@ -1242,7 +1269,7 @@ DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
 
   DvtTextUtils.renderEmptyText(container, emptyTextStr,
       new DvtRectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
-      gauge.__getEventManager(), labelStyle);
+      gauge.getEventManager(), labelStyle);
 };
 
 
@@ -1301,11 +1328,10 @@ DvtGaugeRenderer.formatTickLabelValue = function(value, gauge) {
  */
 DvtGaugeRenderer._formatLabelValue = function(value, gauge, converter, scaling, autoPrecision, isPercent) {
   var options = gauge.getOptions();
-  var percentConverter = null;
-  var output;
 
   var minValue = options['min'];
   var maxValue = options['max'];
+  var output;
 
   var difference = maxValue - minValue;
   var divider = difference < 1000 ? 100 : 1000;
@@ -1315,7 +1341,6 @@ DvtGaugeRenderer._formatLabelValue = function(value, gauge, converter, scaling, 
 
   if (isPercent) {
     value = DvtGaugeRenderer.getFillPercentage(options, options['min'], options['max'], value, true);
-    percentConverter = gauge.getCtx().getNumberConverter({'style': 'percent', 'maximumFractionDigits': 0});
   }
 
   // when scaling is set then init formatter
@@ -1324,15 +1349,12 @@ DvtGaugeRenderer._formatLabelValue = function(value, gauge, converter, scaling, 
     output = formatter.format(value, converter);
   else if (converter && converter['format'])
     output = formatter.format(value, converter);
-  else if (percentConverter)
-    output = formatter.format(value, percentConverter);
   else if (isPercent)
-    output = formatter.format(value * 100);
+    output = Math.round(value * 100);
   else
     output = formatter.format(value);
 
-  // if no percentConverter is set, or if both converters are set, append a % sign to the output
-  return (isPercent && (!percentConverter || converter) ? String(output) + '%' : output);
+  return isPercent ? String(output) + '%' : output;
 };
 
 
@@ -2314,7 +2336,7 @@ DvtObj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults, 'DvtStatusM
 DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
   'color': '#393737',
   'metricLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
-  'plotArea' : {'color': '#E4E8EA', 'borderColor': '#D6DFE6'}
+  'plotArea' : {'color': '#E4E8EA'}
 };
 
 
@@ -2329,7 +2351,7 @@ DvtStatusMeterGaugeDefaults.VERSION_1 = {
   'innerRadius': .7,
   'metricLabel': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif;'), 'position': 'auto'},
   'orientation': 'horizontal',
-  'plotArea' : {'color': '#AAAAAA', 'borderColor': '#C6C6C6', 'rendered': 'auto', 'borderRadius': 'auto'},
+  'plotArea' : {'color': '#AAAAAA', 'rendered': 'auto', 'borderRadius': 'auto'},
   'startAngle': 90,
   'thresholdDisplay': 'onIndicator'
 };
@@ -2442,6 +2464,7 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
 
   var startAngle = startAngleRads;
   var angleExtent = percentFill * angleExtentRads;
+  var plotAreaBorderColor = DvtGaugeStyleUtils.getPlotAreaBorderColor(gauge);
   if (thresholds && options['plotArea']['rendered'] != 'off' && options['thresholdDisplay'] == 'all') {
     for (var currentThresholdIndex = 0; currentThresholdIndex < thresholds.length; currentThresholdIndex++) {
       var thresholdColor = DvtGaugeStyleUtils.getThresholdColor(gauge, thresholds[currentThresholdIndex], currentThresholdIndex);
@@ -2450,12 +2473,14 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
       startAngle = startAngleRads + angleExtentRads * DvtGaugeRenderer.getFillPercentage(options, options['min'], max, min);
       percentFill = DvtGaugeRenderer.getFillPercentage(options, min, max, max);
       angleExtent = percentFill * angleExtentRads;
-      DvtStatusMeterGaugeRenderer._drawCircularArc(gauge, container, bounds, startAngle, angleExtent, innerRadiusLength, outerRadius, thresholdColor, true);
+      var thresholdborderColor = thresholds[currentThresholdIndex]['borderColor'];
+      DvtStatusMeterGaugeRenderer._drawCircularArc(gauge, container, bounds, startAngle, angleExtent, innerRadiusLength,
+          outerRadius, thresholdColor, true, thresholdborderColor ? thresholdborderColor : plotAreaBorderColor);
     }
   }
   else if (options['plotArea']['rendered'] != 'off' && options['thresholdDisplay'] != 'all') {
     var plotAreaColor = DvtGaugeStyleUtils.getPlotAreaColor(gauge);
-    DvtStatusMeterGaugeRenderer._drawCircularArc(gauge, container, bounds, startAngleRads, angleExtentRads, innerRadiusLength, outerRadius, plotAreaColor, true);
+    DvtStatusMeterGaugeRenderer._drawCircularArc(gauge, container, bounds, startAngleRads, angleExtentRads, innerRadiusLength, outerRadius, plotAreaColor, true, plotAreaBorderColor);
   }
 
   innerRadiusLength = maxDiameter * innerRadius * .5;
@@ -2571,7 +2596,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // Create plotArea
   var borderColor = DvtGaugeStyleUtils.getBorderColor(gauge);
-  var plotAreaBorderColor = options['plotArea']['borderColor'];
+  var plotAreaBorderColor = DvtGaugeStyleUtils.getPlotAreaBorderColor(gauge);
   var thresholds = options['thresholds'];
   var gradientAngle = isVert ? 0 : 270;
 
@@ -2586,7 +2611,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
       // For each threshold clip everything above the particular threshold maximum from the plot area shape
       if (i == thresholds.length - 1) {
         if (!isVert && isRTL)
-          cp.addRect(axisInfo.getUnboundedCoordAt(options['max']), 0, bounds.w + 2, bounds.h + 2, 0, 0);
+          cp.addRect(axisInfo.getUnboundedCoordAt(options['max']) + 1, 0, bounds.w + 2, bounds.h + 2, 0, 0);
         else
           cp.addRect(0, 0, bounds.w + 2, bounds.h + 2, 0, 0);
       }
@@ -2597,7 +2622,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
         else {
           if (isRTL) {
             var thresholdMax = thresholds[thresholds.length - 2 - currentThresholdIndex]['max'] == null ? 100 : thresholds[thresholds.length - 2 - currentThresholdIndex]['max'];
-            cp.addRect(0, 0, (options['max'] - thresholdMax) * 1 / (Math.abs(options['min'] - options['max'])) * bounds.w, bounds.h + 2, 0, 0);
+            cp.addRect(axisInfo.getUnboundedCoordAt(options['max']), 0, (options['max'] - thresholdMax) * 1 / (Math.abs(options['min'] - options['max'])) * bounds.w, bounds.h + 2, 0, 0);
           }
           else
             cp.addRect(0, 0, (thresholds[currentThresholdIndex]['max'] - options['min']) * 1 / (Math.abs(options['min'] - options['max'])) * bounds.w, bounds.h + 2, 0, 0);
@@ -2610,7 +2635,8 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
         currentThresholdIndex = thresholds.length - 1 - i;
 
       plotArea.setSolidFill(DvtGaugeStyleUtils.getThresholdColor(gauge, thresholds[currentThresholdIndex], currentThresholdIndex));
-      plotArea.setSolidStroke(plotAreaBorderColor);
+      var thresholdBorderColor = thresholds[currentThresholdIndex]['borderColor'];
+      plotArea.setSolidStroke(thresholdBorderColor ? thresholdBorderColor : plotAreaBorderColor);
       DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects(gauge, container, plotArea, DvtGaugeStyleUtils.getThresholdColor(gauge, thresholds[currentThresholdIndex], currentThresholdIndex), gradientAngle);
     }
   }
@@ -3113,9 +3139,10 @@ DvtStatusMeterGaugeRenderer._calcPointOnArc = function(bounds, radius, angle) {
  * @param {Number} outerRadius Radius to outer border of arc..
  * @param {color} color Color of the arc.
  * @param {Boolean} isPlotArea True if arc being drawn is the plot area.
+ * @param {color} plotAreaBorderColor Color of the plot area border color
  * @private
  */
-DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds, startAngle, angleExtent, innerRadius, outerRadius, color, isPlotArea) {
+DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds, startAngle, angleExtent, innerRadius, outerRadius, color, isPlotArea, plotAreaBorderColor) {
   var context = gauge.getCtx();
   var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
   if (isRTL) {
@@ -3136,6 +3163,10 @@ DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds
   if (borderColor && !isPlotArea) {
     shape.setSolidStroke(borderColor);
   }
+  else if (isPlotArea && plotAreaBorderColor) {
+    shape.setSolidStroke(plotAreaBorderColor);
+  }
+
   container.addChild(shape);
 };
 
@@ -3444,8 +3475,8 @@ DvtStatusMeterGaugeRenderer.rectangleWithBorderRadius = function(x, y, w, h, rad
   if (radius) {
     if (radius.indexOf('/') != -1) {
       var splitHorizVert = radius.split('/');
-      var horiz = splitHorizVert[0].trim().split(/\s+/);
-      var vert = splitHorizVert[1].trim().split(/\s+/);
+      var horiz = DvtStringUtils.trim(splitHorizVert[0]).split(/\s+/);
+      var vert = DvtStringUtils.trim(splitHorizVert[1]).split(/\s+/);
       if (horiz.length == 1)
         topLeftX = topRightX = bottomRightX = bottomLeftX = horiz[0];
       else if (horiz.length == 2) {
@@ -3482,7 +3513,7 @@ DvtStatusMeterGaugeRenderer.rectangleWithBorderRadius = function(x, y, w, h, rad
       }
     }
     else if (radius != 'auto') {
-      var split = radius.trim().split(/\s+/);
+      var split = DvtStringUtils.trim(radius).split(/\s+/);
       if (split.length == 1) {
         topLeftX = topRightX = bottomRightX = bottomLeftX =
             topLeftY = topRightY = bottomRightY = bottomLeftY = split[0];
@@ -3736,7 +3767,7 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
   if (params && params.length == 5)
     this.setPath(params[0], params[1], params[2], params[3], params[4]);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -3819,7 +3850,7 @@ DvtDialGauge.prototype.Render = function(container, width, height)
 DvtDialGauge.prototype.renderUpdate = function() {
   DvtDialGaugeRenderer.updateIndicatorAndLabel(this, this._container, this.Width, this.Height);
 
-  var eventManager = this.__getEventManager();
+  var eventManager = this.getEventManager();
   if (eventManager)
     eventManager.associate(this._editingOverlay, this.__getLogicalObject(), true);
 
@@ -4477,7 +4508,7 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
   if (params && params.length == 1)
     this.setAngle(params[0]);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Rating Gauge component.  This class should never be instantiated directly.  Use the
@@ -4531,13 +4562,41 @@ DvtRatingGauge.prototype.SetOptions = function(options) {
  */
 DvtRatingGauge.prototype.Render = function(container, width, height) 
 {
-  var outerGap = this.getOptions()['__layout']['outerGap'];
+  var outerGap = this.Options['__layout']['outerGap'];
   var maxValue = this.Options['max'];
   var isVert = this.Options['orientation'] == 'vertical';
-  this._size = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) / maxValue) : Math.min(height - 2 * outerGap, (width - 2 * outerGap) / maxValue);
-  this._bounds = isVert ? new DvtRectangle(outerGap, (this.Height - this._size * maxValue) / 2.0, this.Width - 2 * outerGap, this._size * maxValue) :
-      new DvtRectangle((this.Width - this._size * maxValue) / 2.0, outerGap, this._size * maxValue, this.Height - 2 * outerGap);
-  DvtRatingGaugeRenderer.render(this, container, width, height);
+  var selectedSource = this.Options['selectedState']['source'];
+  var preserveAspectRatio = this.Options['preserveAspectRatio'] != 'none';
+
+  if (selectedSource && preserveAspectRatio) {
+    // Show images at the size of the selected shape if defined
+    var onLoad = function(imageInfo) {
+      if (imageInfo && imageInfo.width && imageInfo.height) {
+        var ratio = imageInfo.width / imageInfo.height;
+        this.__shapeWidth = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) * ratio / maxValue) : Math.min((height - 2 * outerGap) * ratio, (width - 2 * outerGap) / maxValue);
+        this.__shapeHeight = this.__shapeWidth / ratio;
+        this.__bounds = isVert ? new DvtRectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
+            new DvtRectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
+        DvtRatingGaugeRenderer.render(this, container, width, height);
+      }
+    };
+    DvtImageLoader.loadImage(this.getCtx(), this.Options['selectedState']['source'], DvtObj.createCallback(this, onLoad));
+  }
+  else {
+    if (!preserveAspectRatio) {
+      // Divide space evenly
+      this.__shapeWidth = isVert ? width - 2 * outerGap : (width - 2 * outerGap) / maxValue;
+      this.__shapeHeight = isVert ? (height - 2 * outerGap) / maxValue : (height - 2 * outerGap);
+    }
+    else {
+      // Show square shapes
+      this.__shapeWidth = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) / maxValue) : Math.min(height - 2 * outerGap, (width - 2 * outerGap) / maxValue);
+      this.__shapeHeight = this.__shapeWidth;
+    }
+    this.__bounds = isVert ? new DvtRectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
+        new DvtRectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
+    DvtRatingGaugeRenderer.render(this, container, width, height);
+  }
 };
 
 /**
@@ -4552,22 +4611,23 @@ DvtRatingGauge.prototype.__getLogicalObject = function() {
  */
 DvtRatingGauge.prototype.GetValueAt = function(x, y) {
 
+  var size = this.Options['orientation'] == 'vertical' ? this.__shapeHeight : this.__shapeWidth;
   if (DvtGaugeDataUtils.hasData(this)) {
     if (this.Options['orientation'] == 'vertical') {
-      y = Math.max(Math.min(y, this._bounds.y + this._bounds.h), this._bounds.y);
+      y = Math.max(Math.min(y, this.__bounds.y + this.__bounds.h), this.__bounds.y);
 
-      val = Math.max((this._bounds.y + this._bounds.h - y) / this._size, this.Options['min']);
+      val = Math.max((this.__bounds.y + this.__bounds.h - y) / size, this.Options['min']);
     }
 
     else {
-      x = Math.max(Math.min(x, this._bounds.x + this._bounds.w), this._bounds.x);
+      x = Math.max(Math.min(x, this.__bounds.x + this.__bounds.w), this.__bounds.x);
 
       // calculating the val depends on locale, but the rounding doesn't
       var val = 0;
       if (!DvtAgent.isRightToLeft(this.getCtx()))
-        val = Math.max((x - this._bounds.x) / this._size, this.Options['min']);
+        val = Math.max((x - this.__bounds.x) / size, this.Options['min']);
       else
-        val = Math.max((this._bounds.x + this._bounds.w - x) / this._size, this.Options['min']);
+        val = Math.max((this.__bounds.x + this.__bounds.w - x) / size, this.Options['min']);
     }
 
     return DvtGaugeRenderer.adjustForStep(this.Options, val);
@@ -4586,7 +4646,7 @@ DvtRatingGauge.prototype.__processHoverEnd = function(x, y) {
   this.__updateClipRects(this.Options['value'], 'render');
 
   // Fire the value change event to reset to the real value
-  this.__dispatchEvent(new DvtValueChangeEvent(this.Options['value'], this.Options['value'], false));
+  this.dispatchEvent(new DvtValueChangeEvent(this.Options['value'], this.Options['value'], false));
 };
 
 
@@ -4606,7 +4666,7 @@ DvtRatingGauge.prototype.__processValueChangeMove = function(x, y) {
   this.__updateClipRects(value, 'hover');
 
   // Fire the value change event
-  this.__dispatchEvent(new DvtValueChangeEvent(this.Options['value'], value, false));
+  this.dispatchEvent(new DvtValueChangeEvent(this.Options['value'], value, false));
 };
 
 
@@ -4621,8 +4681,8 @@ DvtRatingGauge.prototype.__processValueChangeEnd = function(x, y) {
   this.render();
 
   // Fire the both the change and input events on complete
-  this.__dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], false));
-  this.__dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], false));
+  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 /**
@@ -4640,14 +4700,15 @@ DvtRatingGauge.prototype.__updateClipRects = function(value, proc, container) {
 
   var isRTL = DvtAgent.isRightToLeft(this.getCtx());
   var isVert = this.Options['orientation'] == 'vertical';
+  var size = isVert ? this.__shapeHeight : this.__shapeWidth;
 
   // which  to show and which to hide based on whether we're hovering or not
   value = Math.max(Math.min(value, this.Options['max']), 0);  //clipping the data value
   var a = 0;
-  var b = value * this._size;
-  var c = value * this._size;
+  var b = value * size;
+  var c = value * size;
   if (proc == 'render') {
-    a = value * this._size;
+    a = value * size;
     b = 0;
   }
 
@@ -4655,49 +4716,49 @@ DvtRatingGauge.prototype.__updateClipRects = function(value, proc, container) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
     var unselClip = new DvtClipPath('unsel' + this.getId());
-    unselClip.addRect(this._bounds.x, this._bounds.y, this._bounds.w, this._bounds.h - c);
+    unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w, this.__bounds.h - c);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
     var selClip = new DvtClipPath('sel' + this.getId());
-    selClip.addRect(this._bounds.x, this._bounds.y + this._bounds.h - a, this._bounds.w, a);
+    selClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - a, this.__bounds.w, a);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
     var hoverClip = new DvtClipPath('hover' + this.getId());
-    hoverClip.addRect(this._bounds.x, this._bounds.y + this._bounds.h - b, this._bounds.w, b);
+    hoverClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - b, this.__bounds.w, b);
     hoverContainer.setClipPath(hoverClip);
   } else if (!isRTL) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
     var unselClip = new DvtClipPath('unsel' + this.getId());
-    unselClip.addRect(this._bounds.x + c, this._bounds.y, this._bounds.w - c, this._bounds.h);
+    unselClip.addRect(this.__bounds.x + c, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
     var selClip = new DvtClipPath('sel' + this.getId());
-    selClip.addRect(this._bounds.x, this._bounds.y, a, this._bounds.h);
+    selClip.addRect(this.__bounds.x, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
     var hoverClip = new DvtClipPath('hover' + this.getId());
-    hoverClip.addRect(this._bounds.x, this._bounds.y, b, this._bounds.h);
+    hoverClip.addRect(this.__bounds.x, this.__bounds.y, b, this.__bounds.h);
     hoverContainer.setClipPath(hoverClip);
   } else {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
     var unselClip = new DvtClipPath('unsel' + this.getId());
-    unselClip.addRect(this._bounds.x, this._bounds.y, this._bounds.w - c, this._bounds.h);
+    unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
     var selClip = new DvtClipPath('sel' + this.getId());
-    selClip.addRect(this._bounds.x + this._bounds.w - c, this._bounds.y, a, this._bounds.h);
+    selClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
     var hoverClip = new DvtClipPath('hover' + this.getId());
-    hoverClip.addRect(this._bounds.x + this._bounds.w - c, this._bounds.y, b, this._bounds.h);
+    hoverClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, b, this.__bounds.h);
     hoverContainer.setClipPath(hoverClip);
   }
   this.UpdateAriaLiveValue(container, value);
@@ -4754,6 +4815,7 @@ DvtRatingGaugeDefaults.VERSION_1 = {
   'selectedState': {'shape': 'star', 'color': '#F8C15A', 'borderColor': '#F5A700'},
   'hoverState': {'shape': 'star', 'color': '#66A7DA', 'borderColor': '#4A86C5'},
   'changedState': {'shape': 'star', 'color': '#F8C15A', 'borderColor': '#959595'},
+  'preserveAspectRatio' : 'meet',
   'step': 1
 };
 /**
@@ -4776,7 +4838,7 @@ DvtObj.createSubclass(DvtRatingGaugePeer, DvtSimpleObjPeer, 'DvtRatingGaugePeer'
 DvtRatingGaugePeer.prototype.getDatatip = function(target, x, y) {
   var options = this._gauge.getOptions();
   var thresholdIndex;
-  if (this._gauge.__getEventManager().__isMouseEditing())
+  if (this._gauge.getEventManager().__isMouseEditing())
     thresholdIndex = DvtGaugeDataUtils.getValueThresholdIndex(this._gauge, this._gauge.GetValueAt(x, y));
   else
     thresholdIndex = DvtGaugeDataUtils.getValueThresholdIndex(this._gauge);
@@ -4802,15 +4864,6 @@ DvtObj.createSubclass(DvtRatingGaugeRenderer, DvtObj, 'DvtRatingGaugeRenderer');
 DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
   if (DvtGaugeDataUtils.hasData(gauge)) {
     var options = gauge.getOptions();
-    var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
-    var isVert = options['orientation'] == 'vertical';
-
-    // Allocate the bounds for rendering the component
-    var outerGap = options['__layout']['outerGap'];
-    var maxValue = options['max'];
-    var size = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) / maxValue) : Math.min(height - 2 * outerGap, (width - 2 * outerGap) / maxValue);
-    var bounds = isVert ? new DvtRectangle(outerGap, (height - size * maxValue) / 2.0, width - 2 * outerGap, size * maxValue) :
-        new DvtRectangle((width - size * maxValue) / 2.0, outerGap, size * maxValue, height - 2 * outerGap);
     var thresholdIndex = DvtGaugeDataUtils.getValueThresholdIndex(gauge);
     var threshold = DvtGaugeDataUtils.getThreshold(gauge, thresholdIndex);
     var selectedColor = options['selectedState']['color'];
@@ -4827,15 +4880,31 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       changedBorderColor = threshold['borderColor'];
     }
 
-    // Create the options objects for the LED gauges
-    var unselectedOptions = {'value': 0, 'type': options['unselectedState']['shape'], 'color': options['unselectedState']['color'],
-      'borderColor': options['unselectedState']['borderColor'], 'visualEffects': options['visualEffects']};
-    var selectedOptions = {'value': 0, 'type': options['selectedState']['shape'], 'color': selectedColor,
-      'borderColor': selectedBorderColor, 'visualEffects': options['visualEffects']};
-    var changedOptions = {'value': 0, 'type': options['changedState']['shape'], 'color': changedColor,
-      'borderColor': changedBorderColor, 'visualEffects': options['visualEffects']};
-    var hoverOptions = {'value': 0, 'type': options['hoverState']['shape'], 'color': options['hoverState']['color'],
-      'borderColor': options['hoverState']['borderColor'], 'visualEffects': options['visualEffects']};
+    // Create the options objects for the shapes
+    var unselectedOptions = {'value': 0,
+      'type': options['unselectedState']['shape'],
+      'color': options['unselectedState']['color'],
+      'borderColor': options['unselectedState']['borderColor'],
+      'visualEffects': options['visualEffects'],
+      'source': options['unselectedState']['source']};
+    var selectedOptions = {'value': 0,
+      'type': options['selectedState']['shape'],
+      'color': selectedColor,
+      'borderColor': selectedBorderColor,
+      'visualEffects': options['visualEffects'],
+      'source': options['selectedState']['source']};
+    var changedOptions = {'value': 0,
+      'type': options['changedState']['shape'],
+      'color': changedColor,
+      'borderColor': changedBorderColor,
+      'visualEffects': options['visualEffects'],
+      'source': options['changedState']['source']};
+    var hoverOptions = {'value': 0,
+      'type': options['hoverState']['shape'],
+      'color': options['hoverState']['color'],
+      'borderColor': options['hoverState']['borderColor'],
+      'visualEffects': options['visualEffects'],
+      'source': options['hoverState']['source']};
 
     if (options['unselectedState']['shape'] == 'dot') {
       unselectedOptions['type'] = 'circle';
@@ -4843,56 +4912,59 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       unselectedOptions['size'] = 0.05;
     }
 
-    // Create containers for clipping.
-    var unselContainer = new DvtContainer(gauge.getCtx());
-    container.addChild(unselContainer);
-    var selContainer = new DvtContainer(gauge.getCtx());
-    container.addChild(selContainer);
-    var hoverContainer = new DvtContainer(gauge.getCtx());
-    container.addChild(hoverContainer);
+    DvtRatingGaugeRenderer._createShapes(gauge, container, unselectedOptions);
+    DvtRatingGaugeRenderer._createShapes(gauge, container, options['changed'] ? changedOptions : selectedOptions);
+    DvtRatingGaugeRenderer._createShapes(gauge, container, hoverOptions);
 
     gauge.__updateClipRects(options['value'], 'render', container);
-
-    for (var i = 0; i < maxValue; i++) {
-      // The unselectedState shapes
-      if (options['unselectedState']['shape'] != 'none') {
-        var unselectedLED = DvtLedGauge.newInstance(gauge.getCtx(), null, null, true);
-        unselContainer.addChild(unselectedLED);
-        isVert ? unselectedLED.setTranslate(bounds.x + bounds.w / 2 - size / 2, bounds.y + bounds.h - (i + 1) * size) :
-            isRTL ? unselectedLED.setTranslate(bounds.x + bounds.w - (i + 1) * size, bounds.y + bounds.h / 2 - size / 2) :
-            unselectedLED.setTranslate(bounds.x + i * size, bounds.y + bounds.h / 2 - size / 2);
-        unselectedLED.render(unselectedOptions, size, size);
-      }
-
-      // The selected/changed shapes use the same container and cliprect
-      if (options['changed']) {
-        var changedLED = DvtLedGauge.newInstance(gauge.getCtx(), null, null, true);
-        selContainer.addChild(changedLED);
-        isVert ? changedLED.setTranslate(bounds.x + bounds.w / 2 - size / 2, bounds.y + bounds.h - (i + 1) * size) :
-            isRTL ? changedLED.setTranslate(bounds.x + bounds.w - (i + 1) * size, bounds.y + bounds.h / 2 - size / 2) :
-            changedLED.setTranslate(bounds.x + i * size, bounds.y + bounds.h / 2 - size / 2);
-        changedLED.render(changedOptions, size, size);
-      }
-      else {
-        var selectedLED = DvtLedGauge.newInstance(gauge.getCtx(), null, null, true);
-        selContainer.addChild(selectedLED);
-        isVert ? selectedLED.setTranslate(bounds.x + bounds.w / 2 - size / 2, bounds.y + bounds.h - (i + 1) * size) :
-            isRTL ? selectedLED.setTranslate(bounds.x + bounds.w - (i + 1) * size, bounds.y + bounds.h / 2 - size / 2) :
-            selectedLED.setTranslate(bounds.x + i * size, bounds.y + bounds.h / 2 - size / 2);
-        selectedLED.render(selectedOptions, size, size);
-      }
-
-      // The hover shapes
-      var hoverLED = DvtLedGauge.newInstance(gauge.getCtx(), null, null, true);
-      hoverContainer.addChild(hoverLED);
-      isVert ? hoverLED.setTranslate(bounds.x + bounds.w / 2 - size / 2, bounds.y + bounds.h - (i + 1) * size) :
-          isRTL ? hoverLED.setTranslate(bounds.x + bounds.w - (i + 1) * size, bounds.y + bounds.h / 2 - size / 2) :
-          hoverLED.setTranslate(bounds.x + i * size, bounds.y + bounds.h / 2 - size / 2);
-      hoverLED.render(hoverOptions, size, size);
-    }
   }
   else // Render the empty text
     DvtGaugeRenderer.renderEmptyText(gauge, container, new DvtRectangle(0, 0, width, height));
+};
+
+/**
+ * Creates a shape for the rating gauge at the given position
+ * @param {DvtRatingGauge} gauge
+ * @param {DvtContainer} container The container to render into.
+ * @param {object} stateOptions The options object for this state.
+ * @private
+ */
+DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) {
+  var context = gauge.getCtx();
+  var shapesContainer = new DvtContainer(context);
+  container.addChild(shapesContainer);
+
+  var options = gauge.getOptions();
+  var bounds = gauge.__bounds;
+  var shapeWidth = gauge.__shapeWidth;
+  var shapeHeight = gauge.__shapeHeight;
+
+  for (var i = 0; i < options['max']; i++) {
+    var cx, cy;
+    if (options['orientation'] == 'vertical') {
+      cx = bounds.x + bounds.w / 2 - shapeWidth / 2;
+      cy = bounds.y + bounds.h - (i + 1) * shapeHeight;
+    }
+    else if (DvtAgent.isRightToLeft(context)) {
+      cx = bounds.x + bounds.w - (i + 1) * shapeWidth;
+      cy = bounds.y + bounds.h / 2 - shapeHeight / 2;
+    }
+    else {
+      cx = bounds.x + i * shapeWidth;
+      cy = bounds.y + bounds.h / 2 - shapeHeight / 2;
+    }
+
+    var shape;
+    if (stateOptions['source'])
+      shape = new DvtImageMarker(context, cx + shapeWidth / 2, cy + shapeHeight / 2, shapeWidth, shapeHeight, stateOptions['source']);
+    else if (stateOptions['type'] != 'none') {
+      shape = DvtLedGauge.newInstance(context, null, null, true);
+      shape.setTranslate(cx, cy);
+      shape.render(stateOptions, shapeWidth, shapeHeight);
+    }
+    if (shape)
+      shapesContainer.addChild(shape);
+  }
 };
 /**
  * Event Manager for DvtRatingGauge.
@@ -4902,7 +4974,7 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
  * @constructor
  */
 var DvtRatingGaugeEventManager = function(gauge) {
-  this.Init(gauge.getCtx(), gauge.__dispatchEvent, gauge);
+  this.Init(gauge.getCtx(), gauge.dispatchEvent, gauge);
   this._gauge = gauge;
 };
 

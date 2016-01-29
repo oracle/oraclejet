@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -396,7 +396,7 @@ DvtThematicMap.prototype.setMarkerZoomBehavior = function(behavior) {
 /**
  * @override
  */
-DvtThematicMap.prototype.__getEventManager = function() {
+DvtThematicMap.prototype.getEventManager = function() {
   return this._eventHandler;
 };
 
@@ -583,7 +583,7 @@ DvtThematicMap.prototype.PreRender = function() {
 DvtThematicMap.prototype._createHandlers = function() {
   // Each Tmap has only one keyboard handler. Each layer has its own event manager
   // because selection modes can differ between layers.
-  this._eventHandler = new DvtThematicMapEventManager(this.getCtx(), this.__dispatchEvent, this);
+  this._eventHandler = new DvtThematicMapEventManager(this.getCtx(), this.dispatchEvent, this);
   this._eventHandler.addListeners(this);
   if (!DvtAgent.isTouchDevice()) {
     this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this._eventHandler);
@@ -774,6 +774,8 @@ DvtThematicMap.prototype.Render = function() {
     this._oldTopLayerName = this._topLayer.getLayerName();
   }
 
+  // For mashup case, the component who calls this last will get their keyboard handler set on the wrapping div
+  // so we need to call this after rendering data layers
   this.getCtx().setKeyboardFocusArray([this]);
   this._bRendered = true;
 };
@@ -840,14 +842,13 @@ DvtThematicMap.prototype._render = function(pzcContainer, cpContainer) {
     this.setInitialZoom(null);
   }
 
-  // Set initially focused area
-  var navigables = this.getNavigableAreas();
-  if (navigables.length == 0)
-    navigables = this.getNavigableObjects();
-
-  // just use the first object as the focus
-  if (this._keyboardHandler)
+  // Set initially focus to area or marker if no data areas
+  if (this._keyboardHandler) {
+    var navigables = this.getNavigableAreas();
+    if (navigables.length == 0)
+      navigables = this.getNavigableObjects();
     this._eventHandler.setInitialFocus(navigables[0]);
+  }
 
   // Do not set min and max zoom before calling zoom to fit on map
   this._pzc.setMinZoom(null);
@@ -894,6 +895,18 @@ DvtThematicMap.prototype.updateLayer = function(dataLayerOptions, parentLayer, i
   parser.ParseDataLayers([dataLayerOptions], this.getLayer(parentLayer), this._topLayer.getLayerName(), isAreaDataLayer);
   this._renderLegend();
   this._bRendered = true;
+
+  // Reset initially focused object with updated data items
+  if (this._keyboardHandler) {
+    var navigables = this.getNavigableAreas();
+    if (navigables.length == 0)
+      navigables = this.getNavigableObjects();
+    this._eventHandler.setInitialFocus(navigables[0]);
+  }
+
+  // Set component keyboard listener last for mashup case
+  this.getCtx().setKeyboardFocusArray([this]);
+
   // reset zoom limits since we could now have an isolated area after data layer update
   this._updateZoomLimits();
 };
@@ -971,7 +984,7 @@ DvtThematicMap.prototype.HandleLegendEvent = function(event) {
   // Currently only one collapsible container which contains a legend
   var spEvent = new DvtSetPropertyEvent();
   spEvent.addParam(DvtPanZoomComponent.LEGEND_DISCLOSED_EVENT_KEY, event.getSubType() == DvtCollapsiblePanelEvent.SUBTYPE_SHOW);
-  this.__dispatchEvent(spEvent);
+  this.dispatchEvent(spEvent);
 };
 
 
@@ -1065,7 +1078,7 @@ DvtThematicMap.prototype.HandleZoomEvent = function(event) {
         event.addParam('panY', pzcMatrix.getTy());
         // null out animator for Flash. Temp fix until  is done.
         event._animator = null;
-        this.__dispatchEvent(event);
+        this.dispatchEvent(event);
 
         this._transformContainers(pzcMatrix);
 
@@ -1080,7 +1093,7 @@ DvtThematicMap.prototype.HandleZoomEvent = function(event) {
       break;
     case DvtZoomEvent.SUBTYPE_ZOOM_TO_FIT_END:
       // reset pan/zoom state
-      this.__dispatchEvent(new DvtZoomEvent());
+      this.dispatchEvent(new DvtZoomEvent());
       break;
     default:
       break;
@@ -1104,7 +1117,7 @@ DvtThematicMap.prototype.HandlePanEvent = function(event) {
       event.addParam('panY', pzcMatrix.getTy());
       // null out animator for Flash. Temp fix until  is done.
       event._animator = null;
-      this.__dispatchEvent(event);
+      this.dispatchEvent(event);
 
       this._transformContainers(pzcMatrix);
 
@@ -1412,6 +1425,9 @@ DvtThematicMap.prototype._getCenteredObjsMatrix = function() {
   return this._currentAnimMatrix;
 };
 
+/**
+ * Drills down on the current selection of data areas, resetting other layers and areas as needed.
+ */
 DvtThematicMap.prototype.drillDown = function() {
   // stop previous animation
   this._stopAnimation();
@@ -1425,6 +1441,12 @@ DvtThematicMap.prototype.drillDown = function() {
 
     //Reset other disclosed regions in this layer
     var selectedAreas = this._selectedAreas[this._clickedLayerName];
+    var areasToDrill = [];
+    for (var i = 0; i < selectedAreas.length; i++) {
+      if (!this._getAreaFromDataLayer(selectedAreas[i], parentLayer.getDataLayer(this._clickedDataLayerId)).isDrilled())
+        areasToDrill.push(selectedAreas[i]);
+    }
+
     // do not reset if just processing initiallly drilled row keys
     if (!this._processingInitDrilled && this._drillMode == 'single') {
       this._drilled.pop();
@@ -1433,14 +1455,14 @@ DvtThematicMap.prototype.drillDown = function() {
     }
 
     var newSelectedAreas = [];
-    for (var i = 0; i < selectedAreas.length; i++) {
-      var parentArea = selectedAreas[i];
+    for (var i = 0; i < areasToDrill.length; i++) {
+      var parentArea = areasToDrill[i];
       var childrenToDisclose = parentLayer.getChildrenForArea(parentArea);
       newSelectedAreas.push(childrenToDisclose[0]);
 
       //Update child to parent mapping
       for (var j = 0; j < childrenToDisclose.length; j++)
-        this._childToParent[childrenToDisclose[j]] = selectedAreas[i];
+        this._childToParent[childrenToDisclose[j]] = parentArea;
 
       //Add disclosed child areas of drilled region
       childLayer.discloseAreas(childrenToDisclose, fadeInObjs);
@@ -1453,7 +1475,7 @@ DvtThematicMap.prototype.drillDown = function() {
     }
 
     this._handleDrillAnimations(this._drillAnimFadeOutObjs, fadeInObjs, false);
-    this._updateDrillButton(childLayer.getLayerName());
+    this._updateDrillButton(childLayer.getLayerName(), true);
     //Update so that drill up will work right after a drill down with no additional selection
     this._clickedLayerName = childLayer.getLayerName();
     this._selectedAreas[this._clickedLayerName] = newSelectedAreas;
@@ -1558,7 +1580,7 @@ DvtThematicMap.prototype.setEventClientId = function(clientId) {
 /**
  * @override
  */
-DvtThematicMap.prototype.__dispatchEvent = function(event) {
+DvtThematicMap.prototype.dispatchEvent = function(event) {
   var type = event.getType();
   if (type == DvtSelectionEvent.TYPE) {
     this._handleSelectionEvent(event);
@@ -1569,7 +1591,7 @@ DvtThematicMap.prototype.__dispatchEvent = function(event) {
   else if (type == DvtShowPopupEvent.TYPE || type == DvtHidePopupEvent.TYPE) {
     event.addParam('clientId', this._eventClientId);
   }
-  DvtThematicMap.superclass.__dispatchEvent.call(this, event);
+  DvtThematicMap.superclass.dispatchEvent.call(this, event);
 };
 
 
@@ -1602,11 +1624,17 @@ DvtThematicMap.prototype._hideSelectionMenu = function() {
   }
 };
 
-DvtThematicMap.prototype._updateDrillButton = function(layerName) {
+/**
+ * Enables or disables the drill buttons before and after drilling
+ * @param {string} layerName
+ * @param {boolean=} isDrillDown Optional param indicating whether a drill down just occurred
+ * @private
+ */
+DvtThematicMap.prototype._updateDrillButton = function(layerName, isDrillDown) {
   if (this._controlPanel && this._drillMode && this._drillMode != 'none') {
     var childLayer = this.getDrillChildLayer(layerName);
     var parentLayer = this.getDrillParentLayer(layerName);
-    if (childLayer)
+    if (childLayer && !isDrillDown)
       this._controlPanel.setEnabledDrillDownButton(true);
     else
       this._controlPanel.setEnabledDrillDownButton(false);
@@ -1867,11 +1895,27 @@ DvtThematicMap.prototype._getDataItemById = function(id) {
     var dataLayers = this._layers[i].getDataLayers();
     for (var dlId in dataLayers) {
       var dataObjs = dataLayers[dlId].getDataObjects();
-      for (var i = 0; i < dataObjs.length; i++) {
-        if (dataObjs[i].getId() === id)
-          return dataObjs[i];
+      for (var j = 0; j < dataObjs.length; j++) {
+        if (dataObjs[j].getId() === id)
+          return dataObjs[j];
       }
     }
+  }
+  return null;
+};
+
+/**
+ * Retrieves a map area by area name
+ * @param {string} areaName
+ * @param {DvtMapDataLayer} dataLayer
+ * @return {DvtMapAreaPeer}
+ * @private
+ */
+DvtThematicMap.prototype._getAreaFromDataLayer = function(areaName, dataLayer) {
+  var dataObjs = dataLayer.getAreaObjects();
+  for (var j = 0; j < dataObjs.length; j++) {
+    if (dataObjs[j].getLocation() === areaName)
+      return dataObjs[j];
   }
   return null;
 };
@@ -2312,13 +2356,34 @@ DvtObj.createSubclass(DvtThematicMapAutomation, DvtAutomation, 'DvtThematicMapAu
  * <li>dataLayerId:area[index]</li>
  * <li>dataLayerId:marker[index]</li>
  * <li>tooltip</li>
+ * <li>controlPanel#disclosure</li>
+ * <li>controlPanel#zoomToFit</li>
+ * <li>controlPanel#zoomIn</li>
+ * <li>controlPanel#zoomOut</li>
+ * <li>controlPanel#drillDown</li>
+ * <li>controlPanel#drillUp</li>
+ * <li>controlPanel#reset</li>
  * </ul>
  * @override
  */
 DvtThematicMapAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var logicalObj = this._tmap.__getEventManager().GetLogicalObject(displayable);
+  var logicalObj = this._tmap.getEventManager().GetLogicalObject(displayable);
   if (logicalObj && (logicalObj instanceof DvtMapAreaPeer || logicalObj instanceof DvtMapObjPeer))
     return this._getSubId(logicalObj);
+
+  //If displayable is from control panel
+  var controlPanel = this._tmap.getPanZoomCanvas().getControlPanel();
+  if (controlPanel) {
+    logicalObj = controlPanel.getEventManager().GetLogicalObject(displayable);
+    if (logicalObj && logicalObj instanceof DvtButton) {
+      var actions = ['disclosure', 'zoomIn', 'zoomOut', 'zoomToFit', 'drillDown', 'drillUp', 'reset'];
+      for (var idx = 0; idx < actions.length; idx++) {
+        if (controlPanel.getActionDisplayable(actions[idx]) === logicalObj) {
+          return 'controlPanel#' + actions[idx];
+        }
+      }
+    }
+  }
   return null;
 };
 
@@ -2329,6 +2394,13 @@ DvtThematicMapAutomation.prototype.GetSubIdForDomElement = function(displayable)
  * <li>dataLayerId:area[index]</li>
  * <li>dataLayerId:marker[index]</li>
  * <li>tooltip</li>
+ * <li>controlPanel#disclosure</li>
+ * <li>controlPanel#zoomToFit</li>
+ * <li>controlPanel#zoomIn</li>
+ * <li>controlPanel#zoomOut</li>
+ * <li>controlPanel#drillDown</li>
+ * <li>controlPanel#drillUp</li>
+ * <li>controlPanel#reset</li>
  * </ul>
  * @override
  * @export
@@ -2344,6 +2416,16 @@ DvtThematicMapAutomation.prototype.getDomElementForSubId = function(subId) {
     var dataObjType = subId.substring(colonIdx + 1, parenIdx);
     var index = parseInt(subId.substring(parenIdx + 1, subId.length - 1));
     return this._getDomElement(dataLayerId, dataObjType, index);
+  } else if (subId.lastIndexOf('controlPanel') === 0) {
+    var actionIdx = subId.indexOf('#');
+    if (actionIdx > 0) {
+      var action = subId.substring(actionIdx + 1);
+      var controlPanel = this._tmap.getPanZoomCanvas().getControlPanel();
+      if (controlPanel && action) {
+        var displayable = controlPanel.getActionDisplayable(action);
+        return displayable ? displayable.getElem() : null;
+      }
+    }
   }
   return null;
 };
@@ -2719,7 +2801,7 @@ DvtDrillablePath.prototype.handleZoomEvent = function(pzcMatrix) {
     this._updateStrokeZoomWidth(this, 1);
   }
 };
-// Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a custom data item that supports interaction and accessibility.
   *  @extends {DvtContainer}
@@ -2757,7 +2839,7 @@ DvtCustomDataItem.prototype.Init = function(context, dataItem, styles) {
     this._height = dataItem.getHeight();
     this.addChild(dataItem);
   } else {
-    this.getElem().appendChild(dataItem);
+    this.getElem().appendChild(dataItem);//dataItem is output of a custom renderer function or a knockout template @HtmlUpdateReview
     // TODO make this more efficient by defering to render call
     var dim = DvtDisplayableUtils.getDimensionsForced(context, this);
     this._width = dim.w;
@@ -2897,7 +2979,7 @@ DvtCustomDataItem.prototype.updateRootElement = function(rootElement) {
   if (rootElement instanceof DvtBaseComponent)
     this.addChild(rootElement);
   else
-    this.getElem().appendChild(rootElement);
+    this.getElem().appendChild(rootElement);//rootElement is output of a custom renderer function or a knockout template @HtmlUpdateReview
   this._dataItem = rootElement;
 };
 
@@ -3662,7 +3744,6 @@ DvtMapObjPeer.prototype.Init = function(data, dataLayer, displayable, label, cen
   if (this.Displayable) {
     if (data['destination']) {
       this.Displayable.setAriaRole('link');
-      this.Displayable.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
       this._linkCallback = DvtToolkitUtils.getLinkCallback('_blank', data['destination']);
     } else {
       this.Displayable.setAriaRole('img');
@@ -3879,8 +3960,20 @@ DvtMapObjPeer.prototype.UpdateAriaLabel = function() {
  * @param {boolean} bSelectable True if this object is selectable
  */
 DvtMapObjPeer.prototype.setSelectable = function(bSelectable) {
-  if (this.Displayable.setSelectable)
+  var label = this.getLabel();
+  if (this.Displayable.setSelectable) {
+    // DvtShapes setSelectable also sets selecting cursor
     this.Displayable.setSelectable(bSelectable);
+    if (label && bSelectable)
+      label.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+  }
+
+  // DvtShape clears cursors if not selectable so set the selecting cursor after
+  if (this._data['destination']) {
+    this.Displayable.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    if (label)
+      label.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+  }
 };
 
 /**
@@ -5588,6 +5681,9 @@ DvtMapDataLayer.prototype.addDataObject = function(obj) {
   if (obj) {
     this._dataObjs.push(obj);
     this._eventHandler.associate(obj.getDisplayable(), obj);
+    var label = obj.getLabel();
+    if (label)
+      this._eventHandler.associate(label, obj);
   }
 };
 
@@ -6542,7 +6638,7 @@ DvtThematicMapEventManager.prototype.StoreInfoByEventType = function(key) {
   }
   return DvtThematicMapEventManager.superclass.StoreInfoByEventType.call(this, key);
 };
-// Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Thematic Map JSON parser
  * @param {DvtThematicMap} tmap The thematic map to update
@@ -6661,10 +6757,10 @@ DvtThematicMapJsonParser.prototype._parseAreaLayers = function(areaLayers) {
       this._areaLayerStyle.parseInlineStyle(areaLayer['labelStyle']);
 
     if (this._isCustomBasemap) {
-      mapLayer = new DvtMapCustomAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'], this._tmap.__getEventManager());
+      mapLayer = new DvtMapCustomAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'], this._tmap.getEventManager());
       mapLayer.setAreaLayerImage(this._customAreaLayerImages[layer]);
     } else {
-      mapLayer = new DvtMapAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'], this._tmap.__getEventManager());
+      mapLayer = new DvtMapAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'], this._tmap.getEventManager());
       var areaNames = DvtBaseMapManager.getAreaNames(basemap, layer);
       mapLayer.setAreaShapes(this._createPathShapes(areaNames));
       mapLayer.setAreaNames(areaNames);
@@ -6720,10 +6816,10 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
       if (parentLayer instanceof DvtMapAreaLayer && isAreaDataLayer)
         parentLayer.resetRenderedAreas();
     } else {
-      parentLayer = new DvtMapLayer(this._tmap, dataLayerOptions['id'], this._tmap.__getEventManager());
+      parentLayer = new DvtMapLayer(this._tmap, dataLayerOptions['id'], this._tmap.getEventManager());
       this._tmap.addPointLayer(parentLayer);
     }
-    var dataLayer = new DvtMapDataLayer(this._tmap, parentLayer, dataLayerOptions['id'], this._tmap.__getEventManager(), dataLayerOptions);
+    var dataLayer = new DvtMapDataLayer(this._tmap, parentLayer, dataLayerOptions['id'], this._tmap.getEventManager(), dataLayerOptions);
 
     var selectionMode = dataLayerOptions['selectionMode'];
     if (selectionMode == 'single')
@@ -6767,7 +6863,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
             isolatedAreaId = areaId;
         }
 
-        if (disclosedItems && disclosedItems.indexOf(areas[j]['id']) != -1)
+        if (disclosedItems && DvtArrayUtils.getIndex(disclosedItems, areas[j]['id']) != -1)
           initDisclosed.push(areaId);
 
         var dataObj = this._createArea(parentLayer, dataLayer, areas[j]);
@@ -6842,7 +6938,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
             isolatedAreaId = areaId;
         }
 
-        if (disclosedItems && disclosedItems.indexOf(markers[j]['id']) != -1)
+        if (disclosedItems && DvtArrayUtils.getIndex(disclosedItems, markers[j]['id']) != -1)
           initDisclosed.push(areaId);
 
         var initState = {'hovered': false, 'selected': false, 'focused': false};
@@ -7945,85 +8041,6 @@ DvtThematicMapProjections._getInverseRobinsonProjection = function(x, y) {
   return new DvtPoint(originalX, originalY);
 };
 /**
- * @constructor
- * ZoomInButton for use with Diagram.
- */
-var DvtMapControlButton = function(context, button, mapCallback, panZoomCanvas, btype, resources, eventManager) {
-  this.Init(context, button, mapCallback, panZoomCanvas, btype, resources, eventManager);
-};
-
-DvtObj.createSubclass(DvtMapControlButton, DvtBaseControl, 'DvtMapControlButton');
-
-DvtMapControlButton.BUTTON_TYPE_DRILLUP = 0;
-DvtMapControlButton.BUTTON_TYPE_DRILLDOWN = 1;
-DvtMapControlButton.BUTTON_TYPE_RESET = 2;
-
-
-/**
- * Helper method called by the constructor to initialize this object.
- * @param {DvtContext} context An object maintaining application specific context, as well as well as providing
- *                             access to platform specific data and objects, such as the factory
- * @param {DvtButton} button A button used by the control
- * @param {function} mapCallback A callback function that should be called on click event
- * @param {DvtPanZoomCanvas} canvas The PanZoomCanvas this control will be associated with
- * @param {DvtEventManager} eventManager An event manager to handle events for the control
- */
-DvtMapControlButton.prototype.Init = function(context, button, mapCallback, panZoomCanvas, btype, eventManager) {
-  DvtMapControlButton.superclass.Init.call(this, context);
-
-  this._btype = btype;
-  this._button = button;
-  this._eventManager = eventManager;
-  this._button.setCallback(this.HandleOnClick, this);
-  var proxy = new DvtControlPanelEventHandlerProxy(this, null, null,
-      null, null, null,
-      this._getTooltipText());
-  this._eventManager.associate(this._button, proxy);
-
-  this.addChild(this._button);
-
-  this._mapCallback = mapCallback;
-  this._isEnabled = true;
-};
-
-
-/**
- * Sets button state
- * @param {boolean} enabled True to enable the button
- */
-DvtMapControlButton.prototype.setEnabled = function(enabled)
-{
-  this.setAlpha(enabled ? 1.0 : 0.4);
-  this._isEnabled = enabled;
-  this._button.setEnabled(enabled);
-  this._button.initState();
-};
-
-DvtMapControlButton.prototype.HandleOnClick = function(event)
-{
-  DvtEventManager.consumeEvent(event);
-  if (this._isEnabled && this._mapCallback) {
-    this._mapCallback();
-  }
-};
-
-
-/**
- * @return tooltip text for current buton type.
- */
-DvtMapControlButton.prototype._getTooltipText = function() {
-  if (this._btype == DvtMapControlButton.BUTTON_TYPE_DRILLUP) {
-    return DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_DRILLUP');
-  }else if (this._btype == DvtMapControlButton.BUTTON_TYPE_DRILLDOWN) {
-    return DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_DRILLDOWN');
-  }else if (this._btype == DvtMapControlButton.BUTTON_TYPE_RESET) {
-    return DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_RESET');
-  }else {
-    return null;
-  }
-};
-
-/**
  * Thematic map control panel which includes buttons for drilling
  * @param {DvtContext} context The rendering context
  * @param {DvtPanZoomComponent} view The component that this control panel belongs to
@@ -8037,9 +8054,11 @@ var DvtThematicMapControlPanel = function(context, view, state) {
 DvtObj.createSubclass(DvtThematicMapControlPanel, DvtControlPanel, 'DvtThematicMapControlPanel');
 
 /**
+ * Initialize control panel
  * @param {DvtContext} context The rendering context
  * @param {DvtPanZoomComponent} view The component that this control panel belongs to
  * @param {Number} state Whether the initial state is collapsed or expanded
+ * @protected
  */
 DvtThematicMapControlPanel.prototype.Init = function(context, view, state) {
   DvtThematicMapControlPanel.superclass.Init.call(this, context, view, state);
@@ -8056,12 +8075,20 @@ DvtThematicMapControlPanel.prototype.Init = function(context, view, state) {
   this._styleMap = view.getSubcomponentStyles();
 };
 
+/**
+ * Enables or disables the drill down button
+ * @param {boolean} enable True if button should be enabled
+ */
 DvtThematicMapControlPanel.prototype.setEnabledDrillDownButton = function(enable) {
   this._drillDownButtonEnabled = enable;
   if (this._drillDownButton)
     this._drillDownButton.setEnabled(enable);
 };
 
+/**
+ * Enables or disables the drill up button
+ * @param {boolean} enable True if button should be enabled
+ */
 DvtThematicMapControlPanel.prototype.setEnabledDrillUpButton = function(enable) {
   this._drillUpButtonEnabled = enable;
   if (this._drillUpButton)
@@ -8069,35 +8096,53 @@ DvtThematicMapControlPanel.prototype.setEnabledDrillUpButton = function(enable) 
 };
 
 /**
-  *  Populate the horizontal part of the control panel
-  *  @param {DvtContainer} contentSprite Container for holding additional buttons
-  */
+ * Populate the horizontal part of the control panel
+ * @param {DvtContainer} contentSprite Container for holding additional buttons
+ * @protected
+ */
 DvtThematicMapControlPanel.prototype.PopulateHorzContentBar = function(contentSprite) {
   if (this._drillMode && this._drillMode != 'none') {
     var buttonOffset = DvtStyleUtils.getStyle(this._styleMap, DvtControlPanel.CP_BUTTON_WIDTH, 0);
-    this._resetButton = DvtButtonLAFUtils.createResetButton(this.getCtx(), this._resetCallback, this._panZoomCanvas,
-                                                            DvtMapControlButton.BUTTON_TYPE_RESET,
-                                                            this._buttonImages, this._eventManager, this._styleMap);
+    this._resetButton = DvtButtonLAFUtils.createResetButton(this.getCtx(), this._buttonImages, this._styleMap);
+    this._resetButton.setCallback(this._resetCallback, this);
+    this._resetButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_RESET'));
+    this._eventManager.associate(this._resetButton, this._resetButton);
     contentSprite.addChild(this._resetButton);
-    this._drillDownButton = DvtButtonLAFUtils.createDrillDownButton(this.getCtx(), this._drillDownCallback,
-                                                                    this._panZoomCanvas,
-                                                                    DvtMapControlButton.BUTTON_TYPE_DRILLDOWN,
-                                                                    this._buttonImages,
-                                                                    this._eventManager, this._styleMap);
+
+    this._drillDownButton = DvtButtonLAFUtils.createDrillDownButton(this.getCtx(), this._buttonImages, this._styleMap);
+    this._drillDownButton.setCallback(this._drillDownCallback, this);
+    this._drillDownButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_DRILLDOWN'));
+    this._eventManager.associate(this._drillDownButton, this._drillDownButton);
     this._drillDownButton.setTranslateX(buttonOffset);
     this._drillDownButton.setEnabled(this._drillDownButtonEnabled);
     contentSprite.addChild(this._drillDownButton);
-    this._drillUpButton = DvtButtonLAFUtils.createDrillUpButton(this.getCtx(), this._drillUpCallback,
-                                                                this._panZoomCanvas,
-                                                                DvtMapControlButton.BUTTON_TYPE_DRILLUP,
-                                                                this._buttonImages,
-                                                                this._eventManager, this._styleMap);
+
+    this._drillUpButton = DvtButtonLAFUtils.createDrillUpButton(this.getCtx(), this._buttonImages, this._styleMap);
+    this._drillUpButton.setCallback(this._drillUpCallback, this);
+    this._drillUpButton.setTooltip(DvtBundle.getTranslatedString(DvtBundle.SUBCOMPONENT_PREFIX, 'CONTROL_PANEL_DRILLUP'));
+    this._eventManager.associate(this._drillUpButton, this._drillUpButton);
 
     this._drillUpButton.setTranslateX(buttonOffset * 2);
     this._drillUpButton.setEnabled(this._drillUpButtonEnabled);
     contentSprite.addChild(this._drillUpButton);
 
   }
+};
+
+/**
+ * @override
+ */
+DvtThematicMapControlPanel.prototype.getActionDisplayable = function(type, stampId) {
+  var displayable = DvtThematicMapControlPanel.superclass.getActionDisplayable.call(this, type, stampId);
+  if (!displayable && this.isDisclosed()) {
+    if (type == 'drillDown' && this._drillDownButton && this._drillDownButton.isEnabled())
+      displayable = this._drillDownButton;
+    else if (type == 'drillUp' && this._drillUpButton && this._drillUpButton.isEnabled())
+      displayable = this._drillUpButton;
+    else if (type == 'reset' && this._resetButton && this._resetButton.isEnabled())
+      displayable = this._resetButton;
+  }
+  return displayable;
 };
 
   return D;

@@ -14,90 +14,92 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojSunburst
  * @augments oj.dvtBaseComponent
  * @since 0.7
- * 
+ *
  * @classdesc
  * <h3 id="sunburstOverview-section">
  *   JET Sunburst Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#sunburstOverview-section"></a>
  * </h3>
- * 
- * <p>Sunburst component for JET. Sunbursts are used to display hierarchical data across two dimensions, represented by 
+ *
+ * <p>Sunburst component for JET. Sunbursts are used to display hierarchical data across two dimensions, represented by
  * the size and color of the sunburst nodes.</p>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;div data-bind="ojComponent: {
  *   component: 'ojSunburst',
- *   nodes: [{value: 100, color: "#FFFF00", label: "Total Sales", 
+ *   nodes: [{value: 100, color: "#FFFF00", label: "Total Sales",
  *            nodes: [{value: 75, color: "#00FF00", label: "Candy"},
  *                    {value: 20, color: "#FFFF00", label: "Fruit"},
  *                    {value: 15, color: "#FF0000", label: "Vegetables"}]}]
  * }"/>
  * </code>
  * </pre>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"touchDoc"}
- * 
+ *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"keyboardDoc"}
- * 
+ *
  * <h3 id="perf-section">
  *   Performance
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
  * </h3>
- * 
+ *
  * <h4>Animation</h4>
  * <p>Animation should only be enabled for visualizations of small to medium data sets. Alternate visualizations should
  *    be considered if identifying data changes is important, since all nodes will generally move and resize on any data
  *    change.
  * </p>
- * 
+ *
  * <h4>Data Set Size</h4>
- * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this component. 
- *    Applications can enable progressive reveal of data through drilling or aggregate small nodes to reduce the 
+ * <p>As a rule of thumb, it's recommended that applications only set usable data densities on this component.
+ *    Applications can enable progressive reveal of data through drilling or aggregate small nodes to reduce the
  *    displayed data set size.
  * </p>
- * 
+ *
  * <h4>Style Attributes</h4>
- * <p>Use the highest level options property available. For example, consider using  attributes on 
- *    <code class="prettyprint">nodeDefaults</code>, instead of attributes on the individual nodes. The component can 
- *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM 
+ * <p>Use the highest level options property available. For example, consider using  attributes on
+ *    <code class="prettyprint">nodeDefaults</code>, instead of attributes on the individual nodes. The component can
+ *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM
  *    calls.
  * </p>
- * 
+ *
+ * {@ojinclude "name":"trackResize"}
+ *
  * {@ojinclude "name":"rtl"}
- * 
+ *
  * @desc Creates a JET Sunburst.
  * @example <caption>Initialize the Sunburst with no options specified:</caption>
  * $(".selector").ojSunburst();
- * 
+ *
  * @example <caption>Initialize the Sunburst with some options:</caption>
  * $(".selector").ojSunburst({nodes: [{value: 75, color: "#00FF00", label: "Candy"}, {value: 20, color: "#FFFF00", label: "Fruit"}, {value: 15, color: "#FF0000", label: "Vegetables"}]});
- * 
+ *
  * @example <caption>Initialize the Sunburst via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojSunburst'}">
  */
-oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'], 
+oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 {
-  widgetEventPrefix : "oj", 
+  widgetEventPrefix : "oj",
   options: {
     /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic 
+     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
      * intervention. If the new value is the same as the previous value, no event will be fired.
-     * 
+     *
      * @property {Object} data event payload
      * @property {string} data.option the name of the option that changed, i.e. "value"
      * @property {Object} data.previousValue an Object holding the previous value of the option
@@ -105,32 +107,32 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @property {Object} ui.optionMetadata information about the option that is changing
      * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
      *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
      * $(".selector").ojSunburst({
-     *   'optionChange': function (event, data) {} 
+     *   'optionChange': function (event, data) {}
      * });
-     * 
+     *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
      * $(".selector").on({
      *   'ojoptionchange': function (event, data) {
      *       window.console.log("option changing is: " + data['option']);
      *   };
      * });
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojSunburst
      * @instance
      */
     optionChange: null,
-    
+
     /**
      * Triggered during user rotation of the sunburst.
-     * 
+     *
      * @property {Object} ui event payload
      * @property {number} ui.value the start angle of the sunburst, in degrees
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">rotateInput</code> callback specified:</caption>
      * $(".selector").ojSunburst({
      *   "rotateInput": function(event, ui){}
@@ -138,24 +140,24 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojrotateinput</code> event:</caption>
      * $(".selector").on("ojrotateinput", function(event, ui){});
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojSunburst
      * @instance
      */
     rotateInput : null
   },
-  
+
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
     return dvt.DvtSunburst.newInstance(context, callback, callbackObj);
   },
-  
+
   //** @inheritdoc */
   _ConvertLocatorToSubId : function(locator) {
     var subId = locator['subId'];
-    
+
     // Convert the supported locators
     if(subId == 'oj-sunburst-node') {
       // node[index0][index1]...[indexN]
@@ -164,12 +166,12 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
     else if(subId == 'oj-sunburst-tooltip') {
         subId = 'tooltip';
     }
-    
+
     // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
     // support for the old subId syntax in 1.2.0.
     return subId;
   },
-  
+
   //** @inheritdoc */
   _ConvertSubIdToLocator : function(subId) {
     var locator = {};
@@ -183,14 +185,14 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
     }
     return locator;
   },
-  
+
   //** @inheritdoc */
   _GetComponentStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses.push('oj-sunburst');
     return styleClasses;
   },
-  
+
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
@@ -213,25 +215,25 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
     ];
     return styleClasses;
   },
-    
+
   //** @inheritdoc */
   _GetEventTypes : function() {
     return ['optionChange', 'rotateInput'];
   },
-  
+
   //** @inheritdoc */
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
-    
+
     // Safe to modify super's map because function guarentees a new map is returned
-    var ret = this._super();   
+    var ret = this._super();
     ret['DvtSunburstBundle.COLOR'] = translations['labelColor'];
     ret['DvtSunburstBundle.SIZE'] = translations['labelSize'];
     ret['DvtUtilBundle.SUNBURST'] = translations['componentName'];
     return ret;
   },
-  
+
   //** @inheritdoc */
   _HandleEvent : function(event) {
     var type = event && event.getType ? event.getType() : null;
@@ -251,23 +253,23 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
       this._super(event);
     }
   },
-   
+
   //** @inheritdoc */
   _LoadResources : function() {
     // Ensure the resources object exists
     if(this.options['_resources'] == null)
       this.options['_resources'] = {};
-      
+
     var resources = this.options['_resources'];
-      
+
     // Add cursors
     resources['rotateCursor'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/sunburst/rotate.cur');
   },
-  
+
   /**
    * Returns an object with the following properties for automation testing verification of the node with
    * the specified subid path.
-   * 
+   *
    * @param {Array} subIdPath The array of indices in the subId for the desired node
    * @property {string} color
    * @property {string} label
@@ -283,37 +285,37 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
    * @expose
    * @instance
    * @memberof oj.ojSunburst
-   */     
+   */
   getNode: function(subIdPath) {
     var ret = this._component.getAutomation().getNode(subIdPath);
-  
+
     // : Provide backwards compatibility for getters until 1.2.0.
     this._AddAutomationGetters(ret);
-    
+
     return ret;
   },
-    
-  /** 
+
+  /**
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   * 
+   *
    * @example {@ojinclude "name":"nodeContextExample"}
-   * 
+   *
    * @expose
    * @instance
    * @memberof oj.ojSunburst
    */
   getContextByNode: function(node)
   {
-    // context objects are documented with @ojnodecontext 
+    // context objects are documented with @ojnodecontext
     var context = this.getSubIdByNode(node);
     if (context && context['subId'] !== 'oj-sunburst-tooltip')
       return context;
-    
+
     return null;
   },
-  
+
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['nodes']};

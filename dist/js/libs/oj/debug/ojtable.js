@@ -1846,6 +1846,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         oj.DomUtils.unwrap(this.element, this._getTableDomUtils().getTableContainer());
 
         this.element.removeClass(oj.TableDomUtils.CSS_CLASSES._TABLE_CLASS);
+        this._componentDestroyed = true;
       },
       /**
        * @override
@@ -2102,9 +2103,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               return;
             }
             
-            if (this._mouseDownRowIdx != null)
+            // Only clear if Shift or Ctrl are not pressed since this
+            // could be multiple selection
+            if (this._mouseDownRowIdx != null &&
+                !event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT] && 
+                !oj.DomUtils.isMetaKeyPressed(event))
             {
-              this._clearSelectedRows();
+              var rowSelected = this._getRowSelection(this._mouseDownRowIdx);
+              
+              // check if the row which we clicked on is already selected
+              // if it is and it's the only selected row, then don't clear
+              if (rowSelected &&
+                  this._getSelectedRowIdxs().length == 1)
+              {
+                return;
+              }
+              
+              // only clear if non-contiguous selection is not enabled for touch
+              if (!this._nonContiguousSelection)
+              {
+                this._clearSelectedRows();
+              }
             }
           },
           /**
@@ -2315,10 +2334,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
             else if (this._getKeyboardKeys().length == 0)
             {
-              this._clearSelectedRows();
-              this._setRowSelection(rowIdx, !this._getRowSelection(rowIdx), event.currentTarget, event, true);
+              var rowSelected = this._getRowSelection(rowIdx);
+              this._setRowSelection(rowIdx, !rowSelected, event.currentTarget, event, true);
               
-              if (this._isTouchDevice() && this._getRowSelectionMode() == this._OPTION_SELECTION_MODES._MULTIPLE)
+              if (this._isTouchDevice() && 
+                  this._getRowSelectionMode() == this._OPTION_SELECTION_MODES._MULTIPLE &&
+                  !rowSelected)
               {
                 this._getTableDomUtils().createTableBodyRowTouchSelectionAffordance(rowIdx);
               }
@@ -3727,6 +3748,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         else if (menuItemCommand == 'oj-table-sortDsc')
         {
           this._handleSortTableHeaderColumn(columnIdx, false, event);
+        }
+        else if (menuItemCommand == 'oj-table-enableNonContiguousSelection')
+        {
+          this._nonContiguousSelection = true;
+          // update to disable command
+          ui.item.attr('data-oj-command', 'oj-table-disableNonContiguousSelection');
+          ui.item.children().first().text(this.getTranslatedString('labelDisableNonContiguousSelection')); //@HTMLUpdateOK
+        }
+        else if (menuItemCommand == 'oj-table-disableNonContiguousSelection')
+        {
+          this._nonContiguousSelection = false;
+          // update to enable command
+          ui.item.attr('data-oj-command', 'oj-table-enableNonContiguousSelection');
+          ui.item.children().first().text(this.getTranslatedString('labelEnableNonContiguousSelection')); //@HTMLUpdateOK
         }
       },
       /**
@@ -6630,11 +6665,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
         this._taskCount++;
         this._pendingTasks = this._pendingTasks
-          .then(task.bind(self))
-          .then(function(value)
+          .then(
+            function()
+            {
+		          if (!self._componentDestroyed)
+              {
+                return task.bind(self)();
+              }
+            })
+        .then(function(value)
         {
           self._taskCount--;
-          if (self._taskCount == 0)
+          if (self._taskCount == 0 && !self._componentDestroyed)
           {
             self._pendingTasks = undefined;
             if (self._finalTask)
@@ -6774,6 +6816,7 @@ oj.TableDomUtils.prototype.createContextMenu = function(handleContextMenuSelect)
 {
   var menuContainer = null;
   var self = this;
+  var enableNonContigousSelectionMenu = this.component._isTouchDevice() ? this.component._getRowSelectionMode() == this.component._OPTION_SELECTION_MODES._MULTIPLE : false;
 
   if (this.options["contextMenu"] != null || this.getTable().attr("contextmenu") != null)
   {
@@ -6800,14 +6843,22 @@ oj.TableDomUtils.prototype.createContextMenu = function(handleContextMenuSelect)
       }
     }
   }
-  else if (this.component._isTableSortable())
+  else if (this.component._isTableSortable() || enableNonContigousSelectionMenu)
   {
     menuContainer = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._UL));
     menuContainer.css(oj.TableDomUtils.CSS_PROP._DISPLAY, oj.TableDomUtils.CSS_VAL._NONE);
     menuContainer.attr(oj.TableDomUtils.DOM_ATTR._ID, this.getTableId() + '_contextmenu');
     this.getTableContainer().append(menuContainer); //@HTMLUpdateOK
-    var sortMenu = this.createContextMenuItem('sort');
-    menuContainer.append(sortMenu); //@HTMLUpdateOK
+    if (this.component._isTableSortable())
+    {
+      var sortMenu = this.createContextMenuItem('sort');
+      menuContainer.append(sortMenu); //@HTMLUpdateOK
+    }
+    if (enableNonContigousSelectionMenu)
+    {
+      var nonContigousSelectionMenu = this.createContextMenuItem('enableNonContiguousSelection');
+      menuContainer.append(nonContigousSelectionMenu); //@HTMLUpdateOK
+    }
     menuContainer.ojMenu();
     this._menuContainer = menuContainer;
     this.component._contextMenuId = '#' + menuContainer.attr(oj.TableDomUtils.DOM_ATTR._ID);
@@ -6827,6 +6878,14 @@ oj.TableDomUtils.prototype.createContextMenuItem = function(command)
   if (command === 'sort')
   {
     return $(this.createContextMenuListItem(command)).append($('<ul></ul>').append($(this.createContextMenuListItem('sortAsc'))).append($(this.createContextMenuListItem('sortDsc')))); //@HTMLUpdateOK
+  }
+  else if (command == 'enableNonContiguousSelection')
+  {
+    return $(this.createContextMenuListItem(command));
+  }
+  else if (command == 'disableNonContiguousSelection')
+  {
+    return $(this.createContextMenuListItem(command));
   }
   return null;
 };
@@ -6866,6 +6925,14 @@ oj.TableDomUtils.prototype.createContextMenuLabel = function(command)
   else if (command == 'sortDsc')
   {
     commandString = this.component.getTranslatedString('labelSortDsc');
+  }
+  else if (command == 'enableNonContiguousSelection')
+  {
+    commandString = this.component.getTranslatedString('labelEnableNonContiguousSelection');
+  }
+  else if (command == 'disableNonContiguousSelection')
+  {
+    commandString = this.component.getTranslatedString('labelDisableNonContiguousSelection');
   }
   contextMenuLabel.text(commandString);
 
@@ -9854,20 +9921,18 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       {
         cellRenderer = this.component._getColumnRenderer(i, 'cell');
       
-        if (!defaultTableBodyCellPaddingWidth && 
-            !this.component._hasRowOrCellRenderer(i))
-        {
-          tableBodyCellStyle = window.getComputedStyle(tableBodyCell[0]);
-          defaultTableBodyCellPaddingWidth = parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
-          tableBodyCellPaddingWidth = defaultTableBodyCellPaddingWidth;
-        }
-        else if (cellRenderer != null)
+        if (this.component._hasRowOrCellRenderer(i))
         {
           tableBodyCellStyle = window.getComputedStyle(tableBodyCell[0]);
           tableBodyCellPaddingWidth = parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
         }
         else
         {
+          if (!defaultTableBodyCellPaddingWidth)
+          {
+            tableBodyCellStyle = window.getComputedStyle(tableBodyCell[0]);
+            defaultTableBodyCellPaddingWidth = parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT], 10) + parseInt(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT], 10);
+          }
           tableBodyCellPaddingWidth = defaultTableBodyCellPaddingWidth;
         }
         adjustedColumnWidth = null;

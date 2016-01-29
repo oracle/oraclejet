@@ -2608,7 +2608,7 @@ oj.RestImpl.prototype.ajax = function(settings) {
  * @param {Object} attributes Initial set of attribute/value pairs with which to seed this OAuth object 
  * @param {string} header Actual name for the Authorization header (default 'Authorization') 
  * @example <caption>Initialize OAuth with client credentials</caption>
- * var myOAuth = new oj.OAuth('X-Authorization', {...Clent Credentials ...});
+ * var myOAuth = new oj.OAuth('X-Authorization', {...Client Credentials ...});
  * 
  * @example <caption>Initialize OAuth with access_token</caption>
  * var myOAuth = new oj.OAuth('X-Authorization', {...Access Token...});
@@ -2731,7 +2731,7 @@ oj.OAuth.prototype.cleanAccessTokenResponse = function()
  * Set request part of the OAuth object (client credentials, uri endpoint)
  * @param {Object} data current client credentials and uri
  * @example <caption>'Initialize' request part of the OAuth object with client credentials and calculate access_token</caption>
- * myOAuth.setAccessTokenRequest({...Clent Credentials ...});
+ * myOAuth.setAccessTokenRequest({...Client Credentials ...});
  * myOAuth.clientCredentialGrant();
  *
  * @export

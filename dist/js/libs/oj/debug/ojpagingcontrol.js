@@ -721,6 +721,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       {
         this._unregisterDataSourceEventListeners();
         this._unregisterSwipeHandler();
+        // invalidate our refresh/fetch queue
+        this._componentDestroyed = true;
       },
       /**
        * @override
@@ -1688,7 +1690,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         .then(function()
         {
           self._pageFetchCount--;
-          if (self._pageFetchCount == 0)
+          if (self._pageFetchCount == 0 && !self._componentDestroyed)
           {
             self._pendingPageFetch = undefined;
             var data = self._getData();
@@ -1732,7 +1734,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         .then(function()
         {
           self._refreshCount--;
-          if (self._refreshCount == 0)
+          if (self._refreshCount == 0 && !self._componentDestroyed)
           {
             self._pendingRefreshes = undefined;
             self._refresh();
@@ -2037,30 +2039,39 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       {
         var maxPageVal = this._getMaxPageVal(size);
         
-        if (this._getTotalPages() > 0 &&
-            this._isTotalSizeConfidenceActual())
+        var pagingControlNavMaxLabel = this._getPagingControlNav().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS);
+
+        if (pagingControlNavMaxLabel != null && pagingControlNavMaxLabel.length > 0)
         {
-          var pagingControlNavMaxLabel = this._getPagingControlNav().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS);
-        
-          if (pagingControlNavMaxLabel != null && pagingControlNavMaxLabel.length > 0)
+          pagingControlNavMaxLabel = $(pagingControlNavMaxLabel.get(0));
+          
+          if (this._getTotalPages() > 0 &&
+            this._isTotalSizeConfidenceActual())
           {
-            pagingControlNavMaxLabel = $(pagingControlNavMaxLabel.get(0));
             var navInputPageMaxLabel = this.getTranslatedString(this._BUNDLE_KEY._LABEL_NAV_INPUT_PAGE_MAX, {'pageMax': maxPageVal});
             pagingControlNavMaxLabel.text(navInputPageMaxLabel);
           }
           else
           {
-            var pagingControlNavInputSection = this._getPagingControlNavInputSection();
-            if (pagingControlNavInputSection != null)
-            {
-              pagingControlNavMaxLabel = $(document.createElement('span'));
-              pagingControlNavMaxLabel.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS);
-              pagingControlNavInputSection.append(pagingControlNavMaxLabel); //@HTMLUpdateOK
-              var navInputPageMaxLabel = this.getTranslatedString(this._BUNDLE_KEY._LABEL_NAV_INPUT_PAGE_MAX, {'pageMax': maxPageVal});
-              pagingControlNavMaxLabel.text(navInputPageMaxLabel);
-            }
+            pagingControlNavMaxLabel.empty();
           }
         }
+        else
+        {
+          var pagingControlNavInputSection = this._getPagingControlNavInputSection();
+          
+          if (pagingControlNavInputSection != null && 
+            this._getTotalPages() > 0 &&
+            this._isTotalSizeConfidenceActual())
+          {
+            pagingControlNavMaxLabel = $(document.createElement('span'));
+            pagingControlNavMaxLabel.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS);
+            pagingControlNavInputSection.append(pagingControlNavMaxLabel); //@HTMLUpdateOK
+            var navInputPageMaxLabel = this.getTranslatedString(this._BUNDLE_KEY._LABEL_NAV_INPUT_PAGE_MAX, {'pageMax': maxPageVal});
+            pagingControlNavMaxLabel.text(navInputPageMaxLabel);
+          }
+        }
+          
         var pagingControlNavInput = this._getPagingControlNav().find('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
         if (pagingControlNavInput != null && pagingControlNavInput.length > 0)
         {

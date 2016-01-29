@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['./DvtToolkit', './DvtBaseTreeView'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
-  
+
   // Map the D namespace to dvt, which is used to provide access across partitions.
   var D = dvt;
   
@@ -65,7 +65,7 @@ DvtTreemap.prototype.Init = function(context, callback, callbackObj) {
   this.Defaults = new DvtTreemapDefaults();
 
   // Make sure the object has an id for accessibility 
-  this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000));
+  this.setId('treemap' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 };
 
 /**
@@ -337,7 +337,7 @@ DvtTreemap.prototype.__getNodeUnderPoint = function(x, y) {
  * @param {DvtBaseTreeNode} node The node to isolate.
  */
 DvtTreemap.prototype.__isolate = function(node) {
-  var currentNavigable = this.__getEventManager().getFocus();
+  var currentNavigable = this.getEventManager().getFocus();
   if (currentNavigable)
     currentNavigable.hideKeyboardFocusEffect();
 
@@ -346,7 +346,7 @@ DvtTreemap.prototype.__isolate = function(node) {
   this.getOptions()['isolatedNode'] = node.getId();
 
   // Update state
-  this.__dispatchEvent(new DvtTreemapIsolateEvent(node.getId()));
+  this.dispatchEvent(new DvtTreemapIsolateEvent(node.getId()));
 
   // Layout the isolated node and its children
   this._isolateRestoreLayout = true;
@@ -370,7 +370,7 @@ DvtTreemap.prototype.__restore = function() {
   // Update the options state
   this.getOptions()['isolatedNode'] = (this._isolatedNodes.length > 0) ? this._isolatedNodes[this._isolatedNodes.length - 1].getId() : null;
 
-  var currentNavigable = this.__getEventManager().getFocus();
+  var currentNavigable = this.getEventManager().getFocus();
   if (currentNavigable)
     currentNavigable.hideKeyboardFocusEffect();
 
@@ -378,7 +378,7 @@ DvtTreemap.prototype.__restore = function() {
   this.__setNavigableIdToFocus(restoreNode.getId());
 
   // Update state
-  this.__dispatchEvent(new DvtTreemapIsolateEvent());
+  this.dispatchEvent(new DvtTreemapIsolateEvent());
 
   // Layout the isolated node and its children
   this._isolateRestoreLayout = true;
@@ -1231,7 +1231,7 @@ DvtTreemapNode.prototype.GetAnimationParams = function() {
   var b = DvtColorUtils.getBlue(this._color);
 
   // Force bevel removal during animation for leaf nodes by passing an additional random number to force animation.
-  return [this._x, this._y, this._width, this._height, r, g, b, this.hasChildren() ? 0 : Math.random()];
+  return [this._x, this._y, this._width, this._height, r, g, b, this.hasChildren() ? 0 : Math.random()];//Random Number used to force animation @RandomNumberReview
 };
 
 /**
@@ -1394,7 +1394,7 @@ DvtTreemapNode.prototype._createShapeNode = function() {
   }
 
   // Add pointers between this node and the shape
-  this.getView().__getEventManager().associate(shape, this);
+  this.getView().getEventManager().associate(shape, this);
 
   // Allows selection cursor to be shown over nodes if nodeSelection is enabled and node is selectable
   // Unselectable nodes explicitly set as default so correct pointer appears if un-selectable node is drawn inside selectable node
@@ -1443,11 +1443,11 @@ DvtTreemapNode.prototype._createIsolateRestoreButton = function(container) {
 
     // For Alta, associate the node so the hover effect doesn't get removed.
     if (DvtCSSStyle.afterSkinAlta(this.getView().getOptions()['skin']))
-      this.getView().__getEventManager().associate(button, this);
+      this.getView().getEventManager().associate(button, this);
     else {
       // Associate a blank peer so the button is not treated as part of the node
       var tooltip = DvtBundle.getTranslation(this.getView().getOptions(), this.__isIsolated() ? 'tooltipRestore' : 'tooltipIsolate', DvtBundle.TREEMAP_PREFIX, this.__isIsolated() ? 'RESTORE' : 'ISOLATE');
-      this.getView().__getEventManager().associate(button, new DvtBaseTreePeer(this, this.getId(), tooltip));
+      this.getView().getEventManager().associate(button, new DvtBaseTreePeer(this, this.getId(), tooltip));
     }
   }
 
@@ -1566,7 +1566,7 @@ DvtTreemapNode.prototype._createTextNode = function(container) {
       // Associate with a DvtBaseTreePeer to handle drilling
       var peer = new DvtBaseTreePeer(this, this.getId(), null, this.getDatatip(), this.getDatatipColor());
       peer.setDrillable(true);
-      this.getView().__getEventManager().associate(text, peer);
+      this.getView().getEventManager().associate(text, peer);
     }
     else // Parent node will handle all events
       text.setMouseEnabled(false);

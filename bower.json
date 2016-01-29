@@ -1,14 +1,14 @@
 {
   "name": "oraclejet",
   "description": "Oracle JET distribution",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "authors": [
     "Oracle"
   ],
   "license": "UPL",
   "homepage": "http://oraclejet.org",
   "moduleType": [],
-  "ignore":[],
+  "ignore":["samples"],
   "main":[],
   "dependencies": 
   {
