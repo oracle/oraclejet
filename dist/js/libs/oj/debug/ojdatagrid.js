@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery','ojs/internal-deps/datagrid/DvtDataGrid', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common', 'ojs/ojarraydatagriddatasource', 'ojs/ojflattenedtreedatagriddatasource', 'ojs/ojpagingdatagriddatasource' ,'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojdialog', 'ojs/ojpagingcontrol'], function(oj, $, DvtDataGrid)
+define(['ojs/ojcore', 'jquery','ojs/internal-deps/datagrid/DvtDataGrid', 'promise', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common', 'ojs/ojarraydatagriddatasource', 'ojs/ojflattenedtreedatagriddatasource', 'ojs/ojpagingdatagriddatasource' ,'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojdialog', 'ojs/ojpagingcontrol'], function(oj, $, DvtDataGrid)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -90,6 +90,7 @@ oj.DataGridResources = function(rtlMode, translationFunction)
     
     this.attributes = {};
     this.attributes['key'] = "data-oj-key";
+    this.attributes['context'] = "data-oj-context";    
     this.attributes['resizable'] = "data-oj-resizable";
     this.attributes['sortable'] = "data-oj-sortable";    
     this.attributes['sortDir'] = "data-oj-sortdir";    
@@ -653,6 +654,44 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  */
                 selection: [],
                 /**
+                 * The current databody or header cell.  This is typically the item the user navigated to.  Note that if currentCell
+                 * is set to an item that is currently not available (not fetched in highwatermark scrolling case or
+                 * inside a collapsed parent node) or invalid, then the value is ignored.
+                 *
+                 * If the currentCell is a databody cell the object will contain the following information: 
+                 * {type: 'cell', indexes: {row:0, column:0}, keys: {row:'Apple', column:'Sales'}}.
+                 *
+                 * If the currentCell is a header cell the object will contain the following information:
+                 * {type: 'header', axis:'column', index: 0, key: 'Apple', level:0}.
+                 *
+                 * If setting the option to a databody cell, either indexes or keys must be specified, if both are specified indexes will be used as a hint.
+                 * If setting the option to a header cell, axis and either "index and level" or "key" must be specified, if both are specified "index and level" will be used as a hint. 
+                 * If level is not specified it will default to 0.
+                 *
+                 * @expose
+                 * @public
+                 * @instance
+                 * @memberof! oj.ojDataGrid
+                 * @type {Object}
+                 * @default <code class="prettyprint">null</code>
+                 *
+                 * @example <caption>Get the current cell:</caption>
+                 * $( ".selector" ).ojDataGrid("option", "currentCell");
+                 *
+                 * @example <caption>Set the current databody cell based on index on the DataGrid during initialization:</caption>
+                 * $(".selector").ojDataGrid({"currentCell", {indexes: {row:0, column:0}}});
+                 *
+                 * @example <caption>Set the current header cell based on index and level on the DataGrid during initialization:</caption>
+                 * $(".selector").ojDataGrid({"currentCell", {axis:'column', index:0, level:0);
+                 *
+                 * @example <caption>Set the current databody cell based on keys on the DataGrid during initialization:</caption>
+                 * $(".selector").ojDataGrid({"currentCell", {keys: {row:'Apple', column:'Sales'}}});
+                 *
+                 * @example <caption>Set the current header cell based on keys on the DataGrid during initialization:</caption>
+                 * $(".selector").ojDataGrid({"currentCell", {axis:'column', key: 'Apple'}});
+                */
+                currentCell: null,              
+                /**
                  * The header option contains a subset of options for row and column headers.
                  *
                  * @expose
@@ -1064,9 +1103,15 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
-                 * @property {Element} ui.header the key of the header which was resized
-                 * @property {string} ui.size the new pixel size string (ex: '75px')
-                 *
+                 * @property {string|number} ui.header the key of the header which was resized
+                 * @property {string} ui.size DEPRECATED, please use the ui.oldDimensions and ui.newDimensions properties
+                 * @property {Object} ui.oldDimensions
+                 * @property {number} ui.oldDimensions.width the old pixel size (ex: '75px' would be 75)
+                 * @property {number} ui.oldDimensions.height the old pixel size
+                 * @property {Object} ui.newDimensions
+                 * @property {number} ui.newDimensions.width the new pixel size (ex: '75px' would be 75)
+                 * @property {number} ui.newDimensions.height the new pixel size
+                 * 
                  * @example <caption>Initialize the data grid with the <code class="prettyprint">resize</code> callback specified:</caption>
                  * $( ".selector" ).ojDataGrid({
                  *     "resize": function( event, ui ) {}
@@ -1121,7 +1166,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
                  *
                  */
-                 optionChange: null,
+                optionChange: null,
 
                 /**
                  * Triggered after all items in the DataGrid has been rendered.
@@ -1130,6 +1175,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
+                 * @deprecated Use the <a href="#whenReady">whenReady</a> method instead. 
                  * @memberof! oj.ojDataGrid
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
@@ -1163,7 +1209,29 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @example <caption>Bind an event listener to the <code class="prettyprint">ojscroll</code> event:</caption>
                  * $( ".selector" ).on( "ojscroll", function( event, ui ) {} );
                  */
-                 scroll: null   
+                scroll: null,
+                
+                /**
+                 * Triggered before the current cell is changed via the <code class="prettyprint">currentCell</code> option or via the UI.
+                 *
+                 * @expose
+                 * @event
+                 * @memberof! oj.ojDataGrid
+                 * @instance
+                 * @property {Event} event <code class="prettyprint">jQuery</code> event object
+                 * @property {Object} ui Parameters
+                 * @property {Object} ui.currentCell the new current cell, see currentCell for the object information
+                 * @property {Object} ui.previousCurrentCell the previous current cell, see currentCell for the object information
+                 *
+                 * @example <caption>Initialize the ojDataGrid with the <code class="prettyprint">beforeCurrentCell</code> callback specified:</caption>
+                 * $( ".selector" ).ojDataGrid({
+                 *     "beforeCurrentCell": function( event, ui ) {}
+                 * });
+                 *
+                 * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecurrentcell</code> event:</caption>
+                 * $( ".selector" ).on( "ojbeforecurrentcell", function( event, ui ) {} );
+                */
+                beforeCurrentCell: null         
             },
     /**
      * Create the grid
@@ -1176,6 +1244,11 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this._super();
         this.root = this.element[0];
         this.rootId = this.root.getAttribute('id');
+                
+        // ensure whenReady has a promise associated with it.
+        this._createReadyPromise();
+        this._resolveReadyPromise();
+        
         this.grid = new DvtDataGrid();
         //set the visibility state to render until rendering is completed
         this.grid.setVisibility(DvtDataGrid.VISIBILITY_STATE_RENDER);
@@ -1212,7 +1285,28 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this.grid.SetResources(this.resources);
         this.grid.SetCreateContextCallback(this._modifyContext.bind(self));
         this.grid.SetRemoveCallback(this._remove.bind(self));
+        this.grid.SetCreateReadyPromiseCallback(this._createReadyPromise.bind(self));
+        this.grid.SetResolveReadyPromiseCallback(this._resolveReadyPromise.bind(self));
+        
+        this._registerEventListeners();
+       
+        //attempt to render the grid if visible and atatched
+        this._possiblyRenderOrRefresh();
 
+        // register a resize listener
+        if (this.datasource != null)
+        {
+            this._registerResizeListener(this.root);
+        }
+    },
+    /**
+     * Register event listeners
+	 * @private	 
+     */
+    _registerEventListeners: function()
+    {       
+        var self = this;        
+        
         //listen for resizing, selection, sort and trigger relevent events
         this.grid.addListener('resize', function(details)
         {
@@ -1224,6 +1318,16 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          {'_context': {originalEvent: details['event'], internalSet: true},
                           'changed': true});
         });
+        this.grid.addListener('currentCell', function(details)
+        {
+            self.option("currentCell", details['ui'],
+                         {'_context': {originalEvent: details['event'], internalSet: true},
+                          'changed': true});
+        });
+        this.grid.addListener('beforeCurrentCell', function(details)
+        {
+            return self._trigger('beforeCurrentCell', details['event'], details['ui']);
+        });
         this.grid.addListener('sort', function(details)
         {
             self._trigger('sort', details['event'], details['ui']);
@@ -1231,10 +1335,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this.grid.addListener('keydown', function(details)
         {
             self._trigger('keydown', details['event'], details['ui']);
-        });
-        this.grid.addListener('active', function(details)
-        {
-            self._trigger('active', details['event'], details['ui']);
         });
         this.grid.addListener('ready', function(details)
         {
@@ -1244,14 +1344,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         {
             self._trigger('scroll', details['event'], details['ui']);
         });
-        //attempt to render the grid if visible and atatched
-        this._possiblyRenderOrRefresh();
-
-        // register a resize listener
-        if (this.datasource != null)
-        {
-            this._registerResizeListener(this.root);
-        }
     },
     /**
      * Redraw the entire data grid after having made some external modifications.
@@ -2207,12 +2299,13 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      */
     getSubIdByNode: function(node)
     {
-        var cell, indexes, header, index, axis, subId, level;
+        var cell, context, header, subId, indexes;
         cell = $(node).closest('.' + this._getMappedStyle('cell'));
         if (cell.length > 0)
         {
-            indexes = this._findCellIndex(cell);
-            return { 'subId': 'oj-datagrid-cell',
+            indexes = this._findCellIndex(cell);                        
+            return { 
+                'subId': 'oj-datagrid-cell',
                 'rowIndex': indexes['rowIndex'] + this.grid.getStartRow(),
                 'columnIndex': indexes['columnIndex'] + this.grid.getStartColumn()
             };
@@ -2221,9 +2314,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         header = $(node).closest('.' + this._getMappedStyle('headercell'));
         if (header.length > 0)
         {
-            axis = header.hasClass(this._getMappedStyle('colheadercell')) ? 'column' : 'row';
-            index = this._getHeaderIndex(header);
-            level = this._getHeaderLevel(header);
+            context = header[0][this._getMappedAttribute('context')];
             if ($(node).hasClass(this._getMappedStyle('sortascending')))
             {
                 subId = 'oj-datagrid-sort-ascending';                
@@ -2236,11 +2327,79 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             {
                 subId = 'oj-datagrid-header';
             }
-            return { 'subId': subId, 'index': index, 'axis': axis, 'level':level };
+            return {
+                'subId': subId,
+                'axis': context['axis'],
+                'index': this._getHeaderIndex(header),
+                'level': context['level']
+            };            
         }
 
         return null;
     },
+            
+    /**
+     * Returns an object with context for the given child DOM node. 
+     * This will always contain the subid for the node, defined as the 'subId' property on the context object. 
+     * Additional component specific information may also be included. For more details on returned objects, see context objects.
+     *
+     * @param {!Element} node - The child DOM node
+     * @returns {Object|null} - The context for the DOM node, or null when none is found.
+     *
+     * @example  
+     * // Foo is ojInputNumber, ojInputDate, etc.
+     * // Returns {'subId': oj-foo-subid, 'property1': componentSpecificProperty, ...}
+     * var context = $( ".selector" ).ojFoo( "getContextByNode", nodeInsideComponent );
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojDataGrid
+     */
+    getContextByNode: function(node)
+    {
+        var cell, header, context, index;
+        
+        cell = $(node).closest('.' + this._getMappedStyle('cell'));
+        if (cell.length > 0)
+        {
+            context = cell[0][this._getMappedAttribute('context')];
+            index = this._findCellIndex(cell);            
+            return {
+                'subId': 'oj-datagrid-cell',
+                'component': context['component'],
+                'data': context['data'],
+                'datasource': context['datasource'],                        
+                'indexes': {
+                    'row': index['rowIndex'] + this.grid.getStartRow(),
+                    'column': index['columnIndex'] + this.grid.getStartColumn()
+                },
+                'keys': {
+                    'row': context['keys']['row'],
+                    'column': context['keys']['column']
+                }
+            };
+        }
+
+        header = $(node).closest('.' + this._getMappedStyle('headercell'));
+        if (header.length > 0)
+        {
+            context = header[0][this._getMappedAttribute('context')];
+            return {
+                'subId': 'oj-datagrid-header',
+                'axis': context['axis'],
+                'component': context['component'],
+                'data': context['data'],
+                'datasource': context['datasource'],
+                'depth': context['depth'],
+                'extent': context['extent'],
+                'index': this._getHeaderIndex(header),
+                'key': context['key'],
+                'level': context['level']
+            };
+        }
+
+        return null;
+    },             
 
     /**
      * Get the mapped style from the resources
@@ -2523,6 +2682,44 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
     scrollTo: function(options)
     {
         this.grid.scroll(options);
+    },
+       
+    /**
+     * Returns a Promise that resolves when the component is ready, i.e. after data fetching, rendering, and animations complete. 
+     * Note that in the highwatermark scrolling case, component is ready after data fetching, rendering, and associated animations of items fetched so far are complete.
+     *
+     * <p>This method does not accept any arguments.
+     * 
+     * @expose
+     * @memberof oj.ojDataGrid
+     * @instance
+     * @return {Promise} A Promise that resolves when the component is ready.
+     */
+    whenReady: function()
+    {
+        return this._readyPromise;
+    },            
+            
+    /**
+     * Create a ready promise
+	 * @private	 
+     */
+    _createReadyPromise: function()
+    {
+        var self = this;
+        this._readyPromise = new Promise(function(resolve, reject)
+        {
+            self._readyResolve = resolve;
+        });
+    },
+
+    /**
+     * resolve the ready promise
+	 * @private	 
+     */
+    _resolveReadyPromise: function()
+    {
+        this._readyResolve(null);
     }
         
     //////////////////     FRAGMENTS    //////////////////
@@ -2796,7 +2993,40 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
      * @ojsubid oj-datagrid-sort-icon
      * @memberof oj.ojDataGrid
      */    
-    
+
+    //////////////////     CONTEXTS     //////////////////
+    /**
+     * <p>Context for the ojDataGrid component's cells.</p>
+     * 
+     * @property {function} component a reference to the DataGrid widgetConstructor
+     * @property {Object} data the data object for the header
+     * @property {Object} datasource a reference to the data source object
+     * @property {Object} indexes the object that contains both the zero based row index and column index in which the cell is bound to
+     * @property {number} indexes.row the zero based absolute row index
+     * @property {number} indexes.column the zero based absolute column index
+     * @property {Object} keys the object that contains both the row key and column key which identifies the cell
+     * @property {number|string} keys.row the row key
+     * @property {number|string} keys.column the column key
+     *
+     * @ojnodecontext oj-datagrid-cell
+     * @memberof oj.ojDataGrid
+     */
+    /**
+     * <p>Context for the ojDataGrid component's headers.</p>
+     *
+     * @property {number} axis	the axis of the header, possible values are 'row' and 'column'
+     * @property {function} component a reference to the DataGrid widgetConstructor
+     * @property {Object} data the data object for the header
+     * @property {Object} datasource a reference to the data source object
+     * @property {number} depth the the number of levels the header spans
+     * @property {number} extent the number of indexes the header spans
+     * @property {number} index the index of the header, where 0 is the index of the first header
+     * @property {number|string} key the key of the header
+     * @property {number} level the level of the header. The outermost header is level zero
+     *
+     * @ojnodecontext oj-datagrid-header
+     * @memberof oj.ojDataGrid
+     */
 });
 
 });

@@ -1484,16 +1484,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
             var self = this;
             this._menu.widget()
-                .on( "oj__dismiss" + this.menuEventNamespace, function( event, ui ) {
+                .on( "ojclose" + this.menuEventNamespace, function( event, ui ) {
                     self._menuDismissHandler(event);
-                })
-                .on( "ojbeforeopen" + this.menuEventNamespace, function( event, ui ) {
-                    // if something else launches the same menu (including the case where it's our own *context* menu),
-                    // then the *menuButton* menu is no longer showing, so unpress the button.
-                    if (!self._launchingMenu)
-                        self._menuDismissHandler(event);
-
-                    self._launchingMenu = false;
                 });
         }
 
@@ -1532,7 +1524,6 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
         // No need to fire click event, since not appropriate for DownArrow, and already fired for user click.
 
-        this._launchingMenu = true;
         var menu = this._getMenu();
         var menuElem = menu.widget();
         menu.open(event, {"launcher": this.element, "initialFocus": focus});

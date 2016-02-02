@@ -2387,7 +2387,8 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         var self = this, context;
 
         context = this.options['context'];
-        this.component = context['component'];
+        //component now widget constructor
+        this.component = typeof context['component'] === 'function' ? context['component']('instance') : context['component'];        
         this.datasource = context['datasource'];
 
         //root hidden so subtract 1
@@ -2450,7 +2451,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
         // listen for active key change event from host component
         this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-        $(this.component.element).on('ojactive', this.handleActiveKeyChangeCallback);
+        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
     },
     /**
      * Refresh the row expander having made external modifications
@@ -2485,7 +2486,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     {
         // unregister keydown and active key change handlers
         $(this.component.element).off('ojkeydown', this.handleKeyDownCallback);
-        $(this.component.element).off('ojactive', this.handleActiveKeyChangeCallback);
+        $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
 
         // unregister expand/collapse events
         this.datasource.off("expand", this.handleExpandCallback, this);
@@ -2638,14 +2639,17 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */
     _handleActiveKeyChangeEvent: function(event, ui)
     {
-        var rowKey, context, state;
-
-        if (ui['activeKey'] != null)
+        var rowKey, previousRowKey, context, state;
+        if (ui['currentCell'] != null)
         {
-            rowKey = ui['activeKey']['rowKey'];
+            rowKey = ui['currentCell']['type'] == 'cell' ? ui['currentCell']['keys']['row'] :  ui['currentCell']['key'];
+            if (ui['previousValue'] != null)
+            {
+                previousRowKey = ui['previousCurrentCell']['type'] == 'cell' ? ui['previousCurrentCell']['keys']['row'] :  ui['previousCurrentCell']['key'];
+            }
             // if the event is for this row and the active key change event is triggered
             // by row change and not column change
-            if (this.rowKey === rowKey && (ui['previousActiveKey'] == null || ui['previousActiveKey']['row'] != ui['activeKey']['row']))
+            if (this.rowKey === rowKey && previousRowKey != rowKey)
             {
                 // if the component allows AccessibleContext to be set
                 if (this.component._setAccessibleContext)

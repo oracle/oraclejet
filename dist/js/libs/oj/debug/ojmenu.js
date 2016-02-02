@@ -636,7 +636,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         //
         // If ever needed, we can add a "submenuOpenOptions" payload field alongside the "openOptions" field.
         /**
-         * <p>Triggered before this menu is launched via the <code class="prettyprint">open()</code> method or via menu button or context menu functionality.
+         * <p>Triggered before this menu is launched via the <a href="#open">open</a> method or via menu button or context menu functionality.
          * The launch can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
          *
          * <p>The <code class="prettyprint">ui.openOptions</code> payload field contains the settings being used for this menu launch,
@@ -678,6 +678,28 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          * } );
          */
         beforeOpen: null,
+
+        /**
+         * <p>Triggered after this menu is closed.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMenu
+         * @instance
+         * @property {Event} event <code class="prettyprint">jQuery</code> event object.  This is the <a href="#event:select">select</a> event iff the close 
+         *           is due to a menu item selection.
+         * @property {Object} ui Currently empty
+         *
+         * @example <caption>Initialize the menu with the <code class="prettyprint">close</code> callback specified:</caption>
+         * $( ".selector" ).ojMenu({
+         *     "close": function( event, ui ) {}
+         * });
+         *
+         * @example <caption>Bind an event listener to the <code class="prettyprint">ojclose</code> event:</caption>
+         * // $( ".selector" ) must select either the menu root, or the document, due to reparenting
+         * $( ".selector" ).on( "ojclose", function( event, ui ) {} );
+         */
+        close: null,
 
         /**
          * Triggered when the menu is created.
@@ -741,9 +763,33 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          */
 
         /**
+         * <p>Triggered after this menu is launched via the <a href="#open">open</a> method or via menu button or context menu functionality.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojMenu
+         * @instance
+         * @property {Event} event <code class="prettyprint">jQuery</code> event object
+         * @property {Object} ui Currently empty
+         *
+         * @example <caption>Initialize the menu with the <code class="prettyprint">open</code> callback specified:</caption>
+         * $( ".selector" ).ojMenu({
+         *     "open": function( event, ui ) {}
+         * });
+         *
+         * @example <caption>Bind an event listener to the <code class="prettyprint">ojopen</code> event:</caption>
+         * // $( ".selector" ) must select either the menu root, or the document, due to reparenting
+         * $( ".selector" ).on( "ojopen", function( event, ui ) {} );
+         */
+        open: null,
+
+        /**
          * Triggered when a menu item is selected.  The only correct, supported way to react to the selection of a
          * menu item is to listen for this event.  Click listeners and <code class="prettyprint">href</code> navigation should not be used.
-         *
+         * 
+         * If the menu is shared among several launchers, the listener can call <a href="#getCurrentOpenOptions">getCurrentOpenOptions().launcher</a>
+         * to find out what element launched this menu.
+         * 
          * @expose
          * @event
          * @memberof oj.ojMenu
@@ -1474,18 +1520,23 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         this._removeActive(event);
     },
 
-    _focusLauncherAndDismiss: function( event ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    /*
+     * param {Event} event - What triggered the menu to close. Payload for select (if applicable) and close events.
+     * param {Object} selectUi - Payload for select event.  Non-null iff close caused by a menu item selection.
+     */
+    _focusLauncherAndDismiss: function( event, selectUi ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         this._launcher.focus();
-        this.__dismiss( event );
+        this.__dismiss( event, selectUi );
     },
 
     /*
-     * TODO: JSDoc, including making it private-but-actually-internal, then add 2nd star above
-     * Could make this method, and the event, public, if ever needed.
-     *
+     * Internal method, e.g. called by Button for MenuButton functionality.
+     * Could make it public if ever needed.
+     * param {Event} event - What triggered the menu to close. Payload for select (if applicable) and close events.
+     * param {Object} selectUi - Payload for select event.  Non-null iff close caused by a menu item selection.
      */
-    __dismiss: function(event) { // Internal visibility; called by Button's MenuButton functionality.  Not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        //this.element.hide().attr( "aria-hidden", "true" );
+    __dismiss: function(event, selectUi) { // Internal visibility; called by Button's MenuButton functionality.  Not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        var isOpen = this.element.is(":visible");
 
         /** @type {!Object.<oj.PopupService.OPTION, ?>} */
         var psOptions = {};
@@ -1494,9 +1545,21 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         this.element.removeData(_POSITION_DATA);
 
         this._launcher = undefined;
+        
+        // Fire select event after menu closed, so that app select handlers can do their thing
+        // without worrying about the fact that the menu is still sitting there.
+        // Fire select event before close event, because logical, and so that it can be the close event's 
+        // originalEvent.
+        if (selectUi) {
+            var selectResults = this._trigger2( "select", event, selectUi );
+            event = selectResults['event']; // Use the select event as the close event's originalEvent
+        }
 
-        // TODO: if keep this, check whether actually open first, to avoid spurious events
-        this._trigger( "__dismiss", event, {} ); // internal event
+        // just in case it's possible for __dismiss() to get called when menu is already closed, avoid firing spurious event:
+        if (isOpen)
+            this._trigger( "close", event, {} );
+
+        this._currentOpenOptions = null;
 
         //Remove menu from openPopupMenus list
         if(_openPopupMenus.indexOf(this) >= 0)
@@ -1504,8 +1567,58 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     },
 
     /**
+     * <p>Returns a copy of the <code class="prettyprint">openOptions</code> object applicable to the current launch, or the <a href="#openOptions">option</a> 
+     * value otherwise.
+     * 
+     * <p>If the menu is shared among several launchers, this API can be used to find out what element launched the menu, as seen in the example below.
+     * 
+     * <p>Detailed semantics:
+     * 
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Menu state</th>
+     *       <th>Value</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>Menu is open, or transitioning between open and closed, including when this method is called from an <a href="#event:open">open</a>, 
+     *           <a href="#event:select">select</a>, or <a href="#event:close">close</a>  listener. (For <a href="#event:beforeOpen">beforeOpen</a>, see next row.)</td>
+     *       <td>A copy of the object used for the most recent launch is returned.  See the <a href="#openOptions">openOptions</a> 
+     *           option, the <a href="#open">open()</a> method, and the <a href="#event:beforeOpen">beforeOpen</a> event for details on how that 
+     *           object is constructed.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>This method is called from a <a href="#event:beforeOpen">beforeOpen</a> listener.</td>
+     *       <td>A copy of the merged object "so far" is returned. The object ultimately used for the launch may differ if it is changed by 
+     *           a <code class="prettyprint">beforeOpen</code> listener after this method is called.  Unlike the original copy passed to the 
+     *           <code class="prettyprint">beforeOpen</code> listener, the copy returned by this method is not "live" and cannot be used to affect the launch.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Menu is closed.  (All states not listed above.)</td>
+     *       <td>A copy of the <a href="#openOptions">option</a> value is returned.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @expose
+     * @memberof oj.ojMenu
+     * @instance
+     *
+     * @return {!Object} the <code class="prettyprint">openOptions</code> object
+     *
+     * @example <caption>Get the launcher element for the current launch:</caption>
+     * var launcher = $( ".selector" ).ojMenu( "getCurrentOpenOptions" ).launcher;
+     */
+    getCurrentOpenOptions: function() { // Public, not an override (not in base class), so use @expose with unquoted method name.
+        return $.extend(true, {}, this._currentOpenOptions || this.options.openOptions); // return a deep copy
+    },
+
+    /**
      * <p>Launches this menu as a popup, after firing the <a href="#event:beforeOpen">beforeOpen</a> event.  Listeners to that event can cancel the launch
-     * via <code class="prettyprint">event.preventDefault()</code>.
+     * via <code class="prettyprint">event.preventDefault()</code>.  If the launch is not canceled, then the the <a href="#event:open">open</a> event
+     * is fired after the launch.
      *
      * <p>This method's optional <code class="prettyprint">openOptions</code> and <code class="prettyprint">submenuOpenOptions</code> params can be used to specify
      * per-launch values for the settings in the corresponding component options, without altering those options.  Those per-launch values can
@@ -1537,12 +1650,15 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // so this is actually just a shallow copy of position.  This is so that if beforeOpen listener mutates the position object, the position object in the component option remains unchanged.
         // Step 2 isn't needed for submenuOptions, since it isn't passed to beforeOpen.  
         // $.fn.position copies the object passed to it before modifying it, so Step 2 isn't needed for that reason.  
-        if (this.element.is(":visible"))
-          this.__dismiss();
-
         openOptions = $.extend({}, this.options.openOptions, openOptions);
         openOptions.position = $.extend({}, openOptions.position);
         submenuOpenOptions = $.extend({}, this.options.submenuOpenOptions, submenuOpenOptions);
+
+        // getCurrentOpenOptions() returns a deep copy of this._currentOpenOptions if set.  Put the live copy in the ivar, and have that method make the copy, so that the method picks up 
+        // beforeOpen listeners' changes to the live copy.  The old value of the ivar is non-null iff the menu is already open from a previous launch.  Grab the old value so we can restore it
+        // if this (new) launch is cancelled, in which case the old launch stays up and subsequent calls to the method should return the old value.
+        var oldOpenOptions = this._currentOpenOptions;
+        this._currentOpenOptions = openOptions;
 
         oj.PositionUtils._normalizeEventForPosition(event); // see callee doc
         
@@ -1552,11 +1668,25 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // will address this need, but if not, fix it separately, perhaps by adding a new openOptions sub-option so it can be passed to menu.open().
         this._launcherClickShouldDismiss = this.__openingContextMenu;
 
-        // TBD: if we ever pass submenuOpenOptions to a listener, must copy its position object first like we do for openOptions, above.        // Important:  Do the merging *before* calling _trigger(), and don't use the merged values until *after* the call.
-        var cancelled = !this._trigger( "beforeOpen", event, {openOptions: openOptions});
+        // TBD: if we ever pass submenuOpenOptions to a listener, must copy its position object first like we do for openOptions, above.
+        var beforeOpenResults = !this._trigger2( "beforeOpen", event, {openOptions: openOptions});
 
-        if (cancelled)
+        if (beforeOpenResults['proceed']) {
+            this._currentOpenOptions = oldOpenOptions; // see comment above
             return;
+        }
+
+        // Close menu if already open
+        if (this.element.is(":visible")) {
+            // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch, 
+            // then it should return the details for the old launch
+            this._currentOpenOptions = oldOpenOptions;
+            
+            // Use the beforeOpen event as the close event's originalEvent
+            this.__dismiss(beforeOpenResults['event']); // sets this._currentOpenOptions to null
+
+            this._currentOpenOptions = openOptions; // restore this launch's value
+        }
 
         var launcher = openOptions.launcher;
         launcher = $.type(launcher) === "string"
@@ -1564,9 +1694,10 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                    : launcher;
 
         if (!launcher || !launcher.length) {
-          // need launcher so can return focus to it.
-          oj.Logger.warn("When calling Menu.open(), must specify openOptions.launcher via the component option, method param, or beforeOpen listener.  Ignoring the call.");
-          return;
+            // need launcher so can return focus to it.
+            oj.Logger.warn("When calling Menu.open(), must specify openOptions.launcher via the component option, method param, or beforeOpen listener.  Ignoring the call.");
+            this._currentOpenOptions = null;
+            return;
         }
 
         var position = oj.PositionUtils.normalizeHorizontalAlignment(openOptions.position, this.isRtl);
@@ -1575,6 +1706,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // since already checked for null launcher above, this is only possible if "of" was "event" but the event was null.  Caller error.
         if (position.of == null) {
             oj.Logger.warn("position.of passed to Menu.open() is 'event', but the event is null.  Ignoring the call.");
+            this._currentOpenOptions = null;
             return;
         }
         
@@ -1632,6 +1764,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         //Add current menu to openPopupMenus so that it will be closed on focus lost/click away.
         _openPopupMenus.push(this);
+
+        this._trigger( "open", event, {});
     },
 
     _startOpening: function( submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
@@ -1893,12 +2027,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         // if this is a popup menu that's currently shown
         if (this._launcher) {
-            this._focusLauncherAndDismiss(event);
+            this._focusLauncherAndDismiss(event, ui);
         }
-
-        // TODO: should this fire before or after calling __collapseAll (clears this.active and fires
-        // _activeItem event) and/or _focusLauncherAndDismiss() (browser-blurs and hides poupup menu)?
-        this._trigger( "select", event, ui );
     },
 
    /**
@@ -1944,7 +2074,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     * @private
     * @param {Object} pos "my" element associated with the position object
     * @param {Object} props directions as to where the element should be moved
-    * @return {void}
+
     */
     _usingHandler: function(pos, props)
     {

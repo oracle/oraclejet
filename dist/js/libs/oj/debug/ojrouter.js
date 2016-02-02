@@ -51,6 +51,14 @@ var _thisPage = (function() {
 var _urlAdapter;
 
 /**
+ * The default name for the root instance.
+ * @private
+ * @const
+ * @type {string}
+ */
+var _DEFAULT_ROOT_NAME = 'root';
+
+/**
  * The name of the request param for bookmarkable data.
  * @private
  * @const
@@ -891,7 +899,6 @@ function _queueTransition(transition) {
  * oj.Router.sync().then(
  *    function() {
  *       ko.applyBindings(viewModel);
- *       $('#globalBody').show();
  *    },
  *    function(error) {
  *       oj.Logger.error('Error when starting router: ' + error.message);
@@ -931,8 +938,11 @@ oj.Router = function(key, parentRouter) {
    /**
     * A string identifier of the router. It is required the name is unique within all the
     * sibling routers.
-    * @private
+    * @name oj.Router#name
+    * @member
+    * @readonly
     * @type {!string}
+    * @see oj.Router#createChildRouter
     */
    this._name = key;
 
@@ -1086,6 +1096,7 @@ oj.Router = function(key, parentRouter) {
    /**
     * An object used to pass Router information to ojModule in the moduleConfig
     * object.
+    * @ignore
     * @constructor
     */
    function _RouterParams() {
@@ -1247,24 +1258,13 @@ oj.Router = function(key, parentRouter) {
           * @readonly
           */
          (this._parentRouter), enumerable: true
-      },
-      'name': { value:
-         /**
-          * A string identifier of the router. It is required the name is unique within all the
-          * sibling routers.
-          * @name oj.Router#name
-          * @member
-          * @readonly
-          * @type {!string}
-          * @see oj.Router#createChildRouter
-          */
-         (this._name),  enumerable: true
       }
    });
 
 };
 
 Object.defineProperties(oj.Router.prototype, {
+   'name': { get: function () { return this._name; }, enumerable: true },
    'states': { get: function () { return this._states; }, enumerable: true },
    'stateId': { get: function () { return this._stateIdComp; }, enumerable: true },
    'currentState': { get: function () { return this._currentState; }, enumerable: true },
@@ -1281,7 +1281,7 @@ Object.defineProperties(oj.Router.prototype, {
  * @const
  * @type {oj.Router}
  */
-var rootRouter = new oj.Router('root', undefined);
+var rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined);
 
 /**
  * Function use to handle the popstate event.
@@ -1352,7 +1352,7 @@ oj.Router.prototype.createChildRouter = function(name) {
 
    oj.Assert.assertString(name);
 
-   name = name.trim();
+   name = encodeURIComponent(name.trim());
    // Make sure it doesn't already exist.
    for (i = 0; i < this._childRouters.length; i++) {
       sr = this._childRouters[i];
@@ -1786,6 +1786,7 @@ oj.Router.prototype.dispose = function() {
    if (!this._parentRouter) {
       _ojBaseUrl = '';
       _urlAdapter = {};
+      this._name = _DEFAULT_ROOT_NAME;
 
       window.removeEventListener('popstate', handlePopState);
       oj.Router._transitionedToState.removeAll();
@@ -1831,8 +1832,9 @@ Object.defineProperties(oj.Router, {
       /**
        * The static instance of {@link oj.Router} representing the unique root router.
        * This instance is created at the time the module is loaded.<br>
-       * All other routers will be children of this object.
-       * The name property of this router is 'root'. The parent property is null.
+       * All other routers will be children of this object.<br>
+       * The name of this router is 'root'. To change this name use the
+       * {@link oj.Router.defaults|rootInstanceName} property.
        * @name oj.Router.rootInstance
        * @type oj.Router
        * @readonly
@@ -1872,17 +1874,23 @@ Object.defineProperties(oj.Router, {
  * <h6>Warning: </h6>Defaults can not be changed after the first call to {@link oj.Router.sync|sync()}
  * has been made. To re-initialize the router, you need to call {@link oj.Router#dispose|dispose()} on
  * the {@link oj.Router.rootInstance|rootInstance} first then change the defaults.
- * @property {Object} urlAdapter an instance of the url adapter to use.
- * Possible values are an instance of {@link oj.Router.urlPathAdapter} or {@link oj.Router.urlParamAdapter}.
- * @property {string} baseUrl the base URL to be used for relative URL addresses. If not defined,
+ * @property {Object} urlAdapter an instance of the url adapter to use. If not specified, the router
+ * will be using the path url adapter. Possible values are an instance of
+ * {@link oj.Router.urlPathAdapter} or {@link oj.Router.urlParamAdapter}.
+ * @property {string} baseUrl the base URL to be used for relative URL addresses. If not specified,
  * it is the current URL without the document.
  * For example <code class="prettyprint">http://www.example.com/myApp</code>. This is needed
- * by the Router to properly parse the URL.
+ * to properly parse the URL.
+ * @property {string} rootInstanceName the name used for the root router. If not defined,
+ * the name is 'root'. This is used by the {@link oj.Router.urlParamAdapter|urlParamAdapter} to build
+ * the URL in the form of <code class="prettyprint">/index.html?root=book</code>.
  * @export
  * @example <caption>Change the default URL adapter to the urlParamAdapter</caption>
  * oj.Router.defaults['urlAdapter'] = new oj.Router.urlParamAdapter();
- * @example <caption>Change the base URL</caption>
+ * @example <caption>Change the default base URL</caption>
  * oj.Router.defaults['baseUrl'] = 'http://www.example.com/myApp';
+ * @example <caption>Change the default root router name to 'id'</caption>
+ * oj.Router.defaults['rootInstanceName'] = 'id';
  */
 oj.Router.defaults = {};
 
@@ -1916,6 +1924,21 @@ Object.defineProperties(oj.Router.defaults, {
          }
          // Assumption is _ojBaseUrl does not have a trailing /
          _ojBaseUrl = baseUrl.replace(/\/$/, '');
+      },
+      enumerable: true,
+      readonly: false
+   },
+   'rootInstanceName': {
+      get: function() {
+         return rootRouter._name;
+      },
+      set: function(rootName) {
+         if (_initialized) {
+            throw new Error('Incorrect operation. Cannot change the name of the root instance after calling sync() or go().');
+         }
+
+         oj.Assert.assertString(rootName);
+         rootRouter._name = encodeURIComponent(rootName.trim());
       },
       enumerable: true,
       readonly: false
@@ -1965,7 +1988,6 @@ Object.defineProperties(oj.Router.defaults, {
  * oj.Router.sync().then(
  *    function() {
  *       ko.applyBindings(viewModel);
- *       $('#globalBody').show();
  *    },
  *    function(error) {
  *       oj.Logger.error('Error when starting the router: ' + error.message);
@@ -2023,9 +2045,9 @@ oj.Router.sync = function() {
  * @since 1.1.0
  * @classdesc Url adapter used by the {@link oj.Router} to manage URL in the form of
  * <code class="prettyprint">/book/chapter2</code>.<br>The UrlPathAdapter is the default
- * adapter used by the {@link oj.Router|router}. There are two available adapters,
+ * adapter used by the {@link oj.Router|router}. There are two available URL adapters,
  * this one and the {@link oj.Router.urlParamAdapter|urlParamAdapter}.<br>To change
- * the URL adapter, use the {@link oj.Router.defaults|defaults} property.
+ * the URL adapter, use the {@link oj.Router.defaults|urlAdapter} property.
  * @see oj.Router.urlParamAdapter
  * @see oj.Router.defaults
  * @constructor
@@ -2148,9 +2170,9 @@ oj.Router.urlPathAdapter = function () {
  * @class
  * @since 1.1.0
  * @classdesc Url adapter used by the {@link oj.Router} to manage URL in the form of
- * <code class="prettyprint">/index.html?book=chapter2</code>.<br>There are two available
- * adapters, this one and the {@link oj.Router.urlPathAdapter|urlPathAdapter}.<br>To change
- * the URL adapter, use the {@link oj.Router.defaults|defaults} property.
+ * <code class="prettyprint">/index.html?root=book&book=chapter2</code>.<br>There are two available
+ * URL adapters, this one and the {@link oj.Router.urlPathAdapter|urlPathAdapter}.<br>To change
+ * the URL adapter, use the {@link oj.Router.defaults|urlAdapter} property.
  * @see oj.Router.urlPathAdapter
  * @see oj.Router.defaults
  * @constructor

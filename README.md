@@ -20,19 +20,23 @@ Oracle JET is a modular toolkit allowing developers to use as much or as little 
 * For intermediate & advanced JS devs
 
 ## Examples
-Visit the [Oracle JET website](http://oraclejet.org) for examples and much more...
+Here is a list of places to see Oracle JET in action:
+* [Oracle JET website](http://oraclejet.org)
+* [Oracle JET Cookbook](http://www.oracle.com/webfolder/technetwork/jet/uiComponents-formControls.html) - Every component with live code demos
+* [Sample applications and Tutorials](http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html)
+
 
 ## Installation
-Oracle JET uses Bower to perform the initial install and a Yeoman generator to help scaffold up your applications.  If you already have Bower and npm installed, you can simply type:
+Oracle JET provides a Yeoman generator to help scaffold up your applications.  If you already have npm and Yeoman installed, you can simply type:
 
 ```
-bower install oraclejet
-npm install generator-oraclejet
+npm install -g generator-oraclejet
+yo oraclejet <app name>
 ```
-See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet200/jet/) for details.
+See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet200/jet/) for complete installation details, including prerequisites.
 
-## [Documentation](http://docs.oracle.com/middleware/jet112/jet/)
-Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet112/jet/) to help with Getting Started and many common issues.
+## [Documentation](http://docs.oracle.com/middleware/jet200/jet/)
+Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet200/jet/) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
 Oracle JET is an open source project. See 

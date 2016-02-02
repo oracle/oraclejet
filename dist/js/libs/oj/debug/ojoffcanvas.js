@@ -449,6 +449,14 @@ oj.OffcanvasUtils._registerCloseHandler = function(offcanvas)
             ("focus" === event.type && !$(target).is(":focusable")))
           return;
 
+        var key = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+        if (key == null)
+        {
+            // offcanvas already destroyed, unregister the handler
+            oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
+            return;
+        }
+
         // if event target is not the offcanvas dom subtrees, dismiss it
         if (! oj.DomUtils.isLogicalAncestorOrSelf(drawer[0], target))
         {
@@ -560,10 +568,13 @@ oj.OffcanvasUtils._registerSwipeHandler = function(offcanvas)
 oj.OffcanvasUtils._unregisterSwipeHandler = function(offcanvas)
 {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
-  var dHammer = $.data(drawer[0], oj.OffcanvasUtils._DATA_HAMMER_KEY);
-  if (dHammer)
+  if (drawer.length > 0)
   {
-    dHammer["hammer"].off(dHammer["event"]);
+    var dHammer = $.data(drawer[0], oj.OffcanvasUtils._DATA_HAMMER_KEY);
+    if (dHammer)
+    {
+      dHammer["hammer"].off(dHammer["event"]);
+    }
   }
 
 };

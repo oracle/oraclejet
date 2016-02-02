@@ -2218,6 +2218,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       
       var bHorizontal = this._isHorizontal();
       this._touchStartCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
+      this._touchStartCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
     }
   },
   
@@ -2235,6 +2236,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     //save off some initial information at the start of a swipe
     var bHorizontal = this._isHorizontal();
     this._touchStartCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
+    this._touchStartCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
+
     var cssAttr = this._getCssPositionAttr();
     var pagesWrapper = this._pagesWrapper;
     var pagingModel = this._pagingModel;
@@ -2286,6 +2289,18 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var touchCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
     var diff = touchCoord - this._touchStartCoord;
     
+    // - cannot scroll vertically in filmstrip component
+    var touchCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
+    var diff2 = touchCoord2 - this._touchStartCoord2;
+
+    if (Math.abs(diff2) > Math.abs(diff)) {
+      //don't scroll again for this same swipe
+      this._bTouch = false;
+
+      //set a flag indicating we don't scroll for this touch event
+      this._scrolledForThisTouch = false;
+    }
+
     //only initialize the drag once we've passed the initial threshold
     if (!this._bDragInit)
     {

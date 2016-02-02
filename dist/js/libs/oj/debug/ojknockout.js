@@ -1460,7 +1460,7 @@ ko.bindingHandlers['ojContextMenu'] =
       if (!_menu) 
         throw new Error('"contextMenu" set to "' + menuSelector + '", which does not reference a valid JET Menu.');
 
-      $menu.on( "oj__dismiss" + eventNamespace , function( event, ui ) {
+      $menu.on( "ojclose" + eventNamespace , function( event, ui ) {
         document.removeEventListener("keyup", preventKeyUpEventIfMenuOpen);
       });
     };

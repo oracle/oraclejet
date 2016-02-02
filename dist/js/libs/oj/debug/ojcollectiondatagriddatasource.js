@@ -1448,12 +1448,9 @@ oj.CollectionDataGridDataSource.prototype._getModelEvent = function(operation, r
 oj.CollectionDataGridDataSource.prototype._handleModelAdded = function(model, collection, args)
 {
     var event, rowKey;
-    this.collection.indexOf(model, {deferred: true}).then(function(index)
-    {
-        rowKey = oj.CollectionDataGridUtils._getModelKey(model);
-        event = this._getModelEvent('insert', rowKey, null, index, -1);
-        this.handleEvent("change", event);
-    }.bind(this));
+    rowKey = oj.CollectionDataGridUtils._getModelKey(model);
+    event = this._getModelEvent('insert', rowKey, null, model['index'], -1);
+    this.handleEvent("change", event);
 };
 
 /**
@@ -1482,13 +1479,10 @@ oj.CollectionDataGridDataSource.prototype._handleModelDeleted = function(model, 
 oj.CollectionDataGridDataSource.prototype._handleModelChanged = function(model, collection, args)
 {
     var event, rowKey;
-	//pass the indexes into the grid on model change
-    this.collection.indexOf(model, {deferred: true}).then(function(index)
-    {
-        rowKey = oj.CollectionDataGridUtils._getModelKey(model);
-        event = this._getModelEvent('update', rowKey, null, index, -1);
-        this.handleEvent("change", event);
-    }.bind(this));
+    //pass the indexes into the grid on model change
+    rowKey = oj.CollectionDataGridUtils._getModelKey(model);
+    event = this._getModelEvent('update', rowKey, null, model['index'], -1);
+    this.handleEvent("change", event);
 };
 
 /**

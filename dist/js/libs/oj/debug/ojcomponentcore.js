@@ -1455,10 +1455,31 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @param {string} type - component event type
    * @param {?Object} event - original event
    * @param {Object=} data - event data
+   * @return {boolean} true if the default action has not been prevented, false otherwise
    *
    * @private
    */
   _trigger : function (type, event, data)
+  {
+    return this._trigger2(type, event, data)['proceed'];
+  },
+
+  /**
+   * <p>Same as _trigger(), but returns an object containing both the "prevented" status and the event.
+   * 
+   * <p>This is useful for event chaining, so that the returned event (e.g. Menu's select event) can be 
+   * passed as the originalEvent of a subsequent event caused by the first (e.g. Menu's close event).
+   *
+   * @param {string} type - component event type
+   * @param {?Object} event - original event
+   * @param {Object=} data - event data
+   * @return {!{proceed: boolean, event: $.Event}} 
+   *     proceed is true if the default action has not been prevented, false otherwise
+   *     event is the new event that was triggered
+   *
+   * @private
+   */
+  _trigger2 : function (type, event, data)
   {
     var prop, orig, callback = this.options[type];
 
@@ -1472,7 +1493,10 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     this.element.trigger(event, data);
 
-    return !($.isFunction(callback) && callback.apply(this.element[0], [event].concat(data)) === false || event.isDefaultPrevented());
+    return {
+      'proceed': !($.isFunction(callback) && callback.apply(this.element[0], [event].concat(data)) === false || event.isDefaultPrevented()), 
+      'event': event
+    }
   },
 
   /**
@@ -1768,7 +1792,7 @@ $.widget('oj.' + _BASE_COMPONENT,
         throw new Error('"contextMenu" option set to "' + this.options.contextMenu + '", which does not reference a valid JET Menu.');
 
     var self = this;
-    this._contextMenuNode.on( "oj__dismiss" + this.contextMenuEventNamespace , function( event, ui ) {
+    this._contextMenuNode.on( "ojclose" + this.contextMenuEventNamespace , function( event, ui ) {
         document.removeEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
     });
   },

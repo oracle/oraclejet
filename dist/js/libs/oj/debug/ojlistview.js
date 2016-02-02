@@ -716,6 +716,12 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
             self = this;
             promise = this.m_dataSource.fetch(options);
             promise.then(function(value){ 
+                             // check if content handler has been destroyed already
+                             if (self.m_widget == null)
+                             {
+                                 return;
+                             }
+
                              if (initFetch) 
                              { 
                                  self._handleFetchedData(value); 
@@ -2100,6 +2106,52 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 }
             }           
         }
+
+        return null;
+    },
+
+    /**
+     * Returns an object with context for the given child DOM node. 
+     * This will always contain the subid for the node, defined as the 'subId' property on the context object. 
+     * Additional component specific information may also be included. For more details on returned objects, see context objects.
+     * Invoked by widget
+     *
+     * @param {!Element} node the child DOM node
+     * @returns {Object|null} the context for the DOM node, or null when none is found.
+     */
+    getContextByNode: function(node)
+    {
+        var item, key, parent, index, context;
+
+        item = this.FindItem(node);
+        if (item != null && item.length > 0)
+        {
+            key = this.GetKey(item[0]);            
+            if (key != null)
+            {
+                parent = item.parent();
+                index = parent.children("li").index(item);
+                context = {'subId': 'oj-listview-item', 'key': key, 'index': index};
+
+                // group item should return the li
+                if (parent.get(0) != this.element.get(0))
+                {
+                    context['parent'] = parent.parent().get(0);
+                }
+
+                // check if it's a group item
+                if (item.children().first().hasClass(this.getGroupItemStyleClass()))
+                {
+                    context['group'] = true;
+                }
+                else
+                {
+                    context['group'] = false;
+                }
+
+                return context;
+            }
+        }           
 
         return null;
     },
@@ -6179,6 +6231,22 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     },
 
     /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojListView
+     */
+    getContextByNode: function(node)
+    {
+        return this.listview.getContextByNode(node);
+    },
+
+    /**
      * Expand an item.<p>
      * Note when vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.<p>
      *
@@ -6395,6 +6463,18 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
  *
  * @example <caption>Get the disclosure icon for the group item with key 'foo':</caption>
  * var node = $( ".selector" ).ojListView( "getNodeBySubId", {'subId': 'oj-listview-disclosure', 'key': 'foo'} );
+ */
+
+/**
+ * <p>Context for the ojListView component's items.</p>
+ *
+ * @property {number} index the zero based item index relative to its parent
+ * @property {Object} key the key of the item
+ * @property {Element} parent the parent group item.  Only available if item has a parent.
+ * @property {boolean} group whether the item is a group.
+ *
+ * @ojnodecontext oj-listview-item
+ * @memberof oj.ojListView
  */
 
 });

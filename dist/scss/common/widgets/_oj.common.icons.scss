@@ -9,6 +9,22 @@
 
 $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
+
+// this function is needed because 
+// escaped unicode not output when using vars
+// https://github.com/sass/sass/issues/659
+// https://github.com/FortAwesome/Font-Awesome/pull/6728
+// http://www.sassmeister.com/gist/2c5975d9b52afa8a68f6
+// expects the var passed in to be 
+// assigned to a string without a slash, 
+// for example 
+// $foo: "e60a";
+// prepend-slash($foo);
+@function oj-prepend-slash($char)
+{
+  @return #{"\"\\"}#{$char + "\""};
+}
+
 @if $includeIconClasses != false {
   @include module-include-once("common.icons") {
 
@@ -264,65 +280,65 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     // misc
     .oj-fwk-icon-cross:before {
-      content: $oj-fwk-icon-cross;
+      content: oj-prepend-slash($oj-fwk-icon-cross);
     }
     .oj-fwk-icon-cross02:before {
-      content: $oj-fwk-icon-cross02;
+      content: oj-prepend-slash($oj-fwk-icon-cross02);
     }
     .oj-fwk-icon-cross03:before {
-      content: $oj-fwk-icon-cross03;
+      content: oj-prepend-slash($oj-fwk-icon-cross03);
     }
 
     .oj-fwk-icon-magnifier:before {
-      content: $oj-fwk-icon-magnifier;
+      content: oj-prepend-slash($oj-fwk-icon-magnifier);
     }
     .oj-fwk-icon-calendar:before {
-      content: $oj-fwk-icon-calendar;
+      content: oj-prepend-slash($oj-fwk-icon-calendar);
     }
     .oj-fwk-icon-clock:before {
-      content: $oj-fwk-icon-clock;
+      content: oj-prepend-slash($oj-fwk-icon-clock);
     }
     .oj-fwk-icon-help:before {
-      content: $oj-fwk-icon-help;
+      content: oj-prepend-slash($oj-fwk-icon-help);
     }
     .oj-fwk-icon-hamburger:before {
-      content: $oj-fwk-icon-hamburger;
+      content: oj-prepend-slash($oj-fwk-icon-hamburger);
     }
     .oj-fwk-icon-drag:before {
-      content: $oj-fwk-icon-drag;
+      content: oj-prepend-slash($oj-fwk-icon-drag);
     }
     .oj-fwk-icon-folderhierarchy:before {
-      content: $oj-fwk-icon-folderhierarchy;
+      content: oj-prepend-slash($oj-fwk-icon-folderhierarchy);
     }
 
     @if global-variable-exists(oj-fwk-icon-checkmark) and $oj-fwk-icon-checkmark != '' {
       .oj-fwk-icon-checkmark:before {
-        content: $oj-fwk-icon-checkmark;
+        content: oj-prepend-slash($oj-fwk-icon-checkmark);
       }
    }
 
     @if global-variable-exists(oj-fwk-icon-plus) and $oj-fwk-icon-plus != '' {
       .oj-fwk-icon-plus:before {
-        content: $oj-fwk-icon-plus;
+        content: oj-prepend-slash($oj-fwk-icon-plus);
       }
     }
 
     @if global-variable-exists(oj-fwk-icon-minus) and $oj-fwk-icon-minus != '' {
       .oj-fwk-icon-minus:before {
-        content: $oj-fwk-icon-minus;
+        content: oj-prepend-slash($oj-fwk-icon-minus);
       }
     }
 
 
     @if global-variable-exists(oj-fwk-icon-dots-vertical) and $oj-fwk-icon-dots-vertical != '' {
       .oj-fwk-icon-dots-vertical:before {
-        content: $oj-fwk-icon-dots-vertical;
+        content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
       }
     }
 
     @if global-variable-exists(oj-fwk-icon-minimize) and $oj-fwk-icon-minimize != '' {
       .oj-fwk-icon-minimize:before {
-        content: $oj-fwk-icon-minimize;
+        content: oj-prepend-slash($oj-fwk-icon-minimize);
         @include oj-rtl() {
           @include oj-transform-property(scale(-1, 1));
         }
@@ -332,7 +348,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if global-variable-exists(oj-fwk-icon-maximize) and $oj-fwk-icon-maximize != '' {
       .oj-fwk-icon-maximize:before {
-        content: $oj-fwk-icon-maximize;
+        content: oj-prepend-slash($oj-fwk-icon-maximize);
         @include oj-rtl() {
           @include oj-transform-property(scale(-1, 1));
         }
@@ -345,7 +361,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if global-variable-exists(oj-fwk-icon-arrowtail-w) and $oj-fwk-icon-arrowtail-w != '' {
       .oj-fwk-icon-arrowtail-w:before {
-        content: $oj-fwk-icon-arrowtail-w;
+        content: oj-prepend-slash($oj-fwk-icon-arrowtail-w);
       }
 
       // rotation
@@ -376,7 +392,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-arrow-e and $oj-fwk-icon-arrow-e != '' {
       .oj-fwk-icon-arrow-e:before {
-        content: $oj-fwk-icon-arrow-e;
+        content: oj-prepend-slash($oj-fwk-icon-arrow-e);
       }
 
       // rotation
@@ -415,7 +431,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-arrow-se and $oj-fwk-icon-arrow-se != '' {
       .oj-fwk-icon-arrow-se:before {
-        content: $oj-fwk-icon-arrow-se;
+        content: oj-prepend-slash($oj-fwk-icon-arrow-se);
       }
 
 
@@ -472,7 +488,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-arrow02-s and $oj-fwk-icon-arrow02-s != '' {
       .oj-fwk-icon-arrow02-s:before {
-        content: $oj-fwk-icon-arrow02-s;
+        content: oj-prepend-slash($oj-fwk-icon-arrow02-s);
       }
 
 
@@ -513,7 +529,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-arrow03-e and $oj-fwk-icon-arrow03-e != '' {
       .oj-fwk-icon-arrow03-e:before {
-        content: $oj-fwk-icon-arrow03-e;
+        content: oj-prepend-slash($oj-fwk-icon-arrow03-e);
       }
 
 
@@ -553,7 +569,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-arrow03-se and $oj-fwk-icon-arrow03-se != '' {
       .oj-fwk-icon-arrow03-se:before {
-        content: $oj-fwk-icon-arrow03-se;
+        content: oj-prepend-slash($oj-fwk-icon-arrow03-se);
       }
 
 
@@ -617,7 +633,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-caret-e and $oj-fwk-icon-caret-e != '' {
       .oj-fwk-icon-caret-e:before {
-        content: $oj-fwk-icon-caret-e;
+        content: oj-prepend-slash($oj-fwk-icon-caret-e);
       }
 
 
@@ -658,7 +674,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-caret02-e and $oj-fwk-icon-caret02-e != '' {
       .oj-fwk-icon-caret02-e:before {
-        content: $oj-fwk-icon-caret02-e;
+        content: oj-prepend-slash($oj-fwk-icon-caret02-e);
       }
 
 
@@ -700,7 +716,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-caret02end-e and $oj-fwk-icon-caret02end-e != '' {
       .oj-fwk-icon-caret02end-e:before {
-        content: $oj-fwk-icon-caret02end-e;
+        content: oj-prepend-slash($oj-fwk-icon-caret02end-e);
       }
 
       // rotation
@@ -741,7 +757,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     @if  $oj-fwk-icon-caret03-e and $oj-fwk-icon-caret03-e != '' {
       .oj-fwk-icon-caret03-e:before {
-        content: $oj-fwk-icon-caret03-e;
+        content: oj-prepend-slash($oj-fwk-icon-caret03-e);
       }
 
       // rotation
