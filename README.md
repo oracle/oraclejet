@@ -39,7 +39,7 @@ See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet200/je
 Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet200/jet/) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
-Oracle JET is an open source project. See 
+Oracle JET is an open source project. Pull Requests are currently not being accepted. See 
 [CONTRIBUTING](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
 for details.
 

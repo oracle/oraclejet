@@ -242,7 +242,8 @@ select {
      *    `input` and others.
      */
 button,
-html input[type="button"], input[type="reset"],
+html input[type="button"],
+input[type="reset"],
 input[type="submit"] {
   -webkit-appearance: button;
   /* 2 */
@@ -580,13 +581,9 @@ html[dir="rtl"] .oj-padding-end {
     /  generate a class ".binky-icon". You
     /  could then put class="oj-icon binky-icon" on your dom element. 
     --------------------------------------------------------------------*/
-.oj-fwk-icon,
-.oj-panel-drag-icon,
-.oj-panel-expand-icon,
-.oj-panel-collapse-icon,
-.oj-panel-remove-icon,
-.oj-web-applayout-offcanvas-icon,
-.oj-component-icon, .oj-popup-tail.oj-popup-tail-simple {
+.oj-fwk-icon, .oj-panel-drag-icon, .oj-panel-expand-icon, .oj-panel-collapse-icon, .oj-panel-remove-icon, .oj-web-applayout-offcanvas-icon,
+.oj-component-icon,
+.oj-popup-tail.oj-popup-tail-simple {
   font-family: "Alta Icon Font";
   font-size: 16px;
   line-height: 1;
@@ -602,13 +599,9 @@ html[dir="rtl"] .oj-padding-end {
   box-sizing: content-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale; }
-  .oj-fwk-icon:before,
-  .oj-panel-drag-icon:before,
-  .oj-panel-expand-icon:before,
-  .oj-panel-collapse-icon:before,
-  .oj-panel-remove-icon:before,
-  .oj-web-applayout-offcanvas-icon:before,
-  .oj-component-icon:before, .oj-popup-tail.oj-popup-tail-simple:before {
+  .oj-fwk-icon:before, .oj-panel-drag-icon:before, .oj-panel-expand-icon:before, .oj-panel-collapse-icon:before, .oj-panel-remove-icon:before, .oj-web-applayout-offcanvas-icon:before,
+  .oj-component-icon:before,
+  .oj-popup-tail.oj-popup-tail-simple:before {
     display: inline-block; }
 
 /*--------------------------------------------------------------------
@@ -635,15 +628,13 @@ html[dir="rtl"] .oj-padding-end {
     -moz-box-sizing: content-box;
     box-sizing: content-box; }
 
-a .oj-clickable-icon,
-a .oj-tabs-tab-icon,
+a .oj-clickable-icon, a .oj-tabs-tab-icon,
 a.oj-clickable-icon,
 a.oj-tabs-tab-icon,
 a.oj-clickable-icon-nocontext {
   font-weight: normal; }
 
-a .oj-clickable-icon,
-a .oj-tabs-tab-icon,
+a .oj-clickable-icon, a .oj-tabs-tab-icon,
 a.oj-clickable-icon,
 a.oj-tabs-tab-icon,
 a.oj-clickable-icon-nocontext,
@@ -659,8 +650,7 @@ a:visited.oj-clickable-icon-nocontext,
 .oj-default.oj-clickable-icon-nocontext {
   color: #878c90; }
 
-a:hover .oj-clickable-icon,
-a:hover .oj-tabs-tab-icon,
+a:hover .oj-clickable-icon, a:hover .oj-tabs-tab-icon,
 a:hover.oj-clickable-icon,
 a.oj-tabs-tab-icon:hover,
 a:hover.oj-clickable-icon-nocontext,
@@ -671,8 +661,7 @@ a:hover.oj-clickable-icon-nocontext,
 .oj-hover.oj-clickable-icon-nocontext {
   color: #85bbe7; }
 
-a:active .oj-clickable-icon,
-a:active .oj-tabs-tab-icon,
+a:active .oj-clickable-icon, a:active .oj-tabs-tab-icon,
 a:active.oj-clickable-icon,
 a.oj-tabs-tab-icon:active,
 a:active.oj-clickable-icon-nocontext,
@@ -683,8 +672,7 @@ a:active.oj-clickable-icon-nocontext,
 .oj-active.oj-clickable-icon-nocontext {
   color: #0572ce; }
 
-a.oj-selected .oj-clickable-icon,
-a.oj-selected .oj-tabs-tab-icon,
+a.oj-selected .oj-clickable-icon, a.oj-selected .oj-tabs-tab-icon,
 a.oj-selected.oj-clickable-icon,
 a.oj-selected.oj-tabs-tab-icon,
 a.oj-selected.oj-clickable-icon-nocontext,
@@ -695,8 +683,7 @@ a.oj-selected.oj-clickable-icon-nocontext,
 .oj-selected.oj-clickable-icon-nocontext {
   color: #0572ce; }
 
-a.oj-disabled .oj-clickable-icon,
-a.oj-disabled .oj-tabs-tab-icon,
+a.oj-disabled .oj-clickable-icon, a.oj-disabled .oj-tabs-tab-icon,
 a.oj-disabled.oj-clickable-icon,
 a.oj-disabled.oj-tabs-tab-icon,
 a.oj-disabled.oj-clickable-icon-nocontext,
@@ -713,13 +700,13 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-collapsed a.oj-tree-loading > .oj-tree-node-icon.oj-tree-icon:before, .oj-rowexpander-lazyload-icon:before {
   content: url("../common/images/node_anim.gif"); }
 
-.oj-fwk-icon-status-error2,
-.oj-train-icon.oj-error,
+.oj-fwk-icon-status-error2, .oj-train-icon.oj-error,
 .oj-fwk-icon-status-warning2,
 .oj-train-icon.oj-warning,
 .oj-fwk-icon-status-info2,
 .oj-train-icon.oj-info,
-.oj-fwk-icon-status-confirmation2, .oj-train-icon.oj-confirmation {
+.oj-fwk-icon-status-confirmation2,
+.oj-train-icon.oj-confirmation {
   height: 9px;
   width: 9px;
   font-size: 9px; }
@@ -1085,15 +1072,15 @@ a.oj-disabled.oj-clickable-icon-nocontext,
   margin-bottom: 0;
   overflow: hidden;
   width: 2.286rem; }
-  html:not([dir="rtl"]) .oj-panel-resize-button,
-  html:not([dir="rtl"]) .oj-panel-remove-button,
-  html:not([dir="rtl"]) .oj-panel-resize-button.oj-button,
-  html:not([dir="rtl"]) .oj-panel-remove-button.oj-button {
+  html:not([dir="rtl"]) .oj-panel-resize-button, html:not([dir="rtl"])
+  .oj-panel-remove-button, html:not([dir="rtl"])
+  .oj-panel-resize-button.oj-button, html:not([dir="rtl"])
+  .oj-panel-remove-button.oj-button {
     right: 0; }
-  html[dir="rtl"] .oj-panel-resize-button,
-  html[dir="rtl"] .oj-panel-remove-button,
-  html[dir="rtl"] .oj-panel-resize-button.oj-button,
-  html[dir="rtl"] .oj-panel-remove-button.oj-button {
+  html[dir="rtl"] .oj-panel-resize-button, html[dir="rtl"]
+  .oj-panel-remove-button, html[dir="rtl"]
+  .oj-panel-resize-button.oj-button, html[dir="rtl"]
+  .oj-panel-remove-button.oj-button {
     left: 0; }
 
 .oj-panel-resize-button {
@@ -1219,11 +1206,11 @@ h4.oj-collapsible-header {
        * the closed font icon has some whitespace on the left side,
        * use a negative margin to move over the icon
        */ }
-  html:not([dir="rtl"]) .oj-collapsible-header a,
-  html:not([dir="rtl"]) .oj-collapsible-header .oj-collapsible-header-icon {
+  html:not([dir="rtl"]) .oj-collapsible-header a, html:not([dir="rtl"])
+  .oj-collapsible-header .oj-collapsible-header-icon {
     margin-left: -7px; }
-  html[dir="rtl"] .oj-collapsible-header a,
-  html[dir="rtl"] .oj-collapsible-header .oj-collapsible-header-icon {
+  html[dir="rtl"] .oj-collapsible-header a, html[dir="rtl"]
+  .oj-collapsible-header .oj-collapsible-header-icon {
     margin-right: -7px; }
 
 /* accordion */
@@ -1398,23 +1385,23 @@ h4.oj-collapsible-header {
   -webkit-transition-timing-function: ease-in-out;
   transition-timing-function: ease-in-out; }
 
-html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to,
-html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
+html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to, html:not([dir="rtl"])
+.oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
   -webkit-transform: translate3d(-100%, 0, 0);
   transform: translate3d(-100%, 0, 0); }
 
-html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to,
-html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
+html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to, html[dir="rtl"]
+.oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
   -webkit-transform: translate3d(100%, 0, 0);
   transform: translate3d(100%, 0, 0); }
 
-html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to,
-html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
+html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to, html:not([dir="rtl"])
+.oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
   -webkit-transform: translate3d(100%, 0, 0);
   transform: translate3d(100%, 0, 0); }
 
-html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to,
-html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
+html[dir="rtl"] .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-oldpage-to, html[dir="rtl"]
+.oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-prev-newpage-to {
   -webkit-transform: translate3d(-100%, 0, 0);
   transform: translate3d(-100%, 0, 0); }
 
@@ -1472,14 +1459,14 @@ html[dir="rtl"] .oj-filmstrip-arrow-container-overlay.oj-end {
 .oj-filmstrip-arrow-container-overlay.oj-bottom {
   bottom: 0; }
 
-html:not([dir="rtl"]) .oj-filmstrip-arrow-container-overlay.oj-top,
-html:not([dir="rtl"]) .oj-filmstrip-arrow-container-overlay.oj-bottom {
+html:not([dir="rtl"]) .oj-filmstrip-arrow-container-overlay.oj-top, html:not([dir="rtl"])
+.oj-filmstrip-arrow-container-overlay.oj-bottom {
   left: 50%;
   -webkit-transform: translate3d(-50%, 0, 0);
   transform: translate3d(-50%, 0, 0); }
 
-html[dir="rtl"] .oj-filmstrip-arrow-container-overlay.oj-top,
-html[dir="rtl"] .oj-filmstrip-arrow-container-overlay.oj-bottom {
+html[dir="rtl"] .oj-filmstrip-arrow-container-overlay.oj-top, html[dir="rtl"]
+.oj-filmstrip-arrow-container-overlay.oj-bottom {
   right: 50%;
   -webkit-transform: translate3d(50%, 0, 0);
   transform: translate3d(50%, 0, 0); }
@@ -1694,7 +1681,7 @@ html[dir="rtl"] .oj-filmstrip-arrow-container-overlay.oj-bottom {
   cursor: pointer;
   outline: none;
   display: inline-block;
-  padding: 0.55rem 0.85rem 0.65rem 0.85rem;
+  padding: .55rem .85rem .65rem .85rem;
   vertical-align: middle; }
 
 /*
@@ -2081,12 +2068,12 @@ html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-end > .oj-tabs-nav-root .oj-tabs
   border-width: 0 3px 0 0;
   border-radius: 0 0 0 0; }
 
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab,
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab {
+html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab, html:not([dir="rtl"])
+.oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab {
   border-width: 1px; }
 
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab,
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab {
+html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab, html[dir="rtl"]
+.oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab {
   border-width: 1px; }
 
 /*
@@ -2128,40 +2115,40 @@ html[dir="rtl"] .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs
 /*
      * display top, bottom and left border and border radius on the selected tab
      */
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html:not([dir="rtl"])
+.oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 2px 0 0 2px;
   border-right-color: transparent; }
 
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html[dir="rtl"]
+.oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 0 2px 2px 0;
   border-left-color: transparent; }
 
-html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html.oj-slow-borderradius
+.oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 0; }
 
 /*
      * display top, bottom and right border and border radius on the selected tab 
      * when edge = end
      */
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html:not([dir="rtl"]) .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html:not([dir="rtl"])
+.oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 0 2px 2px 0;
   border-color: #d6dfe6;
   margin-left: -1px;
   border-left-color: transparent; }
 
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html[dir="rtl"] .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html[dir="rtl"] .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html[dir="rtl"]
+.oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 2px 0 0 2px;
   border-color: #d6dfe6;
   margin-right: -1px;
   border-right-color: transparent; }
 
-html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html.oj-slow-borderradius
+.oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-radius: 0; }
 
 /* horizontal tabs with the oj-tabs-icon-only class specified */
@@ -2173,8 +2160,8 @@ html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-
 .oj-tabs-horizontal.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
   border-bottom-color: transparent;
   border-radius: 2px 2px 0 0; }
-  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html.oj-slow-borderradius
+  .oj-tabs-horizontal.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
     border-radius: 0; }
 
 .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
@@ -2182,8 +2169,8 @@ html.oj-slow-borderradius .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-
   border-color: #d6dfe6;
   border-top-color: transparent;
   border-radius: 0 0 2px 2px; }
-  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
-  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-icon-only.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
+  html.oj-slow-borderradius .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected, html.oj-slow-borderradius
+  .oj-tabs-horizontal.oj-tabs-icon-only.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
     border-radius: 0; }
 
 /* train */
@@ -2446,8 +2433,8 @@ html body .oj-button {
   background-image: linear-gradient(to bottom, #ffffff 0%, #f1f3f4 3.64%, #e8ebed 50%, #e4e8ea 100%);
   border-color: #c4ced7;
   color: black; }
-  html.oj-slow-cssgradients .oj-button.oj-default.oj-button-full-chrome,
-  html.oj-slow-cssgradients .oj-button.oj-focus-only.oj-button-full-chrome {
+  html.oj-slow-cssgradients .oj-button.oj-default.oj-button-full-chrome, html.oj-slow-cssgradients
+  .oj-button.oj-focus-only.oj-button-full-chrome {
     background-image: none; }
 
 .oj-button.oj-default.oj-button-full-chrome .oj-button-icon,
@@ -2666,7 +2653,10 @@ html body .oj-button {
      * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span 
      * for other types of Buttons.
      */
-input.oj-button[type="button"], input.oj-button[type="submit"], input.oj-button[type="reset"], .oj-button-text-only .oj-button-text {
+input.oj-button[type="button"],
+input.oj-button[type="submit"],
+input.oj-button[type="reset"],
+.oj-button-text-only .oj-button-text {
   padding: 0 0.857rem; }
 
 /* The text span of buttons with text, a left icon, but no right icon */
@@ -2688,13 +2678,13 @@ html[dir="rtl"] .oj-button-text-icon-start .oj-button-text {
   padding: 0; }
 
 /* The left icon of buttons with text and a left icon, with or without a right icon */
-html:not([dir="rtl"]) .oj-button-text-icon-start .oj-button-icon.oj-start,
-html:not([dir="rtl"]) .oj-button-text-icons .oj-button-icon.oj-start {
+html:not([dir="rtl"]) .oj-button-text-icon-start .oj-button-icon.oj-start, html:not([dir="rtl"])
+.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.43rem;
   margin-left: 0.7rem; }
 
-html[dir="rtl"] .oj-button-text-icon-end .oj-button-icon.oj-end,
-html[dir="rtl"] .oj-button-text-icons .oj-button-icon.oj-end {
+html[dir="rtl"] .oj-button-text-icon-end .oj-button-icon.oj-end, html[dir="rtl"]
+.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.43rem;
   margin-left: 0.7rem; }
 
@@ -2713,13 +2703,13 @@ html[dir="rtl"] .oj-button-icons-only .oj-button-icon.oj-end {
   margin-left: 0.5rem; }
 
 /* The right icon of buttons with text and a right icon, with or without a left icon */
-html:not([dir="rtl"]) .oj-button-text-icon-end .oj-button-icon.oj-end,
-html:not([dir="rtl"]) .oj-button-text-icons .oj-button-icon.oj-end {
+html:not([dir="rtl"]) .oj-button-text-icon-end .oj-button-icon.oj-end, html:not([dir="rtl"])
+.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.7rem;
   margin-left: 0.43rem; }
 
-html[dir="rtl"] .oj-button-text-icon-start .oj-button-icon.oj-start,
-html[dir="rtl"] .oj-button-text-icons .oj-button-icon.oj-start {
+html[dir="rtl"] .oj-button-text-icon-start .oj-button-icon.oj-start, html[dir="rtl"]
+.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.7rem;
   margin-left: 0.43rem; }
 
@@ -2734,7 +2724,10 @@ html[dir="rtl"] .oj-button-icons-only .oj-button-icon.oj-start {
      * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span 
      * for other types of Buttons.
      */
-input.oj-button-sm.oj-button[type="button"], input.oj-button-sm.oj-button[type="submit"], input.oj-button-sm.oj-button[type="reset"], .oj-button-sm.oj-button-text-only .oj-button-text {
+input.oj-button-sm.oj-button[type="button"],
+input.oj-button-sm.oj-button[type="submit"],
+input.oj-button-sm.oj-button[type="reset"],
+.oj-button-sm.oj-button-text-only .oj-button-text {
   padding: 0 0.857rem; }
 
 /* The text span of buttons with text, a left icon, but no right icon */
@@ -2756,13 +2749,13 @@ html[dir="rtl"] .oj-button-sm.oj-button-text-icon-start .oj-button-text {
   padding: 0; }
 
 /* The left icon of buttons with text and a left icon, with or without a right icon */
-html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icon-start .oj-button-icon.oj-start,
-html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icons .oj-button-icon.oj-start {
+html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icon-start .oj-button-icon.oj-start, html:not([dir="rtl"])
+.oj-button-sm.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.43rem;
   margin-left: 0.7rem; }
 
-html[dir="rtl"] .oj-button-sm.oj-button-text-icon-end .oj-button-icon.oj-end,
-html[dir="rtl"] .oj-button-sm.oj-button-text-icons .oj-button-icon.oj-end {
+html[dir="rtl"] .oj-button-sm.oj-button-text-icon-end .oj-button-icon.oj-end, html[dir="rtl"]
+.oj-button-sm.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.43rem;
   margin-left: 0.7rem; }
 
@@ -2781,13 +2774,13 @@ html[dir="rtl"] .oj-button-sm.oj-button-icons-only .oj-button-icon.oj-end {
   margin-left: 0.357rem; }
 
 /* The right icon of buttons with text and a right icon, with or without a left icon */
-html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icon-end .oj-button-icon.oj-end,
-html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icons .oj-button-icon.oj-end {
+html:not([dir="rtl"]) .oj-button-sm.oj-button-text-icon-end .oj-button-icon.oj-end, html:not([dir="rtl"])
+.oj-button-sm.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.7rem;
   margin-left: 0.43rem; }
 
-html[dir="rtl"] .oj-button-sm.oj-button-text-icon-start .oj-button-icon.oj-start,
-html[dir="rtl"] .oj-button-sm.oj-button-text-icons .oj-button-icon.oj-start {
+html[dir="rtl"] .oj-button-sm.oj-button-text-icon-start .oj-button-icon.oj-start, html[dir="rtl"]
+.oj-button-sm.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.7rem;
   margin-left: 0.43rem; }
 
@@ -2802,7 +2795,10 @@ html[dir="rtl"] .oj-button-sm.oj-button-icons-only .oj-button-icon.oj-start {
      * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span 
      * for other types of Buttons.
      */
-input.oj-button-lg.oj-button[type="button"], input.oj-button-lg.oj-button[type="submit"], input.oj-button-lg.oj-button[type="reset"], .oj-button-lg.oj-button-text-only .oj-button-text {
+input.oj-button-lg.oj-button[type="button"],
+input.oj-button-lg.oj-button[type="submit"],
+input.oj-button-lg.oj-button[type="reset"],
+.oj-button-lg.oj-button-text-only .oj-button-text {
   padding: 0 1.43rem; }
 
 /* The text span of buttons with text, a left icon, but no right icon */
@@ -2824,13 +2820,13 @@ html[dir="rtl"] .oj-button-lg.oj-button-text-icon-start .oj-button-text {
   padding: 0; }
 
 /* The left icon of buttons with text and a left icon, with or without a right icon */
-html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icon-start .oj-button-icon.oj-start,
-html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icons .oj-button-icon.oj-start {
+html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icon-start .oj-button-icon.oj-start, html:not([dir="rtl"])
+.oj-button-lg.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.43rem;
   margin-left: 1.071rem; }
 
-html[dir="rtl"] .oj-button-lg.oj-button-text-icon-end .oj-button-icon.oj-end,
-html[dir="rtl"] .oj-button-lg.oj-button-text-icons .oj-button-icon.oj-end {
+html[dir="rtl"] .oj-button-lg.oj-button-text-icon-end .oj-button-icon.oj-end, html[dir="rtl"]
+.oj-button-lg.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.43rem;
   margin-left: 1.071rem; }
 
@@ -2849,13 +2845,13 @@ html[dir="rtl"] .oj-button-lg.oj-button-icons-only .oj-button-icon.oj-end {
   margin-left: 0.857rem; }
 
 /* The right icon of buttons with text and a right icon, with or without a left icon */
-html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icon-end .oj-button-icon.oj-end,
-html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icons .oj-button-icon.oj-end {
+html:not([dir="rtl"]) .oj-button-lg.oj-button-text-icon-end .oj-button-icon.oj-end, html:not([dir="rtl"])
+.oj-button-lg.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 1.071rem;
   margin-left: 0.43rem; }
 
-html[dir="rtl"] .oj-button-lg.oj-button-text-icon-start .oj-button-icon.oj-start,
-html[dir="rtl"] .oj-button-lg.oj-button-text-icons .oj-button-icon.oj-start {
+html[dir="rtl"] .oj-button-lg.oj-button-text-icon-start .oj-button-icon.oj-start, html[dir="rtl"]
+.oj-button-lg.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 1.071rem;
   margin-left: 0.43rem; }
 
@@ -2870,7 +2866,10 @@ html[dir="rtl"] .oj-button-lg.oj-button-icons-only .oj-button-icon.oj-start {
      * itself for <input type=button|submit|reset>, which doesn't support icons at all, and a nested span 
      * for other types of Buttons.
      */
-input.oj-button-xl.oj-button[type="button"], input.oj-button-xl.oj-button[type="submit"], input.oj-button-xl.oj-button[type="reset"], .oj-button-xl.oj-button-text-only .oj-button-text {
+input.oj-button-xl.oj-button[type="button"],
+input.oj-button-xl.oj-button[type="submit"],
+input.oj-button-xl.oj-button[type="reset"],
+.oj-button-xl.oj-button-text-only .oj-button-text {
   padding: 0 1.43rem; }
 
 /* The text span of buttons with text, a left icon, but no right icon */
@@ -2892,13 +2891,13 @@ html[dir="rtl"] .oj-button-xl.oj-button-text-icon-start .oj-button-text {
   padding: 0; }
 
 /* The left icon of buttons with text and a left icon, with or without a right icon */
-html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icon-start .oj-button-icon.oj-start,
-html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icons .oj-button-icon.oj-start {
+html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icon-start .oj-button-icon.oj-start, html:not([dir="rtl"])
+.oj-button-xl.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 0.43rem;
   margin-left: 1.071rem; }
 
-html[dir="rtl"] .oj-button-xl.oj-button-text-icon-end .oj-button-icon.oj-end,
-html[dir="rtl"] .oj-button-xl.oj-button-text-icons .oj-button-icon.oj-end {
+html[dir="rtl"] .oj-button-xl.oj-button-text-icon-end .oj-button-icon.oj-end, html[dir="rtl"]
+.oj-button-xl.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 0.43rem;
   margin-left: 1.071rem; }
 
@@ -2917,13 +2916,13 @@ html[dir="rtl"] .oj-button-xl.oj-button-icons-only .oj-button-icon.oj-end {
   margin-left: 1rem; }
 
 /* The right icon of buttons with text and a right icon, with or without a left icon */
-html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icon-end .oj-button-icon.oj-end,
-html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icons .oj-button-icon.oj-end {
+html:not([dir="rtl"]) .oj-button-xl.oj-button-text-icon-end .oj-button-icon.oj-end, html:not([dir="rtl"])
+.oj-button-xl.oj-button-text-icons .oj-button-icon.oj-end {
   margin-right: 1.071rem;
   margin-left: 0.43rem; }
 
-html[dir="rtl"] .oj-button-xl.oj-button-text-icon-start .oj-button-icon.oj-start,
-html[dir="rtl"] .oj-button-xl.oj-button-text-icons .oj-button-icon.oj-start {
+html[dir="rtl"] .oj-button-xl.oj-button-text-icon-start .oj-button-icon.oj-start, html[dir="rtl"]
+.oj-button-xl.oj-button-text-icons .oj-button-icon.oj-start {
   margin-right: 1.071rem;
   margin-left: 0.43rem; }
 
@@ -2957,8 +2956,7 @@ button.oj-button::-moz-focus-inner {
 .oj-button-option-defaults {
   font-family: '{"chroming":"full"}'; }
 
-.oj-button-primary.oj-button.oj-default,
-.oj-button-primary.oj-button.oj-focus-only {
+.oj-button-primary.oj-button.oj-default, .oj-button-primary.oj-button.oj-focus-only {
   background-color: #0572ce;
   background-image: -webkit-linear-gradient(top, #057de2 0%, #0572ce 50%, #056cc4 100%);
   background-image: linear-gradient(to bottom, #057de2 0%, #0572ce 50%, #056cc4 100%);
@@ -2966,8 +2964,7 @@ button.oj-button::-moz-focus-inner {
   color: #ffffff;
   box-shadow: none;
   text-shadow: none; }
-  html.oj-slow-cssgradients .oj-button-primary.oj-button.oj-default,
-  html.oj-slow-cssgradients .oj-button-primary.oj-button.oj-focus-only {
+  html.oj-slow-cssgradients .oj-button-primary.oj-button.oj-default, html.oj-slow-cssgradients .oj-button-primary.oj-button.oj-focus-only {
     background-image: none; }
 
 .oj-button-primary.oj-button.oj-default .oj-button-icon,
@@ -3035,8 +3032,7 @@ button.oj-button::-moz-focus-inner {
 .oj-button-primary.oj-button.oj-disabled.oj-selected .oj-button-icon {
   color: #ffffff; }
 
-.oj-button-confirm.oj-button.oj-default,
-.oj-button-confirm.oj-button.oj-focus-only {
+.oj-button-confirm.oj-button.oj-default, .oj-button-confirm.oj-button.oj-focus-only {
   background-color: #008230;
   background-image: -webkit-linear-gradient(top, #009638 0%, #008230 50%, #00782c 100%);
   background-image: linear-gradient(to bottom, #009638 0%, #008230 50%, #00782c 100%);
@@ -3044,8 +3040,7 @@ button.oj-button::-moz-focus-inner {
   color: #ffffff;
   box-shadow: none;
   text-shadow: none; }
-  html.oj-slow-cssgradients .oj-button-confirm.oj-button.oj-default,
-  html.oj-slow-cssgradients .oj-button-confirm.oj-button.oj-focus-only {
+  html.oj-slow-cssgradients .oj-button-confirm.oj-button.oj-default, html.oj-slow-cssgradients .oj-button-confirm.oj-button.oj-focus-only {
     background-image: none; }
 
 .oj-button-confirm.oj-button.oj-default .oj-button-icon,
@@ -3439,8 +3434,8 @@ a.oj-navigationlist-item-content .oj-navigationlist-item-label {
 .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon,
 .oj-navigationlist.oj-navigationlist-touch .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon {
   color: #0572ce; }
-  .oj-contrast-marker .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon,
-  .oj-contrast-marker .oj-navigationlist.oj-navigationlist-touch .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon {
+  .oj-contrast-marker .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon, .oj-contrast-marker
+  .oj-navigationlist.oj-navigationlist-touch .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon {
     color: #fafafa; }
 
 /* hover icon */
@@ -3521,15 +3516,15 @@ html[dir="rtl"] .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .o
 .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus,
 .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover {
   border-style: dotted; }
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-focus,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-hover,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover {
+  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-focus, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-hover, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover {
     border-width: 1px; }
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-focus,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-hover,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover {
+  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-focus, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-hover, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover {
     border-width: 1px; }
 
 .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected,
@@ -3539,36 +3534,36 @@ html[dir="rtl"] .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .o
 .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus,
 .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover {
   border-style: solid; }
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-focus,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-hover,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus,
-  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover {
+  html[dir="rtl"] .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-focus, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-hover, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus, html[dir="rtl"]
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover {
     border-width: 1px; }
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-focus,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-hover,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus,
-  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover {
+  html:not([dir="rtl"]) .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-focus, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-hover, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus, html:not([dir="rtl"])
+  .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover {
     border-width: 1px; }
 
 /* Padding for sublist    */
-html:not([dir="rtl"]) .oj-navigationlist-collapsible ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul,
-html:not([dir="rtl"]) .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul {
+html:not([dir="rtl"]) .oj-navigationlist-collapsible ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul, html:not([dir="rtl"])
+.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul {
   padding-left: 1.072rem; }
 
-html[dir="rtl"] .oj-navigationlist-collapsible ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul,
-html[dir="rtl"] .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul {
+html[dir="rtl"] .oj-navigationlist-collapsible ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul, html[dir="rtl"]
+.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul {
   padding-right: 1.072rem; }
 
-html:not([dir="rtl"]) .oj-navigationlist-collapsible ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul,
-html:not([dir="rtl"]) .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul {
+html:not([dir="rtl"]) .oj-navigationlist-collapsible ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul, html:not([dir="rtl"])
+.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul {
   padding-left: calc(1.072rem + 0.714rem + 24px); }
 
-html[dir="rtl"] .oj-navigationlist-collapsible ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul,
-html[dir="rtl"] .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul {
+html[dir="rtl"] .oj-navigationlist-collapsible ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul, html[dir="rtl"]
+.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul {
   padding-right: calc(1.072rem + 0.714rem + 24px); }
 
 html:not([dir="rtl"]) .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-navigationlist-group-item) .oj-navigationlist-item-content {
@@ -3594,21 +3589,24 @@ html[dir="rtl"] .oj-navigationlist-group-item {
   overflow: hidden; }
 
 /* Collapse or expand icon color should not change on hover*/
-a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon:hover,
-a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple:hover,
+a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon:hover, a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple:hover,
 a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon,
 a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple,
 a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon:hover,
 a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple:hover,
-a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon, a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple {
+a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon,
+a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple {
   color: #878c90; }
-  .oj-contrast-marker a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon:hover,
-  .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple:hover,
-  .oj-contrast-marker a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon,
+  .oj-contrast-marker a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon:hover, .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple:hover,
+  .oj-contrast-marker
+  a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon,
   .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon.oj-popup-tail.oj-popup-tail-simple,
-  .oj-contrast-marker a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon:hover,
+  .oj-contrast-marker
+  a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon:hover,
   .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple:hover,
-  .oj-contrast-marker a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon, .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple {
+  .oj-contrast-marker
+  a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon,
+  .oj-contrast-marker a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-popup-tail-simple {
     color: #c0c4c8; }
 
 .oj-navigationlist-collapse-icon:focus,
@@ -3620,8 +3618,8 @@ a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon, a
 .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
 .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
   background-color: transparent; }
-  .oj-contrast-marker .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
-  .oj-contrast-marker .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
+  .oj-contrast-marker .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected, .oj-contrast-marker
+  .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
     background-color: transparent; }
 
 .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
@@ -3880,31 +3878,31 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
   border-radius: 0;
   border-width: 0 0 3px 0; }
-  html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item,
-  html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+  html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item, html:not([dir="rtl"])
+  .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
     border-right-width: 0;
     border-left-width: 0; }
-  html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item,
-  html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+  html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item, html[dir="rtl"]
+  .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
     border-left-width: 0;
     border-right-width: 0; }
 
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type,
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
+html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html:not([dir="rtl"])
+.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
   border-left-width: 0;
   border-radius: 0 0 0 0; }
 
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type,
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
+html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html[dir="rtl"]
+.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
   border-right-width: 0;
   border-radius: 0 0 0 0; }
 
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type,
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
+html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html:not([dir="rtl"])
+.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
   border-radius: 0 0 0 0; }
 
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type,
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
+html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html[dir="rtl"]
+.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
   border-radius: 0 0 0 0; }
 
 .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
@@ -4111,8 +4109,8 @@ html:not([dir="ltr"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
 .oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon,
 .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
   color: #ffffff; }
-  .oj-contrast-marker .oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon,
-  .oj-contrast-marker .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+  .oj-contrast-marker .oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon, .oj-contrast-marker
+  .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
     color: #fafafa; }
 
 .oj-menu-item-icon.oj-navigationlist-level-indicator {
@@ -5094,47 +5092,47 @@ html[dir="rtl"] .oj-progressbar-end-label {
   font-size: 1.143rem; }
 
 /* .oj-buttonset-first is applied to the first button of the buttonset. */
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first,
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
+html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first, html:not([dir="rtl"])
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px; }
 
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first,
-html[dir="rtl"] .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
+html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first, html[dir="rtl"]
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
   border-right-width: 1px;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px; }
 
-html.oj-slow-borderradius .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first,
-html.oj-slow-borderradius .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
+html.oj-slow-borderradius .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-first, html.oj-slow-borderradius
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-first {
   border-radius: 0; }
 
 /* .oj-buttonset-last is applied to the last button of the buttonset. */
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last,
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
+html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last, html:not([dir="rtl"])
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
   border-right-width: 1px;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px; }
 
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last,
-html[dir="rtl"] .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
+html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last, html[dir="rtl"]
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px; }
 
-html.oj-slow-borderradius .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last,
-html.oj-slow-borderradius .oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
+html.oj-slow-borderradius .oj-buttonset-multi.oj-button-full-chrome .oj-buttonset-last, html.oj-slow-borderradius
+.oj-buttonset-multi.oj-button-outlined-chrome .oj-buttonset-last {
   border-radius: 0; }
 
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-default,
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only,
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-hover,
-html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
+html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-default, html:not([dir="rtl"])
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-focus-only, html:not([dir="rtl"])
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-hover, html:not([dir="rtl"])
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-disabled {
   border-left-color: #c4ced7; }
 
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-default,
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only,
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-hover,
-html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
+html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-default, html[dir="rtl"]
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-focus-only, html[dir="rtl"]
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-hover, html[dir="rtl"]
+.oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-last).oj-disabled {
   border-left-color: #c4ced7; }
 
 html:not([dir="rtl"]) .oj-buttonset-multi.oj-button-full-chrome .oj-button:not(.oj-buttonset-first).oj-active {
@@ -5741,11 +5739,11 @@ html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
   position: absolute;
   margin-top: -2px;
   text-decoration: none; }
-  html:not([dir="rtl"]) .oj-table-column-header-asc-icon,
-  html:not([dir="rtl"]) .oj-table-column-header-dsc-icon {
+  html:not([dir="rtl"]) .oj-table-column-header-asc-icon, html:not([dir="rtl"])
+  .oj-table-column-header-dsc-icon {
     left: 0; }
-  html[dir="rtl"] .oj-table-column-header-asc-icon,
-  html[dir="rtl"] .oj-table-column-header-dsc-icon {
+  html[dir="rtl"] .oj-table-column-header-asc-icon, html[dir="rtl"]
+  .oj-table-column-header-dsc-icon {
     right: 0; }
 
 /* Styling for the column header sort icons in hover state. */
@@ -5817,8 +5815,8 @@ html[dir="rtl"] .oj-table-grid-display .oj-table-column-header {
   right: 0;
   top: 0;
   bottom: 0; }
-  html.oj-slow-borderradius .oj-table-body-row-touch-selection-affordance-top-icon,
-  html.oj-slow-borderradius .oj-table-body-row-touch-selection-affordance-bottom-icon {
+  html.oj-slow-borderradius .oj-table-body-row-touch-selection-affordance-top-icon, html.oj-slow-borderradius
+  .oj-table-body-row-touch-selection-affordance-bottom-icon {
     border-radius: 0; }
 
 /* Styling for the selection affordance touchable area on touch devices*/
@@ -6449,28 +6447,28 @@ html.oj-slow-cssgradients .oj-hover .oj-datagrid-sort-icon-container {
   background-color: #d6d7d8; }
 
 /* Styling for the gradient for sort icons on hover in an focused header */
-html:not([dir="rtl"]) .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container,
-html:not([dir="rtl"]) .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
+html:not([dir="rtl"]) .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container, html:not([dir="rtl"])
+.oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
   background-image: -webkit-linear-gradient(left, rgba(218, 233, 245, 0), #dae9f5 40%);
   background-image: linear-gradient(to right, rgba(218, 233, 245, 0), #dae9f5 40%); }
 
-html[dir="rtl"] .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container,
-html[dir="rtl"] .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
+html[dir="rtl"] .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container, html[dir="rtl"]
+.oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
   background-image: -webkit-linear-gradient(right, rgba(218, 233, 245, 0), #dae9f5 40%);
   background-image: linear-gradient(to left, rgba(218, 233, 245, 0), #dae9f5 40%); }
 
-html.oj-slow-cssgradients .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container,
-html.oj-slow-cssgradients .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
+html.oj-slow-cssgradients .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container, html.oj-slow-cssgradients
+.oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
   background-image: none;
   background-color: #dae9f5; }
 
 /* Styling for both the sort icons and click area */
-html:not([dir="rtl"]) .oj-datagrid-sort-ascending-icon,
-html:not([dir="rtl"]) .oj-datagrid-sort-descending-icon {
+html:not([dir="rtl"]) .oj-datagrid-sort-ascending-icon, html:not([dir="rtl"])
+.oj-datagrid-sort-descending-icon {
   float: right; }
 
-html[dir="rtl"] .oj-datagrid-sort-ascending-icon,
-html[dir="rtl"] .oj-datagrid-sort-descending-icon {
+html[dir="rtl"] .oj-datagrid-sort-ascending-icon, html[dir="rtl"]
+.oj-datagrid-sort-descending-icon {
   float: left; }
 
 /* Styling for disabled sort icons */
@@ -6528,8 +6526,8 @@ html[dir="rtl"] .oj-datagrid-sort-descending-icon {
   right: 0;
   top: 0;
   bottom: 0; }
-  html.oj-slow-borderradius .oj-datagrid-touch-selection-affordance-top,
-  html.oj-slow-borderradius .oj-datagrid-touch-selection-affordance-bottom {
+  html.oj-slow-borderradius .oj-datagrid-touch-selection-affordance-top, html.oj-slow-borderradius
+  .oj-datagrid-touch-selection-affordance-bottom {
     border-radius: 0; }
 
 /* Styling for the selection affordance touchable area on touch devices*/
@@ -7737,15 +7735,15 @@ html[dir="rtl"] .oj-treemap-restore-icon.oj-active {
 .oj-label-required-icon,
 .oj-label-help-icon {
   float: right; }
-  html[dir="rtl"] .oj-label-required-icon,
-  html[dir="rtl"] .oj-label-help-icon {
+  html[dir="rtl"] .oj-label-required-icon, html[dir="rtl"]
+  .oj-label-help-icon {
     float: left; }
-  html:not([dir="rtl"]) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-label-help-icon {
     margin-left: 6px;
     margin-right: 0; }
-  html[dir="rtl"] .oj-label-required-icon,
-  html[dir="rtl"] .oj-label-help-icon {
+  html[dir="rtl"] .oj-label-required-icon, html[dir="rtl"]
+  .oj-label-help-icon {
     margin-right: 6px;
     margin-left: 0; }
 
@@ -7797,15 +7795,15 @@ html[dir="rtl"] .oj-treemap-restore-icon.oj-active {
 .oj-label-inline .oj-label-required-icon,
 .oj-label-inline .oj-label-help-icon {
   float: left; }
-  html[dir="rtl"] .oj-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-label-inline .oj-label-help-icon {
+  html[dir="rtl"] .oj-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-label-inline .oj-label-help-icon {
     float: right; }
-  html:not([dir="rtl"]) .oj-label-inline .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-label-inline .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-label-inline .oj-label-help-icon {
     margin-right: 6px;
     margin-left: 0; }
-  html[dir="rtl"] .oj-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-label-inline .oj-label-help-icon {
+  html[dir="rtl"] .oj-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-label-inline .oj-label-help-icon {
     margin-left: 6px;
     margin-right: 0; }
 
@@ -7886,19 +7884,19 @@ html .oj-form-control {
   font-family: inherit;
   font-weight: normal;
   width: 100%; }
-  html[dir="rtl"] .oj-inputtext-input,
-  html[dir="rtl"] .oj-inputpassword-input,
-  html[dir="rtl"] .oj-textarea-input,
-  html[dir="rtl"] .oj-inputtext-nocomp,
-  html[dir="rtl"] .oj-inputpassword-nocomp,
-  html[dir="rtl"] .oj-textarea-nocomp {
+  html[dir="rtl"] .oj-inputtext-input, html[dir="rtl"]
+  .oj-inputpassword-input, html[dir="rtl"]
+  .oj-textarea-input, html[dir="rtl"]
+  .oj-inputtext-nocomp, html[dir="rtl"]
+  .oj-inputpassword-nocomp, html[dir="rtl"]
+  .oj-textarea-nocomp {
     text-align: right; }
-  html.oj-slow-borderradius .oj-inputtext-input,
-  html.oj-slow-borderradius .oj-inputpassword-input,
-  html.oj-slow-borderradius .oj-textarea-input,
-  html.oj-slow-borderradius .oj-inputtext-nocomp,
-  html.oj-slow-borderradius .oj-inputpassword-nocomp,
-  html.oj-slow-borderradius .oj-textarea-nocomp {
+  html.oj-slow-borderradius .oj-inputtext-input, html.oj-slow-borderradius
+  .oj-inputpassword-input, html.oj-slow-borderradius
+  .oj-textarea-input, html.oj-slow-borderradius
+  .oj-inputtext-nocomp, html.oj-slow-borderradius
+  .oj-inputpassword-nocomp, html.oj-slow-borderradius
+  .oj-textarea-nocomp {
     border-radius: 0; }
   .oj-inputtext-input::-webkit-input-placeholder,
   .oj-inputpassword-input::-webkit-input-placeholder,
@@ -8446,7 +8444,10 @@ html[dir="rtl"] .oj-listbox-no-results {
 .oj-listbox-highlighter {
   font-weight: bold; }
 
-.oj-inputdatetime, .oj-inputdatetime-date-time, .oj-inputdatetime-date-only, .oj-inputdatetime-time-only {
+.oj-inputdatetime,
+.oj-inputdatetime-date-time,
+.oj-inputdatetime-date-only,
+.oj-inputdatetime-time-only {
   /* use a width of 100% and then max and min width so that when 
          there's less room for the form control it can automatically 
          get smaller instead of overflowing its boundaries */
@@ -8548,20 +8549,20 @@ html[dir="rtl"] .oj-listbox-no-results {
 .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger {
   border-color: #dd6666; }
 
-html:not([dir="rtl"]) .oj-inputdatetime.oj-invalid .oj-inputdatetime-input,
-html:not([dir="rtl"]) .oj-inputdatetime.oj-warning .oj-inputdatetime-input {
+html:not([dir="rtl"]) .oj-inputdatetime.oj-invalid .oj-inputdatetime-input, html:not([dir="rtl"])
+.oj-inputdatetime.oj-warning .oj-inputdatetime-input {
   border-width: 2px 0 2px 2px; }
 
-html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input,
-html[dir="rtl"] .oj-inputdatetime.oj-warning .oj-inputdatetime-input {
+html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input, html[dir="rtl"]
+.oj-inputdatetime.oj-warning .oj-inputdatetime-input {
   border-width: 2px 2px 2px 0; }
 
-html:not([dir="rtl"]) .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger,
-html:not([dir="rtl"]) .oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
+html:not([dir="rtl"]) .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger, html:not([dir="rtl"])
+.oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
   border-width: 2px 2px 2px 0; }
 
-html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger,
-html[dir="rtl"] .oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
+html[dir="rtl"] .oj-inputdatetime.oj-invalid .oj-inputdatetime-input-trigger, html[dir="rtl"]
+.oj-inputdatetime.oj-warning .oj-inputdatetime-input-trigger {
   border-width: 2px 0 2px 2px; }
 
 .oj-inputdatetime.oj-disabled .oj-inputdatetime-input {
@@ -8669,7 +8670,7 @@ html[dir="rtl"] .oj-datepicker-next-icon {
   font-weight: bold; }
 
 .oj-datepicker-calendar th {
-  padding: 0.7em 0.3em;
+  padding: .7em .3em;
   text-transform: uppercase;
   font-size: 0.857rem;
   color: #737373; }
@@ -8740,7 +8741,7 @@ td.oj-datepicker-today {
 
 .oj-datepicker-multi .oj-datepicker-group .oj-datepicker-calendar {
   width: 95%;
-  margin: 0 auto 0.4em; }
+  margin: 0 auto .4em; }
 
 .oj-datepicker-multi-2 .oj-datepicker-group {
   width: 50%; }
@@ -8751,12 +8752,12 @@ td.oj-datepicker-today {
 .oj-datepicker-multi-4 .oj-datepicker-group {
   width: 25%; }
 
-html:not([dir="rtl"]) .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header,
-html:not([dir="rtl"]) .oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
+html:not([dir="rtl"]) .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header, html:not([dir="rtl"])
+.oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
   border-left-width: 0; }
 
-html[dir="rtl"] .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header,
-html[dir="rtl"] .oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
+html[dir="rtl"] .oj-datepicker-multi .oj-datepicker-group-last .oj-datepicker-header, html[dir="rtl"]
+.oj-datepicker-multi .oj-datepicker-group-middle .oj-datepicker-header {
   border-right-width: 0; }
 
 .oj-datepicker-multi .oj-datepicker-buttonpane {
@@ -8892,15 +8893,15 @@ td.oj-datepicker-week-col {
 .oj-choice-row:last-child {
   margin-bottom: 0; }
 
-html:not([dir="rtl"]) .oj-radio,
-html:not([dir="rtl"]) .oj-checkbox,
-html:not([dir="rtl"]) .oj-checkbox-nocomp {
+html:not([dir="rtl"]) .oj-radio, html:not([dir="rtl"])
+.oj-checkbox, html:not([dir="rtl"])
+.oj-checkbox-nocomp {
   margin-left: 2px;
   margin-right: .74rem; }
 
-html[dir="rtl"] .oj-radio,
-html[dir="rtl"] .oj-checkbox,
-html[dir="rtl"] .oj-checkbox-nocomp {
+html[dir="rtl"] .oj-radio, html[dir="rtl"]
+.oj-checkbox, html[dir="rtl"]
+.oj-checkbox-nocomp {
   margin-right: 2px;
   margin-left: .74rem; }
 
@@ -8913,14 +8914,14 @@ html[dir="rtl"] .oj-checkbox-nocomp {
   margin-top: 1px;
   margin-bottom: 0; }
 
-html:not([dir="rtl"]) .oj-radio-label,
-html:not([dir="rtl"]) .oj-checkbox-label,
-html:not([dir="rtl"]) .oj-checkbox-label-nocomp {
+html:not([dir="rtl"]) .oj-radio-label, html:not([dir="rtl"])
+.oj-checkbox-label, html:not([dir="rtl"])
+.oj-checkbox-label-nocomp {
   margin-right: 1.5em; }
 
-html[dir="rtl"] .oj-radio-label,
-html[dir="rtl"] .oj-checkbox-label,
-html[dir="rtl"] .oj-checkbox-label-nocomp {
+html[dir="rtl"] .oj-radio-label, html[dir="rtl"]
+.oj-checkbox-label, html[dir="rtl"]
+.oj-checkbox-label-nocomp {
   margin-left: 1.5em; }
 
 /* Invalid styling for the radioset */
@@ -9846,11 +9847,11 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
   box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.9);
   background-color: #fcfdfe;
   border-color: #b2bcc4; }
-  html.oj-slow-borderradius .oj-switch .oj-switch-thumb,
-  html.oj-slow-borderradius .oj-switch.oj-default .oj-switch-thumb {
+  html.oj-slow-borderradius .oj-switch .oj-switch-thumb, html.oj-slow-borderradius
+  .oj-switch.oj-default .oj-switch-thumb {
     border-radius: 0; }
-  html.oj-slow-boxshadow .oj-switch .oj-switch-thumb,
-  html.oj-slow-boxshadow .oj-switch.oj-default .oj-switch-thumb {
+  html.oj-slow-boxshadow .oj-switch .oj-switch-thumb, html.oj-slow-boxshadow
+  .oj-switch.oj-default .oj-switch-thumb {
     box-shadow: none; }
 
 .oj-switch.oj-selected .oj-switch-track {
@@ -9930,8 +9931,8 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
   box-shadow: none;
   background-color: #fcfdfe;
   border-color: #b2bcc4; }
-  html.oj-slow-borderradius .oj-switch.oj-active .oj-switch-thumb,
-  html.oj-slow-borderradius .oj-switch.oj-hover.oj-active .oj-switch-thumb .oj-switch-thumb {
+  html.oj-slow-borderradius .oj-switch.oj-active .oj-switch-thumb, html.oj-slow-borderradius
+  .oj-switch.oj-hover.oj-active .oj-switch-thumb .oj-switch-thumb {
     border-radius: 0; }
 
 .oj-switch.oj-selected.oj-active .oj-switch-track,
@@ -9952,8 +9953,8 @@ html[dir="rtl"] .oj-switch.oj-selected .oj-switch-thumb {
   box-shadow: none;
   background-color: #ffffff;
   border-color: #ffffff; }
-  html.oj-slow-borderradius .oj-switch.oj-selected.oj-active .oj-switch-thumb,
-  html.oj-slow-borderradius .oj-switch.oj-selected.oj-hover.oj-active .oj-switch-thumb .oj-switch-thumb {
+  html.oj-slow-borderradius .oj-switch.oj-selected.oj-active .oj-switch-thumb, html.oj-slow-borderradius
+  .oj-switch.oj-selected.oj-hover.oj-active .oj-switch-thumb .oj-switch-thumb {
     border-radius: 0; }
 
 .oj-switch.oj-read-only .oj-switch-track {
@@ -10273,7 +10274,8 @@ html[dir="rtl"] .oj-slider-horizontal .oj-slider-range-max {
 .oj-flex-bar-start,
 .oj-flex-bar-middle,
 .oj-flex-bar-end,
-.oj-flex-bar-center-absolute, .oj-hybrid-applayout-bar-title {
+.oj-flex-bar-center-absolute,
+.oj-hybrid-applayout-bar-title {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   display: -webkit-flex;
@@ -11787,9 +11789,9 @@ html[dir="rtl"] .oj-flex-bar-end {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-sm-label-inline,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-sm-label-inline, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
     padding-left: 0.5em; }
@@ -11809,16 +11811,16 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-label-inline.oj-label label,
   .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-sm-label-inline .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-sm-label-inline .oj-label-help-icon,
-  html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-sm-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-sm-label-inline .oj-label-help-icon, html:not([dir="rtl"])
+  .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-sm-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-sm-label-inline .oj-label-help-icon,
-  html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-sm-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-sm-label-inline .oj-label-help-icon, html[dir="rtl"]
+  .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-sm-label-inline .oj-label-help-icon-anchor,
@@ -11832,13 +11834,13 @@ html[dir="rtl"] .oj-flex-bar-end {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-sm-label-inline.oj-label,
-    html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-sm-label-inline.oj-label, html:not([dir="rtl"])
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html:not([dir="rtl"])
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-sm-label-inline.oj-label,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html[dir="rtl"] .oj-sm-label-inline.oj-label, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-sm-label-inline.oj-label-inline-top,
   .oj-sm-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
@@ -11885,9 +11887,9 @@ html[dir="rtl"] .oj-flex-bar-end {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-inline,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-inline, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
     padding-left: 0.5em; }
@@ -11907,16 +11909,16 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-label-inline.oj-label label,
   .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-md-label-inline .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-md-label-inline .oj-label-help-icon,
-  html:not([dir="rtl"]) .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-md-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-md-label-inline .oj-label-help-icon, html:not([dir="rtl"])
+  .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-md-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-md-label-inline .oj-label-help-icon,
-  html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-md-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-md-label-inline .oj-label-help-icon, html[dir="rtl"]
+  .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-md-label-inline .oj-label-help-icon-anchor,
@@ -11930,13 +11932,13 @@ html[dir="rtl"] .oj-flex-bar-end {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-md-label-inline.oj-label,
-    html:not([dir="rtl"]) .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html:not([dir="rtl"]) .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-md-label-inline.oj-label, html:not([dir="rtl"])
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html:not([dir="rtl"])
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-md-label-inline.oj-label,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html[dir="rtl"] .oj-md-label-inline.oj-label, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-md-label-inline.oj-label-inline-top,
   .oj-md-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
@@ -11983,9 +11985,9 @@ html[dir="rtl"] .oj-flex-bar-end {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-inline,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-inline, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
     padding-left: 0.5em; }
@@ -12005,16 +12007,16 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-lg-label-inline.oj-label label,
   .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-lg-label-inline .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-lg-label-inline .oj-label-help-icon,
-  html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-lg-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-lg-label-inline .oj-label-help-icon, html:not([dir="rtl"])
+  .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-lg-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-lg-label-inline .oj-label-help-icon,
-  html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-lg-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-lg-label-inline .oj-label-help-icon, html[dir="rtl"]
+  .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-lg-label-inline .oj-label-help-icon-anchor,
@@ -12028,13 +12030,13 @@ html[dir="rtl"] .oj-flex-bar-end {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-lg-label-inline.oj-label,
-    html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-lg-label-inline.oj-label, html:not([dir="rtl"])
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html:not([dir="rtl"])
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-lg-label-inline.oj-label,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html[dir="rtl"] .oj-lg-label-inline.oj-label, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-lg-label-inline.oj-label-inline-top,
   .oj-lg-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
@@ -12081,9 +12083,9 @@ html[dir="rtl"] .oj-flex-bar-end {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-inline,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-inline, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
     padding-left: 0.5em; }
@@ -12103,16 +12105,16 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-xl-label-inline.oj-label label,
   .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-xl-label-inline .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-xl-label-inline .oj-label-help-icon,
-  html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-xl-label-inline .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-xl-label-inline .oj-label-help-icon, html:not([dir="rtl"])
+  .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-xl-label-inline .oj-label-required-icon,
-  html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-xl-label-inline .oj-label-help-icon,
-  html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-xl-label-inline .oj-label-required-icon, html[dir="rtl"]
+  .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-xl-label-inline .oj-label-help-icon, html[dir="rtl"]
+  .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-xl-label-inline .oj-label-help-icon-anchor,
@@ -12126,13 +12128,13 @@ html[dir="rtl"] .oj-flex-bar-end {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-xl-label-inline.oj-label,
-    html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-xl-label-inline.oj-label, html:not([dir="rtl"])
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html:not([dir="rtl"])
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-xl-label-inline.oj-label,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
+    html[dir="rtl"] .oj-xl-label-inline.oj-label, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-xl-label-inline.oj-label-inline-top,
   .oj-xl-labels-inline > .oj-flex > .oj-flex-item > .oj-label-inline-top,
@@ -12252,23 +12254,22 @@ html[dir="rtl"] .oj-hybrid-padding-end, html[dir="rtl"] .oj-hybrid-applayout-hea
   background-color: #313334;
   color: #ffffff; }
 
-.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
-.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header-no-border,
+.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header, .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header-no-border,
 .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
   background-color: #313334; }
 
-.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
-.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header-no-border,
+.oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header, .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header-no-border,
 .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
   border-style: none; }
 
 .oj-hybrid-applayout-page {
   position: fixed; }
 
-.oj-hybrid-applayout-header,
-.oj-hybrid-applayout-header-no-border,
+.oj-hybrid-applayout-header, .oj-hybrid-applayout-header-no-border,
 .oj-hybrid-applayout-footer,
-.oj-hybrid-applayout-navbar, .oj-hybrid-applayout-navbar-fixed-top, .oj-hybrid-applayout-navbar-fixed-bottom {
+.oj-hybrid-applayout-navbar,
+.oj-hybrid-applayout-navbar-fixed-top,
+.oj-hybrid-applayout-navbar-fixed-bottom {
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto; }
 
@@ -12433,12 +12434,12 @@ html:not([dir="rtl"]) .oj-web-applayout-header .oj-flex-bar-start .oj-button.oj-
 html[dir="rtl"] .oj-web-applayout-header .oj-flex-bar-start .oj-button.oj-button-lg:first-child {
   margin-right: -0.857rem; }
 
-html:not([dir="rtl"]) .oj-web-applayout-header .oj-flex-bar-end .oj-button:last-child,
-html:not([dir="rtl"]) .oj-web-applayout-header .oj-flex-bar-end .oj-toolbar:last-child {
+html:not([dir="rtl"]) .oj-web-applayout-header .oj-flex-bar-end .oj-button:last-child, html:not([dir="rtl"])
+.oj-web-applayout-header .oj-flex-bar-end .oj-toolbar:last-child {
   margin-right: -0.5rem; }
 
-html[dir="rtl"] .oj-web-applayout-header .oj-flex-bar-end .oj-button:last-child,
-html[dir="rtl"] .oj-web-applayout-header .oj-flex-bar-end .oj-toolbar:last-child {
+html[dir="rtl"] .oj-web-applayout-header .oj-flex-bar-end .oj-button:last-child, html[dir="rtl"]
+.oj-web-applayout-header .oj-flex-bar-end .oj-toolbar:last-child {
   margin-left: -0.5rem; }
 
 .oj-web-applayout-header-title {
@@ -13028,9 +13029,9 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-sm-label-inline,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-sm-label-inline, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon {
     margin-top: 1px; }
@@ -13038,12 +13039,12 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
   .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon,
   .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-sm-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon-anchor {
@@ -13055,11 +13056,11 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label,
-    html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label, html:not([dir="rtl"])
+    .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label,
-    html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html[dir="rtl"] .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label, html[dir="rtl"]
+    .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-inline-top,
   .oj-sm-labels-inline > .oj-row > .oj-col > .oj-label-nocomp.oj-label-for-non-control {
@@ -13098,9 +13099,9 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-md-label-inline,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-md-label-inline, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon {
     margin-top: 1px; }
@@ -13108,12 +13109,12 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
   .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon,
   .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-md-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon-anchor {
@@ -13125,11 +13126,11 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col > .oj-label,
-    html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-md-labels-inline > .oj-row > .oj-col > .oj-label, html:not([dir="rtl"])
+    .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col > .oj-label,
-    html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html[dir="rtl"] .oj-md-labels-inline > .oj-row > .oj-col > .oj-label, html[dir="rtl"]
+    .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-inline-top,
   .oj-md-labels-inline > .oj-row > .oj-col > .oj-label-nocomp.oj-label-for-non-control {
@@ -13168,9 +13169,9 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-lg-label-inline,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-lg-label-inline, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon {
     margin-top: 1px; }
@@ -13178,12 +13179,12 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
   .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon,
   .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-lg-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon-anchor {
@@ -13195,11 +13196,11 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label,
-    html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label, html:not([dir="rtl"])
+    .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label,
-    html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html[dir="rtl"] .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label, html[dir="rtl"]
+    .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-inline-top,
   .oj-lg-labels-inline > .oj-row > .oj-col > .oj-label-nocomp.oj-label-for-non-control {
@@ -13238,9 +13239,9 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: right; }
-    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-xl-label-inline,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
+    html[dir="rtl"] .oj-form > .oj-row > .oj-col:nth-child(odd) > .oj-xl-label-inline, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) > .oj-label-nocomp {
       text-align: left; }
   .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon {
     margin-top: 1px; }
@@ -13248,12 +13249,12 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
   .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon,
   .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) label {
     float: none; }
-  html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html:not([dir="rtl"])
+  .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-left: 0;
     margin-right: 6px; }
-  html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon,
-  html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
+  html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-required-icon, html[dir="rtl"]
+  .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon {
     margin-right: 0;
     margin-left: 6px; }
   .oj-xl-labels-inline > .oj-row > .oj-col:nth-child(odd) .oj-label-help-icon-anchor {
@@ -13265,11 +13266,11 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
     margin-top: 0.4em;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-    html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label,
-    html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html:not([dir="rtl"]) .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label, html:not([dir="rtl"])
+    .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-right: 0.5em; }
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label,
-    html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
+    html[dir="rtl"] .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label, html[dir="rtl"]
+    .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-nocomp {
       padding-left: 0.5em; }
   .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-inline-top,
   .oj-xl-labels-inline > .oj-row > .oj-col > .oj-label-nocomp.oj-label-for-non-control {

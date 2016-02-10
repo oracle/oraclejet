@@ -394,7 +394,6 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
   var self = this;
   this._isPaged =  options['pageSize'] > 0 ? true : false;
   this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
-  this._initFetch = true;
   this._pageSize = options['pageSize'] > 0 ? options['pageSize'] : -1;
   options['pageSize'] = this._pageSize;
   options['startIndex'] = this._startIndex;
@@ -402,9 +401,19 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
 
   return new Promise(function (resolve, reject)
   {
-    if (self._isPaged)
+    var pageSize = self._pageSize;
+    
+    if (!self._isPaged)
     {
-      self._collection.setRangeLocal(self._startIndex, self._pageSize).then(function(actual) 
+      // set an arbitrary page size for setRangeLocal. When non-virtual, will fetch everything anyway.
+      pageSize = 25;
+    }
+    
+    self._collection.setRangeLocal(self._startIndex, pageSize).then(function(actual) 
+      {
+        var result;
+        
+        if (self._isPaged)
         {
           var rowArray = [];
           var keyArray = [];
@@ -414,7 +423,7 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
             rowArray[i] = actual['models'][i]['attributes'];
             keyArray[i] = actual['models'][i]['id'];
           }
-          var result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
+          result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
           
           if (actual['models'].length < self._pageSize)
           {
@@ -429,43 +438,20 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
           {
             self._fetchResultSize = null;
           }
-          
-          self._endFetch.call(self, options, result, null);
-          resolve(result);
-        },
-        function(error) 
+        }
+        else
         {
-          self._endFetch.call(self, options, null, error);
-          reject(error);
-        });
-    }
-    else
-    {
-      if (self._collection.size() > 0)
+          result = self._getRowArray();
+        }
+
+        self._endFetch.call(self, options, result, null);
+        resolve(result);
+      },
+      function(error) 
       {
-         var result = self._getRowArray();
-         self._endFetch.call(self, options, result, null);
-         resolve(result);
-      }
-      else
-      {
-        self._collection.fetch({
-          'success': function(collection, response, opts) 
-          {
-            self._collection = collection;
-            var result = self._getRowArray();
-            self._endFetch.call(self, options, result, null);
-            resolve(result);
-          },
-          'error': function(collection, e, opts) 
-          {
-            self._collection = collection;
-            self._endFetch.call(self, options, null, e);
-            reject(e);
-          }
-        });
-      }
-    }
+        self._endFetch.call(self, options, null, error);
+        reject(error);
+      });
   });
 };
 

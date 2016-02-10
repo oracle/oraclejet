@@ -4105,6 +4105,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           var self = this;
           this._queueTask(function()
           {
+            if (self._isLoadMoreOnScroll())
+            {
+              return self._invokeDataFetchRows(0, null);
+            }
             return self._invokeDataFetchRows(null);
           }).then(function()
           {
