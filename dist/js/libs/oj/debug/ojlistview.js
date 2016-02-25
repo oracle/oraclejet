@@ -338,12 +338,18 @@ oj.DataSourceContentHandler.prototype.isSelectable = function(context)
 
 oj.DataSourceContentHandler.prototype.signalTaskStart = function()
 {
-    this.m_widget.signalTaskStart();
+    if (this.m_widget) // check that widget exists (e.g. not destroyed)
+    {
+        this.m_widget.signalTaskStart();
+    }
 };
 
 oj.DataSourceContentHandler.prototype.signalTaskEnd = function()
 {
-    this.m_widget.signalTaskEnd();
+    if (this.m_widget) // check that widget exists (e.g. not destroyed)
+    {
+        this.m_widget.signalTaskEnd();
+    }
 };
 /**
  * Handler for TableDataSource generated content
@@ -726,7 +732,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
                              { 
                                  self._handleFetchedData(value); 
                                  // initial fetch we'll append the loading indicator at the end (for highwatermark scrolling)
-                                 if (self._isLoadMoreOnScroll())
+                                 if (self._isLoadMoreOnScroll() && value != null && value['keys'] && value['keys'].length > 0)
                                  {
                                      self._appendLoadingIndicator();
                                  }

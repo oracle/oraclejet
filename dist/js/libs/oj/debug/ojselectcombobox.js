@@ -2599,7 +2599,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
               this.search.focus();
 
             this.container.addClass("oj-active");
-            _ComboUtils.killEvent(e);
           }
           ));
         

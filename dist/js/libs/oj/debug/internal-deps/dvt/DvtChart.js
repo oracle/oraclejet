@@ -7638,7 +7638,7 @@ DvtDataCursor.prototype.getBehavior = function() {
 DvtDataCursor.prototype.setBehavior = function(behavior) {
   this._behavior = behavior;
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a funnel shape.
   *  @extends {DvtPath}
@@ -7710,19 +7710,37 @@ DvtFunnelSlice.prototype.Init = function(chart, seriesIndex, numDrawnSeries, fun
 
 /** The ratio of rx/ry in the 3D funnel opening
  * @private */
-DvtFunnelSlice._FUNNEL_3D_WIDTH_RATIO = .12;
+DvtFunnelSlice._FUNNEL_3D_WIDTH_RATIO = .08;
 /** Angle for creating the funnel sides
  * @private */
-DvtFunnelSlice._FUNNEL_ANGLE_2D = 31;
+DvtFunnelSlice._FUNNEL_ANGLE_2D = 36;
 /** Ratio between the smallest and largest slices
  * @private */
-DvtFunnelSlice._FUNNEL_RATIO = 6 / 22;
+DvtFunnelSlice._FUNNEL_RATIO = 1 / 3;
 /** Color for funnel slice border. Could be overridden in styleDefaults.
  * @private */
 DvtFunnelSlice._BORDER_COLOR = '#FFFFFF';
 /** Minimum number of characters to use when truncating.
  * @private */
 DvtFunnelSlice._MIN_CHARS_DATA_LABEL = 3;
+/** Length of the first line.
+ * @private */
+DvtFunnelSlice._LINE_FRACTION = 2 / 3;
+/** Fraction into which the funnel area is divided by the first line.
+ * @private */
+DvtFunnelSlice._AREA_FRACTION = 0.41;
+/** Fraction into which the funnel height is divided by the first line.
+ * @private */
+DvtFunnelSlice._HEIGHT_FRACTION = 0.28;
+/** Length of the second line.
+ * @private */
+DvtFunnelSlice._LINE_FRACTION_2 = 0.4;
+/** Fraction into which the funnel area is divided by the second line.
+ * @private */
+DvtFunnelSlice._AREA_FRACTION_2 = 0.8;
+/** Fraction into which the funnel height is divided by the second line.
+ * @private */
+DvtFunnelSlice._HEIGHT_FRACTION_2 = 0.7;
 
 
 /**
@@ -7736,23 +7754,91 @@ DvtFunnelSlice.prototype._getPath = function() {
   var offset = (this._numDrawnSeries + 1) * this._gap;
   var angle = DvtMath.degreesToRads(DvtFunnelSlice._FUNNEL_ANGLE_2D - 2 * this._3dRatio);
 
-  var rx = (this._funnelWidth - (gapCount * this._gap)) / Math.sin(DvtMath.degreesToRads(DvtFunnelSlice._FUNNEL_ANGLE_2D));
+  var totalWidth = this._funnelWidth - gapCount * this._gap;
+  var rx = totalWidth / Math.sin(DvtMath.degreesToRads(DvtFunnelSlice._FUNNEL_ANGLE_2D));
   var ry = this._funnelHeight / Math.sin(angle);
   var ratio = this._3dRatio * this._funnelWidth / this._funnelHeight * DvtFunnelSlice._FUNNEL_3D_WIDTH_RATIO;
   if (ratio < 0.00001)
     ratio = 0;
-  var delta = angle * (1 - this._startPercent);
-  var gamma = angle * (1 - this._startPercent - this._valuePercent);
+
+  // Dividing the funnel into three trapezoids to come up with a better approximation for the dimensions. We draw two lines,
+  // at .28 and .7 of the height, and they split the area to the ratio .41: .39: .2.
+  var b1 = this._funnelHeight;
+  var b2 = this._funnelHeight * DvtFunnelSlice._FUNNEL_RATIO;
+  var p1, p2; // The percent at which we are calculating the width
+  var b11, b12, b21, b22;  // The first and second base of the trapezoid into which the percent we are looking at falls.
+  var f1, f2; // The fraction of the area included in the trapezoid we are considering.
+  var t1, t2; // Total width of the trapezoid we are considering.
+  var h1, h2; // Horizontal distance from the slice to the center of the ellipse for drawing the funnel arcs.
+
+  // calculating first edge
+  if (this._startPercent < DvtFunnelSlice._AREA_FRACTION) {
+    p1 = this._startPercent;
+    b11 = b1;
+    b21 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION;
+    f1 = DvtFunnelSlice._AREA_FRACTION;
+    t1 = totalWidth * DvtFunnelSlice._HEIGHT_FRACTION;
+    h1 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION);
+  }
+  else if (this._startPercent < DvtFunnelSlice._AREA_FRACTION_2) {
+    p1 = this._startPercent - DvtFunnelSlice._AREA_FRACTION;
+    b11 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION;
+    b21 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION_2;
+    f1 = DvtFunnelSlice._AREA_FRACTION_2 - DvtFunnelSlice._AREA_FRACTION;
+    t1 = totalWidth * (DvtFunnelSlice._HEIGHT_FRACTION_2 - DvtFunnelSlice._HEIGHT_FRACTION);
+    h1 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION_2);
+  }
+  else {
+    p1 = this._startPercent - DvtFunnelSlice._AREA_FRACTION_2;
+    b11 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION_2;
+    b21 = b2;
+    f1 = 1 - DvtFunnelSlice._AREA_FRACTION_2;
+    t1 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION_2);
+    h1 = 0;
+  }
+
+  // Calculating second edge
+  if (this._startPercent + this._valuePercent < DvtFunnelSlice._AREA_FRACTION) {
+    b12 = b1;
+    b22 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION;
+    p2 = this._startPercent + this._valuePercent;
+    f2 = DvtFunnelSlice._AREA_FRACTION;
+    t2 = totalWidth * DvtFunnelSlice._HEIGHT_FRACTION;
+    h2 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION);
+  }
+  else if (this._startPercent + this._valuePercent < DvtFunnelSlice._AREA_FRACTION_2) {
+    b12 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION;
+    b22 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION_2;
+    p2 = this._startPercent + this._valuePercent - DvtFunnelSlice._AREA_FRACTION;
+    f2 = DvtFunnelSlice._AREA_FRACTION_2 - DvtFunnelSlice._AREA_FRACTION;
+    t2 = totalWidth * (DvtFunnelSlice._HEIGHT_FRACTION_2 - DvtFunnelSlice._HEIGHT_FRACTION);
+    h2 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION_2);
+  }
+  else {
+    b12 = this._funnelHeight * DvtFunnelSlice._LINE_FRACTION_2;
+    b22 = b2;
+    p2 = this._startPercent + this._valuePercent - DvtFunnelSlice._AREA_FRACTION_2;
+    f2 = 1 - DvtFunnelSlice._AREA_FRACTION_2;
+    t2 = totalWidth * (1 - DvtFunnelSlice._HEIGHT_FRACTION_2);
+    h2 = 0;
+  }
+
+  var w1 = Math.sqrt((f1 - p1) / f1 * b11 * b11 + p1 / f1 * b21 * b21);
+  var w2 = Math.sqrt((f2 - p2) / f2 * b12 * b12 + p2 / f2 * b22 * b22);
+
+  var startAngle = 0.98 * Math.asin((((w1 - b21) * (t1) / (b11 - b21)) + h1) / rx);
+  var endAngle = 0.98 * Math.asin((((w2 - b22) * (t2) / (b12 - b22)) + h2) / rx);
+
   var c1 = (1 + DvtFunnelSlice._FUNNEL_RATIO) / 2 * this._funnelHeight + ry;
   var c2 = (1 - DvtFunnelSlice._FUNNEL_RATIO) / 2 * this._funnelHeight - ry;
   var ar, arcDir1, arcDir2;
 
   if (isBiDi) {
-    ar = [rx * Math.sin(delta) + offset, c1 - ry * Math.cos(delta), rx * Math.sin(gamma) + offset, c1 - ry * Math.cos(gamma), rx * Math.sin(gamma) + offset, c2 + ry * Math.cos(gamma), rx * Math.sin(delta) + offset, c2 + ry * Math.cos(delta)];
+    ar = [rx * Math.sin(startAngle) + offset, c1 - ry * Math.cos(startAngle), rx * Math.sin(endAngle) + offset, c1 - ry * Math.cos(endAngle), rx * Math.sin(endAngle) + offset, c2 + ry * Math.cos(endAngle), rx * Math.sin(startAngle) + offset, c2 + ry * Math.cos(startAngle)];
     arcDir1 = 0;
     arcDir2 = 1;
   } else {
-    ar = [this._funnelWidth - offset - rx * Math.sin(delta), c1 - ry * Math.cos(delta), this._funnelWidth - offset - rx * Math.sin(gamma), c1 - ry * Math.cos(gamma), this._funnelWidth - offset - rx * Math.sin(gamma), c2 + ry * Math.cos(gamma), this._funnelWidth - offset - rx * Math.sin(delta), c2 + ry * Math.cos(delta)];
+    ar = [this._funnelWidth - offset - rx * Math.sin(startAngle), c1 - ry * Math.cos(startAngle), this._funnelWidth - offset - rx * Math.sin(endAngle), c1 - ry * Math.cos(endAngle), this._funnelWidth - offset - rx * Math.sin(endAngle), c2 + ry * Math.cos(endAngle), this._funnelWidth - offset - rx * Math.sin(startAngle), c2 + ry * Math.cos(startAngle)];
     arcDir1 = 1;
     arcDir2 = 0;
   }
@@ -7815,7 +7901,7 @@ DvtFunnelSlice.prototype._getSliceLabel = function(sliceBounds, barBounds) {
   label.setCSSStyle(style);
 
   // Truncating text and dropping if doesn't fit.
-  if (! DvtTextUtils.fitText(label, sliceBounds.h - 10, sliceBounds.w, this, DvtFunnelSlice._MIN_CHARS_DATA_LABEL))
+  if (! DvtTextUtils.fitText(label, sliceBounds.h - this._3dRatio * (0.8 - this._valuePercent) * 50, sliceBounds.w, this, DvtFunnelSlice._MIN_CHARS_DATA_LABEL))
     return;
 
   var textDim = label.measureDimensions();
