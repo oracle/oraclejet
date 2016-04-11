@@ -332,6 +332,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
       templateFunction({'parentElement':dummyDiv, 'data': context['data']});
       var elem = dummyDiv.children[0];
       if (elem && elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+        dummyDiv.removeChild(elem);
         $(dummyDiv).remove();
         return elem;
       }
@@ -449,7 +450,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtDiagram.newInstance(context, callback, callbackObj);
+    return dvt.Diagram.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -535,18 +536,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
     var ret = this._super();
     ret['DvtUtilBundle.DIAGRAM'] = translations['componentName'];
     return ret;
-  },
-
-  //** @inheritdoc */
-  _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtSelectionEvent.TYPE) {
-      // update the options selection state
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else {
-      this._super(event);
-    }
   },
 
   /**

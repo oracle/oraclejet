@@ -81,7 +81,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *
  * <h4>Animation</h4>
  * <p>Animation should only be enabled for visualizations of small to medium data sets.</p>
- * 
+ *
  * <h4>Data Set Size</h4>
  * <p>As a rule of thumb, it's recommended that applications only set usable data
  *    densities on the timeline. For example, applications should limit the number of
@@ -140,7 +140,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _CreateDvtComponent: function(context, callback, callbackObj)
   {
-    return dvt.DvtTimeline.newInstance(context, callback, callbackObj);
+    return dvt.Timeline.newInstance(context, callback, callbackObj);
   },
 
   /**
@@ -332,18 +332,12 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _HandleEvent: function(event)
   {
-    var type = event && event.getType ? event.getType() : null;
-
-    if (type === dvt.DvtSelectionEvent.TYPE)
+    var type = event['type'];
+    if(type === 'viewportChange')
     {
-      // update the options selection state
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else if(type === dvt.DvtTimelineViewportChangeEvent.TYPE)
-    {
-      var viewportStart = new Date(event.getViewportStart()).toISOString();
-      var viewportEnd = new Date(event.getViewportEnd()).toISOString();
-      var minorAxisScale = event.getMinorAxisScale();
+      var viewportStart = new Date(event['viewportStart']).toISOString();
+      var viewportEnd = new Date(event['viewportEnd']).toISOString();
+      var minorAxisScale = event['minorAxisScale'];
       var viewportChangePayload = {
         'viewportStart': viewportStart,
         'viewportEnd': viewportEnd,
@@ -407,20 +401,20 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
     resources['converterVert'] = converterVert;
   },
 
-  /** 
+  /**
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   * 
+   *
    * @example {@ojinclude "name":"nodeContextExample"}
-   * 
+   *
    * @expose
    * @instance
    * @memberof oj.ojTimeline
    */
   getContextByNode: function(node)
   {
-    // context objects are documented with @ojnodecontext 
+    // context objects are documented with @ojnodecontext
     return this.getSubIdByNode(node);
   },
 

@@ -6,9 +6,7 @@
 define(['./DvtToolkit', './DvtAxis'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
+(function(dvt) {
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -17,12 +15,11 @@ define(['./DvtToolkit', './DvtAxis'], function(dvt) {
  * Abstract Base Class for Gauge component.
  * @class
  * @constructor
- * @extends {DvtBaseComponent}
- * @export
+ * @extends {dvt.BaseComponent}
  */
 var DvtGauge = function() {};
 
-DvtObj.createSubclass(DvtGauge, DvtBaseComponent, 'DvtGauge');
+dvt.Obj.createSubclass(DvtGauge, dvt.BaseComponent);
 
 
 /** @private **/
@@ -47,20 +44,23 @@ DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRender
     this._eventManager.addListeners(this);
 
     // Set up keyboard handler on non-touch devices
-    if (!DvtAgent.isTouchDevice())
+    if (!dvt.Agent.isTouchDevice())
       this._eventManager.setKeyboardHandler(this.CreateKeyboardHandler(this._eventManager));
 
     // Make sure the object has an id for clipRect naming
     this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
     // Create an editing overlay to prevent touch conflicts
-    this._editingOverlay = new DvtRect(context, 0, 0);
+    this._editingOverlay = new dvt.Rect(context, 0, 0);
     this._editingOverlay.setInvisibleFill();
     this.addChild(this._editingOverlay);
   }
 
   /** @private **/
   this._bEditing = false;
+
+  /** @private **/
+  this._bResizeRender = false;
 
   /** @private **/
   this._oldValue = null;
@@ -74,7 +74,7 @@ DvtGauge.prototype.SetOptions = function(options) {
   this.Options = options;
 
   // Disable animation for canvas and xml
-  if (!DvtAgent.isEnvironmentBrowser()) {
+  if (!dvt.Agent.isEnvironmentBrowser()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }
@@ -83,7 +83,6 @@ DvtGauge.prototype.SetOptions = function(options) {
 
 /**
  * @override
- * @export
  */
 DvtGauge.prototype.render = function(options, width, height) 
 {
@@ -101,6 +100,12 @@ DvtGauge.prototype.render = function(options, width, height)
 
   // Update the store width and height if provided
   if (!isNaN(width) && !isNaN(height)) {
+    // Turn off animation if the gauge is being resized
+    if ((this.Width != 0 && this.Width != width) || (this.Height != 0 && this.Height != height))
+      this._bResizeRender = true;
+    else
+      this._bResizeRender = false;
+
     this.Width = width;
     this.Height = height;
   }
@@ -109,7 +114,7 @@ DvtGauge.prototype.render = function(options, width, height)
   this.__shapes = [];
 
   // Render the gauge.  Add the container at index 0 to avoid interfering with the editable overlay.
-  var container = new DvtContainer(this.getCtx());
+  var container = new dvt.Container(this.getCtx());
   this.addChildAt(container, 0);
   this.Render(container, this.Width, this.Height);
 
@@ -132,10 +137,10 @@ DvtGauge.prototype.render = function(options, width, height)
     container.setAriaProperty('valuenow', value);
     var tooltip = DvtGaugeRenderer.getTooltipString(this);
 
-    if (DvtAgent.isTouchDevice()) {
+    if (dvt.Agent.isTouchDevice()) {
       this._container.setAriaProperty('live', 'assertive');
       if (value != tooltip)
-        tooltip = value + DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
+        tooltip = value + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
     }
     if (value != tooltip)
       container.setAriaProperty('label', tooltip);
@@ -151,7 +156,7 @@ DvtGauge.prototype.render = function(options, width, height)
 
   // . To support ADF action attribute
   if (this.Options['_selectingCursor']) {
-    this.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
   this.UpdateAriaAttributes();
 
@@ -162,17 +167,17 @@ DvtGauge.prototype.render = function(options, width, height)
 
 /**
  * Creates and returns a logical object for this gauge.
- * @return {DvtSimpleObjPeer}
+ * @return {dvt.SimpleObjPeer}
  */
 DvtGauge.prototype.__getLogicalObject = function() {
   var tooltip = DvtGaugeRenderer.getTooltipString(this);
   var color = DvtGaugeStyleUtils.getColor(this);
-  return new DvtSimpleObjPeer(null, tooltip, color);
+  return new dvt.SimpleObjPeer(null, tooltip, color);
 };
 
 /**
  * Renders the component at the specified size.
- * @param {DvtContainer} container The container to render within.
+ * @param {dvt.Container} container The container to render within.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
@@ -185,7 +190,7 @@ DvtGauge.prototype.Render = function(container, width, height)
 /**
  * Checks animation settings for the gauge and creates and plays animation on display
  * or animation on data change.
- * @param {DvtContainer} container The container to render within.
+ * @param {dvt.Container} container The container to render within.
  * @param {boolean} bData True if new data was provided to the gauge.
  * @param {Array} oldShapes The array of DvtShapes that can be animated
  * @param {number} width The width of the component.
@@ -200,23 +205,23 @@ DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, 
   }
 
   var bBlackBoxUpdate = false;
-  var animationOnDataChange = this._bEditing ? 'none' : this.getOptions()['animationOnDataChange'];
-  var animationOnDisplay = this._bEditing ? 'none' : this.getOptions()['animationOnDisplay'];
-  var animationDuration = DvtStyleUtils.getTimeMilliseconds(this.getOptions()['animationDuration']) / 1000;
+  var animationOnDataChange = (this._bEditing || this._bResizeRender) ? 'none' : this.getOptions()['animationOnDataChange'];
+  var animationOnDisplay = (this._bEditing || this._bResizeRender) ? 'none' : this.getOptions()['animationOnDisplay'];
+  var animationDuration = dvt.StyleUtils.getTimeMilliseconds(this.getOptions()['animationDuration']) / 1000;
 
   if (!animationOnDisplay && !animationOnDataChange)
     return;
 
-  var bounds = new DvtRectangle(0, 0, width, height);
+  var bounds = new dvt.Rectangle(0, 0, width, height);
   var context = this.getCtx();
 
   if (!this._container && animationOnDisplay !== 'none' && this.__shapes[0] != null) { // animationOnDisplay
-    this._animation = DvtBlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container, bounds, animationDuration);
+    this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container, bounds, animationDuration);
     if (!this._animation)
       this._animation = this.CreateAnimationOnDisplay(this.__shapes, animationOnDisplay, animationDuration);
   }
   else if (this._container && animationOnDataChange != 'none' && bData && this.__shapes[0] != null) { // animationOnDataChange
-    this._animation = DvtBlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange,
+    this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange,
         this._container, container, bounds, animationDuration);
     if (this._animation)
       bBlackBoxUpdate = true;
@@ -240,11 +245,11 @@ DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, 
 
 
 /**
- * Creates a DvtPlayable that performs animation upon inital gauge display.
+ * Creates a dvt.Playable that performs animation upon inital gauge display.
  * @param {Array} objs The array of DvtShapes to animate to.
  * @param {string} animationType The animation type.
  * @param {number} animationDuration The duration of the animation in seconds.
- * @return {DvtPlayable}
+ * @return {dvt.Playable}
  * @protected
  */
 DvtGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, animationDuration) {
@@ -254,12 +259,12 @@ DvtGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, anim
 
 
 /**
- * Creates a DvtPlayable that performs animation for a gauge update.
+ * Creates a dvt.Playable that performs animation for a gauge update.
  * @param {Array} oldObjs The array of DvtShapes to animate from.
  * @param {Array} newObjs The array of DvtShapes to animate to.
  * @param {string} animationType The animation type.
  * @param {number} animationDuration The duration of the animation in seconds.
- * @return {DvtPlayable}
+ * @return {dvt.Playable}
  * @protected
  */
 DvtGauge.prototype.CreateAnimationOnDataChange = function(oldObjs, newObjs, animationType, animationDuration) {
@@ -271,11 +276,11 @@ DvtGauge.prototype.CreateAnimationOnDataChange = function(oldObjs, newObjs, anim
     var endState = newObj.getAnimationParams();
 
     newObj.setAnimationParams(startState);
-    var animation = new DvtCustomAnimation(this.getCtx(), newObj, animationDuration);
-    animation.getAnimator().addProp(DvtAnimator.TYPE_NUMBER_ARRAY, newObj, newObj.getAnimationParams, newObj.setAnimationParams, endState);
+    var animation = new dvt.CustomAnimation(this.getCtx(), newObj, animationDuration);
+    animation.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, newObj, newObj.getAnimationParams, newObj.setAnimationParams, endState);
     animatedObjs.push(animation);
   }
-  return new DvtParallelPlayable(this.getCtx(), animatedObjs);
+  return new dvt.ParallelPlayable(this.getCtx(), animatedObjs);
 };
 
 
@@ -300,7 +305,7 @@ DvtGauge.prototype.renderUpdate = function() {
 
 /**
  * Helper function for updating the live values that are read out while editing for accessibility
- * @param {DvtContainer} container The slider container we are using.
+ * @param {dvt.Container} container The slider container we are using.
  * @param {number} value The value of the gauge
  * @protected
  */
@@ -308,7 +313,7 @@ DvtGauge.prototype.UpdateAriaLiveValue = function(container, value) {
   value = DvtGaugeRenderer.getFormattedMetricLabel(value ? value : this.Options['value'], this);
   container.setAriaProperty('valuenow', value);
 
-  if (DvtAgent.isTouchDevice())
+  if (dvt.Agent.isTouchDevice())
     container.setAriaProperty('label', value);
 };
 
@@ -364,7 +369,7 @@ DvtGauge.prototype.__processValueChangeMove = function(x, y) {
     this.renderUpdate();
 
     // Fire the value change input event
-    this.dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], false));
+    this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, this.Options['value'], false));
   }
 };
 
@@ -379,17 +384,17 @@ DvtGauge.prototype.__processValueChangeEnd = function(x, y) {
   this.__processValueChangeMove(x, y);
 
   // Need to reset the tooltip value if overridden by UpdateAriaLiveValue
-  if (DvtAgent.isTouchDevice()) {
+  if (dvt.Agent.isTouchDevice()) {
     var value = DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this);
     var tooltip = DvtGaugeRenderer.getTooltipString(this);
     if (value != tooltip) {
-      tooltip = value + DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
+      tooltip = value + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ARIA_LABEL_DESC_DELIMITER') + tooltip;
       this._container.setAriaProperty('label', tooltip);
     }
   }
 
   // Fire the event and reset
-  this.dispatchEvent(new DvtValueChangeEvent(this._oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, this.Options['value'], true));
   this._bEditing = false;
   this._oldValue = null;
 };
@@ -415,7 +420,7 @@ DvtGauge.prototype.__increaseValue = function() {
   this.render();
 
   // Fire the value change input event
-  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 
@@ -440,7 +445,7 @@ DvtGauge.prototype.__decreaseValue = function() {
   this.render();
 
   // Fire the value change input event
-  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 
@@ -469,8 +474,7 @@ DvtGauge._thresholdComparator = function(a, b) {
 
 /**
  * Returns the automation object for this gauge
- * @return {DvtAutomation} The automation object
- * @export
+ * @return {dvt.Automation} The automation object
  */
 DvtGauge.prototype.getAutomation = function() {
   return new DvtGaugeAutomation(this);
@@ -479,7 +483,7 @@ DvtGauge.prototype.getAutomation = function() {
 /**
  * Creates the keyboard handler.
  * @param {DvtGaugeEventManager} manager Event manager.
- * @return {DvtKeyboardHandler}
+ * @return {dvt.KeyboardHandler}
  * @protected
  */
 DvtGauge.prototype.CreateKeyboardHandler = function(manager) {
@@ -490,7 +494,7 @@ DvtGauge.prototype.CreateKeyboardHandler = function(manager) {
  * @override
  */
 DvtGauge.prototype.GetComponentDescription = function() {
-  return DvtBundle.getTranslation(this.getOptions(), 'componentName', DvtBundle.UTIL_PREFIX, 'GAUGE');
+  return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'GAUGE');
 };
 
 /**
@@ -502,19 +506,19 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
     if (this.IsParentRoot()) {
       if (this.Options['readOnly']) {
         this.getCtx().setAriaRole('img');
-        this.getCtx().setAriaLabel(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-            [DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'DATA_VISUALIZATION'),
-              DvtDisplayable.generateAriaLabel(DvtStringUtils.processAriaLabel(this.GetComponentDescription()),
+        this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
+            [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'),
+              dvt.Displayable.generateAriaLabel(dvt.StringUtils.processAriaLabel(this.GetComponentDescription()),
              tooltip ? [tooltip] : null)]));
       } else {
         this.getCtx().setAriaRole('application');
-        this.getCtx().setAriaLabel(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-            [DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), DvtStringUtils.processAriaLabel(this.GetComponentDescription())]));
+        this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
+            [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), dvt.StringUtils.processAriaLabel(this.GetComponentDescription())]));
       }
     }
     else if (this.Options['readOnly']) {
       this.setAriaRole('img');
-      this.setAriaProperty('label', DvtDisplayable.generateAriaLabel(DvtStringUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
+      this.setAriaProperty('label', dvt.Displayable.generateAriaLabel(dvt.StringUtils.processAriaLabel(this.GetComponentDescription()), tooltip ? [tooltip] : null));
     }
   }
 };
@@ -522,15 +526,14 @@ DvtGauge.prototype.UpdateAriaAttributes = function() {
  *  Provides automation services for a DVT component.
  *  @class DvtGaugeAutomation
  *  @param {DvtGauge} dvtComponent
- *  @implements {DvtAutomation}
+ *  @implements {dvt.Automation}
  *  @constructor
- *  @export
  */
 var DvtGaugeAutomation = function(dvtComponent) {
   this._gauge = dvtComponent;
 };
 
-DvtObj.createSubclass(DvtGaugeAutomation, DvtAutomation, 'DvtGaugeAutomation');
+dvt.Obj.createSubclass(DvtGaugeAutomation, dvt.Automation);
 
 /**
  * Valid subIds inlcude:
@@ -538,10 +541,9 @@ DvtObj.createSubclass(DvtGaugeAutomation, DvtAutomation, 'DvtGaugeAutomation');
  * <li>tooltip</li>
  * </ul>
  * @override
- * @export
  */
 DvtGaugeAutomation.prototype.getDomElementForSubId = function(subId) {
-  if (subId == DvtAutomation.TOOLTIP_SUBID)
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
     return this.GetTooltipElement(this._gauge);
 
   else if (subId.indexOf('item') == 0) {
@@ -562,7 +564,6 @@ DvtGaugeAutomation.prototype.getDomElementForSubId = function(subId) {
 /**
  * Returns the value of the gauge. Used for verification.
  * @return {Number} the value of the gauge
- * @export
  */
 DvtGaugeAutomation.prototype.getValue = function() {
   return this._gauge.getOptions()['value'];
@@ -572,34 +573,33 @@ DvtGaugeAutomation.prototype.getValue = function() {
  * Returns the formatted metric label of the gauge. Used for verification.
  * Valid only for DialGauge, LedGauge, and StatusMeterGauge.
  * @return {String} the formatted metric label string
- * @export
  */
 DvtGaugeAutomation.prototype.getMetricLabel = function() {
   return DvtGaugeRenderer.getFormattedMetricLabel(this.getValue(), this._gauge);
 };
 
-DvtBundle.addDefaultStrings(DvtBundle.GAUGE_PREFIX, {
+dvt.Bundle.addDefaultStrings(dvt.Bundle.GAUGE_PREFIX, {
 });
 /**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
- * @extends {DvtBaseComponentDefaults}
+ * @extends {dvt.BaseComponentDefaults}
  */
 var DvtGaugeDefaults = function() {};
 
-DvtObj.createSubclass(DvtGaugeDefaults, DvtBaseComponentDefaults, 'DvtGaugeDefaults');
+dvt.Obj.createSubclass(DvtGaugeDefaults, dvt.BaseComponentDefaults);
 
 
 /**
  * Defaults for ALTA.
  */
 DvtGaugeDefaults.SKIN_ALTA = {
-  'skin': DvtCSSStyle.SKIN_ALTA,
+  'skin': dvt.CSSStyle.SKIN_ALTA,
   'color': '#393737',
-  'metricLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
-  '_statusMessageStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"),
-  'title': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
+  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
+  'title': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   '_thresholdColors': ['#ed6647', '#fad55c', '#68c182']
 };
 
@@ -608,20 +608,21 @@ DvtGaugeDefaults.SKIN_ALTA = {
  * Defaults for version 1.
  */
 DvtGaugeDefaults.VERSION_1 = {
-  'skin': DvtCSSStyle.SKIN_SKYROS,
+  'skin': dvt.CSSStyle.SKIN_SKYROS,
   'min': 0, 'max': 100,
+  'center': {},
   'color': '#313842', 'borderColor': null, 'visualEffects': 'auto', 'emptyText': null,
   'animationOnDataChange': 'none', 'animationOnDisplay': 'none', 'animationDuration': 500,
   'readOnly': 'true',
   'metricLabel': {
     'rendered': 'auto',
     'scaling': 'auto',
-    'style': new DvtCSSStyle('font-family: tahoma, sans-serif;'),
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
     'textType': 'number'
   },
-  '_statusMessageStyle': new DvtCSSStyle('font-family: tahoma, sans-serif;'),
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
   'title': {
-    'style': new DvtCSSStyle('font-family: tahoma, sans-serif;'),
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
     'position': 'auto'
   },
 
@@ -637,8 +638,8 @@ DvtGaugeDefaults.VERSION_1 = {
 DvtGaugeDefaults.prototype.Init = function(defaultsMap) {
   // This will only be called via subclasses.  Combine with defaults from this class before passing to super.
   var ret = {
-    'skyros': DvtJSONUtils.merge(defaultsMap['skyros'], DvtGaugeDefaults.VERSION_1),
-    'alta': DvtJSONUtils.merge(defaultsMap['alta'], DvtGaugeDefaults.SKIN_ALTA)
+    'skyros': dvt.JsonUtils.merge(defaultsMap['skyros'], DvtGaugeDefaults.VERSION_1),
+    'alta': dvt.JsonUtils.merge(defaultsMap['alta'], DvtGaugeDefaults.SKIN_ALTA)
   };
 
   DvtGaugeDefaults.superclass.Init.call(this, ret);
@@ -652,7 +653,7 @@ DvtGaugeDefaults.prototype.Init = function(defaultsMap) {
  */
 DvtGaugeDefaults.isSkyrosSkin = function(gauge) 
 {
-  return (gauge.getOptions()['skin'] == DvtCSSStyle.SKIN_SKYROS);
+  return (gauge.getOptions()['skin'] == dvt.CSSStyle.SKIN_SKYROS);
 };
 /**
  * Style related utility functions for gauge components.
@@ -660,7 +661,7 @@ DvtGaugeDefaults.isSkyrosSkin = function(gauge)
  */
 var DvtGaugeDataUtils = new Object();
 
-DvtObj.createSubclass(DvtGaugeDataUtils, DvtObj, 'DvtGaugeDataUtils');
+dvt.Obj.createSubclass(DvtGaugeDataUtils, dvt.Obj);
 
 
 /**
@@ -739,7 +740,7 @@ DvtGaugeDataUtils.getReferenceObject = function(gauge, index) {
  * Event Manager for DvtGauge.
  * @param {DvtGauge} gauge
  * @class
- * @extends {DvtEventManager}
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtGaugeEventManager = function(gauge) {
@@ -748,7 +749,7 @@ var DvtGaugeEventManager = function(gauge) {
   this.IsMouseEditing = false;
 };
 
-DvtObj.createSubclass(DvtGaugeEventManager, DvtEventManager, 'DvtGaugeEventManager');
+dvt.Obj.createSubclass(DvtGaugeEventManager, dvt.EventManager);
 
 
 /**
@@ -809,7 +810,7 @@ DvtGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
  * @override
  */
 DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
-  if (DvtTouchEvent.TOUCHSTART === event.type && this._gauge.getOptions()['readOnly'] === false) {
+  if (dvt.TouchEvent.TOUCHSTART === event.type && this._gauge.getOptions()['readOnly'] === false) {
     // Set the editing flag so moves are tracked
     this.IsMouseEditing = true;
     var coords = this.GetRelativePosition(event.touches[0].pageX, event.touches[0].pageY);
@@ -818,14 +819,14 @@ DvtGaugeEventManager.prototype.PreEventBubble = function(event) {
     // Prevent default action from occuring
     event.preventDefault();
   }
-  else if (DvtTouchEvent.TOUCHMOVE === event.type && this.IsMouseEditing) {
+  else if (dvt.TouchEvent.TOUCHMOVE === event.type && this.IsMouseEditing) {
     var coords = this.GetRelativePosition(event.touches[0].pageX, event.touches[0].pageY);
     this._gauge.__processValueChangeMove(coords.x, coords.y);
 
     // Prevent default action from occuring
     event.preventDefault();
   }
-  else if (DvtTouchEvent.TOUCHEND === event.type && this.IsMouseEditing) {
+  else if (dvt.TouchEvent.TOUCHEND === event.type && this.IsMouseEditing) {
     this.IsMouseEditing = false;
     var coords = this.GetRelativePosition(event.changedTouches[0].pageX, event.changedTouches[0].pageY);
     this._gauge.__processValueChangeEnd(coords.x, coords.y);
@@ -849,7 +850,7 @@ DvtGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
   this.KeyboardHandler.processKeyDown(event);
   var keyCode = event.keyCode;
 
-  if (keyCode == DvtKeyboardEvent.UP_ARROW || keyCode == DvtKeyboardEvent.LEFT_ARROW || keyCode == DvtKeyboardEvent.DOWN_ARROW || keyCode == DvtKeyboardEvent.RIGHT_ARROW || keyCode == DvtKeyboardEvent.TAB) {
+  if (keyCode == dvt.KeyboardEvent.UP_ARROW || keyCode == dvt.KeyboardEvent.LEFT_ARROW || keyCode == dvt.KeyboardEvent.DOWN_ARROW || keyCode == dvt.KeyboardEvent.RIGHT_ARROW || keyCode == dvt.KeyboardEvent.TAB) {
     var pos = this._gauge.getCtx().getStageAbsolutePosition();
     this.ProcessObjectTooltip(event, pos.x, pos.y, this._gauge.__getLogicalObject(), this._gauge);
   }
@@ -869,7 +870,7 @@ DvtGaugeEventManager.prototype.OnBlur = function(event) {
  * Returns the position of the specified page coords, relative to the component.
  * @param {number} pageX
  * @param {number} pageY
- * @return {DvtPoint}
+ * @return {dvt.Point}
  * @protected
  */
 DvtGaugeEventManager.prototype.GetRelativePosition = function(pageX, pageY) {
@@ -893,10 +894,10 @@ DvtGaugeEventManager.prototype.__isMouseEditing = function() {
 };
 
 /**
- * @param {DvtEventManager} manager The owning DvtEventManager
+ * @param {dvt.EventManager} manager The owning dvt.EventManager
  * @param {DvtGauge} gauge
  * @class DvtGaugeKeyboardHandler
- * @extends {DvtKeyboardHandler}
+ * @extends {dvt.KeyboardHandler}
  * @constructor
  */
 var DvtGaugeKeyboardHandler = function(manager, gauge)
@@ -904,7 +905,7 @@ var DvtGaugeKeyboardHandler = function(manager, gauge)
   this.Init(manager, gauge);
 };
 
-DvtObj.createSubclass(DvtGaugeKeyboardHandler, DvtKeyboardHandler, 'DvtGaugeKeyboardHandler');
+dvt.Obj.createSubclass(DvtGaugeKeyboardHandler, dvt.KeyboardHandler);
 
 
 /**
@@ -922,15 +923,15 @@ DvtGaugeKeyboardHandler.prototype.Init = function(manager, gauge) {
 DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
   // Note: Don't call superclass so that the arrow key behaviors are not overridden
   var keyCode = event.keyCode;
-  var isR2L = DvtAgent.isRightToLeft(this._gauge.getCtx());
+  var isR2L = dvt.Agent.isRightToLeft(this._gauge.getCtx());
 
-  if (keyCode == DvtKeyboardEvent.UP_ARROW || keyCode == (isR2L ? DvtKeyboardEvent.LEFT_ARROW : DvtKeyboardEvent.RIGHT_ARROW)) {
+  if (keyCode == dvt.KeyboardEvent.UP_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.LEFT_ARROW : dvt.KeyboardEvent.RIGHT_ARROW)) {
     this._gauge.__increaseValue();
-    DvtEventManager.consumeEvent(event);
+    dvt.EventManager.consumeEvent(event);
   }
-  else if (keyCode == DvtKeyboardEvent.DOWN_ARROW || keyCode == (isR2L ? DvtKeyboardEvent.RIGHT_ARROW : DvtKeyboardEvent.LEFT_ARROW)) {
+  else if (keyCode == dvt.KeyboardEvent.DOWN_ARROW || keyCode == (isR2L ? dvt.KeyboardEvent.RIGHT_ARROW : dvt.KeyboardEvent.LEFT_ARROW)) {
     this._gauge.__decreaseValue();
-    DvtEventManager.consumeEvent(event);
+    dvt.EventManager.consumeEvent(event);
   }
 };
 
@@ -940,14 +941,15 @@ DvtGaugeKeyboardHandler.prototype.processKeyDown = function(event) {
  */
 var DvtGaugeStyleUtils = new Object();
 
-DvtObj.createSubclass(DvtGaugeStyleUtils, DvtObj, 'DvtGaugeStyleUtils');
+dvt.Obj.createSubclass(DvtGaugeStyleUtils, dvt.Obj);
 
 
-/** @private */
+/** @private @const*/
 DvtGaugeStyleUtils._THRESHOLD_COLOR_RAMP = ['#ed6647', '#fad55c', '#68c182'];
-DvtGaugeStyleUtils._SKYROS_THRESHOLD_COLOR_RAMP = ['#D62800', '#FFCF21', '#84AE31'];
+/** @private @const*/
 DvtGaugeStyleUtils._SKYROS_THRESHOLD_COLOR_RAMP = ['#D62800', '#FFCF21', '#84AE31'];
 
+/** @private @const*/
 DvtGaugeStyleUtils._ALTA_CIRCLE = {'startAngle': 202.5, 'angleExtent': 225,
   'anchorX': 100, 'anchorY': 103,
   'metricLabelBounds': {'x': 80, 'y': 86, 'width': 40, 'height': 34},
@@ -957,6 +959,7 @@ DvtGaugeStyleUtils._ALTA_CIRCLE = {'startAngle': 202.5, 'angleExtent': 225,
   'radius': 60,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ALTA_DOME = {'startAngle': 202.5, 'angleExtent': 225,
   'anchorX': 100, 'anchorY': 103,
   'metricLabelBounds': {'x': 83, 'y': 86, 'width': 34, 'height': 34},
@@ -966,6 +969,7 @@ DvtGaugeStyleUtils._ALTA_DOME = {'startAngle': 202.5, 'angleExtent': 225,
   'radius': 60,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ALTA_RECTANGLE = {'startAngle': 202.5, 'angleExtent': 225,
   'anchorX': 100, 'anchorY': 103,
   'metricLabelBounds': {'x': 83, 'y': 86, 'width': 34, 'height': 34},
@@ -975,6 +979,7 @@ DvtGaugeStyleUtils._ALTA_RECTANGLE = {'startAngle': 202.5, 'angleExtent': 225,
   'radius': 60,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ANTIQUE_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.1,
   'anchorX': 100, 'anchorY': 100,
   'metricLabelBounds': {'x': 82, 'y': 133, 'width': 36, 'height': 34},
@@ -984,6 +989,7 @@ DvtGaugeStyleUtils._ANTIQUE_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.1,
   'radius': 61,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ANTIQUE_DOME = {'startAngle': 195.5, 'angleExtent': 210.8,
   'anchorX': 100, 'anchorY': 100,
   'metricLabelBounds': {'x': 84, 'y': 135, 'width': 32, 'height': 35},
@@ -993,6 +999,7 @@ DvtGaugeStyleUtils._ANTIQUE_DOME = {'startAngle': 195.5, 'angleExtent': 210.8,
   'radius': 63,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ANTIQUE_RECTANGLE = {'startAngle': 207.6, 'angleExtent': 235,
   'anchorX': 100, 'anchorY': 95.8,
   'metricLabelBounds': {'x': 83, 'y': 125, 'width': 34, 'height': 40},
@@ -1002,6 +1009,7 @@ DvtGaugeStyleUtils._ANTIQUE_RECTANGLE = {'startAngle': 207.6, 'angleExtent': 235
   'radius': 64,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._LIGHT_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.1,
   'anchorX': 100, 'anchorY': 100,
   'metricLabelBounds': {'x': 80, 'y': 82, 'width': 40, 'height': 40},
@@ -1011,6 +1019,7 @@ DvtGaugeStyleUtils._LIGHT_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.1,
   'radius': 58,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._LIGHT_DOME = {'startAngle': 201, 'angleExtent': 222,
   'anchorX': 100.2, 'anchorY': 89,
   'metricLabelBounds': {'x': 80, 'y': 70, 'width': 41, 'height': 39},
@@ -1020,6 +1029,7 @@ DvtGaugeStyleUtils._LIGHT_DOME = {'startAngle': 201, 'angleExtent': 222,
   'radius': 56,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._LIGHT_RECTANGLE = {'startAngle': 211, 'angleExtent': 242,
   'anchorX': 100, 'anchorY': 91.445,
   'metricLabelBounds': {'x': 78, 'y': 75, 'width': 44, 'height': 38},
@@ -1029,6 +1039,7 @@ DvtGaugeStyleUtils._LIGHT_RECTANGLE = {'startAngle': 211, 'angleExtent': 242,
   'radius': 58,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._DARK_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.5,
   'metricLabelBounds': {'x': 80, 'y': 82, 'width': 40, 'height': 40},
   'indicatorLength': .85,
@@ -1037,6 +1048,7 @@ DvtGaugeStyleUtils._DARK_CIRCLE = {'startAngle': 220.5, 'angleExtent': 261.5,
   'radius': 60,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._DARK_DOME = {'startAngle': 201, 'angleExtent': 222,
   'anchorX': 100.2, 'anchorY': 89,
   'metricLabelBounds': {'x': 80, 'y': 73, 'width': 40, 'height': 36},
@@ -1046,6 +1058,7 @@ DvtGaugeStyleUtils._DARK_DOME = {'startAngle': 201, 'angleExtent': 222,
   'radius': 56,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._DARK_RECTANGLE = {'startAngle': 201, 'angleExtent': 222,
   'anchorX': 100.2, 'anchorY': 99.5,
   'metricLabelBounds': {'x': 80, 'y': 83, 'width': 41, 'height': 36},
@@ -1055,17 +1068,22 @@ DvtGaugeStyleUtils._DARK_RECTANGLE = {'startAngle': 201, 'angleExtent': 222,
   'radius': 58,
   'majorTickCount': 6};
 
+/** @private @const*/
 DvtGaugeStyleUtils._ANTIQUE_INDICATOR = {
   'anchorX': 42, 'anchorY': 510
 };
+
+/** @private @const*/
 DvtGaugeStyleUtils._ALTA_INDICATOR = {
   'anchorX': 187, 'anchorY': 388
 };
 
+/** @private @const*/
 DvtGaugeStyleUtils._LIGHT_INDICATOR = {
   'anchorX': 227, 'anchorY': 425
 };
 
+/** @private @const*/
 DvtGaugeStyleUtils._DARK_INDICATOR = {
   'anchorX': 227, 'anchorY': 425
 };
@@ -1081,8 +1099,8 @@ DvtGaugeStyleUtils.getColor = function(gauge) {
   // Thresholds
   var thresholdIndex = DvtGaugeDataUtils.getValueThresholdIndex(gauge);
   var threshold = DvtGaugeDataUtils.getThreshold(gauge, thresholdIndex);
-  if (threshold && (!(gauge instanceof DvtStatusMeterGauge) ||
-      ((gauge instanceof DvtStatusMeterGauge) && options['thresholdDisplay'] == 'onIndicator'))) {
+  if (threshold && (!(gauge instanceof dvt.StatusMeterGauge) ||
+      ((gauge instanceof dvt.StatusMeterGauge) && options['thresholdDisplay'] == 'onIndicator'))) {
     return DvtGaugeStyleUtils.getThresholdColor(gauge, threshold, thresholdIndex);
   }
 
@@ -1104,8 +1122,8 @@ DvtGaugeStyleUtils.getBorderColor = function(gauge) {
   var threshold = DvtGaugeDataUtils.getThreshold(gauge, thresholdIndex);
 
   if (threshold && threshold['borderColor'] &&
-      (!(gauge instanceof DvtStatusMeterGauge) ||
-      (gauge instanceof DvtStatusMeterGauge) && (options['thresholdDisplay'] == 'onIndicator')))
+      (!(gauge instanceof dvt.StatusMeterGauge) ||
+      (gauge instanceof dvt.StatusMeterGauge) && (options['thresholdDisplay'] == 'onIndicator')))
     return threshold['borderColor'];
 
   return options['borderColor'];
@@ -1124,7 +1142,7 @@ DvtGaugeStyleUtils.getPlotAreaColor = function(gauge) {
   // Thresholds
   var thresholdIndex = DvtGaugeDataUtils.getValueThresholdIndex(gauge);
   var threshold = DvtGaugeDataUtils.getThreshold(gauge, thresholdIndex);
-  if (threshold && (!(gauge instanceof DvtStatusMeterGauge) || ((gauge instanceof DvtStatusMeterGauge) && options['thresholdDisplay'] != 'onIndicator'))) {
+  if (threshold && (!(gauge instanceof dvt.StatusMeterGauge) || ((gauge instanceof dvt.StatusMeterGauge) && options['thresholdDisplay'] != 'onIndicator'))) {
     return DvtGaugeStyleUtils.getThresholdColor(gauge, threshold, thresholdIndex);
   }
 
@@ -1141,7 +1159,7 @@ DvtGaugeStyleUtils.getPlotAreaBorderColor = function(gauge) {
   // Options Object
   var options = gauge.getOptions();
   var borderColor = options['plotArea']['borderColor'];
-  if ((gauge instanceof DvtStatusMeterGauge) && options['orientation'] != 'circular' &&
+  if ((gauge instanceof dvt.StatusMeterGauge) && options['orientation'] != 'circular' &&
       borderColor == null) {
     return options['skin'] == 'skyros' ? '#C6C6C6' : '#D6DFE6';
   }
@@ -1240,13 +1258,13 @@ DvtGaugeStyleUtils.hasTitle = function(options) {
  */
 var DvtGaugeRenderer = new Object();
 
-DvtObj.createSubclass(DvtGaugeRenderer, DvtObj, 'DvtGaugeRenderer');
+dvt.Obj.createSubclass(DvtGaugeRenderer, dvt.Obj);
 
 /**
  * Renders the empty text for the component.
  * @param {DvtGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
   // Get the empty text string
@@ -1254,21 +1272,21 @@ DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
   var emptyTextStr = options['emptyText'];
 
   if (!emptyTextStr)
-    emptyTextStr = DvtBundle.getTranslation(options, 'labelNoData', DvtBundle.UTIL_PREFIX, 'NO_DATA', null);
+    emptyTextStr = dvt.Bundle.getTranslation(options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
 
   // Set font size
   var labelStyle = options['_statusMessageStyle'];
   if (!labelStyle.getStyle('font-size'))
     labelStyle.setStyle('font-size', '13px');
 
-  if (gauge instanceof DvtStatusMeterGauge) {
+  if (gauge instanceof dvt.StatusMeterGauge) {
     var labelColor = labelStyle.getStyle('color');
     labelColor = labelColor ? labelColor : '#333333';
     labelStyle.setStyle('color', labelColor);
   }
 
-  DvtTextUtils.renderEmptyText(container, emptyTextStr,
-      new DvtRectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
+  dvt.TextUtils.renderEmptyText(container, emptyTextStr,
+      new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
       gauge.getEventManager(), labelStyle);
 };
 
@@ -1344,7 +1362,7 @@ DvtGaugeRenderer._formatLabelValue = function(value, gauge, converter, scaling, 
   }
 
   // when scaling is set then init formatter
-  var formatter = new DvtLinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision);
+  var formatter = new dvt.LinearScaleAxisValueFormatter(gauge.getCtx(), minValue, maxValue, increment, scaling, autoPrecision);
   if (converter && converter['getAsString'])
     output = formatter.format(value, converter);
   else if (converter && converter['format'])
@@ -1390,7 +1408,7 @@ DvtGaugeRenderer.getTooltipString = function(gauge) {
   else if (options['shortDesc'] != null)
     return options['shortDesc'];
   else if (options['title']['text'])
-    return DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [options['title']['text'], metricValue]);
+    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [options['title']['text'], metricValue]);
   else // Use the formatted metric label
     return metricValue;
 };
@@ -1398,8 +1416,8 @@ DvtGaugeRenderer.getTooltipString = function(gauge) {
 /**
  * Renders the label into the specified area.
  * @param {DvtGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {color} color Label color
  * @param {string} halign The horizontal alignment
  * @param {string} valign The vertical alignment
@@ -1417,7 +1435,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, halign,
     var maxString = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
 
     // Create the label and align
-    var label = new DvtOutputText(gauge.getCtx(), labelString, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+    var label = new dvt.OutputText(gauge.getCtx(), labelString, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
     label.setCSSStyle(options['metricLabel']['style']);
     var size = options['metricLabel']['style'].getStyle('font-size');
     size = size ? parseInt(size) : null;
@@ -1432,7 +1450,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, halign,
       label.alignTop();
     }
     else if (valign == 'middle') {
-      DvtTextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
+      dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
     }
     else if (valign == 'bottom') {
       label.setY(bounds.y + bounds.h);
@@ -1455,7 +1473,7 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, halign,
       label.setSolidFill(color);
 
     // Truncate if needed, null is returned if the label doesn't fit
-    rendered = DvtTextUtils.fitText(label, bounds.w, bounds.h, container);
+    rendered = dvt.TextUtils.fitText(label, bounds.w, bounds.h, container);
   }
   return rendered;
 };
@@ -1463,8 +1481,8 @@ DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, halign,
 /**
  * Renders the title into the specified area.
  * @param {DvtGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {color} color Title color
  * @param {string} valign The vertical alignment
  * @return {boolean} Return true if the title is rendered
@@ -1477,14 +1495,14 @@ DvtGaugeRenderer.renderTitle = function(gauge, container, bounds, color, valign)
   if (DvtGaugeStyleUtils.hasTitle(options)) {
     var titleString = options['title']['text'];
     var titleStyle = options['title']['style'];
-    var title = new DvtMultilineText(gauge.getCtx(), titleString);
+    var title = new dvt.MultilineText(gauge.getCtx(), titleString);
     var fontStyle = titleStyle.clone();
     title.setCSSStyle(titleStyle);
     var size = titleStyle.getStyle('font-size');
     size = size ? parseInt(size) : null;
     if (!size) {
       // Calculate font size
-      var tempTitle = new DvtOutputText(gauge.getCtx(), titleString, 0, 0);
+      var tempTitle = new dvt.OutputText(gauge.getCtx(), titleString, 0, 0);
       tempTitle.setCSSStyle(titleStyle);
       size = tempTitle.getOptimalFontSize(bounds);
       fontStyle.setFontSize('font-size', size.toString());
@@ -1494,9 +1512,9 @@ DvtGaugeRenderer.renderTitle = function(gauge, container, bounds, color, valign)
       fontStyle.setStyle('color', color);
 
     title.setCSSStyle(fontStyle);
-    rendered = DvtTextUtils.fitText(title, bounds.w, bounds.h, gauge);
+    rendered = dvt.TextUtils.fitText(title, bounds.w, bounds.h, gauge);
 
-    var textHeight = DvtTextUtils.getTextHeight(title);
+    var textHeight = dvt.TextUtils.getTextHeight(title);
     if (valign == 'top')
       title.setY(bounds.y);
     else if (valign == 'bottom')
@@ -1514,8 +1532,8 @@ DvtGaugeRenderer.renderTitle = function(gauge, container, bounds, color, valign)
 /**
  * Returns the optimal font size based on a list of labels and the available bounds
  * @param {Array} labels A list of label strings used to find the optimal string size for the label
- * @param {DvtOutputText} label The text object used to get the optimal size
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.OutputText} label The text object used to get the optimal size
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @return {number} The optimal font size
  */
 DvtGaugeRenderer.calcLabelFontSize = function(labels, label, bounds) {
@@ -1554,7 +1572,7 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
   }
   return value;
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -1564,24 +1582,22 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
  * @class
  * @constructor
  * @extends {DvtGauge}
- * @export
  */
-var DvtLedGauge = function() {};
+dvt.LedGauge = function() {};
 
-DvtObj.createSubclass(DvtLedGauge, DvtGauge, 'DvtLedGauge');
+dvt.Obj.createSubclass(dvt.LedGauge, DvtGauge);
 
 
 /**
- * Returns a new instance of DvtLedGauge.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.LedGauge.
+ * @param {dvt.Context} context The rendering context.
  * @param {string=} callback The function that should be called to dispatch component events.
  * @param {object=} callbackObj The optional object instance on which the callback function is defined.
  * @param {boolean=} bStaticRendering True to indicate that the gauge is not interactive to optimize performance.
- * @return {DvtLedGauge}
- * @export
+ * @return {dvt.LedGauge}
  */
-DvtLedGauge.newInstance = function(context, callback, callbackObj, bStaticRendering) {
-  var gauge = new DvtLedGauge();
+dvt.LedGauge.newInstance = function(context, callback, callbackObj, bStaticRendering) {
+  var gauge = new dvt.LedGauge();
   gauge.Init(context, callback, callbackObj, bStaticRendering);
   return gauge;
 };
@@ -1590,8 +1606,8 @@ DvtLedGauge.newInstance = function(context, callback, callbackObj, bStaticRender
 /**
  * @override
  */
-DvtLedGauge.prototype.Init = function(context, callback, callbackObj, bStaticRendering) {
-  DvtLedGauge.superclass.Init.call(this, context, callback, callbackObj, bStaticRendering);
+dvt.LedGauge.prototype.Init = function(context, callback, callbackObj, bStaticRendering) {
+  dvt.LedGauge.superclass.Init.call(this, context, callback, callbackObj, bStaticRendering);
 
   // Create the defaults object
   this.Defaults = new DvtLedGaugeDefaults();
@@ -1601,9 +1617,9 @@ DvtLedGauge.prototype.Init = function(context, callback, callbackObj, bStaticRen
 /**
  * @override
  */
-DvtLedGauge.prototype.SetOptions = function(options) {
+dvt.LedGauge.prototype.SetOptions = function(options) {
   // Combine the user options with the defaults and store
-  DvtLedGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
+  dvt.LedGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 
   // animationOnDisplay="auto" will do "zoom"
   if (this.Options['animationOnDisplay'] == 'auto')
@@ -1621,7 +1637,7 @@ DvtLedGauge.prototype.SetOptions = function(options) {
 /**
  * @override
  */
-DvtLedGauge.prototype.Render = function(container, width, height) 
+dvt.LedGauge.prototype.Render = function(container, width, height) 
 {
   DvtLedGaugeRenderer.render(this, container, width, height);
 };
@@ -1635,7 +1651,7 @@ var DvtLedGaugeDefaults = function() {
   this.Init({'skyros': DvtLedGaugeDefaults.VERSION_1, 'alta': {}});
 };
 
-DvtObj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults, 'DvtLedGaugeDefaults');
+dvt.Obj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults);
 
 
 /**
@@ -1645,12 +1661,12 @@ DvtLedGaugeDefaults.VERSION_1 = {
   'type': 'circle'
 };
 /**
- * Renderer for DvtLedGauge.
+ * Renderer for dvt.LedGauge.
  * @class
  */
 var DvtLedGaugeRenderer = new Object();
 
-DvtObj.createSubclass(DvtLedGaugeRenderer, DvtObj, 'DvtLedGaugeRenderer');
+dvt.Obj.createSubclass(DvtLedGaugeRenderer, dvt.Obj);
 
 /** @private **/
 DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_CMDS = 'M-42,36.6Q-50,36.6,-46.54,28.6L-4,-43.07Q0,-50,4,-43.07L46.54,28.6Q50,36.6,42,36.6Z';
@@ -1694,8 +1710,8 @@ DvtLedGaugeRenderer._SHAPE_HUMAN_CMDS = 'M -0.06059525142297417 -50.868420651084
 
 /**
  * Renders the gauge in the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
@@ -1705,7 +1721,7 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
     var options = gauge.getOptions();
     var outerGap = options['__layout']['outerGap'];
     var size = options && (options['size'] >= 0 || options['size'] < 1) ? Math.sqrt(options['size']) : 1;
-    var bounds = new DvtRectangle(outerGap + ((width - 2 * outerGap) * (1 - size) / 2), outerGap + ((height - 2 * outerGap) * (1 - size) / 2), (width - 2 * outerGap) * size, (height - 2 * outerGap) * size);
+    var bounds = new dvt.Rectangle(outerGap + ((width - 2 * outerGap) * (1 - size) / 2), outerGap + ((height - 2 * outerGap) * (1 - size) / 2), (width - 2 * outerGap) * size, (height - 2 * outerGap) * size);
 
     // Render the LED shape first
     DvtLedGaugeRenderer._renderShape(gauge, container, bounds);
@@ -1715,7 +1731,7 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
 
     // Render the title on top of the LED
     var bTitleRendered = false;
-    var labelColor = DvtColorUtils.getContrastingTextColor(DvtGaugeStyleUtils.getColor(gauge));
+    var labelColor = dvt.ColorUtils.getContrastingTextColor(DvtGaugeStyleUtils.getColor(gauge));
     if (DvtGaugeStyleUtils.hasTitle(options)) {
       var titleValign = 'middle';
       var titleBounds = DvtLedGaugeRenderer._getLabelBounds(gauge, container, bounds);
@@ -1725,7 +1741,7 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
         titleValign = 'top';
       }
       // Use the specified label color unless in high contrast mode
-      if (!DvtAgent.isHighContrast() && options['title']['style'].getStyle('color') != null) {
+      if (!dvt.Agent.isHighContrast() && options['title']['style'].getStyle('color') != null) {
         bTitleRendered = DvtGaugeRenderer.renderTitle(gauge, container, titleBounds, null, titleValign);
       }
       else {
@@ -1743,7 +1759,7 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
       }
 
       // Use the specified label color unless in high contrast mode
-      if (!DvtAgent.isHighContrast() && options['metricLabel']['style'].getStyle('color') != null) {
+      if (!dvt.Agent.isHighContrast() && options['metricLabel']['style'].getStyle('color') != null) {
         DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, null, 'center', valign);
       }
       else {
@@ -1752,14 +1768,14 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
     }
   }
   else // Render the empty text
-    DvtGaugeRenderer.renderEmptyText(gauge, container, new DvtRectangle(0, 0, width, height));
+    DvtGaugeRenderer.renderEmptyText(gauge, container, new dvt.Rectangle(0, 0, width, height));
 };
 
 /**
  * Renders the led shape into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
@@ -1779,7 +1795,7 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // Initialize the cache if not done already.  The cache stores the paths centered at 0,0 and at scale 100.
   if (!DvtLedGaugeRenderer._cache)
-    DvtLedGaugeRenderer._cache = new DvtCache(50);
+    DvtLedGaugeRenderer._cache = new dvt.Cache(50);
 
   // Render the LED shape
   var shape;
@@ -1788,13 +1804,13 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   // Scale is relative to reference size of 100
   var scale = Math.min(bounds.w / 100, bounds.h / 100);
   if (type == 'rectangle') {
-    shape = new DvtRect(context, bounds.x, bounds.y, bounds.w, bounds.h);
+    shape = new dvt.Rect(context, bounds.x, bounds.y, bounds.w, bounds.h);
   }
   else if (type == 'diamond') {
-    shape = new DvtPolygon(context, [cx - r, cy, cx, cy - r, cx + r, cy, cx, cy + r]);
+    shape = new dvt.Polygon(context, [cx - r, cy, cx, cy - r, cx + r, cy, cx, cy + r]);
   }
   else if (type == 'circle') {
-    shape = new DvtCircle(context, cx, cy, r);
+    shape = new dvt.Circle(context, cx, cy, r);
   }
   else {
     if (type == 'star')
@@ -1809,28 +1825,28 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
       // Assume we're using a custom path
       cmds = DvtLedGaugeRenderer._cache.get(type);
       if (!cmds) {
-        shape = new DvtPath(context, type);
+        shape = new dvt.Path(context, type);
         // Calculate the dimensions and shift the shape to be centered at 0,0 within its containing rectangle
-        var dim = DvtDisplayableUtils.getDimForced(context, shape);
+        var dim = dvt.DisplayableUtils.getDimForced(context, shape);
         var scaleTo100 = 100 / Math.max(dim.w, dim.h);
-        cmds = DvtPathUtils.transformPath(type, - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
+        cmds = dvt.PathUtils.transformPath(type, - scaleTo100 * (dim.x + dim.w / 2), - scaleTo100 * (dim.y + dim.h / 2), scaleTo100, scaleTo100);
         DvtLedGaugeRenderer._cache.put(type, cmds);
       }
     }
 
     // These shapes are defined as polygons
     if ((!isSkyros && (type == 'triangle' || type == 'arrow')) || type == 'star') {
-      cmds = DvtPolygonUtils.scale(cmds, scale, scale);
+      cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
 
       // Translate from center of (0,0)
-      cmds = DvtPolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
-      shape = new DvtPolygon(context, cmds);
+      cmds = dvt.PolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+      shape = new dvt.Polygon(context, cmds);
     }
     // All others use paths
     else {
       // Translate from center of (0,0)
-      cmds = DvtPathUtils.transformPath(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, scale, scale);
-      shape = new DvtPath(context, cmds);
+      cmds = dvt.PathUtils.transformPath(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, scale, scale);
+      shape = new dvt.Path(context, cmds);
     }
   }
 
@@ -1838,17 +1854,17 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   if (isSkyros || options['visualEffects'] == 'none')
     shape.setSolidFill(color);
   else {
-    var arColors = [DvtColorUtils.adjustHSL(color, 0, - .09, .04), DvtColorUtils.adjustHSL(color, 0, - .04, - .05)];
+    var arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .09, .04), dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05)];
     var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
     var gradientRotation = type == 'arrow' || type == 'star' || type == 'triangle' ? rotation - 90 : 270;
-    shape.setFill(new DvtLinearGradientFill(gradientRotation, arColors, [1, 1], [0, 1]));
+    shape.setFill(new dvt.LinearGradientFill(gradientRotation, arColors, [1, 1], [0, 1]));
   }
   if (borderColor)
     shape.setSolidStroke(borderColor);
 
   // rotate the shape if needed
   var rotation = isSkyros ? options['rotation'] + 90 : options['rotation'];
-  if (rotation && (type == 'arrow' || type == 'triangle' || (shape instanceof DvtPath && type != 'human')))
+  if (rotation && (type == 'arrow' || type == 'triangle' || (shape instanceof dvt.Path && type != 'human')))
     shape = DvtLedGaugeRenderer._rotate(gauge, container, shape, bounds);
 
   // Add the shape to the container
@@ -1857,24 +1873,24 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
 /**
  * Scales and rotates the shape into the specified bounds.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtDisplayable} shape The shape for the gauge.
- * @param {DvtRectangle} bounds The bounds of the shape.
- * @return {DvtDisplayable} The scaled shape
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Displayable} shape The shape for the gauge.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
+ * @return {dvt.Displayable} The scaled shape
  * @private
  */
 DvtLedGaugeRenderer._rotate = function(gauge, container, shape, bounds) {
   var options = gauge.getOptions();
 
   // Add containers for the tranforms, add to display list to calc dimensions
-  var translateGroup = new DvtContainer(gauge.getCtx());
+  var translateGroup = new dvt.Container(gauge.getCtx());
   container.addChild(translateGroup);
   translateGroup.addChild(shape);
 
   // Rotate the shape, non-90 degree rotation values are ignored
   var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
-  var rotationMatrix = new DvtMatrix();
+  var rotationMatrix = new dvt.Matrix();
   rotationMatrix.rotate(Math.PI * (rotation) / 180);
   shape.setMatrix(rotationMatrix);
 
@@ -1883,7 +1899,7 @@ DvtLedGaugeRenderer._rotate = function(gauge, container, shape, bounds) {
   var tx = (bounds.x + bounds.w / 2) - (groupDims.x + groupDims.w / 2);
   var ty = (bounds.y + bounds.h / 2) - (groupDims.y + groupDims.h / 2);
 
-  var matrix = new DvtMatrix();
+  var matrix = new dvt.Matrix();
   matrix.translate(tx, ty);
   translateGroup.setMatrix(matrix);
 
@@ -1893,9 +1909,9 @@ DvtLedGaugeRenderer._rotate = function(gauge, container, shape, bounds) {
 
 /**
  * Renders the visual effects for the shape into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderVisualEffects = function(gauge, container, bounds) {
@@ -1922,17 +1938,17 @@ DvtLedGaugeRenderer._renderVisualEffects = function(gauge, container, bounds) {
 
 /**
  * Renders the visual effects for the rectangle LED into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderOverlayRectangle = function(gauge, container, bounds) {
   // Overlay Shape
   var dx = bounds.w * 0.04;
   var dy = bounds.h * 0.04;
-  var overlayBounds = new DvtRectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
-  var overlay = new DvtRect(gauge.getCtx(), overlayBounds.x, overlayBounds.y, overlayBounds.w, overlayBounds.h);
+  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
+  var overlay = new dvt.Rect(gauge.getCtx(), overlayBounds.x, overlayBounds.y, overlayBounds.w, overlayBounds.h);
   overlay.setMouseEnabled(false);
   container.addChild(overlay);
 
@@ -1940,26 +1956,26 @@ DvtLedGaugeRenderer._renderOverlayRectangle = function(gauge, container, bounds)
   var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
   var arAlphas = [0.75, 0.5, 0.15, 0, 0.2, 0.4, 0.2];
   var arStops = [0, 0.05, 0.4, 0.6, 0.8, 0.9, 1.0];
-  var gradient = new DvtLinearGradientFill(270, arColors, arAlphas, arStops);
+  var gradient = new dvt.LinearGradientFill(270, arColors, arAlphas, arStops);
   overlay.setFill(gradient);
 };
 
 /**
  * Renders the visual effects for the diamond LED into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderOverlayDiamond = function(gauge, container, bounds) {
   // Overlay Shape
   var dx = bounds.w * 0.05;
   var dy = bounds.h * 0.05;
-  var overlayBounds = new DvtRectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
+  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
   var cx = overlayBounds.x + overlayBounds.w / 2;
   var cy = overlayBounds.y + overlayBounds.h / 2;
   var r = Math.min(overlayBounds.w, overlayBounds.h) / 2;
-  var overlay = new DvtPolygon(gauge.getCtx(), [cx - r, cy, cx, cy - r, cx + r, cy, cx, cy + r]);
+  var overlay = new dvt.Polygon(gauge.getCtx(), [cx - r, cy, cx, cy - r, cx + r, cy, cx, cy + r]);
   overlay.setMouseEnabled(false);
   container.addChild(overlay);
 
@@ -1967,15 +1983,15 @@ DvtLedGaugeRenderer._renderOverlayDiamond = function(gauge, container, bounds) {
   var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
   var arAlphas = [0.75, 0.5, 0.15, 0, 0.2, 0.4, 0.2];
   var arStops = [0, 0.05, 0.4, 0.6, 0.8, 0.9, 1.0];
-  var gradient = new DvtLinearGradientFill(270, arColors, arAlphas, arStops);
+  var gradient = new dvt.LinearGradientFill(270, arColors, arAlphas, arStops);
   overlay.setFill(gradient);
 };
 
 /**
  * Renders the visual effects for the triangle LED into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderOverlayTriangle = function(gauge, container, bounds) {
@@ -1983,15 +1999,15 @@ DvtLedGaugeRenderer._renderOverlayTriangle = function(gauge, container, bounds) 
   var dx = bounds.w * 0.05;
   var dy = bounds.h * 0.05;
   var isSkyros = DvtGaugeDefaults.isSkyrosSkin(gauge);
-  var overlayBounds = new DvtRectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
+  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
   var cmds = DvtLedGaugeRenderer._SKYROS_SHAPE_TRIANGLE_INNER_CMDS;
   var scale = Math.min(overlayBounds.w / 100, overlayBounds.h / 100);
-  cmds = DvtPolygonUtils.scale(cmds, scale, scale);
+  cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
 
   // Translate from center of (0,0)
-  cmds = DvtPolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+  cmds = dvt.PolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
 
-  var overlay = new DvtPolygon(gauge.getCtx(), cmds);
+  var overlay = new dvt.Polygon(gauge.getCtx(), cmds);
   // Calculate the gradient params
   var options = gauge.getOptions();
   var rotation = options && (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
@@ -1999,7 +2015,7 @@ DvtLedGaugeRenderer._renderOverlayTriangle = function(gauge, container, bounds) 
   var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
   var arAlphas = [0.3, 0.55, 0.0, 0.25, 0.1];
   var arStops = [0, 0.05, 0.4, 0.9, 1.0];
-  var gradient = new DvtLinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
+  var gradient = new dvt.LinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
   overlay.setFill(gradient);
 
   // Add to display list
@@ -2010,9 +2026,9 @@ DvtLedGaugeRenderer._renderOverlayTriangle = function(gauge, container, bounds) 
 
 /**
  * Renders the visual effects for the arrow LED into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderOverlayArrow = function(gauge, container, bounds) {
@@ -2020,16 +2036,16 @@ DvtLedGaugeRenderer._renderOverlayArrow = function(gauge, container, bounds) {
   var dx = bounds.w * 0.05;
   var dy = bounds.h * 0.05;
   var isSkyros = DvtGaugeDefaults.isSkyrosSkin(gauge);
-  var overlayBounds = new DvtRectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
+  var overlayBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
   var cmds = DvtLedGaugeRenderer._SKYROS_SHAPE_ARROW_INNER_CMDS;
 
   var scale = Math.min(overlayBounds.w / 100, overlayBounds.h / 100);
-  cmds = DvtPolygonUtils.scale(cmds, scale, scale);
+  cmds = dvt.PolygonUtils.scale(cmds, scale, scale);
 
   // Translate from center of (0,0)
-  cmds = DvtPolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+  cmds = dvt.PolygonUtils.translate(cmds, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
 
-  var overlay = new DvtPolygon(gauge.getCtx(), cmds);
+  var overlay = new dvt.Polygon(gauge.getCtx(), cmds);
 
   // Calculate the gradient params
   var options = gauge.getOptions();
@@ -2038,7 +2054,7 @@ DvtLedGaugeRenderer._renderOverlayArrow = function(gauge, container, bounds) {
   var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
   var arAlphas = [0.3, 0.55, 0.0, 0.25, 0.1];
   var arStops = [0, 0.05, 0.4, 0.9, 1.0];
-  var gradient = new DvtLinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
+  var gradient = new dvt.LinearGradientFill(gradientRotation, arColors, arAlphas, arStops);
   overlay.setFill(gradient);
 
   // Add to display list
@@ -2049,23 +2065,23 @@ DvtLedGaugeRenderer._renderOverlayArrow = function(gauge, container, bounds) {
 
 /**
  * Renders the visual effects for the circle LED into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
  * @private
  */
 DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
   // The circle uses two overlays.
   var dx = bounds.w * 0.05;
   var dy = bounds.h * 0.05;
-  var gradientBounds = new DvtRectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
+  var gradientBounds = new dvt.Rectangle(bounds.x + dx, bounds.y + dy, bounds.w - 2 * dx, bounds.h - 2 * dy);
 
   //********************* First Overlay: "Overlay" ************************/
   // Shape
   var cx = gradientBounds.x + gradientBounds.w / 2;
   var cy = gradientBounds.y + gradientBounds.h / 2;
   var radius = Math.min(gradientBounds.w, gradientBounds.h) / 2;
-  var overlay = new DvtCircle(gauge.getCtx(), cx, cy, radius);
+  var overlay = new dvt.Circle(gauge.getCtx(), cx, cy, radius);
   overlay.setMouseEnabled(false);
   container.addChild(overlay);
 
@@ -2076,7 +2092,7 @@ DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
   var gradientCx = cx;
   var gradientCy = cy - radius * 0.6;// per UX
   var gradientRadius = radius * 1.5;
-  var gradient = new DvtRadialGradientFill(arColors, arAlphas, arStops, gradientCx, gradientCy, gradientRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
+  var gradient = new dvt.RadialGradientFill(arColors, arAlphas, arStops, gradientCx, gradientCy, gradientRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
   overlay.setFill(gradient);
 
   //********************* Second Overlay: "Highlight" ************************/
@@ -2084,7 +2100,7 @@ DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
   var rx = radius * 0.6;// per UX
   var ry = radius * 0.4;// per UX
   cy = cy - 0.3 * ry;// per UX
-  var highlight = new DvtOval(gauge.getCtx(), cx, cy - ry, rx, ry);
+  var highlight = new dvt.Oval(gauge.getCtx(), cx, cy - ry, rx, ry);
   highlight.setMouseEnabled(false);
   container.addChild(highlight);
 
@@ -2095,16 +2111,16 @@ DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
   var highlightCx = cx;
   var highlightCy = cy;
   var highlightRadius = rx;
-  var highlightGradient = new DvtRadialGradientFill(highlightColors, highlightAlphas, highlightStops, highlightCx, highlightCy, highlightRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
+  var highlightGradient = new dvt.RadialGradientFill(highlightColors, highlightAlphas, highlightStops, highlightCx, highlightCy, highlightRadius, [gradientBounds.x, gradientBounds.y, gradientBounds.w, gradientBounds.h]);
   highlight.setFill(highlightGradient);
 };
 
 /**
  * Find correct label bounds
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The bounds of the shape.
- * @return {DvtRectangle} Bounds for the label
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The bounds of the shape.
+ * @return {dvt.Rectangle} Bounds for the label
  * @private
  */
 DvtLedGaugeRenderer._getLabelBounds = function(gauge, container, bounds) {
@@ -2192,9 +2208,9 @@ DvtLedGaugeRenderer._getLabelBounds = function(gauge, container, bounds) {
     newWidth -= minDim * .3;
     newHeight -= minDim * .3;
   }
-  return new DvtRectangle(newX, newY, newWidth, newHeight);
+  return new dvt.Rectangle(newX, newY, newWidth, newHeight);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -2204,23 +2220,21 @@ DvtLedGaugeRenderer._getLabelBounds = function(gauge, container, bounds) {
  * @class
  * @constructor
  * @extends {DvtGauge}
- * @export
  */
-var DvtStatusMeterGauge = function() {};
+dvt.StatusMeterGauge = function() {};
 
-DvtObj.createSubclass(DvtStatusMeterGauge, DvtGauge, 'DvtStatusMeterGauge');
+dvt.Obj.createSubclass(dvt.StatusMeterGauge, DvtGauge);
 
 
 /**
- * Returns a new instance of DvtStatusMeterGauge.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.StatusMeterGauge.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtStatusMeterGauge}
- * @export
+ * @return {dvt.StatusMeterGauge}
  */
-DvtStatusMeterGauge.newInstance = function(context, callback, callbackObj) {
-  var gauge = new DvtStatusMeterGauge();
+dvt.StatusMeterGauge.newInstance = function(context, callback, callbackObj) {
+  var gauge = new dvt.StatusMeterGauge();
   gauge.Init(context, callback, callbackObj);
   return gauge;
 };
@@ -2229,15 +2243,15 @@ DvtStatusMeterGauge.newInstance = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtStatusMeterGauge.prototype.Init = function(context, callback, callbackObj) {
-  DvtStatusMeterGauge.superclass.Init.call(this, context, callback, callbackObj);
+dvt.StatusMeterGauge.prototype.Init = function(context, callback, callbackObj) {
+  dvt.StatusMeterGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
   this.Defaults = new DvtStatusMeterGaugeDefaults();
 
   /**
    * The axis info of the chart. This will be set during render time and is used for editing support.
-   * @type {DvtAxisInfo}
+   * @type {dvt.AxisInfo}
    */
   this.__axisInfo = null;
 };
@@ -2246,16 +2260,16 @@ DvtStatusMeterGauge.prototype.Init = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtStatusMeterGauge.prototype.SetOptions = function(options) {
+dvt.StatusMeterGauge.prototype.SetOptions = function(options) {
   // Combine the user options with the defaults and store
-  DvtStatusMeterGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
+  dvt.StatusMeterGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
 
 
 /**
  * @override
  */
-DvtStatusMeterGauge.prototype.Render = function(container, width, height) 
+dvt.StatusMeterGauge.prototype.Render = function(container, width, height) 
 {
   DvtStatusMeterGaugeRenderer.render(this, container, width, height);
 };
@@ -2264,7 +2278,7 @@ DvtStatusMeterGauge.prototype.Render = function(container, width, height)
 /**
  * @override
  */
-DvtStatusMeterGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, animationDuration) {
+dvt.StatusMeterGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, animationDuration) {
   var animatedObjs = [];
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
@@ -2275,21 +2289,21 @@ DvtStatusMeterGauge.prototype.CreateAnimationOnDisplay = function(objs, animatio
       obj.setAnimationParams([endState[0], endState[1], endState[3], endState[3]]);
     else if (this.Options['orientation'] == 'circular')
       obj.setAnimationParams([endState[0], endState[1], 0, endState[3], endState[4]]);
-    var animation = new DvtCustomAnimation(this.getCtx(), obj, animationDuration);
-    animation.getAnimator().addProp(DvtAnimator.TYPE_NUMBER_ARRAY, obj, obj.getAnimationParams, obj.setAnimationParams, endState);
-    animation.getAnimator().setEasing(function(progress) {return DvtEasing.backOut(progress, 0.7);});
+    var animation = new dvt.CustomAnimation(this.getCtx(), obj, animationDuration);
+    animation.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, obj, obj.getAnimationParams, obj.setAnimationParams, endState);
+    animation.getAnimator().setEasing(function(progress) {return dvt.Easing.backOut(progress, 0.7);});
     animatedObjs.push(animation);
   }
-  return new DvtParallelPlayable(this.getCtx(), animatedObjs);
+  return new dvt.ParallelPlayable(this.getCtx(), animatedObjs);
 };
 
 
 /**
  * @override
  */
-DvtStatusMeterGauge.prototype.GetValueAt = function(x, y) {
+dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
   var options = this.Options;
-  var isRTL = DvtAgent.isRightToLeft(this.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   if (options['orientation'] == 'horizontal') {
     return this.__axisInfo.getBoundedValueAt(x);
   }
@@ -2299,7 +2313,7 @@ DvtStatusMeterGauge.prototype.GetValueAt = function(x, y) {
   else if (options['orientation'] == 'circular') {
     var angleExtent = options['angleExtent'];
     var angleRads = Math.atan2(y - this.cy, x - this.cx);
-    var angle = isRTL ? 180 - (DvtMath.radsToDegrees(angleRads) - options['startAngle']) : DvtMath.radsToDegrees(angleRads) - (360 - options['startAngle']);
+    var angle = isRTL ? 180 - (dvt.Math.radsToDegrees(angleRads) - options['startAngle']) : dvt.Math.radsToDegrees(angleRads) - (360 - options['startAngle']);
     angle = (angle + 720) % 360;
 
     // Calculate and adjust ratio to keep in bounds
@@ -2327,7 +2341,7 @@ var DvtStatusMeterGaugeDefaults = function() {
   this.Init({'skyros': DvtStatusMeterGaugeDefaults.VERSION_1, 'alta': DvtStatusMeterGaugeDefaults.SKIN_ALTA});
 };
 
-DvtObj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults, 'DvtStatusMeterGaugeDefaults');
+dvt.Obj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults);
 
 
 /**
@@ -2335,7 +2349,7 @@ DvtObj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults, 'DvtStatusM
  */
 DvtStatusMeterGaugeDefaults.SKIN_ALTA = {
   'color': '#393737',
-  'metricLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
+  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   'plotArea' : {'color': '#E4E8EA'}
 };
 
@@ -2349,27 +2363,24 @@ DvtStatusMeterGaugeDefaults.VERSION_1 = {
   'color': '#313842',
   'indicatorSize': 1,
   'innerRadius': .7,
-  'metricLabel': {'style': new DvtCSSStyle('font-family: tahoma, sans-serif;'), 'position': 'auto'},
+  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS), 'position': 'auto'},
   'orientation': 'horizontal',
   'plotArea' : {'color': '#AAAAAA', 'rendered': 'auto', 'borderRadius': 'auto'},
   'startAngle': 90,
   'thresholdDisplay': 'onIndicator'
 };
 /**
- * Renderer for DvtStatusMeterGauge.
+ * Renderer for dvt.StatusMeterGauge.
  * @class
  */
 var DvtStatusMeterGaugeRenderer = new Object();
 
-DvtObj.createSubclass(DvtStatusMeterGaugeRenderer, DvtObj, 'DvtStatusMeterGaugeRenderer');
-
-/** @private **/
-DvtStatusMeterGaugeRenderer._MIN_CORNER_RADIUS = 2.5;
+dvt.Obj.createSubclass(DvtStatusMeterGaugeRenderer, dvt.Obj);
 
 /**
  * Renders the gauge in the specified area.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
@@ -2378,7 +2389,7 @@ DvtStatusMeterGaugeRenderer.render = function(gauge, container, width, height) {
     // Allocate the outer gap for the component
     var options = gauge.getOptions();
     var outerGap = options['__layout']['outerGap'];
-    var bounds = new DvtRectangle(outerGap, outerGap, width - 2 * outerGap, height - 2 * outerGap);
+    var bounds = new dvt.Rectangle(outerGap, outerGap, width - 2 * outerGap, height - 2 * outerGap);
 
     if (options['orientation'] == 'horizontal' || options['orientation'] == 'vertical') {
       // Render metric label outside of plot area. Metric labels within the plot area are handled within
@@ -2393,28 +2404,29 @@ DvtStatusMeterGaugeRenderer.render = function(gauge, container, width, height) {
     }
   }
   else // Render the empty text
-    DvtGaugeRenderer.renderEmptyText(gauge, container, new DvtRectangle(0, 0, width, height));
+    DvtGaugeRenderer.renderEmptyText(gauge, container, new dvt.Rectangle(0, 0, width, height));
 };
 
 
 /**
  * Renders the circular shape into the specified area.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bounds) {
   var options = gauge.getOptions();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var containerBounds = bounds.clone();
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var percentFill = 0;
   var labelBounds = null;
   var value = options['value'];
   var innerRadius = options['innerRadius'];
   var thresholds = options['thresholds'];
-  var maxDiameter = null;
-  var startAngleRads = DvtMath.TWO_PI - DvtMath.degreesToRads(options['startAngle']);
-  var angleExtentRads = DvtMath.degreesToRads(options['angleExtent']);
+  var maxDiameter, maxInnerDiameter = null;
+  var startAngleRads = dvt.Math.TWO_PI - dvt.Math.degreesToRads(options['startAngle']);
+  var angleExtentRads = dvt.Math.degreesToRads(options['angleExtent']);
   var endAngle = (startAngleRads + angleExtentRads) % (2 * Math.PI);
 
   // Store center for editable gauges
@@ -2423,6 +2435,7 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
   // Determine start quadrant and end quadrent
   if (angleExtentRads != 2 * Math.PI) {
     labelBounds = DvtStatusMeterGaugeRenderer._adjustCenterAndBounds(gauge, innerRadius, startAngleRads, angleExtentRads, endAngle, bounds, isRTL);
+    maxInnerDiameter = gauge.maxInnerDiameter;
   }
   maxDiameter = maxDiameter ? maxDiameter : Math.min(bounds.w, bounds.h);
   var innerRadiusLength = maxDiameter * .5 * innerRadius;
@@ -2437,16 +2450,15 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
   var labelHalign = 'center';
   var labelValign = 'middle';
   if (!labelBounds) {
-    var maxInnerDiameter = Math.min(bounds.w, bounds.h) * innerRadius;
-    innerRadius ? innerRadius * Math.min(bounds.w, bounds.h) : Math.min(bounds.w, bounds.h);
+    maxInnerDiameter = Math.min(bounds.w, bounds.h) * innerRadius;
     // Center label bounds within the space available.
-    labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (5 / 7));
+    labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (5 / 7));
   }
 
   var bTitleRendered = false;
   if (DvtGaugeStyleUtils.hasTitle(options)) {
     var titleValign = 'middle';
-    var titleSpace = new DvtRectangle(labelBounds.x, labelBounds.y, labelBounds.w, labelBounds.h);
+    var titleSpace = new dvt.Rectangle(labelBounds.x, labelBounds.y, labelBounds.w, labelBounds.h);
     // If both the title and metricLabel are rendered 1/3 of the available space is allocated for the title
     if (options['metricLabel']['rendered'] != 'off') {
       titleSpace.y = titleSpace.y + titleSpace.h * .6;
@@ -2507,18 +2519,20 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
       DvtStatusMeterGaugeRenderer._drawCircularReferenceLine(gauge, container, bounds, angle, referenceLineColor, referenceLineWidth, referenceLineStyle);
     }
   }
+  if (options['center']['renderer'])
+    DvtStatusMeterGaugeRenderer._renderCenterContent(gauge, options, bounds, containerBounds, maxInnerDiameter);
 };
 
 /**
  * Renders the status meter shape into the specified area.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   var options = gauge.getOptions();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var isVert = (options['orientation'] == 'vertical');
 
   // Create an axis info to find the coords of values.
@@ -2536,7 +2550,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   axisOptions['tickLabel'] = {
     'rendered' : 'off'
   };
-  var axisInfo = DvtAxisInfo.newInstance(gauge.getCtx(), axisOptions, bounds);
+  var axisInfo = dvt.AxisInfo.newInstance(gauge.getCtx(), axisOptions, bounds);
 
   // Store the axisInfo on the gauge for editing support
   gauge.__axisInfo = axisInfo;
@@ -2606,7 +2620,7 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
       var currentThresholdIndex = i;
       var plotArea = DvtStatusMeterGaugeRenderer._createShape(gauge, gauge.getCtx(), plotX1, plotX2, plotY1, plotY2);
 
-      var cp = new DvtClipPath('pacp' + gauge.getId());
+      var cp = new dvt.ClipPath('pacp' + gauge.getId());
 
       // For each threshold clip everything above the particular threshold maximum from the plot area shape
       if (i == thresholds.length - 1) {
@@ -2656,10 +2670,10 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   // Apply style properties
   var color = DvtGaugeStyleUtils.getColor(gauge);
   if (!DvtGaugeDefaults.isSkyrosSkin(gauge) && options['visualEffects'] != 'none') {
-    var arColors = [DvtColorUtils.adjustHSL(color, 0, - .09, .04), DvtColorUtils.adjustHSL(color, 0, - .04, - .05)];
+    var arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .09, .04), dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05)];
     var arAlphas = [1, 1];
     var arStops = [0, 1];
-    var gradient = new DvtLinearGradientFill(gradientAngle, arColors, arAlphas, arStops);
+    var gradient = new dvt.LinearGradientFill(gradientAngle, arColors, arAlphas, arStops);
     shape.setFill(gradient);
   }
   else
@@ -2689,26 +2703,26 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
         referenceLineSize = ((1 - indicatorSize) / 2 + indicatorSize) * bounds.w;
         xCoord = bounds.x + ((1 - indicatorSize) / 4) * bounds.w;
         yCoord = axisInfo.getUnboundedCoordAt(value);
-        referenceLine = new DvtLine(gauge.getCtx(), xCoord, yCoord, xCoord + referenceLineSize, yCoord);
+        referenceLine = new dvt.Line(gauge.getCtx(), xCoord, yCoord, xCoord + referenceLineSize, yCoord);
       }
       else {
         referenceLineSize = ((1 - indicatorSize) / 2 + indicatorSize) * bounds.h;
         xCoord = axisInfo.getUnboundedCoordAt(value);
         yCoord = bounds.y + ((1 - indicatorSize) / 4) * bounds.h;
-        referenceLine = new DvtLine(gauge.getCtx(), xCoord, yCoord, xCoord, yCoord + referenceLineSize);
+        referenceLine = new dvt.Line(gauge.getCtx(), xCoord, yCoord, xCoord, yCoord + referenceLineSize);
       }
       var lineWidth = referenceObjects[i]['lineWidth'] ? referenceObjects[i]['lineWidth'] : 2;
-      var stroke = new DvtSolidStroke(refColor, 1, lineWidth);
+      var stroke = new dvt.SolidStroke(refColor, 1, lineWidth);
       if (referenceObjects[i]['lineStyle'])
-        stroke.setStyle(DvtStroke.convertTypeString(referenceObjects[i]['lineStyle']));
+        stroke.setStyle(dvt.Stroke.convertTypeString(referenceObjects[i]['lineStyle']));
       referenceLine.setStroke(stroke);
       container.addChild(referenceLine);
 
       // Shadowing effect
       // Fix for : Shadow causes the reference line to disappear in IE11
-      if (!DvtAgent.isPlatformIE() && options['visualEffects'] != 'none') {
-        var shadowRGBA = DvtColorUtils.makeRGBA(0, 0, 0, 0.8);
-        var shadow = new DvtShadow(shadowRGBA, 0.75, 3, 3, 50, 1, 2, false, false, false);
+      if (!dvt.Agent.isPlatformIE() && options['visualEffects'] != 'none') {
+        var shadowRGBA = dvt.ColorUtils.makeRGBA(0, 0, 0, 0.8);
+        var shadow = new dvt.Shadow(shadowRGBA, 0.75, 3, 3, 50, 1, 2, false, false, false);
         referenceLine.addDrawEffect(shadow);
       }
     }
@@ -2731,13 +2745,13 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
 /**
  * Creates and returns the shape for the statusmeter.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContext} context
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Context} context
  * @param {number} x1
  * @param {number} x2
  * @param {number} y1
  * @param {number} y2
- * @return {DvtPath}
+ * @return {dvt.Path}
  * @private
  */
 DvtStatusMeterGaugeRenderer._createShape = function(gauge, context, x1, x2, y1, y2) {
@@ -2749,16 +2763,16 @@ DvtStatusMeterGaugeRenderer._createShape = function(gauge, context, x1, x2, y1, 
   var multiplier = options['orientation'] == 'vertical' ? width : height;
   var defaultValue = DvtGaugeDefaults.isSkyrosSkin(gauge) ? '25%' : '15%';
   var borderRadiusInput = options['plotArea']['borderRadius'] != 'auto' ? options['plotArea']['borderRadius'] : options['borderRadius'];
-  var cmds = DvtStatusMeterGaugeRenderer.rectangleWithBorderRadius(x, y, width, height, borderRadiusInput, multiplier, defaultValue);
-  return new DvtPath(context, cmds);
+  var cmds = dvt.PathUtils.rectangleWithBorderRadius(x, y, width, height, borderRadiusInput, multiplier, defaultValue);
+  return new dvt.Path(context, cmds);
 };
 
 
 /**
  * Renders the visual effects for the shape into the specified area.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtShape} shape The shape to use for the visual effects.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Shape} shape The shape to use for the visual effects.
  * @param {boolean} bRender True if the shape should be rendered at this time.
  * @param {number} gradientAngle
  * @private
@@ -2774,7 +2788,7 @@ DvtStatusMeterGaugeRenderer._renderVisualEffects = function(gauge, container, sh
     var arColors = ['#FFFFFF', '#FFFFFF', '#FFFFFF'];
     var arAlphas = [0.5, 0.3125, 0];
     var arStops = [0, 0.3, 1.0];
-    var gradient = new DvtLinearGradientFill(gradientAngle, arColors, arAlphas, arStops);
+    var gradient = new dvt.LinearGradientFill(gradientAngle, arColors, arAlphas, arStops);
     shape.setFill(gradient);
     gauge.__shapes.push(shape);
 
@@ -2788,9 +2802,9 @@ DvtStatusMeterGaugeRenderer._renderVisualEffects = function(gauge, container, sh
 
 /**
  * Renders the visual effects for the plot area.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtShape} shape The plot area.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Shape} shape The plot area.
  * @param {string} color
  * @param {number} gradientAngle
  * @private
@@ -2807,12 +2821,12 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
 
   // Gradient
   if (DvtGaugeDefaults.isSkyrosSkin(gauge)) {
-    arColors = [DvtColorUtils.getDarker(color, .9), color, DvtColorUtils.getBrighter(color, .7)];
-    gradient = new DvtLinearGradientFill(gradientAngle, arColors, [1, 1, 1], [0, 0.04, 0.73]);
+    arColors = [dvt.ColorUtils.getDarker(color, .9), color, dvt.ColorUtils.getBrighter(color, .7)];
+    gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1, 1], [0, 0.04, 0.73]);
   }
   else {
-    arColors = [DvtColorUtils.adjustHSL(color, 0, - .04, - .05), DvtColorUtils.adjustHSL(color, 0, - .09, .04)];
-    gradient = new DvtLinearGradientFill(gradientAngle, arColors, [1, 1], [0, 1]);
+    arColors = [dvt.ColorUtils.adjustHSL(color, 0, - .04, - .05), dvt.ColorUtils.adjustHSL(color, 0, - .09, .04)];
+    gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1], [0, 1]);
   }
   shape.setFill(gradient);
 };
@@ -2821,16 +2835,16 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
 /**
  * Renders the label into the specified area for vertical/horizontal status meter gauges with the label outside the plotarea.
  * Updates the bounds after rendering to reserve space for the labels.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, container, bounds) {
   var options = gauge.getOptions();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var isVert = options['orientation'] == 'vertical';
-  var label = new DvtOutputText(gauge.getCtx(), '');
+  var label = new dvt.OutputText(gauge.getCtx(), '');
   var labelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
   var labelGap = options['__layout']['labelGap'];
   var labelStyle = options['metricLabel']['style'];
@@ -2846,9 +2860,9 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
   if (isVert && options['metricLabel']['rendered'] == 'on') {
     var bound = options['max'] > 0 ? options['max'] : options['min'];
     var maxValue = DvtGaugeRenderer.getFormattedMetricLabel(bound, gauge);
-    var maxLabel = new DvtOutputText(gauge.getCtx(), maxValue);
+    var maxLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
     maxLabel.setCSSStyle(labelStyle);
-    var computedLabelBounds = new DvtRectangle(bounds.x, bounds.y + .8 * bounds.h, bounds.w, .2 * (bounds.h));
+    var computedLabelBounds = new dvt.Rectangle(bounds.x, bounds.y + .8 * bounds.h, bounds.w, .2 * (bounds.h));
     var size = labelStyle.getStyle('font-size');
     size = size ? parseInt(size) : maxLabel.getOptimalFontSize(computedLabelBounds);
     maxLabelDims = maxLabel.measureDimensions();
@@ -2861,7 +2875,7 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
     label.setY(bounds.y + bounds.h);
     bounds.h -= labelGap;
     label.alignCenter();
-    DvtTextUtils.fitText(label, bounds.w, bounds.h, container);
+    dvt.TextUtils.fitText(label, bounds.w, bounds.h, container);
   }
   // Allocate space for the horizontal label
   else if (!isVert && options['metricLabel']['rendered'] == 'on') {
@@ -2880,7 +2894,7 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
     if (options['max'] > 0 || options['plotArea']['rendered'] != 'off' || !((options['plotArea']['rendered'] == 'auto') && (options['thresholdDisplay'] == 'onIndicator'))) {
       var bound = options['max'] > 0 ? options['max'] : options['min'];
       var maxValue = DvtGaugeRenderer.getFormattedMetricLabel(bound, gauge);
-      var maxLabel = new DvtOutputText(gauge.getCtx(), maxValue);
+      var maxLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
       maxLabel.setCSSStyle(labelStyle);
       maxLabel.setFontSize(size);
       maxLabelDims = maxLabel.measureDimensions();
@@ -2902,7 +2916,7 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
     // Allocate space to the left for negative values
     if (options['min'] < 0 && options['plotArea']['rendered'] != 'on' && !(options['plotArea']['rendered'] == 'auto' && (options['thresholdDisplay'] == 'onIndicator'))) {
       var minValue = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
-      var minLabel = new DvtOutputText(gauge.getCtx(), minValue);
+      var minLabel = new dvt.OutputText(gauge.getCtx(), minValue);
       minLabel.setCSSStyle(labelStyle);
       minLabel.setFontSize(size);
       var minLabelDims = minLabel.measureDimensions();
@@ -2925,19 +2939,19 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
     // Create and position the text
     label.setTextString(labelString);
     label.setX(alignCoord);
-    DvtTextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
+    dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
     label.alignRight();
 
     // Truncate to fit
-    DvtTextUtils.fitText(label, labelSpace, bounds.h, container);
+    dvt.TextUtils.fitText(label, labelSpace, bounds.h, container);
   }
 };
 
 /**
  * Renders the label into the specified area for vertical/horizontal status meter gauges with the label inside the plotarea.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {string} color The color of the background
  * @param {string} labelPosition The position of the label
  * @param {object} indicator An object containing the indicator x1, y1, x2, y2.
@@ -2947,17 +2961,17 @@ DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, contai
  */
 DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, container, bounds, color, labelPosition, indicator, plotArea, repeatedTry) {
   var options = gauge.getOptions();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var isVert = options['orientation'] == 'vertical';
   var plotAreaRendered = options['plotArea']['rendered'] == 'on';
   var hAlignment = 'center';
   var vAlignment = 'middle';
 
-  var labelSpace = new DvtRectangle(Math.min(indicator.x1, indicator.x2), Math.min(indicator.y1, indicator.y2),
+  var labelSpace = new dvt.Rectangle(Math.min(indicator.x1, indicator.x2), Math.min(indicator.y1, indicator.y2),
       Math.abs(indicator.x2 - indicator.x1), Math.abs(indicator.y2 - indicator.y1));
   var labelColor = options['metricLabel']['style'].getStyle('color');
   if (labelPosition == 'center') {
-    labelColor = labelColor ? labelColor : DvtColorUtils.getContrastingTextColor(color);
+    labelColor = labelColor ? labelColor : dvt.ColorUtils.getContrastingTextColor(color);
     if (isVert) {
       labelSpace.h -= labelSpace.w;
       labelSpace.y += (labelSpace.w / 2);
@@ -2968,7 +2982,7 @@ DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, contain
     }
   }
   else if (labelPosition == 'insideIndicatorEdge') {
-    labelColor = labelColor ? labelColor : DvtColorUtils.getContrastingTextColor(color);
+    labelColor = labelColor ? labelColor : dvt.ColorUtils.getContrastingTextColor(color);
     if (isVert) {
       labelSpace.h -= labelSpace.w;
       labelSpace.y += (labelSpace.w / 2);
@@ -3053,48 +3067,48 @@ DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, contain
 
 /**
  * Renders the title for vertical/horizontal status meter gauges.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {string} labelPosition The position of the label
  * @private
  */
 DvtStatusMeterGaugeRenderer._renderTitle = function(gauge, container, bounds, labelPosition) {
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var options = gauge.getOptions();
   var isVert = options['orientation'] == 'vertical';
-  var titleSpace = new DvtRectangle(bounds.x, bounds.y, isVert ? bounds.w : bounds.w - bounds.h, isVert ? bounds.h - bounds.w : bounds.h);
+  var titleSpace = new dvt.Rectangle(bounds.x, bounds.y, isVert ? bounds.w : bounds.w - bounds.h, isVert ? bounds.h - bounds.w : bounds.h);
   var titleString = options['title']['text'];
   if (!DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options) && options['metricLabel']['rendered'] == 'on') {
     var labelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
-    titleString = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [titleString, labelString]);
+    titleString = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [titleString, labelString]);
   }
   var titleStyle = options['title']['style'];
   var fontStyle = titleStyle.clone();
   var size = titleStyle.getStyle('font-size');
   if (!size) {
     // Calculate font size
-    var tempTitle = new DvtOutputText(gauge.getCtx(), titleString, 0, 0);
+    var tempTitle = new dvt.OutputText(gauge.getCtx(), titleString, 0, 0);
     tempTitle.setCSSStyle(titleStyle);
     tempTitle.setTextString(titleString);
     // Make size calculations based on the available height not width to have consistent size on same sized gauges
     // for horizontal gauges. For vertical gauges make calculations based on width
     if (isVert)
-      size = tempTitle.getOptimalFontSize(new DvtRectangle(titleSpace.x, titleSpace.y, titleSpace.w, Number.MAX_VALUE));
+      size = tempTitle.getOptimalFontSize(new dvt.Rectangle(titleSpace.x, titleSpace.y, titleSpace.w, Number.MAX_VALUE));
     else
-      size = tempTitle.getOptimalFontSize(new DvtRectangle(titleSpace.x, titleSpace.y, Number.MAX_VALUE, titleSpace.h));
+      size = tempTitle.getOptimalFontSize(new dvt.Rectangle(titleSpace.x, titleSpace.y, Number.MAX_VALUE, titleSpace.h));
   }
-  var title = new DvtMultilineText(gauge.getCtx(), titleString);
+  var title = new dvt.MultilineText(gauge.getCtx(), titleString);
   fontStyle.setFontSize('font-size', size.toString());
   title.setCSSStyle(fontStyle);
-  DvtTextUtils.fitText(title, titleSpace.w, titleSpace.h, gauge);
+  dvt.TextUtils.fitText(title, titleSpace.w, titleSpace.h, gauge);
   if (options['title']['position'] == 'center' || (options['title']['position'] == 'auto' && isVert)) {
-    DvtTextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
+    dvt.TextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
     title.setX(bounds.x + bounds.w / 2);
     title.alignCenter();
   }
   else {
-    DvtTextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
+    dvt.TextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
     if (!isVert && isRTL) {
       title.setX(bounds.x + bounds.w - titleSpace.h / 2);
       title.alignRight();
@@ -3115,7 +3129,7 @@ DvtStatusMeterGaugeRenderer._renderTitle = function(gauge, container, bounds, la
 /**
  * Returns the location of the point on the arc with the specified radius
  * at the specified angle.
- * @param {DvtRectangle} bounds
+ * @param {dvt.Rectangle} bounds
  * @param {number} radius
  * @param {number} angle
  * @return {object} An object with x and y properties.
@@ -3130,9 +3144,9 @@ DvtStatusMeterGaugeRenderer._calcPointOnArc = function(bounds, radius, angle) {
 
 /**
  * Draw specified segment for circular status meter
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} startAngle Start angle.
  * @param {Number} angleExtent Angle from start to end.
  * @param {Number} innerRadius Radius to inner border of arc.
@@ -3144,7 +3158,7 @@ DvtStatusMeterGaugeRenderer._calcPointOnArc = function(bounds, radius, angle) {
  */
 DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds, startAngle, angleExtent, innerRadius, outerRadius, color, isPlotArea, plotAreaBorderColor) {
   var context = gauge.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   if (isRTL) {
     startAngle = Math.PI - startAngle - angleExtent;
     startAngle = startAngle > 0 ? startAngle : startAngle + 2 * Math.PI;
@@ -3152,7 +3166,7 @@ DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds
 
   var shape;
   if (isPlotArea) {
-    shape = new DvtPath(context, DvtStatusMeterGaugeRenderer.createCircularPathCmd(bounds, startAngle, angleExtent, innerRadius, outerRadius));
+    shape = new dvt.Path(context, DvtStatusMeterGaugeRenderer.createCircularPathCmd(bounds, startAngle, angleExtent, innerRadius, outerRadius));
   }
   else {
     shape = new DvtStatusMeterGaugeCircularIndicator(context, bounds, startAngle, angleExtent, innerRadius, outerRadius);
@@ -3173,9 +3187,9 @@ DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds
 
 /**
  * Draw reference line
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} angle Angle at which line is drawn.
  * @param {string} color Color of the arc.
  * @param {number} lineWidth
@@ -3187,17 +3201,17 @@ DvtStatusMeterGaugeRenderer._drawCircularReferenceLine = function(gauge, contain
   var maxDiameter = Math.min(bounds.w, bounds.h);
   var innerRadius = maxDiameter * .275;
   var outerRadius = maxDiameter * .5;
-  if (DvtAgent.isRightToLeft(gauge.getCtx())) {
+  if (dvt.Agent.isRightToLeft(gauge.getCtx())) {
     angle = Math.PI - angle;
     angle = angle > 0 ? angle : angle + 2 * Math.PI;
   }
   var p1 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, innerRadius, angle);
   var p2 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, outerRadius, angle);
-  var shape = new DvtLine(context, p1.x, p1.y, p2.x, p2.y);
+  var shape = new dvt.Line(context, p1.x, p1.y, p2.x, p2.y);
 
-  var stroke = new DvtSolidStroke(color, 1, lineWidth);
+  var stroke = new dvt.SolidStroke(color, 1, lineWidth);
   if (lineStyle) {
-    stroke.setStyle(DvtStroke.convertTypeString(lineStyle));
+    stroke.setStyle(dvt.Stroke.convertTypeString(lineStyle));
   }
   shape.setStroke(stroke);
   container.addChild(shape);
@@ -3205,7 +3219,7 @@ DvtStatusMeterGaugeRenderer._drawCircularReferenceLine = function(gauge, contain
 
 /**
  * Calculates and returns the path command for the circular shape.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} startAngle
  * @param {Number} angleExtent
  * @param {Number} innerRadius
@@ -3216,7 +3230,7 @@ DvtStatusMeterGaugeRenderer.createCircularPathCmd = function(bounds, startAngle,
   var cmd;
   var p1, p2, p3, p4;
 
-  if (angleExtent < DvtMath.TWO_PI)
+  if (angleExtent < dvt.Math.TWO_PI)
   {
     // Calc the 4 points.  We will draw:
     // 1. Arc from p1 to p2
@@ -3229,11 +3243,11 @@ DvtStatusMeterGaugeRenderer.createCircularPathCmd = function(bounds, startAngle,
     p4 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, innerRadius, startAngle);
 
     // Create the command and feed it into the path
-    cmd = DvtPathUtils.moveTo(p1.x, p1.y) +
-          DvtPathUtils.arcTo(outerRadius, outerRadius, angleExtent, 1, p2.x, p2.y) +
-          DvtPathUtils.lineTo(p3.x, p3.y) +
-          DvtPathUtils.arcTo(innerRadius, innerRadius, angleExtent, 0, p4.x, p4.y) +
-          DvtPathUtils.closePath();
+    cmd = dvt.PathUtils.moveTo(p1.x, p1.y) +
+          dvt.PathUtils.arcTo(outerRadius, outerRadius, angleExtent, 1, p2.x, p2.y) +
+          dvt.PathUtils.lineTo(p3.x, p3.y) +
+          dvt.PathUtils.arcTo(innerRadius, innerRadius, angleExtent, 0, p4.x, p4.y) +
+          dvt.PathUtils.closePath();
   }
   else
   {
@@ -3244,17 +3258,17 @@ DvtStatusMeterGaugeRenderer.createCircularPathCmd = function(bounds, startAngle,
     p4 = DvtStatusMeterGaugeRenderer._calcPointOnArc(bounds, innerRadius, startAngle + angleExtent / 2);
 
     // Create the command and return it
-    cmd = DvtPathUtils.moveTo(p1.x, p1.y) +
-          DvtPathUtils.arcTo(outerRadius, outerRadius, angleExtent / 2, 1, p2.x, p2.y) +
-          DvtPathUtils.arcTo(outerRadius, outerRadius, angleExtent / 2, 1, p1.x, p1.y);
+    cmd = dvt.PathUtils.moveTo(p1.x, p1.y) +
+          dvt.PathUtils.arcTo(outerRadius, outerRadius, angleExtent / 2, 1, p2.x, p2.y) +
+          dvt.PathUtils.arcTo(outerRadius, outerRadius, angleExtent / 2, 1, p1.x, p1.y);
 
     // Add the inner segment for a hollow center
     if (innerRadius > 0)
-      cmd += DvtPathUtils.moveTo(p4.x, p4.y) +
-             DvtPathUtils.arcTo(innerRadius, innerRadius, angleExtent / 2, 0, p3.x, p3.y) +
-             DvtPathUtils.arcTo(innerRadius, innerRadius, angleExtent / 2, 0, p4.x, p4.y);
+      cmd += dvt.PathUtils.moveTo(p4.x, p4.y) +
+             dvt.PathUtils.arcTo(innerRadius, innerRadius, angleExtent / 2, 0, p3.x, p3.y) +
+             dvt.PathUtils.arcTo(innerRadius, innerRadius, angleExtent / 2, 0, p4.x, p4.y);
 
-    cmd += DvtPathUtils.closePath();
+    cmd += dvt.PathUtils.closePath();
   }
   return cmd;
 };
@@ -3268,19 +3282,19 @@ DvtStatusMeterGaugeRenderer.createCircularPathCmd = function(bounds, startAngle,
 DvtStatusMeterGaugeRenderer.getAngleQuadrant = function(angle, bStart) {
   var quadrant = 1;
   if (bStart) {
-    if (angle >= DvtMath.HALF_PI && angle < Math.PI)
+    if (angle >= dvt.Math.HALF_PI && angle < Math.PI)
       quadrant = 2;
     else if (angle >= Math.PI && angle < Math.PI * 1.5)
       quadrant = 3;
-    else if (angle >= Math.PI * 1.5 && angle < DvtMath.TWO_PI)
+    else if (angle >= Math.PI * 1.5 && angle < dvt.Math.TWO_PI)
       quadrant = 4;
   }
   else {
-    if (angle > DvtMath.HALF_PI && angle <= Math.PI)
+    if (angle > dvt.Math.HALF_PI && angle <= Math.PI)
       quadrant = 2;
     else if (angle > Math.PI && angle <= Math.PI * 1.5)
       quadrant = 3;
-    else if (angle > Math.PI * 1.5 && angle < DvtMath.TWO_PI || angle == 0)
+    else if (angle > Math.PI * 1.5 && angle < dvt.Math.TWO_PI || angle == 0)
       quadrant = 4;
   }
   return quadrant;
@@ -3300,14 +3314,14 @@ DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea = function(options) {
 
 /**
  * Adjust the bounds of the rendered circular gauge shape when the angleExtent is less than 360. Returns the label bounds.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
  * @param {Number} innerRadius
  * @param {Number} startAngleRads
  * @param {Number} angleExtentRads
  * @param {Number} endAngle
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Boolean} isRTL Indicates if the page is right to left.
- * @return {DvtRectangle} The bounds of the label.
+ * @return {dvt.Rectangle} The bounds of the label.
  * @private
  */
 DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius, startAngleRads, angleExtentRads, endAngle, bounds, isRTL) {
@@ -3321,7 +3335,7 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
   var maxDiameter, maxInnerDiameter;
 
   // Arc is within one quadrant
-  if (startQuadrant == endQuadrant && angleExtentRads <= DvtMath.HALF_PI) {
+  if (startQuadrant == endQuadrant && angleExtentRads <= dvt.Math.HALF_PI) {
     maxDiameter = Math.min(bounds.w, bounds.h) * 2;
     bounds.w = bounds.w + maxDiameter / 2;
     bounds.h = bounds.h + maxDiameter / 2;
@@ -3333,7 +3347,7 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       bounds.y -= maxDiameter / 2;
       cx = width / 2 - maxDiameter / 4 + 1;
       cy = height / 2 - maxDiameter / 4 + 1;
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - 1, bounds.y + bounds.h / 2 - 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - 1, bounds.y + bounds.h / 2 - 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
     }
 
   // Start and end in second quadrant
@@ -3341,14 +3355,14 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       bounds.y -= maxDiameter / 2;
       cx = width / 2 + maxDiameter / 4 - 1;
       cy = height / 2 - maxDiameter / 4 + 1;
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) + 1, bounds.y + bounds.h / 2 - 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) + 1, bounds.y + bounds.h / 2 - 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
     }
 
   // Start and end in third quadrant
     else if ((!isRTL && startQuadrant == 3) || (isRTL && startQuadrant == 4)) {
       cx = width / 2 + maxDiameter / 4 - 1;
       cy = height / 2 + maxDiameter / 4 - 1;
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) + 1, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7) + 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) + 1, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7) + 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
     }
 
   // Start and end in fourth quadrant
@@ -3356,7 +3370,7 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       bounds.x -= maxDiameter / 2;
       cx = width / 2 - maxDiameter / 4 + 1;
       cy = height / 2 + maxDiameter / 4 - 1;
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - 1, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7) + 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - 1, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7) + 1, maxInnerDiameter * (3 / 7) - 2, maxInnerDiameter * (2.5 / 7) - 2);
     }
   }
 
@@ -3366,7 +3380,7 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       maxDiameter = Math.min(bounds.w, bounds.h * 2);
       maxInnerDiameter = maxDiameter * innerRadius;
       if (bounds.w > bounds.h) {
-        labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h - (bounds.h - maxDiameter / 2) / 2 - maxInnerDiameter * (2.75 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h - (bounds.h - maxDiameter / 2) / 2 - maxInnerDiameter * (2.75 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7));
         if (startQuadrant == 1) {
           labelBounds.y = bounds.y + (bounds.h - maxDiameter / 2) / 2 + maxInnerDiameter * (.5 / 7);
           bounds.y -= (maxDiameter / 2 - ((bounds.h - maxDiameter / 2) / 2));
@@ -3383,7 +3397,7 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       maxDiameter = Math.min(bounds.w * 2, bounds.h);
       maxInnerDiameter = maxDiameter * innerRadius;
       if (bounds.w < bounds.h) {
-        labelBounds = new DvtRectangle(bounds.x + bounds.w - (bounds.w - maxDiameter / 2) / 2 - maxInnerDiameter * (3.25 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7), maxInnerDiameter * (5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + bounds.w - (bounds.w - maxDiameter / 2) / 2 - maxInnerDiameter * (3.25 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7), maxInnerDiameter * (5 / 7));
         if ((!isRTL && startQuadrant == 4) || (isRTL && startQuadrant == 2)) {
           labelBounds.x = bounds.x + (bounds.w - maxDiameter / 2) / 2 + maxInnerDiameter * (.25 / 7);
           bounds.x -= (maxDiameter / 2 - ((bounds.w - maxDiameter / 2) / 2));
@@ -3405,43 +3419,43 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
       maxInnerDiameter = maxDiameter * innerRadius;
       var labelCenterOffset = maxInnerDiameter * (3 / 7) * ((2 * bounds.w) / maxDiameter - 1);
       if (!isRTL) {
-        labelBounds = new DvtRectangle(bounds.x + maxDiameter / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) * (1 + ((2 * bounds.w) / maxDiameter - 1)), maxInnerDiameter * (5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + maxDiameter / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) * (1 + ((2 * bounds.w) / maxDiameter - 1)), maxInnerDiameter * (5 / 7));
         cx = maxDiameter / 2;
       }
       else {
-        labelBounds = new DvtRectangle(bounds.x + bounds.w - maxDiameter / 2 - labelCenterOffset, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) + labelCenterOffset, maxInnerDiameter * (5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + bounds.w - maxDiameter / 2 - labelCenterOffset, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) + labelCenterOffset, maxInnerDiameter * (5 / 7));
         bounds.x -= (maxDiameter - bounds.w);
         cx = -maxDiameter / 2 + width;
       }
       bounds.w = maxDiameter;
     }
     else if (startQuadrant == 2 && bounds.h < bounds.w) {
-      maxDiameter = Math.min(2 * ((bounds.h) / (Math.cos(startAngleRads - DvtMath.HALF_PI) + 1)), 2 * ((bounds.h) / (Math.sin(endAngle) + 1)), bounds.w);
+      maxDiameter = Math.min(2 * ((bounds.h) / (Math.cos(startAngleRads - dvt.Math.HALF_PI) + 1)), 2 * ((bounds.h) / (Math.sin(endAngle) + 1)), bounds.w);
       maxInnerDiameter = maxDiameter * innerRadius;
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + maxDiameter / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7) * (1 + ((2 * bounds.h) / maxDiameter - 1)));
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + maxDiameter / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7) * (1 + ((2 * bounds.h) / maxDiameter - 1)));
       bounds.h = maxDiameter;
       cy = maxDiameter / 2;
     }
     else if (startQuadrant == 3 && bounds.h > bounds.w) {
-      maxDiameter = Math.min(2 * ((bounds.w) / (Math.cos(startAngleRads - Math.PI) + 1)), 2 * ((bounds.w) / (Math.sin(endAngle - DvtMath.HALF_PI) + 1)), bounds.h);
+      maxDiameter = Math.min(2 * ((bounds.w) / (Math.cos(startAngleRads - Math.PI) + 1)), 2 * ((bounds.w) / (Math.sin(endAngle - dvt.Math.HALF_PI) + 1)), bounds.h);
       maxInnerDiameter = maxDiameter * innerRadius;
       var labelCenterOffset = maxInnerDiameter * (3 / 7) * ((2 * bounds.w) / maxDiameter - 1);
       if (!isRTL) {
-        labelBounds = new DvtRectangle(bounds.x + bounds.w - maxDiameter / 2 - labelCenterOffset, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) + labelCenterOffset, maxInnerDiameter * (5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + bounds.w - maxDiameter / 2 - labelCenterOffset, bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) + labelCenterOffset, maxInnerDiameter * (5 / 7));
         bounds.x -= (maxDiameter - bounds.w);
         cx = -maxDiameter / 2 + width;
       }
       else {
-        labelBounds = new DvtRectangle(bounds.x + maxDiameter / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) * (1 + ((2 * bounds.w) / maxDiameter - 1)), maxInnerDiameter * (5 / 7));
+        labelBounds = new dvt.Rectangle(bounds.x + maxDiameter / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (3 / 7) * (1 + ((2 * bounds.w) / maxDiameter - 1)), maxInnerDiameter * (5 / 7));
         cx = maxDiameter / 2;
       }
       bounds.w = maxDiameter;
     }
     else if (startQuadrant == 4 && bounds.h < bounds.w) {
-      maxDiameter = Math.min(2 * ((bounds.h) / (Math.cos(startAngleRads - Math.PI * 1.5) + 1)), 2 * ((bounds.h) / (Math.sin(DvtMath.TWO_PI - endAngle) + 1)), bounds.w);
+      maxDiameter = Math.min(2 * ((bounds.h) / (Math.cos(startAngleRads - Math.PI * 1.5) + 1)), 2 * ((bounds.h) / (Math.sin(dvt.Math.TWO_PI - endAngle) + 1)), bounds.w);
       maxInnerDiameter = maxDiameter * innerRadius;
       var labelCenterOffset = maxInnerDiameter * (2.5 / 7) * ((2 * bounds.h) / maxDiameter - 1);
-      labelBounds = new DvtRectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) , bounds.y + bounds.h - maxDiameter / 2 - labelCenterOffset, maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7) + labelCenterOffset);
+      labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7) , bounds.y + bounds.h - maxDiameter / 2 - labelCenterOffset, maxInnerDiameter * (6 / 7), maxInnerDiameter * (2.5 / 7) + labelCenterOffset);
       bounds.y -= (maxDiameter - bounds.h);
       bounds.h = maxDiameter;
       cy = - maxDiameter / 2 + height;
@@ -3449,169 +3463,65 @@ DvtStatusMeterGaugeRenderer._adjustCenterAndBounds = function(gauge, innerRadius
   }
   gauge.cx = cx;
   gauge.cy = cy;
+  gauge.maxInnerDiameter = maxInnerDiameter;
   return labelBounds;
 };
 
 /**
- * Parse corner radii and return the new shape
- * @param {number} x Rectangle x.
- * @param {number} y Rectangle y.
- * @param {number} w Rectangle width.
- * @param {number} h Rectangle height.
- * @param {String} radius The options attribute needed to be parsed
- * @param {number} multiplier The value used for when a percent radius is provided
- * @param {string} defaultValue A specified value for the border radius
- * @return {string} Path command of shape with border radius.
- */
-DvtStatusMeterGaugeRenderer.rectangleWithBorderRadius = function(x, y, w, h, radius, multiplier, defaultValue) {
-  var topLeftX = defaultValue;
-  var topLeftY = defaultValue;
-  var topRightX = defaultValue;
-  var topRightY = defaultValue;
-  var bottomRightX = defaultValue;
-  var bottomRightY = defaultValue;
-  var bottomLeftX = defaultValue;
-  var bottomLeftY = defaultValue;
-  if (radius) {
-    if (radius.indexOf('/') != -1) {
-      var splitHorizVert = radius.split('/');
-      var horiz = DvtStringUtils.trim(splitHorizVert[0]).split(/\s+/);
-      var vert = DvtStringUtils.trim(splitHorizVert[1]).split(/\s+/);
-      if (horiz.length == 1)
-        topLeftX = topRightX = bottomRightX = bottomLeftX = horiz[0];
-      else if (horiz.length == 2) {
-        topLeftX = bottomRightX = horiz[0];
-        topRightX = bottomLeftX = horiz[1];
-      }
-      else if (horiz.length == 3) {
-        topLeftX = horiz[0];
-        topRightX = bottomLeftX = horiz[1];
-        bottomRightX = horiz[2];
-      }
-      else if (horiz.length == 4) {
-        topLeftX = horiz[0];
-        topRightX = horiz[1];
-        bottomRightX = horiz[2];
-        bottomLeftX = horiz[3];
-      }
-      if (vert.length == 1)
-        topLeftY = topRightY = bottomRightY = bottomLeftY = vert[0];
-      else if (vert.length == 2) {
-        topLeftY = bottomRightY = vert[0];
-        topRightY = bottomLeftY = vert[1];
-      }
-      else if (vert.length == 3) {
-        topLeftY = vert[0];
-        topRightY = bottomLeftY = vert[1];
-        bottomRightY = vert[2];
-      }
-      else if (vert.length == 4) {
-        topLeftY = vert[0];
-        topRightY = vert[1];
-        bottomRightY = vert[2];
-        bottomLeftY = vert[3];
-      }
-    }
-    else if (radius != 'auto') {
-      var split = DvtStringUtils.trim(radius).split(/\s+/);
-      if (split.length == 1) {
-        topLeftX = topRightX = bottomRightX = bottomLeftX =
-            topLeftY = topRightY = bottomRightY = bottomLeftY = split[0];
-      }
-      else if (split.length == 2) {
-        topLeftX = bottomRightX = topLeftY = bottomRightY = split[0];
-        topRightX = bottomLeftX = topRightY = bottomLeftY = split[1];
-      }
-      else if (split.length == 3) {
-        topLeftX = topLeftY = split[0];
-        topRightX = bottomLeftX = topRightY = bottomLeftY = split[1];
-        bottomRightX = bottomRightY = split[2];
-      }
-      else if (split.length == 4) {
-        topLeftX = topLeftY = split[0];
-        topRightX = topRightY = split[1];
-        bottomRightX = bottomRightY = split[2];
-        bottomLeftX = bottomLeftY = split[3];
-      }
-    }
-  }
-
-  return DvtStatusMeterGaugeRenderer._roundedRectangle(x, y, w, h,
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(topLeftX, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(topLeftY, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(topRightX, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(topRightY, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(bottomRightX, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(bottomRightY, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(bottomLeftX, multiplier),
-      DvtStatusMeterGaugeRenderer._parseBorderRadiusItem(bottomLeftY, multiplier));
-};
-
-/**
- * Parse a single corner radius dimension
- * @param {String} item The x or y radius input need to be parsed
- * @param {number} multiplier The value used for when a percent radius is provided
- * @return {number} The integer value of the corner radius
+ * Renders the custom center content of circular status meter gauge
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {object} options The options object.
+ * @param {dvt.Rectangle} bounds The bounds of the 360 degree gauge.
+ * @param {dvt.Rectangle} containerBounds The available bounds for rendering.
+ * @param {number} innerDiameter The inner diameter of the gauge.
  * @private
  */
-DvtStatusMeterGaugeRenderer._parseBorderRadiusItem = function(item, multiplier) {
-  var radius = Math.min(parseFloat(item), multiplier / 2);
-  if (item.indexOf('%') != -1) {
-    radius = Math.min(50, parseFloat(item)) * .01 * multiplier;
+DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, bounds, containerBounds, innerDiameter) {
+  var outerBounds = new dvt.Rectangle(bounds.x + (bounds.w - innerDiameter) * .5, bounds.y + (bounds.h - innerDiameter) * .5, innerDiameter, innerDiameter);
+  outerBounds = outerBounds.getIntersection(containerBounds);
+  var innerBounds = new dvt.Rectangle(bounds.x + (bounds.w - innerDiameter / Math.sqrt(2)) * .5, bounds.y + (bounds.h - innerDiameter / Math.sqrt(2)) * .5, innerDiameter / Math.sqrt(2), innerDiameter / Math.sqrt(2));
+  innerBounds = innerBounds.getIntersection(containerBounds);
+  var centerRenderer = options['center']['renderer'];
+  if (centerRenderer) {
+    var dataContext = {
+      'outerBounds': {'x': outerBounds.x, 'y': outerBounds.y, 'width': outerBounds.w, 'height': outerBounds.h},
+      'innerBounds': {'x': innerBounds.x, 'y': innerBounds.y, 'width': innerBounds.w, 'height': innerBounds.h},
+      'metricLabel': DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge),
+      'component': options['_widgetConstructor']
+    };
+    var context = gauge.getCtx();
+    var parentDiv = context.getContainer();
+
+    // Remove existing overlay if there is one
+    var existingOverlay = gauge.centerDiv;
+    if (existingOverlay)
+      parentDiv.removeChild(existingOverlay);
+
+    var customContent = centerRenderer(dataContext);
+    if (!customContent)
+      return;
+    var newOverlay = context.createOverlayDiv();
+    newOverlay.appendChild(customContent);
+    gauge.centerDiv = newOverlay;
+    parentDiv.appendChild(newOverlay);
+
+    // Invoke the overlay attached callback if one is available.
+    var callback = context.getOverlayAttachedCallback();
+    if (callback)
+      callback(newOverlay);
   }
-  return radius < DvtStatusMeterGaugeRenderer._MIN_CORNER_RADIUS ? 0 : radius;
 };
-
-/**
- * Returns a path command for a rounded rectangle.
- * @param {number} x Rectangle x.
- * @param {number} y Rectangle y.
- * @param {number} w Rectangle width.
- * @param {number} h Rectangle height.
- * @param {number} tlcrX Top left corner x radius.
- * @param {number} tlcrY Top left corner y radius.
- * @param {number} trcrX Top right corner x radius.
- * @param {number} trcrY Top right corner y radius.
- * @param {number} brcrX Bottom right corner x radius.
- * @param {number} brcrY Bottom right corner y radius.
- * @param {number} blcrX Bottom left corner x radius.
- * @param {number} blcrY Bottom left corner  y radius.
- * @return {string} Path command.
- * @private
- */
-DvtStatusMeterGaugeRenderer._roundedRectangle = function(x, y, w, h, tlcrX, tlcrY, trcrX, trcrY, brcrX, brcrY, blcrX, blcrY) {
-  tlcrY = Math.min(tlcrY, .5 * h);
-  trcrY = Math.min(trcrY, .5 * h);
-  brcrY = Math.min(brcrY, .5 * h);
-  blcrY = Math.min(blcrY, .5 * h);
-  tlcrX = Math.min(tlcrX, .5 * w);
-  trcrX = Math.min(trcrX, .5 * w);
-  brcrX = Math.min(brcrX, .5 * w);
-  blcrX = Math.min(blcrX, .5 * w);
-  var cmd = DvtPathUtils.moveTo(x + tlcrX, y) +
-            DvtPathUtils.lineTo(x + w - trcrX, y) +
-            DvtPathUtils.arcTo(trcrX, trcrY, Math.PI / 2, 1, x + w, y + trcrY) +
-            DvtPathUtils.lineTo(x + w, y + h - brcrY) +
-            DvtPathUtils.arcTo(brcrX, brcrY, Math.PI / 2, 1, x + w - brcrX, y + h) +
-            DvtPathUtils.lineTo(x + blcrX, y + h) +
-            DvtPathUtils.arcTo(blcrX, blcrY, Math.PI / 2, 1, x, y + h - blcrY) +
-            DvtPathUtils.lineTo(x, y + tlcrY) +
-            DvtPathUtils.arcTo(tlcrX, tlcrY, Math.PI / 2, 1, x + tlcrX, y) +
-            DvtPathUtils.closePath();
-
-  return cmd;
-};
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
 /**
- * Indicator for DvtStatusMeterGauge.
+ * Indicator for dvt.StatusMeterGauge.
  * @class
  * @constructor
- * @extends {DvtRect}
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContext} context The rendering context
+ * @extends {dvt.Rect}
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Context} context The rendering context
  * @param {number} x1
  * @param {number} x2
  * @param {number} y1
@@ -3621,12 +3531,12 @@ var DvtStatusMeterGaugeIndicator = function(gauge, context, x1, x2, y1, y2) {
   this.Init(gauge, context, x1, x2, y1, y2);
 };
 
-DvtObj.createSubclass(DvtStatusMeterGaugeIndicator, DvtPath, 'DvtStatusMeterGaugeIndicator');
+dvt.Obj.createSubclass(DvtStatusMeterGaugeIndicator, dvt.Path);
 
 /**
  * Initializes the component.
- * @param {DvtStatusMeterGauge} gauge The gauge being rendered.
- * @param {DvtContext} context The rendering context
+ * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
+ * @param {dvt.Context} context The rendering context
  * @param {number} x1
  * @param {number} x2
  * @param {number} y1
@@ -3665,7 +3575,7 @@ DvtStatusMeterGaugeIndicator.prototype.setCoords = function(x1, x2, y1, y2) {
   var multiplier = options['orientation'] == 'vertical' ? width : height;
   var defaultValue = DvtGaugeDefaults.isSkyrosSkin(this._gauge) ? '25%' : '15%';
 
-  var cmds = DvtStatusMeterGaugeRenderer.rectangleWithBorderRadius(x, y, width, height, options['borderRadius'], multiplier, defaultValue);
+  var cmds = dvt.PathUtils.rectangleWithBorderRadius(x, y, width, height, options['borderRadius'], multiplier, defaultValue);
   this.setCmds(cmds);
 };
 
@@ -3687,7 +3597,7 @@ DvtStatusMeterGaugeIndicator.prototype.setAnimationParams = function(params) {
   if (params && params.length == 4)
     this.setCoords(params[0], params[1], params[2], params[3]);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -3695,9 +3605,9 @@ DvtStatusMeterGaugeIndicator.prototype.setAnimationParams = function(params) {
  * Indicator for the circular DvtStatusMetergauge.
  * @class
  * @constructor
- * @extends {DvtPath}
- * @param {DvtContext} context The rendering context
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @extends {dvt.Path}
+ * @param {dvt.Context} context The rendering context
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} startAngle
  * @param {Number} angleExtent
  * @param {Number} innerRadius
@@ -3707,13 +3617,13 @@ var DvtStatusMeterGaugeCircularIndicator = function(context, bounds, startAngle,
   this.Init(context, bounds, startAngle, angleExtent, innerRadius, outerRadius);
 };
 
-DvtObj.createSubclass(DvtStatusMeterGaugeCircularIndicator, DvtPath, 'DvtStatusMeterGaugeCircularIndicator');
+dvt.Obj.createSubclass(DvtStatusMeterGaugeCircularIndicator, dvt.Path);
 
 
 /**
  * Initializes the component.
- * @param {DvtContext} context The rendering context
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Context} context The rendering context
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} startAngle
  * @param {Number} angleExtent
  * @param {Number} innerRadius
@@ -3730,14 +3640,14 @@ DvtStatusMeterGaugeCircularIndicator.prototype.Init = function(context, bounds, 
 
 /**
  * Specifies the coordinates for the indicator.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {Number} startAngle
  * @param {Number} angleExtent
  * @param {Number} innerRadius
  * @param {Number} outerRadius
  */
 DvtStatusMeterGaugeCircularIndicator.prototype.setPath = function(bounds, startAngle, angleExtent, innerRadius, outerRadius) {
-  if (bounds && (bounds instanceof DvtRectangle))
+  if (bounds && (bounds instanceof dvt.Rectangle))
     this._bounds = bounds;
   else
     bounds = this._bounds;
@@ -3777,23 +3687,21 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
  * @class
  * @constructor
  * @extends {DvtGauge}
- * @export
  */
-var DvtDialGauge = function() {};
+dvt.DialGauge = function() {};
 
-DvtObj.createSubclass(DvtDialGauge, DvtGauge, 'DvtDialGauge');
+dvt.Obj.createSubclass(dvt.DialGauge, DvtGauge);
 
 
 /**
- * Returns a new instance of DvtDialGauge.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.DialGauge.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtDialGauge}
- * @export
+ * @return {dvt.DialGauge}
  */
-DvtDialGauge.newInstance = function(context, callback, callbackObj) {
-  var gauge = new DvtDialGauge();
+dvt.DialGauge.newInstance = function(context, callback, callbackObj) {
+  var gauge = new dvt.DialGauge();
   gauge.Init(context, callback, callbackObj);
   return gauge;
 };
@@ -3802,15 +3710,15 @@ DvtDialGauge.newInstance = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtDialGauge.prototype.Init = function(context, callback, callbackObj) {
-  DvtDialGauge.superclass.Init.call(this, context, callback, callbackObj);
+dvt.DialGauge.prototype.Init = function(context, callback, callbackObj) {
+  dvt.DialGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
   this.Defaults = new DvtDialGaugeDefaults();
 
   /**
    * The anchor point of the indicator on the gauge. This will be set during render time and is used for editing support.
-   * @type {DvtPoint}
+   * @type {dvt.Point}
    */
   this.__anchorPt = null;
 };
@@ -3819,7 +3727,7 @@ DvtDialGauge.prototype.Init = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtDialGauge.prototype.SetOptions = function(options) {
+dvt.DialGauge.prototype.SetOptions = function(options) {
   var backgroundType = options['background'];
   var indicatorType = options['indicator'];
 
@@ -3833,13 +3741,13 @@ DvtDialGauge.prototype.SetOptions = function(options) {
   }
 
   // Combine the user options with the defaults and store
-  DvtDialGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
+  dvt.DialGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
 
 /**
  * @override
  */
-DvtDialGauge.prototype.Render = function(container, width, height) 
+dvt.DialGauge.prototype.Render = function(container, width, height) 
 {
   DvtDialGaugeRenderer.render(this, container, width, height);
 };
@@ -3847,7 +3755,7 @@ DvtDialGauge.prototype.Render = function(container, width, height)
 /**
  * override
  */
-DvtDialGauge.prototype.renderUpdate = function() {
+dvt.DialGauge.prototype.renderUpdate = function() {
   DvtDialGaugeRenderer.updateIndicatorAndLabel(this, this._container, this.Width, this.Height);
 
   var eventManager = this.getEventManager();
@@ -3860,7 +3768,7 @@ DvtDialGauge.prototype.renderUpdate = function() {
 /**
  * @override
  */
-DvtDialGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, animationDuration) {
+dvt.DialGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, animationDuration) {
   // The only object in objs will be a DvtDialGaugeIndicator
   var animatedObjs = [];
   for (var i = 0; i < objs.length; i++) {
@@ -3872,26 +3780,26 @@ DvtDialGauge.prototype.CreateAnimationOnDisplay = function(objs, animationType, 
     obj.setAngle(startAngle);
 
     // Create the animation
-    var animation = new DvtCustomAnimation(this.getCtx(), obj, animationDuration);
-    animation.getAnimator().addProp(DvtAnimator.TYPE_NUMBER_ARRAY, obj, obj.getAnimationParams, obj.setAnimationParams, endState);
-    animation.getAnimator().setEasing(function(progress) {return DvtEasing.backOut(progress, 0.7);});
+    var animation = new dvt.CustomAnimation(this.getCtx(), obj, animationDuration);
+    animation.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, obj, obj.getAnimationParams, obj.setAnimationParams, endState);
+    animation.getAnimator().setEasing(function(progress) {return dvt.Easing.backOut(progress, 0.7);});
     animatedObjs.push(animation);
   }
-  return new DvtParallelPlayable(this.getCtx(), animatedObjs);
+  return new dvt.ParallelPlayable(this.getCtx(), animatedObjs);
 };
 
 
 /**
  * @override
  */
-DvtDialGauge.prototype.GetValueAt = function(x, y) {
+dvt.DialGauge.prototype.GetValueAt = function(x, y) {
   var angleRads = Math.atan2(y - this.__anchorPt.y, x - this.__anchorPt.x);
-  var angle = DvtMath.radsToDegrees(angleRads);
+  var angle = dvt.Math.radsToDegrees(angleRads);
   if (angle <= 0) // adjust to (0, 360]
     angle += 360;
 
   // Calculate the start angle and extent
-  var isRTL = DvtAgent.isRightToLeft(this.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   var backgroundOptions = this.getOptions()['background'];
   var startAngle = isRTL ? 180 + backgroundOptions['startAngle'] : 360 - backgroundOptions['startAngle'];
   var angleExtent = backgroundOptions['angleExtent'];
@@ -3944,7 +3852,7 @@ var DvtDialGaugeDefaults = function() {
   this.Init({'skyros': DvtDialGaugeDefaults.VERSION_1, 'alta': {}});
 };
 
-DvtObj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults, 'DvtDialGaugeDefaults');
+dvt.Obj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults);
 
 
 /**
@@ -3952,32 +3860,32 @@ DvtObj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults, 'DvtDialGaugeDefau
  */
 DvtDialGaugeDefaults.VERSION_1 = {
   'background': {'startAngle': 180, 'angleExtent': 180, 'indicatorLength': 0.7},
-  'metricLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")},
+  'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   'tickLabel': {
     'scaling': 'auto',
-    'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;")
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)
   }
 };
 /**
- * Renderer for DvtDialGauge.
+ * Renderer for dvt.DialGauge.
  * @class
  */
 var DvtDialGaugeRenderer = new Object();
 
-DvtObj.createSubclass(DvtDialGaugeRenderer, DvtObj, 'DvtDialGaugeRenderer');
+dvt.Obj.createSubclass(DvtDialGaugeRenderer, dvt.Obj);
 
 
 /**
  * Renders the gauge in the specified area.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
 DvtDialGaugeRenderer.render = function(gauge, container, width, height) {
   if (DvtGaugeDataUtils.hasData(gauge)) {
     // Create the bounds.  No outer gap is allocated to retain image fidelity.
-    var bounds = new DvtRectangle(0, 0, width, height);
+    var bounds = new dvt.Rectangle(0, 0, width, height);
 
     // Render the bar
     DvtDialGaugeRenderer._renderShape(gauge, container, bounds);
@@ -3986,13 +3894,13 @@ DvtDialGaugeRenderer.render = function(gauge, container, width, height) {
     DvtDialGaugeRenderer._renderLabel(gauge, container, bounds);
   }
   else // Render the empty text
-    DvtGaugeRenderer.renderEmptyText(gauge, container, new DvtRectangle(0, 0, width, height));
+    DvtGaugeRenderer.renderEmptyText(gauge, container, new dvt.Rectangle(0, 0, width, height));
 };
 
 /**
  * Update the indicator and metric label without re-rendering the whole gauge
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
@@ -4003,14 +3911,14 @@ DvtDialGaugeRenderer.updateIndicatorAndLabel = function(gauge, container, width,
 
   // Remove and recreate the metric label
   container.removeChild(gauge.__label);
-  DvtDialGaugeRenderer._renderLabel(gauge, container, new DvtRectangle(0, 0, width, height));
+  DvtDialGaugeRenderer._renderLabel(gauge, container, new dvt.Rectangle(0, 0, width, height));
 };
 
 /**
  * Renders the led shape into the specified area.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
@@ -4028,7 +3936,7 @@ DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
   var indicator = DvtDialGaugeRenderer._createIndicator(gauge, bounds);
 
   // Create containers to separate the transforms so they can be adjusted later
-  var translateContainer = new DvtContainer(gauge.getCtx());
+  var translateContainer = new dvt.Container(gauge.getCtx());
   var rotateContainer = new DvtDialGaugeIndicator(gauge.getCtx());
   container.addChild(translateContainer);
   translateContainer.addChild(rotateContainer);
@@ -4043,7 +3951,7 @@ DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // Apply the transformations to correctly position the indicator
   // 1. Translate the indicator so that the anchor point is at the origin
-  var mat = new DvtMatrix();
+  var mat = new dvt.Matrix();
   mat.translate(-indicatorAnchor.x, -indicatorAnchor.y);
   mat.scale(scale, scale);
   indicator.setMatrix(mat);
@@ -4052,7 +3960,7 @@ DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
   rotateContainer.setAngle(angleRads);
 
   // 3. Translate to the anchor point on the background
-  mat = new DvtMatrix();
+  mat = new dvt.Matrix();
   mat.translate(backgroundAnchor.x, backgroundAnchor.y);
   translateContainer.setMatrix(mat);
 
@@ -4067,17 +3975,17 @@ DvtDialGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
 /**
  * Creates and returns the background.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
- * @return {DvtDisplayable}
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @return {dvt.Displayable}
  * @private
  */
 DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
   var backgroundOptions = gauge.getOptions()['background'];
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
 
   // Calculate the required resolution needed.  This check isn't ideal, but it's close enough for now.
-  var isTouchDevice = DvtAgent.isTouchDevice();
+  var isTouchDevice = dvt.Agent.isTouchDevice();
   var widthRes = isTouchDevice ? 2 * bounds.w : bounds.w;
   var heightRes = isTouchDevice ? 2 * bounds.h : bounds.h;
 
@@ -4115,10 +4023,10 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
 
       // Use the image if it's SVG, a PNG whose size > resolution, or the last image provided.
       if (isSvg || (width >= widthRes && height >= heightRes) || i == images.length - 1) {
-        var shape = new DvtImage(gauge.getCtx(), source, 0, 0, width, height);
+        var shape = new dvt.Image(gauge.getCtx(), source, 0, 0, width, height);
 
         // Scale and translate to center
-        var matrix = new DvtMatrix();
+        var matrix = new dvt.Matrix();
         var scale = Math.min(bounds.w / width, bounds.h / height);
         var tx = (bounds.w - scale * width) / 2;
         var ty = (bounds.h - scale * height) / 2;
@@ -4128,8 +4036,8 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && DvtAgent.isPlatformWebkit()) {
-          var imageDims = DvtImageLoader.loadImage(gauge.getCtx(), source, DvtObj.createCallback(shape, shape.__setDimensions));
+        if (isSvg && dvt.Agent.isPlatformWebkit()) {
+          var imageDims = dvt.ImageLoader.loadImage(gauge.getCtx(), source, dvt.Obj.createCallback(shape, shape.__setDimensions));
           if (imageDims)
             shape.__setDimensions(imageDims);
         }
@@ -4160,7 +4068,7 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
           backgroundOptions['_metricLabelBounds'] = metLblBounds;
 
           // Helper for integration of new custom gauges, comment out when not using
-          /*var metBounds = new DvtRect(gauge.getCtx(), metLblBounds['x'], metLblBounds['y'], metLblBounds['width'], metLblBounds['height']);
+          /*var metBounds = new dvt.Rect(gauge.getCtx(), metLblBounds['x'], metLblBounds['y'], metLblBounds['width'], metLblBounds['height']);
           metBounds.setSolidFill("#0000FF", 0.3);
           gauge.addChild(metBounds);*/
         }
@@ -4181,9 +4089,9 @@ DvtDialGaugeRenderer._createBackground = function(gauge, bounds) {
 
 /**
  * Creates and returns the indicator.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
- * @return {DvtDisplayable}
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @return {dvt.Displayable}
  * @private
  */
 DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
@@ -4191,7 +4099,7 @@ DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
   var indicatorLength = DvtDialGaugeRenderer._getIndicatorLength(gauge, bounds);
 
   // Calculate the required resolution needed.  This check isn't ideal, but it's close enough for now.
-  var heightRes = DvtAgent.isTouchDevice() ? 2 * indicatorLength : indicatorLength;
+  var heightRes = dvt.Agent.isTouchDevice() ? 2 * indicatorLength : indicatorLength;
 
   // Iterate and use the first image with enough detail
   var refWidth;
@@ -4213,12 +4121,12 @@ DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
 
       // Use the image if it's SVG, a PNG whose height > indicatorLength, or the last image provided.
       if (isSvg || height >= heightRes || i == images.length - 1) {
-        var shape = new DvtImage(gauge.getCtx(), source, 0, 0, width, height);
+        var shape = new dvt.Image(gauge.getCtx(), source, 0, 0, width, height);
 
         // Create an image loader to set the width and height of the image after loads.  This is
         // needed to correctly load svg images in webkit.
-        if (isSvg && DvtAgent.isPlatformWebkit()) {
-          var imageDims = DvtImageLoader.loadImage(gauge.getCtx(), source, DvtObj.createCallback(shape, shape.__setDimensions));
+        if (isSvg && dvt.Agent.isPlatformWebkit()) {
+          var imageDims = dvt.ImageLoader.loadImage(gauge.getCtx(), source, dvt.Obj.createCallback(shape, shape.__setDimensions));
           if (imageDims) {
             // Once the image is initially loaded, ping it with the given size.  This is needed to get the
             // browser to correctly render the SVG.  The returned size from imageDims may not be correct
@@ -4246,12 +4154,12 @@ DvtDialGaugeRenderer._createIndicator = function(gauge, bounds) {
 
 /**
  * Returns the rotation angle for the start angle in radians.
- * @param {DvtDialGauge} gauge The gauge being rendered.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
  * @return {Number}
  */
 DvtDialGaugeRenderer.__getStartAngle = function(gauge) {
   var backgroundOptions = gauge.getOptions()['background'];
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var startAngle = isRTL ? 180 - backgroundOptions['startAngle'] : backgroundOptions['startAngle'];
   return Math.PI * (90 - startAngle) / 180;
 };
@@ -4259,7 +4167,7 @@ DvtDialGaugeRenderer.__getStartAngle = function(gauge) {
 
 /**
  * Returns the rotation angle of the indicator in radians.
- * @param {DvtDialGauge} gauge The gauge being rendered.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
  * @param {Number} value The value to be rotated to
  * @return {Number}
  * @private
@@ -4275,7 +4183,7 @@ DvtDialGaugeRenderer._getRotation = function(gauge, value) {
   var ratio = (value - minValue) / (maxValue - minValue);
 
   // Calculate the start angle and extent
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var startAngle = isRTL ? 180 - backgroundOptions['startAngle'] : backgroundOptions['startAngle'];
   var angleExtent = isRTL ? -backgroundOptions['angleExtent'] : backgroundOptions['angleExtent'];
 
@@ -4287,9 +4195,9 @@ DvtDialGaugeRenderer._getRotation = function(gauge, value) {
 
 /**
  * Returns the anchor point for the indicator on the background relative to the rendering bounds.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
- * @return {DvtPoint}
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @return {dvt.Point}
  * @private
  */
 DvtDialGaugeRenderer._getBackgroundAnchorPoint = function(gauge, bounds) {
@@ -4298,16 +4206,16 @@ DvtDialGaugeRenderer._getBackgroundAnchorPoint = function(gauge, bounds) {
   var anchorY = backgroundOptions['_anchorY'];
 
   if (!isNaN(anchorX) && !isNaN(anchorY)) // private fields are calculated earlier and already scaled
-    return new DvtPoint(anchorX, anchorY);
+    return new dvt.Point(anchorX, anchorY);
   else // default to center
-    return new DvtPoint(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+    return new dvt.Point(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
 };
 
 
 /**
  * Returns the length of the indicator.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @return {Number} The length of the indicator.
  * @private
  */
@@ -4319,10 +4227,10 @@ DvtDialGaugeRenderer._getIndicatorLength = function(gauge, bounds) {
 
 /**
  * Returns the anchor point of the indicator relative to the indicator image.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
- * @param {DvtRectangle} indicatorBounds The bounds for the indicator.
- * @return {DvtPoint}
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @param {dvt.Rectangle} indicatorBounds The bounds for the indicator.
+ * @return {dvt.Point}
  * @private
  */
 DvtDialGaugeRenderer._getIndicatorAnchorPoint = function(gauge, bounds, indicatorBounds) {
@@ -4331,17 +4239,17 @@ DvtDialGaugeRenderer._getIndicatorAnchorPoint = function(gauge, bounds, indicato
   var anchorY = indicatorOptions['_anchorY'];
 
   if (!isNaN(anchorX) && !isNaN(anchorY))
-    return new DvtPoint(anchorX, anchorY); // already adjusted for image size
+    return new dvt.Point(anchorX, anchorY); // already adjusted for image size
   else // default to center of the bottom edge
-    return new DvtPoint(indicatorBounds.x + indicatorBounds.w / 2, indicatorBounds.y + indicatorBounds.h);
+    return new dvt.Point(indicatorBounds.x + indicatorBounds.w / 2, indicatorBounds.y + indicatorBounds.h);
 };
 
 
 /**
  * Returns the scaling transform value for the indicator.
- * @param {DvtDialGauge} gauge The gauge being rendered.
- * @param {DvtRectangle} bounds The available bounds for rendering.
- * @param {DvtRectangle} indicatorBounds The bounds for the indicator.
+ * @param {dvt.DialGauge} gauge The gauge being rendered.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @param {dvt.Rectangle} indicatorBounds The bounds for the indicator.
  * @return {Number}
  * @private
  */
@@ -4353,9 +4261,9 @@ DvtDialGaugeRenderer._getIndicatorScaleFactor = function(gauge, bounds, indicato
 
 /**
  * Renders the label into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtDialGaugeRenderer._renderLabel = function(gauge, container, bounds) {
@@ -4381,7 +4289,7 @@ DvtDialGaugeRenderer._renderLabel = function(gauge, container, bounds) {
     }
 
     // Create the label and align
-    var label = new DvtOutputText(gauge.getCtx(), labelString, cx, cy);
+    var label = new dvt.OutputText(gauge.getCtx(), labelString, cx, cy);
     if (!options['metricLabel']['style'].getStyle('color') && options['background']['_isDark'])
       options['metricLabel']['style'].setStyle('color', '#CCCCCC');
     label.setCSSStyle(options['metricLabel']['style']);
@@ -4396,7 +4304,7 @@ DvtDialGaugeRenderer._renderLabel = function(gauge, container, bounds) {
     label.alignMiddle();
 
     // Truncate if needed, null is returned if the label doesn't fit
-    if (DvtTextUtils.fitText(label, labelWidth, labelHeight, container)) {
+    if (dvt.TextUtils.fitText(label, labelWidth, labelHeight, container)) {
       gauge.__label = label;
     }
   }
@@ -4405,14 +4313,14 @@ DvtDialGaugeRenderer._renderLabel = function(gauge, container, bounds) {
 
 /**
  * Renders the tick labels into the specified area.
- * @param {DvtLedGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} bounds The available bounds for rendering.
+ * @param {dvt.LedGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
 DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
   var options = gauge.getOptions();
-  var isRTL = DvtAgent.isRightToLeft(gauge.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   // Create and position the label
   if (options['background']['radius'] && options['background']['majorTickCount']) {
     var radius = options['background']['_radius'];
@@ -4420,14 +4328,14 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
     var maxValue = options['max'];
     var majorTickCount = options['background']['majorTickCount'];
     var fontSize = 12;
-    var labelBounds = new DvtRectangle(cx, cy, bounds.w, bounds.h);
+    var labelBounds = new dvt.Rectangle(cx, cy, bounds.w, bounds.h);
     var style = options['metricLabel']['style'].getStyle('font-size');
     if (options['background']['_tickLabelHeight'] && (!style))
       labelBounds.h = options['background']['_tickLabelHeight'];
     if (options['background']['_tickLabelWidth'] && (!style))
       labelBounds.w = options['background']['_tickLabelWidth'];
     if (!style) {
-      var label = new DvtOutputText(gauge.getCtx(), '', cx, cy);
+      var label = new dvt.OutputText(gauge.getCtx(), '', cx, cy);
       fontSize = DvtGaugeRenderer.calcLabelFontSize([DvtGaugeRenderer.formatTickLabelValue(options['max'], gauge), DvtGaugeRenderer.formatTickLabelValue(options['min'], gauge)], label, labelBounds);
     }
     for (var x = 0; x < majorTickCount; x++)
@@ -4444,7 +4352,7 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
       var cy = anchor.y + radius * Math.sin(angleRads - Math.PI / 2);
 
       // Create the label and align
-      var label = new DvtOutputText(gauge.getCtx(), labelString, cx, cy);
+      var label = new dvt.OutputText(gauge.getCtx(), labelString, cx, cy);
       if (!options['tickLabel']['style'].getStyle('color') && options['background']['_isDark'])
         options['tickLabel']['style'].setStyle('color', '#CCCCCC');
       label.setCSSStyle(options['tickLabel']['style']);
@@ -4454,26 +4362,26 @@ DvtDialGaugeRenderer._renderTickLabels = function(gauge, container, bounds) {
       label.alignMiddle();
 
       // Truncate if needed
-      DvtTextUtils.fitText(label, labelBounds.w + .5, labelBounds.h + .5, container);
+      dvt.TextUtils.fitText(label, labelBounds.w + .5, labelBounds.h + .5, container);
     }
   }
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 
 /**
- * Indicator for DvtDialGauge.
+ * Indicator for dvt.DialGauge.
  * @class
  * @constructor
- * @extends {DvtContainer}
- * @param {DvtContext} context The rendering context
+ * @extends {dvt.Container}
+ * @param {dvt.Context} context The rendering context
  */
 var DvtDialGaugeIndicator = function(context) {
   this.Init(context);
 };
 
-DvtObj.createSubclass(DvtDialGaugeIndicator, DvtContainer, 'DvtDialGaugeIndicator');
+dvt.Obj.createSubclass(DvtDialGaugeIndicator, dvt.Container);
 
 
 /**
@@ -4482,7 +4390,7 @@ DvtObj.createSubclass(DvtDialGaugeIndicator, DvtContainer, 'DvtDialGaugeIndicato
  */
 DvtDialGaugeIndicator.prototype.setAngle = function(angleRads) {
   // Use a matrix to prevent the angles from being cumulative
-  var mat = new DvtMatrix();
+  var mat = new dvt.Matrix();
   mat.rotate(angleRads);
   this.setMatrix(mat);
 
@@ -4516,23 +4424,21 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
  * @class
  * @constructor
  * @extends {DvtGauge}
- * @export
  */
-var DvtRatingGauge = function() {};
+dvt.RatingGauge = function() {};
 
-DvtObj.createSubclass(DvtRatingGauge, DvtGauge, 'DvtRatingGauge');
+dvt.Obj.createSubclass(dvt.RatingGauge, DvtGauge);
 
 
 /**
- * Returns a new instance of DvtRatingGauge.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.RatingGauge.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtRatingGauge}
- * @export
+ * @return {dvt.RatingGauge}
  */
-DvtRatingGauge.newInstance = function(context, callback, callbackObj) {
-  var gauge = new DvtRatingGauge();
+dvt.RatingGauge.newInstance = function(context, callback, callbackObj) {
+  var gauge = new dvt.RatingGauge();
   gauge.Init(context, callback, callbackObj);
   return gauge;
 };
@@ -4541,8 +4447,8 @@ DvtRatingGauge.newInstance = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtRatingGauge.prototype.Init = function(context, callback, callbackObj) {
-  DvtRatingGauge.superclass.Init.call(this, context, callback, callbackObj);
+dvt.RatingGauge.prototype.Init = function(context, callback, callbackObj) {
+  dvt.RatingGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
   this.Defaults = new DvtRatingGaugeDefaults();
@@ -4552,15 +4458,15 @@ DvtRatingGauge.prototype.Init = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtRatingGauge.prototype.SetOptions = function(options) {
+dvt.RatingGauge.prototype.SetOptions = function(options) {
   // Combine the user options with the defaults and store
-  DvtRatingGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
+  dvt.RatingGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
 
 /**
  * @override
  */
-DvtRatingGauge.prototype.Render = function(container, width, height) 
+dvt.RatingGauge.prototype.Render = function(container, width, height) 
 {
   var outerGap = this.Options['__layout']['outerGap'];
   var maxValue = this.Options['max'];
@@ -4575,12 +4481,12 @@ DvtRatingGauge.prototype.Render = function(container, width, height)
         var ratio = imageInfo.width / imageInfo.height;
         this.__shapeWidth = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) * ratio / maxValue) : Math.min((height - 2 * outerGap) * ratio, (width - 2 * outerGap) / maxValue);
         this.__shapeHeight = this.__shapeWidth / ratio;
-        this.__bounds = isVert ? new DvtRectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
-            new DvtRectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
+        this.__bounds = isVert ? new dvt.Rectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
+            new dvt.Rectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
         DvtRatingGaugeRenderer.render(this, container, width, height);
       }
     };
-    DvtImageLoader.loadImage(this.getCtx(), this.Options['selectedState']['source'], DvtObj.createCallback(this, onLoad));
+    dvt.ImageLoader.loadImage(this.getCtx(), this.Options['selectedState']['source'], dvt.Obj.createCallback(this, onLoad));
   }
   else {
     if (!preserveAspectRatio) {
@@ -4593,8 +4499,8 @@ DvtRatingGauge.prototype.Render = function(container, width, height)
       this.__shapeWidth = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) / maxValue) : Math.min(height - 2 * outerGap, (width - 2 * outerGap) / maxValue);
       this.__shapeHeight = this.__shapeWidth;
     }
-    this.__bounds = isVert ? new DvtRectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
-        new DvtRectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
+    this.__bounds = isVert ? new dvt.Rectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
+        new dvt.Rectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
     DvtRatingGaugeRenderer.render(this, container, width, height);
   }
 };
@@ -4602,14 +4508,14 @@ DvtRatingGauge.prototype.Render = function(container, width, height)
 /**
  * @override
  */
-DvtRatingGauge.prototype.__getLogicalObject = function() {
+dvt.RatingGauge.prototype.__getLogicalObject = function() {
   return new DvtRatingGaugePeer(this);
 };
 
 /**
  * @override
  */
-DvtRatingGauge.prototype.GetValueAt = function(x, y) {
+dvt.RatingGauge.prototype.GetValueAt = function(x, y) {
 
   var size = this.Options['orientation'] == 'vertical' ? this.__shapeHeight : this.__shapeWidth;
   if (DvtGaugeDataUtils.hasData(this)) {
@@ -4624,7 +4530,7 @@ DvtRatingGauge.prototype.GetValueAt = function(x, y) {
 
       // calculating the val depends on locale, but the rounding doesn't
       var val = 0;
-      if (!DvtAgent.isRightToLeft(this.getCtx()))
+      if (!dvt.Agent.isRightToLeft(this.getCtx()))
         val = Math.max((x - this.__bounds.x) / size, this.Options['min']);
       else
         val = Math.max((this.__bounds.x + this.__bounds.w - x) / size, this.Options['min']);
@@ -4642,18 +4548,18 @@ DvtRatingGauge.prototype.GetValueAt = function(x, y) {
  * @param {number} x The x coordinate of the value change.
  * @param {number} y The y coordinate of the value change.
  */
-DvtRatingGauge.prototype.__processHoverEnd = function(x, y) {
+dvt.RatingGauge.prototype.__processHoverEnd = function(x, y) {
   this.__updateClipRects(this.Options['value'], 'render');
 
   // Fire the value change event to reset to the real value
-  this.dispatchEvent(new DvtValueChangeEvent(this.Options['value'], this.Options['value'], false));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this.Options['value'], this.Options['value'], false));
 };
 
 
 /**
  * @override
  */
-DvtRatingGauge.prototype.__processValueChangeStart = function(x, y) {
+dvt.RatingGauge.prototype.__processValueChangeStart = function(x, y) {
   this.__processValueChangeMove(x, y);
 };
 
@@ -4661,19 +4567,19 @@ DvtRatingGauge.prototype.__processValueChangeStart = function(x, y) {
 /**
  * @override
  */
-DvtRatingGauge.prototype.__processValueChangeMove = function(x, y) {
+dvt.RatingGauge.prototype.__processValueChangeMove = function(x, y) {
   var value = this.GetValueAt(x, y);
   this.__updateClipRects(value, 'hover');
 
   // Fire the value change event
-  this.dispatchEvent(new DvtValueChangeEvent(this.Options['value'], value, false));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this.Options['value'], value, false));
 };
 
 
 /**
  * @override
  */
-DvtRatingGauge.prototype.__processValueChangeEnd = function(x, y) {
+dvt.RatingGauge.prototype.__processValueChangeEnd = function(x, y) {
   // Render again because a click was registerd
   var oldValue = this.Options['value'];
   this.Options['value'] = this.GetValueAt(x, y);
@@ -4681,24 +4587,24 @@ DvtRatingGauge.prototype.__processValueChangeEnd = function(x, y) {
   this.render();
 
   // Fire the both the change and input events on complete
-  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], false));
-  this.dispatchEvent(new DvtValueChangeEvent(oldValue, this.Options['value'], true));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], false));
+  this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(oldValue, this.Options['value'], true));
 };
 
 /**
  * Updates the cliprects used in the rating gauge for hover and the different states.
  * @param {number} value The point at which the clips rects are drawn.
  * @param {string} proc The process being done- "hover" or "render"
- * @param {DvtContainer} container The container that holds this gauge- allowing us to access the three subcontainers with selected/changed, unselected, and hover shapes.
+ * @param {dvt.Container} container The container that holds this gauge- allowing us to access the three subcontainers with selected/changed, unselected, and hover shapes.
  */
-DvtRatingGauge.prototype.__updateClipRects = function(value, proc, container) {
+dvt.RatingGauge.prototype.__updateClipRects = function(value, proc, container) {
   if (!DvtGaugeDataUtils.hasData(this))
     return;
 
   if (!container)
     container = this._container;
 
-  var isRTL = DvtAgent.isRightToLeft(this.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   var isVert = this.Options['orientation'] == 'vertical';
   var size = isVert ? this.__shapeHeight : this.__shapeWidth;
 
@@ -4715,49 +4621,49 @@ DvtRatingGauge.prototype.__updateClipRects = function(value, proc, container) {
   if (isVert) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new DvtClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath('unsel' + this.getId());
     unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w, this.__bounds.h - c);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new DvtClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath('sel' + this.getId());
     selClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - a, this.__bounds.w, a);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new DvtClipPath('hover' + this.getId());
+    var hoverClip = new dvt.ClipPath('hover' + this.getId());
     hoverClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - b, this.__bounds.w, b);
     hoverContainer.setClipPath(hoverClip);
   } else if (!isRTL) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new DvtClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath('unsel' + this.getId());
     unselClip.addRect(this.__bounds.x + c, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new DvtClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath('sel' + this.getId());
     selClip.addRect(this.__bounds.x, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new DvtClipPath('hover' + this.getId());
+    var hoverClip = new dvt.ClipPath('hover' + this.getId());
     hoverClip.addRect(this.__bounds.x, this.__bounds.y, b, this.__bounds.h);
     hoverContainer.setClipPath(hoverClip);
   } else {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new DvtClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath('unsel' + this.getId());
     unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new DvtClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath('sel' + this.getId());
     selClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new DvtClipPath('hover' + this.getId());
+    var hoverClip = new dvt.ClipPath('hover' + this.getId());
     hoverClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, b, this.__bounds.h);
     hoverContainer.setClipPath(hoverClip);
   }
@@ -4768,9 +4674,9 @@ DvtRatingGauge.prototype.__updateClipRects = function(value, proc, container) {
  * Return the led gauge drawn at the given index.
  * Internal API used for Automation purposes.
  * @param {Number} index
- * @return {DvtDisplayable}
+ * @return {dvt.Displayable}
  */
-DvtRatingGauge.prototype.__getRatingGaugeItem = function(index) {
+dvt.RatingGauge.prototype.__getRatingGaugeItem = function(index) {
   // Returning the unselected shape at the given index.
   return this._container.getChildAt(0).getChildAt(index);
 };
@@ -4778,7 +4684,7 @@ DvtRatingGauge.prototype.__getRatingGaugeItem = function(index) {
 /**
  * @override
  */
-DvtRatingGauge.prototype.CreateEventManager = function() {
+dvt.RatingGauge.prototype.CreateEventManager = function() {
   return new DvtRatingGaugeEventManager(this);
 };
 /**
@@ -4791,7 +4697,7 @@ var DvtRatingGaugeDefaults = function() {
   this.Init({'skyros': DvtRatingGaugeDefaults.VERSION_1, 'alta': DvtRatingGaugeDefaults.SKIN_ALTA});
 };
 
-DvtObj.createSubclass(DvtRatingGaugeDefaults, DvtGaugeDefaults, 'DvtRatingGaugeDefaults');
+dvt.Obj.createSubclass(DvtRatingGaugeDefaults, DvtGaugeDefaults);
 
 
 /**
@@ -4820,7 +4726,7 @@ DvtRatingGaugeDefaults.VERSION_1 = {
 };
 /**
  * Rating gauge tooltip support
- * @param {DvtRatingGauge} gauge The rating gauge.
+ * @param {dvt.RatingGauge} gauge The rating gauge.
  * @class
  * @constructor
  * @implements {DvtTooltipSource}
@@ -4830,7 +4736,7 @@ var DvtRatingGaugePeer = function(gauge) {
   this._gauge = gauge;
 };
 
-DvtObj.createSubclass(DvtRatingGaugePeer, DvtSimpleObjPeer, 'DvtRatingGaugePeer');
+dvt.Obj.createSubclass(DvtRatingGaugePeer, dvt.SimpleObjPeer);
 
 /**
  * @override
@@ -4847,17 +4753,17 @@ DvtRatingGaugePeer.prototype.getDatatip = function(target, x, y) {
 };
 
 /**
- * Renderer for DvtRatingGauge.
+ * Renderer for dvt.RatingGauge.
  * @class
  */
 var DvtRatingGaugeRenderer = new Object();
 
-DvtObj.createSubclass(DvtRatingGaugeRenderer, DvtObj, 'DvtRatingGaugeRenderer');
+dvt.Obj.createSubclass(DvtRatingGaugeRenderer, dvt.Obj);
 
 /**
  * Renders the gauge in the specified area.
- * @param {DvtRatingGauge} gauge The gauge being rendered.
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.RatingGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
  */
@@ -4919,19 +4825,19 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
     gauge.__updateClipRects(options['value'], 'render', container);
   }
   else // Render the empty text
-    DvtGaugeRenderer.renderEmptyText(gauge, container, new DvtRectangle(0, 0, width, height));
+    DvtGaugeRenderer.renderEmptyText(gauge, container, new dvt.Rectangle(0, 0, width, height));
 };
 
 /**
  * Creates a shape for the rating gauge at the given position
- * @param {DvtRatingGauge} gauge
- * @param {DvtContainer} container The container to render into.
+ * @param {dvt.RatingGauge} gauge
+ * @param {dvt.Container} container The container to render into.
  * @param {object} stateOptions The options object for this state.
  * @private
  */
 DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) {
   var context = gauge.getCtx();
-  var shapesContainer = new DvtContainer(context);
+  var shapesContainer = new dvt.Container(context);
   container.addChild(shapesContainer);
 
   var options = gauge.getOptions();
@@ -4945,7 +4851,7 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
       cx = bounds.x + bounds.w / 2 - shapeWidth / 2;
       cy = bounds.y + bounds.h - (i + 1) * shapeHeight;
     }
-    else if (DvtAgent.isRightToLeft(context)) {
+    else if (dvt.Agent.isRightToLeft(context)) {
       cx = bounds.x + bounds.w - (i + 1) * shapeWidth;
       cy = bounds.y + bounds.h / 2 - shapeHeight / 2;
     }
@@ -4955,10 +4861,12 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
     }
 
     var shape;
-    if (stateOptions['source'])
-      shape = new DvtImageMarker(context, cx + shapeWidth / 2, cy + shapeHeight / 2, shapeWidth, shapeHeight, stateOptions['source']);
+    if (stateOptions['source']) {
+      shape = new dvt.ImageMarker(context, cx + shapeWidth / 2, cy + shapeHeight / 2, shapeWidth, shapeHeight, null, stateOptions['source']);
+      shape.setPreserveAspectRatio('none');
+    }
     else if (stateOptions['type'] != 'none') {
-      shape = DvtLedGauge.newInstance(context, null, null, true);
+      shape = dvt.LedGauge.newInstance(context, null, null, true);
       shape.setTranslate(cx, cy);
       shape.render(stateOptions, shapeWidth, shapeHeight);
     }
@@ -4967,10 +4875,10 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
   }
 };
 /**
- * Event Manager for DvtRatingGauge.
+ * Event Manager for dvt.RatingGauge.
  * @param {DvtGauge} gauge
  * @class
- * @extends {DvtEventManager}
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtRatingGaugeEventManager = function(gauge) {
@@ -4978,7 +4886,7 @@ var DvtRatingGaugeEventManager = function(gauge) {
   this._gauge = gauge;
 };
 
-DvtObj.createSubclass(DvtRatingGaugeEventManager, DvtGaugeEventManager, 'DvtRatingGaugeEventManager');
+dvt.Obj.createSubclass(DvtRatingGaugeEventManager, DvtGaugeEventManager);
 
 
 /**
@@ -5029,7 +4937,7 @@ DvtRatingGaugeEventManager.prototype.OnMouseMove = function(event) {
  * @override
  */
 DvtRatingGaugeEventManager.prototype.OnMouseDown = function(event) {
-  // Want to directly call the OnMouseDown from DvtEventManager, so we don't go through the
+  // Want to directly call the OnMouseDown from dvt.EventManager, so we don't go through the
   // default gauge behavior since it's already covered in OnMouseOver
   DvtGaugeEventManager.superclass.OnMouseDown.call(this, event);
 };
@@ -5050,6 +4958,28 @@ DvtRatingGaugeEventManager.prototype.ProcessKeyboardEvent = function(event)
 DvtRatingGaugeEventManager.prototype.IsShowingTooltipWhileEditing = function() {
   return true;
 };
+dvt.exportProperty(dvt, 'DialGauge', dvt.DialGauge);
+dvt.exportProperty(dvt, 'LedGauge', dvt.LedGauge);
+dvt.exportProperty(dvt, 'RatingGauge', dvt.RatingGauge);
+dvt.exportProperty(dvt, 'StatusMeterGauge', dvt.StatusMeterGauge);
+dvt.exportProperty(dvt.DialGauge, 'DialGauge', dvt.DialGauge);
+dvt.exportProperty(dvt.DialGauge, 'LedGauge', dvt.LedGauge);
+dvt.exportProperty(dvt.DialGauge, 'RatingGauge', dvt.RatingGauge);
+dvt.exportProperty(dvt.DialGauge, 'StatusMeterGauge', dvt.StatusMeterGauge);
 
-  return D;
+dvt.exportProperty(DvtGauge.prototype, 'getAutomation', DvtGauge.prototype.getAutomation);
+dvt.exportProperty(DvtGauge.prototype, 'destroy', DvtGauge.prototype.destroy);
+dvt.exportProperty(DvtGauge.prototype, 'render', DvtGauge.prototype.render);
+
+dvt.exportProperty(DvtGaugeAutomation.prototype, 'getDomElementForSubId', DvtGaugeAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtGaugeAutomation.prototype, 'getValue', DvtGaugeAutomation.prototype.getValue);
+dvt.exportProperty(DvtGaugeAutomation.prototype, 'getMetricLabel', DvtGaugeAutomation.prototype.getMetricLabel);
+
+/**
+ * Exporting for test automation purposes only.
+ */
+dvt.LedGaugeRenderer = DvtLedGaugeRenderer;
+})(dvt);
+
+  return dvt;
 });

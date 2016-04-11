@@ -932,7 +932,7 @@ function _queueTransition(transition) {
  * @constructor
  * @export
  */
-oj.Router = function(key, parentRouter) {
+oj.Router = function(key, parentRouter, parentState) {
    var router = this;
 
    /**
@@ -951,7 +951,7 @@ oj.Router = function(key, parentRouter) {
     * @private
     * @type {!string | undefined}
     */
-   this._parentState = parentRouter ? parentRouter._stateId() : undefined;
+   this._parentState = parentState || (parentRouter ? parentRouter._stateId() : undefined);
 
    /**
     * The parent router. Root router doesn't have one.
@@ -1281,7 +1281,7 @@ Object.defineProperties(oj.Router.prototype, {
  * @const
  * @type {oj.Router}
  */
-var rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined);
+var rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined, undefined);
 
 /**
  * Function use to handle the popstate event.
@@ -1335,8 +1335,15 @@ oj.Router.prototype.getChildRouter = function(name) {
 };
 
 /**
- * Create a child router for the current router state with the given name.
+ * Create a child router with the given name. A router can either have one child router that handle
+ * all possible states or one child router per state. In the first scenario, the child router
+ * is not attached to a specific state of the parent and needs to be configured dynamically. In the
+ * second scenario, a child router is attached to a specific state of the parent. If the id of
+ * the parent state is not specified using the parentState argument, the child router is attached
+ * to the current state of the router.
  * @param {!string} name The unique name representing the router.
+ * @param {string=} parentStateId The id of the state of the parent router for this child router. If
+ * not defined, the child router is created for the current state of the router.
  * @return {oj.Router} the child router
  * @throws An error if a child router exist with the same name or if the current
  * state already has a child router.
@@ -1344,13 +1351,18 @@ oj.Router.prototype.getChildRouter = function(name) {
  * @example <caption>Create a child router of the root:</caption>
  * router = oj.Router.rootInstance;
  * childRouter = router.createChildRouter('chapter');
+ * @example <caption>Create a child router for parent state id 'book':</caption>
+ * router = oj.Router.rootInstance;
+ * childRouter = router.createChildRouter('chapter', 'book');
  */
-oj.Router.prototype.createChildRouter = function(name) {
+oj.Router.prototype.createChildRouter = function(name, parentStateId) {
    var i,
        sr,
        childRouter;
 
    oj.Assert.assertString(name);
+
+   parentStateId = parentStateId||this._stateId();
 
    name = encodeURIComponent(name.trim());
    // Make sure it doesn't already exist.
@@ -1359,12 +1371,12 @@ oj.Router.prototype.createChildRouter = function(name) {
       if (sr._name === name) {
          throw new Error('Invalid router name "' + name + '", it already exists.');
       }
-      else if (sr._parentState === this._stateId()) {
+      else if (sr._parentState === parentStateId) {
          throw new Error('Cannot create more than one child router for parent state id "' + sr._parentState + '".');
       }
    }
 
-   childRouter = new oj.Router(name, this);
+   childRouter = new oj.Router(name, this, parentStateId);
 
    this._childRouters.push(childRouter);
 
@@ -1680,10 +1692,12 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
 
    // Do not do anything if the new URL is the same.
    // This compare URLs without the bookmarkable data.
+   // When replace is true, it is possible the new URL is the same (by example when going to the
+   // default state of a child router) but the transition still need to be executed.
    // 
    // 
-   if (_urlAdapter.cleanUrl(newUrl) !== shortUrl) {
-      oj.Logger.info('New URL is different.');
+   if (replace || _urlAdapter.cleanUrl(newUrl) !== shortUrl) {
+      oj.Logger.info('Deferred mode or new URL is different.');
       return _canExit(this).then(_changeState);
    }
 

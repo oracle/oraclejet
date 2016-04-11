@@ -6,52 +6,48 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
+(function(dvt) {
 /**
  * PictoChart component.  The component should never be instantiated directly.  Use the newInstance function instead
- * @param {DvtContext} context The rendering context.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @class
  * @constructor
- * @export
  */
-var DvtPictoChart = function(context, callback, callbackObj) {
+dvt.PictoChart = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
 };
 
-DvtObj.createSubclass(DvtPictoChart, DvtBaseComponent, 'DvtPictoChart');
+dvt.Obj.createSubclass(dvt.PictoChart, dvt.BaseComponent);
 
 /**
- * Returns a new instance of DvtPictoChart.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.PictoChart.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtPictoChart}
- * @export
+ * @return {dvt.PictoChart}
  */
-DvtPictoChart.newInstance = function(context, callback, callbackObj) {
-  return new DvtPictoChart(context, callback, callbackObj);
+dvt.PictoChart.newInstance = function(context, callback, callbackObj) {
+  return new dvt.PictoChart(context, callback, callbackObj);
 };
 
 /**
  * Initializes the component.
- * @param {DvtContext} context The rendering context.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @protected
  */
-DvtPictoChart.prototype.Init = function(context, callback, callbackObj) {
-  DvtPictoChart.superclass.Init.call(this, context, callback, callbackObj);
+dvt.PictoChart.prototype.Init = function(context, callback, callbackObj) {
+  dvt.PictoChart.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtPictoChartEventManager(this);
   this.EventManager.addListeners(this);
 
   // Set up keyboard handler on non-touch devices
-  if (!DvtAgent.isTouchDevice())
+  if (!dvt.Agent.isTouchDevice())
     this.EventManager.setKeyboardHandler(new DvtPictoChartKeyboardHandler(this.EventManager));
 
   // Create the defaults object
@@ -65,10 +61,10 @@ DvtPictoChart.prototype.Init = function(context, callback, callbackObj) {
  * Calculates the preferred dimensions for this pictoChart.
  * @param {Number=} width The component width, if defined.
  * @param {Number=} height The component height, if defined.
- * @return {DvtDimension} The preferred dimensions.
+ * @return {dvt.Dimension} The preferred dimensions.
  * @private
  */
-DvtPictoChart.prototype._getPreferredSize = function(width, height) {
+dvt.PictoChart.prototype._getPreferredSize = function(width, height) {
   // Calculate the preferred width or height if not defined
   if (!width || !height) {
     var info = DvtPictoChartRenderer.getInfo(this, width, height);
@@ -80,14 +76,13 @@ DvtPictoChart.prototype._getPreferredSize = function(width, height) {
       height = info.items ? info.rowCount * info.rowHeight : 0;
   }
 
-  return new DvtDimension(width, height);
+  return new dvt.Dimension(width, height);
 };
 
 /**
  * @override
- * @export
  */
-DvtPictoChart.prototype.render = function(options, width, height) {
+dvt.PictoChart.prototype.render = function(options, width, height) {
   // IMPORTANT: If width and height are passed, then flowing layout would be disabled.
 
   // Keep old references for animation
@@ -121,24 +116,24 @@ DvtPictoChart.prototype.render = function(options, width, height) {
     // Determine whether the layout is fixed or flowing.
     // To find out, set the preferred dims on the SVG, and see if the outerDiv dims follow the SVG dims.
     var preferredSize = this._getPreferredSize();
-    DvtToolkitUtils.setSvgSize(context, preferredSize.w, preferredSize.h);
-    var outerDivSize = DvtToolkitUtils.getOuterDivSize(context);
+    dvt.ToolkitUtils.setSvgSize(context, preferredSize.w, preferredSize.h);
+    var outerDivSize = dvt.ToolkitUtils.getOuterDivSize(context);
 
     if (preferredSize.w == outerDivSize.w && preferredSize.h != outerDivSize.h) {
       // Height is fixed, but width is probably flowing.
       // Relayout with fixed height to find the preferred width.
       this.Height = outerDivSize.h;
       preferredSize = this._getPreferredSize(null, this.Height);
-      DvtToolkitUtils.setSvgSize(context, preferredSize.w, this.Height);
-      this.Width = DvtToolkitUtils.getOuterDivSize(context).w;
+      dvt.ToolkitUtils.setSvgSize(context, preferredSize.w, this.Height);
+      this.Width = dvt.ToolkitUtils.getOuterDivSize(context).w;
     }
     else if (preferredSize.w != outerDivSize.w && preferredSize.h == outerDivSize.h) {
       // Width is fixed, but height is probably flowing.
       // Relayout with fixed width to find the preferred height.
       this.Width = outerDivSize.w;
       preferredSize = this._getPreferredSize(this.Width, null);
-      DvtToolkitUtils.setSvgSize(context, this.Width, preferredSize.h);
-      this.Height = DvtToolkitUtils.getOuterDivSize(context).h;
+      dvt.ToolkitUtils.setSvgSize(context, this.Width, preferredSize.h);
+      this.Height = dvt.ToolkitUtils.getOuterDivSize(context).h;
     }
     else {
       // The width and height are either both fixed or both flowing.
@@ -161,9 +156,9 @@ DvtPictoChart.prototype.render = function(options, width, height) {
   }
 
   // Render the component
-  this._container = new DvtContainer(context);
+  this._container = new dvt.Container(context);
   this.addChild(this._container);
-  DvtPictoChartRenderer.render(this, this._container, new DvtRectangle(0, 0, this.Width, this.Height), this._info);
+  DvtPictoChartRenderer.render(this, this._container, new dvt.Rectangle(0, 0, this.Width, this.Height), this._info);
 
   // Construct the new animation playable
   if (!this._oldContainer) {
@@ -171,7 +166,7 @@ DvtPictoChart.prototype.render = function(options, width, height) {
   }
   else if (this.Options['animationOnDataChange'] != 'none' && options) {
     // Treat layout changes as data change animations and animate to new positions
-    var animHandler = new DvtDataAnimationHandler(context, null);
+    var animHandler = new dvt.DataAnimationHandler(context, null);
     animHandler.constructAnimation(oldMarkers, this._markers);
     this._animation = animHandler.getAnimation();
   }
@@ -179,7 +174,7 @@ DvtPictoChart.prototype.render = function(options, width, height) {
   // If an animation was created, play it
   if (this._animation) {
     // Temporarily set the SVG size to max(oldSize, newSize) to ensure that the animation isn't truncated
-    DvtToolkitUtils.setSvgSize(context, Math.max(oldWidth, this.Width), Math.max(oldHeight, this.Height));
+    dvt.ToolkitUtils.setSvgSize(context, Math.max(oldWidth, this.Width), Math.max(oldHeight, this.Height));
 
     // Remove event listeners and empty text temporarily
     this.EventManager.removeListeners(this);
@@ -196,7 +191,7 @@ DvtPictoChart.prototype.render = function(options, width, height) {
 /**
  * @override
  */
-DvtPictoChart.prototype.SetOptions = function(options) {
+dvt.PictoChart.prototype.SetOptions = function(options) {
   if (options) {
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
@@ -205,7 +200,7 @@ DvtPictoChart.prototype.SetOptions = function(options) {
     this.Options = this.GetDefaults();
 
   // Disable animation for png
-  if (!DvtAgent.isEnvironmentBrowser()) {
+  if (!dvt.Agent.isEnvironmentBrowser()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }
@@ -213,9 +208,9 @@ DvtPictoChart.prototype.SetOptions = function(options) {
   // Initialize the selection handler
   var selectionMode = this.Options['selectionMode'];
   if (selectionMode == 'single')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_SINGLE);
+    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode == 'multiple')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_MULTIPLE);
+    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
 
@@ -227,7 +222,7 @@ DvtPictoChart.prototype.SetOptions = function(options) {
  * Cleaning and processing at the end of the render call.
  * @private
  */
-DvtPictoChart.prototype._onRenderEnd = function() {
+dvt.PictoChart.prototype._onRenderEnd = function() {
   // Clean up the old container used by black box updates
   if (this._oldContainer) {
     this.removeChild(this._oldContainer);
@@ -245,7 +240,7 @@ DvtPictoChart.prototype._onRenderEnd = function() {
   }
 
   // Set the preferred size on the SVG element
-  DvtToolkitUtils.setSvgSize(this.getCtx(), this.Width, this.Height);
+  dvt.ToolkitUtils.setSvgSize(this.getCtx(), this.Width, this.Height);
 
   // Set the initial keyboard focus
   this.EventManager.setFocusObj(this._items[0]);
@@ -255,7 +250,7 @@ DvtPictoChart.prototype._onRenderEnd = function() {
     this._selectionHandler.processInitialSelections(this.Options['selection'], this._items);
 
   // Set initial highlighting
-  DvtCategoryRolloverHandler.highlight(this.Options['highlightedCategories'], this._items, this.Options['highlightMatch'] == 'any');
+  dvt.CategoryRolloverHandler.highlight(this.Options['highlightedCategories'], this._items, this.Options['highlightMatch'] == 'any');
 
   this.UpdateAriaAttributes();
 
@@ -267,7 +262,7 @@ DvtPictoChart.prototype._onRenderEnd = function() {
 /**
  * @return {DvtPictoChartEventManager}
  */
-DvtPictoChart.prototype.getEventManager = function() {
+dvt.PictoChart.prototype.getEventManager = function() {
   return this.EventManager;
 };
 
@@ -275,7 +270,7 @@ DvtPictoChart.prototype.getEventManager = function() {
  * Registers the pictoChart items. The items must be registered to participate in interactivity.
  * @param {array} items Array of DvtPictoChartItem.
  */
-DvtPictoChart.prototype.registerItems = function(items) {
+dvt.PictoChart.prototype.registerItems = function(items) {
   this._items = items;
 };
 
@@ -283,7 +278,7 @@ DvtPictoChart.prototype.registerItems = function(items) {
  * Returns the pictoChart items.
  * @return {array} Array of DvtPictoChartItem.
  */
-DvtPictoChart.prototype.getItems = function() {
+dvt.PictoChart.prototype.getItems = function() {
   return this._items;
 };
 
@@ -291,15 +286,15 @@ DvtPictoChart.prototype.getItems = function() {
  * Registers the marker with the component. The marker must be registered to participate in animation.
  * @param {DvtPictoChartShapeMarker|DvtPictoChartImageMarker} marker
  */
-DvtPictoChart.prototype.registerMarker = function(marker) {
+dvt.PictoChart.prototype.registerMarker = function(marker) {
   this._markers.push(marker);
 };
 
 /**
  * Registers the "no data" text.
- * @param {DvtOutputText} text
+ * @param {dvt.OutputText} text
  */
-DvtPictoChart.prototype.registerEmptyText = function(text) {
+dvt.PictoChart.prototype.registerEmptyText = function(text) {
   this._emptyText = text;
 };
 
@@ -307,7 +302,7 @@ DvtPictoChart.prototype.registerEmptyText = function(text) {
  * Returns the total count of the all items.
  * @return {number}
  */
-DvtPictoChart.prototype.getTotalCount = function() {
+dvt.PictoChart.prototype.getTotalCount = function() {
   var count = 0;
   for (var i = 0; i < this._items.length; i++) {
     count += this._items[i].getCount();
@@ -319,67 +314,66 @@ DvtPictoChart.prototype.getTotalCount = function() {
  * Returns the animation duration.
  * @return {number}
  */
-DvtPictoChart.prototype.getAnimationDuration = function() {
-  return DvtStyleUtils.getTimeMilliseconds(this.Options['animationDuration']) / 1000;
+dvt.PictoChart.prototype.getAnimationDuration = function() {
+  return dvt.StyleUtils.getTimeMilliseconds(this.Options['animationDuration']) / 1000;
 };
 
 /**
  * Returns the animation on display.
- * @return {DvtPlayable}
+ * @return {dvt.Playable}
  * @private
  */
-DvtPictoChart.prototype._getAnimationOnDisplay = function() {
+dvt.PictoChart.prototype._getAnimationOnDisplay = function() {
   var animOnDisplay = this.Options['animationOnDisplay'];
   var duration = this.getAnimationDuration();
   var context = this.getCtx();
-  var bounds = new DvtRectangle(0, 0, this.Width, this.Height);
+  var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
 
-  if (DvtBlackBoxAnimationHandler.isSupported(animOnDisplay))
-    return DvtBlackBoxAnimationHandler.getInAnimation(context, animOnDisplay, this._container, bounds, duration);
+  if (dvt.BlackBoxAnimationHandler.isSupported(animOnDisplay))
+    return dvt.BlackBoxAnimationHandler.getInAnimation(context, animOnDisplay, this._container, bounds, duration);
 
   var playables = [];
   if (animOnDisplay == 'popIn') {
     for (var i = 0; i < this._markers.length; i++) {
       var marker = this._markers[i];
-      playables.push(new DvtAnimPopIn(context, marker, true, duration));
+      playables.push(new dvt.AnimPopIn(context, marker, true, duration));
     }
   }
   else if (animOnDisplay != 'none') {
     // Grow animation
     for (var i = 0; i < this._markers.length; i++) {
       var marker = this._markers[i];
-      var playable = new DvtCustomAnimation(context, marker, duration);
+      var playable = new dvt.CustomAnimation(context, marker, duration);
       var startState, endState;
 
       if (DvtPictoChartRenderer.isVertical(this)) {
         startState = DvtPictoChartRenderer.isOriginRight(this) ? this.Width : 0;
         endState = marker.getCx();
         marker.setCx(startState);
-        playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, marker, marker.getCx, marker.setCx, endState);
+        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, marker, marker.getCx, marker.setCx, endState);
       }
       else {
         startState = DvtPictoChartRenderer.isOriginBottom(this) ? this.Height : 0;
         endState = marker.getCy();
         marker.setCy(startState);
-        playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, marker, marker.getCy, marker.setCy, endState);
+        playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, marker, marker.getCy, marker.setCy, endState);
       }
       playables.push(playable);
     }
     // Add fade in to hide the ugly overlaps at the beginning
-    playables.push(DvtBlackBoxAnimationHandler.getInAnimation(context, DvtBlackBoxAnimationHandler.ALPHA_FADE, this._container, bounds, duration));
+    playables.push(dvt.BlackBoxAnimationHandler.getInAnimation(context, dvt.BlackBoxAnimationHandler.ALPHA_FADE, this._container, bounds, duration));
   }
 
   if (playables.length > 0)
-    return new DvtParallelPlayable(context, playables);
+    return new dvt.ParallelPlayable(context, playables);
   else
     return null;
 };
 
 /**
  * @override
- * @export
  */
-DvtPictoChart.prototype.destroy = function() {
+dvt.PictoChart.prototype.destroy = function() {
   if (this.EventManager) {
     this.EventManager.removeListeners(this);
     this.EventManager.destroy();
@@ -387,30 +381,28 @@ DvtPictoChart.prototype.destroy = function() {
   }
 
   // Call super last during destroy
-  DvtPictoChart.superclass.destroy.call(this);
+  dvt.PictoChart.superclass.destroy.call(this);
 };
 
 /**
  * @override
- * @export
  */
-DvtPictoChart.prototype.highlight = function(categories) {
+dvt.PictoChart.prototype.highlight = function(categories) {
   // Update the options
   var options = this.getOptions();
-  options['highlightedCategories'] = DvtJSONUtils.clone(categories);
+  options['highlightedCategories'] = dvt.JsonUtils.clone(categories);
 
   // Perform the highlighting and propagate to children
-  DvtCategoryRolloverHandler.highlight(categories, this.getItems(), options['highlightMatch'] == 'any');
+  dvt.CategoryRolloverHandler.highlight(categories, this.getItems(), options['highlightMatch'] == 'any');
 };
 
 /**
  * @override
- * @export
  */
-DvtPictoChart.prototype.select = function(selection) {
+dvt.PictoChart.prototype.select = function(selection) {
   // Update the options
   var options = this.getOptions();
-  options['selection'] = DvtJSONUtils.clone(selection);
+  options['selection'] = dvt.JsonUtils.clone(selection);
 
   // Perform the selection
   if (this._selectionHandler)
@@ -420,33 +412,31 @@ DvtPictoChart.prototype.select = function(selection) {
 /**
  * @override
  */
-DvtPictoChart.prototype.GetComponentDescription = function() {
-  return DvtBundle.getTranslation(this.getOptions(), 'componentName', DvtBundle.UTIL_PREFIX, 'PICTOCHART');
+dvt.PictoChart.prototype.GetComponentDescription = function() {
+  return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'PICTOCHART');
 };
 
 /**
  * Returns the automation object for this component.
  * @return {DvtPictoChartAutomation} The automation object.
- * @export
  */
-DvtPictoChart.prototype.getAutomation = function() {
+dvt.PictoChart.prototype.getAutomation = function() {
   if (!this._automation)
     this._automation = new DvtPictoChartAutomation(this);
   return this._automation;
 };
 /**
- * Provides automation services for DvtPictoChart.
+ * Provides automation services for dvt.PictoChart.
  * @class  DvtPictoChartAutomation
- * @param {DvtPictoChart} picto
- * @implements {DvtAutomation}
+ * @param {dvt.PictoChart} picto
+ * @implements {dvt.Automation}
  * @constructor
- * @export
  */
 var DvtPictoChartAutomation = function(picto) {
   this._picto = picto;
 };
 
-DvtObj.createSubclass(DvtPictoChartAutomation, DvtAutomation, 'DvtPictoChartAutomation');
+dvt.Obj.createSubclass(DvtPictoChartAutomation, dvt.Automation);
 
 /**
  * Valid subIds inlcude:
@@ -472,10 +462,9 @@ DvtPictoChartAutomation.prototype.GetSubIdForDomElement = function(displayable) 
  * <li>tooltip</li>
  * </ul>
  * @override
- * @export
  */
 DvtPictoChartAutomation.prototype.getDomElementForSubId = function(subId) {
-  if (subId == DvtAutomation.TOOLTIP_SUBID)
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
     return this.GetTooltipElement(this._picto);
 
   var parenIdx = subId.indexOf('[');
@@ -503,7 +492,6 @@ DvtPictoChartAutomation.prototype.getDomElementForSubId = function(subId) {
  * </ul>
  * @param {Number} index The index of the tag cloud item
  * @return {Object} An object containing data for the tag cloud item
- * @export
  */
 DvtPictoChartAutomation.prototype.getItem = function(index) {
   var item = this._picto.getItems()[index];
@@ -523,14 +511,13 @@ DvtPictoChartAutomation.prototype.getItem = function(index) {
 /**
  * Returns the number of items in the pictoChart
  * @return {Number}
- * @export
  */
 DvtPictoChartAutomation.prototype.getItemCount = function() {
   return this._picto.getItems().length;
 };
 /**
  * Event Manager for pictoChart component.
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @constructor
  */
 var DvtPictoChartEventManager = function(picto) {
@@ -538,7 +525,7 @@ var DvtPictoChartEventManager = function(picto) {
   this._picto = picto;
 };
 
-DvtObj.createSubclass(DvtPictoChartEventManager, DvtEventManager, 'DvtPictoChartEventManager');
+dvt.Obj.createSubclass(DvtPictoChartEventManager, dvt.EventManager);
 
 /**
  * @override
@@ -553,9 +540,8 @@ DvtPictoChartEventManager.prototype.ProcessRolloverEvent = function(event, obj, 
   options['highlightedCategories'] = bOver ? categories.slice() : null;
 
   // Fire the event to the rollover handler, who will fire to the component callback.
-  var type = bOver ? DvtCategoryRolloverEvent.TYPE_OVER : DvtCategoryRolloverEvent.TYPE_OUT;
-  var rolloverEvent = new DvtCategoryRolloverEvent(type, options['highlightedCategories']);
-  var hoverBehaviorDelay = DvtStyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
+  var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
+  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._picto.getItems(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
 };
 
@@ -635,19 +621,19 @@ DvtPictoChartEventManager.prototype.HandleTouchDblClickInternal = function(event
  */
 DvtPictoChartEventManager.prototype.processDrillEvent = function(obj) {
   if (obj instanceof DvtPictoChartItem && obj.isDrillable())
-    this.FireEvent(new DvtDrillEvent(obj.getId()));
+    this.FireEvent(dvt.EventFactory.newDrillEvent(obj.getId()));
 };
 /**
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
- * @extends {DvtBaseComponentDefaults}
+ * @extends {dvt.BaseComponentDefaults}
  */
 var DvtPictoChartDefaults = function() {
   this.Init({'alta': DvtPictoChartDefaults.VERSION_1});
 };
 
-DvtObj.createSubclass(DvtPictoChartDefaults, DvtBaseComponentDefaults, 'DvtPictoChartDefaults');
+dvt.Obj.createSubclass(DvtPictoChartDefaults, dvt.BaseComponentDefaults);
 
 /**
  * Contains overrides for version 1.
@@ -672,16 +658,16 @@ DvtPictoChartDefaults.VERSION_1 = {
   '_defaultSize': 32,
   '_defaultShape': 'rectangle',
   '_gapRatio': 0.25,
-  '_textStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;"),
-  '_statusMessageStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #252525;"),
-  '_tooltipStyle': new DvtCSSStyle('border-collapse: separate; border-spacing: 1px'),
-  '_tooltipLabelStyle': new DvtCSSStyle('color: #737373; padding: 0px 2px'),
-  '_tooltipValueStyle': new DvtCSSStyle('color: #333333; padding: 0px 2px')
+  '_textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
+  '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 1px'),
+  '_tooltipLabelStyle': new dvt.CSSStyle('color: #737373; padding: 0px 2px'),
+  '_tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px')
 };
-// Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @param {number} cx  The x position of the center of the marker.
  * @param {number} cy  The y position of the center of the marker.
  * @param {number} width  The width of the marker.
@@ -691,32 +677,32 @@ DvtPictoChartDefaults.VERSION_1 = {
  * @param {String} sourceHover Image URI for the hover state.
  * @param {String} sourceHoverSelected Image URI for the hover selected state.
  * @param {String} id The id of the marker.
- * @extends {DvtImageMarker}
+ * @extends {dvt.ImageMarker}
  * @constructor
  */
 var DvtPictoChartImageMarker = function(picto, cx, cy, width, height, source, sourceSelected, sourceHover, sourceHoverSelected, id) {
-  DvtPictoChartImageMarker.superclass.Init.call(this, picto.getCtx(), cx, cy, width, height, source, sourceSelected, sourceHover, sourceHoverSelected, id);
+  DvtPictoChartImageMarker.superclass.Init.call(this, picto.getCtx(), cx, cy, width, height, null, source, sourceSelected, sourceHover, sourceHoverSelected, id);
   this._picto = picto;
 };
 
-DvtObj.createSubclass(DvtPictoChartImageMarker, DvtImageMarker, 'DvtPictoChartImageMarker');
+dvt.Obj.createSubclass(DvtPictoChartImageMarker, dvt.ImageMarker);
 
 
 //---------------------------------------------------------------------//
-// Animation support: DvtDataAnimationHandler                          //
+// Animation support: dvt.DataAnimationHandler                          //
 //---------------------------------------------------------------------//
 
 /**
  * @override
  */
 DvtPictoChartImageMarker.prototype.animateUpdate = function(handler, oldMarker) {
-  var animation = new DvtCustomAnimation(this.getCtx(), this, this._picto.getAnimationDuration() * 0.75);
+  var animation = new dvt.CustomAnimation(this.getCtx(), this, this._picto.getAnimationDuration() * 0.75);
   var animator = animation.getAnimator();
 
   // Position and size animation
   var endParams = this._getAnimationParams();
   this._setAnimationParams(oldMarker._getAnimationParams());
-  animator.addProp(DvtAnimator.TYPE_NUMBER_ARRAY, this, this._getAnimationParams, this._setAnimationParams, endParams);
+  animator.addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this._getAnimationParams, this._setAnimationParams, endParams);
 
   // Hide old item
   oldMarker.setAlpha(0);
@@ -728,7 +714,7 @@ DvtPictoChartImageMarker.prototype.animateUpdate = function(handler, oldMarker) 
  * @override
  */
 DvtPictoChartImageMarker.prototype.animateDelete = function(handler) {
-  handler.add(new DvtAnimFadeOut(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 0);
+  handler.add(new dvt.AnimFadeOut(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 0);
 };
 
 /**
@@ -736,7 +722,7 @@ DvtPictoChartImageMarker.prototype.animateDelete = function(handler) {
  */
 DvtPictoChartImageMarker.prototype.animateInsert = function(handler) {
   this.setAlpha(0);
-  handler.add(new DvtAnimFadeIn(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 2);
+  handler.add(new dvt.AnimFadeIn(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 2);
 };
 
 /**
@@ -759,10 +745,10 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
   this.setWidth(params[2]);
   this.setHeight(params[3]);
 };
-// Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * PictoChartItem
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @param {object} item The option object of the pictoChart item
  * @class
  * @constructor
@@ -776,7 +762,7 @@ var DvtPictoChartItem = function(picto, item) {
   this.Init(picto, item);
 };
 
-DvtObj.createSubclass(DvtPictoChartItem, DvtContainer, 'DvtPictoChartItem');
+dvt.Obj.createSubclass(DvtPictoChartItem, dvt.Container);
 
 /**
  * Counter for generating default id
@@ -785,7 +771,7 @@ DvtObj.createSubclass(DvtPictoChartItem, DvtContainer, 'DvtPictoChartItem');
 DvtPictoChartItem._counter = 0;
 
 /**
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @param {object} item The option object of the pictoChart item
  * @override
  */
@@ -800,11 +786,11 @@ DvtPictoChartItem.prototype.Init = function(picto, item) {
 
   this._isSelected = false;
   this._isShowingKeyboardFocusEffect = false;
-  this._keyboardTooltipLocation = new DvtPoint(0, 0);
+  this._keyboardTooltipLocation = new dvt.Point(0, 0);
 
   // Apply the selecting cursor if selectable or drillable
   if (this.isSelectable() || this.isDrillable())
-    this.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
 
   // Associate using the event manager
   picto.getEventManager().associate(this, this);
@@ -942,7 +928,7 @@ DvtPictoChartItem.prototype.isDrillable = function() {
  * @return {boolean}
  */
 DvtPictoChartItem.prototype.isDoubleClickable = function() {
-  // : IE double clicking workaround in DvtEventManager.
+  // : IE double clicking workaround in dvt.EventManager.
   return this.isSelectable() && this.isDrillable();
 };
 
@@ -985,14 +971,14 @@ DvtPictoChartItem.prototype.getDatatip = function(target) {
   var nameTd = '';
   var name = this.getName();
   if (name)
-    nameTd = DvtHtmlTooltipManager.createStartTag('td', options['_tooltipLabelStyle']) + name + '<\/td>';
+    nameTd = dvt.HtmlTooltipManager.createStartTag('td', options['_tooltipLabelStyle']) + name + '<\/td>';
 
-  var isRTL = DvtAgent.isRightToLeft(this._picto.getCtx());
-  options['_tooltipLabelStyle'].setStyle(DvtCSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
-  options['_tooltipValueStyle'].setStyle(DvtCSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
+  var isRTL = dvt.Agent.isRightToLeft(this._picto.getCtx());
+  options['_tooltipLabelStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
+  options['_tooltipValueStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
 
-  return DvtHtmlTooltipManager.createStartTag('table', options['_tooltipStyle']) + '<tr>' + nameTd +
-      DvtHtmlTooltipManager.createStartTag('td', options['_tooltipValueStyle']) + this._getCountString() + '<\/td>' +
+  return dvt.HtmlTooltipManager.createStartTag('table', options['_tooltipStyle']) + '<tr>' + nameTd +
+      dvt.HtmlTooltipManager.createStartTag('td', options['_tooltipValueStyle']) + this._getCountString() + '<\/td>' +
       '<\/tr><\/table>';
 };
 
@@ -1009,7 +995,7 @@ DvtPictoChartItem.prototype.getDatatipColor = function() {
  * @private
  */
 DvtPictoChartItem.prototype._getCountString = function() {
-  return DvtBundle.getTranslation(this._picto.getOptions(), 'labelCountWithTotal', DvtBundle.UTIL_PREFIX, 'COUNT_WITH_TOTAL', [this.getCount(), this._picto.getTotalCount()]);
+  return dvt.Bundle.getTranslation(this._picto.getOptions(), 'labelCountWithTotal', dvt.Bundle.UTIL_PREFIX, 'COUNT_WITH_TOTAL', [this.getCount(), this._picto.getTotalCount()]);
 };
 
 
@@ -1086,9 +1072,9 @@ DvtPictoChartItem.prototype.getAriaLabel = function() {
   var states = [];
   var options = this._picto.getOptions();
   if (this.isSelectable())
-    states.push(DvtBundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', DvtBundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
+    states.push(dvt.Bundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
   if (this.isDrillable())
-    states.push(DvtBundle.getTranslation(options, 'stateDrillable', DvtBundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+    states.push(dvt.Bundle.getTranslation(options, 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
 
   var shortDesc;
   var name = this.getName();
@@ -1097,9 +1083,9 @@ DvtPictoChartItem.prototype.getAriaLabel = function() {
   else if (name == null)
     shortDesc = this._getCountString();
   else
-    shortDesc = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [name, this._getCountString()]);
+    shortDesc = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [name, this._getCountString()]);
 
-  return DvtDisplayable.generateAriaLabel(shortDesc, states);
+  return dvt.Displayable.generateAriaLabel(shortDesc, states);
 };
 
 /**
@@ -1108,7 +1094,7 @@ DvtPictoChartItem.prototype.getAriaLabel = function() {
  * @private
  */
 DvtPictoChartItem.prototype._updateAriaLabel = function() {
-  if (!DvtAgent.deferAriaCreation())
+  if (!dvt.Agent.deferAriaCreation())
     this.setAriaProperty('label', this.getAriaLabel());
 };
 
@@ -1134,7 +1120,7 @@ DvtPictoChartItem.prototype.getCategories = function(category) {
  */
 DvtPictoChartItem.prototype.getNextNavigable = function(event) {
   var keyboardHandler = this._picto.getEventManager().getKeyboardHandler();
-  if (event.type == DvtMouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event))
+  if (event.type == dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event))
     return this;
   else if (keyboardHandler.isNavigationEvent(event))
     return DvtPictoChartKeyboardHandler.getNextNavigable(this._picto, this, event);
@@ -1181,7 +1167,7 @@ DvtPictoChartItem.prototype.isShowingKeyboardFocusEffect = function() {
 
 /**
  * Sets where the tooltip should appear on keyboard navigation.
- * @param {DvtPoint} location
+ * @param {dvt.Point} location
  */
 DvtPictoChartItem.prototype.setKeyboardTooltipLocation = function(location) {
   this._keyboardTooltipLocation = location;
@@ -1196,14 +1182,14 @@ DvtPictoChartItem.prototype.getKeyboardTooltipLocation = function() {
 /**
  * @param {DvtPictoChartEventManager} eventManager The owning event manager.
  * @class DvtPictoChartKeyboardHandler
- * @extends {DvtKeyboardHandler}
+ * @extends {dvt.KeyboardHandler}
  * @constructor
  */
 var DvtPictoChartKeyboardHandler = function(eventManager) {
   this.Init(eventManager);
 };
 
-DvtObj.createSubclass(DvtPictoChartKeyboardHandler, DvtKeyboardHandler, 'DvtPictoChartKeyboardHandler');
+dvt.Obj.createSubclass(DvtPictoChartKeyboardHandler, dvt.KeyboardHandler);
 
 /**
  * @override
@@ -1216,14 +1202,14 @@ DvtPictoChartKeyboardHandler.prototype.isSelectionEvent = function(event) {
  * @override
  */
 DvtPictoChartKeyboardHandler.prototype.isMultiSelectEvent = function(event) {
-  return event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey;
+  return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
 };
 
 /**
  * Finds next navigable item based on direction.
- * @param {DvtPictoChart} picto The component.
+ * @param {dvt.PictoChart} picto The component.
  * @param {DvtKeyboardNavigable} currentNavigable The navigable item with current focus.
- * @param {DvtKeyboardEvent} event The keyboard event.
+ * @param {dvt.KeyboardEvent} event The keyboard event.
  * @return {DvtKeyboardNavigable} The next navigable.
  */
 DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable, event) {
@@ -1231,13 +1217,13 @@ DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable
   var isOriginBottom = DvtPictoChartRenderer.isOriginBottom(picto);
 
   var isForward =
-      (event.keyCode == DvtKeyboardEvent.LEFT_ARROW && isOriginRight) ||
-      (event.keyCode == DvtKeyboardEvent.RIGHT_ARROW && !isOriginRight) ||
-      (event.keyCode == DvtKeyboardEvent.UP_ARROW && isOriginBottom) ||
-      (event.keyCode == DvtKeyboardEvent.DOWN_ARROW && !isOriginBottom);
+      (event.keyCode == dvt.KeyboardEvent.LEFT_ARROW && isOriginRight) ||
+      (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW && !isOriginRight) ||
+      (event.keyCode == dvt.KeyboardEvent.UP_ARROW && isOriginBottom) ||
+      (event.keyCode == dvt.KeyboardEvent.DOWN_ARROW && !isOriginBottom);
 
   var navigableItems = picto.getItems();
-  var nextIdx = DvtArrayUtils.getIndex(navigableItems, currentNavigable) + (isForward ? 1 : -1);
+  var nextIdx = dvt.ArrayUtils.getIndex(navigableItems, currentNavigable) + (isForward ? 1 : -1);
   if (nextIdx < navigableItems.length && nextIdx >= 0)
     return navigableItems[nextIdx];
   else
@@ -1249,15 +1235,15 @@ DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable
  */
 DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
   var currentNavigable = this._eventManager.getFocus();
-  if (currentNavigable && event.keyCode == DvtKeyboardEvent.ENTER) {
+  if (currentNavigable && event.keyCode == dvt.KeyboardEvent.ENTER) {
     this._eventManager.processDrillEvent(currentNavigable);
-    DvtEventManager.consumeEvent(event);
+    dvt.EventManager.consumeEvent(event);
     return currentNavigable;
   }
   else
     return DvtPictoChartKeyboardHandler.superclass.processKeyDown.call(this, event);
 };
-// Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
  *  @param {DvtPictChart} picto
@@ -1267,37 +1253,37 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
  *  @param {number} width The width of the marker.
  *  @param {number} height The height of the marker.
  *  @param {String} id The id of the marker.
- *  @extends {DvtSimpleMarker}
+ *  @extends {dvt.SimpleMarker}
  *  @constructor
  */
 var DvtPictoChartShapeMarker = function(picto, shape, cx, cy, width, height, id) {
-  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape, DvtCSSStyle.SKIN_ALTA, cx, cy, width, height, true, id);
+  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape, dvt.CSSStyle.SKIN_ALTA, cx, cy, width, height, null, true, id);
   this._picto = picto;
 };
 
-DvtObj.createSubclass(DvtPictoChartShapeMarker, DvtSimpleMarker, 'DvtPictoChartShapeMarker');
+dvt.Obj.createSubclass(DvtPictoChartShapeMarker, dvt.SimpleMarker);
 
 
 //---------------------------------------------------------------------//
-// Animation support: DvtDataAnimationHandler                          //
+// Animation support: dvt.DataAnimationHandler                          //
 //---------------------------------------------------------------------//
 
 /**
  * @override
  */
 DvtPictoChartShapeMarker.prototype.animateUpdate = function(handler, oldMarker) {
-  var animation = new DvtCustomAnimation(this.getCtx(), this, this._picto.getAnimationDuration() * 0.75);
+  var animation = new dvt.CustomAnimation(this.getCtx(), this, this._picto.getAnimationDuration() * 0.75);
   var animator = animation.getAnimator();
 
   // Color animation
   var endFill = this.getFill();
   this.setFill(oldMarker.getFill().clone());
-  animator.addProp(DvtAnimator.TYPE_FILL, this, this.getFill, this.setFill, endFill);
+  animator.addProp(dvt.Animator.TYPE_FILL, this, this.getFill, this.setFill, endFill);
 
   // Position and size animation
   var endParams = this._getAnimationParams();
   this._setAnimationParams(oldMarker._getAnimationParams());
-  animator.addProp(DvtAnimator.TYPE_NUMBER_ARRAY, this, this._getAnimationParams, this._setAnimationParams, endParams);
+  animator.addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this._getAnimationParams, this._setAnimationParams, endParams);
 
   // Hide old item
   oldMarker.setAlpha(0);
@@ -1309,7 +1295,7 @@ DvtPictoChartShapeMarker.prototype.animateUpdate = function(handler, oldMarker) 
  * @override
  */
 DvtPictoChartShapeMarker.prototype.animateDelete = function(handler) {
-  handler.add(new DvtAnimFadeOut(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 0);
+  handler.add(new dvt.AnimFadeOut(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 0);
 };
 
 /**
@@ -1317,7 +1303,7 @@ DvtPictoChartShapeMarker.prototype.animateDelete = function(handler) {
  */
 DvtPictoChartShapeMarker.prototype.animateInsert = function(handler) {
   this.setAlpha(0);
-  handler.add(new DvtAnimFadeIn(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 2);
+  handler.add(new dvt.AnimFadeIn(this.getCtx(), this, this._picto.getAnimationDuration() * 0.5), 2);
 };
 
 /**
@@ -1341,24 +1327,24 @@ DvtPictoChartShapeMarker.prototype._setAnimationParams = function(params) {
   this.setHeight(params[3]);
 };
 /**
- * Renderer for DvtPictoChart.
+ * Renderer for dvt.PictoChart.
  * @class
  */
 var DvtPictoChartRenderer = {};
 
-DvtObj.createSubclass(DvtPictoChartRenderer, DvtObj, 'DvtPictoChartRenderer');
+dvt.Obj.createSubclass(DvtPictoChartRenderer, dvt.Obj);
 
 /**
  * Renders the pictoChart contents into the available space.
- * @param {DvtPictoChart} picto The pictoChart being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.PictoChart} picto The pictoChart being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {Object=} info (optional) The pictoChart info, obtained from DvtPictoChartRenderer.getInfo().
  */
 DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
   // Add invisible background to allow interactivity (e.g. clear selection)
   var context = picto.getCtx();
-  var background = new DvtRect(context, availSpace.x, availSpace.y, availSpace.w, availSpace.h);
+  var background = new dvt.Rect(context, availSpace.x, availSpace.y, availSpace.w, availSpace.h);
   background.setInvisibleFill();
   container.addChild(background);
 
@@ -1380,7 +1366,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
   var isOriginRight = DvtPictoChartRenderer.isOriginRight(picto);
 
   // Use a 2D cell map to keep track of which cells are occupied
-  var cellMap = new DvtMap2D();
+  var cellMap = new dvt.Map2D();
 
   var prevColSpan = 0;
   var prevRowSpan = 0;
@@ -1454,7 +1440,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
       }
       else {
         // Add hit area to remove gap between shapes (for selection, tooltip, etc)
-        var hitArea = new DvtRect(context, rectX, rectY, rectW, rectH);
+        var hitArea = new dvt.Rect(context, rectX, rectY, rectW, rectH);
         hitArea.setInvisibleFill();
         item.addChild(hitArea);
 
@@ -1468,14 +1454,14 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
 
       // Draw clip path if the marker is fractional
       if (fraction < 1) {
-        var clipPath = new DvtClipPath();
+        var clipPath = new dvt.ClipPath();
         clipPath.addRect(rectX, rectY, rectW, rectH);
         marker.setClipPath(clipPath);
       }
 
       // Set the keyboard tooltip to show up on the first marker
       if (isFirstMarker) {
-        item.setKeyboardTooltipLocation(new DvtPoint(x, y));
+        item.setKeyboardTooltipLocation(new dvt.Point(x, y));
         isFirstMarker = false;
       }
 
@@ -1496,7 +1482,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
 
 /**
  * Creates the pictoChart items and computes the layout variables.
- * @param {DvtPictoChart} picto The pictoChart being rendered.
+ * @param {dvt.PictoChart} picto The pictoChart being rendered.
  * @param {number=} width The width, if fixed by user (optional)
  * @param {number=} height The height, if fixed by user (optional)
  * @return {Object} An object containing items, colCount, rowCount, colWidth, and rowHeight.
@@ -1508,7 +1494,7 @@ DvtPictoChartRenderer.getInfo = function(picto, width, height) {
     return {};
 
   // Create a boolean map of hidden categories for better performance
-  var categoryMap = DvtArrayUtils.createBooleanMap(options['hiddenCategories']);
+  var categoryMap = dvt.ArrayUtils.createBooleanMap(options['hiddenCategories']);
 
   // Create items and compute the number of cells that are needed to fit all items
   var items = [];
@@ -1521,7 +1507,7 @@ DvtPictoChartRenderer.getInfo = function(picto, width, height) {
       continue;
 
     var item = new DvtPictoChartItem(picto, itemObjs[i]);
-    if (categoryMap && DvtArrayUtils.hasAnyMapItem(categoryMap, item.getCategories()))
+    if (categoryMap && dvt.ArrayUtils.hasAnyMapItem(categoryMap, item.getCategories()))
       continue;
 
     // Compute the maximum colSpan and rowSpan
@@ -1606,7 +1592,7 @@ DvtPictoChartRenderer._ceil = function(a, b) {
 
 /**
  * Returns the next available cell for the shape.
- * @param {DvtMap2D} cellMap
+ * @param {dvt.Map2D} cellMap
  * @param {number} colSpan
  * @param {number} rowSpan
  * @param {number} colCount
@@ -1636,7 +1622,7 @@ DvtPictoChartRenderer._findNextAvailableCell = function(cellMap, colSpan, rowSpa
 
 /**
  * Returns whether the cells are available.
- * @param {DvtMap2D} cellMap
+ * @param {dvt.Map2D} cellMap
  * @param {number} col
  * @param {number} row
  * @param {number} colSpan
@@ -1656,7 +1642,7 @@ DvtPictoChartRenderer._areCellsAvailable = function(cellMap, col, row, colSpan, 
 
 /**
  * Occupies the specified cells.
- * @param {DvtMap2D} cellMap
+ * @param {dvt.Map2D} cellMap
  * @param {number} col
  * @param {number} row
  * @param {number} colSpan
@@ -1673,21 +1659,21 @@ DvtPictoChartRenderer._occupyCells = function(cellMap, col, row, colSpan, rowSpa
 
 /**
  * Renders the empty text for the component.
- * @param {DvtPictoChart} picto The pictoChart being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.PictoChart} picto The pictoChart being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtPictoChartRenderer.renderEmptyText = function(picto, container, availSpace) {
   var options = picto.getOptions();
-  var emptyTextStr = DvtBundle.getTranslation(options, 'labelNoData', DvtBundle.UTIL_PREFIX, 'NO_DATA');
-  var emptyText = DvtTextUtils.renderEmptyText(container, emptyTextStr, availSpace.clone(),
+  var emptyTextStr = dvt.Bundle.getTranslation(options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA');
+  var emptyText = dvt.TextUtils.renderEmptyText(container, emptyTextStr, availSpace.clone(),
       picto.getEventManager(), options['_statusMessageStyle']);
   picto.registerEmptyText(emptyText);
 };
 
 /**
  * Returns whether the pictoChart is vertical.
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @return {boolean}
  */
 DvtPictoChartRenderer.isVertical = function(picto) {
@@ -1696,7 +1682,7 @@ DvtPictoChartRenderer.isVertical = function(picto) {
 
 /**
  * Returns whether the pictoChart is layout from bottom to top.
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @return {boolean}
  */
 DvtPictoChartRenderer.isOriginBottom = function(picto) {
@@ -1706,14 +1692,26 @@ DvtPictoChartRenderer.isOriginBottom = function(picto) {
 
 /**
  * Returns whether the pictoChart is layout from right to left.
- * @param {DvtPictoChart} picto
+ * @param {dvt.PictoChart} picto
  * @return {boolean}
  */
 DvtPictoChartRenderer.isOriginRight = function(picto) {
   var origin = picto.getOptions()['layoutOrigin'];
   var isEnd = origin == 'topEnd' || origin == 'bottomEnd';
-  return DvtAgent.isRightToLeft(picto.getCtx()) ? !isEnd : isEnd;
+  return dvt.Agent.isRightToLeft(picto.getCtx()) ? !isEnd : isEnd;
 };
+dvt.exportProperty(dvt, 'PictoChart', dvt.PictoChart);
+dvt.exportProperty(dvt.PictoChart, 'newInstance', dvt.PictoChart.newInstance);
+dvt.exportProperty(dvt.PictoChart.prototype, 'destroy', dvt.PictoChart.prototype.destroy);
+dvt.exportProperty(dvt.PictoChart.prototype, 'getAutomation', dvt.PictoChart.prototype.getAutomation);
+dvt.exportProperty(dvt.PictoChart.prototype, 'highlight', dvt.PictoChart.prototype.highlight);
+dvt.exportProperty(dvt.PictoChart.prototype, 'render', dvt.PictoChart.prototype.render);
+dvt.exportProperty(dvt.PictoChart.prototype, 'select', dvt.PictoChart.prototype.select);
 
-  return D;
+dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getDomElementForSubId', DvtPictoChartAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getItem', DvtPictoChartAutomation.prototype.getItem);
+dvt.exportProperty(DvtPictoChartAutomation.prototype, 'getItemCount', DvtPictoChartAutomation.prototype.getItemCount);
+})(dvt);
+
+  return dvt;
 });

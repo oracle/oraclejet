@@ -865,6 +865,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
     _APPLICATION_LEVEL_NAV_STYLE_CLASS: 'oj-navigationlist-app-level',
     _PAGE_LEVEL_NAV_STYLE_CLASS: 'oj-navigationlist-page-level',
     _NAVLIST_ITEM_ICON_HAS_TITLE: 'navigationListItemIconHastitle',
+    _NAVLIST_NO_FOLLOW_LINK_CLASS: 'oj-navigationlist-nofollow-link',
     /**
      * Returns Item label text
      * @returns {string|null} Item label
@@ -1647,6 +1648,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         return this.Trigger("beforeSelect", event, {item: item, key: key});
     },
     _initiateNavigation: function (item) {
+        
+        if (this.ojContext.element.hasClass(this._NAVLIST_NO_FOLLOW_LINK_CLASS)) {
+            return false;
+        }
+        
         var itemContent = this.getItemContentElement(item);
         var url = itemContent.attr('href');
         if (url && url !== "#") {
@@ -1816,6 +1822,25 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
               }
           }
           return null;
+    },
+    /**
+     * Returns an object with context for the given child DOM node. 
+     * This will always contain the subid for the node, defined as the 'subId' property on the context object. 
+     * Additional component specific information may also be included. For more details on returned objects, see context objects.
+     * Invoked by widget
+     *
+     * @param {!Element} node the child DOM node
+     * @returns {Object|null} the context for the DOM node, or null when none is found.
+     */
+    getContextByNode: function(node)
+    {
+        var context = _ojNavigationListView.superclass.getContextByNode.call(this,node);
+        if (context && context['subId'] == 'oj-listview-item') 
+        {
+            context['subId'] = 'oj-navigationlist-item';
+            return context;
+        }
+        return null;
     },
     /**
      * Refresh navlist
@@ -2051,6 +2076,11 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      *     <tr>
      *       <td>oj-xl-condense</td>
      *       <td>Use this class to condense horizontal navigation list items on extra large and up screens.
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-navigationlist-nofollow-link</td>
+     *       <td> Use this class to prevent automatic navigation to the url specified on &lt;a> tag's <code class="prettyprint">href</code> attribute. In this case, navigation can be handled programmatically by using <a href="#event:optionChange">optionChange</a> event.
      *       </td>
      *     </tr>
      *   </tbody>
@@ -2708,6 +2738,21 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
             return this.navlist.getSubIdByNode(node);
         },
         /**
+         * {@ojinclude "name":"nodeContextDoc"}
+         * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+         * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+         *
+         * @example {@ojinclude "name":"nodeContextExample"}
+         *
+         * @expose
+         * @instance
+         * @memberof oj.ojNavigationList
+         */
+        getContextByNode: function(node)
+        {
+           return this.navlist.getContextByNode(node);
+        },
+        /**
          * Expand an item.<p>
          * Note when vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.<p>
          *
@@ -2855,6 +2900,21 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
             this._super();
             this.navlist.refresh();
 
+        },
+        /**
+         * Returns a Promise that resolves when the component is ready, i.e. after data fetching, rendering, and animations complete. 
+         * Note that in the highwatermark scrolling case, component is ready after data fetching, rendering, and associated animations of items fetched so far are complete.
+         *
+         * <p>This method does not accept any arguments.
+         * 
+         * @expose
+         * @memberof oj.ojNavigationList
+         * @instance
+         * @return {Promise} A Promise that resolves when the component is ready.
+         */
+        whenReady: function()
+        {
+            return this.navlist.whenReady();
         },
         /**
          * Destroy the Navigation List
@@ -3076,6 +3136,17 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
              */
 
            // Node Context Objects *********************************************
+            /**
+             * <p>Context for the ojNavigationList component's items.</p>
+             *
+             * @property {number} index the zero based item index relative to its parent
+             * @property {Object} key the key of the item
+             * @property {Element} parent the parent group item.  Only available if item has a parent.
+             * @property {boolean} group whether the item is a group.
+             *
+             * @ojnodecontext oj-navigationlist-item
+             * @memberof oj.ojNavigationList
+             */
     });
 
     // Add custom getters for properties from theming file

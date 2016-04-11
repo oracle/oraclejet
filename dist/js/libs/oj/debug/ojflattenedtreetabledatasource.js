@@ -92,6 +92,8 @@ oj.FlattenedTreeTableDataSource = function(data, options)
     if (self._pageSize)
     {
       setTimeout(function(){
+        self._data.refresh();
+        self._rows = null;
         self.fetch();
       }, 0);
     }
@@ -124,6 +126,8 @@ oj.FlattenedTreeTableDataSource = function(data, options)
     if (self._pageSize)
     {
       setTimeout(function(){
+        self._data.refresh();
+        self._rows = null;
         self.fetch();
       }, 0);
     }
@@ -409,6 +413,22 @@ oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
   return -1;
 };
 
+/**
+ * Returns the confidence for the totalSize value. 
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
+ *                  "estimate" if the totalSize is an estimate 
+ *                  "atLeast" if the totalSize is at least a certain number 
+ *                  "unknown" if the totalSize is unknown
+ * @export
+ * @expose
+ * @memberof! oj.CollectionTableDataSource
+ * @instance 
+ */
+oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function()
+{ 
+  return "unknown";
+};
+
 /**** end delegated functions ****/
 
 oj.FlattenedTreeTableDataSource.prototype._getMetadata = function(index)
@@ -448,7 +468,7 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
         for (i = this._startIndex; i <= endIndex; i++)
         {
           rowArray[i - this._startIndex] = this._rows['data'][i];
-          keyArray[i - this._startIndex] = '';
+          keyArray[i - this._startIndex] = this._getMetadata(i)['key'];
         }
         var result = {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
         this._endFetch(options, result, null);
@@ -466,6 +486,11 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
       this._rows = null;
     }
   }
+  else
+  {
+    // if we don't have any cached rows then we always need to fetch from the start
+    startIndex = 0;
+  }
   
   var rangeOption = {'start': startIndex, 'count':  rangeCount};
   var self = this;
@@ -475,7 +500,7 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
     {
       "success": function(nodeSet)
       {
-        self._handleFetchRowsSuccess(nodeSet);
+        self._handleFetchRowsSuccess(nodeSet, startIndex);
         options['refresh'] = true;
         var endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(self._rows, self._startIndex, self._pageSize);
         var rowArray = [];
@@ -484,7 +509,7 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
         for (i = self._startIndex; i <= endIndex; i++)
         {
           rowArray[i - self._startIndex] = self._rows['data'][i];
-          keyArray[i - self._startIndex] = nodeSet.getMetadata(i)['key'];
+          keyArray[i - self._startIndex] = self._getMetadata(i)['key'];
         }
         var result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
         self._endFetch(options, result, null);
@@ -499,15 +524,15 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
   });
 };
 
-oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nodeSet)
+oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nodeSet, startIndex)
 {
   var i, rowIdx;
   for (i = 0; i < nodeSet.getCount(); i++)
   {
-    rowIdx = this._startIndex + i;
+    rowIdx = startIndex + i;
     this._nodeSetList[rowIdx] = {};
     this._nodeSetList[rowIdx]['nodeSet'] = nodeSet;
-    this._nodeSetList[rowIdx]['startIndex'] = this._startIndex;
+    this._nodeSetList[rowIdx]['startIndex'] = startIndex;
   }
 
   if (!this._rows)

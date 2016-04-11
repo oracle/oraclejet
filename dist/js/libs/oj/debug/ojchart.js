@@ -73,7 +73,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtSparkChart.newInstance(context, callback, callbackObj);
+    return dvt.SparkChart.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -821,7 +821,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _CreateDvtComponent: function(context, callback, callbackObj) {
-      return dvt.DvtChart.newInstance(context, callback, callbackObj);
+      return dvt.Chart.newInstance(context, callback, callbackObj);
     },
 
     //** @inheritdoc */
@@ -1024,54 +1024,53 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _HandleEvent: function(event) {
-      // TODO: Use DvtOptionChangeEvent whenever possible
-
-      var type = event && event.getType ? event.getType() : null;
-      if (type === dvt.DvtSelectionEvent.TYPE || type === dvt.DvtSelectionEvent.TYPE_INPUT) {
-        var selection = event.getSelection();
+      var type = event['type'];
+      if (type === 'selection') {
+        var selection = event['selection'];
         if (selection) {
           // Convert the graph selection context into the JET context
           var selectedItems = [];
           for (var i = 0; i < selection.length; i++) {
-            var selectedItem = {'id': selection[i].getId(),
-              'series': selection[i].getSeries(),
-              'group': selection[i].getGroup()};
+            var selectedItem = {'id': selection[i]['id'],
+              'series': selection[i]['series'],
+              'group': selection[i]['group']};
             selectedItems.push(selectedItem);
           }
 
           var selectPayload = {
-            'endGroup': event.getEndGroup(), 'startGroup': event.getStartGroup(),
-            'xMax': event.getXMax(), 'xMin': event.getXMin(),
-            'yMax': event.getYMax(), 'yMin': event.getYMin()
+            'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
+            'xMax': event['xMax'], 'xMin': event['xMin'],
+            'yMax': event['yMax'], 'yMin': event['yMin'],
+            'y2Max': event['y2Max'], 'y2Min': event['y2Min']
           };
 
-          // Update the options selection state if this is a non-input event
-          if(type === dvt.DvtSelectionEvent.TYPE) {
+          // Update the options selection state if the user interaction is complete
+          if(event['complete'])
             this._UserOptionChange('selection', selectedItems, selectPayload);
-          } else {
+          else {
             selectPayload['items'] = selectedItems;
             this._trigger('selectInput', null, selectPayload);
           }
         }
       }
-      else if (type === dvt.DvtCategoryHideShowEvent.TYPE_HIDE || type === dvt.DvtCategoryHideShowEvent.TYPE_SHOW) {
-        var filterType = (type === dvt.DvtCategoryHideShowEvent.TYPE_HIDE) ? 'out' : 'in';
-        this._trigger('categoryFilter', null, {'category': event.getCategory(), 'type': filterType});
+      else if (type === 'categoryHide' || type === 'categoryShow') {
+        var filterType = (type === 'categoryHide') ? 'out' : 'in';
+        this._trigger('categoryFilter', null, {'category': event['category'], 'type': filterType});
         this._UserOptionChange('hiddenCategories', event['hiddenCategories']);
       }
-      else if (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER || type === dvt.DvtCategoryRolloverEvent.TYPE_OUT) {
-        var highlightType = (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER) ? 'on' : 'off';
+      else if (type === 'categoryHighlight') {
+        var highlightType = event['categories'] && event['categories'].length > 0 ? 'on' : 'off';
         this._trigger('categoryHighlight', null, {'categories': event['categories'], 'type': highlightType});
         this._UserOptionChange('highlightedCategories', event['categories']);
       }
-      else if (type === dvt.DvtChartViewportChangeEvent.TYPE || type === dvt.DvtChartViewportChangeEvent.TYPE_INPUT) {
-        var viewportChangePayload = {'endGroup': event.getEndGroup(), 'startGroup': event.getStartGroup(),
-                                     'xMax': event.getXMax(), 'xMin': event.getXMin(),
-                                     'yMax': event.getYMax(), 'yMin': event.getYMin()};
+      else if (type === 'viewportChange') {
+        var viewportChangePayload = {'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
+                                     'xMax': event['xMax'], 'xMin': event['xMin'],
+                                     'yMax': event['yMax'], 'yMin': event['yMin']};
 
         // Maintain the viewport state
         // TODO we should be firing option change event for this, but it doesn't support nested props yet.
-        if(type === dvt.DvtChartViewportChangeEvent.TYPE) {
+        if(event['complete']) {
           // Ensure the axis options both exist
           if(!this.options['xAxis'])
             this.options['xAxis'] = {};
@@ -1082,22 +1081,22 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
           // X-Axis: Clear the start and end group because min/max more accurate.
           this.options['xAxis']['viewportStartGroup'] = null;
           this.options['xAxis']['viewportEndGroup'] = null;
-          if(event.getXMin() != null && event.getXMax() != null) {
-            this.options['xAxis']['viewportMin'] = event.getXMin();
-            this.options['xAxis']['viewportMax'] = event.getXMax();
+          if(event['xMin'] != null && event['xMax'] != null) {
+            this.options['xAxis']['viewportMin'] = event['xMin'];
+            this.options['xAxis']['viewportMax'] = event['xMax'];
           }
 
           // Y-Axis
-          if(event.getYMin() != null && event.getYMax() != null) {
-            this.options['yAxis']['viewportMin'] = event.getYMin();
-            this.options['yAxis']['viewportMax'] = event.getYMax();
+          if(event['yMin'] != null && event['yMax'] != null) {
+            this.options['yAxis']['viewportMin'] = event['yMin'];
+            this.options['yAxis']['viewportMax'] = event['yMax'];
           }
         }
 
-        this._trigger(type === dvt.DvtChartViewportChangeEvent.TYPE ? 'viewportChange' : 'viewportChangeInput', null, viewportChangePayload);
+        this._trigger(event['complete'] ? 'viewportChange' : 'viewportChangeInput', null, viewportChangePayload);
       }
-      else if (type === dvt.DvtDrillEvent.TYPE) {
-        this._trigger('drill', null, {'id': event.getId(), 'series': event.getSeries(), 'group': event.getGroup()});
+      else if (type === 'drill') {
+        this._trigger('drill', null, {'id': event['id'], 'series': event['series'], 'group': event['group']});
       }
       else {
         this._super(event);
@@ -1411,7 +1410,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     _GetComponentDeferredDataPaths : function() {
       return {'root': ['groups', 'series']};
     },
-    
+
     /**
      * Returns a promise that is resolved when the component is finished rendering.
      * This can be used to determine when it is okay to call automation and other APIs on the component.

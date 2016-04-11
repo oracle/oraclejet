@@ -30,8 +30,7 @@ Here is a list of places to see Oracle JET in action:
 Oracle JET provides a Yeoman generator to help scaffold up your applications.  To install and build a blank app, type:
 
 ```
-npm install -g yo
-npm install -g grunt
+npm install -g yo grunt bower grunt-cli
 npm install -g generator-oraclejet
 
 yo oraclejet <app name>

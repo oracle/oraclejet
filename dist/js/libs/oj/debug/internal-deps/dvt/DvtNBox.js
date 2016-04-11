@@ -6,9 +6,6 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -16,31 +13,31 @@ define(['./DvtToolkit'], function(dvt) {
 /**
  * NBox component.  This nbox should never be instantiated directly.  Use the
  * newInstance function instead.
- * @param {DvtContext} context The rendering context.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @class
  * @constructor
- * @extends {DvtBaseComponent}
+ * @extends {dvt.BaseComponent}
  * @export
  */
-var DvtNBox = function(context, callback, callbackObj) {
+dvt.NBox = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
 };
 
-DvtObj.createSubclass(DvtNBox, DvtBaseComponent, 'DvtNBox');
+dvt.Obj.createSubclass(dvt.NBox, dvt.BaseComponent);
 
 
 /**
- * Returns a new instance of DvtNBox.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.NBox.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtNBox}
+ * @return {dvt.NBox}
  * @export
  */
-DvtNBox.newInstance = function(context, callback, callbackObj) {
-  return new DvtNBox(context, callback, callbackObj);
+dvt.NBox.newInstance = function(context, callback, callbackObj) {
+  return new dvt.NBox(context, callback, callbackObj);
 };
 
 
@@ -50,7 +47,7 @@ DvtNBox.newInstance = function(context, callback, callbackObj) {
  * @return {object} The object containing defaults for this component.
  * @export
  */
-DvtNBox.getDefaults = function(skin) {
+dvt.NBox.getDefaults = function(skin) {
   return (new DvtNBoxDefaults()).getDefaults(skin);
 };
 
@@ -58,8 +55,8 @@ DvtNBox.getDefaults = function(skin) {
 /**
  * @override
  */
-DvtNBox.prototype.Init = function(context, callback, callbackObj) {
-  DvtNBox.superclass.Init.call(this, context, callback, callbackObj);
+dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
+  dvt.NBox.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
   this.Defaults = new DvtNBoxDefaults();
@@ -69,12 +66,12 @@ DvtNBox.prototype.Init = function(context, callback, callbackObj) {
   this.EventManager.addListeners(this);
 
   // Drag and drop support
-  this._dragSource = new DvtDragSource(context);
+  this._dragSource = new dvt.DragSource(context);
   this._dropTarget = new DvtNBoxDropTarget(this);
   this.EventManager.setDragSource(this._dragSource);
 
   // Set up keyboard handler on non-touch devices
-  if (!DvtAgent.isTouchDevice())
+  if (!dvt.Agent.isTouchDevice())
     this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
   // Make sure the object has an id for clipRect naming
@@ -88,7 +85,7 @@ DvtNBox.prototype.Init = function(context, callback, callbackObj) {
 
   /**
    * The legend of the nbox.  This will be set during render time.
-   * @type {DvtLegend}
+   * @type {dvt.Legend}
    */
   this.legend = null;
 
@@ -109,7 +106,7 @@ DvtNBox.prototype.Init = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtNBox.prototype.SetOptions = function(options) {
+dvt.NBox.prototype.SetOptions = function(options) {
   if (!options)
     options = this.getSanitizedOptions();
 
@@ -121,9 +118,9 @@ DvtNBox.prototype.SetOptions = function(options) {
     DvtNBoxDataUtils.processDataObject(this);
 
     // Disable animation for canvas and xml
-    if (!DvtAgent.isEnvironmentBrowser()) {
-      this.Options[DvtNBoxConstants.ANIMATION_ON_DISPLAY] = 'none';
-      this.Options[DvtNBoxConstants.ANIMATION_ON_DATA_CHANGE] = 'none';
+    if (!dvt.Agent.isEnvironmentBrowser()) {
+      this.Options[dvt.NBoxConstants.ANIMATION_ON_DISPLAY] = 'none';
+      this.Options[dvt.NBoxConstants.ANIMATION_ON_DATA_CHANGE] = 'none';
     }
   }
   else if (!this.Options) // No object has ever been provided, copy the defaults
@@ -131,11 +128,11 @@ DvtNBox.prototype.SetOptions = function(options) {
   this._displayables = [];
 
   // Initialize the selection handler
-  var selectionMode = this.Options[DvtNBoxConstants.SELECTION_MODE];
+  var selectionMode = this.Options[dvt.NBoxConstants.SELECTION_MODE];
   if (selectionMode == 'single')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_SINGLE);
+    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode == 'multiple')
-    this._selectionHandler = new DvtSelectionHandler(DvtSelectionHandler.TYPE_MULTIPLE);
+    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
 
@@ -148,7 +145,7 @@ DvtNBox.prototype.SetOptions = function(options) {
  * @override
  * @export
  */
-DvtNBox.prototype.render = function(options, width, height) {
+dvt.NBox.prototype.render = function(options, width, height) {
   //  If datachange animation, save nbox info before rendering for later use.
   var animationOnDataChange = DvtNBoxStyleUtils.getAnimationOnDataChange(this);
   var oldNBox = null;
@@ -180,9 +177,9 @@ DvtNBox.prototype.render = function(options, width, height) {
   }
 
   // Create a new container and render the component into it
-  var container = new DvtContainer(this.getCtx());
+  var container = new dvt.Container(this.getCtx());
   this.addChild(container);
-  DvtNBoxRenderer.render(this, container, new DvtRectangle(0, 0, this.Width, this.Height));
+  DvtNBoxRenderer.render(this, container, new dvt.Rectangle(0, 0, this.Width, this.Height));
 
   // Set the nbox, the panel drawer and the legend as keyboard listeners that are connected through tabbing
   var keyboardHandlers = [this];
@@ -219,40 +216,42 @@ DvtNBox.prototype.render = function(options, width, height) {
   // Construct the new animation playable
   var animationOnDisplay = DvtNBoxStyleUtils.getAnimationOnDisplay(this);
   var animationDuration = DvtNBoxStyleUtils.getAnimationDuration(this);
-  var bounds = new DvtRectangle(0, 0, this.Width, this.Height);
+  var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
   var bBlackBoxUpdate = false; // true if this is a black box update animation
 
   if (!this._container) {
     if (animationOnDisplay !== 'none') {
       // AnimationOnDisplay
-      this._animation = DvtBlackBoxAnimationHandler.getInAnimation(this.getCtx(), animationOnDisplay, container,
-                                                                   bounds, animationDuration);
+      this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), animationOnDisplay, container,
+          bounds, animationDuration);
     }
   }
   else if (animationOnDataChange != 'none' && options) {
     // AnimationOnDataChange
-    this._animation = DvtBlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animationOnDataChange, this._container,
-                                                                       container, bounds, animationDuration);
+    this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animationOnDataChange, this._container,
+        container, bounds, animationDuration);
     if (this._animation) {           // Black Box Animation
       bBlackBoxUpdate = true;
     }
     else {
-      this._deleteContainer = new DvtContainer(this.getCtx(), 'DeleteContainer');
+      this._deleteContainer = new dvt.Container(this.getCtx(), 'DeleteContainer');
       this.addChild(this._deleteContainer);
       var ah = new DvtNBoxDataAnimationHandler(this.getCtx(), this._deleteContainer, oldNBox, this);
+      var nodeOrderFunction = DvtNBoxRenderer.getNodeOrderFunction(this);
       ah.constructAnimation([oldNBox], [this]);
       this._animation = ah.getAnimation();
+      dvt.Playable.appendOnEnd(this._animation, nodeOrderFunction, this);
     }
   }
 
   // If an animation was created, play it
   if (this._animation) {
     this.setMouseEnabled(false);
-    DvtPlayable.appendOnEnd(this._animation, this._onAnimationEnd, this);
-    if (DvtAgent.isPlatformIE() && DvtAgent.getVersion() >= 12) {
+    dvt.Playable.appendOnEnd(this._animation, this._onAnimationEnd, this);
+    if (dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() >= 12) {
       // Edge can return incorrect values for getBBox on text elements after animation
       // Hacking for now by forcing a full non-animated render
-      DvtPlayable.appendOnEnd(this._animation, function() {this.setAnimationAllowed(false); this.render(options); this.setAnimationAllowed(true);}, this);
+      dvt.Playable.appendOnEnd(this._animation, function() {this.setAnimationAllowed(false); this.render(options); this.setAnimationAllowed(true);}, this);
     }
     this._animation.play();
   }
@@ -278,7 +277,7 @@ DvtNBox.prototype.render = function(options, width, height) {
  * Performs cleanup of the previously rendered content.  Note that this doesn't cleanup anything needed for animation.
  * @protected
  */
-DvtNBox.prototype.__cleanUp = function() {
+dvt.NBox.prototype.__cleanUp = function() {
   // Tooltip cleanup
   this.EventManager.hideTooltip();
 
@@ -291,7 +290,7 @@ DvtNBox.prototype.__cleanUp = function() {
  * Hook for cleaning up animation behavior at the end of the animation.
  * @private
  */
-DvtNBox.prototype._onAnimationEnd = function() {
+dvt.NBox.prototype._onAnimationEnd = function() {
   // Clean up the old container used by black box updates
   if (this._oldContainer) {
     this.removeChild(this._oldContainer);
@@ -315,25 +314,25 @@ DvtNBox.prototype._onAnimationEnd = function() {
 /**
  * @override
  */
-DvtNBox.prototype.CreateKeyboardHandler = function(manager) {
+dvt.NBox.prototype.CreateKeyboardHandler = function(manager) {
   return new DvtNBoxKeyboardHandler(manager, this);
 };
 
 /**
  * Gets the child container
  *
- * @return {DvtContainer} child container
+ * @return {dvt.Container} child container
  */
-DvtNBox.prototype.getChildContainer = function() {
+dvt.NBox.prototype.getChildContainer = function() {
   return this._container;
 };
 
 /**
  * Gets the delete container used for animation
  *
- * @return {DvtContainer} the delete container
+ * @return {dvt.Container} the delete container
  */
-DvtNBox.prototype.getDeleteContainer = function() {
+dvt.NBox.prototype.getDeleteContainer = function() {
   return this._deleteContainer;
 };
 
@@ -343,7 +342,7 @@ DvtNBox.prototype.getDeleteContainer = function() {
  *
  * @return {array} the registered displayables
  */
-DvtNBox.prototype.getDisplayables = function() {
+dvt.NBox.prototype.getDisplayables = function() {
   return this._displayables;
 };
 
@@ -352,7 +351,7 @@ DvtNBox.prototype.getDisplayables = function() {
  * Updates keyboard focus effect
  * @private
  */
-DvtNBox.prototype._updateKeyboardFocusEffect = function() {
+dvt.NBox.prototype._updateKeyboardFocusEffect = function() {
   var navigable = this.EventManager.getFocus();
   var isShowingKeyboardFocusEffect = false;
   if (navigable) {
@@ -372,7 +371,7 @@ DvtNBox.prototype._updateKeyboardFocusEffect = function() {
 /**
  * @override
  */
-DvtNBox.prototype.getEventManager = function() {
+dvt.NBox.prototype.getEventManager = function() {
   return this.EventManager;
 };
 
@@ -382,23 +381,22 @@ DvtNBox.prototype.getEventManager = function() {
  * @param {object} event
  * @param {object} source The component that is the source of the event, if available.
  */
-DvtNBox.prototype.processEvent = function(event, source) {
-  var type = event.getType();
+dvt.NBox.prototype.processEvent = function(event, source) {
+  var type = event['type'];
   var options = this.getSanitizedOptions();
-  if (type == DvtCategoryHideShowEvent.TYPE_HIDE || type == DvtCategoryHideShowEvent.TYPE_SHOW) {
+  if (type == 'categoryHide' || type == 'categoryShow') {
     event = this._processHideShowEvent(event);
   }
-  else if (type == DvtCategoryRolloverEvent.TYPE_OVER || type == DvtCategoryRolloverEvent.TYPE_OUT) {
+  else if (type == 'categoryHighlight') {
     event = this._processRolloverEvent(event);
   }
-  else if (type == DvtSelectionEvent.TYPE) {
+  else if (type == 'selection') {
     event = this._processSelectionEvent(event);
   }
-  else if (options['_legend'] && type == DvtPanelDrawerEvent.TYPE) {
-    var disclosure = event.getSubType() == DvtPanelDrawerEvent.SUBTYPE_HIDE ? 'undisclosed' : 'disclosed';
-    event = new DvtSetPropertyEvent();
-    event.addParam(DvtNBoxConstants.LEGEND_DISCLOSURE, disclosure);
-    options[DvtNBoxConstants.LEGEND_DISCLOSURE] = disclosure;
+  else if (options['_legend'] && type == dvt.PanelDrawerEvent.TYPE) {
+    var disclosure = event.getSubType() == dvt.PanelDrawerEvent.SUBTYPE_HIDE ? 'undisclosed' : 'disclosed';
+    event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.LEGEND_DISCLOSURE, disclosure);
+    options[dvt.NBoxConstants.LEGEND_DISCLOSURE] = disclosure;
     this.render(options);
   }
 
@@ -410,29 +408,28 @@ DvtNBox.prototype.processEvent = function(event, source) {
 
 /**
  * Processes hide/show event
- * @param {DvtCategoryHideShowEvent} event hide/show event
+ * @param {object} event hide/show event
  * @return {object} processed event
  * @private
  */
-DvtNBox.prototype._processHideShowEvent = function(event) {
+dvt.NBox.prototype._processHideShowEvent = function(event) {
   var options = this.getSanitizedOptions();
-  var hiddenCategories = options[DvtNBoxConstants.HIDDEN_CATEGORIES];
+  var hiddenCategories = options[dvt.NBoxConstants.HIDDEN_CATEGORIES];
   if (!hiddenCategories) {
     hiddenCategories = [];
   }
-  var categoryIndex = DvtArrayUtils.getIndex(hiddenCategories, event.getCategory());
-  if (event.getType() == DvtCategoryHideShowEvent.TYPE_HIDE && categoryIndex == -1) {
-    hiddenCategories.push(event.getCategory());
+  var categoryIndex = dvt.ArrayUtils.getIndex(hiddenCategories, event['category']);
+  if (event['type'] == 'categoryHide' && categoryIndex == -1) {
+    hiddenCategories.push(event['category']);
   }
-  if (event.getType() == DvtCategoryHideShowEvent.TYPE_SHOW && categoryIndex != -1) {
+  if (event['type'] == 'categoryShow' && categoryIndex != -1) {
     hiddenCategories.splice(categoryIndex, 1);
   }
   if (hiddenCategories.length == 0) {
     hiddenCategories = null;
   }
-  event = new DvtSetPropertyEvent();
-  event.addParam(DvtNBoxConstants.HIDDEN_CATEGORIES, hiddenCategories);
-  options[DvtNBoxConstants.HIDDEN_CATEGORIES] = hiddenCategories;
+  event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.HIDDEN_CATEGORIES, hiddenCategories);
+  options[dvt.NBoxConstants.HIDDEN_CATEGORIES] = hiddenCategories;
   this.render(options);
   return event;
 };
@@ -440,11 +437,11 @@ DvtNBox.prototype._processHideShowEvent = function(event) {
 
 /**
  * Processes rollover event
- * @param {DvtCategoryRolloverEvent} event rollover event
+ * @param {object} event rollover event
  * @return {object} processed event
  * @private
  */
-DvtNBox.prototype._processRolloverEvent = function(event) {
+dvt.NBox.prototype._processRolloverEvent = function(event) {
   this._processHighlighting(event['categories']);
   return event;
 };
@@ -452,12 +449,12 @@ DvtNBox.prototype._processRolloverEvent = function(event) {
 
 /**
  * Processes selection event.
- * @param {DvtSelectionEvent} event Selection event.
+ * @param {object} event Selection event.
  * @return {object} Processed event.
  * @private
  */
-DvtNBox.prototype._processSelectionEvent = function(event) {
-  var selection = event.getSelection();
+dvt.NBox.prototype._processSelectionEvent = function(event) {
+  var selection = event['selection'];
   var selectedItems = null;
   if (selection) {
     var selectedMap = {};
@@ -477,7 +474,7 @@ DvtNBox.prototype._processSelectionEvent = function(event) {
             var nodeIndices = data['nodeIndices'];
             for (var j = 0; j < nodeIndices.length; j++) {
               var node = DvtNBoxDataUtils.getNode(this, nodeIndices[j]);
-              selectedMap[node[DvtNBoxConstants.ID]] = true;
+              selectedMap[node[dvt.NBoxConstants.ID]] = true;
             }
           }
         }
@@ -493,7 +490,7 @@ DvtNBox.prototype._processSelectionEvent = function(event) {
         selectedItems.push(id);
       }
     }
-    event = new DvtSelectionEvent(eventSelection);
+    event = dvt.EventFactory.newSelectionEvent(eventSelection);
   }
   DvtNBoxDataUtils.setSelectedItems(this, selectedItems);
   if (drawer)
@@ -508,7 +505,7 @@ DvtNBox.prototype._processSelectionEvent = function(event) {
  * @param {object} source The component that is the source of the event, if available.
  * @private
  */
-DvtNBox.prototype._distributeToChildren = function(event, source) {
+dvt.NBox.prototype._distributeToChildren = function(event, source) {
   if (this.legend && this.legend != source)
     this.legend.processEvent(event, source);
 };
@@ -519,7 +516,7 @@ DvtNBox.prototype._distributeToChildren = function(event, source) {
  * in interactivity.
  * @param {DvtNBoxObjPeer} peer
  */
-DvtNBox.prototype.registerObject = function(peer) {
+dvt.NBox.prototype.registerObject = function(peer) {
   this._peers.push(peer);
 };
 
@@ -528,7 +525,7 @@ DvtNBox.prototype.registerObject = function(peer) {
  * Returns the peers for all objects within the nbox.
  * @return {array}
  */
-DvtNBox.prototype.getObjects = function() {
+dvt.NBox.prototype.getObjects = function() {
   return this._peers;
 };
 
@@ -536,7 +533,7 @@ DvtNBox.prototype.getObjects = function() {
 /**
  * @return {number} nbox width
  */
-DvtNBox.prototype.getWidth = function() {
+dvt.NBox.prototype.getWidth = function() {
   return this.Width;
 };
 
@@ -544,16 +541,16 @@ DvtNBox.prototype.getWidth = function() {
 /**
  * @return {number} nbox height
  */
-DvtNBox.prototype.getHeight = function() {
+dvt.NBox.prototype.getHeight = function() {
   return this.Height;
 };
 
 
 /**
  * Returns the selection handler for the nbox.
- * @return {DvtSelectionHandler} The selection handler for the nbox
+ * @return {dvt.SelectionHandler} The selection handler for the nbox
  */
-DvtNBox.prototype.getSelectionHandler = function() {
+dvt.NBox.prototype.getSelectionHandler = function() {
   return this._selectionHandler;
 };
 
@@ -562,7 +559,7 @@ DvtNBox.prototype.getSelectionHandler = function() {
   *  Returns whether selecton is supported on the nbox.
   *  @return {boolean} True if selection is turned on for the nbox and false otherwise.
   */
-DvtNBox.prototype.isSelectionSupported = function() {
+dvt.NBox.prototype.isSelectionSupported = function() {
   return (this._selectionHandler ? true : false);
 };
 
@@ -572,7 +569,7 @@ DvtNBox.prototype.isSelectionSupported = function() {
  * @param {string} stampId The id of the stamp containing the showPopupBehaviors.
  * @return {array} The array of showPopupBehaviors.
  */
-DvtNBox.prototype.getShowPopupBehaviors = function(stampId) {
+dvt.NBox.prototype.getShowPopupBehaviors = function(stampId) {
   return this._popupBehaviors ? this._popupBehaviors[stampId] : null;
 };
 
@@ -583,7 +580,7 @@ DvtNBox.prototype.getShowPopupBehaviors = function(stampId) {
  * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
  * @param {object} oldNBox an object representing the old NBox state
  */
-DvtNBox.prototype.animateUpdate = function(animationHandler, oldNBox) {
+dvt.NBox.prototype.animateUpdate = function(animationHandler, oldNBox) {
   DvtNBoxRenderer.animateUpdate(animationHandler, oldNBox, this);
 };
 
@@ -593,8 +590,8 @@ DvtNBox.prototype.animateUpdate = function(animationHandler, oldNBox) {
  *
  * @return {object} the options object
  */
-DvtNBox.prototype.getSanitizedOptions = function() {
-  return DvtJSONUtils.clone(this.getOptions(),
+dvt.NBox.prototype.getSanitizedOptions = function() {
+  return dvt.JsonUtils.clone(this.getOptions(),
       function(key) {
         return key.indexOf('__') != 0;
       }
@@ -607,7 +604,7 @@ DvtNBox.prototype.getSanitizedOptions = function() {
  *
  * @return {object} an object containing the panel drawer styles
  */
-DvtNBox.prototype.getSubcomponentStyles = function() {
+dvt.NBox.prototype.getSubcomponentStyles = function() {
   // TODO: refactor the control panel naming
   // just return an empty map and take the panel drawer defaults
   return {};
@@ -619,7 +616,7 @@ DvtNBox.prototype.getSubcomponentStyles = function() {
  * @param {array} clientIds
  * @return {string}
  */
-DvtNBox.prototype.__isDragAvailable = function(clientIds) {
+dvt.NBox.prototype.__isDragAvailable = function(clientIds) {
   // Drag and drop supported when selection is enabled, only 1 drag source
   if (this._selectionHandler)
     return clientIds[0];
@@ -633,7 +630,7 @@ DvtNBox.prototype.__isDragAvailable = function(clientIds) {
  * @param {DvtBaseTreeNode} node The node where the drag was initiated.
  * @return {array} The row keys for the current drag.
  */
-DvtNBox.prototype.__getDragTransferable = function(node) {
+dvt.NBox.prototype.__getDragTransferable = function(node) {
   // Select the node if not already selected
   if (!node.isSelected()) {
     this._selectionHandler.processClick(node, false);
@@ -647,18 +644,18 @@ DvtNBox.prototype.__getDragTransferable = function(node) {
   for (var i = 0; i < selection.length; i++) {
     var item = selection[i];
     if (item instanceof DvtNBoxNode) {
-      var id = item.getData()[DvtNBoxConstants.ID];
+      var id = item.getData()[dvt.NBoxConstants.ID];
       rowKeys.push(id);
       selectionMap[id] = true;
     }
     else if (item instanceof DvtNBoxCategoryNode) {
       var nodeIndices = item.getData()['nodeIndices'];
       for (var j = 0; j < nodeIndices.length; j++) {
-        var nodeId = DvtNBoxDataUtils.getNode(this, nodeIndices[j])[DvtNBoxConstants.ID];
+        var nodeId = DvtNBoxDataUtils.getNode(this, nodeIndices[j])[dvt.NBoxConstants.ID];
         rowKeys.push(nodeId);
         selectionMap[nodeId] = true;
       }
-      selectionMap[item.getData()[DvtNBoxConstants.ID]] = true;
+      selectionMap[item.getData()[dvt.NBoxConstants.ID]] = true;
     }
   }
 
@@ -674,7 +671,7 @@ DvtNBox.prototype.__getDragTransferable = function(node) {
       else if (DvtNBoxDataUtils.getGrouping(this) && DvtNBoxDataUtils.getCategoryNode(this, id)) {
         var nodeIndices = DvtNBoxDataUtils.getCategoryNode(this, id)['nodeIndices'];
         for (var j = 0; j < nodeIndices.length; j++) {
-          var nodeId = DvtNBoxDataUtils.getNode(this, nodeIndices[j])[DvtNBoxConstants.ID];
+          var nodeId = DvtNBoxDataUtils.getNode(this, nodeIndices[j])[dvt.NBoxConstants.ID];
           if (!selectionMap[nodeId]) {
             rowKeys.push(nodeId);
             selectionMap[nodeId] = true;
@@ -693,7 +690,7 @@ DvtNBox.prototype.__getDragTransferable = function(node) {
  * Returns the displayables to use for drag feedback for the current drag.
  * @return {array} The displayables for the current drag.
  */
-DvtNBox.prototype.__getDragFeedback = function() {
+dvt.NBox.prototype.__getDragFeedback = function() {
   // This is called after __getDragTransferable, so the selection has been updated already.
   // Gather the displayables for the selected objects
   var displayables = this._selectionHandler.getSelection().slice(0);
@@ -707,7 +704,7 @@ DvtNBox.prototype.__getDragFeedback = function() {
  * @param {number} y the y coordinate
  * @return {DvtNBoxCell} the cell
  */
-DvtNBox.prototype.__getCellUnderPoint = function(x, y) {
+dvt.NBox.prototype.__getCellUnderPoint = function(x, y) {
   var cellCount = DvtNBoxDataUtils.getRowCount(this) * DvtNBoxDataUtils.getColumnCount(this);
   for (var i = 0; i < cellCount; i++) {
     var cell = DvtNBoxDataUtils.getDisplayable(this, DvtNBoxDataUtils.getCell(this, i));
@@ -722,9 +719,9 @@ DvtNBox.prototype.__getCellUnderPoint = function(x, y) {
 /**
  * Displays drop site feedback for the specified cell.
  * @param {DvtNBoxCell} cell The cell for which to show drop feedback, or null to remove drop feedback.
- * @return {DvtDisplayable} The drop site feedback, if any.
+ * @return {dvt.Displayable} The drop site feedback, if any.
  */
-DvtNBox.prototype.__showDropSiteFeedback = function(cell) {
+dvt.NBox.prototype.__showDropSiteFeedback = function(cell) {
   // Remove any existing drop site feedback
   if (this._dropSiteFeedback) {
     this._dropSiteFeedback.getParent().removeChild(this._dropSiteFeedback);
@@ -744,7 +741,7 @@ DvtNBox.prototype.__showDropSiteFeedback = function(cell) {
  * @return {DvtNBoxAutomation} the automation object
  * @export
  */
-DvtNBox.prototype.getAutomation = function() {
+dvt.NBox.prototype.getAutomation = function() {
   if (!this.Automation)
     this.Automation = new DvtNBoxAutomation(this);
   return this.Automation;
@@ -753,17 +750,17 @@ DvtNBox.prototype.getAutomation = function() {
 /**
  * @override
  */
-DvtNBox.prototype.GetComponentDescription = function() {
-  return DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'NBOX', DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this));
+dvt.NBox.prototype.GetComponentDescription = function() {
+  return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NBOX', DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this));
 };
 
 /**
  * @override
  * @export
  */
-DvtNBox.prototype.highlight = function(categories) {
+dvt.NBox.prototype.highlight = function(categories) {
   // Update the options
-  this.Options['highlightedCategories'] = DvtJSONUtils.clone(categories);
+  this.Options['highlightedCategories'] = dvt.JsonUtils.clone(categories);
 
   this._processHighlighting(categories);
 };
@@ -773,16 +770,16 @@ DvtNBox.prototype.highlight = function(categories) {
  * @param {array} categories Categories to highlight by
  * @private
  */
-DvtNBox.prototype._processHighlighting = function(categories) {
+dvt.NBox.prototype._processHighlighting = function(categories) {
   var displayables = this.getNodeDisplayables();
   // Manipulate the alphas
   var nbox = this;
   var hasCategory = function(disp) {
     if (disp instanceof DvtNBoxNode) {
       if (disp.getCategories()) {
-        return nbox.getOptions()[DvtNBoxConstants.HIGHLIGHT_MATCH] == 'all' ?
-            DvtArrayUtils.hasAllItems(categories, disp.getCategories()) :
-            DvtArrayUtils.hasAnyItem(categories, disp.getCategories());
+        return nbox.getOptions()[dvt.NBoxConstants.HIGHLIGHT_MATCH] == 'all' ?
+            dvt.ArrayUtils.hasAllItems(categories, disp.getCategories()) :
+            dvt.ArrayUtils.hasAnyItem(categories, disp.getCategories());
       }
     }
     else if (disp instanceof DvtNBoxCategoryNode) {
@@ -792,10 +789,10 @@ DvtNBox.prototype._processHighlighting = function(categories) {
       var categoryNodeCount = data['nodeIndices'].length;
       for (var i = 0; i < categoryNodeCount; i++) {
         var nodeData = DvtNBoxDataUtils.getNode(nbox, data['nodeIndices'][i]);
-        if (nodeData[DvtNBoxConstants.CATEGORIES]) {
-          if (nbox.getOptions()[DvtNBoxConstants.HIGHLIGHT_MATCH] == 'all' ?
-              DvtArrayUtils.hasAllItems(categories, nodeData[DvtNBoxConstants.CATEGORIES]) :
-              DvtArrayUtils.hasAnyItem(categories, nodeData[DvtNBoxConstants.CATEGORIES]))
+        if (nodeData[dvt.NBoxConstants.CATEGORIES]) {
+          if (nbox.getOptions()[dvt.NBoxConstants.HIGHLIGHT_MATCH] == 'all' ?
+              dvt.ArrayUtils.hasAllItems(categories, nodeData[dvt.NBoxConstants.CATEGORIES]) :
+              dvt.ArrayUtils.hasAnyItem(categories, nodeData[dvt.NBoxConstants.CATEGORIES]))
             return true;
         }
       }
@@ -807,11 +804,10 @@ DvtNBox.prototype._processHighlighting = function(categories) {
   var cellCount = DvtNBoxDataUtils.getRowCount(nbox) * DvtNBoxDataUtils.getColumnCount(nbox);
   // Reset highlighted map so we can recalculate cell counts properly
   nbox.getOptions()['__highlightedMap'] = null;
-  var cellCounts = DvtNBoxRenderer._calculateCellCounts(nbox);
   for (i = 0; i < cellCount; i++) {
     var cellData = DvtNBoxDataUtils.getCell(nbox, i);
     var cell = DvtNBoxDataUtils.getDisplayable(nbox, cellData);
-    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cell, cellCounts, false);
+    DvtNBoxCellRenderer.renderHeader(nbox, cellData, cell, false);
   }
 
   // Adjust alphas and category node counts
@@ -819,7 +815,7 @@ DvtNBox.prototype._processHighlighting = function(categories) {
   var highlightedMap = {};
   if (highlightedItems) {
     for (var i = 0; i < highlightedItems.length; i++) {
-      highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
     }
   }
 
@@ -848,7 +844,7 @@ DvtNBox.prototype._processHighlighting = function(categories) {
  * Returns list of node displayables (DvtNBoxNode, DvtNBoxCategoryNode)
  * @return {array} array of node displayables
  */
-DvtNBox.prototype.getNodeDisplayables = function() {
+dvt.NBox.prototype.getNodeDisplayables = function() {
   var dataObjects = [];
   // First collect all the relevant data objects
   // Individual Nodes
@@ -860,7 +856,7 @@ DvtNBox.prototype.getNodeDisplayables = function() {
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(this);
   var groupInfo = this.getOptions()['__groups'];
   if (groupInfo) {
-    if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+    if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
       var cellCount = DvtNBoxDataUtils.getRowCount(this) * DvtNBoxDataUtils.getColumnCount(this);
       for (var i = 0; i < cellCount; i++) {
         var cellGroups = groupInfo[i + ''];
@@ -891,7 +887,7 @@ DvtNBox.prototype.getNodeDisplayables = function() {
  * animationOnDataChange
  * @return {boolean} whether animation is allowed
  */
-DvtNBox.prototype.isAnimationAllowed = function() {
+dvt.NBox.prototype.isAnimationAllowed = function() {
   return this._animationAllowed;
 };
 
@@ -900,10 +896,10 @@ DvtNBox.prototype.isAnimationAllowed = function() {
  * animationOnDataChange
  * @param {boolean} animationAllowed whether animation is allowed
  */
-DvtNBox.prototype.setAnimationAllowed = function(animationAllowed) {
+dvt.NBox.prototype.setAnimationAllowed = function(animationAllowed) {
   this._animationAllowed = animationAllowed;
 };
-// APIs called by the ADF Faces drag source for DvtNBox
+// APIs called by the ADF Faces drag source for dvt.NBox
 
 
 /**
@@ -913,7 +909,7 @@ DvtNBox.prototype.setAnimationAllowed = function(animationAllowed) {
  * @param mouseY the x coordinate of the mouse
  * @param clientIds the array of client ids of the valid drag components
  */
-DvtNBox.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
+dvt.NBox.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
   return this._dragSource.isDragAvailable(clientIds);
 };
 
@@ -921,7 +917,7 @@ DvtNBox.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
 /**
  * Returns the transferable object for a drag initiated at these coordinates.
  */
-DvtNBox.prototype.getDragTransferable = function(mouseX, mouseY) {
+dvt.NBox.prototype.getDragTransferable = function(mouseX, mouseY) {
   return this._dragSource.getDragTransferable(mouseX, mouseY);
 };
 
@@ -929,7 +925,7 @@ DvtNBox.prototype.getDragTransferable = function(mouseX, mouseY) {
 /**
  * Returns the feedback for the drag operation.
  */
-DvtNBox.prototype.getDragOverFeedback = function(mouseX, mouseY) {
+dvt.NBox.prototype.getDragOverFeedback = function(mouseX, mouseY) {
   return this._dragSource.getDragOverFeedback(mouseX, mouseY);
 };
 
@@ -937,7 +933,7 @@ DvtNBox.prototype.getDragOverFeedback = function(mouseX, mouseY) {
 /**
  * Returns an Object containing the drag context info.
  */
-DvtNBox.prototype.getDragContext = function(mouseX, mouseY) {
+dvt.NBox.prototype.getDragContext = function(mouseX, mouseY) {
   return this._dragSource.getDragContext(mouseX, mouseY);
 };
 
@@ -946,7 +942,7 @@ DvtNBox.prototype.getDragContext = function(mouseX, mouseY) {
  * Returns the offset to use for the drag feedback. This positions the drag
  * feedback relative to the pointer.
  */
-DvtNBox.prototype.getDragOffset = function(mouseX, mouseY) {
+dvt.NBox.prototype.getDragOffset = function(mouseX, mouseY) {
   return this._dragSource.getDragOffset(mouseX, mouseY);
 };
 
@@ -954,7 +950,7 @@ DvtNBox.prototype.getDragOffset = function(mouseX, mouseY) {
 /**
  * Returns the offset from the mouse pointer where the drag is considered to be located.
  */
-DvtNBox.prototype.getPointerOffset = function(xOffset, yOffset) {
+dvt.NBox.prototype.getPointerOffset = function(xOffset, yOffset) {
   return this._dragSource.getPointerOffset(xOffset, yOffset);
 };
 
@@ -962,7 +958,7 @@ DvtNBox.prototype.getPointerOffset = function(xOffset, yOffset) {
 /**
  * Notifies the component that a drag started.
  */
-DvtNBox.prototype.initiateDrag = function() {
+dvt.NBox.prototype.initiateDrag = function() {
   this._dragSource.initiateDrag();
 };
 
@@ -970,17 +966,17 @@ DvtNBox.prototype.initiateDrag = function() {
 /**
  * Clean up after the drag is completed.
  */
-DvtNBox.prototype.dragDropEnd = function() {
+dvt.NBox.prototype.dragDropEnd = function() {
   this._dragSource.dragDropEnd();
 };
-// APIs called by the ADF Faces drop target for DvtNBox
+// APIs called by the ADF Faces drop target for dvt.NBox
 
 
 /**
  * If a drop is possible at these mouse coordinates, returns the client id
  * of the drop component. Returns null if drop is not possible.
  */
-DvtNBox.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
+dvt.NBox.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
   return this._dropTarget.acceptDrag(mouseX, mouseY, clientIds);
 };
 
@@ -988,7 +984,7 @@ DvtNBox.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
 /**
  * Paints drop site feedback as a drag enters the drop site.
  */
-DvtNBox.prototype.dragEnter = function() {
+dvt.NBox.prototype.dragEnter = function() {
   this._dropTarget.dragEnter();
 };
 
@@ -996,7 +992,7 @@ DvtNBox.prototype.dragEnter = function() {
 /**
  * Cleans up drop site feedback as a drag exits the drop site.
  */
-DvtNBox.prototype.dragExit = function() {
+dvt.NBox.prototype.dragExit = function() {
   this._dropTarget.dragExit();
 };
 
@@ -1005,362 +1001,362 @@ DvtNBox.prototype.dragExit = function() {
  * Returns the object representing the drop site. This method is called when a valid
  * drop is performed.
  */
-DvtNBox.prototype.getDropSite = function(mouseX, mouseY) {
+dvt.NBox.prototype.getDropSite = function(mouseX, mouseY) {
   return this._dropTarget.getDropSite(mouseX, mouseY);
 };
-// Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
 /**
  * NBox Constants
  * @class
  */
-var DvtNBoxConstants = {};
+dvt.NBoxConstants = {};
 
-DvtObj.createSubclass(DvtNBoxConstants, DvtObj, 'DvtNBoxConstants');
-
-/**
- * @const
- */
-DvtNBoxConstants.COLUMN = 'column';
+dvt.Obj.createSubclass(dvt.NBoxConstants, dvt.Obj);
 
 /**
  * @const
  */
-DvtNBoxConstants.COLUMNS = 'columns';
+dvt.NBoxConstants.COLUMN = 'column';
 
 /**
  * @const
  */
-DvtNBoxConstants.COLUMNS_TITLE = 'columnsTitle';
+dvt.NBoxConstants.COLUMNS = 'columns';
 
 /**
  * @const
  */
-DvtNBoxConstants.COLUMNS_TITLE_STYLE = 'columnsTitleStyle';
+dvt.NBoxConstants.COLUMNS_TITLE = 'columnsTitle';
 
 /**
  * @const
  */
-DvtNBoxConstants.COLUMN_LABEL_STYLE = 'columnLabelStyle';
-
-/**
- * @export
- * @const
- */
-DvtNBoxConstants.MAXIMIZED_COLUMN = 'maximizedColumn';
+dvt.NBoxConstants.COLUMNS_TITLE_STYLE = 'columnsTitleStyle';
 
 /**
  * @const
  */
-DvtNBoxConstants.ROW = 'row';
-
-/**
- * @const
- */
-DvtNBoxConstants.ROWS = 'rows';
-
-/**
- * @const
- */
-DvtNBoxConstants.ROWS_TITLE = 'rowsTitle';
-
-/**
- * @const
- */
-DvtNBoxConstants.ROWS_TITLE_STYLE = 'rowsTitleStyle';
-
-/**
- * @const
- */
-DvtNBoxConstants.ROW_LABEL_STYLE = 'rowLabelStyle';
+dvt.NBoxConstants.COLUMN_LABEL_STYLE = 'columnLabelStyle';
 
 /**
  * @export
  * @const
  */
-DvtNBoxConstants.MAXIMIZED_ROW = 'maximizedRow';
+dvt.NBoxConstants.MAXIMIZED_COLUMN = 'maximizedColumn';
 
 /**
  * @const
  */
-DvtNBoxConstants.CELL = 'cell';
+dvt.NBoxConstants.ROW = 'row';
 
 /**
  * @const
  */
-DvtNBoxConstants.CELLS = 'cells';
+dvt.NBoxConstants.ROWS = 'rows';
 
 /**
  * @const
  */
-DvtNBoxConstants.CELL_DEFAULTS = 'cellDefaults';
+dvt.NBoxConstants.ROWS_TITLE = 'rowsTitle';
 
 /**
  * @const
  */
-DvtNBoxConstants.NODES = 'nodes';
+dvt.NBoxConstants.ROWS_TITLE_STYLE = 'rowsTitleStyle';
 
 /**
  * @const
  */
-DvtNBoxConstants.NODE_DEFAULTS = 'nodeDefaults';
-
-/**
- * @const
- */
-DvtNBoxConstants.CATEGORIES = 'categories';
-
-/**
- * @const
- */
-DvtNBoxConstants.ICON = 'icon';
-
-/**
- * @const
- */
-DvtNBoxConstants.ICON_DEFAULTS = 'iconDefaults';
-
-/**
- * @const
- */
-DvtNBoxConstants.INDICATOR = 'indicator';
-
-/**
- * @const
- */
-DvtNBoxConstants.INDICATOR_ICON = 'indicatorIcon';
-
-/**
- * @const
- */
-DvtNBoxConstants.INDICATOR_ICON_DEFAULTS = 'indicatorIconDefaults';
-
-/**
- * @const
- */
-DvtNBoxConstants.INDICATOR_COLOR = 'indicatorColor';
-
-/**
- * @const
- */
-DvtNBoxConstants.X_PERCENTAGE = 'xPercentage';
-
-/**
- * @const
- */
-DvtNBoxConstants.Y_PERCENTAGE = 'yPercentage';
-
-/**
- * @const
- */
-DvtNBoxConstants.SELECTION = 'selection';
-
-/**
- * @const
- */
-DvtNBoxConstants.SELECTION_MODE = 'selectionMode';
+dvt.NBoxConstants.ROW_LABEL_STYLE = 'rowLabelStyle';
 
 /**
  * @export
  * @const
  */
-DvtNBoxConstants.SELECTION_INFO = 'selectionInfo';
+dvt.NBoxConstants.MAXIMIZED_ROW = 'maximizedRow';
 
 /**
  * @const
  */
-DvtNBoxConstants.HAS_SELECTION_LISTENER = 'hasSelectionListener';
+dvt.NBoxConstants.CELL = 'cell';
 
 /**
  * @const
  */
-DvtNBoxConstants.HIGHLIGHTED_CATEGORIES = 'highlightedCategories';
+dvt.NBoxConstants.CELLS = 'cells';
 
 /**
  * @const
  */
-DvtNBoxConstants.HIGHLIGHT_MATCH = 'highlightMatch';
-
-/**
- * @export
- * @const
- */
-DvtNBoxConstants.HIDDEN_CATEGORIES = 'hiddenCategories';
+dvt.NBoxConstants.CELL_DEFAULTS = 'cellDefaults';
 
 /**
  * @const
  */
-DvtNBoxConstants.HOVER_BEHAVIOR = 'hoverBehavior';
+dvt.NBoxConstants.NODES = 'nodes';
 
 /**
  * @const
  */
-DvtNBoxConstants.GROUP_CATEGORY = 'groupCategory';
+dvt.NBoxConstants.NODE_DEFAULTS = 'nodeDefaults';
 
 /**
  * @const
  */
-DvtNBoxConstants.GROUP_ATTRIBUTES = 'groupAttributes';
+dvt.NBoxConstants.CATEGORIES = 'categories';
 
 /**
  * @const
  */
-DvtNBoxConstants.GROUP_BEHAVIOR = 'groupBehavior';
+dvt.NBoxConstants.ICON = 'icon';
 
 /**
  * @const
  */
-DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL = 'withinCell';
+dvt.NBoxConstants.ICON_DEFAULTS = 'iconDefaults';
 
 /**
  * @const
  */
-DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS = 'acrossCells';
+dvt.NBoxConstants.INDICATOR = 'indicator';
 
 /**
  * @const
  */
-DvtNBoxConstants.OTHER_COLOR = 'otherColor';
+dvt.NBoxConstants.INDICATOR_ICON = 'indicatorIcon';
 
 /**
  * @const
  */
-DvtNBoxConstants.OTHER_THRESHOLD = 'otherThreshold';
+dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS = 'indicatorIconDefaults';
 
 /**
  * @const
  */
-DvtNBoxConstants.ANIMATION_ON_DATA_CHANGE = 'animationOnDataChange';
+dvt.NBoxConstants.INDICATOR_COLOR = 'indicatorColor';
 
 /**
  * @const
  */
-DvtNBoxConstants.ANIMATION_ON_DISPLAY = 'animationOnDisplay';
+dvt.NBoxConstants.X_PERCENTAGE = 'xPercentage';
 
 /**
  * @const
  */
-DvtNBoxConstants.ANIMATION_DURATION = 'animationDuration';
-
-/**
- * @export
- * @const
- */
-DvtNBoxConstants.DRAWER = '_drawer';
+dvt.NBoxConstants.Y_PERCENTAGE = 'yPercentage';
 
 /**
  * @const
  */
-DvtNBoxConstants.LEGEND = '_legend';
+dvt.NBoxConstants.SELECTION = 'selection';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.SELECTION_MODE = 'selectionMode';
 
 /**
  * @export
  * @const
  */
-DvtNBoxConstants.LEGEND_DISCLOSURE = 'legendDisclosure';
+dvt.NBoxConstants.SELECTION_INFO = 'selectionInfo';
 
 /**
  * @const
  */
-DvtNBoxConstants.ID = 'id';
+dvt.NBoxConstants.HAS_SELECTION_LISTENER = 'hasSelectionListener';
 
 /**
  * @const
  */
-DvtNBoxConstants.LABEL = 'label';
+dvt.NBoxConstants.HIGHLIGHTED_CATEGORIES = 'highlightedCategories';
 
 /**
  * @const
  */
-DvtNBoxConstants.LABEL_STYLE = 'labelStyle';
+dvt.NBoxConstants.HIGHLIGHT_MATCH = 'highlightMatch';
+
+/**
+ * @export
+ * @const
+ */
+dvt.NBoxConstants.HIDDEN_CATEGORIES = 'hiddenCategories';
 
 /**
  * @const
  */
-DvtNBoxConstants.LABEL_HALIGN = 'labelHalign';
+dvt.NBoxConstants.HOVER_BEHAVIOR = 'hoverBehavior';
 
 /**
  * @const
  */
-DvtNBoxConstants.SECONDARY_LABEL = 'secondaryLabel';
+dvt.NBoxConstants.GROUP_CATEGORY = 'groupCategory';
 
 /**
  * @const
  */
-DvtNBoxConstants.SECONDARY_LABEL_STYLE = 'secondaryLabelStyle';
+dvt.NBoxConstants.GROUP_ATTRIBUTES = 'groupAttributes';
 
 /**
  * @const
  */
-DvtNBoxConstants.SHORT_DESC = 'shortDesc';
+dvt.NBoxConstants.GROUP_BEHAVIOR = 'groupBehavior';
 
 /**
  * @const
  */
-DvtNBoxConstants.SHOW_COUNT = 'showCount';
+dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL = 'withinCell';
 
 /**
  * @const
  */
-DvtNBoxConstants.STYLE = 'style';
+dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS = 'acrossCells';
 
 /**
  * @const
  */
-DvtNBoxConstants.STYLE_DEFAULTS = 'styleDefaults';
+dvt.NBoxConstants.OTHER_COLOR = 'otherColor';
 
 /**
  * @const
  */
-DvtNBoxConstants.BORDER_COLOR = 'borderColor';
+dvt.NBoxConstants.OTHER_THRESHOLD = 'otherThreshold';
 
 /**
  * @const
  */
-DvtNBoxConstants.BORDER_RADIUS = 'borderRadius';
+dvt.NBoxConstants.ANIMATION_ON_DATA_CHANGE = 'animationOnDataChange';
 
 /**
  * @const
  */
-DvtNBoxConstants.BORDER_WIDTH = 'borderWidth';
+dvt.NBoxConstants.ANIMATION_ON_DISPLAY = 'animationOnDisplay';
 
 /**
  * @const
  */
-DvtNBoxConstants.COLOR = 'color';
+dvt.NBoxConstants.ANIMATION_DURATION = 'animationDuration';
+
+/**
+ * @export
+ * @const
+ */
+dvt.NBoxConstants.DRAWER = '_drawer';
 
 /**
  * @const
  */
-DvtNBoxConstants.PATTERN = 'pattern';
+dvt.NBoxConstants.LEGEND = '_legend';
+
+/**
+ * @export
+ * @const
+ */
+dvt.NBoxConstants.LEGEND_DISCLOSURE = 'legendDisclosure';
 
 /**
  * @const
  */
-DvtNBoxConstants.OPACITY = 'opacity';
+dvt.NBoxConstants.ID = 'id';
 
 /**
  * @const
  */
-DvtNBoxConstants.SHAPE = 'shape';
+dvt.NBoxConstants.LABEL = 'label';
 
 /**
  * @const
  */
-DvtNBoxConstants.SOURCE = 'source';
+dvt.NBoxConstants.LABEL_STYLE = 'labelStyle';
 
 /**
  * @const
  */
-DvtNBoxConstants.HEIGHT = 'height';
+dvt.NBoxConstants.LABEL_HALIGN = 'labelHalign';
 
 /**
  * @const
  */
-DvtNBoxConstants.WIDTH = 'width';
+dvt.NBoxConstants.SECONDARY_LABEL = 'secondaryLabel';
 
-DvtBundle.addDefaultStrings(DvtBundle.NBOX_PREFIX, {
+/**
+ * @const
+ */
+dvt.NBoxConstants.SECONDARY_LABEL_STYLE = 'secondaryLabelStyle';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.SHORT_DESC = 'shortDesc';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.SHOW_COUNT = 'showCount';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.STYLE = 'style';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.STYLE_DEFAULTS = 'styleDefaults';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.BORDER_COLOR = 'borderColor';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.BORDER_RADIUS = 'borderRadius';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.BORDER_WIDTH = 'borderWidth';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.COLOR = 'color';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.PATTERN = 'pattern';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.OPACITY = 'opacity';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.SHAPE = 'shape';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.SOURCE = 'source';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.HEIGHT = 'height';
+
+/**
+ * @const
+ */
+dvt.NBoxConstants.WIDTH = 'width';
+
+dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
   'HIGHLIGHTED_COUNT': '{0}/{1}',
   'COMMA_SEP_LIST': '{0}, {1}',
   'OTHER': 'Other',
@@ -1377,20 +1373,20 @@ DvtBundle.addDefaultStrings(DvtBundle.NBOX_PREFIX, {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
- * @extends {DvtBaseComponentDefaults}
+ * @extends {dvt.BaseComponentDefaults}
  */
 var DvtNBoxDefaults = function() {
   this.Init({'skyros': DvtNBoxDefaults.VERSION_1, 'alta': DvtNBoxDefaults.SKIN_ALTA});
 };
 
-DvtObj.createSubclass(DvtNBoxDefaults, DvtBaseComponentDefaults, 'DvtNBoxDefaults');
+dvt.Obj.createSubclass(DvtNBoxDefaults, dvt.BaseComponentDefaults);
 
 
 /**
  * Defaults for version 1.
  */
 DvtNBoxDefaults.VERSION_1 = {
-  'skin': DvtCSSStyle.SKIN_ALTA,
+  'skin': dvt.CSSStyle.SKIN_ALTA,
   'selectionMode': 'multiple',
   'animationOnDataChange': 'none',
   'animationOnDisplay': 'none',
@@ -1408,34 +1404,34 @@ DvtNBoxDefaults.VERSION_1 = {
   'styleDefaults': {
     'animationDuration': 500,
     'hoverBehaviorDelay': 200,
-    'columnLabelStyle': new DvtCSSStyle('font-size: 12px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-    'rowLabelStyle': new DvtCSSStyle('font-size: 12px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-    'columnsTitleStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-    'rowsTitleStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-    'cellDefaults': {'style': new DvtCSSStyle('background-color:#e9e9e9'),
-      'maximizedStyle': new DvtCSSStyle('background-color:#dddddd'),
-      'minimizedStyle': new DvtCSSStyle('background-color:#e9e9e9'),
-      'labelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-weight:bold'),
-      'countLabelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-      'bodyCountLabelStyle': new DvtCSSStyle('color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-      'dropTargetStyle': new DvtCSSStyle('background-color:rgba(217, 244, 250, .75);border-color:#ccf6ff'),
+    'columnLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #252525;'),
+    'rowLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #252525;'),
+    'columnsTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
+    'rowsTitleStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
+    'cellDefaults' : {'style': new dvt.CSSStyle('background-color:#e9e9e9'),
+      'maximizedStyle': new dvt.CSSStyle('background-color:#dddddd'),
+      'minimizedStyle': new dvt.CSSStyle('background-color:#e9e9e9'),
+      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14 + 'color: #252525;'),
+      'countLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
+      'bodyCountLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;'),
+      'dropTargetStyle': new dvt.CSSStyle('background-color:rgba(217, 244, 250, .75);border-color:#ccf6ff'),
       'showCount': 'auto',
       'showMaximize': 'on'},
-    '__scrollbar': {'scrollbarBackground': 'linear-gradient(bottom, #dce2e7 0%, #f8f8f8 8%)',
+    '__scrollbar' : {'scrollbarBackground': 'linear-gradient(bottom, #dce2e7 0%, #f8f8f8 8%)',
       'scrollbarBorderColor': '#dce2e7',
       'scrollbarHandleColor': '#abb0b4',
       'scrollbarHandleHoverColor' : '#333333',
       'scrollbarHandleActiveColor' : '#333333'},
-    '__drawerDefaults': {'background': '#e9e9e9',
+    '__drawerDefaults' : {'background': '#e9e9e9',
       'borderColor': '#bcc7d2',
       'borderRadius': 1,
       'headerBackground': 'linear-gradient(to bottom, #f5f5f5 0%, #f0f0f0 100%)',
-      'labelStyle': new DvtCSSStyle('font-size: 14px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-weight:bold'),
-      'countLabelStyle': new DvtCSSStyle('font-size: 14px; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-weight:bold'),
+      'labelStyle': new dvt.CSSStyle('color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14),
+      'countLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14),
       'countBorderRadius': 1},
-    'nodeDefaults': {'color': '#FFFFFF',
-      'labelStyle': new DvtCSSStyle('font-size: 12px; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
-      'secondaryLabelStyle': new DvtCSSStyle('font-size: 11px; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif'),
+    'nodeDefaults' : {'color': '#FFFFFF',
+      'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12),
+      'secondaryLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11),
       'alphaFade': 0.2,
       'borderRadius': 1,
       'hoverColor': '#FFFFFF',
@@ -1446,20 +1442,22 @@ DvtNBoxDefaults.VERSION_1 = {
         'sourcePaddingRatio': 0,
         'opacity': 1,
         'pattern': 'none',
-        'borderWidth': 1,
+        'borderColor': '#000000',
+        'borderWidth': 0,
         'borderRadius' : 0,
-        'shape': DvtSimpleMarker.CIRCLE},
+        'shape': dvt.SimpleMarker.CIRCLE},
       'indicatorIconDefaults': {'width': 10,
         'height': 10,
         'opacity': 1,
         'pattern': 'none',
-        'borderWidth': 1,
+        'borderColor': '#000000',
+        'borderWidth': 0,
         'borderRadius' : 0,
-        'shape': DvtSimpleMarker.CIRCLE}},
-    '__legendDefaults': {'sectionStyle': 'font-size: 12px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; font-weight:bold',
-      'itemStyle': 'font-size: 12px; color: #252525; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif',
+        'shape': dvt.SimpleMarker.CIRCLE}},
+    '__legendDefaults' : {'sectionStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12,
+      'itemStyle': 'color: #252525;' + dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12,
       'markerColor': '#808080'},
-    '__categoryNodeDefaults': {'labelStyle': new DvtCSSStyle('font-family:"Helvetica Neue", Helvetica, Arial, sans-serif')}
+    '__categoryNodeDefaults' : {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)}
   },
   '__layout': {
     'componentGap': 8,
@@ -1497,17 +1495,20 @@ DvtNBoxDefaults.VERSION_1 = {
   }
 };
 
+/**
+ * Defaults for alta.
+ */
 DvtNBoxDefaults.SKIN_ALTA = {
 };
 var DvtNBoxCell = function() {};
 
-DvtObj.createSubclass(DvtNBoxCell, DvtContainer, 'DvtNBoxCell');
+dvt.Obj.createSubclass(DvtNBoxCell, dvt.Container);
 
 
 /**
  * Returns a new instance of DvtNBoxCell
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this cell
  *
  * @return {DvtNBoxCell} the nbox cell
@@ -1522,14 +1523,14 @@ DvtNBoxCell.newInstance = function(nbox, data) {
 /**
  * Initializes this component
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this cell
  *
  * @protected
  */
 DvtNBoxCell.prototype.Init = function(nbox, data) {
-  var r = DvtNBoxDataUtils.getRowIndex(nbox, data[DvtNBoxConstants.ROW]);
-  var c = DvtNBoxDataUtils.getColumnIndex(nbox, data[DvtNBoxConstants.COLUMN]);
+  var r = DvtNBoxDataUtils.getRowIndex(nbox, data[dvt.NBoxConstants.ROW]);
+  var c = DvtNBoxDataUtils.getColumnIndex(nbox, data[dvt.NBoxConstants.COLUMN]);
   DvtNBoxCell.superclass.Init.call(this, nbox.getCtx(), null, 'c:' + r + ',' + c);
   this._nbox = nbox;
   this._data = data;
@@ -1549,16 +1550,13 @@ DvtNBoxCell.prototype.getData = function() {
 
 /**
  * Renders the nbox cell into the available space.
- * @param {DvtContainer} container the container to render into
- * @param {object} cellLayout object containing properties related to cellLayout
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Container} container the container to render into
+ * @param {dvt.Rectangle} availSpace The available space.
  */
-DvtNBoxCell.prototype.render = function(container, cellLayout, cellCounts, availSpace) {
-  this._cellCounts = cellCounts;
+DvtNBoxCell.prototype.render = function(container, availSpace) {
   container.addChild(this);
   DvtNBoxDataUtils.setDisplayable(this._nbox, this._data, this);
-  DvtNBoxCellRenderer.render(this._nbox, this._data, this, cellLayout, cellCounts, availSpace);
+  DvtNBoxCellRenderer.render(this._nbox, this._data, this, availSpace);
   this._nbox.EventManager.associate(this, this);
 };
 
@@ -1566,7 +1564,7 @@ DvtNBoxCell.prototype.render = function(container, cellLayout, cellCounts, avail
 /**
  * Gets the container that child nodes should be added to
  *
- * @return {DvtContainer} the container that child nodes should be added to
+ * @return {dvt.Container} the container that child nodes should be added to
  */
 DvtNBoxCell.prototype.getChildContainer = function() {
   return this._childContainer;
@@ -1576,7 +1574,7 @@ DvtNBoxCell.prototype.getChildContainer = function() {
 /**
  * Sets the container that child nodes should be added to
  *
- * @param {DvtContainer} container the container that child nodes should be added to
+ * @param {dvt.Container} container the container that child nodes should be added to
  */
 DvtNBoxCell.prototype.setChildContainer = function(container) {
   this._childContainer = container;
@@ -1626,20 +1624,19 @@ DvtNBoxCell.prototype.handleDoubleClick = function() {
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
   var options = this._nbox.getSanitizedOptions();
-  var event = new DvtSetPropertyEvent();
-  options[DvtNBoxConstants.DRAWER] = null;
-  event.addParam(DvtNBoxConstants.DRAWER, null);
-  if (maximizedRow == this._data[DvtNBoxConstants.ROW] && maximizedColumn == this._data[DvtNBoxConstants.COLUMN]) {
-    options[DvtNBoxConstants.MAXIMIZED_ROW] = null;
-    event.addParam(DvtNBoxConstants.MAXIMIZED_ROW, null);
-    options[DvtNBoxConstants.MAXIMIZED_COLUMN] = null;
-    event.addParam(DvtNBoxConstants.MAXIMIZED_COLUMN, null);
+  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
+  options[dvt.NBoxConstants.DRAWER] = null;
+  if (maximizedRow == this._data[dvt.NBoxConstants.ROW] && maximizedColumn == this._data[dvt.NBoxConstants.COLUMN]) {
+    options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
+    event['properties'][dvt.NBoxConstants.MAXIMIZED_ROW] = null;
+    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
+    event['properties'][dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
   }
   else {
-    options[DvtNBoxConstants.MAXIMIZED_ROW] = this._data[DvtNBoxConstants.ROW];
-    event.addParam(DvtNBoxConstants.MAXIMIZED_ROW, this._data[DvtNBoxConstants.ROW]);
-    options[DvtNBoxConstants.MAXIMIZED_COLUMN] = this._data[DvtNBoxConstants.COLUMN];
-    event.addParam(DvtNBoxConstants.MAXIMIZED_COLUMN, this._data[DvtNBoxConstants.COLUMN]);
+    options[dvt.NBoxConstants.MAXIMIZED_ROW] = this._data[dvt.NBoxConstants.ROW];
+    event['properties'][dvt.NBoxConstants.MAXIMIZED_ROW] = this._data[dvt.NBoxConstants.ROW];
+    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = this._data[dvt.NBoxConstants.COLUMN];
+    event['properties'][dvt.NBoxConstants.MAXIMIZED_COLUMN] = this._data[dvt.NBoxConstants.COLUMN];
   }
 
   var otherCell;
@@ -1690,7 +1687,7 @@ DvtNBoxCell.prototype.contains = function(x, y) {
 /**
  * Renders the drop site feedback for this cell
  *
- * @return {DvtDisplayable} the drop site feedback
+ * @return {dvt.Displayable} the drop site feedback
  */
 DvtNBoxCell.prototype.renderDropSiteFeedback = function() {
   return DvtNBoxCellRenderer.renderDropSiteFeedback(this._nbox, this);
@@ -1699,16 +1696,16 @@ DvtNBoxCell.prototype.renderDropSiteFeedback = function() {
 
 /**
  * Process a keyboard event
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  */
 DvtNBoxCell.prototype.HandleKeyboardEvent = function(event) {
   //use ENTER to drill down the cell and ESCAPE to drill up
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
-  var isCellMaximized = (maximizedRow == this._data[DvtNBoxConstants.ROW] && maximizedColumn == this._data[DvtNBoxConstants.COLUMN]) ? true : false;
+  var isCellMaximized = (maximizedRow == this._data[dvt.NBoxConstants.ROW] && maximizedColumn == this._data[dvt.NBoxConstants.COLUMN]) ? true : false;
 
-  if (!isCellMaximized && event.keyCode == DvtKeyboardEvent.ENTER ||
-      isCellMaximized && event.keyCode == DvtKeyboardEvent.ESCAPE) {
+  if (!isCellMaximized && event.keyCode == dvt.KeyboardEvent.ENTER ||
+      isCellMaximized && event.keyCode == dvt.KeyboardEvent.ESCAPE) {
     this.handleDoubleClick();
   }
 };
@@ -1721,11 +1718,11 @@ DvtNBoxCell.prototype.getAriaLabel = function() {
   var cellIndex = this.getCellIndex();
   var states = [];
   if (DvtNBoxDataUtils.isCellMaximized(this._nbox, cellIndex))
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_MAXIMIZED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_MAXIMIZED'));
   else if (DvtNBoxDataUtils.isCellMinimized(this._nbox, cellIndex))
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_MINIMIZED'));
-  states.push([DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'SIZE'), this.getNodeCount()]);
-  return DvtDisplayable.generateAriaLabel(this.getData()['shortDesc'], states);
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_MINIMIZED'));
+  states.push([dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), this.getNodeCount()]);
+  return dvt.Displayable.generateAriaLabel(this.getData()['shortDesc'], states);
 };
 
 
@@ -1782,7 +1779,7 @@ DvtNBoxCell.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
-    if (event.keyCode == DvtKeyboardEvent.OPEN_BRACKET) {
+    if (event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
       next = this._getFirstNavigableChild(event);
     }
     else {
@@ -1796,7 +1793,7 @@ DvtNBoxCell.prototype.getNextNavigable = function(event)
 /**
  * @private
  * Gets next sibling cell based on direction
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  * @return {DvtKeyboardNavigable} a sibling cell
  */
 DvtNBoxCell.prototype._getNextSibling = function(event) {
@@ -1804,14 +1801,14 @@ DvtNBoxCell.prototype._getNextSibling = function(event) {
   var cellCount = DvtNBoxDataUtils.getRowCount(this._nbox) * DvtNBoxDataUtils.getColumnCount(this._nbox);
   for (var i = 0; i < cellCount; i++)
     cells.push(DvtNBoxDataUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, i)));
-  return DvtKeyboardHandler.getNextNavigable(this, event, cells);
+  return dvt.KeyboardHandler.getNextNavigable(this, event, cells);
 };
 
 
 /**
  * @private
  * Gets a first navigable child node based on direction
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  * @return {DvtKeyboardNavigable} a sibling cell
  */
 DvtNBoxCell.prototype._getFirstNavigableChild = function(event) {
@@ -1820,7 +1817,7 @@ DvtNBoxCell.prototype._getFirstNavigableChild = function(event) {
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
   var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
-  if (drawerData && maximizedRow == this.getData()[DvtNBoxConstants.ROW] && maximizedColumn == this.getData()[DvtNBoxConstants.COLUMN]) {
+  if (drawerData && maximizedRow == this.getData()[dvt.NBoxConstants.ROW] && maximizedColumn == this.getData()[dvt.NBoxConstants.COLUMN]) {
     childObj = DvtNBoxDataUtils.getDisplayable(this._nbox, drawerData);
   }
   else {
@@ -1850,7 +1847,7 @@ DvtNBoxCell.prototype._getFirstNavigableChild = function(event) {
  * @return {Number} cell index
  */
 DvtNBoxCell.prototype.getCellIndex = function() {
-  return DvtNBoxDataUtils.getCellIndexByRowColumn(this._nbox, this.getData()[DvtNBoxConstants.ROW], this.getData()[DvtNBoxConstants.COLUMN]);
+  return DvtNBoxDataUtils.getCellIndexByRowColumn(this._nbox, this.getData()[dvt.NBoxConstants.ROW], this.getData()[dvt.NBoxConstants.COLUMN]);
 };
 
 /**
@@ -1858,8 +1855,30 @@ DvtNBoxCell.prototype.getCellIndex = function() {
  * @return {String} cell label
  */
 DvtNBoxCell.prototype.getLabel = function() {
-  var label = this.getData()[DvtNBoxConstants.LABEL];
+  var label = this.getData()[dvt.NBoxConstants.LABEL];
   return (label ? label : null);
+};
+
+/**
+ * Get the cell count label
+ * @return {String} cell count label
+ */
+DvtNBoxCell.prototype.getCountLabel = function() {
+  var data = this.getData();
+  // Custom count label support
+  // Custom count label via function
+  var countLabelFunc = this._nbox.getOptions()['countLabel'];
+  if (countLabelFunc) {
+    var dataContext = {
+      'row' : data['row'],
+      'column' : data['column'],
+      'nodeCount' : this.getNodeCount(),
+      'highlightedNodeCount' : this.getHighlightedNodeCount(),
+      'totalNodeCount' : DvtNBoxDataUtils.getNodeCount(this._nbox)
+    };
+    return countLabelFunc(dataContext);
+  }
+  return data['countLabel'];
 };
 
 /**
@@ -1868,8 +1887,8 @@ DvtNBoxCell.prototype.getLabel = function() {
  */
 DvtNBoxCell.prototype.getBackground = function() {
   var style = DvtNBoxStyleUtils.getCellStyle(this._nbox, this.getCellIndex());
-  var bgFill = style.getStyle(DvtCSSStyle.BACKGROUND);
-  var colorFill = style.getStyle(DvtCSSStyle.BACKGROUND_COLOR);
+  var bgFill = style.getStyle(dvt.CSSStyle.BACKGROUND);
+  var colorFill = style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
   return bgFill ? bgFill : colorFill;
 };
 
@@ -1893,11 +1912,20 @@ DvtNBoxCell.prototype.hasOverflowIndicator = function() {
  * @return {Number} number of nodes in the cell
  */
 DvtNBoxCell.prototype.getNodeCount = function() {
-  if (!this._cellCounts) {
-    this._cellCounts = DvtNBoxRenderer._calculateCellCounts(this._nbox);
-  }
-  var index = this.getCellIndex();
-  return this._cellCounts['total'][index];
+  var cellCounts = DvtNBoxRenderer.getCellCounts(this._nbox);
+  return cellCounts['total'][this.getCellIndex()];
+};
+
+
+/**
+ * Get the number of highlighted nodes in the cell
+ * @return {Number} number of highlighted nodes in the cell
+ */
+DvtNBoxCell.prototype.getHighlightedNodeCount = function() {
+  var cellCounts = DvtNBoxRenderer.getCellCounts(this._nbox);
+  if (cellCounts['highlighted'])
+    return cellCounts['highlighted'][this.getCellIndex()];
+  return null;
 };
 
 /**
@@ -1906,11 +1934,11 @@ DvtNBoxCell.prototype.getNodeCount = function() {
  * @return {DvtNBoxNode} node object
  */
 DvtNBoxCell.prototype.getNode = function(index) {
-  var nodes = this._nbox.getOptions()[DvtNBoxConstants.NODES];
+  var nodes = this._nbox.getOptions()[dvt.NBoxConstants.NODES];
   if (nodes) {
     var nodeIndex = 0;
     for (var idx = 0; idx < nodes.length; idx++) {
-      if (this.getData()[DvtNBoxConstants.ROW] == nodes[idx][DvtNBoxConstants.ROW] && this.getData()[DvtNBoxConstants.COLUMN] == nodes[idx][DvtNBoxConstants.COLUMN]
+      if (this.getData()[dvt.NBoxConstants.ROW] == nodes[idx][dvt.NBoxConstants.ROW] && this.getData()[dvt.NBoxConstants.COLUMN] == nodes[idx][dvt.NBoxConstants.COLUMN]
          && !DvtNBoxDataUtils.isNodeHidden(this._nbox, nodes[idx])) {
         if (index == nodeIndex)
           return nodes[idx];
@@ -1925,7 +1953,7 @@ DvtNBoxCell.prototype.getNode = function(index) {
 /**
  * Returns the cell displayable (itself)
  *
- * @return {DvtDisplayable} displayable
+ * @return {dvt.Displayable} displayable
  */
 DvtNBoxCell.prototype.getDisplayable = function() {
   return this;
@@ -1934,52 +1962,45 @@ DvtNBoxCell.prototype.getDisplayable = function() {
 /**
  * Returns the displayable that should receive the keyboard focus
  *
- * @return {DvtDisplayable} displayable to receive keyboard focus
+ * @return {dvt.Displayable} displayable to receive keyboard focus
  */
 DvtNBoxCell.prototype.getKeyboardFocusDisplayable = function() {
   // return the cell
-  if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) != DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS ||
+  if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) != dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS ||
       !this._nbox.getOptions()['__groups']) {
     return DvtNBoxDataUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, DvtNBoxDataUtils.getCellIndex(this._nbox, this.getData())));
   }
   return null;
 };
-var DvtNBoxNode = function() {};
-
-DvtObj.createSubclass(DvtNBoxNode, DvtContainer, 'DvtNBoxNode');
-
-
 /**
- * Returns a new instance of DvtNBoxNode
- *
- * @param {DvtNBox} nbox the parent nbox
+ * An NBox node.
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this node
- *
- * @return {DvtNBoxNode} the nbox node
+ * @class
+ * @constructor
  */
-DvtNBoxNode.newInstance = function(nbox, data) {
-  var component = new DvtNBoxNode();
-  component.Init(nbox, data);
-  return component;
+var DvtNBoxNode = function(nbox, data) {
+  this.Init(nbox, data);
 };
 
+dvt.Obj.createSubclass(DvtNBoxNode, dvt.Container);
 
 /**
  * Initializes this component
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this node
  *
  * @protected
  */
 DvtNBoxNode.prototype.Init = function(nbox, data) {
-  DvtNBoxNode.superclass.Init.call(this, nbox.getCtx(), null, data[DvtNBoxConstants.ID]);
+  DvtNBoxNode.superclass.Init.call(this, nbox.getCtx(), null, data[dvt.NBoxConstants.ID]);
   this._nbox = nbox;
   this._data = data;
   this._nbox.registerObject(this);
-  var selectionMode = this._nbox.getOptions()[DvtNBoxConstants.SELECTION_MODE];
+  var selectionMode = this._nbox.getOptions()[dvt.NBoxConstants.SELECTION_MODE];
   if (selectionMode == 'single' || selectionMode == 'multiple' || this.getAction()) {
-    this.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
   this._maxAlpha = 1;
 };
@@ -2004,7 +2025,7 @@ DvtNBoxNode.prototype.getAction = function() {
 
 /**
  * Renders the nbox node
- * @param {DvtContainer} container the container to render into
+ * @param {dvt.Container} container the container to render into
  * @param {object} nodeLayout An object containing properties related to the sizes of the various node subsections
  */
 DvtNBoxNode.prototype.render = function(container, nodeLayout) {
@@ -2063,7 +2084,7 @@ DvtNBoxNode.prototype.hideHoverEffect = function() {
 /**
  * Sets the shape that should be used for displaying selection and hover feedback
  *
- * @param {DvtShape} selectionShape the shape that should be used for displaying selection and hover feedback
+ * @param {dvt.Shape} selectionShape the shape that should be used for displaying selection and hover feedback
  */
 DvtNBoxNode.prototype.setSelectionShape = function(selectionShape) {
   this._selectionShape = selectionShape;
@@ -2073,7 +2094,7 @@ DvtNBoxNode.prototype.setSelectionShape = function(selectionShape) {
 /**
  * Gets the shape that should be used for displaying selection and hover feedback
  *
- * @return {DvtShape} the shape that should be used for displaying selection and hover feedback
+ * @return {dvt.Shape} the shape that should be used for displaying selection and hover feedback
  */
 DvtNBoxNode.prototype.getSelectionShape = function() {
   return this._selectionShape;
@@ -2109,7 +2130,7 @@ DvtNBoxNode.prototype.getDatatip = function(target, x, y) {
  * @return {string} the shortDesc
  */
 DvtNBoxNode.prototype.getShortDesc = function() {
-  return this._data[DvtNBoxConstants.SHORT_DESC];
+  return this._data[dvt.NBoxConstants.SHORT_DESC];
 };
 
 
@@ -2199,7 +2220,7 @@ DvtNBoxNode.prototype.getShowPopupBehaviors = function() {
     var spbs = this._data['showPopupBehaviors'];
     if (spbs) {
       for (var i = 0; i < spbs.length; i++) {
-        this._showPopupBehaviors.push(new DvtShowPopupBehavior(spbs[i]['popupId'], spbs[i]['triggerType'], spbs[i]['alignId'], spbs[i]['align']));
+        this._showPopupBehaviors.push(new dvt.ShowPopupBehavior(spbs[i]['popupId'], spbs[i]['triggerType'], spbs[i]['alignId'], spbs[i]['align']));
       }
     }
   }
@@ -2214,7 +2235,7 @@ DvtNBoxNode.prototype.getPopupBounds = function(behavior) {
   if (behavior && behavior.getAlign()) {
     var matrix = DvtNBoxRenderer.getGlobalMatrix(this);
     var background = DvtNBoxDataUtils.getDisplayable(this._nbox, this._data, 'background');
-    return new DvtRectangle(matrix.getTx() + background.getX(), matrix.getTy() + background.getY(), background.getWidth(), background.getHeight());
+    return new dvt.Rectangle(matrix.getTx() + background.getX(), matrix.getTy() + background.getY(), background.getWidth(), background.getHeight());
   }
   return null;
 };
@@ -2269,10 +2290,10 @@ DvtNBoxNode.prototype._getParentContainer = function() {
  * Updates accessibility attributes on selection event
  */
 DvtNBoxNode.prototype.UpdateAccessibilityAttributes = function() {
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = this.getAriaLabel();
     if (desc)
-      this.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      this.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 
@@ -2289,7 +2310,7 @@ DvtNBoxNode.prototype.getAriaLabel = function() {
  * @return {array} categories
  */
 DvtNBoxNode.prototype.getCategories = function() {
-  return this.getData()[DvtNBoxConstants.CATEGORIES] ? this.getData()[DvtNBoxConstants.CATEGORIES] : [];
+  return this.getData()[dvt.NBoxConstants.CATEGORIES] ? this.getData()[dvt.NBoxConstants.CATEGORIES] : [];
 };
 
 
@@ -2349,23 +2370,23 @@ DvtNBoxNode.prototype.isShowingKeyboardFocusEffect = function() {
 DvtNBoxNode.prototype.getNextNavigable = function(event) 
 {
   var next = null;
-  if (event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey) {
+  if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
     // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
     // care of the selection
     return this;
   }
   else if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
-    if (event.keyCode == DvtKeyboardEvent.CLOSE_BRACKET) {
+    if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET) {
       next = this._getParentContainer();
     }
-    else if (event.keyCode == DvtKeyboardEvent.OPEN_BRACKET) {
+    else if (event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
       next = this;
     }
     else {
       next = DvtNBoxDataUtils.getNextNavigableNode(this._nbox, this, event);
     }
   }
-  else if (event.type == DvtMouseEvent.CLICK) {
+  else if (event.type == dvt.MouseEvent.CLICK) {
     next = this;
   }
   return next;
@@ -2373,22 +2394,22 @@ DvtNBoxNode.prototype.getNextNavigable = function(event)
 
 /**
  * Process a keyboard event
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  */
 DvtNBoxNode.prototype.HandleKeyboardEvent = function(event) {
   //use ENTER to drill down the cell and ESCAPE to drill up
   var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
-  if (drawerData && event.keyCode == DvtKeyboardEvent.ESCAPE) { //drawer
+  if (drawerData && event.keyCode == dvt.KeyboardEvent.ESCAPE) { //drawer
     this.handleDoubleClick();
   }
   else {
     var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(this._nbox);
     var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(this._nbox);
 
-    var isCellMaximized = (maximizedRow == this._data[DvtNBoxConstants.ROW] && maximizedColumn == this._data[DvtNBoxConstants.COLUMN]) ? true : false;
+    var isCellMaximized = (maximizedRow == this._data[dvt.NBoxConstants.ROW] && maximizedColumn == this._data[dvt.NBoxConstants.COLUMN]) ? true : false;
 
-    if (!isCellMaximized && event.keyCode == DvtKeyboardEvent.ENTER ||
-        isCellMaximized && event.keyCode == DvtKeyboardEvent.ESCAPE) {
+    if (!isCellMaximized && event.keyCode == dvt.KeyboardEvent.ENTER ||
+        isCellMaximized && event.keyCode == dvt.KeyboardEvent.ESCAPE) {
       this.handleDoubleClick();
     }
   }
@@ -2398,7 +2419,7 @@ DvtNBoxNode.prototype.HandleKeyboardEvent = function(event) {
 /**
  * Returns the node displayable (itself).
  *
- * @return {DvtDisplayable} displayable
+ * @return {dvt.Displayable} displayable
  */
 DvtNBoxNode.prototype.getDisplayable = function() {
   return this;
@@ -2408,10 +2429,10 @@ DvtNBoxNode.prototype.getDisplayable = function() {
 /**
  * Returns the displayable that should receive the keyboard focus
  *
- * @return {DvtDisplayable} displayable to receive keyboard focus
+ * @return {dvt.Displayable} displayable to receive keyboard focus
  */
 DvtNBoxNode.prototype.getKeyboardFocusDisplayable = function() {
-  var node = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, this.getData()[DvtNBoxConstants.ID]));
+  var node = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, this.getData()[dvt.NBoxConstants.ID]));
   if (node) {
     // return the node if it's still displayed
     var displayable = DvtNBoxDataUtils.getDisplayable(this._nbox, node);
@@ -2451,14 +2472,41 @@ DvtNBoxNode.prototype._getParentDrawer = function() {
   }
   return null;
 };
+
+/**
+ * Gets the container that child elements should be added to.
+ * Can create new container if create param is set true.
+ * Only used in when necessary (e.g. icon clip paths for border radius).
+ *
+ * @param {boolean} create whether or not to create child container if it doesn't exist
+ * @return {dvt.Container} the container that child elements should be added to
+ */
+DvtNBoxNode.prototype.getChildContainer = function(create) {
+  if (!create || this._childContainer) return this._childContainer;
+
+  this._childContainer = new dvt.Container(this.getCtx());
+  this.addChild(this._childContainer);
+
+  return this._childContainer;
+};
+
+/**
+ * Sets the container that child elements should be added to.
+ * Only used in when necessary (e.g. icon clip paths for border radius).
+ *
+ * @param {dvt.Container} container the container that child elements should be added to
+ */
+DvtNBoxNode.prototype.setChildContainer = function(container) {
+  this._childContainer = container;
+};
 var DvtNBoxNodeOverflow = function() {};
 
-DvtObj.createSubclass(DvtNBoxNodeOverflow, DvtContainer, 'DvtNBoxNodeOverflow');
+dvt.Obj.createSubclass(DvtNBoxNodeOverflow, dvt.Container);
 
 /**
  * Returns a new instance of DvtNBoxNodeOverflow
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {DvtNBoxCell} cell the cell for this object
  *
  * @return {DvtNBoxNodeOverflow} the node oveflow object
@@ -2473,7 +2521,7 @@ DvtNBoxNodeOverflow.newInstance = function(nbox, cell) {
 /**
  * Initializes this component
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {DvtNBoxCell} cell the cell for this object
  *
  * @protected
@@ -2488,7 +2536,7 @@ DvtNBoxNodeOverflow.prototype.Init = function(nbox, cell) {
 
 /**
  * Renders the nbox overflow object
- * @param {DvtContainer} container the container to render into
+ * @param {dvt.Container} container the container to render into
  * @param {number} width the width of the overflow button
  * @param {number} height the height of the overflow button
  */
@@ -2512,40 +2560,40 @@ DvtNBoxNodeOverflow.prototype.render = function(container, width, height) {
 
   var ctx = this._nbox.getCtx();
 
-  var upRect = new DvtRect(ctx, 0, 0, width, height);
-  var overRect = new DvtRect(ctx, 0, 0, width, height);
-  var downRect = new DvtRect(ctx, 0, 0, width, height);
-  var disRect = new DvtRect(ctx, 0, 0, width, height);
+  var upRect = new dvt.Rect(ctx, 0, 0, width, height);
+  var overRect = new dvt.Rect(ctx, 0, 0, width, height);
+  var downRect = new dvt.Rect(ctx, 0, 0, width, height);
+  var disRect = new dvt.Rect(ctx, 0, 0, width, height);
 
   upRect.setInvisibleFill();
   overRect.setInvisibleFill();
   downRect.setInvisibleFill();
   disRect.setInvisibleFill();
 
-  var upState = new DvtContainer(ctx);
-  var overState = new DvtContainer(ctx);
-  var downState = new DvtContainer(ctx);
-  var disState = new DvtContainer(ctx);
+  var upState = new dvt.Container(ctx);
+  var overState = new dvt.Container(ctx);
+  var downState = new dvt.Container(ctx);
+  var disState = new dvt.Container(ctx);
 
   upState.addChild(upRect);
   overState.addChild(overRect);
   downState.addChild(downRect);
   disState.addChild(disRect);
 
-  upState.addChild(new DvtImage(ctx, options['_resources']['overflow_ena']['src'], x, y, w, h));
-  overState.addChild(new DvtImage(ctx, options['_resources']['overflow_ovr']['src'], x, y, w, h));
-  downState.addChild(new DvtImage(ctx, options['_resources']['overflow_dwn']['src'], x, y, w, h));
-  disState.addChild(new DvtImage(ctx, options['_resources']['overflow_dis']['src'], x, y, w, h));
+  upState.addChild(new dvt.Image(ctx, options['_resources']['overflow_ena']['src'], x, y, w, h));
+  overState.addChild(new dvt.Image(ctx, options['_resources']['overflow_ovr']['src'], x, y, w, h));
+  downState.addChild(new dvt.Image(ctx, options['_resources']['overflow_dwn']['src'], x, y, w, h));
+  disState.addChild(new dvt.Image(ctx, options['_resources']['overflow_dis']['src'], x, y, w, h));
 
 
-  this._button = new DvtButton(ctx, upState, overState, downState, disState, null, this.HandleClick, this);
+  this._button = new dvt.Button(ctx, upState, overState, downState, disState, null, this.HandleClick, this);
   if (!DvtNBoxDataUtils.isMaximizeEnabled(this._nbox)) {
     this._button.setEnabled(false);
     this._button.drawDisabledState();
   }
 
   this.addChild(this._button);
-  var keyboardFocusEffect = new DvtKeyboardFocusEffect(this._nbox.getCtx(), this, new DvtRectangle(-1, -1, width + 2, height + 2));
+  var keyboardFocusEffect = new dvt.KeyboardFocusEffect(this._nbox.getCtx(), this, new dvt.Rectangle(-1, -1, width + 2, height + 2));
   DvtNBoxDataUtils.setDisplayable(this._nbox, this, keyboardFocusEffect, 'focusEffect');
   container.addChild(this);
   this._addAccessibilityAttributes();
@@ -2564,7 +2612,7 @@ DvtNBoxNodeOverflow.prototype.getParentCell = function() {
 
 /**
  * Gets the overflow button
- * @return {DvtButton} button for the overflow
+ * @return {dvt.Button} button for the overflow
  */
 DvtNBoxNodeOverflow.prototype.getButton = function() {
   return this._button;
@@ -2572,20 +2620,20 @@ DvtNBoxNodeOverflow.prototype.getButton = function() {
 
 /**
  * Process a click event
- * @param {DvtMouseEvent} event
+ * @param {dvt.MouseEvent} event
  */
 DvtNBoxNodeOverflow.prototype.HandleClick = function(event) {
-  DvtEventManager.consumeEvent(event);
+  dvt.EventManager.consumeEvent(event);
   this._cell.handleDoubleClick(true);
 };
 
 
 /**
  * Process a keyboard event
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  */
 DvtNBoxNodeOverflow.prototype.HandleKeyboardEvent = function(event) {
-  if (event.keyCode == DvtKeyboardEvent.ENTER) {
+  if (event.keyCode == dvt.KeyboardEvent.ENTER) {
     this._cell.handleDoubleClick();
   }
 };
@@ -2597,10 +2645,10 @@ DvtNBoxNodeOverflow.prototype.HandleKeyboardEvent = function(event) {
  */
 DvtNBoxNodeOverflow.prototype._addAccessibilityAttributes = function() {
   this.setAriaRole('button');
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = this.getAriaLabel();
     if (desc)
-      this.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      this.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 
@@ -2609,7 +2657,7 @@ DvtNBoxNodeOverflow.prototype._addAccessibilityAttributes = function() {
  * @override
  */
 DvtNBoxNodeOverflow.prototype.getDatatip = function(target, x, y) {
-  return DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'ADDITIONAL_DATA');
+  return dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'ADDITIONAL_DATA');
 };
 
 
@@ -2677,7 +2725,7 @@ DvtNBoxNodeOverflow.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
-    if (event.keyCode == DvtKeyboardEvent.CLOSE_BRACKET) {
+    if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET) {
       next = this.getParentCell();
     }
     else {
@@ -2691,7 +2739,7 @@ DvtNBoxNodeOverflow.prototype.getNextNavigable = function(event)
 /**
  * Returns the node overflow displayable (itself).
  *
- * @return {DvtDisplayable} displayable
+ * @return {dvt.Displayable} displayable
  */
 DvtNBoxNodeOverflow.prototype.getDisplayable = function() {
   return this;
@@ -2701,24 +2749,24 @@ DvtNBoxNodeOverflow.prototype.getDisplayable = function() {
 /**
  * Returns the displayable that should receive the keyboard focus
  *
- * @return {DvtDisplayable} displayable to receive keyboard focus
+ * @return {dvt.Displayable} displayable to receive keyboard focus
  */
 DvtNBoxNodeOverflow.prototype.getKeyboardFocusDisplayable = function() {
   // return first hidden node when maximizing the cell
   var oldPrevNode = this['__prev'];
-  var newPrevNode = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, oldPrevNode[DvtNBoxConstants.ID]));
+  var newPrevNode = DvtNBoxDataUtils.getNode(this._nbox, DvtNBoxDataUtils.getNodeIndex(this._nbox, oldPrevNode[dvt.NBoxConstants.ID]));
   var newNode = newPrevNode['__next'];
   return DvtNBoxDataUtils.getDisplayable(this._nbox, newNode);
 };
 var DvtNBoxCategoryNode = function() {};
 
-DvtObj.createSubclass(DvtNBoxCategoryNode, DvtContainer, 'DvtNBoxCategoryNode');
+dvt.Obj.createSubclass(DvtNBoxCategoryNode, dvt.Container);
 
 
 /**
  * Returns a new instance of DvtNBoxCategoryNode
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this category node
  *
  * @return {DvtNBoxCategoryNode} the nbox category node
@@ -2733,21 +2781,18 @@ DvtNBoxCategoryNode.newInstance = function(nbox, data) {
 /**
  * Initializes this component
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data for this category node
  *
  * @protected
  */
 DvtNBoxCategoryNode.prototype.Init = function(nbox, data) {
   DvtNBoxCategoryNode.superclass.Init.call(this, nbox.getCtx(), null,
-                                           isNaN(data[DvtNBoxConstants.CELL]) ? data[DvtNBoxConstants.ID] : data[DvtNBoxConstants.CELL] + ':' + data[DvtNBoxConstants.ID]);// TODO for : Passing non container params weird
+                                           isNaN(data[dvt.NBoxConstants.CELL]) ? data[dvt.NBoxConstants.ID] : data[dvt.NBoxConstants.CELL] + ':' + data[dvt.NBoxConstants.ID]);// TODO for : Passing non container params weird
   this._nbox = nbox;
   this._data = data;
   this._nbox.registerObject(this);
-  var selectionMode = this._nbox.getOptions()[DvtNBoxConstants.SELECTION_MODE];
-  if (selectionMode == 'multiple') {
-    this.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
-  }
+  this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   this._maxAlpha = 1;
 };
 
@@ -2764,7 +2809,7 @@ DvtNBoxCategoryNode.prototype.getData = function() {
 
 /**
  * Renders the nbox node
- * @param {DvtContainer} container the container to render into
+ * @param {dvt.Container} container the container to render into
  * @param {number} scale The number of pixels per unit (used to determine the size of this category node based on its node count)
  * @param {number} gap The number of pixels to shrink this node (to leave padding in the force layout)
  */
@@ -2781,7 +2826,7 @@ DvtNBoxCategoryNode.prototype.render = function(container, scale, gap) {
  * @return {boolean} true if this object is selectable.
  */
 DvtNBoxCategoryNode.prototype.isSelectable = function() {
-  var selectionMode = this._nbox.getOptions()[DvtNBoxConstants.SELECTION_MODE];
+  var selectionMode = this._nbox.getOptions()[dvt.NBoxConstants.SELECTION_MODE];
   return selectionMode == 'multiple';
 };
 
@@ -2825,7 +2870,7 @@ DvtNBoxCategoryNode.prototype.hideHoverEffect = function() {
 /**
  * Sets the shape that should be used for displaying selection and hover feedback
  *
- * @param {DvtShape} selectionShape the shape that should be used for displaying selection and hover feedback
+ * @param {dvt.Shape} selectionShape the shape that should be used for displaying selection and hover feedback
  */
 DvtNBoxCategoryNode.prototype.setSelectionShape = function(selectionShape) {
   this._selectionShape = selectionShape;
@@ -2835,7 +2880,7 @@ DvtNBoxCategoryNode.prototype.setSelectionShape = function(selectionShape) {
 /**
  * Gets the shape that should be used for displaying selection and hover feedback
  *
- * @return {DvtShape} the shape that should be used for displaying selection and hover feedback
+ * @return {dvt.Shape} the shape that should be used for displaying selection and hover feedback
  */
 DvtNBoxCategoryNode.prototype.getSelectionShape = function() {
   return this._selectionShape;
@@ -2851,7 +2896,7 @@ DvtNBoxCategoryNode.prototype.getLabel = function() {
   var labels = DvtNBoxDataUtils.getCategoryNodeLabels(this._nbox, this._data);
   while (labels.length > 1) {
     var params = [labels[0], labels[1]];
-    var joined = DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'COMMA_SEP_LIST', params);
+    var joined = dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'COMMA_SEP_LIST', params);
     labels.splice(0, 2, joined);
   }
   return labels[0];
@@ -2878,7 +2923,7 @@ DvtNBoxCategoryNode.prototype.getDatatip = function(target, x, y) {
     }
     return this._nbox.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, dataContext);
   }
-  return this.getShortDesc() + '\n' + DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'SIZE'), this._data['nodeIndices'].length]);
+  return this.getShortDesc() + '\n' + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), this._data['nodeIndices'].length]);
 };
 
 /**
@@ -2929,7 +2974,7 @@ DvtNBoxCategoryNode.prototype.setAlpha = function(alpha) {
  * @override
  */
 DvtNBoxCategoryNode.prototype.isDoubleClickable = function() {
-  return true;
+  return this.isSelectable();
 };
 
 
@@ -2937,10 +2982,18 @@ DvtNBoxCategoryNode.prototype.isDoubleClickable = function() {
  * @override
  */
 DvtNBoxCategoryNode.prototype.handleDoubleClick = function() {
+  if (this.isSelectable())
+    this.openDrawer();
+};
+
+
+/**
+ * Opens nBox drawer.  Triggered on single click with selection disabled, double click with selection enabled.
+ */
+DvtNBoxCategoryNode.prototype.openDrawer = function() {
   var options = this._nbox.getSanitizedOptions();
-  options[DvtNBoxConstants.DRAWER] = {'id': this.getId()};
-  var event = new DvtSetPropertyEvent();
-  event.addParam(DvtNBoxConstants.DRAWER, this.getId());
+  options[dvt.NBoxConstants.DRAWER] = {'id': this.getId()};
+  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, this.getId());
   this._nbox.processEvent(event);
   this._nbox.render(options);
 };
@@ -2997,14 +3050,14 @@ DvtNBoxCategoryNode.prototype.getDragFeedback = function(mouseX, mouseY) {
 
 /**
  * Process a keyboard event
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  */
 DvtNBoxCategoryNode.prototype.HandleKeyboardEvent = function(event) {
-  if (event.keyCode == DvtKeyboardEvent.ENTER) {
-    this.handleDoubleClick();
+  if (event.keyCode == dvt.KeyboardEvent.ENTER) {
+    this.openDrawer();
   }
-  else if (event.keyCode == DvtKeyboardEvent.ESCAPE &&
-      DvtNBoxDataUtils.getGroupBehavior(this._nbox) == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  else if (event.keyCode == dvt.KeyboardEvent.ESCAPE &&
+      DvtNBoxDataUtils.getGroupBehavior(this._nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     var cellData = DvtNBoxDataUtils.getCell(this._nbox, this._data.cell);
     var cell = DvtNBoxDataUtils.getDisplayable(this._nbox, cellData);
     cell.HandleKeyboardEvent(event);
@@ -3017,10 +3070,10 @@ DvtNBoxCategoryNode.prototype.HandleKeyboardEvent = function(event) {
  * Updates accessibility attributes on selection event
  */
 DvtNBoxCategoryNode.prototype.UpdateAccessibilityAttributes = function() {
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = this.getAriaLabel();
     if (desc)
-      this.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      this.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 
@@ -3037,7 +3090,7 @@ DvtNBoxCategoryNode.prototype.getAriaLabel = function() {
  * @return {array} categories
  */
 DvtNBoxCategoryNode.prototype.getCategories = function() {
-  var categories = this.getData()[DvtNBoxConstants.CATEGORIES];
+  var categories = this.getData()[dvt.NBoxConstants.CATEGORIES];
   if (!categories) {
     var intersect = function(a, b) {
       return a.filter(function(n) {
@@ -3047,14 +3100,14 @@ DvtNBoxCategoryNode.prototype.getCategories = function() {
     var indices = this.getData()['nodeIndices'];
     categories = null;
     for (var i = 0; i < indices.length; i++) {
-      var nodeCategories = DvtNBoxDataUtils.getNode(this._nbox, indices[i])[DvtNBoxConstants.CATEGORIES];
+      var nodeCategories = DvtNBoxDataUtils.getNode(this._nbox, indices[i])[dvt.NBoxConstants.CATEGORIES];
       if (!nodeCategories) {
         categories = [];
         break;
       }
       categories = categories == null ? nodeCategories : intersect(categories, nodeCategories);
     }
-    this.getData()[DvtNBoxConstants.CATEGORIES] = categories;
+    this.getData()[dvt.NBoxConstants.CATEGORIES] = categories;
   }
   return categories;
 };
@@ -3127,24 +3180,24 @@ DvtNBoxCategoryNode.prototype.isShowingKeyboardFocusEffect = function() {
 DvtNBoxCategoryNode.prototype.getNextNavigable = function(event) 
 {
   var next = null;
-  if (event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey)
+  if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey)
   {
     // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
     // care of the selection
     return this;
   }
-  else if (event.keyCode == DvtKeyboardEvent.CLOSE_BRACKET &&
-          DvtNBoxDataUtils.getGroupBehavior(this._nbox) == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  else if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET &&
+          DvtNBoxDataUtils.getGroupBehavior(this._nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     //get parent cell if the node is in the cell
-    var cellData = DvtNBoxDataUtils.getCell(this._nbox, this.getData()[DvtNBoxConstants.CELL]);
+    var cellData = DvtNBoxDataUtils.getCell(this._nbox, this.getData()[dvt.NBoxConstants.CELL]);
     next = DvtNBoxDataUtils.getDisplayable(this._nbox, cellData);
   }
-  else if (event.keyCode == DvtKeyboardEvent.CLOSE_BRACKET || event.keyCode == DvtKeyboardEvent.OPEN_BRACKET) {
+  else if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET || event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
     next = this; //do nothing
   }
   else if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
     //get sibling category node
-    if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
+    if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
       var groups = this._nbox.getOptions()['__groups'];
       var groupNodes = [];
       for (var id in groups) {
@@ -3164,7 +3217,7 @@ DvtNBoxCategoryNode.prototype.getNextNavigable = function(event)
       next = DvtNBoxKeyboardHandler.getNextNavigableCategoryNode(this, event, nodes);
     }
   }
-  else if (event.type == DvtMouseEvent.CLICK) {
+  else if (event.type == dvt.MouseEvent.CLICK) {
     next = this;
   }
   return next;
@@ -3174,7 +3227,7 @@ DvtNBoxCategoryNode.prototype.getNextNavigable = function(event)
 /**
  * Returns the category node displayable (itself).
  *
- * @return {DvtDisplayable} displayable
+ * @return {dvt.Displayable} displayable
  */
 DvtNBoxCategoryNode.prototype.getDisplayable = function() {
   return this;
@@ -3184,7 +3237,7 @@ DvtNBoxCategoryNode.prototype.getDisplayable = function() {
 /**
  * Returns the displayable that should receive the keyboard focus
  *
- * @return {DvtDisplayable} displayable to receive keyboard focus
+ * @return {dvt.Displayable} displayable to receive keyboard focus
  */
 DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
   // return the drawer when expanding a group node
@@ -3204,7 +3257,7 @@ DvtNBoxCategoryNode.prototype.getKeyboardFocusDisplayable = function() {
  * @param {function} callback A function that responds to component events.
  * @param {object} callbackObj The object instance that the callback function is defined on.
  * @class DvtNBoxCategoryRolloverHandler
- * @extends {DvtCategoryRolloverHandler}
+ * @extends {dvt.CategoryRolloverHandler}
  * @constructor
  */
 var DvtNBoxCategoryRolloverHandler = function(callback, callbackObj) {
@@ -3212,7 +3265,7 @@ var DvtNBoxCategoryRolloverHandler = function(callback, callbackObj) {
   this._nbox = callbackObj;
 };
 
-DvtObj.createSubclass(DvtNBoxCategoryRolloverHandler, DvtCategoryRolloverHandler, 'DvtNBoxCategoryRolloverHandler');
+dvt.Obj.createSubclass(DvtNBoxCategoryRolloverHandler, dvt.CategoryRolloverHandler);
 
 /**
  * @override
@@ -3226,7 +3279,7 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloverCallback = function(event, o
     if (this._callback)
       this._callback.call(this._callbackObj, event, this._source);
   };
-  return DvtObj.createCallback(this, callback);
+  return dvt.Obj.createCallback(this, callback);
 };
 
 /**
@@ -3241,11 +3294,11 @@ DvtNBoxCategoryRolloverHandler.prototype.GetRolloutCallback = function(event, ob
     if (this._callback)
       this._callback.call(this._callbackObj, event, this._source);
   };
-  return DvtObj.createCallback(this, callback);
+  return dvt.Obj.createCallback(this, callback);
 };
 var DvtNBoxDrawer = function() {};
 
-DvtObj.createSubclass(DvtNBoxDrawer, DvtContainer, 'DvtNBoxDrawer');
+dvt.Obj.createSubclass(DvtNBoxDrawer, dvt.Container);
 
 
 /**
@@ -3266,7 +3319,7 @@ DvtNBoxDrawer.newInstance = function(nbox, data) {
 /**
  * Initializes this component
  *
- * @param {DvtNBox} nbox the parent nbox
+ * @param {dvt.NBox} nbox the parent nbox
  * @param {object} data the data associated with the currently open group
  *
  * @protected
@@ -3291,8 +3344,8 @@ DvtNBoxDrawer.prototype.getData = function() {
 
 /**
  * Renders the drawer
- * @param {DvtContainer} container the container to render into
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Container} container the container to render into
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxDrawer.prototype.render = function(container, availSpace) {
   container.addChild(this);
@@ -3305,7 +3358,7 @@ DvtNBoxDrawer.prototype.render = function(container, availSpace) {
 /**
  * Gets the container that child nodes should be added to
  *
- * @return {DvtContainer} the container that child nodes should be added to
+ * @return {dvt.Container} the container that child nodes should be added to
  */
 DvtNBoxDrawer.prototype.getChildContainer = function() {
   return this._childContainer;
@@ -3315,7 +3368,7 @@ DvtNBoxDrawer.prototype.getChildContainer = function() {
 /**
  * Sets the container that child nodes should be added to
  *
- * @param {DvtContainer} container the container that child nodes should be added to
+ * @param {dvt.Container} container the container that child nodes should be added to
  */
 DvtNBoxDrawer.prototype.setChildContainer = function(container) {
   this._childContainer = container;
@@ -3343,9 +3396,8 @@ DvtNBoxDrawer.prototype.handleDoubleClick = function() {
  */
 DvtNBoxDrawer.prototype.closeDrawer = function() {
   var options = this._nbox.getSanitizedOptions();
-  options[DvtNBoxConstants.DRAWER] = null;
-  var event = new DvtSetPropertyEvent();
-  event.addParam(DvtNBoxConstants.DRAWER, null);
+  options[dvt.NBoxConstants.DRAWER] = null;
+  var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
   this._nbox.processEvent(event);
   this._nbox.render(options);
 };
@@ -3378,10 +3430,10 @@ DvtNBoxDrawer.prototype.animateInsert = function(animationHandler) {
 
 /**
  * Process a keyboard event
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  */
 DvtNBoxDrawer.prototype.HandleKeyboardEvent = function(event) {
-  if (event.keyCode == DvtKeyboardEvent.ESCAPE) {
+  if (event.keyCode == dvt.KeyboardEvent.ESCAPE) {
     this.closeDrawer();
   }
 };
@@ -3392,10 +3444,10 @@ DvtNBoxDrawer.prototype.HandleKeyboardEvent = function(event) {
  * Updates accessibility attributes on selection event
  */
 DvtNBoxDrawer.prototype.UpdateAccessibilityAttributes = function() {
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = this.getAriaLabel();
     if (desc) {
-      var object = DvtAgent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(this._nbox, this.getData(), 'background') : this;
+      var object = dvt.Agent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(this._nbox, this.getData(), 'background') : this;
       object.setAriaProperty('label', desc);
     }
   }
@@ -3466,14 +3518,14 @@ DvtNBoxDrawer.prototype.getNextNavigable = function(event)
 {
   var next = null;
   if (this._nbox.EventManager.getKeyboardHandler().isNavigationEvent(event)) {
-    if (event.keyCode == DvtKeyboardEvent.OPEN_BRACKET) {
+    if (event.keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
       //find first individual node
       var container = this.getChildContainer();
       if (container.getScrollingPane)
         container = container.getScrollingPane();
       var next = DvtNBoxDataUtils.getFirstNavigableNode(this._nbox, container);
     }
-    else if (event.keyCode == DvtKeyboardEvent.CLOSE_BRACKET) {
+    else if (event.keyCode == dvt.KeyboardEvent.CLOSE_BRACKET) {
       //find parent cell
       var maximizedCellIndex = DvtNBoxDataUtils.getMaximizedCellIndex(this._nbox);
       next = DvtNBoxDataUtils.getDisplayable(this._nbox, DvtNBoxDataUtils.getCell(this._nbox, maximizedCellIndex));
@@ -3486,7 +3538,7 @@ DvtNBoxDrawer.prototype.getNextNavigable = function(event)
 /**
  * Returns the drawer displayable (itself).
  *
- * @return {DvtDisplayable} displayable
+ * @return {dvt.Displayable} displayable
  */
 DvtNBoxDrawer.prototype.getDisplayable = function() {
   return this;
@@ -3496,24 +3548,24 @@ DvtNBoxDrawer.prototype.getDisplayable = function() {
 /**
  * Returns the displayable that should receive the keyboard focus
  *
- * @return {DvtDisplayable} displayable to receive keyboard focus
+ * @return {dvt.Displayable} displayable to receive keyboard focus
  */
 DvtNBoxDrawer.prototype.getKeyboardFocusDisplayable = function() {
   if (this._nbox.getOptions()['_drawer'])
     return this;
 
   // return the associated group node associated when closing the drawer
-  var groupNodeData = DvtNBoxDataUtils.getCategoryNode(this._nbox, this.getData()[DvtNBoxConstants.ID]);
+  var groupNodeData = DvtNBoxDataUtils.getCategoryNode(this._nbox, this.getData()[dvt.NBoxConstants.ID]);
   if (groupNodeData)
     return DvtNBoxDataUtils.getDisplayable(this._nbox, groupNodeData);
   return null;
 };
 /**
  * Animation handler for NBox
- * @param {DvtContext} context the platform specific context object
- * @param {DvtContainer} deleteContainer the container where deletes should be moved for animation
+ * @param {dvt.Context} context the platform specific context object
+ * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
  * @param {object} an object representing the old nbox state
- * @param {DvtNBox} the nbox component
+ * @param {dvt.NBox} the nbox component
  * @class DvtNBoxDataAnimationHandler
  * @constructor
  */
@@ -3521,7 +3573,7 @@ var DvtNBoxDataAnimationHandler = function(context, deleteContainer, oldNBox, ne
   this.Init(context, deleteContainer, oldNBox, newNBox);
 };
 
-DvtObj.createSubclass(DvtNBoxDataAnimationHandler, DvtDataAnimationHandler, 'DvtNBoxDataAnimationHandler');
+dvt.Obj.createSubclass(DvtNBoxDataAnimationHandler, dvt.DataAnimationHandler);
 
 DvtNBoxDataAnimationHandler.DELETE = 0;
 DvtNBoxDataAnimationHandler.UPDATE = 1;
@@ -3531,10 +3583,10 @@ DvtNBoxDataAnimationHandler.INSERT = 2;
 /**
  * Initialization method called by the constructor
  *
- * @param {DvtContext} context the platform specific context object
- * @param {DvtContainer} deleteContainer the container where deletes should be moved for animation
+ * @param {dvt.Context} context the platform specific context object
+ * @param {dvt.Container} deleteContainer the container where deletes should be moved for animation
  * @param {object} an object representing the old nbox state
- * @param {DvtNBox} the nbox component
+ * @param {dvt.NBox} the nbox component
  */
 DvtNBoxDataAnimationHandler.prototype.Init = function(context, deleteContainer, oldNBox, newNBox) {
   DvtNBoxDataAnimationHandler.superclass.Init.call(this, context, deleteContainer);
@@ -3556,7 +3608,7 @@ DvtNBoxDataAnimationHandler.prototype.getOldNBox = function() {
 /**
  * Returns the new NBox state
  *
- * @return {DvtNBox} the nbox component
+ * @return {dvt.NBox} the nbox component
  */
 DvtNBoxDataAnimationHandler.prototype.getNewNBox = function() {
   return this._newNBox;
@@ -3572,17 +3624,17 @@ DvtNBoxDataAnimationHandler.prototype.getAnimationDuration = function() {
   return DvtNBoxStyleUtils.getAnimationDuration(this._oldNBox);
 };
 /**
- * Drop Target event handler for DvtNBox
- * @param {DvtNBox} view
+ * Drop Target event handler for dvt.NBox
+ * @param {dvt.NBox} view
  * @class DvtNBoxDropTarget
- * @extends {DvtDropTarget}
+ * @extends {dvt.DropTarget}
  * @constructor
  */
 var DvtNBoxDropTarget = function(view) {
   this._view = view;
 };
 
-DvtObj.createSubclass(DvtNBoxDropTarget, DvtDropTarget, 'DvtNBoxDropTarget');
+dvt.Obj.createSubclass(DvtNBoxDropTarget, dvt.DropTarget);
 
 
 /**
@@ -3622,17 +3674,17 @@ DvtNBoxDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
   var cell = this._view.__getCellUnderPoint(mouseX, mouseY);
   if (cell) {
     var data = cell.getData();
-    return {row: data[DvtNBoxConstants.ROW], column: data[DvtNBoxConstants.COLUMN]};
+    return {row: data[dvt.NBoxConstants.ROW], column: data[dvt.NBoxConstants.COLUMN]};
   }
   else
     return null;
 };
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
- * Event Manager for DvtNBox.
- * @param {DvtNBox} nbox NBox component
+ * Event Manager for dvt.NBox.
+ * @param {dvt.NBox} nbox NBox component
  * @class
- * @extends {DvtEventManager}
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtNBoxEventManager = function(nbox) {
@@ -3640,7 +3692,7 @@ var DvtNBoxEventManager = function(nbox) {
   this._nbox = nbox;
 };
 
-DvtObj.createSubclass(DvtNBoxEventManager, DvtEventManager, 'DvtNBoxEventManager');
+dvt.Obj.createSubclass(DvtNBoxEventManager, dvt.EventManager);
 
 /**
  * @override
@@ -3648,6 +3700,10 @@ DvtObj.createSubclass(DvtNBoxEventManager, DvtEventManager, 'DvtNBoxEventManager
 DvtNBoxEventManager.prototype.OnClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
   this._processActionEvent(obj);
+
+  // Only open drawer if category node not selectable. If selectable, open using double click.
+  if (obj instanceof DvtNBoxCategoryNode && !obj.isSelectable())
+    obj.openDrawer();
 };
 
 /**
@@ -3679,12 +3735,16 @@ DvtNBoxEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
 DvtNBoxEventManager.prototype.HandleTouchClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
   this._processActionEvent(obj);
+
+  // Only open drawer if category node not selectable. If selectable, open using double click.
+  if (obj instanceof DvtNBoxCategoryNode && !obj.isSelectable())
+    obj.openDrawer();
 };
 
 /**
  * Handler for mouse or touch double click actions
  *
- * @param {DvtDisplayable} displayable the event target
+ * @param {dvt.Displayable} displayable the event target
  * @private
  */
 DvtNBoxEventManager.prototype._handleDblClick = function(displayable) {
@@ -3704,12 +3764,12 @@ DvtNBoxEventManager.prototype.ProcessKeyboardEvent = function(event)
   var keyCode = event.keyCode;
   var navigable = this.getFocus(); // the item with current keyboard focus
 
-  if (keyCode == DvtKeyboardEvent.ENTER || keyCode == DvtKeyboardEvent.ESCAPE) { //drill up and down
+  if (keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.ESCAPE) { //drill up and down
     if (navigable && navigable.HandleKeyboardEvent)
       navigable.HandleKeyboardEvent(event);
     navigable = null;
   }
-  else if (event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey) { //multi-select event
+  else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) { //multi-select event
     if (navigable instanceof DvtNBoxCategoryNode || navigable instanceof DvtNBoxNode)
       eventConsumed = DvtNBoxEventManager.superclass.ProcessKeyboardEvent.call(this, event);
   }
@@ -3721,7 +3781,7 @@ DvtNBoxEventManager.prototype.ProcessKeyboardEvent = function(event)
 
 /**
  * Processes a rollover action on the specified logical object.
- * @param {DvtBaseEvent} event The event that caused the rollover.
+ * @param {dvt.BaseEvent} event The event that caused the rollover.
  * @param {DvtLogicalObject} obj The logical object that was the target of the event.
  * @param {boolean} bOver True if this is a rollover, false if this is a rollout.
  * @protected
@@ -3737,9 +3797,8 @@ DvtNBoxEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOver)
   options['highlightedCategories'] = bOver ? categories.slice() : null;
 
   // Fire the event to the rollover handler, who will fire to the component callback.
-  var type = bOver ? DvtCategoryRolloverEvent.TYPE_OVER : DvtCategoryRolloverEvent.TYPE_OUT;
-  var rolloverEvent = new DvtCategoryRolloverEvent(type, options['highlightedCategories']);
-  var hoverBehaviorDelay = DvtStyleUtils.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
+  var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
+  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._nbox.getNodeDisplayables(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
 };
 
@@ -3752,12 +3811,12 @@ DvtNBoxEventManager.prototype.CreateCategoryRolloverHandler = function(callback,
 
 /**
  * Processes an action on the specified data item.
- * @param {DvtDisplayable} obj The logical object of the data item.
+ * @param {dvt.Displayable} obj The logical object of the data item.
  * @private
  */
 DvtNBoxEventManager.prototype._processActionEvent = function(obj) {
   if (obj && obj.getAction && obj.getAction())
-    this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()));
+    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()));
 };
 
 /**
@@ -3769,25 +3828,25 @@ DvtNBoxEventManager.prototype.GetTouchResponse = function() {
   var cellData = DvtNBoxDataUtils.getCell(this._nbox, DvtNBoxDataUtils.getMaximizedCellIndex(this._nbox));
   if ((drawerData && DvtNBoxDataUtils.getDisplayable(this._nbox, drawerData).getChildContainer().hasScrollingContent()) ||
       (cellData && DvtNBoxDataUtils.getDisplayable(this._nbox, cellData).getChildContainer().hasScrollingContent()))
-    return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
-  else if (options['touchResponse'] === DvtEventManager.TOUCH_RESPONSE_TOUCH_START)
-    return DvtEventManager.TOUCH_RESPONSE_TOUCH_START;
-  return DvtEventManager.TOUCH_RESPONSE_AUTO;
+    return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+  else if (options['touchResponse'] === dvt.EventManager.TOUCH_RESPONSE_TOUCH_START)
+    return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
+  return dvt.EventManager.TOUCH_RESPONSE_AUTO;
 };
 /**
  * Keyboard handler for the NBox component
- * @param {DvtEventManager} manager The owning DvtEventManager
- * @param {DvtNBox} nbox The owning NBox component
+ * @param {dvt.EventManager} manager The owning dvt.EventManager
+ * @param {dvt.NBox} nbox The owning NBox component
  * @class DvtNBoxKeyboardHandler
  * @constructor
- * @extends {DvtKeyboardHandler}
+ * @extends {dvt.KeyboardHandler}
  */
 var DvtNBoxKeyboardHandler = function(manager, nbox)
 {
   this.Init(manager, nbox);
 };
 
-DvtObj.createSubclass(DvtNBoxKeyboardHandler, DvtKeyboardHandler, 'DvtNBoxKeyboardHandler');
+dvt.Obj.createSubclass(DvtNBoxKeyboardHandler, dvt.KeyboardHandler);
 
 
 /**
@@ -3805,16 +3864,16 @@ DvtNBoxKeyboardHandler.prototype.Init = function(manager, nbox) {
 DvtNBoxKeyboardHandler.prototype.processKeyDown = function(event) {
   var keyCode = event.keyCode;
 
-  if (keyCode == DvtKeyboardEvent.TAB) {
+  if (keyCode == dvt.KeyboardEvent.TAB) {
     var currentNavigable = this._eventManager.getFocus();
     var next = null;
-    DvtEventManager.consumeEvent(event);
+    dvt.EventManager.consumeEvent(event);
     if (!currentNavigable) {
       var drawerData = DvtNBoxDataUtils.getDrawer(this._nbox);
       if (drawerData) { //drawer
         next = DvtNBoxDataUtils.getDisplayable(this._nbox, drawerData);
       }
-      else if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
+      else if (DvtNBoxDataUtils.getGroupBehavior(this._nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
         //find first group node
         var groups = this._nbox.getOptions()['__groups'];
         if (groups) {
@@ -3846,7 +3905,7 @@ DvtNBoxKeyboardHandler.prototype.processKeyDown = function(event) {
  */
 DvtNBoxKeyboardHandler.prototype.isSelectionEvent = function(event)
 {
-  if (event.keyCode == DvtKeyboardEvent.TAB)
+  if (event.keyCode == dvt.KeyboardEvent.TAB)
     return false;
   else
     return this.isNavigationEvent(event) && !event.ctrlKey;
@@ -3858,21 +3917,21 @@ DvtNBoxKeyboardHandler.prototype.isSelectionEvent = function(event)
  */
 DvtNBoxKeyboardHandler.prototype.isMultiSelectEvent = function(event)
 {
-  return event.keyCode == DvtKeyboardEvent.SPACE && event.ctrlKey;
+  return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
 };
 
 
 /**
  * Helper methods that gets keyboardBoundingBox for an nbox displayable object
  * @param {DvtNBoxCategoryNode|DvtNBoxCell|DvtNBoxDrawer|DvtNBoxNode} obj A displayable object that needs keyboard bounding box
- * @param {DvtDisplayable=} targetCoordinateSpace The displayable defining the target coordinate space
- * @return {DvtRectangle} the bounding box for this object relative to the target coordinate space
+ * @param {dvt.Displayable=} targetCoordinateSpace The displayable defining the target coordinate space
+ * @return {dvt.Rectangle} the bounding box for this object relative to the target coordinate space
  */
 DvtNBoxKeyboardHandler.getKeyboardBoundingBox = function(obj, targetCoordinateSpace) {
   var bounds = obj.getDimensions();
-  var stageP1 = obj.localToStage(new DvtPoint(bounds.x, bounds.y));
-  var stageP2 = obj.localToStage(new DvtPoint(bounds.x + bounds.w, bounds.y + bounds.h));
-  return new DvtRectangle(stageP1.x, stageP1.y, stageP2.x - stageP1.x, stageP2.y - stageP1.y);
+  var stageP1 = obj.localToStage(new dvt.Point(bounds.x, bounds.y));
+  var stageP2 = obj.localToStage(new dvt.Point(bounds.x + bounds.w, bounds.y + bounds.h));
+  return new dvt.Rectangle(stageP1.x, stageP1.y, stageP2.x - stageP1.x, stageP2.y - stageP1.y);
 };
 
 
@@ -3883,8 +3942,8 @@ DvtNBoxKeyboardHandler.prototype.isNavigationEvent = function(event)
 {
   var retVal = false;
   switch (event.keyCode) {
-    case DvtKeyboardEvent.OPEN_BRACKET:
-    case DvtKeyboardEvent.CLOSE_BRACKET:
+    case dvt.KeyboardEvent.OPEN_BRACKET:
+    case dvt.KeyboardEvent.CLOSE_BRACKET:
       retVal = true; break;
     default:
       retVal = DvtNBoxKeyboardHandler.superclass.isNavigationEvent.call(this, event);
@@ -3896,7 +3955,7 @@ DvtNBoxKeyboardHandler.prototype.isNavigationEvent = function(event)
 /**
  * Finds next navigable category node based on node size and direction  among sorted category nodes
  * @param {DvtKeyboardNavigable} curr current navigable item with keyboard focus (optional).
- * @param {DvtKeyboardEvent} event
+ * @param {dvt.KeyboardEvent} event
  * @param {Array} navigableItems An array of items that could receive focus next
  * @return {DvtNBoxCategoryNode} The object that can get keyboard focus as a result of the keyboard event.
  */
@@ -3914,7 +3973,7 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
   }
 
   var next = curr;
-  var bNext = (event.keyCode == DvtKeyboardEvent.RIGHT_ARROW || event.keyCode == DvtKeyboardEvent.DOWN_ARROW) ? true : false;
+  var bNext = (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
   var itemCount = navigableItems.length;
   for (var i = 0; i < itemCount; i++) {
     var testObj = navigableItems[i];
@@ -3933,8 +3992,8 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
 /**
  *  Provides automation services for a DVT nBox component.
  *  @class  DvtNBoxAutomation
- *  @param {DvtNBox} dvtComponent
- *  @implements {DvtAutomation}
+ *  @param {dvt.NBox} dvtComponent
+ *  @implements {dvt.Automation}
  *  @constructor
  *  @export
  */
@@ -3942,11 +4001,11 @@ var DvtNBoxAutomation = function(dvtComponent) {
   this.Init(dvtComponent);
 };
 
-DvtObj.createSubclass(DvtNBoxAutomation, DvtAutomation, 'DvtNBoxAutomation');
+dvt.Obj.createSubclass(DvtNBoxAutomation, dvt.Automation);
 
 /**
  * Initializes this automation object
- * @param {DvtNBox} dvtComponent
+ * @param {dvt.NBox} dvtComponent
  */
 DvtNBoxAutomation.prototype.Init = function(dvtComponent) {
   this._nBox = dvtComponent;
@@ -3970,16 +4029,16 @@ DvtNBoxAutomation.prototype.Init = function(dvtComponent) {
  * <li>tooltip</li>
  * </ul>
  *
- * @param {DvtDisplayable} displayable
+ * @param {dvt.Displayable} displayable
  * @return {string} subId
  *
  * @override
  */
 DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
-  var cell = this._getParentObject(displayable, 'DvtNBoxCell');
-  var drawer = this._getParentObject(displayable, 'DvtNBoxDrawer');
+  var cell = this._getParentObject(displayable, DvtNBoxCell);
+  var drawer = this._getParentObject(displayable, DvtNBoxDrawer);
 
-  while (displayable && !(displayable instanceof DvtNBox)) {
+  while (displayable && !(displayable instanceof dvt.NBox)) {
     var nBox = this.getComponent();
     var component;
     var action;
@@ -4009,8 +4068,8 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
 
       // cell#overflow
       // cell#closeButton
-      if (displayable instanceof DvtButton) {
-        if (this._getParentObject(displayable, 'DvtNBoxNodeOverflow')) {
+      if (displayable instanceof dvt.Button) {
+        if (this._getParentObject(displayable, DvtNBoxNodeOverflow)) {
           action = 'overflow';
           return this._createSubId(component, action);
         }
@@ -4043,7 +4102,7 @@ DvtNBoxAutomation.prototype.GetSubIdForDomElement = function(displayable) {
       }
 
       // dialog#closeButton
-      if (displayable instanceof DvtButton) {
+      if (displayable instanceof dvt.Button) {
         action = 'closeButton';
         return this._createSubId(component, action);
       }
@@ -4104,13 +4163,13 @@ DvtNBoxAutomation.prototype._createSubId = function(component, action) {
  * </ul>
  *
  * @param {string} subId
- * @return {DvtDisplayable}
+ * @return {dvt.Displayable}
  * @export
  * @override
  */
 DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
   var nBox = this.getComponent();
-  if (subId == DvtAutomation.TOOLTIP_SUBID)
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
     return this.GetTooltipElement(nBox);
 
   var parsedId = this._parseSubId(subId);
@@ -4166,7 +4225,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
         }
         var node = DvtNBoxDataUtils.getFirstNavigableNode(nBox, container);
         var count = 0;
-        while (node && node.getTypeName() == 'DvtNBoxNode') {
+        while (node instanceof DvtNBoxNode) {
           if (count == nodeIndex) {
             displayable = node;
             break;
@@ -4247,7 +4306,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
             // dialog#closeButton
             if (action == 'closeButton') {
               for (var j = 0; j < dialog.getNumChildren(); j++) {
-                if (dialog.getChildAt(j) instanceof DvtButton) {
+                if (dialog.getChildAt(j) instanceof dvt.Button) {
                   displayable = dialog.getChildAt(j);
                 }
               }
@@ -4263,7 +4322,7 @@ DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
               }
               var node = DvtNBoxDataUtils.getFirstNavigableNode(nBox, dialogContainer);
               var count = 0;
-              while (node && node.getTypeName() == 'DvtNBoxNode') {
+              while (node instanceof DvtNBoxNode) {
                 if (count == nodeIndex) {
                   displayable = node;
                   break;
@@ -4312,7 +4371,7 @@ DvtNBoxAutomation.prototype._parseSubId = function(subId) {
 
 /**
  * Gets the component
- * @return {DvtNBox} the component
+ * @return {dvt.NBox} the component
  */
 DvtNBoxAutomation.prototype.getComponent = function() {
   return this._nBox;
@@ -4425,8 +4484,8 @@ DvtNBoxAutomation.prototype._getCellIndexFromValues = function(values) {
 /**
  * Look for an object of given type in ancestry
  *
- * @param {DvtDisplayable} displayable
- * @param {string} type
+ * @param {dvt.Displayable} displayable
+ * @param {object} type
  * @return {DvtNBoxCell} ancestor cell
  *
  * @private
@@ -4434,7 +4493,7 @@ DvtNBoxAutomation.prototype._getCellIndexFromValues = function(values) {
 DvtNBoxAutomation.prototype._getParentObject = function(displayable, type) {
   var parent = displayable;
   while (parent) {
-    if (parent.getTypeName() == type) {
+    if (parent instanceof type) {
       return parent;
     }
     else {
@@ -4502,7 +4561,7 @@ DvtNBoxAutomation.prototype.getData = function(key, attribute) {
  */
 DvtNBoxAutomation.prototype.getGroupNode = function(groupInfo) {
   if (groupInfo && DvtNBoxDataUtils.getGrouping(this._nBox)
-  && DvtNBoxDataUtils.getGroupBehavior(this._nBox) == DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
+  && DvtNBoxDataUtils.getGroupBehavior(this._nBox) == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
     if (typeof groupInfo === 'string')
       return this._getGroupNodeData(groupInfo);
     var groupData = '';
@@ -4636,7 +4695,7 @@ DvtNBoxAutomation.prototype._getNode = function(nodeData) {
  */
 DvtNBoxAutomation.prototype.getCellGroupNode = function(cellData, groupInfo) {
   if (groupInfo && DvtNBoxDataUtils.getGrouping(this._nBox)
-      && DvtNBoxDataUtils.getGroupBehavior(this._nBox) == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+      && DvtNBoxDataUtils.getGroupBehavior(this._nBox) == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     if (typeof groupInfo === 'string')
       return this._getGroupNodeData(cellData['cellIndex'] + ':' + groupInfo);
     var groupData = cellData['cellIndex'] + ':';
@@ -4654,14 +4713,14 @@ DvtNBoxAutomation.prototype.getCellGroupNode = function(cellData, groupInfo) {
 /**
  * @private
  * Get marker data from marker
- * @param {DvtSimpleMarker|DvtImageMarker} marker Displayable marker object
+ * @param {dvt.SimpleMarker|dvt.ImageMarker} marker Displayable marker object
  * @return {Object} Marker data object
  */
 DvtNBoxAutomation.prototype._getMarkerData = function(marker) {
   if (marker) {
     var data = {};
     // public api expects image markers to return a shape of 'none'
-    data['shape'] = (marker instanceof DvtSimpleMarker ? marker.getType() : 'none');
+    data['shape'] = (marker instanceof dvt.SimpleMarker ? marker.getType() : 'none');
     if (marker.getFill())
       data['color'] = marker.getFill().getColor();
     return data;
@@ -4739,31 +4798,29 @@ DvtNBoxAutomation.prototype.getNodeIndexFromId = function(id) {
 
 
 /**
- * Renderer for DvtNBox.
+ * Renderer for dvt.NBox.
  * @class
  */
 var DvtNBoxRenderer = new Object();
 
-DvtObj.createSubclass(DvtNBoxRenderer, DvtObj, 'DvtNBoxRenderer');
+dvt.Obj.createSubclass(DvtNBoxRenderer, dvt.Obj);
 
 
 /**
  * Renders the nbox contents into the available space.
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer.render = function(nbox, container, availSpace) {
   DvtNBoxRenderer._renderBackground(nbox, container, availSpace);
   DvtNBoxRenderer._renderLegend(nbox, container, availSpace);
   DvtNBoxRenderer._adjustAvailSpace(availSpace);
-  var cellCounts = DvtNBoxRenderer._calculateCellCounts(nbox);
-  var cellLayout = DvtNBoxCellRenderer.calculateCellLayout(nbox, cellCounts);
 
-  DvtNBoxRenderer._renderTitles(nbox, container, cellLayout, availSpace);
+  DvtNBoxRenderer._renderTitles(nbox, container, availSpace);
   DvtNBoxRenderer._adjustAvailSpace(availSpace);
-  DvtNBoxRenderer._renderCells(nbox, container, cellCounts, cellLayout, availSpace);
-  DvtNBoxRenderer._renderNodes(nbox, container, cellCounts, availSpace);
+  DvtNBoxRenderer._renderCells(nbox, container, availSpace);
+  DvtNBoxRenderer._renderNodes(nbox, container, availSpace);
   DvtNBoxRenderer._renderInitialSelection(nbox);
   DvtNBoxRenderer._fixZOrder(nbox);
 };
@@ -4771,16 +4828,16 @@ DvtNBoxRenderer.render = function(nbox, container, availSpace) {
 
 /**
  * Renders the nbox background.
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer._renderBackground = function(nbox, container, availSpace) {
   // NBox background: Apply invisible background for interaction support
-  var rect = new DvtRect(nbox.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
+  var rect = new dvt.Rect(nbox.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
   rect.setInvisibleFill();
   container.addChild(rect);
-  var clipPath = new DvtClipPath();
+  var clipPath = new dvt.ClipPath();
   clipPath.addRect(availSpace.x, availSpace.y, availSpace.w, availSpace.h);
   container.setClipPath(clipPath);
 };
@@ -4788,24 +4845,24 @@ DvtNBoxRenderer._renderBackground = function(nbox, container, availSpace) {
 
 /**
  * Renders the nbox legend.
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer._renderLegend = function(nbox, container, availSpace) {
   var legendData = DvtNBoxDataUtils.getLegend(nbox);
   if (legendData && legendData['sections']) {
     var options = nbox.getOptions();
-    var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+    var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
-    var panelDrawer = new DvtPanelDrawer(nbox.getCtx(), nbox.processEvent, nbox, 'pd1');
-    panelDrawer.addEvtListener(DvtPanelDrawerEvent.TYPE, nbox.processEvent, false, nbox);
-    panelDrawer.setDockSide(DvtPanelDrawer.DOCK_TOP);
+    var panelDrawer = new dvt.PanelDrawer(nbox.getCtx(), nbox.processEvent, nbox, 'pd1');
+    panelDrawer.addEvtListener(dvt.PanelDrawerEvent.TYPE, nbox.processEvent, false, nbox);
+    panelDrawer.setDockSide(dvt.PanelDrawer.DOCK_TOP);
     panelDrawer.setMaxHeight(availSpace.h - options['__layout']['legendBottomGap']);
     panelDrawer.setMaxWidth(availSpace.w / 3);
     container.addChild(panelDrawer);
 
-    var legend = DvtLegend.newInstance(nbox.getCtx(), nbox.processEvent, nbox);
+    var legend = dvt.Legend.newInstance(nbox.getCtx(), nbox.processEvent, nbox);
     container.addChild(legend);
     var preferredSize = legend.getPreferredSize(legendData, panelDrawer.getMaxContentWidth(), panelDrawer.getMaxContentHeight());
     legend.render(legendData, preferredSize.w, preferredSize.h);
@@ -4814,15 +4871,15 @@ DvtNBoxRenderer._renderLegend = function(nbox, container, availSpace) {
     var legendEna = options['_resources']['legend_ena'];
     var legendOvr = options['_resources']['legend_ovr'];
     var legendDwn = options['_resources']['legend_dwn'];
-    var legendEnaImg = new DvtImage(nbox.getCtx(), legendEna['src'], 0, 0, legendEna['width'], legendEna['height']);
-    var legendOvrImg = new DvtImage(nbox.getCtx(), legendOvr['src'], 0, 0, legendOvr['width'], legendOvr['height']);
-    var legendDwnImg = new DvtImage(nbox.getCtx(), legendDwn['src'], 0, 0, legendDwn['width'], legendDwn['height']);
-    panelDrawer.addPanel(legend, legendEnaImg, legendOvrImg, legendDwnImg, DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'LEGEND'), 'legend');
+    var legendEnaImg = new dvt.Image(nbox.getCtx(), legendEna['src'], 0, 0, legendEna['width'], legendEna['height']);
+    var legendOvrImg = new dvt.Image(nbox.getCtx(), legendOvr['src'], 0, 0, legendOvr['width'], legendOvr['height']);
+    var legendDwnImg = new dvt.Image(nbox.getCtx(), legendDwn['src'], 0, 0, legendDwn['width'], legendDwn['height']);
+    panelDrawer.addPanel(legend, legendEnaImg, legendOvrImg, legendDwnImg, dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'LEGEND'), 'legend');
     if (rtl) {
-      panelDrawer.setDiscloseDirection(DvtPanelDrawer.DIR_RIGHT);
+      panelDrawer.setDiscloseDirection(dvt.PanelDrawer.DIR_RIGHT);
     }
     panelDrawer.renderComponent();
-    if (options[DvtNBoxConstants.LEGEND_DISCLOSURE] == 'disclosed') {
+    if (options[dvt.NBoxConstants.LEGEND_DISCLOSURE] == 'disclosed') {
       panelDrawer.setDisplayedPanelId('legend');
       panelDrawer.setDisclosed(true, true);
     }
@@ -4840,12 +4897,11 @@ DvtNBoxRenderer._renderLegend = function(nbox, container, availSpace) {
 
 /**
  * Renders the nbox titles and updates the available space.
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {object} cellLayout Aan object containing sizes related to cell layout, based upon the first specified cell
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
-DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace) {
+DvtNBoxRenderer._renderTitles = function(nbox, container, availSpace) {
   var options = nbox.getOptions();
   var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
   var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
@@ -4853,7 +4909,7 @@ DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace
   var componentGap = options['__layout']['componentGap'];
   var titleGap = options['__layout']['titleGap'];
   var titleComponentGap = options['__layout']['titleComponentGap'];
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   availSpace.x += componentGap;
   availSpace.y += componentGap;
@@ -4878,27 +4934,27 @@ DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace
   var rowTitleComponentGap = 0;
   var columnTitleComponentGap = 0;
 
-  if (options[DvtNBoxConstants.COLUMNS_TITLE]) {
-    columnsTitle = DvtNBoxRenderer.createText(nbox.getCtx(), options[DvtNBoxConstants.COLUMNS_TITLE],
-                                              options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.COLUMNS_TITLE_STYLE],
-                                              DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+  if (options[dvt.NBoxConstants.COLUMNS_TITLE]) {
+    columnsTitle = DvtNBoxRenderer.createText(nbox.getCtx(), options[dvt.NBoxConstants.COLUMNS_TITLE],
+                                              options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.COLUMNS_TITLE_STYLE],
+                                              dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
     container.addChild(columnsTitle);
-    columnsTitleHeight = DvtTextUtils.guessTextDimensions(columnsTitle).h;
+    columnsTitleHeight = dvt.TextUtils.guessTextDimensions(columnsTitle).h;
   }
-  if (options[DvtNBoxConstants.ROWS_TITLE]) {
-    rowsTitle = DvtNBoxRenderer.createText(nbox.getCtx(), options[DvtNBoxConstants.ROWS_TITLE],
-                                           options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.ROWS_TITLE_STYLE],
-                                           DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+  if (options[dvt.NBoxConstants.ROWS_TITLE]) {
+    rowsTitle = DvtNBoxRenderer.createText(nbox.getCtx(), options[dvt.NBoxConstants.ROWS_TITLE],
+                                           options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.ROWS_TITLE_STYLE],
+                                           dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
     container.addChild(rowsTitle);
-    rowsTitleWidth = DvtTextUtils.guessTextDimensions(rowsTitle).h;
+    rowsTitleWidth = dvt.TextUtils.guessTextDimensions(rowsTitle).h;
   }
 
   for (var i = 0; i < columnCount; i++) {
     var column = DvtNBoxDataUtils.getColumn(nbox, i);
-    if (column[DvtNBoxConstants.LABEL]) {
-      var columnLabel = DvtNBoxRenderer.createText(nbox.getCtx(), column[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getColumnLabelStyle(nbox, i), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-      columnLabelsHeight = Math.max(columnLabelsHeight, DvtTextUtils.guessTextDimensions(columnLabel).h);
-      if (!maximizedColumn || maximizedColumn == column[DvtNBoxConstants.ID]) {
+    if (column[dvt.NBoxConstants.LABEL]) {
+      var columnLabel = DvtNBoxRenderer.createText(nbox.getCtx(), column[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getColumnLabelStyle(nbox, i), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+      columnLabelsHeight = Math.max(columnLabelsHeight, dvt.TextUtils.guessTextDimensions(columnLabel).h);
+      if (!maximizedColumn || maximizedColumn == column[dvt.NBoxConstants.ID]) {
         columnLabels[i] = columnLabel;
         container.addChild(columnLabels[i]);
       }
@@ -4907,10 +4963,10 @@ DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace
 
   for (var i = 0; i < rowCount; i++) {
     var row = DvtNBoxDataUtils.getRow(nbox, i);
-    if (row[DvtNBoxConstants.LABEL]) {
-      var rowLabel = DvtNBoxRenderer.createText(nbox.getCtx(), row[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getRowLabelStyle(nbox, i), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-      rowLabelsWidth = Math.max(rowLabelsWidth, DvtTextUtils.guessTextDimensions(rowLabel).h);
-      if (!maximizedRow || maximizedRow == row[DvtNBoxConstants.ID]) {
+    if (row[dvt.NBoxConstants.LABEL]) {
+      var rowLabel = DvtNBoxRenderer.createText(nbox.getCtx(), row[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getRowLabelStyle(nbox, i), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+      rowLabelsWidth = Math.max(rowLabelsWidth, dvt.TextUtils.guessTextDimensions(rowLabel).h);
+      if (!maximizedRow || maximizedRow == row[dvt.NBoxConstants.ID]) {
         rowLabels[i] = rowLabel;
         container.addChild(rowLabels[i]);
       }
@@ -4938,38 +4994,38 @@ DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace
   availSpace.h -= columnHeaderHeight;
 
   if (columnsTitle) {
-    if (DvtTextUtils.fitText(columnsTitle, availSpace.w, columnsTitleHeight, container)) {
+    if (dvt.TextUtils.fitText(columnsTitle, availSpace.w, columnsTitleHeight, container)) {
       DvtNBoxRenderer.positionText(columnsTitle, availSpace.x + availSpace.w / 2, availSpace.y + availSpace.h + columnHeaderHeight - columnsTitleHeight / 2);
-      DvtNBoxDataUtils.setDisplayable(nbox, nbox.getOptions(), columnsTitle, DvtNBoxConstants.COLUMNS_TITLE);
+      DvtNBoxDataUtils.setDisplayable(nbox, nbox.getOptions(), columnsTitle, dvt.NBoxConstants.COLUMNS_TITLE);
     }
   }
   if (rowsTitle) {
-    if (DvtTextUtils.fitText(rowsTitle, availSpace.h, rowsTitleWidth, container)) {
+    if (dvt.TextUtils.fitText(rowsTitle, availSpace.h, rowsTitleWidth, container)) {
       DvtNBoxRenderer.positionText(rowsTitle,
                                    availSpace.x + (rtl ? availSpace.w : 0) + (rtl ? 1 : -1) * (rowHeaderWidth - rowsTitleWidth / 2),
                                    availSpace.y + availSpace.h / 2,
                                    rtl ? Math.PI / 2 : -Math.PI / 2);
-      DvtNBoxDataUtils.setDisplayable(nbox, nbox.getOptions(), rowsTitle, DvtNBoxConstants.ROWS_TITLE);
+      DvtNBoxDataUtils.setDisplayable(nbox, nbox.getOptions(), rowsTitle, dvt.NBoxConstants.ROWS_TITLE);
     }
   }
   for (var i = 0; i < columnCount; i++) {
     if (columnLabels[i]) {
-      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, maximizedRowIndex == -1 ? 0 : maximizedRowIndex, i, cellLayout, availSpace);
-      if (DvtTextUtils.fitText(columnLabels[i], cellDims.w, columnLabelsHeight, container)) {
+      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, maximizedRowIndex == -1 ? 0 : maximizedRowIndex, i, availSpace);
+      if (dvt.TextUtils.fitText(columnLabels[i], cellDims.w, columnLabelsHeight, container)) {
         DvtNBoxRenderer.positionText(columnLabels[i], cellDims.x + cellDims.w / 2, availSpace.y + availSpace.h + columnTitleComponentGap + columnLabelsHeight / 2);
-        DvtNBoxDataUtils.setDisplayable(nbox, DvtNBoxDataUtils.getColumn(nbox, i), columnLabels[i], DvtNBoxConstants.LABEL);
+        DvtNBoxDataUtils.setDisplayable(nbox, DvtNBoxDataUtils.getColumn(nbox, i), columnLabels[i], dvt.NBoxConstants.LABEL);
       }
     }
   }
   for (var i = 0; i < rowCount; i++) {
     if (rowLabels[i]) {
-      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, i, maximizedColumnIndex == -1 ? 0 : maximizedColumnIndex, cellLayout, availSpace);
-      if (DvtTextUtils.fitText(rowLabels[i], cellDims.h, rowLabelsWidth, container)) {
+      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, i, maximizedColumnIndex == -1 ? 0 : maximizedColumnIndex, availSpace);
+      if (dvt.TextUtils.fitText(rowLabels[i], cellDims.h, rowLabelsWidth, container)) {
         DvtNBoxRenderer.positionText(rowLabels[i],
                                      availSpace.x + (rtl ? availSpace.w : 0) + (rtl ? 1 : -1) * (rowTitleComponentGap + rowLabelsWidth / 2),
                                      cellDims.y + cellDims.h / 2,
                                      rtl ? Math.PI / 2 : -Math.PI / 2);
-        DvtNBoxDataUtils.setDisplayable(nbox, DvtNBoxDataUtils.getRow(nbox, i), rowLabels[i], DvtNBoxConstants.LABEL);
+        DvtNBoxDataUtils.setDisplayable(nbox, DvtNBoxDataUtils.getRow(nbox, i), rowLabels[i], dvt.NBoxConstants.LABEL);
       }
     }
   }
@@ -4979,16 +5035,16 @@ DvtNBoxRenderer._renderTitles = function(nbox, container, cellLayout, availSpace
 /**
  * Creates a text element
  *
- * @param {DvtContext} ctx the rendering context
+ * @param {dvt.Context} ctx the rendering context
  * @param {string} strText the text string
- * @param {DvtCSSStyle} style the style object to apply to the test
+ * @param {dvt.CSSStyle} style the style object to apply to the test
  * @param {string} halign the horizontal alignment
  * @param {string} valign the vertical alignment
  *
- * @return {DvtOutputText} the text element
+ * @return {dvt.OutputText} the text element
  */
 DvtNBoxRenderer.createText = function(ctx, strText, style, halign, valign) {
-  var text = new DvtOutputText(ctx, strText, 0, 0);
+  var text = new dvt.OutputText(ctx, strText, 0, 0);
   text.setCSSStyle(style);
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
@@ -4998,28 +5054,35 @@ DvtNBoxRenderer.createText = function(ctx, strText, style, halign, valign) {
 
 /**
  * Renders cells
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
- * @param {object} cellLayout Aan object containing sizes related to cell layout, based upon the first specified cell
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
-DvtNBoxRenderer._renderCells = function(nbox, container, cellCounts, cellLayout, availSpace) {
+DvtNBoxRenderer._renderCells = function(nbox, container, availSpace) {
   var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
   var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
   for (var r = 0; r < rowCount; r++) {
     for (var c = 0; c < columnCount; c++) {
       var cell = DvtNBoxDataUtils.getCell(nbox, r * columnCount + c);
       var cellContainer = DvtNBoxCell.newInstance(nbox, cell);
-      cellContainer.render(container, cellLayout, cellCounts, availSpace);
+      cellContainer.render(container, availSpace);
     }
   }
 };
 
 
 /**
+ * Returns the number of nodes (highlighted and total) for each cell
+ * @param {dvt.NBox} nbox The nbox component
+ * @return {object} Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
+ */
+DvtNBoxRenderer.getCellCounts = function(nbox) {
+  return nbox.getOptions()['__cellCounts'] || DvtNBoxRenderer._calculateCellCounts(nbox);
+};
+
+/**
  * Counts the number of nodes (highlighted and total) for each cell
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @return {object} Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
  */
 DvtNBoxRenderer._calculateCellCounts = function(nbox) {
@@ -5033,7 +5096,7 @@ DvtNBoxRenderer._calculateCellCounts = function(nbox) {
   if (highlightedItems) {
     highlighted = [];
     for (var i = 0; i < highlightedItems.length; i++) {
-      highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
     }
   }
   for (var i = 0; i < cellCount; i++) {
@@ -5048,7 +5111,7 @@ DvtNBoxRenderer._calculateCellCounts = function(nbox) {
     if (!DvtNBoxDataUtils.isNodeHidden(nbox, node)) {
       var cellIndex = DvtNBoxDataUtils.getCellIndex(nbox, node);
       total[cellIndex]++;
-      if (highlighted && highlightedMap[node[DvtNBoxConstants.ID]]) {
+      if (highlighted && highlightedMap[node[dvt.NBoxConstants.ID]]) {
         highlighted[cellIndex]++;
       }
     }
@@ -5058,67 +5121,25 @@ DvtNBoxRenderer._calculateCellCounts = function(nbox) {
   if (highlighted) {
     retVal['highlighted'] = highlighted;
   }
+  nbox.getOptions()['__cellCounts'] = retVal;
   return retVal;
 };
 
 
 /**
- * Renders nodes
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
- * @param {DvtRectangle} availSpace The available space.
+ * Calculates the order to render the nodes in, taking into account selection/highlighting state.
+ * @param {dvt.NBox} nbox The nbox component
+ *
+ * @return {object} object mapping cells to arrays of node objects in rendering order
  */
-DvtNBoxRenderer._renderNodes = function(nbox, container, cellCounts, availSpace) {
-  if (DvtNBoxDataUtils.getNodeCount(nbox) > 0) {
-    // skip rendering nodes if rendering counts only.
-    if (DvtNBoxDataUtils.getCellContent(nbox) == 'counts') {
-      var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
-      var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
-      var bodyCountLabels = [];
-      for (var r = 0; r < rowCount; r++) {
-        for (var c = 0; c < columnCount; c++) {
-          bodyCountLabels.push(r * columnCount + c);
-        }
-      }
-      DvtNBoxCellRenderer.renderBodyCountLabels(nbox, cellCounts, bodyCountLabels);
-      return;
-    }
-
-    if (DvtNBoxDataUtils.getGrouping(nbox)) {
-      DvtNBoxRenderer._renderCategoryNodes(nbox, container, availSpace);
-      DvtNBoxRenderer._renderDrawer(nbox, container, availSpace);
-    }
-    else {
-      DvtNBoxRenderer._renderIndividualNodes(nbox, container, cellCounts, availSpace);
-    }
-  }
-};
-
-
-/**
- * Renders individual nodes (no grouping)
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
- * @param {DvtRectangle} availSpace The available space.
- */
-DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, availSpace) {
-  var options = nbox.getOptions();
-  var gridGap = options['__layout']['gridGap'];
-
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
-
-  // If no nodes are highlighted/selected, make a single pass through the nodes for ordering
-  // If some nodes are highlighted/selected, make additional passes, ensuring highlighted/selected nodes come first in render order
-
+DvtNBoxRenderer.calculateNodeOrders = function(nbox) {
   var orderPasses = ['normal'];
-  var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
+
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
   var highlightedMap = {};
   if (highlightedItems) {
     for (var i = 0; i < highlightedItems.length; i++) {
-      highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
     }
   }
 
@@ -5148,10 +5169,10 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
       var node = DvtNBoxDataUtils.getNode(nbox, n);
       if (!DvtNBoxDataUtils.isNodeHidden(nbox, node)) {
         if (orderPasses[p] == 'normal' ||
-            (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
-            (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]]) ||
-            (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
-            (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]])) {
+            (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[dvt.NBoxConstants.ID]] && selectedMap[node[dvt.NBoxConstants.ID]]) ||
+            (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[dvt.NBoxConstants.ID]] && !selectedMap[node[dvt.NBoxConstants.ID]]) ||
+            (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[dvt.NBoxConstants.ID]] && selectedMap[node[dvt.NBoxConstants.ID]]) ||
+            (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[dvt.NBoxConstants.ID]] && !selectedMap[node[dvt.NBoxConstants.ID]])) {
           var cellIndex = DvtNBoxDataUtils.getCellIndex(nbox, node);
           if (!DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
             if (!cellNodes[cellIndex]) {
@@ -5163,6 +5184,67 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
       }
     }
   }
+  return cellNodes;
+};
+
+/**
+ * Renders nodes
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ */
+DvtNBoxRenderer._renderNodes = function(nbox, container, availSpace) {
+  if (DvtNBoxDataUtils.getNodeCount(nbox) > 0) {
+    // skip rendering nodes if rendering counts only.
+    if (DvtNBoxDataUtils.getCellContent(nbox) == 'counts') {
+      var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
+      var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
+      var bodyCountLabels = [];
+      for (var r = 0; r < rowCount; r++) {
+        for (var c = 0; c < columnCount; c++) {
+          bodyCountLabels.push(r * columnCount + c);
+        }
+      }
+      DvtNBoxCellRenderer.renderBodyCountLabels(nbox, bodyCountLabels);
+      return;
+    }
+
+    if (DvtNBoxDataUtils.getGrouping(nbox)) {
+      DvtNBoxRenderer._renderCategoryNodes(nbox, container, availSpace);
+      DvtNBoxRenderer._renderDrawer(nbox, container, availSpace);
+    }
+    else {
+      DvtNBoxRenderer._renderIndividualNodes(nbox, container, availSpace);
+    }
+  }
+};
+
+
+/**
+ * Renders individual nodes (no grouping)
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ */
+DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, availSpace) {
+  var options = nbox.getOptions();
+  var gridGap = options['__layout']['gridGap'];
+
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
+
+  // If no nodes are highlighted/selected, make a single pass through the nodes for ordering
+  // If some nodes are highlighted/selected, make additional passes, ensuring highlighted/selected nodes come first in render order
+
+  var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
+  var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
+  var highlightedMap = {};
+  if (highlightedItems) {
+    for (var i = 0; i < highlightedItems.length; i++) {
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
+    }
+  }
+
+  var cellNodes = DvtNBoxRenderer.calculateNodeOrders(nbox);
 
   var nodeLayout = DvtNBoxNodeRenderer.calculateNodeLayout(nbox, cellNodes);
   var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
@@ -5188,8 +5270,8 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
           var node = nodes[n];
           if (maxNodes < 0 || n < maxNodes) {
             var cellContainer = DvtNBoxDataUtils.getDisplayable(nbox, cell).getChildContainer();
-            var scrolling = cellContainer instanceof DvtSimpleScrollableContainer;
-            var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
+            var scrolling = cellContainer instanceof dvt.SimpleScrollableContainer;
+            var nodeContainer = new DvtNBoxNode(nbox, node);
             var gridXOrigin = cell['__childArea'].x + (cell['__childArea'].w - cellLayout['cellColumns'] * hGridSize + gridGap) / 2;
             var gridYOrigin = scrolling ? gridGap : cell['__childArea'].y;
             var gridColumn = n % cellColumns;
@@ -5200,7 +5282,7 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
             nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn,
                 gridYOrigin + vGridSize * gridRow);
             nodeContainer.render(scrolling ? cellContainer.getScrollingPane() : cellContainer, nodeLayout);
-            if (highlightedItems && !highlightedMap[node[DvtNBoxConstants.ID]]) {
+            if (highlightedItems && !highlightedMap[node[dvt.NBoxConstants.ID]]) {
               nodeContainer.setAlpha(alphaFade);
             }
 
@@ -5264,36 +5346,36 @@ DvtNBoxRenderer._renderIndividualNodes = function(nbox, container, cellCounts, a
     }
   }
   if (bodyCountLabels.length > 0) {
-    DvtNBoxCellRenderer.renderBodyCountLabels(nbox, cellCounts, bodyCountLabels);
+    DvtNBoxCellRenderer.renderBodyCountLabels(nbox, bodyCountLabels);
   }
 };
 
 
 /**
  * Renders category nodes
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
   var groups = {};
   var nodeCount = DvtNBoxDataUtils.getNodeCount(nbox);
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(nbox);
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
   var highlightedMap = {};
   if (highlightedItems) {
     for (var i = 0; i < highlightedItems.length; i++) {
-      highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
     }
   }
   for (var n = 0; n < nodeCount; n++) {
     var node = DvtNBoxDataUtils.getNode(nbox, n);
     if (!DvtNBoxDataUtils.isNodeHidden(nbox, node)) {
       var groupContainer = groups;
-      if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+      if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
         var groupId = DvtNBoxDataUtils.getCellIndex(nbox, node) + '';
         groupContainer = groups[groupId];
         if (!groupContainer) {
@@ -5305,23 +5387,23 @@ DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
       var group = groupContainer[groupId];
       if (!group) {
         group = {};
-        group[DvtNBoxConstants.ID] = groupId;
-        if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
-          group[DvtNBoxConstants.CELL] = DvtNBoxDataUtils.getCellIndex(nbox, node);
+        group[dvt.NBoxConstants.ID] = groupId;
+        if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+          group[dvt.NBoxConstants.CELL] = DvtNBoxDataUtils.getCellIndex(nbox, node);
         }
         group['nodeIndices'] = [];
         group['highlightedCount'] = 0;
         groupContainer[groupId] = group;
       }
       group['nodeIndices'].push(n);
-      if (highlightedMap[DvtNBoxDataUtils.getNode(nbox, n)[DvtNBoxConstants.ID]]) {
+      if (highlightedMap[DvtNBoxDataUtils.getNode(nbox, n)[dvt.NBoxConstants.ID]]) {
         group['highlightedCount']++;
       }
     }
   }
   // Process other threshold
   var otherGroups;
-  if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     otherGroups = {};
     for (var cellId in groups) {
       otherGroups[cellId] = DvtNBoxRenderer._processOtherThreshold(nbox, groups[cellId]);
@@ -5332,7 +5414,7 @@ DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
   }
   var groups = otherGroups;
   nbox.getOptions()['__groups'] = groups;
-  if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
+  if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
     // Sort groups by size
     var sortedGroups = [];
     for (var group in groups) {
@@ -5359,7 +5441,7 @@ DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
       nodeContainer.setMaxAlpha(.8);
     }
   }
-  else if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  else if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
     var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
     var cellCount = rowCount * columnCount;
@@ -5382,7 +5464,7 @@ DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
         var center = layouts[i]['center'];
         var cell = DvtNBoxDataUtils.getCell(nbox, i);
         var childContainer = DvtNBoxDataUtils.getDisplayable(nbox, cell).getChildContainer();
-        var scrolling = childContainer instanceof DvtSimpleScrollableContainer;
+        var scrolling = childContainer instanceof dvt.SimpleScrollableContainer;
         for (var group in positions) {
           var nodeContainer = DvtNBoxCategoryNode.newInstance(nbox, groups[i][group]);
           nodeContainer.setTranslate(cell['__childArea'].x + cell['__childArea'].w / 2 + scale * (positions[group].x - center.x),
@@ -5397,10 +5479,10 @@ DvtNBoxRenderer._renderCategoryNodes = function(nbox, container, availSpace) {
 
 /**
  * Returns the dimensions of the specified nbox row
- * @param {DvtNBox} the nbox component
+ * @param {dvt.NBox} the nbox component
  * @param {number} rowIndex the index of the specified row
- * @param {DvtRectangle} availSpace the dimensions of the available space
- * @param {DvtRectangle} the dimensions of the specified nbox row
+ * @param {dvt.Rectangle} availSpace the dimensions of the available space
+ * @param {dvt.Rectangle} the dimensions of the specified nbox row
  */
 DvtNBoxRenderer.getRowDimensions = function(nbox, rowIndex, availSpace) {
   var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
@@ -5409,32 +5491,32 @@ DvtNBoxRenderer.getRowDimensions = function(nbox, rowIndex, availSpace) {
   var y = availSpace.y + (rowCount - rowIndex - 1) * rowHeight;
   var h = rowHeight;
 
-  return new DvtRectangle(availSpace.x, y, availSpace.w, h);
+  return new dvt.Rectangle(availSpace.x, y, availSpace.w, h);
 };
 
 
 /**
  * Returns the dimensions of the specified nbox column
- * @param {DvtNBox} the nbox component
+ * @param {dvt.NBox} the nbox component
  * @param {number} columnIndex the index of the specified column
- * @param {DvtRectangle} availSpace the dimensions of the available space
- * @param {DvtRectangle} the dimensions of the specified nbox column
+ * @param {dvt.Rectangle} availSpace the dimensions of the available space
+ * @param {dvt.Rectangle} the dimensions of the specified nbox column
  */
 DvtNBoxRenderer.getColumnDimensions = function(nbox, columnIndex, availSpace) {
   var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
   var columnWidth = availSpace.w / columnCount;
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var x = availSpace.x + (rtl ? availSpace.w - columnWidth : 0) + (rtl ? -1 : 1) * columnIndex * columnWidth;
   var w = columnWidth;
 
-  return new DvtRectangle(x, availSpace.y, w, availSpace.h);
+  return new dvt.Rectangle(x, availSpace.y, w, availSpace.h);
 };
 
 
 /**
  * Helper function that adjusts the input rectangle to the closest pixel.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer._adjustAvailSpace = function(availSpace) {
   // : Adjust the bounds to the closest pixel to prevent antialiasing issues.
@@ -5448,7 +5530,7 @@ DvtNBoxRenderer._adjustAvailSpace = function(availSpace) {
 /**
  * Helper function to position text
  *
- * @param {DvtOutputText} text The text to position
+ * @param {dvt.OutputText} text The text to position
  * @param {number} x The x coordinate
  * @param {number} y The y coordinate
  * @param {number} angle The optional angle to rotate by
@@ -5469,7 +5551,7 @@ DvtNBoxRenderer.positionText = function(text, x, y, angle) {
 /**
  * Renders the initial selection state
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  */
 DvtNBoxRenderer._renderInitialSelection = function(nbox) {
   if (nbox.isSelectionSupported()) {
@@ -5491,7 +5573,7 @@ DvtNBoxRenderer._renderInitialSelection = function(nbox) {
             var selected = true;
             for (var j = 0; j < nodeIndices.length; j++) {
               var node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j]);
-              if (!selectedMap[node[DvtNBoxConstants.ID]]) {
+              if (!selectedMap[node[dvt.NBoxConstants.ID]]) {
                 selected = false;
                 break;
               }
@@ -5530,7 +5612,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
   for (var i = 0; i < sortedGroups.length; i++) {
     var x = i * Math.cos(thetaStep * i);
     var y = i * Math.sin(thetaStep * i);
-    positions[sortedGroups[i]] = DvtVectorUtils.createVector(x, y);
+    positions[sortedGroups[i]] = dvt.VectorUtils.createVector(x, y);
   }
   // Force iterations
   var alpha = 1;
@@ -5546,15 +5628,15 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
       var iPos = positions[iGroup];
       var iSize = groups[iGroup]['nodeIndices'].length;
       // Gravity
-      displacement[iGroup] = DvtVectorUtils.createVector(alpha * xGravity * iPos.x, alpha * yGravity * iPos.y);
+      displacement[iGroup] = dvt.VectorUtils.createVector(alpha * xGravity * iPos.x, alpha * yGravity * iPos.y);
       for (var j = 0; j < sortedGroups.length; j++) {
         if (i != j) {
           // Repulsion
           var jGroup = sortedGroups[j];
           var jPos = positions[jGroup];
           var jSize = groups[jGroup]['nodeIndices'].length;
-          var difference = DvtVectorUtils.subtractVectors(iPos, jPos);
-          var distance = DvtVectorUtils.getMagnitude(difference);
+          var difference = dvt.VectorUtils.subtractVectors(iPos, jPos);
+          var distance = dvt.VectorUtils.getMagnitude(difference);
           var angle = Math.atan2(difference.y, difference.x);
           // every PI/2 interval is the same, shift so that 0 < angle < PI/2
           while (angle < 0) {
@@ -5573,7 +5655,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
           if (distance < minimumDistance) {
             // Shift the current node backwards (bigger nodes move proportionally less than smaller nodes)
             var repulsion = (jSize / (iSize + jSize)) * ((minimumDistance - distance) / distance);
-            displacement[iGroup] = DvtVectorUtils.addVectors(displacement[iGroup], DvtVectorUtils.scaleVector(difference, (1 - alpha) * repulsion));
+            displacement[iGroup] = dvt.VectorUtils.addVectors(displacement[iGroup], dvt.VectorUtils.scaleVector(difference, (1 - alpha) * repulsion));
           }
         }
       }
@@ -5581,7 +5663,7 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
     // Apply displacement
     for (var i = 0; i < sortedGroups.length; i++) {
       var iGroup = sortedGroups[i];
-      positions[iGroup] = DvtVectorUtils.addVectors(positions[iGroup], displacement[iGroup]);
+      positions[iGroup] = dvt.VectorUtils.addVectors(positions[iGroup], displacement[iGroup]);
     }
     alpha *= alphaDecay;
   }
@@ -5603,14 +5685,14 @@ DvtNBoxRenderer._forceLayoutGroups = function(groups, width, height) {
   var scale = Math.min(xScale, yScale);
   var cx = (left + right) / 2;
   var cy = (top + bottom) / 2;
-  return {'scale': scale, 'center': new DvtPoint(cx, cy), 'positions': positions};
+  return {'scale': scale, 'center': new dvt.Point(cx, cy), 'positions': positions};
 };
 
 
 /**
  * Aggregates any groups that fall below the other threshold
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} groups a map of groups (may either represent groups across the entire nbox or within a single cell)
  * @return {object} a map of groups with any groups that fall below the other threshold aggregated into a single 'other' group
  */
@@ -5623,7 +5705,7 @@ DvtNBoxRenderer._processOtherThreshold = function(nbox, groups) {
   var processedGroups = {};
   var otherGroup = {};
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(nbox);
-  if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     for (var groupId in groups) {
       var group = groups[groupId];
       otherGroup['cell'] = group['cell'];
@@ -5653,9 +5735,9 @@ DvtNBoxRenderer._processOtherThreshold = function(nbox, groups) {
 
 /**
  * Renders the open group, if any
- * @param {DvtNBox} nbox The nbox being rendered.
- * @param {DvtContainer} container The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.NBox} nbox The nbox being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxRenderer._renderDrawer = function(nbox, container, availSpace) {
   var drawerData = DvtNBoxDataUtils.getDrawer(nbox);
@@ -5668,9 +5750,8 @@ DvtNBoxRenderer._renderDrawer = function(nbox, container, availSpace) {
     else {
       // Wwe have stale drawer data, null it out
       var options = nbox.getOptions();
-      options[DvtNBoxConstants.DRAWER] = null;
-      var event = new DvtSetPropertyEvent();
-      event.addParam(DvtNBoxConstants.DRAWER, null);
+      options[dvt.NBoxConstants.DRAWER] = null;
+      var event = dvt.EventFactory.newAdfPropertyChangeEvent(dvt.NBoxConstants.DRAWER, null);
       nbox.processEvent(event);
     }
   }
@@ -5680,8 +5761,8 @@ DvtNBoxRenderer._renderDrawer = function(nbox, container, availSpace) {
 /**
  * Gets a matrix that can be used to reparent a displayable at the top level without changing its position
  *
- * @param {DvtDisplayable} displayable the displayable to be reparented
- * @return {DvtMatrix} a matrix that will maintain the child's position when reparented
+ * @param {dvt.Displayable} displayable the displayable to be reparented
+ * @return {dvt.Matrix} a matrix that will maintain the child's position when reparented
  */
 DvtNBoxRenderer.getGlobalMatrix = function(displayable) {
   var matrix = displayable.getMatrix().clone();
@@ -5700,7 +5781,7 @@ DvtNBoxRenderer.getGlobalMatrix = function(displayable) {
  *
  * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox state
+ * @param {dvt.NBox} newNBox the new NBox state
  */
 DvtNBoxRenderer.animateUpdate = function(animationHandler, oldNBox, newNBox) {
   DvtNBoxRenderer._animateCells(animationHandler, oldNBox, newNBox);
@@ -5721,7 +5802,7 @@ DvtNBoxRenderer.animateUpdate = function(animationHandler, oldNBox, newNBox) {
  *
  * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox state
+ * @param {dvt.NBox} newNBox the new NBox state
  */
 DvtNBoxRenderer._animateCells = function(animationHandler, oldNBox, newNBox) {
   var oldRowCount = DvtNBoxDataUtils.getRowCount(oldNBox);
@@ -5741,8 +5822,8 @@ DvtNBoxRenderer._animateCells = function(animationHandler, oldNBox, newNBox) {
   if (oldRowCount == newRowCount && oldColumnCount == newColumnCount) {
     var identical = true;
     for (var i = 0; i < newRowCount; i++) {
-      var oldRowValue = DvtNBoxDataUtils.getRow(oldNBox, i)[DvtNBoxConstants.ID];
-      var newRowValue = DvtNBoxDataUtils.getRow(newNBox, i)[DvtNBoxConstants.ID];
+      var oldRowValue = DvtNBoxDataUtils.getRow(oldNBox, i)[dvt.NBoxConstants.ID];
+      var newRowValue = DvtNBoxDataUtils.getRow(newNBox, i)[dvt.NBoxConstants.ID];
       if (oldRowValue != newRowValue) {
         identical = false;
         break;
@@ -5750,8 +5831,8 @@ DvtNBoxRenderer._animateCells = function(animationHandler, oldNBox, newNBox) {
     }
     if (identical) {
       for (var i = 0; i < newColumnCount; i++) {
-        var oldColumnValue = DvtNBoxDataUtils.getColumn(oldNBox, i)[DvtNBoxConstants.ID];
-        var newColumnValue = DvtNBoxDataUtils.getColumn(newNBox, i)[DvtNBoxConstants.ID];
+        var oldColumnValue = DvtNBoxDataUtils.getColumn(oldNBox, i)[dvt.NBoxConstants.ID];
+        var newColumnValue = DvtNBoxDataUtils.getColumn(newNBox, i)[dvt.NBoxConstants.ID];
         if (oldColumnValue != newColumnValue) {
           identical = false;
           break;
@@ -5775,7 +5856,7 @@ DvtNBoxRenderer._animateCells = function(animationHandler, oldNBox, newNBox) {
  *
  * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox state
+ * @param {dvt.NBox} newNBox the new NBox state
  */
 DvtNBoxRenderer._animateNodes = function(animationHandler, oldNBox, newNBox) {
   var oldNodeCount = DvtNBoxDataUtils.getNodeCount(oldNBox);
@@ -5825,7 +5906,7 @@ DvtNBoxRenderer._animateNodes = function(animationHandler, oldNBox, newNBox) {
 /**
  * Gets the list of DvtNBoxCategoryNodes (sorted by id)
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {array} the list of DvtNBoxCategoryNodes, sorted by id
  */
 DvtNBoxRenderer._getSortedGroups = function(nbox) {
@@ -5833,7 +5914,7 @@ DvtNBoxRenderer._getSortedGroups = function(nbox) {
   var groupInfo = nbox.getOptions()['__groups'];
   var groupNodes = [];
   if (groupInfo) {
-    if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+    if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
       var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
       var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
       var cellCount = rowCount * columnCount;
@@ -5856,7 +5937,7 @@ DvtNBoxRenderer._getSortedGroups = function(nbox) {
 /**
  * Gets the list of DvtNBoxCategoryNodes (sorted by id) from a map of category node data
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} container a map of category node data
  * @return {array} the list of DvtNBoxCategoryNodes, sorted by id
  */
@@ -5878,7 +5959,7 @@ DvtNBoxRenderer._getSortedGroupsFromContainer = function(nbox, container) {
  *
  * @param {DvtNBoxDataAnimationHandler} animationHandler the animation handler
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox state
+ * @param {dvt.NBox} newNBox the new NBox state
  */
 DvtNBoxRenderer._animateDrawer = function(animationHandler, oldNBox, newNBox) {
   var oldDrawer = DvtNBoxDataUtils.getDrawer(oldNBox);
@@ -5893,17 +5974,17 @@ DvtNBoxRenderer._animateDrawer = function(animationHandler, oldNBox, newNBox) {
 /**
  * Sets a fill (which may be a solid color or linear-gradient) on a displayable
  *
- * @param {DvtDisplayable} displaylable the displayable to fill
+ * @param {dvt.Displayable} displaylable the displayable to fill
  * @param {string} fillString the string description of the fill
  */
 DvtNBoxRenderer.setFill = function(displayable, fillString) {
   if (fillString.indexOf('linear-gradient') == 0) {
-    var linearGradient = DvtGradientParser.parseCSSGradient(fillString);
+    var linearGradient = dvt.GradientParser.parseCSSGradient(fillString);
     if (linearGradient) {
-      displayable.setFill(new DvtLinearGradientFill(linearGradient.getAngle(),
-                                                    linearGradient.getColors(),
-                                                    linearGradient.getAlphas(),
-                                                    linearGradient.getRatios()));
+      displayable.setFill(new dvt.LinearGradientFill(linearGradient.getAngle(),
+          linearGradient.getColors(),
+          linearGradient.getAlphas(),
+          linearGradient.getRatios()));
     }
   }
   else {
@@ -5916,7 +5997,7 @@ DvtNBoxRenderer.setFill = function(displayable, fillString) {
 /**
  * Moves the legend (which is rendered first) to the top of the z order
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  */
 DvtNBoxRenderer._fixZOrder = function(nbox) {
   var legendData = DvtNBoxDataUtils.getLegend(nbox);
@@ -5927,6 +6008,64 @@ DvtNBoxRenderer._fixZOrder = function(nbox) {
     }
   }
 };
+
+
+/**
+ * Ensures nodes are in correct DOM order following animations.  Saves order of nodes prior
+ * to animation, then returns a function that corrects the order afterwards.
+ *
+ * @param {dvt.NBox} nbox the nbox component
+ * @return {function} function called post-animation to reorder nodes
+ */
+DvtNBoxRenderer.getNodeOrderFunction = function(nbox) {
+  var orders = [];
+  var newDrawer = DvtNBoxDataUtils.getDrawer(nbox);
+  if (newDrawer) {
+    var drawerContainer = DvtNBoxDataUtils.getDisplayable(nbox, newDrawer).getChildContainer().getScrollingPane();
+    for (var i = 0; i < drawerContainer.getNumChildren(); i++)
+      orders.push(drawerContainer.getChildAt(i));
+  }
+  else {
+    var cellCount = DvtNBoxDataUtils.getRowCount(nbox) * DvtNBoxDataUtils.getColumnCount(nbox);
+    for (var c = 0; c < cellCount; c++) {
+      var cellOrder = [];
+      var cell = DvtNBoxDataUtils.getCell(nbox, c);
+      var cellContainer = DvtNBoxDataUtils.getDisplayable(nbox, cell).getChildContainer();
+      if (cellContainer instanceof dvt.SimpleScrollableContainer)
+        cellContainer = cellContainer.getScrollingPane();
+      for (var n = 0; n < cellContainer.getNumChildren(); n++)
+        cellOrder.push(cellContainer.getChildAt(n));
+      orders.push(cellOrder);
+    }
+  }
+  return function() {
+    if (!orders.length)
+      return;
+    else if (orders[0] && isNaN(orders[0].length)) {
+      var drawerData = DvtNBoxDataUtils.getDrawer(nbox);
+      if (drawerData) {
+        var drawerContainer = DvtNBoxDataUtils.getDisplayable(nbox, drawerData).getChildContainer().getScrollingPane();
+        for (var n = 0; n < orders.length; n++) {
+          drawerContainer.addChild(orders[n]);
+        }
+      }
+    }
+    else {
+      for (var c = 0; c < orders.length; c++) {
+        var cellOrder = orders[c];
+        var cellData = DvtNBoxDataUtils.getCell(nbox, c);
+        if (cellOrder.length && cellData) {
+          var cellContainer = DvtNBoxDataUtils.getDisplayable(nbox, cellData).getChildContainer();
+          if (cellContainer instanceof dvt.SimpleScrollableContainer)
+            cellContainer = cellContainer.getScrollingPane();
+          for (var n = 0; n < cellOrder.length; n++) {
+            cellContainer.addChild(cellOrder[n]);
+          }
+        }
+      }
+    }
+  };
+};
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -5936,19 +6075,17 @@ DvtNBoxRenderer._fixZOrder = function(nbox) {
  */
 var DvtNBoxCellRenderer = new Object();
 
-DvtObj.createSubclass(DvtNBoxCellRenderer, DvtObj, 'DvtNBoxCellRenderer');
+dvt.Obj.createSubclass(DvtNBoxCellRenderer, dvt.Obj);
 
 
 /**
  * Renders the nbox cell into the available space.
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} cellData The cell data being rendered
  * @param {DvtNBoxCell} cellContainer The container to render into
- * @param {object} cellLayout object containing properties related to cellLayout
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
- * @param {DvtRectangle} availSpace The available space
+ * @param {dvt.Rectangle} availSpace The available space
  */
-DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, cellLayout, cellCounts, availSpace) {
+DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, availSpace) {
   var options = nbox.getOptions();
   var cellGap = options['__layout']['cellGap'];
   var cellStartGap = options['__layout']['cellStartGap'];
@@ -5956,28 +6093,30 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, cellLayout,
   var cellTopGap = options['__layout']['cellTopGap'];
   var cellBottomGap = options['__layout']['cellBottomGap'];
 
-  var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData[DvtNBoxConstants.ROW]);
-  var c = DvtNBoxDataUtils.getColumnIndex(nbox, cellData[DvtNBoxConstants.COLUMN]);
+  var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
 
-  var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, cellLayout, availSpace);
+  var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData[dvt.NBoxConstants.ROW]);
+  var c = DvtNBoxDataUtils.getColumnIndex(nbox, cellData[dvt.NBoxConstants.COLUMN]);
+
+  var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, availSpace);
 
   cellContainer.setTranslate(cellDims.x + cellGap / 2, cellDims.y + cellGap / 2);
   var cellIndex = r * DvtNBoxDataUtils.getColumnCount(nbox) + c; // cells are in sorted row-major order
-  var cellRect = new DvtRect(nbox.getCtx(), 0, 0, Math.max(cellDims.w - cellGap, 0), Math.max(cellDims.h - cellGap, 0));
+  var cellRect = new dvt.Rect(nbox.getCtx(), 0, 0, Math.max(cellDims.w - cellGap, 0), Math.max(cellDims.h - cellGap, 0));
   cellRect.setPixelHinting(true);
   var style = DvtNBoxStyleUtils.getCellStyle(nbox, cellIndex);
   DvtNBoxCellRenderer._applyStyleToRect(cellRect, style);
   cellContainer.addChild(cellRect);
   DvtNBoxDataUtils.setDisplayable(nbox, cellData, cellRect, 'background');
 
-  var keyboardFocusEffect = new DvtKeyboardFocusEffect(nbox.getCtx(), cellContainer, new DvtRectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2));
+  var keyboardFocusEffect = new dvt.KeyboardFocusEffect(nbox.getCtx(), cellContainer, new dvt.Rectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2));
   DvtNBoxDataUtils.setDisplayable(nbox, cellData, keyboardFocusEffect, 'focusEffect');
 
-  var addedHeader = DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, cellCounts, false);
+  var addedHeader = DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
 
   var childContainer = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex) ?
-      new DvtSimpleScrollableContainer(nbox.getCtx(), cellRect.getWidth(), cellRect.getHeight() - (addedHeader ? cellLayout['headerSize'] : 0)) :
-      new DvtContainer(nbox.getCtx());
+      new dvt.SimpleScrollableContainer(nbox.getCtx(), cellRect.getWidth(), cellRect.getHeight() - (addedHeader ? cellLayout['headerSize'] : 0)) :
+      new dvt.Container(nbox.getCtx());
 
   cellContainer.addChild(childContainer);
   cellContainer.setChildContainer(childContainer);
@@ -5985,16 +6124,16 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, cellLayout,
   var childArea = null;
   if (addedHeader) {
     if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-      childArea = new DvtRectangle(cellLayout['headerSize'], cellTopGap, cellRect.getWidth() - cellLayout['headerSize'] - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
+      childArea = new dvt.Rectangle(cellLayout['headerSize'], cellTopGap, cellRect.getWidth() - cellLayout['headerSize'] - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
     }
     else {
-      childArea = new DvtRectangle(cellStartGap, cellLayout['headerSize'], cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellLayout['headerSize'] - cellBottomGap);
+      childArea = new dvt.Rectangle(cellStartGap, cellLayout['headerSize'], cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellLayout['headerSize'] - cellBottomGap);
     }
-    if (childContainer instanceof DvtSimpleScrollableContainer)
+    if (childContainer instanceof dvt.SimpleScrollableContainer)
       childContainer.setTranslate(0, cellLayout['headerSize']);
   }
   else {
-    childArea = new DvtRectangle(cellStartGap, cellTopGap, cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
+    childArea = new dvt.Rectangle(cellStartGap, cellTopGap, cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
   }
   childArea.w = Math.max(childArea.w, 0);
   childArea.h = Math.max(childArea.h, 0);
@@ -6004,18 +6143,17 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, cellLayout,
 
 /**
  * Renders the nbox cell header
- * @param {DvtNBox} nbox The nbox components
+ * @param {dvt.NBox} nbox The nbox components
  * @param {object} cellData The cell data
  * @param {DvtNBoxCell} cellContainer The container to render into.
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
  * @param {boolean} noCount Indicates whether the count label should be suppressed
  * @return {boolean} true if a header was rendered, false otherwise
  */
-DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellCounts, noCount) {
-  var oldLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, DvtNBoxConstants.LABEL);
+DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, noCount) {
+  var oldLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, dvt.NBoxConstants.LABEL);
   if (oldLabel) {
     oldLabel.getParent().removeChild(oldLabel);
-    DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, DvtNBoxConstants.LABEL);
+    DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, dvt.NBoxConstants.LABEL);
   }
   var oldCountLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'countLabel');
   if (oldCountLabel) {
@@ -6035,15 +6173,17 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
     var cellStartGap = options['__layout']['cellStartGap'];
     var cellEndGap = options['__layout']['cellEndGap'];
     var cellTopGap = options['__layout']['cellTopGap'];
-    var cellLayout = options['__layout']['__cellLayout'];
+
+    var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+    var cellCounts = DvtNBoxRenderer.getCellCounts(nbox);
 
     var cellRect = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'background');
 
-    var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData[DvtNBoxConstants.ROW]);
-    var c = DvtNBoxDataUtils.getColumnIndex(nbox, cellData[DvtNBoxConstants.COLUMN]);
+    var r = DvtNBoxDataUtils.getRowIndex(nbox, cellData[dvt.NBoxConstants.ROW]);
+    var c = DvtNBoxDataUtils.getColumnIndex(nbox, cellData[dvt.NBoxConstants.COLUMN]);
     var cellIndex = r * DvtNBoxDataUtils.getColumnCount(nbox) + c; // cells are in sorted row-major order
 
-    var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+    var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
     var cellCloseWidthWithGap = 0;
     if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
@@ -6052,10 +6192,10 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
       if (cellRect.getWidth() - cellStartGap - cellEndGap > closeWidth) {
         var closeOvr = options['_resources']['close_ovr'];
         var closeDwn = options['_resources']['close_dwn'];
-        var closeEnaImg = new DvtImage(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
-        var closeOvrImg = new DvtImage(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
-        var closeDwnImg = new DvtImage(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
-        var closeButton = new DvtButton(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, cellContainer.handleDoubleClick, cellContainer);
+        var closeEnaImg = new dvt.Image(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
+        var closeOvrImg = new dvt.Image(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
+        var closeDwnImg = new dvt.Image(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
+        var closeButton = new dvt.Button(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, cellContainer.handleDoubleClick, cellContainer);
 
         // Center/hide close button if cell too thin for normal rendering
         var closeButtonX = rtl ? Math.min((cellRect.getWidth() - closeWidth) / 2, cellEndGap) : Math.max((cellRect.getWidth() - closeWidth) / 2, cellRect.getWidth() - cellEndGap - closeWidth);
@@ -6067,7 +6207,7 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
         addedHeader = true;
       }
     }
-    if (cellData[DvtNBoxConstants.LABEL]) {
+    if (cellData[dvt.NBoxConstants.LABEL]) {
       var labelHeight = cellLayout['labelHeight'];
       var skipLabel = false;
       var halign = DvtNBoxStyleUtils.getLabelHalign(nbox, cellData);
@@ -6078,23 +6218,22 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
       var countLabelY = 0;
       var countText = null;
       var showCount = DvtNBoxStyleUtils.getCellShowCount(nbox, cellData);
-      var cellCountLabel = cellData['countLabel'];
-      if (!noCount) {
-        if (cellCountLabel && showCount != 'off') {
+      if (!noCount && showCount != 'off') {
+        var cellCountLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData).getCountLabel();
+        if (cellCountLabel)
           countText = cellCountLabel;
-        }
         else if (showCount == 'on') {
           countText = '' + cellCounts['total'][cellIndex];
           if (cellCounts['highlighted']) {
-            countText = DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'HIGHLIGHTED_COUNT', [cellCounts['highlighted'][cellIndex], countText]);
+            countText = dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'HIGHLIGHTED_COUNT', [cellCounts['highlighted'][cellIndex], countText]);
           }
         }
       }
       if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
         // Vertical Label
         if (countText) {
-          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-          if (DvtTextUtils.fitText(countLabel, cellRect.getHeight() - cellStartGap - cellEndGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+          if (dvt.TextUtils.fitText(countLabel, cellRect.getHeight() - cellStartGap - cellEndGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
             DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
             addedHeader = true;
             countLabelWidth = countLabel.getDimensions().w;
@@ -6109,9 +6248,9 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
         }
         var countLabelOffset = 0;
         if (!skipLabel) {
-          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
-          if (DvtTextUtils.fitText(label, cellRect.getHeight() - cellStartGap - cellEndGap - countLabelWidthWithGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
-            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
+          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
+          if (dvt.TextUtils.fitText(label, cellRect.getHeight() - cellStartGap - cellEndGap - countLabelWidthWithGap, cellRect.getWidth() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, dvt.NBoxConstants.LABEL);
             var labelWidth = label.getDimensions().w;
             addedHeader = true;
             DvtNBoxRenderer.positionText(label, cellTopGap + labelHeight / 2, (cellRect.getHeight() + countLabelWidthWithGap) / 2, rtl ? Math.PI / 2 : -Math.PI / 2);
@@ -6125,20 +6264,20 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
       }
       else {
         if (countText) {
-          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
-          if (DvtTextUtils.fitText(countLabel, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
+          countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), countText, DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+          if (dvt.TextUtils.fitText(countLabel, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
             DvtNBoxDataUtils.setDisplayable(nbox, cellData, countLabel, 'countLabel');
             addedHeader = true;
             countLabelWidth = countLabel.getDimensions().w;
             countLabelWidthWithGap = countLabelWidth + countLabelGap;
             // Count label will get offset after rendering the cell label
-            if (halign == DvtOutputText.H_ALIGN_CENTER) {
+            if (halign == dvt.OutputText.H_ALIGN_CENTER) {
               countLabelX = cellRect.getWidth() / 2;
             }
-            else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
+            else if (halign == dvt.OutputText.H_ALIGN_RIGHT) {
               countLabelX = cellRect.getWidth() - cellEndGap;
             }
-            else { // halign == DvtOutputText.H_ALIGN_LEFT
+            else { // halign == dvt.OutputText.H_ALIGN_LEFT
               countLabelX = cellStartGap;
             }
             countLabelY = cellTopGap + labelHeight / 2;
@@ -6151,21 +6290,21 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
         var countLabelOffset = 0;
         if (!skipLabel) {
 
-          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), halign, DvtOutputText.V_ALIGN_MIDDLE);
-          if (DvtTextUtils.fitText(label, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap - countLabelWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
-            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, DvtNBoxConstants.LABEL);
+          var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, cellIndex), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+          if (dvt.TextUtils.fitText(label, cellRect.getWidth() - cellStartGap - cellEndGap - cellCloseWidthWithGap - countLabelWidthWithGap, cellRect.getHeight() - 2 * cellTopGap, cellContainer)) {
+            DvtNBoxDataUtils.setDisplayable(nbox, cellData, label, dvt.NBoxConstants.LABEL);
             var labelWidth = label.getDimensions().w;
             addedHeader = true;
             var labelX;
-            if (halign == DvtOutputText.H_ALIGN_CENTER) {
+            if (halign == dvt.OutputText.H_ALIGN_CENTER) {
               labelX = (cellRect.getWidth() - (rtl ? -1 : 1) * countLabelWidthWithGap) / 2;
               countLabelOffset = (rtl ? -1 : 1) * (labelWidth + countLabelGap) / 2;
             }
-            else if (halign == DvtOutputText.H_ALIGN_RIGHT) {
+            else if (halign == dvt.OutputText.H_ALIGN_RIGHT) {
               labelX = cellRect.getWidth() - cellEndGap - (rtl ? 0 : 1) * countLabelWidthWithGap;
               countLabelOffset = (rtl ? -1 : 0) * (labelWidth + countLabelGap);
             }
-            else { // halign == DvtOutputText.H_ALIGN_LEFT
+            else { // halign == dvt.OutputText.H_ALIGN_LEFT
               labelX = cellStartGap + (rtl ? 1 : 0) * countLabelWidthWithGap;
               countLabelOffset = (rtl ? 0 : 1) * (labelWidth + countLabelGap);
             }
@@ -6186,22 +6325,22 @@ DvtNBoxCellRenderer.renderHeader = function(nbox, cellData, cellContainer, cellC
 
 /**
  * Renders the body countLabels for the specified cells
- * @param {DvtNBox} nbox The nbox components
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
+ * @param {dvt.NBox} nbox The nbox components
  * @param {array} cellIndices The indices of the cells
  */
-DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndices) {
-
-  var cellLayout = DvtNBoxCellRenderer.calculateCellLayout(nbox, cellCounts);
+DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellIndices) {
   var cellTopGap = nbox.getOptions()['__layout']['cellTopGap'];
   var cellStartGap = nbox.getOptions()['__layout']['cellStartGap'];
+
+  var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+  var cellCounts = DvtNBoxRenderer.getCellCounts(nbox);
 
   var headerFontSize = Number.MAX_VALUE;
   var removeHeaders = false;
 
   // calculate header font sizes
   var cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[0]);
-  var headerLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, DvtNBoxConstants.LABEL);
+  var headerLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, dvt.NBoxConstants.LABEL);
   var headerCount = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'countLabel');
   var headerLabelSize = headerLabel && headerLabel.getCSSStyle() ? headerLabel.getCSSStyle().getFontSize() : null;
   var headerCountSize = headerCount && headerCount.getCSSStyle() ? headerCount.getCSSStyle().getFontSize() : null;
@@ -6226,22 +6365,22 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
   for (var i = 0; i < maximizedCellIndices.length; i++) {
     var cellIndex = maximizedCellIndices[i];
     var count = cellCounts['total'][cellIndex];
-    maximizedLabels[i] = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+    maximizedLabels[i] = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
   }
   for (var i = 0; i < minimizedCellIndices.length; i++) {
     var cellIndex = minimizedCellIndices[i];
     var count = cellCounts['total'][cellIndex];
-    minimizedLabels[i] = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+    minimizedLabels[i] = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCellBodyCountLabelStyle(nbox), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
   }
 
   // remove headers if either of the following:
   // 1) calculated body countLabel font size is less than header font size
   // 2) count is the only thing in the cell header (no label)
-  var maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, cellCounts, maximizedCellIndices, maximizedLabels);
+  var maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, maximizedCellIndices, maximizedLabels);
   if (maximizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
     removeHeaders = true;
   }
-  var minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, cellCounts, minimizedCellIndices, minimizedLabels);
+  var minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, minimizedCellIndices, minimizedLabels);
   if (minimizedFontSize <= headerFontSize || (headerCount && !headerLabel)) {
     removeHeaders = true;
   }
@@ -6249,13 +6388,13 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
   if (removeHeaders) {
     for (var i = 0; i < cellIndices.length; i++) {
       cellData = DvtNBoxDataUtils.getCell(nbox, cellIndices[i]);
-      headerLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, DvtNBoxConstants.LABEL);
+      headerLabel = DvtNBoxDataUtils.getDisplayable(nbox, cellData, dvt.NBoxConstants.LABEL);
       headerCount = DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'countLabel');
       var childArea = cellData['__childArea'];
       var headerRemoved = false;
       if (headerLabel) {
         headerLabel.getParent().removeChild(headerLabel);
-        DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, DvtNBoxConstants.LABEL);
+        DvtNBoxDataUtils.setDisplayable(nbox, cellData, null, dvt.NBoxConstants.LABEL);
         headerRemoved = true;
       }
       if (headerCount) {
@@ -6278,8 +6417,8 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
     }
 
     // recalculate font sizes
-    maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, cellCounts, maximizedCellIndices, maximizedLabels);
-    minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, cellCounts, minimizedCellIndices, minimizedLabels);
+    maximizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, maximizedCellIndices, maximizedLabels);
+    minimizedFontSize = DvtNBoxCellRenderer.getBodyCountLabelsFontSize(nbox, minimizedCellIndices, minimizedLabels);
   }
 
   for (var i = 0; i < maximizedCellIndices.length; i++) {
@@ -6289,9 +6428,9 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
     var childArea = cellData['__childArea'];
 
     maximizedLabels[i].setFontSize(maximizedFontSize);
-    if (DvtTextUtils.fitText(maximizedLabels[i], childArea.w, childArea.h, cellContainer)) {
+    if (dvt.TextUtils.fitText(maximizedLabels[i], childArea.w, childArea.h, cellContainer)) {
       if (!removeHeaders)
-        DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, cellCounts, true);
+        DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
       DvtNBoxRenderer.positionText(maximizedLabels[i], childArea.x + childArea.w / 2, childArea.y + childArea.h / 2);
     }
   }
@@ -6302,9 +6441,9 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
     var childArea = cellData['__childArea'];
 
     minimizedLabels[i].setFontSize(minimizedFontSize);
-    if (DvtTextUtils.fitText(minimizedLabels[i], childArea.w, childArea.h, cellContainer)) {
+    if (dvt.TextUtils.fitText(minimizedLabels[i], childArea.w, childArea.h, cellContainer)) {
       if (!removeHeaders)
-        DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, cellCounts, true);
+        DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, true);
       DvtNBoxRenderer.positionText(minimizedLabels[i], childArea.x + childArea.w / 2, childArea.y + childArea.h / 2);
     }
   }
@@ -6313,13 +6452,12 @@ DvtNBoxCellRenderer.renderBodyCountLabels = function(nbox, cellCounts, cellIndic
 
 /**
  * Calculate thes font size for the body countLabels for the specified cells
- * @param {DvtNBox} nbox The nbox components
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
+ * @param {dvt.NBox} nbox The nbox components
  * @param {array} cellIndices The indices of the cells
  * @param {array} labels The body countLabels for the specified cells
  * @return {number} computed font size of body countLabels
  */
-DvtNBoxCellRenderer.getBodyCountLabelsFontSize = function(nbox, cellCounts, cellIndices, labels) {
+DvtNBoxCellRenderer.getBodyCountLabelsFontSize = function(nbox, cellIndices, labels) {
   var fontSize = Number.MAX_VALUE;
   for (var i = 0; i < cellIndices.length; i++) {
     var childArea = DvtNBoxDataUtils.getCell(nbox, cellIndices[i])['__childArea'];
@@ -6332,33 +6470,33 @@ DvtNBoxCellRenderer.getBodyCountLabelsFontSize = function(nbox, cellCounts, cell
 /**
  * Gets whether the labels for the specified cell should be rendered vertically
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} cellData the cell data
  * @return whether the labels for the specified cell should be rendered vertically
  */
 DvtNBoxCellRenderer._isLabelVertical = function(nbox, cellData) {
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
-  return ((maximizedColumn && maximizedColumn != cellData[DvtNBoxConstants.COLUMN]) && (!maximizedRow || (maximizedRow == cellData[DvtNBoxConstants.ROW]))) ? true : false;
+  return ((maximizedColumn && maximizedColumn != cellData[dvt.NBoxConstants.COLUMN]) && (!maximizedRow || (maximizedRow == cellData[dvt.NBoxConstants.ROW]))) ? true : false;
 };
 
 
 /**
  * Calculates the dimensions for the specified cell
  *
- * @param {DvtNBox} nbox The nbox components
+ * @param {dvt.NBox} nbox The nbox components
  * @param {number} rowIndex the row index of the specified cell
  * @param {number} columnIndex the column index of the specified cell
- * @param {object} cellLayout object containing properties related to cellLayout
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  *
- * @return {DvtRectangle} the dimensions for the specified cell
+ * @return {dvt.Rectangle} the dimensions for the specified cell
  */
-DvtNBoxCellRenderer.getCellDimensions = function(nbox, rowIndex, columnIndex, cellLayout, availSpace) {
+DvtNBoxCellRenderer.getCellDimensions = function(nbox, rowIndex, columnIndex, availSpace) {
   var options = nbox.getOptions();
   var cellGap = options['__layout']['cellGap'];
+  var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var minimizedSize = cellGap + cellLayout['minimumCellSize'];
   var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
@@ -6417,32 +6555,42 @@ DvtNBoxCellRenderer.getCellDimensions = function(nbox, rowIndex, columnIndex, ce
       columnX = availSpace.x + (rtl ? -minimizedColumnSize : availSpace.w) + (rtl ? 1 : -1) * (columnCount - columnIndex) * minimizedColumnSize;
     }
   }
-  return new DvtRectangle(columnX, rowY, columnW, rowH);
+  return new dvt.Rectangle(columnX, rowY, columnW, rowH);
 };
-
 
 /**
  * Calculates sizes related to cell layout, based upon the first specified cell
  * (Assumes that the cells are specified homogeneously)
- * @param {DvtNBox} nbox the nbox component
- * @param {object} cellCounts Two keys ('highlighted' and 'total') which each map to an array of cell counts by cell index
+ * @param {dvt.NBox} nbox the nbox component
  * @return {object} an object containing the calculated sizes
  */
-DvtNBoxCellRenderer.calculateCellLayout = function(nbox, cellCounts) {
+DvtNBoxCellRenderer.getCellLayout = function(nbox) {
+  return nbox.getOptions()['__layout']['__cellLayout'] || DvtNBoxCellRenderer._calculateCellLayout(nbox);
+};
+
+/**
+ * @private
+ * Calculates sizes related to cell layout, based upon the first specified cell
+ * (Assumes that the cells are specified homogeneously)
+ * @param {dvt.NBox} nbox the nbox component
+ * @return {object} an object containing the calculated sizes
+ */
+DvtNBoxCellRenderer._calculateCellLayout = function(nbox) {
   var options = nbox.getOptions();
+  var cellCounts = DvtNBoxRenderer.getCellCounts(nbox);
   var cellTopGap = options['__layout']['cellTopGap'];
   var cellBottomGap = options['__layout']['cellBottomGap'];
   var cellLabelGap = options['__layout']['cellLabelGap'];
   var minimumCellSize = options['__layout']['minimumCellSize'];
   var labelHeight = 0;
   var cellData = DvtNBoxDataUtils.getCell(nbox, 0);
-  if (cellData && cellData[DvtNBoxConstants.LABEL]) {
-    var halign = cellData[DvtNBoxConstants.LABEL_HALIGN];
-    var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, 0), halign, DvtOutputText.V_ALIGN_MIDDLE);
-    labelHeight = DvtTextUtils.guessTextDimensions(label).h;
+  if (cellData && cellData[dvt.NBoxConstants.LABEL]) {
+    var halign = cellData[dvt.NBoxConstants.LABEL_HALIGN];
+    var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, 0), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+    labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
     if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
-      var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][0], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
-      var countLabelHeight = DvtTextUtils.guessTextDimensions(count).h;
+      var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][0], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+      var countLabelHeight = dvt.TextUtils.guessTextDimensions(count).h;
       labelHeight = Math.max(labelHeight, countLabelHeight);
     }
   }
@@ -6465,7 +6613,7 @@ DvtNBoxCellRenderer.calculateCellLayout = function(nbox, cellCounts) {
 DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell) {
   var oldNBox = animationHandler.getOldNBox();
   var newNBox = animationHandler.getNewNBox();
-  var playable = new DvtCustomAnimation(newNBox.getCtx(), newCell, animationHandler.getAnimationDuration());
+  var playable = new dvt.CustomAnimation(newNBox.getCtx(), newCell, animationHandler.getAnimationDuration());
 
   // Promote the child container first so that nodes that position themselves correctly
   var childContainer = newCell.getChildContainer();
@@ -6479,21 +6627,21 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   var cellTy = newCell.getTranslateY();
 
   // Position
-  playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newCell, newCell.getMatrix, newCell.setMatrix, newCell.getMatrix());
+  playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, newCell, newCell.getMatrix, newCell.setMatrix, newCell.getMatrix());
   newCell.setMatrix(oldCell.getMatrix());
 
   // Background
   var oldBackground = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell.getData(), 'background');
   var newBackground = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'background');
 
-  var rtl = DvtAgent.isRightToLeft(newNBox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(newNBox.getCtx());
   var widthDiff = rtl ? 0 : newBackground.getWidth() - oldBackground.getWidth();
 
-  playable.getAnimator().addProp(DvtAnimator.TYPE_FILL, newBackground, newBackground.getFill, newBackground.setFill, newBackground.getFill());
+  playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newBackground, newBackground.getFill, newBackground.setFill, newBackground.getFill());
   newBackground.setFill(oldBackground.getFill());
-  playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newBackground, newBackground.getWidth, newBackground.setWidth, newBackground.getWidth());
+  playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newBackground, newBackground.getWidth, newBackground.setWidth, newBackground.getWidth());
   newBackground.setWidth(oldBackground.getWidth());
-  playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newBackground, newBackground.getHeight, newBackground.setHeight, newBackground.getHeight());
+  playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newBackground, newBackground.getHeight, newBackground.setHeight, newBackground.getHeight());
   newBackground.setHeight(oldBackground.getHeight());
 
 
@@ -6501,44 +6649,44 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   if (newCell.isShowingKeyboardFocusEffect()) {
     var effect = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'focusEffect').getEffect();
     if (effect) {
-      playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, effect, effect.getWidth, effect.setWidth, effect.getWidth());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, effect, effect.getWidth, effect.setWidth, effect.getWidth());
       effect.setWidth(oldBackground.getWidth() + 2);
-      playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, effect, effect.getHeight, effect.setHeight, effect.getHeight());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, effect, effect.getHeight, effect.setHeight, effect.getHeight());
       effect.setHeight(oldBackground.getHeight() + 2);
     }
   }
 
   // Labels
   DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, 'countLabel');
-  DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, DvtNBoxConstants.LABEL);
+  DvtNBoxCellRenderer._animateLabels(animationHandler, oldCell, newCell, dvt.NBoxConstants.LABEL);
 
   // Close button
   var oldClose = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell.getData(), 'closeButton');
   var newClose = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'closeButton');
   if (oldClose) {
     if (newClose) {
-      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
       newClose.setMatrix(oldClose.getMatrix());
     }
     else {
       var oldCloseStart = DvtNBoxRenderer.getGlobalMatrix(oldClose);
       oldClose.setTranslate(oldClose.getTranslateX() + widthDiff + cellTx, oldClose.getTranslateY() + cellTy);
 
-      animationHandler.add(new DvtAnimFadeOut(newNBox.getCtx(), oldClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
-      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, oldClose, oldClose.getMatrix, oldClose.setMatrix, oldClose.getMatrix());
+      animationHandler.add(new dvt.AnimFadeOut(newNBox.getCtx(), oldClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+      playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, oldClose, oldClose.getMatrix, oldClose.setMatrix, oldClose.getMatrix());
       oldClose.setMatrix(oldCloseStart);
       newNBox.getDeleteContainer().addChild(oldClose);
     }
   }
   else if (newClose) {
-    animationHandler.add(new DvtAnimFadeIn(newNBox.getCtx(), newClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
-    playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
+    animationHandler.add(new dvt.AnimFadeIn(newNBox.getCtx(), newClose, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+    playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, newClose, newClose.getMatrix, newClose.setMatrix, newClose.getMatrix());
     newClose.setTranslate(newClose.getTranslateX() - widthDiff, newClose.getTranslateY());
     newClose.setAlpha(0);
 
   }
 
-  DvtPlayable.appendOnEnd(playable, function() {newCell.addChild(childContainer); childContainer.setMatrix(childMatrix)});
+  dvt.Playable.appendOnEnd(playable, function() {newCell.addChild(childContainer); childContainer.setMatrix(childMatrix)});
   animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
 };
 
@@ -6551,17 +6699,17 @@ DvtNBoxCellRenderer._animateLabels = function(animationHandler, oldCell, newCell
   var newVerticalLabel = DvtNBoxCellRenderer._isLabelVertical(newNBox, newCell.getData());
   if (oldLabel || newLabel) {
     if (oldLabel && newLabel && (oldVerticalLabel == newVerticalLabel)) {
-      var playable = new DvtCustomAnimation(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration());
+      var playable = new dvt.CustomAnimation(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration());
       var oldAlign = oldLabel.getHorizAlignment();
       oldAlign = oldAlign == 'left' ? -1 : oldAlign == 'center' ? 0 : 1;
       var newAlign = newLabel.getHorizAlignment();
       newAlign = newAlign == 'left' ? -1 : newAlign == 'center' ? 0 : 1;
       var alignOffset = (newAlign - oldAlign) * newLabel.measureDimensions().w / 2;
-      playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newLabel, newLabel.getX, newLabel.setX, newLabel.getX());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newLabel, newLabel.getX, newLabel.setX, newLabel.getX());
       newLabel.setX(oldLabel.getX() + alignOffset);
-      playable.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newLabel, newLabel.getY, newLabel.setY, newLabel.getY());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newLabel, newLabel.getY, newLabel.setY, newLabel.getY());
       newLabel.setY(oldLabel.getY());
-      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newLabel, newLabel.getMatrix, newLabel.setMatrix, newLabel.getMatrix());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, newLabel, newLabel.getMatrix, newLabel.setMatrix, newLabel.getMatrix());
       newLabel.setMatrix(oldLabel.getMatrix());
       animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
 
@@ -6569,23 +6717,23 @@ DvtNBoxCellRenderer._animateLabels = function(animationHandler, oldCell, newCell
         newLabel.setAlpha(0);
         newCell.addChild(oldLabel);
 
-        var fadeOutAnim = new DvtAnimFadeOut(newNBox.getCtx(), oldLabel, animationHandler.getAnimationDuration());
-        var fadeInAnim = new DvtAnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration());
+        var fadeOutAnim = new dvt.AnimFadeOut(newNBox.getCtx(), oldLabel, animationHandler.getAnimationDuration());
+        var fadeInAnim = new dvt.AnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration());
         animationHandler.add(fadeOutAnim, DvtNBoxDataAnimationHandler.UPDATE);
         animationHandler.add(fadeInAnim, DvtNBoxDataAnimationHandler.INSERT);
 
-        DvtPlayable.appendOnEnd(fadeOutAnim, function() {newNBox.getDeleteContainer().addChild(oldLabel)});
+        dvt.Playable.appendOnEnd(fadeOutAnim, function() {newNBox.getDeleteContainer().addChild(oldLabel)});
       }
     }
     else {
       if (oldLabel) {
         oldLabel.setMatrix(DvtNBoxRenderer.getGlobalMatrix(oldLabel));
         newNBox.getDeleteContainer().addChild(oldLabel);
-        animationHandler.add(new DvtAnimFadeOut(newNBox.getCtx(), oldLabel, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+        animationHandler.add(new dvt.AnimFadeOut(newNBox.getCtx(), oldLabel, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
       }
       if (newLabel) {
         newLabel.setAlpha(0);
-        animationHandler.add(new DvtAnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+        animationHandler.add(new dvt.AnimFadeIn(newNBox.getCtx(), newLabel, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
       }
     }
   }
@@ -6607,7 +6755,7 @@ DvtNBoxCellRenderer.animateDelete = function(animationHandler, oldCell) {
   }
   // Add the cell to the delete container and fade out
   nbox.getDeleteContainer().addChild(oldCell);
-  animationHandler.add(new DvtAnimFadeOut(nbox.getCtx(), oldCell, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+  animationHandler.add(new dvt.AnimFadeOut(nbox.getCtx(), oldCell, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
 };
 
 
@@ -6628,9 +6776,9 @@ DvtNBoxCellRenderer.animateInsert = function(animationHandler, newCell) {
   }
   // Fade in the cell
   newCell.setAlpha(0);
-  var playable = new DvtAnimFadeIn(nbox.getCtx(), newCell, animationHandler.getAnimationDuration());
+  var playable = new dvt.AnimFadeIn(nbox.getCtx(), newCell, animationHandler.getAnimationDuration());
   if (childContainer) {
-    DvtPlayable.appendOnEnd(playable, function() {newCell.addChild(childContainer); childContainer.setMatrix(childMatrix);});
+    dvt.Playable.appendOnEnd(playable, function() {newCell.addChild(childContainer); childContainer.setMatrix(childMatrix);});
   }
   animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
 };
@@ -6639,13 +6787,13 @@ DvtNBoxCellRenderer.animateInsert = function(animationHandler, newCell) {
 /**
  * Renders the drop site feedback for the specified cell
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {DvtNBoxCell} cell the cell
- * @return {DvtDisplayable} the drop site feedback
+ * @return {dvt.Displayable} the drop site feedback
  */
 DvtNBoxCellRenderer.renderDropSiteFeedback = function(nbox, cell) {
   var background = DvtNBoxDataUtils.getDisplayable(nbox, cell.getData(), 'background');
-  var dropSiteFeedback = new DvtRect(nbox.getCtx(), background.getX(), background.getY(), background.getWidth(), background.getHeight());
+  var dropSiteFeedback = new dvt.Rect(nbox.getCtx(), background.getX(), background.getY(), background.getWidth(), background.getHeight());
   dropSiteFeedback.setPixelHinting(true);
   var style = DvtNBoxStyleUtils.getCellDropTargetStyle(nbox);
   DvtNBoxCellRenderer._applyStyleToRect(dropSiteFeedback, style);
@@ -6655,23 +6803,23 @@ DvtNBoxCellRenderer.renderDropSiteFeedback = function(nbox, cell) {
 
 
 /**
- * Applies CSS properties to a DvtRect (placed here to avoid changing the behavior of DvtRect.setCSSStyle)
+ * Applies CSS properties to a dvt.Rect (placed here to avoid changing the behavior of dvt.Rect.setCSSStyle)
  *
- * @param {DvtRect} rect the DvtRect
- * @param {DvtCSSStyle} style  the DvtCSSStyle
+ * @param {dvt.Rect} rect the dvt.Rect
+ * @param {dvt.CSSStyle} style  the dvt.CSSStyle
  */
 DvtNBoxCellRenderer._applyStyleToRect = function(rect, style) {
-  var bgFill = style.getStyle(DvtCSSStyle.BACKGROUND);
-  var colorFill = style.getStyle(DvtCSSStyle.BACKGROUND_COLOR);
+  var bgFill = style.getStyle(dvt.CSSStyle.BACKGROUND);
+  var colorFill = style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
   var fill = bgFill ? bgFill : colorFill;
   if (fill) {
     DvtNBoxRenderer.setFill(rect, fill);
   }
-  var borderStyle = style.getStyle(DvtCSSStyle.BORDER_STYLE);
+  var borderStyle = style.getStyle(dvt.CSSStyle.BORDER_STYLE);
   if (borderStyle == 'solid') {
-    var borderColor = style.getStyle(DvtCSSStyle.BORDER_COLOR);
+    var borderColor = style.getStyle(dvt.CSSStyle.BORDER_COLOR);
     borderColor = borderColor ? borderColor : '#000000';
-    var borderWidth = style.getStyle(DvtCSSStyle.BORDER_WIDTH);
+    var borderWidth = style.getStyle(dvt.CSSStyle.BORDER_WIDTH);
     borderWidth = borderWidth == null ? 1 : parseFloat(borderWidth);
     rect.setSolidStroke(borderColor, null, borderWidth);
   }
@@ -6681,17 +6829,17 @@ DvtNBoxCellRenderer._applyStyleToRect = function(rect, style) {
 /**
  * @private
  * Adds accessibility attributes to the object
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} cellData the cell data
  * @param {DvtNBoxCell} cellContainer the object that should be updated with accessibility attributes
  */
 DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellContainer) {
-  var object = DvtAgent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'background') : cellContainer;
+  var object = dvt.Agent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(nbox, cellData, 'background') : cellContainer;
   object.setAriaRole('img');
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = cellContainer.getAriaLabel();
     if (desc)
-      object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -6703,12 +6851,16 @@ DvtNBoxCellRenderer._addAccessibilityAttributes = function(nbox, cellData, cellC
  */
 var DvtNBoxNodeRenderer = new Object();
 
-DvtObj.createSubclass(DvtNBoxNodeRenderer, DvtObj, 'DvtNBoxNodeRenderer');
+dvt.Obj.createSubclass(DvtNBoxNodeRenderer, dvt.Obj);
 
+/** @private **/
+DvtNBoxNodeRenderer._MIN_CORNER_RADIUS = 2.5;
+/** @private **/
+DvtNBoxNodeRenderer._ASPECT_RATIO_SCALING = 'xMidYMid slice';
 
 /**
  * Renders the nbox node.
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} nodeData the node data being rendered
  * @param {DvtNBoxNode} nodeContainer The container to render into.
  * @param {object} nodeLayout An object containing properties related to the sizes of the various node subsections
@@ -6719,13 +6871,17 @@ DvtNBoxNodeRenderer.render = function(nbox, nodeData, nodeContainer, nodeLayout)
   DvtNBoxNodeRenderer._renderNodeIcon(nbox, nodeData, nodeContainer, nodeLayout);
   DvtNBoxNodeRenderer._renderNodeLabels(nbox, nodeData, nodeContainer, nodeLayout);
   DvtNBoxNodeRenderer._addAccessibilityAttributes(nbox, nodeContainer);
+
+  var childContainer = nodeContainer.getChildContainer();
+  if (childContainer)
+    DvtNBoxNodeRenderer._clipIfNecessary(nbox, childContainer, nodeLayout);
 };
 
 
 /**
  * Calculates sizes related to node layout, based upon the first specified node
  * (Assumes that the nodes are specified homogeneously)
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} cellNodes object containing node rendering order for each cell
  * @return {object} an object containing the calculated sizes
  */
@@ -6792,27 +6948,27 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox, cellNodes) {
     cellColumns = Math.floor((cellArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
 
     // check if labels are visible at calculated width
-    if (node[DvtNBoxConstants.LABEL]) {
+    if (node[dvt.NBoxConstants.LABEL]) {
       // temp container for checking if labels are visible
-      var container = new DvtContainer();
+      var container = new dvt.Container();
       var labelVisible = false;
       var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
-      var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
-      if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+      var labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
+      if (dvt.TextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
         labelVisible = true;
       }
-      if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+      if (node[dvt.NBoxConstants.SECONDARY_LABEL]) {
         var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
-        var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
-        if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
+        var secondaryLabelHeight = dvt.TextUtils.guessTextDimensions(secondaryLabel).h;
+        if (dvt.TextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
           labelVisible = true;
         }
       }
       if (!labelVisible) {
         labelSectionWidth = 0;
-        if (node[DvtNBoxConstants.COLOR]) {
+        if (node[dvt.NBoxConstants.COLOR]) {
           if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
-              (!icon || icon[DvtNBoxConstants.SOURCE])) {
+              (!icon || icon[dvt.NBoxConstants.SOURCE])) {
             // Swatch needed
             labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, cellArea.w - indicatorSectionWidth - iconSectionWidth));
           }
@@ -7007,7 +7163,7 @@ DvtNBoxNodeRenderer.calculateNodeLayout = function(nbox, cellNodes) {
 /**
  * Calculates sizes related to node layout, based upon the first specified node
  * (Assumes that the nodes are specified homogeneously)
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} data the drawer data
  * @param {array} nodes drawer nodes
  * @return {object} an object containing the calculated sizes
@@ -7047,27 +7203,27 @@ DvtNBoxNodeRenderer.calculateNodeDrawerLayout = function(nbox, data, nodes) {
   var columns = Math.floor((childArea.w + gridGap) / (indicatorSectionWidth + iconSectionWidth + labelSectionWidth + gridGap));
 
   // check if labels are visible at calculated width
-  if (node[DvtNBoxConstants.LABEL]) {
+  if (node[dvt.NBoxConstants.LABEL]) {
     // temp container for checking if labels are visible
-    var container = new DvtContainer();
+    var container = new dvt.Container();
     var labelVisible = false;
     var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
-    var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
-    if (DvtTextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
+    var labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
+    if (dvt.TextUtils.fitText(label, labelSectionWidth - startLabelGap - nodeEndLabelGap, labelHeight, container)) {
       labelVisible = true;
     }
-    if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+    if (node[dvt.NBoxConstants.SECONDARY_LABEL]) {
       var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
-      var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
-      if (DvtTextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
+      var secondaryLabelHeight = dvt.TextUtils.guessTextDimensions(secondaryLabel).h;
+      if (dvt.TextUtils.fitText(secondaryLabel, labelSectionWidth - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, container)) {
         labelVisible = true;
       }
     }
     if (!labelVisible) {
       labelSectionWidth = 0;
-      if (node[DvtNBoxConstants.COLOR]) {
+      if (node[dvt.NBoxConstants.COLOR]) {
         if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
-            (!icon || icon[DvtNBoxConstants.SOURCE])) {
+            (!icon || icon[dvt.NBoxConstants.SOURCE])) {
           // Swatch needed
           labelSectionWidth = Math.max(0, Math.min(nodeSwatchSize, childArea.w - indicatorSectionWidth - iconSectionWidth));
         }
@@ -7095,9 +7251,10 @@ DvtNBoxNodeRenderer.calculateNodeDrawerLayout = function(nbox, data, nodes) {
 
 
 /**
+ * @private
  * Calculates sizes related to node layout, based upon the first specified node
  * (Assumes that the nodes are specified homogeneously)
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {object} an object containing the calculated sizes
  */
 DvtNBoxNodeRenderer._calculateSimpleNodeLayout = function(nbox) {
@@ -7117,40 +7274,40 @@ DvtNBoxNodeRenderer._calculateSimpleNodeLayout = function(nbox) {
   var indicatorColor = DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node);
   var icon = DvtNBoxDataUtils.getIcon(nbox, node);
   if (indicatorIcon) {
-    var indicatorIconWidth = indicatorIcon[DvtNBoxConstants.WIDTH];
-    var indicatorIconHeight = indicatorIcon[DvtNBoxConstants.HEIGHT];
+    var indicatorIconWidth = indicatorIcon[dvt.NBoxConstants.WIDTH];
+    var indicatorIconHeight = indicatorIcon[dvt.NBoxConstants.HEIGHT];
     indicatorSectionWidth = indicatorIconWidth + 2 * nodeIndicatorGap;
     nodeHeight = Math.max(nodeHeight, indicatorIconHeight + 2 * nodeIndicatorGap);
   }
   else if (indicatorColor) {
     indicatorSectionWidth = nodeSwatchSize;
   }
-  if (node[DvtNBoxConstants.LABEL]) {
+  if (node[dvt.NBoxConstants.LABEL]) {
     var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
-    var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
+    var labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
     nodeHeight = Math.max(nodeHeight, labelHeight + 2 * nodeSingleLabelGap);
-    if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+    if (node[dvt.NBoxConstants.SECONDARY_LABEL]) {
       var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
-      var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
+      var secondaryLabelHeight = dvt.TextUtils.guessTextDimensions(secondaryLabel).h;
       nodeHeight = Math.max(nodeHeight, labelHeight + secondaryLabelHeight + 2 * nodeDualLabelGap + nodeInterLabelGap);
     }
   }
   else {
     labelSectionWidth = 0;
     // Is there a data color to show?
-    if (node[DvtNBoxConstants.COLOR]) {
+    if (node[dvt.NBoxConstants.COLOR]) {
       if ((!indicatorIcon || DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node)) &&
-          (!icon || icon[DvtNBoxConstants.SOURCE])) {
+          (!icon || icon[dvt.NBoxConstants.SOURCE])) {
         // Swatch needed
         labelSectionWidth = indicatorSectionWidth ? indicatorSectionWidth : nodeSwatchSize;
       }
     }
   }
   if (icon) {
-    var preferredSize = Math.max(nodeHeight, DvtAgent.isTouchDevice() ? icon['preferredSizeTouch'] : icon['preferredSize']);
-    var padding = (icon[DvtNBoxConstants.SOURCE] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * preferredSize;
-    var iconWidth = (icon[DvtNBoxConstants.WIDTH] ? icon[DvtNBoxConstants.WIDTH] : preferredSize - 2 * padding);
-    var iconHeight = (icon[DvtNBoxConstants.HEIGHT] ? icon[DvtNBoxConstants.HEIGHT] : preferredSize - 2 * padding);
+    var preferredSize = Math.max(nodeHeight, dvt.Agent.isTouchDevice() ? icon['preferredSizeTouch'] : icon['preferredSize']);
+    var padding = (icon[dvt.NBoxConstants.SOURCE] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * preferredSize;
+    var iconWidth = (icon[dvt.NBoxConstants.WIDTH] ? icon[dvt.NBoxConstants.WIDTH] : preferredSize - 2 * padding);
+    var iconHeight = (icon[dvt.NBoxConstants.HEIGHT] ? icon[dvt.NBoxConstants.HEIGHT] : preferredSize - 2 * padding);
     iconSectionWidth = iconWidth + 2 * padding;
     nodeHeight = Math.max(nodeHeight, iconHeight + 2 * padding);
   }
@@ -7162,8 +7319,9 @@ DvtNBoxNodeRenderer._calculateSimpleNodeLayout = function(nbox) {
 
 
 /**
+ * @private
  * Renders the node background
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxNode} nodeContainer the container for the node contents
  * @param {object} nodeLayout an object containing dimensions of the various node sections
@@ -7173,29 +7331,30 @@ DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, 
 
   var height = nodeLayout['nodeHeight'];
   var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
+
   var hoverColor = DvtNBoxStyleUtils.getNodeHoverColor(nbox);
   var selectionColor = DvtNBoxStyleUtils.getNodeSelectionColor(nbox);
 
-  var selectionRect = new DvtRect(nbox.getCtx(),
-                                  0,
-                                  0,
-                                  width,
-                                  height);
+  var selectionRect = new dvt.Rect(nbox.getCtx(),
+      0,
+      0,
+      width,
+      height);
   selectionRect.setFill(null);
   if (borderRadius) {
     selectionRect.setRx(borderRadius);
     selectionRect.setRy(borderRadius);
   }
-  selectionRect.setHoverStroke(new DvtSolidStroke(hoverColor, null, 2), new DvtSolidStroke(selectionColor, null, 4));
-  selectionRect.setSelectedStroke(new DvtSolidStroke(selectionColor, null, 4), null);
-  selectionRect.setSelectedHoverStroke(new DvtSolidStroke(hoverColor, null, 2), new DvtSolidStroke(selectionColor, null, 6));
+  selectionRect.setHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 4));
+  selectionRect.setSelectedStroke(new dvt.SolidStroke(selectionColor, null, 4), null);
+  selectionRect.setSelectedHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 6));
   nodeContainer.addChild(selectionRect);
   nodeContainer.setSelectionShape(selectionRect);
-  var nodeRect = new DvtRect(nbox.getCtx(),
-                             0,
-                             0,
-                             width,
-                             height);
+  var nodeRect = new dvt.Rect(nbox.getCtx(),
+      0,
+      0,
+      width,
+      height);
   if (borderRadius) {
     nodeRect.setRx(borderRadius);
     nodeRect.setRy(borderRadius);
@@ -7210,125 +7369,177 @@ DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, 
 
 
 /**
+ * @private
  * Renders the node indicator
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxNode} nodeContainer the container for the node contents
  * @param {object} nodeLayout an object containing dimensions of the various node sections
  */
 DvtNBoxNodeRenderer._renderNodeIndicator = function(nbox, node, nodeContainer, nodeLayout) {
   var color = DvtNBoxStyleUtils.getNodeColor(nbox, node);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(color);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
   var indicatorX = rtl ? nodeLayout['labelSectionWidth'] + nodeLayout['iconSectionWidth'] : 0;
 
   var indicatorColor = DvtNBoxStyleUtils.getNodeIndicatorColor(nbox, node);
   if (indicatorColor) {
     // Render the indicator background swatch
-    contrastColor = DvtColorUtils.getContrastingTextColor(indicatorColor);
-    var bgRect = new DvtRect(nbox.getCtx(), indicatorX, 0, nodeLayout['indicatorSectionWidth'], nodeLayout['nodeHeight']);
+    contrastColor = dvt.ColorUtils.getContrastingTextColor(indicatorColor);
+    var bgRect = new dvt.Rect(nbox.getCtx(), indicatorX, 0, nodeLayout['indicatorSectionWidth'], nodeLayout['nodeHeight']);
     bgRect.setSolidFill(indicatorColor);
     DvtNBoxNodeRenderer._clipIfNecessary(nbox, bgRect, nodeLayout);
     nodeContainer.addChild(bgRect);
-    DvtNBoxDataUtils.setDisplayable(nbox, node, bgRect, DvtNBoxConstants.INDICATOR);
+    DvtNBoxDataUtils.setDisplayable(nbox, node, bgRect, dvt.NBoxConstants.INDICATOR);
   }
   var indicatorIcon = DvtNBoxDataUtils.getIndicatorIcon(nbox, node);
   if (indicatorIcon) {
-    var indicatorIconColor = indicatorIcon[DvtNBoxConstants.COLOR] ? indicatorIcon[DvtNBoxConstants.COLOR] : contrastColor;
-    var indicatorMarker;
-    if (indicatorIcon[DvtNBoxConstants.SOURCE]) {
-      indicatorMarker = new DvtImageMarker(nbox.getCtx(),
-                                           indicatorX + nodeLayout['indicatorSectionWidth'] / 2,
-                                           nodeLayout['nodeHeight'] / 2,
-                                           indicatorIcon[DvtNBoxConstants.WIDTH],
-                                           indicatorIcon[DvtNBoxConstants.HEIGHT],
-                                           indicatorIcon[DvtNBoxConstants.SOURCE]);
-    }
-    else {
-      indicatorMarker = new DvtSimpleMarker(nbox.getCtx(),
-                                            indicatorIcon[DvtNBoxConstants.SHAPE],
-                                            DvtCSSStyle.SKIN_ALTA,
-                                            indicatorX + nodeLayout['indicatorSectionWidth'] / 2,
-                                            nodeLayout['nodeHeight'] / 2,
-                                            indicatorIcon[DvtNBoxConstants.WIDTH],
-                                            indicatorIcon[DvtNBoxConstants.HEIGHT]);
-    }
-    if (indicatorIcon[DvtNBoxConstants.PATTERN] != 'none') {
-      indicatorMarker.setFill(new DvtPatternFill(indicatorIcon[DvtNBoxConstants.PATTERN], indicatorIconColor, color));
-    }
-    else {
-      indicatorMarker.setSolidFill(indicatorIconColor);
-    }
-    if (indicatorIcon[DvtNBoxConstants.WIDTH] > nodeLayout['indicatorSectionWidth'])
-      DvtNBoxNodeRenderer._clipIfNecessary(nbox, indicatorMarker, nodeLayout);
+    var indicatorIconWidth = indicatorIcon[dvt.NBoxConstants.WIDTH];
+    var indicatorIconHeight = indicatorIcon[dvt.NBoxConstants.HEIGHT];
+    var indicatorIconX = indicatorX + nodeLayout['indicatorSectionWidth'] / 2;
+    var indicatorIconY = nodeLayout['nodeHeight'] / 2;
+    var indicatorIconWidthWithStroke = indicatorIconWidth;
 
-    nodeContainer.addChild(indicatorMarker);
-    DvtNBoxDataUtils.setDisplayable(nbox, node, indicatorMarker, DvtNBoxConstants.INDICATOR_ICON);
+
+    var indicatorIconColor = indicatorIcon[dvt.NBoxConstants.COLOR] ? indicatorIcon[dvt.NBoxConstants.COLOR] : contrastColor;
+    var indicatorMarker;
+    var indicatorIconBorderColor = indicatorIcon[dvt.NBoxConstants.BORDER_COLOR];
+    var indicatorIconBorderWidth = indicatorIcon[dvt.NBoxConstants.BORDER_WIDTH];
+    var indicatorIconBorderRadius = indicatorIcon[dvt.NBoxConstants.BORDER_RADIUS];
+    var indicatorIconPattern = indicatorIcon[dvt.NBoxConstants.PATTERN];
+    if (indicatorIcon[dvt.NBoxConstants.SOURCE]) {
+      indicatorMarker = new dvt.ImageMarker(nbox.getCtx(),
+          indicatorIconX, indicatorIconY,
+          indicatorIconWidth, indicatorIconHeight,
+          indicatorIconBorderRadius,
+          indicatorIcon[dvt.NBoxConstants.SOURCE]);
+      indicatorMarker.setPreserveAspectRatio(DvtNBoxNodeRenderer._ASPECT_RATIO_SCALING);
+    }
+    else {
+      indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
+          indicatorIcon[dvt.NBoxConstants.SHAPE],
+          dvt.CSSStyle.SKIN_ALTA,
+          indicatorIconX, indicatorIconY,
+          indicatorIconWidth, indicatorIconHeight,
+          indicatorIconBorderRadius);
+
+      if (indicatorIconBorderWidth > 0) indicatorIconWidthWithStroke += indicatorIconBorderWidth;
+    }
+
+    if (indicatorIconBorderWidth)
+      indicatorMarker.setSolidStroke(indicatorIconBorderColor, null, indicatorIconBorderWidth);
+
+    if (indicatorIconPattern != 'none')
+      indicatorMarker.setFill(new dvt.PatternFill(indicatorIconPattern, indicatorIconColor, color));
+    else
+      indicatorMarker.setSolidFill(indicatorIconColor);
+
+    // If indicatorIcon is too wide, add clip path
+    if (indicatorIconWidthWithStroke > nodeLayout['indicatorSectionWidth']) {
+      // If we need 2 clip paths, add to node childContainer
+      if (indicatorIconBorderRadius && indicatorIcon[dvt.NBoxConstants.SOURCE]) {
+        var childContainer = nodeContainer.getChildContainer(true);
+        childContainer.addChild(indicatorMarker);
+      }
+      else {
+        DvtNBoxNodeRenderer._clipIfNecessary(nbox, indicatorMarker, nodeLayout);
+        nodeContainer.addChild(indicatorMarker);
+      }
+    }
+    else {
+      nodeContainer.addChild(indicatorMarker);
+    }
+
+    DvtNBoxDataUtils.setDisplayable(nbox, node, indicatorMarker, dvt.NBoxConstants.INDICATOR_ICON);
   }
 };
 
 
 /**
+ * @private
  * Renders the node icon
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxNode} nodeContainer the container for the node contents
  * @param {object} nodeLayout an object containing dimensions of the various node sections
  */
 DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLayout) {
   var color = DvtNBoxStyleUtils.getNodeColor(nbox, node);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(color);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var icon = DvtNBoxDataUtils.getIcon(nbox, node);
   if (icon) {
-    var padding = (icon[DvtNBoxConstants.SOURCE] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * nodeLayout['nodeHeight'];
+    var padding = (icon[dvt.NBoxConstants.SOURCE] ? icon['sourcePaddingRatio'] : icon['shapePaddingRatio']) * nodeLayout['nodeHeight'];
 
-    var iconWidth = icon[DvtNBoxConstants.WIDTH] ? icon[DvtNBoxConstants.WIDTH] : nodeLayout['iconWidth'] ? nodeLayout['iconWidth'] : (nodeLayout['iconSectionWidth'] - 2 * padding);
-    var iconHeight = icon[DvtNBoxConstants.HEIGHT] ? icon[DvtNBoxConstants.HEIGHT] : (nodeLayout['nodeHeight'] - 2 * padding);
+    var iconWidth = icon[dvt.NBoxConstants.WIDTH] ? icon[dvt.NBoxConstants.WIDTH] : nodeLayout['iconWidth'] ? nodeLayout['iconWidth'] : (nodeLayout['iconSectionWidth'] - 2 * padding);
+    var iconHeight = icon[dvt.NBoxConstants.HEIGHT] ? icon[dvt.NBoxConstants.HEIGHT] : (nodeLayout['nodeHeight'] - 2 * padding);
     var iconX = nodeLayout[rtl ? 'labelSectionWidth' : 'indicatorSectionWidth'] + Math.max(nodeLayout['iconSectionWidth'] / 2, nodeLayout['iconWidth'] ? nodeLayout['iconWidth'] / 2 : 0);
     var iconY = nodeLayout['nodeHeight'] / 2;
 
-    var iconColor = icon[DvtNBoxConstants.COLOR] ? icon[DvtNBoxConstants.COLOR] : contrastColor;
+    var iconColor = icon[dvt.NBoxConstants.COLOR] ? icon[dvt.NBoxConstants.COLOR] : contrastColor;
     var iconMarker;
-    if (icon[DvtNBoxConstants.SOURCE]) {
-      iconMarker = new DvtImageMarker(nbox.getCtx(),
-                                      iconX,
-                                      iconY,
-                                      iconWidth,
-                                      iconHeight,
-                                      icon[DvtNBoxConstants.SOURCE]);
+    var iconBorderColor = icon[dvt.NBoxConstants.BORDER_COLOR];
+    var iconBorderWidth = icon[dvt.NBoxConstants.BORDER_WIDTH];
+    var iconBorderRadius = icon[dvt.NBoxConstants.BORDER_RADIUS];
+    var iconPattern = icon[dvt.NBoxConstants.PATTERN];
+    if (icon[dvt.NBoxConstants.SOURCE]) {
+      iconMarker = new dvt.ImageMarker(nbox.getCtx(),
+          iconX,
+          iconY,
+          iconWidth,
+          iconHeight,
+          iconBorderRadius,
+          icon[dvt.NBoxConstants.SOURCE]);
+      iconMarker.setPreserveAspectRatio(DvtNBoxNodeRenderer._ASPECT_RATIO_SCALING);
     }
     else {
-      iconMarker = new DvtSimpleMarker(nbox.getCtx(),
-                                       icon[DvtNBoxConstants.SHAPE],
-                                       DvtCSSStyle.SKIN_ALTA,
-                                       iconX,
-                                       iconY,
-                                       iconWidth,
-                                       iconHeight);
+      iconMarker = new dvt.SimpleMarker(nbox.getCtx(),
+          icon[dvt.NBoxConstants.SHAPE],
+          dvt.CSSStyle.SKIN_ALTA,
+          iconX,
+          iconY,
+          iconWidth - iconBorderWidth,
+          iconHeight - iconBorderWidth,
+          iconBorderRadius);
     }
-    if (icon[DvtNBoxConstants.PATTERN] != 'none') {
-      iconMarker.setFill(new DvtPatternFill(icon[DvtNBoxConstants.PATTERN], iconColor, color));
-    }
-    else {
+
+    if (iconBorderWidth)
+      iconMarker.setSolidStroke(iconBorderColor, null, iconBorderWidth);
+
+    if (iconPattern != 'none')
+      iconMarker.setFill(new dvt.PatternFill(iconPattern, iconColor, color));
+    else
       iconMarker.setSolidFill(iconColor);
-    }
+
+
+    // If icon is on one of the ends, add clip path
     if (nodeLayout['indicatorSectionWidth'] == 0 || nodeLayout['labelSectionWidth'] == 0) {
-      // icon is on one of the ends
-      DvtNBoxNodeRenderer._clipIfNecessary(nbox, iconMarker, nodeLayout);
+      // If we need 2 clip paths, add to node childContainer
+      if (iconBorderRadius && icon[dvt.NBoxConstants.SOURCE]) {
+        var childContainer = nodeContainer.getChildContainer(true);
+        childContainer.addChild(iconMarker);
+      }
+      else {
+        DvtNBoxNodeRenderer._clipIfNecessary(nbox, iconMarker, nodeLayout);
+        nodeContainer.addChild(iconMarker);
+      }
     }
-    nodeContainer.addChild(iconMarker);
+    else {
+      nodeContainer.addChild(iconMarker);
+    }
+
+    DvtNBoxDataUtils.setDisplayable(nbox, node, iconMarker, dvt.NBoxConstants.ICON);
   }
-  DvtNBoxDataUtils.setDisplayable(nbox, node, iconMarker, DvtNBoxConstants.ICON);
 };
 
 
 /**
+ * @private
  * Renders the node labels
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxNode} nodeContainer the container for the node contents
  * @param {object} nodeLayout an object containing dimensions of the various node sections
@@ -7341,30 +7552,30 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
   var nodeEndLabelGap = options['__layout']['nodeEndLabelGap'];
   var startLabelGap = nodeLayout['indicatorSectionWidth'] || nodeLayout['iconSectionWidth'] ? nodeStartLabelGap : nodeLabelOnlyStartLabelGap;
   var color = DvtNBoxStyleUtils.getNodeColor(nbox, node);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(color);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
   var labelX = rtl ? nodeLayout['labelSectionWidth'] - startLabelGap : nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + startLabelGap;
 
-  if (node[DvtNBoxConstants.LABEL]) {
+  if (node[dvt.NBoxConstants.LABEL]) {
     var label = DvtNBoxDataUtils.getNodeLabel(nbox, node);
-    var labelHeight = DvtTextUtils.guessTextDimensions(label).h;
-    if (DvtTextUtils.fitText(label, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, labelHeight, nodeContainer)) {
+    var labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
+    if (dvt.TextUtils.fitText(label, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, labelHeight, nodeContainer)) {
       DvtNBoxRenderer.positionText(label, labelX, nodeLayout['nodeHeight'] / 2);
       (label.getCSSStyle() && label.getCSSStyle().getStyle('color')) ?
           label.setSolidFill(label.getCSSStyle().getStyle('color')) : label.setSolidFill(contrastColor);
-      DvtNBoxDataUtils.setDisplayable(nbox, node, label, DvtNBoxConstants.LABEL);
+      DvtNBoxDataUtils.setDisplayable(nbox, node, label, dvt.NBoxConstants.LABEL);
     }
-    if (node[DvtNBoxConstants.SECONDARY_LABEL]) {
+    if (node[dvt.NBoxConstants.SECONDARY_LABEL]) {
       var secondaryLabel = DvtNBoxDataUtils.getNodeSecondaryLabel(nbox, node);
-      var secondaryLabelHeight = DvtTextUtils.guessTextDimensions(secondaryLabel).h;
-      if (DvtTextUtils.fitText(secondaryLabel, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, nodeContainer)) {
+      var secondaryLabelHeight = dvt.TextUtils.guessTextDimensions(secondaryLabel).h;
+      if (dvt.TextUtils.fitText(secondaryLabel, nodeLayout['labelSectionWidth'] - startLabelGap - nodeEndLabelGap, secondaryLabelHeight, nodeContainer)) {
         var yOffset = (nodeLayout['nodeHeight'] - labelHeight - secondaryLabelHeight - nodeInterLabelGap) / 2;
         DvtNBoxRenderer.positionText(label, labelX, yOffset + labelHeight / 2);
         DvtNBoxRenderer.positionText(secondaryLabel, labelX, yOffset + labelHeight + nodeInterLabelGap + secondaryLabelHeight / 2);
         (secondaryLabel.getCSSStyle() && secondaryLabel.getCSSStyle().getStyle('color')) ?
             secondaryLabel.setSolidFill(secondaryLabel.getCSSStyle().getStyle('color')) : secondaryLabel.setSolidFill(contrastColor);
-        DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, DvtNBoxConstants.SECONDARY_LABEL);
+        DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, dvt.NBoxConstants.SECONDARY_LABEL);
       }
     }
   }
@@ -7374,14 +7585,14 @@ DvtNBoxNodeRenderer._renderNodeLabels = function(nbox, node, nodeContainer, node
 /**
  * @private
  * Returns max label width of given nodes
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {array} nodes the array of DvtNBoxNodes to check labels for
  *
  * @return {nnumber} max label width
  */
 DvtNBoxNodeRenderer._getMaxLabelWidth = function(nbox, nodes) {
   // create and add labels to temporary container
-  var container = new DvtContainer();
+  var container = new dvt.Container();
   for (var n = 0; n < nodes.length; n++) {
     var node = nodes[n];
     container.addChild(DvtNBoxDataUtils.getNodeLabel(nbox, node));
@@ -7400,18 +7611,20 @@ DvtNBoxNodeRenderer._getMaxLabelWidth = function(nbox, nodes) {
 };
 
 /**
+ * @private
  * Conditionally adds a clip path to the specified displayable if a border radius has been specified.
  *
- * @param {DvtNBox} nbox
- * @param {DvtDisplayable} displayable
+ * @param {dvt.NBox} nbox
+ * @param {dvt.Displayable} displayable
  * @param {object} nodeLayout an object containing dimensions of the various node sections
  */
 DvtNBoxNodeRenderer._clipIfNecessary = function(nbox, displayable, nodeLayout) {
   var borderRadius = DvtNBoxStyleUtils.getNodeBorderRadius(nbox);
+  borderRadius = borderRadius < DvtNBoxNodeRenderer._MIN_CORNER_RADIUS ? 0 : borderRadius;
   if (borderRadius) {
     var nodeWidth = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'];
     var nodeHeight = nodeLayout['nodeHeight'];
-    var clipPath = new DvtClipPath();
+    var clipPath = new dvt.ClipPath();
     clipPath.addRect(0, 0, nodeWidth, nodeHeight, borderRadius, borderRadius);
     displayable.setClipPath(clipPath);
   }
@@ -7437,30 +7650,30 @@ DvtNBoxNodeRenderer.animateUpdate = function(animationHandler, oldNode, newNode)
   var oldScrollContainer = DvtNBoxDataUtils.getNodeScrollableContainer(oldNBox, oldNode);
   var newScrollContainer = DvtNBoxDataUtils.getNodeScrollableContainer(newNBox, newNode);
   if (oldScrollContainer || newScrollContainer) {
-    var clipPath = new DvtClipPath();
+    var clipPath = new dvt.ClipPath();
     var rect;
     if (oldScrollContainer) {
       var oldScrollMatrix = DvtNBoxRenderer.getGlobalMatrix(oldScrollContainer);
-      var oldScrollRect = new DvtRectangle(oldScrollMatrix.getTx(), oldScrollMatrix.getTy(), oldScrollContainer.getWidth(), oldScrollContainer.getHeight());
+      var oldScrollRect = new dvt.Rectangle(oldScrollMatrix.getTx(), oldScrollMatrix.getTy(), oldScrollContainer.getWidth(), oldScrollContainer.getHeight());
 
       var oldCellIndex = DvtNBoxDataUtils.getCellIndex(oldNBox, oldNode.getData());
       var oldCell = DvtNBoxDataUtils.getCell(oldNBox, oldCellIndex);
       var oldCellBackground = DvtNBoxDataUtils.getDisplayable(oldNBox, oldCell, 'background');
       var oldCellMatrix = DvtNBoxRenderer.getGlobalMatrix(oldCellBackground);
-      var oldCellRect = new DvtRectangle(oldCellMatrix.getTx(), oldCellMatrix.getTy(), oldCellBackground.getWidth(), oldCellBackground.getHeight());
+      var oldCellRect = new dvt.Rectangle(oldCellMatrix.getTx(), oldCellMatrix.getTy(), oldCellBackground.getWidth(), oldCellBackground.getHeight());
 
       rect = oldScrollRect.getUnion(oldCellRect);
     }
 
     if (newScrollContainer) {
       var newScrollMatrix = DvtNBoxRenderer.getGlobalMatrix(newScrollContainer);
-      var newScrollRect = new DvtRectangle(newScrollMatrix.getTx(), newScrollMatrix.getTy(), newScrollContainer.getWidth(), newScrollContainer.getHeight());
+      var newScrollRect = new dvt.Rectangle(newScrollMatrix.getTx(), newScrollMatrix.getTy(), newScrollContainer.getWidth(), newScrollContainer.getHeight());
 
       var newCellIndex = DvtNBoxDataUtils.getCellIndex(newNBox, newNode.getData());
       var newCell = DvtNBoxDataUtils.getCell(newNBox, newCellIndex);
       var newCellBackground = DvtNBoxDataUtils.getDisplayable(newNBox, newCell, 'background');
       var newCellMatrix = DvtNBoxRenderer.getGlobalMatrix(newCellBackground);
-      var newCellRect = new DvtRectangle(newCellMatrix.getTx(), newCellMatrix.getTy(), newCellBackground.getWidth(), newCellBackground.getHeight());
+      var newCellRect = new dvt.Rectangle(newCellMatrix.getTx(), newCellMatrix.getTy(), newCellBackground.getWidth(), newCellBackground.getHeight());
 
       var newRect = newScrollRect.getUnion(newCellRect);
       rect = rect ? rect.getUnion(newRect) : newRect;
@@ -7472,28 +7685,29 @@ DvtNBoxNodeRenderer.animateUpdate = function(animationHandler, oldNode, newNode)
     }
   }
 
-  var movePlayable = new DvtAnimMoveTo(newNode.getCtx(), newNode, new DvtPoint(newGlobalMatrix.getTx(), newGlobalMatrix.getTy()), animationHandler.getAnimationDuration());
-  DvtPlayable.appendOnEnd(movePlayable, function() {parent.addChild(newNode); newNode.setMatrix(newMatrix); newNode.setClipPath(null)});
+  var movePlayable = new dvt.AnimMoveTo(newNode.getCtx(), newNode, new dvt.Point(newGlobalMatrix.getTx(), newGlobalMatrix.getTy()), animationHandler.getAnimationDuration());
+  dvt.Playable.appendOnEnd(movePlayable, function() {parent.addChild(newNode); newNode.setMatrix(newMatrix); newNode.setClipPath(null)});
   animationHandler.add(movePlayable, DvtNBoxDataAnimationHandler.UPDATE);
 
   // Colors
-  var playable = new DvtCustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
+  var playable = new dvt.CustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
   DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, 'background');
-  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, DvtNBoxConstants.LABEL);
-  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, DvtNBoxConstants.SECONDARY_LABEL);
-  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, DvtNBoxConstants.INDICATOR);
-  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, DvtNBoxConstants.INDICATOR_ICON);
-  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, DvtNBoxConstants.ICON);
+  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, dvt.NBoxConstants.LABEL);
+  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, dvt.NBoxConstants.SECONDARY_LABEL);
+  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, dvt.NBoxConstants.INDICATOR);
+  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, dvt.NBoxConstants.INDICATOR_ICON);
+  DvtNBoxNodeRenderer._animateFill(playable, oldNBox, newNBox, oldNode, newNode, dvt.NBoxConstants.ICON);
   animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
 };
 
 
 /**
+ * @private
  * Helper to animate between fills
  *
- * @param {DvtPlayable} playable The playable to add the animation to
+ * @param {dvt.Playable} playable The playable to add the animation to
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox
+ * @param {dvt.NBox} newNBox the new NBox
  * @param {DvtNBoxNode} oldNode the old node
  * @param {DvtNBoxNode} newNode the new node
  * @param {string} displayableKey the key to use for looking up the sub displayable
@@ -7502,7 +7716,7 @@ DvtNBoxNodeRenderer._animateFill = function(playable, oldNBox, newNBox, oldNode,
   var oldDisplayable = DvtNBoxDataUtils.getDisplayable(oldNBox, oldNode.getData(), displayableKey);
   var newDisplayable = DvtNBoxDataUtils.getDisplayable(newNBox, newNode.getData(), displayableKey);
   if (oldDisplayable && newDisplayable) {
-    playable.getAnimator().addProp(DvtAnimator.TYPE_FILL, newDisplayable, newDisplayable.getFill, newDisplayable.setFill, newDisplayable.getFill());
+    playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newDisplayable, newDisplayable.getFill, newDisplayable.setFill, newDisplayable.getFill());
     newDisplayable.setFill(oldDisplayable.getFill());
   }
 };
@@ -7523,7 +7737,7 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
   }
 
   var oldData = oldNode.getData();
-  var id = oldData[DvtNBoxConstants.ID];
+  var id = oldData[dvt.NBoxConstants.ID];
   var newNodeIndex = DvtNBoxDataUtils.getNodeIndex(newNBox, id);
 
   if (!isNaN(newNodeIndex)) {
@@ -7535,7 +7749,7 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
       if (DvtNBoxDataUtils.getGrouping(newNBox)) {
         var groups = newNBox.getOptions()['__groups'];
         var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(newNBox);
-        if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+        if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
           groups = groups[DvtNBoxDataUtils.getCellIndex(newNBox, newNode)];
         }
         var group = groups[DvtNBoxDataUtils.getNodeGroupId(newNode)];
@@ -7543,40 +7757,40 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
           var groupNode = DvtNBoxDataUtils.getDisplayable(newNBox, group);
           if (groupNode) {
             var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-            var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
-            animationHandler.add(new DvtAnimMoveTo(newNBox.getCtx(), oldNode, new DvtPoint(centerMatrix.getTx() - centerOffset.x, centerMatrix.getTy() - centerOffset.y), animationHandler.getAnimationDuration()), animationPhase);
+            var centerOffset = new dvt.Point((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
+            animationHandler.add(new dvt.AnimMoveTo(newNBox.getCtx(), oldNode, new dvt.Point(centerMatrix.getTx() - centerOffset.x, centerMatrix.getTy() - centerOffset.y), animationHandler.getAnimationDuration()), animationPhase);
           }
         }
       }
       // Should it move to a different cell?
-      else if (oldData[DvtNBoxConstants.ROW] != newNode[DvtNBoxConstants.ROW] ||
-          oldData[DvtNBoxConstants.COLUMN] != newNode[DvtNBoxConstants.COLUMN]) {
+      else if (oldData[dvt.NBoxConstants.ROW] != newNode[dvt.NBoxConstants.ROW] ||
+          oldData[dvt.NBoxConstants.COLUMN] != newNode[dvt.NBoxConstants.COLUMN]) {
 
         var oldGlobalMatrix = DvtNBoxRenderer.getGlobalMatrix(oldNode);
         var oldDims = oldNode.getDimensions();
         animationHandler.getNewNBox().addChild(oldNode);
         oldNode.setMatrix(oldGlobalMatrix);
 
-        var newCell = DvtNBoxDataUtils.getCellByRowColumn(newNBox, newNode[DvtNBoxConstants.ROW], newNode[DvtNBoxConstants.COLUMN]);
+        var newCell = DvtNBoxDataUtils.getCellByRowColumn(newNBox, newNode[dvt.NBoxConstants.ROW], newNode[dvt.NBoxConstants.COLUMN]);
         var overflow = DvtNBoxDataUtils.getDisplayable(newNBox, newCell.getData(), 'overflow');
         if (overflow) {
           var overflowMatrix = DvtNBoxRenderer.getGlobalMatrix(overflow);
-          animationHandler.add(new DvtAnimMoveTo(newNBox.getCtx(), oldNode, new DvtPoint(overflowMatrix.getTx(), overflowMatrix.getTy()), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+          animationHandler.add(new dvt.AnimMoveTo(newNBox.getCtx(), oldNode, new dvt.Point(overflowMatrix.getTx(), overflowMatrix.getTy()), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
         }
         else {
           var cellMatrix = DvtNBoxRenderer.getGlobalMatrix(newCell);
           var cellDimensions = newCell.getDimensions();
-          var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
-          animationHandler.add(new DvtAnimMoveTo(newNBox.getCtx(), oldNode, new DvtPoint(cellMatrix.getTx() + cellDimensions.w / 2 - centerOffset.x, cellMatrix.getTy() + cellDimensions.h / 2 - centerOffset.y), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
+          var centerOffset = new dvt.Point((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
+          animationHandler.add(new dvt.AnimMoveTo(newNBox.getCtx(), oldNode, new dvt.Point(cellMatrix.getTx() + cellDimensions.w / 2 - centerOffset.x, cellMatrix.getTy() + cellDimensions.h / 2 - centerOffset.y), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.UPDATE);
         }
-        var scaleAnim = new DvtCustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
-        scaleAnim.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, oldNode, oldNode.getScaleX, oldNode.setScaleX, .01);
-        scaleAnim.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, oldNode, oldNode.getScaleY, oldNode.setScaleY, .01);
-        DvtPlayable.appendOnEnd(scaleAnim, function() {newNBox.getDeleteContainer().addChild(oldNode)});
+        var scaleAnim = new dvt.CustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
+        scaleAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNode, oldNode.getScaleX, oldNode.setScaleX, .01);
+        scaleAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, oldNode, oldNode.getScaleY, oldNode.setScaleY, .01);
+        dvt.Playable.appendOnEnd(scaleAnim, function() {newNBox.getDeleteContainer().addChild(oldNode)});
 
         animationHandler.add(scaleAnim, DvtNBoxDataAnimationHandler.INSERT);
-        animationHandler.add(new DvtAnimMoveBy(newNBox.getCtx(), oldNode, new DvtPoint(oldDims.w / 2, oldDims.h / 2), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.INSERT);
-        animationHandler.add(new DvtAnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.INSERT);
+        animationHandler.add(new dvt.AnimMoveBy(newNBox.getCtx(), oldNode, new dvt.Point(oldDims.w / 2, oldDims.h / 2), animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.INSERT);
+        animationHandler.add(new dvt.AnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration()), DvtNBoxDataAnimationHandler.INSERT);
 
         return;
       }
@@ -7585,13 +7799,13 @@ DvtNBoxNodeRenderer.animateDelete = function(animationHandler, oldNode) {
   oldNode.setMatrix(DvtNBoxRenderer.getGlobalMatrix(oldNode));
   var scrollContainer = DvtNBoxDataUtils.getNodeScrollableContainer(oldNBox, oldNode);
   if (scrollContainer) {
-    var clipPath = new DvtClipPath();
+    var clipPath = new dvt.ClipPath();
     var scrollMatrix = DvtNBoxRenderer.getGlobalMatrix(scrollContainer);
-    var rect = new DvtRectangle(scrollMatrix.getTx(), scrollMatrix.getTy(), scrollContainer._width, scrollContainer._height);
+    var rect = new dvt.Rectangle(scrollMatrix.getTx(), scrollMatrix.getTy(), scrollContainer._width, scrollContainer._height);
     clipPath.addRect(rect.x, rect.y, rect.w, rect.h);
     oldNode.setClipPath(clipPath);
   }
-  animationHandler.add(new DvtAnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration()), animationPhase);
+  animationHandler.add(new dvt.AnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration()), animationPhase);
   newNBox.getDeleteContainer().addChild(oldNode);
 
 };
@@ -7612,7 +7826,7 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
     return;
   }
 
-  var id = newNode.getData()[DvtNBoxConstants.ID];
+  var id = newNode.getData()[dvt.NBoxConstants.ID];
   var oldNodeIndex = DvtNBoxDataUtils.getNodeIndex(oldNBox, id);
   if (!isNaN(oldNodeIndex)) {
     var oldNode = DvtNBoxDataUtils.getNode(oldNBox, oldNodeIndex);
@@ -7623,7 +7837,7 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
       if (DvtNBoxDataUtils.getGrouping(oldNBox)) {
         var groups = oldNBox.getOptions()['__groups'];
         var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(oldNBox);
-        if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+        if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
           groups = groups[DvtNBoxDataUtils.getCellIndex(oldNBox, oldNode)];
         }
         var group = groups[DvtNBoxDataUtils.getNodeGroupId(oldNode)];
@@ -7634,20 +7848,20 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
             var parent = newNode.getParent();
             var finalMatrix = DvtNBoxRenderer.getGlobalMatrix(newNode);
             var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-            var centerOffset = new DvtPoint((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
+            var centerOffset = new dvt.Point((nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth']) / 2, nodeLayout['nodeHeight'] / 2);
             centerMatrix.translate(-centerOffset.x, -centerOffset.y);
             newNBox.addChild(newNode);
             newNode.setMatrix(centerMatrix);
-            var movePlayable = new DvtAnimMoveTo(newNBox.getCtx(), newNode, new DvtPoint(finalMatrix.getTx(), finalMatrix.getTy()), animationHandler.getAnimationDuration());
-            DvtPlayable.appendOnEnd(movePlayable, function() {newNode.setMatrix(childMatrix); parent.addChild(newNode)});
+            var movePlayable = new dvt.AnimMoveTo(newNBox.getCtx(), newNode, new dvt.Point(finalMatrix.getTx(), finalMatrix.getTy()), animationHandler.getAnimationDuration());
+            dvt.Playable.appendOnEnd(movePlayable, function() {newNode.setMatrix(childMatrix); parent.addChild(newNode)});
             animationHandler.add(movePlayable, animationPhase);
           }
         }
       }
     }
   }
-  var fadeAnim = new DvtCustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
-  fadeAnim.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newNode, newNode.getAlpha, newNode.setAlpha, newNode.getAlpha());
+  var fadeAnim = new dvt.CustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
+  fadeAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newNode, newNode.getAlpha, newNode.setAlpha, newNode.getAlpha());
   animationHandler.add(fadeAnim, animationPhase);
   newNode.setAlpha(0);
 };
@@ -7656,15 +7870,15 @@ DvtNBoxNodeRenderer.animateInsert = function(animationHandler, newNode) {
 /**
  * @private
  * Adds accessibility attributes to the object
- * @param {DvtNBox} nbox the nbox
+ * @param {dvt.NBox} nbox the nbox
  * @param {DvtNBoxNode} object the object that should be updated with accessibility attributes
  */
 DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
   object.setAriaRole('img');
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = object.getAriaLabel();
     if (desc)
-      object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -7676,12 +7890,12 @@ DvtNBoxNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
  */
 var DvtNBoxCategoryNodeRenderer = new Object();
 
-DvtObj.createSubclass(DvtNBoxCategoryNodeRenderer, DvtObj, 'DvtNBoxCategoryNodeRenderer');
+dvt.Obj.createSubclass(DvtNBoxCategoryNodeRenderer, dvt.Obj);
 
 
 /**
  * Renders the nbox category node.
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} nodeData the category node data being rendered
  * @param {DvtNBoxCategoryNode} nodeContainer The container to render into.
  * @param {number} scale The number of pixels per unit (used to determine the size of this category node based on its node count)
@@ -7697,7 +7911,7 @@ DvtNBoxCategoryNodeRenderer.render = function(nbox, nodeData, nodeContainer, sca
 
 /**
  * Renders the node background
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the category node data being rendered
  * @param {DvtNBoxCategoryNode} nodeContainer the container for the node contents
  * @param {number} scale The number of pixels per unit (used to determine the size of this category node based on its node count)
@@ -7711,27 +7925,27 @@ DvtNBoxCategoryNodeRenderer._renderNodeBackground = function(nbox, node, nodeCon
   var hoverColor = DvtNBoxStyleUtils.getNodeHoverColor(nbox);
   var selectionColor = DvtNBoxStyleUtils.getNodeSelectionColor(nbox);
 
-  var selectionRect = new DvtRect(nbox.getCtx(),
-                                  -side / 2,
-                                  -side / 2,
-                                  side,
-                                  side);
+  var selectionRect = new dvt.Rect(nbox.getCtx(),
+      -side / 2,
+      -side / 2,
+      side,
+      side);
   selectionRect.setFill(null);
   if (borderRadius) {
     selectionRect.setRx(borderRadius);
     selectionRect.setRy(borderRadius);
   }
-  selectionRect.setHoverStroke(new DvtSolidStroke(hoverColor, null, 2), new DvtSolidStroke(selectionColor, null, 4));
-  selectionRect.setSelectedStroke(new DvtSolidStroke(selectionColor, null, 4), null);
-  selectionRect.setSelectedHoverStroke(new DvtSolidStroke(hoverColor, null, 2), new DvtSolidStroke(selectionColor, null, 6));
+  selectionRect.setHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 4));
+  selectionRect.setSelectedStroke(new dvt.SolidStroke(selectionColor, null, 4), null);
+  selectionRect.setSelectedHoverStroke(new dvt.SolidStroke(hoverColor, null, 2), new dvt.SolidStroke(selectionColor, null, 6));
   nodeContainer.addChild(selectionRect);
   nodeContainer.setSelectionShape(selectionRect);
 
-  var nodeRect = new DvtRect(nbox.getCtx(),
-                             -side / 2,
-                             -side / 2,
-                             side,
-                             side);
+  var nodeRect = new dvt.Rect(nbox.getCtx(),
+      -side / 2,
+      -side / 2,
+      side,
+      side);
   if (borderRadius) {
     nodeRect.setRx(borderRadius);
     nodeRect.setRy(borderRadius);
@@ -7756,7 +7970,7 @@ DvtNBoxCategoryNodeRenderer.getSideLength = function(node) {
 
 /**
  * Renders the node indicator
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxCategoryNode} nodeContainer the container for the node contents
  * @param {number} scale The number of pixels per unit (used to determine the size of this category node based on its node count)
@@ -7767,20 +7981,20 @@ DvtNBoxCategoryNodeRenderer._renderNodeIndicator = function(nbox, node, nodeCont
   var options = nbox.getOptions();
   var markerGap = options['__layout']['markerGap'];
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var side = scale * Math.sqrt(node['nodeIndices'].length) - gap;
 
   var color = DvtNBoxStyleUtils.getCategoryNodeColor(nbox, node);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(color);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
 
   var indicatorWidth = side / 4;
   var indicatorIconScale = 1;
   var indicatorX = rtl ? side / 2 - indicatorWidth : -side / 2;
   var indicatorIcon = DvtNBoxStyleUtils.getStyledCategoryIndicatorIcon(nbox, node);
   if (indicatorIcon) {
-    var indicatorIconWidth = indicatorIcon[DvtNBoxConstants.WIDTH];
-    var indicatorIconHeight = indicatorIcon[DvtNBoxConstants.HEIGHT];
+    var indicatorIconWidth = indicatorIcon[dvt.NBoxConstants.WIDTH];
+    var indicatorIconHeight = indicatorIcon[dvt.NBoxConstants.HEIGHT];
     var xScale = indicatorWidth / (indicatorIconWidth + 2 * markerGap);
     var yScale = side / (indicatorIconHeight + 2 * markerGap);
     indicatorIconScale = Math.min(xScale, yScale);
@@ -7789,30 +8003,35 @@ DvtNBoxCategoryNodeRenderer._renderNodeIndicator = function(nbox, node, nodeCont
   var indicatorColor = DvtNBoxStyleUtils.getCategoryNodeIndicatorColor(nbox, node);
   if (indicatorColor) {
     // Render the indicator background swatch
-    contrastColor = DvtColorUtils.getContrastingTextColor(indicatorColor);
-    var bgRect = new DvtRect(nbox.getCtx(), indicatorX, -side / 2, indicatorWidth, side);
+    contrastColor = dvt.ColorUtils.getContrastingTextColor(indicatorColor);
+    var bgRect = new dvt.Rect(nbox.getCtx(), indicatorX, -side / 2, indicatorWidth, side);
     bgRect.setSolidFill(indicatorColor);
     nodeContainer.addChild(bgRect);
     retVal = true;
   }
 
   if (indicatorIcon) {
-    var indicatorIconColor = indicatorIcon[DvtNBoxConstants.COLOR] ? indicatorIcon[DvtNBoxConstants.COLOR] : contrastColor;
-    var indicatorMarker = new DvtSimpleMarker(nbox.getCtx(),
-        indicatorIcon[DvtNBoxConstants.SHAPE],
-        DvtCSSStyle.SKIN_ALTA,
+    var indicatorIconColor = indicatorIcon[dvt.NBoxConstants.COLOR] ? indicatorIcon[dvt.NBoxConstants.COLOR] : contrastColor;
+    var indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
+        indicatorIcon[dvt.NBoxConstants.SHAPE],
+        dvt.CSSStyle.SKIN_ALTA,
         (rtl ? 1 : -1) * (side - indicatorWidth) / 2,
         0,
-        indicatorIcon[DvtNBoxConstants.WIDTH] * indicatorIconScale,
-        indicatorIcon[DvtNBoxConstants.HEIGHT] * indicatorIconScale);
-    if (indicatorIcon[DvtNBoxConstants.PATTERN] && indicatorIcon[DvtNBoxConstants.PATTERN] != 'none') {
-      indicatorMarker.setFill(new DvtPatternFill(indicatorIcon[DvtNBoxConstants.PATTERN], indicatorIconColor, color));
+        indicatorIcon[dvt.NBoxConstants.WIDTH] * indicatorIconScale,
+        indicatorIcon[dvt.NBoxConstants.HEIGHT] * indicatorIconScale,
+        indicatorIcon[dvt.NBoxConstants.BORDER_RADIUS]);
+
+    if (indicatorIcon[dvt.NBoxConstants.BORDER_WIDTH])
+      indicatorMarker.setSolidStroke(indicatorIcon[dvt.NBoxConstants.BORDER_COLOR], null, indicatorIcon[dvt.NBoxConstants.BORDER_WIDTH]);
+
+    if (indicatorIcon[dvt.NBoxConstants.PATTERN] && indicatorIcon[dvt.NBoxConstants.PATTERN] != 'none') {
+      indicatorMarker.setFill(new dvt.PatternFill(indicatorIcon[dvt.NBoxConstants.PATTERN], indicatorIconColor, color));
     }
     else {
       indicatorMarker.setSolidFill(indicatorIconColor);
     }
     nodeContainer.addChild(indicatorMarker);
-    DvtNBoxDataUtils.setDisplayable(nbox, node, indicatorMarker, DvtNBoxConstants.INDICATOR_ICON);
+    DvtNBoxDataUtils.setDisplayable(nbox, node, indicatorMarker, dvt.NBoxConstants.INDICATOR_ICON);
     retVal = true;
   }
   return retVal;
@@ -7821,7 +8040,7 @@ DvtNBoxCategoryNodeRenderer._renderNodeIndicator = function(nbox, node, nodeCont
 
 /**
  * Renders the node count
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the node data being rendered
  * @param {DvtNBoxCategoryNode} nodeContainer the container for the node contents
  * @param {number} scale The number of pixels per unit (used to determine the size of this category node based on its node count)
@@ -7832,7 +8051,7 @@ DvtNBoxCategoryNodeRenderer._renderNodeCount = function(nbox, node, nodeContaine
   var options = nbox.getOptions();
   var labelGap = options['__layout']['categoryNodeLabelGap'];
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
@@ -7854,17 +8073,17 @@ DvtNBoxCategoryNodeRenderer._renderNodeCount = function(nbox, node, nodeContaine
   var width = bIndicator ? .75 * side : side;
   var countX = (rtl ? -1 : 1) * (side - width) / 2;
   var color = DvtNBoxStyleUtils.getCategoryNodeColor(nbox, node);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(color);
-  var labelBounds = new DvtRectangle(0, 0, width - 2 * labelGap, side - 2 * labelGap);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(color);
+  var labelBounds = new dvt.Rectangle(0, 0, width - 2 * labelGap, side - 2 * labelGap);
   if (label)
     label.setTextString('' + count);
   else {
-    label = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCategoryNodeLabelStyle(nbox), DvtOutputText.H_ALIGN_CENTER, DvtOutputText.V_ALIGN_MIDDLE);
+    label = DvtNBoxRenderer.createText(nbox.getCtx(), '' + count, DvtNBoxStyleUtils.getCategoryNodeLabelStyle(nbox), dvt.OutputText.H_ALIGN_CENTER, dvt.OutputText.V_ALIGN_MIDDLE);
     DvtNBoxDataUtils.setDisplayable(nbox, node, label, 'label');
   }
   var fontSize = label.getOptimalFontSize(labelBounds);
   label.setFontSize(fontSize);
-  if (DvtTextUtils.fitText(label, width - 2 * labelGap, side - 2 * labelGap, nodeContainer)) {
+  if (dvt.TextUtils.fitText(label, width - 2 * labelGap, side - 2 * labelGap, nodeContainer)) {
     DvtNBoxRenderer.positionText(label, countX, 0);
     label.setSolidFill(contrastColor);
   }
@@ -7882,8 +8101,8 @@ DvtNBoxCategoryNodeRenderer.animateUpdate = function(animationHandler, oldNode, 
   oldNode.setAlpha(0);
   animationHandler.getNewNBox().addChild(newNode);
   newNode.setMatrix(oldGlobalMatrix);
-  var playable = new DvtAnimMoveTo(newNode.getCtx(), newNode, new DvtPoint(newGlobalMatrix.getTx(), newGlobalMatrix.getTy()), animationHandler.getAnimationDuration());
-  DvtPlayable.appendOnEnd(playable, function() {parent.addChild(newNode); newNode.setMatrix(newMatrix)});
+  var playable = new dvt.AnimMoveTo(newNode.getCtx(), newNode, new dvt.Point(newGlobalMatrix.getTx(), newGlobalMatrix.getTy()), animationHandler.getAnimationDuration());
+  dvt.Playable.appendOnEnd(playable, function() {parent.addChild(newNode); newNode.setMatrix(newMatrix)});
   animationHandler.add(playable, DvtNBoxDataAnimationHandler.UPDATE);
 };
 
@@ -7902,10 +8121,10 @@ DvtNBoxCategoryNodeRenderer.animateDelete = function(animationHandler, oldNode) 
     animationPhase = DvtNBoxDataAnimationHandler.DELETE;
   }
 
-  var scalePlayable = new DvtAnimScaleTo(newNBox.getCtx(), oldNode, new DvtPoint(.01, .01), animationHandler.getAnimationDuration());
+  var scalePlayable = new dvt.AnimScaleTo(newNBox.getCtx(), oldNode, new dvt.Point(.01, .01), animationHandler.getAnimationDuration());
   animationHandler.add(scalePlayable, animationPhase);
 
-  var fadePlayable = new DvtAnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration());
+  var fadePlayable = new dvt.AnimFadeOut(newNBox.getCtx(), oldNode, animationHandler.getAnimationDuration());
   animationHandler.add(fadePlayable, animationPhase);
 
   oldNode.setMatrix(DvtNBoxRenderer.getGlobalMatrix(oldNode));
@@ -7929,11 +8148,11 @@ DvtNBoxCategoryNodeRenderer.animateInsert = function(animationHandler, newNode) 
 
   newNode.setScaleX(0.01);
   newNode.setScaleY(0.01);
-  var scalePlayable = new DvtAnimScaleTo(newNBox.getCtx(), newNode, new DvtPoint(1, 1), animationHandler.getAnimationDuration());
+  var scalePlayable = new dvt.AnimScaleTo(newNBox.getCtx(), newNode, new dvt.Point(1, 1), animationHandler.getAnimationDuration());
   animationHandler.add(scalePlayable, animationPhase);
 
-  var fadeAnim = new DvtCustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
-  fadeAnim.getAnimator().addProp(DvtAnimator.TYPE_NUMBER, newNode, newNode.getAlpha, newNode.setAlpha, newNode.getAlpha());
+  var fadeAnim = new dvt.CustomAnimation(newNBox.getCtx(), newNode, animationHandler.getAnimationDuration());
+  fadeAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newNode, newNode.getAlpha, newNode.setAlpha, newNode.getAlpha());
   animationHandler.add(fadeAnim, animationPhase);
 
   newNode.setAlpha(0);
@@ -7945,7 +8164,7 @@ DvtNBoxCategoryNodeRenderer.animateInsert = function(animationHandler, newNode) 
  * Determines whether the grouping is the same between two nbox states
  *
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox] newNBox the new NBox
+ * @param {dvt.NBox] newNBox the new NBox
  *}
  * @return {boolean} true if the grouping is the same, false otherwise
  */
@@ -7976,7 +8195,7 @@ DvtNBoxCategoryNodeRenderer.isGroupingEqual = function(oldNBox, newNBox) {
  * Determines whether the maximize is the same between two nbox states
  *
  * @param {object} oldNBox an object representing the old NBox state
- * @param {DvtNBox} newNBox the new NBox
+ * @param {dvt.NBox} newNBox the new NBox
  *
  * @return {boolean} true if the maximize is the same, false otherwise
  */
@@ -7993,15 +8212,15 @@ DvtNBoxCategoryNodeRenderer.isMaximizeEqual = function(oldNBox, newNBox) {
 /**
  * @private
  * Adds accessibility attributes to the object
- * @param {DvtNBox} nbox the nbox
+ * @param {dvt.NBox} nbox the nbox
  * @param {DvtNBoxCategoryNode} object the object that should be updated with accessibility attributes
  */
 DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object) {
   object.setAriaRole('img');
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = object.getAriaLabel();
     if (desc)
-      object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -8013,22 +8232,22 @@ DvtNBoxCategoryNodeRenderer._addAccessibilityAttributes = function(nbox, object)
  */
 var DvtNBoxDrawerRenderer = new Object();
 
-DvtObj.createSubclass(DvtNBoxDrawerRenderer, DvtObj, 'DvtNBoxDrawerRenderer');
+dvt.Obj.createSubclass(DvtNBoxDrawerRenderer, dvt.Obj);
 
 
 /**
  * Renders the nbox drawer
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} data the data associated with the currently open group
  * @param {DvtNBoxDrawer} drawerContainer The container to render into.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtNBoxDrawerRenderer.render = function(nbox, data, drawerContainer, availSpace) {
   var drawerBounds = DvtNBoxDrawerRenderer.getDrawerBounds(nbox, data, availSpace);
   data['__drawerBounds'] = drawerBounds;
   drawerContainer.setTranslate(drawerBounds.x, drawerBounds.y);
 
-  var keyboardFocusEffect = new DvtKeyboardFocusEffect(nbox.getCtx(), drawerContainer, new DvtRectangle(-1, -1, drawerBounds.w + 2, drawerBounds.h + 2));
+  var keyboardFocusEffect = new dvt.KeyboardFocusEffect(nbox.getCtx(), drawerContainer, new dvt.Rectangle(-1, -1, drawerBounds.w + 2, drawerBounds.h + 2));
   DvtNBoxDataUtils.setDisplayable(nbox, data, keyboardFocusEffect, 'focusEffect');
 
   DvtNBoxDrawerRenderer._renderBody(nbox, data, drawerContainer);
@@ -8039,7 +8258,7 @@ DvtNBoxDrawerRenderer.render = function(nbox, data, drawerContainer, availSpace)
 
 /**
  * Renders the nbox drawer header
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} data the data associated with the currently open group
  * @param {DvtNBoxDrawer} drawerContainer The container to render into.
  * @private
@@ -8055,9 +8274,9 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var indicatorGap = options['__layout']['nodeIndicatorGap'];
   var swatchSize = options['__layout']['nodeSwatchSize'];
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
-  var categoryNode = DvtNBoxDataUtils.getCategoryNode(nbox, data[DvtNBoxConstants.ID]);
+  var categoryNode = DvtNBoxDataUtils.getCategoryNode(nbox, data[dvt.NBoxConstants.ID]);
   var nodeCount = categoryNode['nodeIndices'].length;
 
   var drawerBounds = data['__drawerBounds'];
@@ -8069,10 +8288,10 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
     var closeOvr = options['_resources']['close_ovr'];
     var closeDwn = options['_resources']['close_dwn'];
     var closeHeight = closeEna['height'];
-    var closeEnaImg = new DvtImage(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
-    var closeOvrImg = new DvtImage(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
-    var closeDwnImg = new DvtImage(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
-    var closeButton = new DvtButton(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, drawerContainer.closeDrawer, drawerContainer);
+    var closeEnaImg = new dvt.Image(nbox.getCtx(), closeEna['src'], 0, 0, closeEna['width'], closeEna['height']);
+    var closeOvrImg = new dvt.Image(nbox.getCtx(), closeOvr['src'], 0, 0, closeOvr['width'], closeOvr['height']);
+    var closeDwnImg = new dvt.Image(nbox.getCtx(), closeDwn['src'], 0, 0, closeDwn['width'], closeDwn['height']);
+    var closeButton = new dvt.Button(nbox.getCtx(), closeEnaImg, closeOvrImg, closeDwnImg, null, null, drawerContainer.closeDrawer, drawerContainer);
 
     // Center/hide close button if drawer too thin for normal rendering
     var closeButtonX = rtl ? Math.min((drawerBounds.w - closeWidth) / 2, drawerButtonGap) : Math.max((drawerBounds.w - closeWidth) / 2, drawerBounds.w - drawerButtonGap - closeWidth);
@@ -8084,24 +8303,24 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
 
   // Render the count indicator
   var countColor = DvtNBoxStyleUtils.getCategoryNodeColor(nbox, categoryNode);
-  var contrastColor = DvtColorUtils.getContrastingTextColor(countColor);
+  var contrastColor = dvt.ColorUtils.getContrastingTextColor(countColor);
   var indicatorColor = DvtNBoxStyleUtils.getCategoryNodeIndicatorColor(nbox, categoryNode);
-  var indicatorIconColor = indicatorColor ? DvtColorUtils.getContrastingTextColor(indicatorColor) : contrastColor;
+  var indicatorIconColor = indicatorColor ? dvt.ColorUtils.getContrastingTextColor(indicatorColor) : contrastColor;
   var indicatorIcon = DvtNBoxStyleUtils.getStyledCategoryIndicatorIcon(nbox, categoryNode);
   var indicatorIconWidth = swatchSize;
   var scale = 1;
   if (indicatorIcon) {
-    var indicatorIconW = indicatorIcon[DvtNBoxConstants.WIDTH];
-    var indicatorIconH = indicatorIcon[DvtNBoxConstants.HEIGHT];
+    var indicatorIconW = indicatorIcon[dvt.NBoxConstants.WIDTH];
+    var indicatorIconH = indicatorIcon[dvt.NBoxConstants.HEIGHT];
     scale = swatchSize / indicatorIconH;
     indicatorIconWidth = scale * indicatorIconW;
-    indicatorIconColor = indicatorIcon[DvtNBoxConstants.COLOR] ? indicatorIcon[DvtNBoxConstants.COLOR] : indicatorIconColor;
+    indicatorIconColor = indicatorIcon[dvt.NBoxConstants.COLOR] ? indicatorIcon[dvt.NBoxConstants.COLOR] : indicatorIconColor;
   }
 
   var countBorderRadius = DvtNBoxStyleUtils.getDrawerCountBorderRadius(nbox);
 
-  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
-  var countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), '' + nodeCount, DvtNBoxStyleUtils.getDrawerCountLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
+  var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
+  var countLabel = DvtNBoxRenderer.createText(nbox.getCtx(), '' + nodeCount, DvtNBoxStyleUtils.getDrawerCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
   var countLabelDims = countLabel.measureDimensions();
   var countLabelWidth = countLabelDims.w;
   var countLabelHeight = countLabelDims.h;
@@ -8111,36 +8330,41 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
   var countIndicatorWidth = countIndicatorSectionWidth + countLabelSectionWidth;
   var countIndicatorShape;
   if (drawerBounds.w - closeWidth - 2 * drawerButtonGap - drawerStartGap > countIndicatorWidth) {
-    var countIndicatorPath = DvtPathUtils.roundedRectangle(0, 0, countIndicatorWidth, countIndicatorHeight, countBorderRadius, countBorderRadius, countBorderRadius, countBorderRadius);
-    countIndicatorShape = new DvtPath(nbox.getCtx(), countIndicatorPath);
+    var countIndicatorPath = dvt.PathUtils.roundedRectangle(0, 0, countIndicatorWidth, countIndicatorHeight, countBorderRadius, countBorderRadius, countBorderRadius, countBorderRadius);
+    countIndicatorShape = new dvt.Path(nbox.getCtx(), countIndicatorPath);
     countIndicatorShape.setSolidFill(countColor);
     drawerContainer.addChild(countIndicatorShape);
 
     var indicatorX = rtl ? countLabelSectionWidth : 0;
     if (countIndicatorSectionWidth > 0) {
       if (indicatorColor) {
-        var indicatorSectionPath = DvtPathUtils.roundedRectangle(indicatorX,
-                                                                 0,
-                                                                 countIndicatorSectionWidth,
-                                                                 countIndicatorHeight,
-                                                                 rtl ? 0 : countBorderRadius,
-                                                                 rtl ? countBorderRadius : 0,
-                                                                 rtl ? countBorderRadius : 0,
-                                                                 rtl ? 0 : countBorderRadius);
-        var indicatorSection = new DvtPath(nbox.getCtx(), indicatorSectionPath);
+        var indicatorSectionPath = dvt.PathUtils.roundedRectangle(indicatorX,
+            0,
+            countIndicatorSectionWidth,
+            countIndicatorHeight,
+            rtl ? 0 : countBorderRadius,
+            rtl ? countBorderRadius : 0,
+            rtl ? countBorderRadius : 0,
+            rtl ? 0 : countBorderRadius);
+        var indicatorSection = new dvt.Path(nbox.getCtx(), indicatorSectionPath);
         indicatorSection.setSolidFill(indicatorColor);
         countIndicatorShape.addChild(indicatorSection);
       }
       if (indicatorIcon) {
-        var indicatorMarker = new DvtSimpleMarker(nbox.getCtx(),
-            indicatorIcon[DvtNBoxConstants.SHAPE],
-            DvtCSSStyle.SKIN_ALTA,
+        var indicatorMarker = new dvt.SimpleMarker(nbox.getCtx(),
+            indicatorIcon[dvt.NBoxConstants.SHAPE],
+            dvt.CSSStyle.SKIN_ALTA,
             indicatorX + countIndicatorSectionWidth / 2,
             countIndicatorHeight / 2,
-            indicatorIcon[DvtNBoxConstants.WIDTH] * scale,
-            indicatorIcon[DvtNBoxConstants.HEIGHT] * scale);
-        if (indicatorIcon[DvtNBoxConstants.PATTERN] && indicatorIcon[DvtNBoxConstants.PATTERN] != 'none') {
-          indicatorMarker.setFill(new DvtPatternFill(indicatorIcon[DvtNBoxConstants.PATTERN], indicatorIconColor, indicatorColor ? indicatorColor : countColor));
+            indicatorIcon[dvt.NBoxConstants.WIDTH] * scale,
+            indicatorIcon[dvt.NBoxConstants.HEIGHT] * scale,
+            indicatorIcon[dvt.NBoxConstants.BORDER_RADIUS]);
+
+        if (indicatorIcon[dvt.NBoxConstants.BORDER_WIDTH])
+          indicatorMarker.setSolidStroke(indicatorIcon[dvt.NBoxConstants.BORDER_COLOR], null, indicatorIcon[dvt.NBoxConstants.BORDER_WIDTH]);
+
+        if (indicatorIcon[dvt.NBoxConstants.PATTERN] && indicatorIcon[dvt.NBoxConstants.PATTERN] != 'none') {
+          indicatorMarker.setFill(new dvt.PatternFill(indicatorIcon[dvt.NBoxConstants.PATTERN], indicatorIconColor, indicatorColor ? indicatorColor : countColor));
         }
         else {
           indicatorMarker.setSolidFill(indicatorIconColor);
@@ -8157,9 +8381,9 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
 
   // Render the category label
   var categoryText = DvtNBoxDataUtils.getDisplayable(nbox, categoryNode).getLabel();
-  var categoryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), categoryText, DvtNBoxStyleUtils.getDrawerLabelStyle(nbox), halign, DvtOutputText.V_ALIGN_MIDDLE);
+  var categoryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), categoryText, DvtNBoxStyleUtils.getDrawerLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
   var labelOffset = 0;
-  if (DvtTextUtils.fitText(categoryLabel, drawerBounds.w - drawerStartGap - drawerLabelGap - countIndicatorWidth - 2 * drawerButtonGap - closeWidth, drawerHeaderHeight, drawerContainer)) {
+  if (dvt.TextUtils.fitText(categoryLabel, drawerBounds.w - drawerStartGap - drawerLabelGap - countIndicatorWidth - 2 * drawerButtonGap - closeWidth, drawerHeaderHeight, drawerContainer)) {
     var labelX = rtl ? drawerBounds.w - drawerStartGap : drawerStartGap;
     DvtNBoxRenderer.positionText(categoryLabel, labelX, drawerHeaderHeight / 2);
     var categoryLabelDims = categoryLabel.measureDimensions();
@@ -8177,7 +8401,7 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
 
 /**
  * Renders the nbox drawer body
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} data the data associated with the currently open group
  * @param {DvtNBoxDrawer} drawerContainer The container to render into.
  * @private
@@ -8188,14 +8412,14 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
   var drawerHeaderHeight = options['__layout']['drawerHeaderHeight'];
   var drawerBounds = data['__drawerBounds'];
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
 
   // Render the body shape
   var borderRadius = DvtNBoxStyleUtils.getDrawerBorderRadius(nbox);
   var borderColor = DvtNBoxStyleUtils.getDrawerBorderColor(nbox);
 
-  var bodyPath = DvtPathUtils.roundedRectangle(0, 0, drawerBounds.w, drawerBounds.h, borderRadius, borderRadius, borderRadius, borderRadius);
-  var body = new DvtPath(nbox.getCtx(), bodyPath);
+  var bodyPath = dvt.PathUtils.roundedRectangle(0, 0, drawerBounds.w, drawerBounds.h, borderRadius, borderRadius, borderRadius, borderRadius);
+  var body = new dvt.Path(nbox.getCtx(), bodyPath);
   DvtNBoxRenderer.setFill(body, DvtNBoxStyleUtils.getDrawerBackground(nbox));
   body.setSolidStroke(borderColor);
   body.setPixelHinting(true);
@@ -8203,21 +8427,71 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
   DvtNBoxDataUtils.setDisplayable(nbox, data, body, 'background');
 
   // Render the nodes
-  data['__childArea'] = new DvtRectangle(gridGap, drawerHeaderHeight + gridGap, Math.max(drawerBounds.w - 2 * gridGap, 0), Math.max(drawerBounds.h - drawerHeaderHeight - 2 * gridGap, 0));
-  var scrollContainer = new DvtSimpleScrollableContainer(nbox.getCtx(), drawerBounds.w, drawerBounds.h - drawerHeaderHeight);
+  data['__childArea'] = new dvt.Rectangle(gridGap, drawerHeaderHeight + gridGap, Math.max(drawerBounds.w - 2 * gridGap, 0), Math.max(drawerBounds.h - drawerHeaderHeight - 2 * gridGap, 0));
+  var scrollContainer = new dvt.SimpleScrollableContainer(nbox.getCtx(), drawerBounds.w, drawerBounds.h - drawerHeaderHeight);
   scrollContainer.setTranslate(0, drawerHeaderHeight);
   drawerContainer.addChild(scrollContainer);
   drawerContainer.setChildContainer(scrollContainer);
 
-  // If no nodes are highlighted, make a single pass through the nodes for rendering
-  // If some nodes are highlighted, make two passes, first rendering the highlighted nodes, then the unhighlighted nodes
-  var orderPasses = ['normal'];
   var alphaFade = DvtNBoxStyleUtils.getFadedNodeAlpha(nbox);
   var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
   var highlightedMap = {};
   if (highlightedItems) {
     for (var i = 0; i < highlightedItems.length; i++) {
-      highlightedMap[highlightedItems[i][DvtNBoxConstants.ID]] = true;
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
+    }
+  }
+
+  var nodes = DvtNBoxDrawerRenderer.calculateNodeOrders(nbox, data);
+  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeDrawerLayout(nbox, data, nodes);
+  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
+  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
+
+  var container = DvtNBoxDataUtils.getDisplayable(nbox, data).getChildContainer();
+  for (var n = 0; n < nodes.length; n++) {
+    var node = nodes[n];
+    if (nodeLayout['drawerLayout'][dvt.NBoxConstants.COLUMNS] != 0 && nodeLayout['drawerLayout'][dvt.NBoxConstants.ROWS] != 0) {
+      var nodeContainer = new DvtNBoxNode(nbox, node);
+      var gridXOrigin = data['__childArea'].x + (data['__childArea'].w - nodeLayout['drawerLayout'][dvt.NBoxConstants.COLUMNS] * hGridSize + gridGap) / 2;
+      var gridYOrigin = gridGap;
+      var gridColumn = (n % nodeLayout['drawerLayout'][dvt.NBoxConstants.COLUMNS]);
+      if (rtl) {
+        gridColumn = nodeLayout['drawerLayout'][dvt.NBoxConstants.COLUMNS] - gridColumn - 1;
+      }
+      var gridRow = Math.floor((n / nodeLayout['drawerLayout'][dvt.NBoxConstants.COLUMNS]));
+      nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn, gridYOrigin + vGridSize * gridRow);
+      nodeContainer.render(container.getScrollingPane(), nodeLayout);
+      if (highlightedItems && !highlightedMap[node[dvt.NBoxConstants.ID]]) {
+        nodeContainer.setAlpha(alphaFade);
+      }
+
+      //keyboard navigation
+      var prevNode = n > 0 ? nodes[n - 1] : null;
+      if (prevNode) {
+        node['__prev'] = prevNode;
+        prevNode['__next'] = node;
+      }
+    }
+  }
+  container.prepareContentPane();
+};
+
+
+/**
+ * Calculates the order to render the nodes in, taking into account selection/highlighting state.
+ * @param {dvt.NBox} nbox The nbox component
+ * @param {object} data the data associated with the currently open group
+ * @return {array} array of node objects in rendering order
+ */
+DvtNBoxDrawerRenderer.calculateNodeOrders = function(nbox, data) {
+  // If no nodes are highlighted, make a single pass through the nodes for rendering
+  // If some nodes are highlighted, make two passes, first rendering the highlighted nodes, then the unhighlighted nodes
+  var orderPasses = ['normal'];
+  var highlightedItems = DvtNBoxDataUtils.getHighlightedItems(nbox);
+  var highlightedMap = {};
+  if (highlightedItems) {
+    for (var i = 0; i < highlightedItems.length; i++) {
+      highlightedMap[highlightedItems[i][dvt.NBoxConstants.ID]] = true;
     }
   }
 
@@ -8240,78 +8514,47 @@ DvtNBoxDrawerRenderer._renderBody = function(nbox, data, drawerContainer) {
   }
 
   var nodes = [];
-  var categoryNode = DvtNBoxDataUtils.getCategoryNode(nbox, data[DvtNBoxConstants.ID]);
+  var categoryNode = DvtNBoxDataUtils.getCategoryNode(nbox, data[dvt.NBoxConstants.ID]);
   var nodeCount = categoryNode['nodeIndices'].length;
   for (var p = 0; p < orderPasses.length; p++) {
     for (var n = 0; n < nodeCount; n++) {
       var node = DvtNBoxDataUtils.getNode(nbox, categoryNode['nodeIndices'][n]);
       if (orderPasses[p] == 'normal' ||
-          (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
-          (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]]) ||
-          (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[DvtNBoxConstants.ID]] && selectedMap[node[DvtNBoxConstants.ID]]) ||
-          (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[DvtNBoxConstants.ID]] && !selectedMap[node[DvtNBoxConstants.ID]])) {
+          (orderPasses[p] == 'highlighted-selected' && highlightedMap[node[dvt.NBoxConstants.ID]] && selectedMap[node[dvt.NBoxConstants.ID]]) ||
+          (orderPasses[p] == 'highlighted-unselected' && highlightedMap[node[dvt.NBoxConstants.ID]] && !selectedMap[node[dvt.NBoxConstants.ID]]) ||
+          (orderPasses[p] == 'unhighlighted-selected' && !highlightedMap[node[dvt.NBoxConstants.ID]] && selectedMap[node[dvt.NBoxConstants.ID]]) ||
+          (orderPasses[p] == 'unhighlighted-unselected' && !highlightedMap[node[dvt.NBoxConstants.ID]] && !selectedMap[node[dvt.NBoxConstants.ID]])) {
         nodes.push(node);
       }
     }
   }
-
-  var nodeLayout = DvtNBoxNodeRenderer.calculateNodeDrawerLayout(nbox, data, nodes);
-  var hGridSize = nodeLayout['indicatorSectionWidth'] + nodeLayout['iconSectionWidth'] + nodeLayout['labelSectionWidth'] + gridGap;
-  var vGridSize = nodeLayout['nodeHeight'] + gridGap;
-
-  var container = DvtNBoxDataUtils.getDisplayable(nbox, data).getChildContainer();
-  for (var n = 0; n < nodes.length; n++) {
-    var node = nodes[n];
-    if (nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] != 0 && nodeLayout['drawerLayout'][DvtNBoxConstants.ROWS] != 0) {
-      var nodeContainer = DvtNBoxNode.newInstance(nbox, node);
-      var gridXOrigin = data['__childArea'].x + (data['__childArea'].w - nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] * hGridSize + gridGap) / 2;
-      var gridYOrigin = gridGap;
-      var gridColumn = (n % nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]);
-      if (rtl) {
-        gridColumn = nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS] - gridColumn - 1;
-      }
-      var gridRow = Math.floor((n / nodeLayout['drawerLayout'][DvtNBoxConstants.COLUMNS]));
-      nodeContainer.setTranslate(gridXOrigin + hGridSize * gridColumn, gridYOrigin + vGridSize * gridRow);
-      nodeContainer.render(container.getScrollingPane(), nodeLayout);
-      if (highlightedItems && !highlightedMap[node[DvtNBoxConstants.ID]]) {
-        nodeContainer.setAlpha(alphaFade);
-      }
-
-      //keyboard navigation
-      var prevNode = n > 0 ? nodes[n - 1] : null;
-      if (prevNode) {
-        node['__prev'] = prevNode;
-        prevNode['__next'] = node;
-      }
-    }
-  }
-  container.prepareContentPane();
+  return nodes;
 };
 
 
 /**
  * Gets the drawer bounds
  *
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} data the data associated with the currently open group
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  *
- * @return {DvtRectangle} the drawer bounds
+ * @return {dvt.Rectangle} the drawer bounds
  */
 DvtNBoxDrawerRenderer.getDrawerBounds = function(nbox, data, availSpace) {
   var options = nbox.getOptions();
   var gridGap = options['__layout']['gridGap'];
-  var cellLayout = options['__layout']['__cellLayout'];
-  var drawerBounds = new DvtRectangle(availSpace.x + gridGap, availSpace.y + gridGap, Math.max(availSpace.w - 2 * gridGap, 0), Math.max(availSpace.h - 2 * gridGap, 0));
+  var cellLayout = DvtNBoxCellRenderer.getCellLayout(nbox);
+  var drawerBounds = new dvt.Rectangle(availSpace.x + gridGap, availSpace.y + gridGap, Math.max(availSpace.w - 2 * gridGap, 0), Math.max(availSpace.h - 2 * gridGap, 0));
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(nbox);
-  if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
-    var cellIndex = parseInt(data['id'].substring(0, data[DvtNBoxConstants.ID].indexOf(':')));
+  if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+    var cellIndex = parseInt(data['id'].substring(0, data[dvt.NBoxConstants.ID].indexOf(':')));
     if (DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex)) {
       var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-      var r = DvtNBoxDataUtils.getRowIndex(nbox, cell[DvtNBoxConstants.ROW]);
-      var c = DvtNBoxDataUtils.getColumnIndex(nbox, cell[DvtNBoxConstants.COLUMN]);
-      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, cellLayout, availSpace);
-      drawerBounds = new DvtRectangle(cellDims.x + gridGap, cellDims.y + gridGap + cellLayout['headerSize'], Math.max(cellDims.w - 2 * gridGap, 0), Math.max(cellDims.h - cellLayout['headerSize'] - 2 * gridGap, 0));
+      var r = DvtNBoxDataUtils.getRowIndex(nbox, cell[dvt.NBoxConstants.ROW]);
+      var c = DvtNBoxDataUtils.getColumnIndex(nbox, cell[dvt.NBoxConstants.COLUMN]);
+      var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, availSpace);
+      drawerBounds = new dvt.Rectangle(cellDims.x + gridGap, cellDims.y + gridGap + cellLayout['headerSize'], Math.max(cellDims.w - 2 * gridGap, 0), Math.max(cellDims.h - cellLayout['headerSize'] - 2 * gridGap, 0));
     }
   }
   return drawerBounds;
@@ -8335,7 +8578,7 @@ DvtNBoxDrawerRenderer.animateDelete = function(animationHandler, oldDrawer) {
 
   var newNBox = animationHandler.getNewNBox();
   var drawerBounds = oldDrawer.getData()['__drawerBounds'];
-  var id = oldDrawer.getData()[DvtNBoxConstants.ID];
+  var id = oldDrawer.getData()[dvt.NBoxConstants.ID];
   var group = DvtNBoxDataUtils.getCategoryNode(newNBox, id);
   if (group) {
     var sideLength = DvtNBoxCategoryNodeRenderer.getSideLength(group);
@@ -8344,14 +8587,14 @@ DvtNBoxDrawerRenderer.animateDelete = function(animationHandler, oldDrawer) {
     var groupNode = DvtNBoxDataUtils.getDisplayable(newNBox, group);
     if (groupNode) {
       var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-      var finalMatrix = new DvtMatrix(scaleX, 0, 0, scaleY, centerMatrix.getTx() - sideLength / 2, centerMatrix.getTy() - sideLength / 2);
-      var playable = new DvtCustomAnimation(newNBox.getCtx(), oldDrawer, animationHandler.getAnimationDuration());
-      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, oldDrawer, oldDrawer.getMatrix, oldDrawer.setMatrix, finalMatrix);
+      var finalMatrix = new dvt.Matrix(scaleX, 0, 0, scaleY, centerMatrix.getTx() - sideLength / 2, centerMatrix.getTy() - sideLength / 2);
+      var playable = new dvt.CustomAnimation(newNBox.getCtx(), oldDrawer, animationHandler.getAnimationDuration());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, oldDrawer, oldDrawer.getMatrix, oldDrawer.setMatrix, finalMatrix);
       animationHandler.add(playable, animationPhase);
     }
   }
   newNBox.getDeleteContainer().addChild(oldDrawer);
-  var fadePlayable = new DvtAnimFadeOut(newNBox.getCtx(), oldDrawer, animationHandler.getAnimationDuration());
+  var fadePlayable = new dvt.AnimFadeOut(newNBox.getCtx(), oldDrawer, animationHandler.getAnimationDuration());
   animationHandler.add(fadePlayable, animationPhase);
 };
 
@@ -8364,7 +8607,7 @@ DvtNBoxDrawerRenderer.animateInsert = function(animationHandler, newDrawer) {
 
   var newNBox = animationHandler.getNewNBox();
   var drawerBounds = newDrawer.getData()['__drawerBounds'];
-  var id = newDrawer.getData()[DvtNBoxConstants.ID];
+  var id = newDrawer.getData()[dvt.NBoxConstants.ID];
   var group = DvtNBoxDataUtils.getCategoryNode(newNBox, id);
   if (group) {
     var sideLength = DvtNBoxCategoryNodeRenderer.getSideLength(group);
@@ -8373,18 +8616,18 @@ DvtNBoxDrawerRenderer.animateInsert = function(animationHandler, newDrawer) {
     var groupNode = DvtNBoxDataUtils.getDisplayable(newNBox, group);
     if (groupNode) {
       var centerMatrix = DvtNBoxRenderer.getGlobalMatrix(groupNode);
-      var initMatrix = new DvtMatrix(scaleX, 0, 0, scaleY, centerMatrix.getTx() - sideLength / 2, centerMatrix.getTy() - sideLength / 2);
-      var playable = new DvtCustomAnimation(newNBox.getCtx(), newDrawer, animationHandler.getAnimationDuration());
-      playable.getAnimator().addProp(DvtAnimator.TYPE_MATRIX, newDrawer, newDrawer.getMatrix, newDrawer.setMatrix, newDrawer.getMatrix());
+      var initMatrix = new dvt.Matrix(scaleX, 0, 0, scaleY, centerMatrix.getTx() - sideLength / 2, centerMatrix.getTy() - sideLength / 2);
+      var playable = new dvt.CustomAnimation(newNBox.getCtx(), newDrawer, animationHandler.getAnimationDuration());
+      playable.getAnimator().addProp(dvt.Animator.TYPE_MATRIX, newDrawer, newDrawer.getMatrix, newDrawer.setMatrix, newDrawer.getMatrix());
       var parent = newDrawer.getParent();
       newNBox.addChild(newDrawer);
-      DvtPlayable.appendOnEnd(playable, function() {parent.addChild(newDrawer)});
+      dvt.Playable.appendOnEnd(playable, function() {parent.addChild(newDrawer)});
       newDrawer.setMatrix(initMatrix);
       animationHandler.add(playable, animationPhase);
     }
   }
   newDrawer.setAlpha(0);
-  var fadePlayable = new DvtAnimFadeIn(newNBox.getCtx(), newDrawer, animationHandler.getAnimationDuration());
+  var fadePlayable = new dvt.AnimFadeIn(newNBox.getCtx(), newDrawer, animationHandler.getAnimationDuration());
   animationHandler.add(fadePlayable, animationPhase);
 };
 
@@ -8392,44 +8635,44 @@ DvtNBoxDrawerRenderer.animateInsert = function(animationHandler, newDrawer) {
 /**
  * @private
  * Adds accessibility attributes to the object
- * @param {DvtNBox} nbox The nbox component
+ * @param {dvt.NBox} nbox The nbox component
  * @param {object} data the data associated with the currently open group
  * @param {DvtNBoxDrawer} drawerContainer the object that should be updated with accessibility attributes
  */
 DvtNBoxDrawerRenderer._addAccessibilityAttributes = function(nbox, data, drawerContainer) {
-  var object = DvtAgent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(nbox, data, 'background') : drawerContainer;
+  var object = dvt.Agent.isTouchDevice() ? DvtNBoxDataUtils.getDisplayable(nbox, data, 'background') : drawerContainer;
   object.setAriaRole('img');
-  if (!DvtAgent.deferAriaCreation()) {
+  if (!dvt.Agent.deferAriaCreation()) {
     var desc = drawerContainer.getAriaLabel();
     if (desc)
-      object.setAriaProperty(DvtNBoxConstants.LABEL, desc);
+      object.setAriaProperty(dvt.NBoxConstants.LABEL, desc);
   }
 };
 /**
- * Data related utility functions for DvtNBox.
+ * Data related utility functions for dvt.NBox.
  * @class
  */
 var DvtNBoxDataUtils = new Object();
 
-DvtObj.createSubclass(DvtNBoxDataUtils, DvtObj, 'DvtNBoxDataUtils');
+dvt.Obj.createSubclass(DvtNBoxDataUtils, dvt.Obj);
 
 
 /**
  * Processes the data object.  Generates and sorts cells if not specified
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  */
 DvtNBoxDataUtils.processDataObject = function(nbox) {
   var options = nbox.getOptions();
-  var cells = options[DvtNBoxConstants.CELLS];
+  var cells = options[dvt.NBoxConstants.CELLS];
   var cellMap = {};
   if (cells) {
     for (var i = 0; i < cells.length; i++) {
       var cell = cells[i];
-      var row = cell[DvtNBoxConstants.ROW];
+      var row = cell[dvt.NBoxConstants.ROW];
       if (!cellMap[row]) {
         cellMap[row] = {};
       }
-      var column = cell[DvtNBoxConstants.COLUMN];
+      var column = cell[dvt.NBoxConstants.COLUMN];
       cellMap[row][column] = cell;
     }
   }
@@ -8439,24 +8682,24 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
   // Process rows
   for (var r = 0; r < DvtNBoxDataUtils.getRowCount(nbox); r++) {
     var rowObj = DvtNBoxDataUtils.getRow(nbox, r);
-    rowMap[rowObj[DvtNBoxConstants.ID]] = r;
+    rowMap[rowObj[dvt.NBoxConstants.ID]] = r;
   }
   options['__rowMap'] = rowMap;
 
   // Process columns
   for (var c = 0; c < DvtNBoxDataUtils.getColumnCount(nbox); c++) {
     var columnObj = DvtNBoxDataUtils.getColumn(nbox, c);
-    columnMap[columnObj[DvtNBoxConstants.ID]] = c;
+    columnMap[columnObj[dvt.NBoxConstants.ID]] = c;
   }
   options['__columnMap'] = columnMap;
 
   // Process cells
   for (var r = 0; r < DvtNBoxDataUtils.getRowCount(nbox); r++) {
     var rowObj = DvtNBoxDataUtils.getRow(nbox, r);
-    var row = rowObj[DvtNBoxConstants.ID];
+    var row = rowObj[dvt.NBoxConstants.ID];
     for (var c = 0; c < DvtNBoxDataUtils.getColumnCount(nbox); c++) {
       var columnObj = DvtNBoxDataUtils.getColumn(nbox, c);
-      var column = columnObj[DvtNBoxConstants.ID];
+      var column = columnObj[dvt.NBoxConstants.ID];
       if (cellMap[row] && cellMap[row][column]) {
         var cellObj = cellMap[row][column];
         newCells.push(cellObj);
@@ -8466,38 +8709,38 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
       }
     }
   }
-  options[DvtNBoxConstants.CELLS] = newCells;
+  options[dvt.NBoxConstants.CELLS] = newCells;
   var nodeMap = {};
   var grouping = false;
   for (var n = 0; n < DvtNBoxDataUtils.getNodeCount(nbox); n++) {
     var nodeObj = DvtNBoxDataUtils.getNode(nbox, n);
-    nodeMap[nodeObj[DvtNBoxConstants.ID]] = n;
+    nodeMap[nodeObj[dvt.NBoxConstants.ID]] = n;
     if (!grouping &&
-        (nodeObj[DvtNBoxConstants.GROUP_CATEGORY] ||
+        (nodeObj[dvt.NBoxConstants.GROUP_CATEGORY] ||
          nodeObj['_groupCategories'] ||
          nodeObj['_groupLabels']))
       grouping = true;
   }
   options['__nodeMap'] = nodeMap;
-  options['__grouping'] = options[DvtNBoxConstants.GROUP_BEHAVIOR] != 'none' ? grouping : false;
+  options['__grouping'] = options[dvt.NBoxConstants.GROUP_BEHAVIOR] != 'none' ? grouping : false;
 
   // Disable maximize if we're grouping across cells
-  if (DvtNBoxDataUtils.getGrouping(nbox) && DvtNBoxDataUtils.getGroupBehavior(nbox) == DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
-    options[DvtNBoxConstants.MAXIMIZED_ROW] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, DvtNBoxConstants.MAXIMIZED_ROW, null);
-    options[DvtNBoxConstants.MAXIMIZED_COLUMN] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, DvtNBoxConstants.MAXIMIZED_COLUMN, null);
+  if (DvtNBoxDataUtils.getGrouping(nbox) && DvtNBoxDataUtils.getGroupBehavior(nbox) == dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS) {
+    options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
+    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
+    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
+    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
   }
   // Disable maximize if either row or column is invalid
-  if ((options[DvtNBoxConstants.MAXIMIZED_ROW] && isNaN(rowMap[options[DvtNBoxConstants.MAXIMIZED_ROW]])) ||
-      (options[DvtNBoxConstants.MAXIMIZED_COLUMN] && isNaN(columnMap[options[DvtNBoxConstants.MAXIMIZED_COLUMN]]))) {
-    options[DvtNBoxConstants.MAXIMIZED_ROW] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, DvtNBoxConstants.MAXIMIZED_ROW, null);
-    options[DvtNBoxConstants.MAXIMIZED_COLUMN] = null;
-    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, DvtNBoxConstants.MAXIMIZED_COLUMN, null);
+  if ((options[dvt.NBoxConstants.MAXIMIZED_ROW] && isNaN(rowMap[options[dvt.NBoxConstants.MAXIMIZED_ROW]])) ||
+      (options[dvt.NBoxConstants.MAXIMIZED_COLUMN] && isNaN(columnMap[options[dvt.NBoxConstants.MAXIMIZED_COLUMN]]))) {
+    options[dvt.NBoxConstants.MAXIMIZED_ROW] = null;
+    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_ROW, null);
+    options[dvt.NBoxConstants.MAXIMIZED_COLUMN] = null;
+    DvtNBoxDataUtils.fireSetPropertyEvent(nbox, dvt.NBoxConstants.MAXIMIZED_COLUMN, null);
   }
   // Process legend
-  var legend = options[DvtNBoxConstants.LEGEND];
+  var legend = options[dvt.NBoxConstants.LEGEND];
   if (legend && legend['sections']) {
     var legendPrecedence = ['color',
                             'iconFill',
@@ -8510,10 +8753,10 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
 
     legend['sections'] = legend['sections'].slice(0);
     var sortFunc = function(a, b) {
-      return DvtArrayUtils.getIndex(legendPrecedence, a['type']) - DvtArrayUtils.getIndex(legendPrecedence, b['type']);
+      return dvt.ArrayUtils.getIndex(legendPrecedence, a['type']) - dvt.ArrayUtils.getIndex(legendPrecedence, b['type']);
     };
     legend['sections'].sort(sortFunc);
-    var hiddenCategories = options[DvtNBoxConstants.HIDDEN_CATEGORIES];
+    var hiddenCategories = options[dvt.NBoxConstants.HIDDEN_CATEGORIES];
 
     // Generate the legend
     legend['hideAndShowBehavior'] = 'on';
@@ -8528,7 +8771,7 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
       for (var j = 0; j < section['items'].length; j++) {
         var item = section['items'][j];
         var category = item['categories'] && item['categories'].length > 0 ? item['categories'][0] : item['id'];
-        item['categoryVisibility'] = DvtArrayUtils.getIndex(hiddenCategories, category) != -1 ? 'hidden' : null;
+        item['categoryVisibility'] = dvt.ArrayUtils.getIndex(hiddenCategories, category) != -1 ? 'hidden' : null;
         if (item['indicatorColor']) {
           item['color'] = item['indicatorColor'];
         }
@@ -8547,56 +8790,56 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
 /**
  * Gets the number of columns in the nbox
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {number} the number of columns in the nbox
  */
 DvtNBoxDataUtils.getColumnCount = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.COLUMNS].length;
+  return nbox.getOptions()[dvt.NBoxConstants.COLUMNS].length;
 };
 
 
 /**
  * Gets the number of rows in the nbox
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {number} the number of rows in the nbox
  */
 DvtNBoxDataUtils.getRowCount = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.ROWS].length;
+  return nbox.getOptions()[dvt.NBoxConstants.ROWS].length;
 };
 
 /**
  * Get the NBox column label for column value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {String} colValue nbox column value
  * @return {String} nbox column label
  */
 DvtNBoxDataUtils.getColumnLabel = function(nbox, colValue) {
   var col = DvtNBoxDataUtils.getColumn(nbox, DvtNBoxDataUtils.getColumnIndex(nbox, colValue));
-  if (col && col[DvtNBoxConstants.LABEL])
-    return col[DvtNBoxConstants.LABEL];
+  if (col && col[dvt.NBoxConstants.LABEL])
+    return col[dvt.NBoxConstants.LABEL];
   return null;
 };
 
 /**
  * Get the NBox row label for row value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {String} rowValue nbox row value
  * @return {String} nbox row label
  */
 DvtNBoxDataUtils.getRowLabel = function(nbox, rowValue) {
   var row = DvtNBoxDataUtils.getRow(nbox, DvtNBoxDataUtils.getRowIndex(nbox, rowValue));
-  if (row && row[DvtNBoxConstants.LABEL])
-    return row[DvtNBoxConstants.LABEL];
+  if (row && row[dvt.NBoxConstants.LABEL])
+    return row[dvt.NBoxConstants.LABEL];
   return null;
 };
 
 /**
  * Get the NBox cell for row value and column value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {String} rowValue nbox row value
  * @param {String} columnValue nbox column value
  * @return {DvtNBoxCell}  nbox cell object
@@ -8611,7 +8854,7 @@ DvtNBoxDataUtils.getCellByRowColumn = function(nbox, rowValue, columnValue) {
 /**
  * Get the NBox cell index for row value and column value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {String} rowValue nbox row value
  * @param {String} columnValue nbox column value
  * @return {Number} nbox cell index
@@ -8624,53 +8867,53 @@ DvtNBoxDataUtils.getCellIndexByRowColumn = function(nbox, rowValue, columnValue)
 /**
  * Gets the data for the specified column index
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} columnIndex the column index
  * @return {object} the data for the specified column index
  */
 DvtNBoxDataUtils.getColumn = function(nbox, columnIndex) {
-  return nbox.getOptions()[DvtNBoxConstants.COLUMNS][columnIndex];
+  return nbox.getOptions()[dvt.NBoxConstants.COLUMNS][columnIndex];
 };
 
 
 /**
  * Gets the data for the specified row index
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} rowIndex the row index
  * @return {object} the data for the specified row index
  */
 DvtNBoxDataUtils.getRow = function(nbox, rowIndex) {
-  return nbox.getOptions()[DvtNBoxConstants.ROWS][rowIndex];
+  return nbox.getOptions()[dvt.NBoxConstants.ROWS][rowIndex];
 };
 
 
 /**
  * Gets the value of the maximized row
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {string} the value of the maximized row
  */
 DvtNBoxDataUtils.getMaximizedRow = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.MAXIMIZED_ROW];
+  return nbox.getOptions()[dvt.NBoxConstants.MAXIMIZED_ROW];
 };
 
 
 /**
  * Gets the value of the maximized column
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {string} the value of the maximized column
  */
 DvtNBoxDataUtils.getMaximizedColumn = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.MAXIMIZED_COLUMN];
+  return nbox.getOptions()[dvt.NBoxConstants.MAXIMIZED_COLUMN];
 };
 
 
 /**
  * Gets the index for the specified row value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {string} row the row value
  * @return {number} the row index
  */
@@ -8682,7 +8925,7 @@ DvtNBoxDataUtils.getRowIndex = function(nbox, row) {
 /**
  * Gets the index for the specified column value
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {string} column the column value
  * @return {number} the column index
  */
@@ -8694,41 +8937,41 @@ DvtNBoxDataUtils.getColumnIndex = function(nbox, column) {
 /**
  * Gets the data for the specified cell index.  Note that after DvtNBoxDataUtils.processDataObject
  * has been called, cells are sorted in row-major order
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} cellIndex the cell index
  * @return {object} the data for the specified cell index
  */
 DvtNBoxDataUtils.getCell = function(nbox, cellIndex) {
-  return nbox.getOptions()[DvtNBoxConstants.CELLS][cellIndex];
+  return nbox.getOptions()[dvt.NBoxConstants.CELLS][cellIndex];
 };
 
 
 /**
  * Gets the number of nodes in the nbox
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {number} the number of nodes in the nbox
  */
 DvtNBoxDataUtils.getNodeCount = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.NODES] ? nbox.getOptions()[DvtNBoxConstants.NODES].length : 0;
+  return nbox.getOptions()[dvt.NBoxConstants.NODES] ? nbox.getOptions()[dvt.NBoxConstants.NODES].length : 0;
 };
 
 
 /**
  * Gets the data for the specified node index
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} nodeIndex the node index
  * @return {object} the data for the specified node index
  */
 DvtNBoxDataUtils.getNode = function(nbox, nodeIndex) {
-  return nbox.getOptions()[DvtNBoxConstants.NODES][nodeIndex];
+  return nbox.getOptions()[dvt.NBoxConstants.NODES][nodeIndex];
 };
 
 
 /**
  * Gets the index for the specified node id
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {string} id the node id
  * @return {number} the node index
  */
@@ -8739,13 +8982,13 @@ DvtNBoxDataUtils.getNodeIndex = function(nbox, id) {
 
 /**
  * Gets the cell index for the specified node
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data
  * @return {number} the cell index for the specified node
  */
 DvtNBoxDataUtils.getCellIndex = function(nbox, node) {
-  var nodeRowIndex = DvtNBoxDataUtils.getRowIndex(nbox, node[DvtNBoxConstants.ROW]);
-  var nodeColumnIndex = DvtNBoxDataUtils.getColumnIndex(nbox, node[DvtNBoxConstants.COLUMN]);
+  var nodeRowIndex = DvtNBoxDataUtils.getRowIndex(nbox, node[dvt.NBoxConstants.ROW]);
+  var nodeColumnIndex = DvtNBoxDataUtils.getColumnIndex(nbox, node[dvt.NBoxConstants.COLUMN]);
   var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
   return nodeColumnIndex + nodeRowIndex * columnCount;
 };
@@ -8753,13 +8996,13 @@ DvtNBoxDataUtils.getCellIndex = function(nbox, node) {
 
 /**
  * Gets the icon for the specified node
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data
  * @return {object} the icon data for the specified node
  */
 DvtNBoxDataUtils.getIcon = function(nbox, node) {
-  if (node[DvtNBoxConstants.ICON]) {
-    return DvtNBoxStyleUtils.getStyledIcon(nbox, node[DvtNBoxConstants.ICON]);
+  if (node[dvt.NBoxConstants.ICON]) {
+    return DvtNBoxStyleUtils.getStyledIcon(nbox, node[dvt.NBoxConstants.ICON]);
   }
   return null;
 };
@@ -8767,45 +9010,45 @@ DvtNBoxDataUtils.getIcon = function(nbox, node) {
 
 /**
  * Gets the indicator icon for the specified node
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data
  * @return {object} the indicator icon data for the specified node
  */
 DvtNBoxDataUtils.getIndicatorIcon = function(nbox, node) {
-  if (node[DvtNBoxConstants.INDICATOR_ICON])
-    return DvtNBoxStyleUtils.getStyledIndicatorIcon(nbox, node[DvtNBoxConstants.INDICATOR_ICON]);
+  if (node[dvt.NBoxConstants.INDICATOR_ICON])
+    return DvtNBoxStyleUtils.getStyledIndicatorIcon(nbox, node[dvt.NBoxConstants.INDICATOR_ICON]);
   return null;
 };
 
 
 /**
  * Gets the selected items for the nbox
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {array} the list of selected items
  */
 DvtNBoxDataUtils.getSelectedItems = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.SELECTION];
+  return nbox.getOptions()[dvt.NBoxConstants.SELECTION];
 };
 
 
 /**
  * Sets the selected items for the nbox
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {array} selectedItems the list of selected items
  */
 DvtNBoxDataUtils.setSelectedItems = function(nbox, selectedItems) {
-  nbox.getOptions()[DvtNBoxConstants.SELECTION] = selectedItems;
+  nbox.getOptions()[dvt.NBoxConstants.SELECTION] = selectedItems;
 };
 
 
 /**
  * Gets the highlighted items for the nbox
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {array} the list of highlighted items
  */
 DvtNBoxDataUtils.getHighlightedItems = function(nbox) {
   var items;
-  var categories = nbox.getOptions()[DvtNBoxConstants.HIGHLIGHTED_CATEGORIES];
+  var categories = nbox.getOptions()[dvt.NBoxConstants.HIGHLIGHTED_CATEGORIES];
   if (categories && categories.length > 0) {
     items = [];
     for (var n = 0; n < DvtNBoxDataUtils.getNodeCount(nbox); n++) {
@@ -8821,7 +9064,7 @@ DvtNBoxDataUtils.getHighlightedItems = function(nbox) {
 /**
  * Gets the attribute groups currently being grouped by
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {array} An array containing the visual attributes to apply to the group nodes.
  */
 DvtNBoxDataUtils.getGrouping = function(nbox) {
@@ -8832,23 +9075,23 @@ DvtNBoxDataUtils.getGrouping = function(nbox) {
 /**
  * Gets the visual attributes currently used in grouping
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {array} An array containing the visual attributes to apply to the group nodes.
  */
 DvtNBoxDataUtils.getGroupAttributes = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.GROUP_ATTRIBUTES];
+  return nbox.getOptions()[dvt.NBoxConstants.GROUP_ATTRIBUTES];
 };
 
 
 /**
- * Gets the grouping behavior.  Valid values are 'none', DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL, and
- * DvtNBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS
+ * Gets the grouping behavior.  Valid values are 'none', dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL, and
+ * dvt.NBoxConstants.GROUP_BEHAVIOR_ACROSS_CELLS
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {string} the grouping behavior
  */
 DvtNBoxDataUtils.getGroupBehavior = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.GROUP_BEHAVIOR];
+  return nbox.getOptions()[dvt.NBoxConstants.GROUP_BEHAVIOR];
 };
 
 
@@ -8859,8 +9102,8 @@ DvtNBoxDataUtils.getGroupBehavior = function(nbox) {
  * @return {string} the group id for the specified node
  */
 DvtNBoxDataUtils.getNodeGroupId = function(node) {
-  if (node[DvtNBoxConstants.GROUP_CATEGORY])
-    return node[DvtNBoxConstants.GROUP_CATEGORY];
+  if (node[dvt.NBoxConstants.GROUP_CATEGORY])
+    return node[dvt.NBoxConstants.GROUP_CATEGORY];
   var categories = node['_groupCategories'];
   if (categories && categories.length > 0) {
     return categories.join(';');
@@ -8873,16 +9116,16 @@ DvtNBoxDataUtils.getNodeGroupId = function(node) {
  * Gets the x percentage value for the specified node to be used as part of the position average when grouping across
  * cells
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data
  * @return {number} the x percentage value
  */
 DvtNBoxDataUtils.getXPercentage = function(nbox, node) {
-  if (!isNaN(node[DvtNBoxConstants.X_PERCENTAGE])) {
-    return node[DvtNBoxConstants.X_PERCENTAGE];
+  if (!isNaN(node[dvt.NBoxConstants.X_PERCENTAGE])) {
+    return node[dvt.NBoxConstants.X_PERCENTAGE];
   }
   var columnCount = DvtNBoxDataUtils.getColumnCount(nbox);
-  var columnIndex = DvtNBoxDataUtils.getColumnIndex(nbox, node[DvtNBoxConstants.COLUMN]);
+  var columnIndex = DvtNBoxDataUtils.getColumnIndex(nbox, node[dvt.NBoxConstants.COLUMN]);
   return (columnIndex + 0.5) / columnCount;
 };
 
@@ -8891,16 +9134,16 @@ DvtNBoxDataUtils.getXPercentage = function(nbox, node) {
  * Gets the y percentage value for the specified node to be used as part of the position average when grouping across
  * cells
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data
  * @return {number} the y percentage value
  */
 DvtNBoxDataUtils.getYPercentage = function(nbox, node) {
-  if (!isNaN(node[DvtNBoxConstants.Y_PERCENTAGE])) {
-    return node[DvtNBoxConstants.Y_PERCENTAGE];
+  if (!isNaN(node[dvt.NBoxConstants.Y_PERCENTAGE])) {
+    return node[dvt.NBoxConstants.Y_PERCENTAGE];
   }
   var rowCount = DvtNBoxDataUtils.getRowCount(nbox);
-  var rowIndex = DvtNBoxDataUtils.getRowIndex(nbox, node[DvtNBoxConstants.ROW]);
+  var rowIndex = DvtNBoxDataUtils.getRowIndex(nbox, node[dvt.NBoxConstants.ROW]);
   return (rowIndex + 0.5) / rowCount;
 };
 
@@ -8908,40 +9151,40 @@ DvtNBoxDataUtils.getYPercentage = function(nbox, node) {
 /**
  * Gets the other threshold value for the nbox.  Represents a percentage of the collection size (0-1)
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {number} the other threshold value
  */
 DvtNBoxDataUtils.getOtherThreshold = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.OTHER_THRESHOLD];
+  return nbox.getOptions()[dvt.NBoxConstants.OTHER_THRESHOLD];
 };
 
 
 /**
  * Gets the color for the aggregate group node representing any groups that fall below the other threshold
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {string} the other threshold color
  */
 DvtNBoxDataUtils.getOtherColor = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.OTHER_COLOR];
+  return nbox.getOptions()[dvt.NBoxConstants.OTHER_COLOR];
 };
 
 
 /**
  * Gets the data associated with the currently open group
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {object} the data associated with the currently open group
  */
 DvtNBoxDataUtils.getDrawer = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.DRAWER];
+  return nbox.getOptions()[dvt.NBoxConstants.DRAWER];
 };
 
 
 /**
  * Returns the category node data for the specified id
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {string} id the id of the category node
  * @return {object} the category node data
  */
@@ -8949,7 +9192,7 @@ DvtNBoxDataUtils.getCategoryNode = function(nbox, id) {
   var groupBehavior = DvtNBoxDataUtils.getGroupBehavior(nbox);
   var groups = nbox.getOptions()['__groups'];
   var groupId = id;
-  if (groupBehavior == DvtNBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
+  if (groupBehavior == dvt.NBoxConstants.GROUP_BEHAVIOR_WITHIN_CELL) {
     var cell = id.substring(0, id.indexOf(':'));
     groupId = id.substring(id.indexOf(':') + 1);
     groups = groups[cell];
@@ -8959,7 +9202,7 @@ DvtNBoxDataUtils.getCategoryNode = function(nbox, id) {
 
 
 /**
- * @param {DvtNBox} nbox the NBox component
+ * @param {dvt.NBox} nbox the NBox component
  * @param {object} categoryNode the category node data object
  *
  * @return {array} array of category labels
@@ -8971,8 +9214,8 @@ DvtNBoxDataUtils.getCategoryNodeLabels = function(nbox, categoryNode) {
   // Grab any node to get groupCategory or _groupCategories
   var node = DvtNBoxDataUtils.getNode(nbox, categoryNode['nodeIndices'][0]);
 
-  if (node[DvtNBoxConstants.GROUP_CATEGORY])
-    return categoryNode['__labels'] = [node[DvtNBoxConstants.GROUP_CATEGORY]];
+  if (node[dvt.NBoxConstants.GROUP_CATEGORY])
+    return categoryNode['__labels'] = [node[dvt.NBoxConstants.GROUP_CATEGORY]];
 
   // Set labels to group categories
   categoryNode['__labels'] = [];
@@ -8994,9 +9237,9 @@ DvtNBoxDataUtils.getCategoryNodeLabels = function(nbox, categoryNode) {
 /**
  * Sets the rendered displayable on the corresponding data object
  *
- * @param {DvtNBox} nbox the NBox component
+ * @param {dvt.NBox} nbox the NBox component
  * @param {object} dataObject the data object
- * @param {DvtDisplayable} displayable the rendered displayable
+ * @param {dvt.Displayable} displayable the rendered displayable
  * @param {string} key an optional key (if storing more than one displayable)
  */
 DvtNBoxDataUtils.setDisplayable = function(nbox, dataObject, displayable, key) {
@@ -9015,10 +9258,10 @@ DvtNBoxDataUtils.setDisplayable = function(nbox, dataObject, displayable, key) {
 /**
  * Gets the rendered displayable from the corresponding data object
  *
- * @param {DvtNBox} nbox the NBox component
+ * @param {dvt.NBox} nbox the NBox component
  * @param {object} dataObject the data object
  * @param {string} key an optional key (if storing more than one displayable)
- * @return {DvtDisplayable} the rendered displayable
+ * @return {dvt.Displayable} the rendered displayable
  */
 DvtNBoxDataUtils.getDisplayable = function(nbox, dataObject, key) {
   if (!dataObject) {
@@ -9034,7 +9277,7 @@ DvtNBoxDataUtils.getDisplayable = function(nbox, dataObject, key) {
 /**
  * Returns whether or not maximize gesture is enabled.
  *
- * @param {DvtNBox} nbox the NBox component.
+ * @param {dvt.NBox} nbox the NBox component.
  * @return {boolean} whether or not maximize gesture is enabled.
  */
 DvtNBoxDataUtils.isMaximizeEnabled = function(nbox) {
@@ -9048,7 +9291,7 @@ DvtNBoxDataUtils.isMaximizeEnabled = function(nbox) {
  * 'auto': Nodes or body counts rendered, depending on size of cell.
  * 'counts': Body counts always rendered, regardless of size.
  *
- * @param {DvtNBox} nbox the NBox component.
+ * @param {dvt.NBox} nbox the NBox component.
  * @return {string} the type of content rendered.
  */
 DvtNBoxDataUtils.getCellContent = function(nbox) {
@@ -9060,7 +9303,7 @@ DvtNBoxDataUtils.getCellContent = function(nbox) {
 /**
  * Returns whether or not the specified cell is minimized
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} cellIndex the index of the specified cell
  * @return {boolean} true if the cell is minimized, false otherwise
  */
@@ -9072,8 +9315,8 @@ DvtNBoxDataUtils.isCellMinimized = function(nbox, cellIndex) {
     return false;
   }
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-  var cellRow = cell[DvtNBoxConstants.ROW];
-  var cellColumn = cell[DvtNBoxConstants.COLUMN];
+  var cellRow = cell[dvt.NBoxConstants.ROW];
+  var cellColumn = cell[dvt.NBoxConstants.COLUMN];
   if (maximizedRow && maximizedColumn) {
     // if a single cell is maximized, all other cells are minimized
     return maximizedRow != cellRow || maximizedColumn != cellColumn;
@@ -9086,7 +9329,7 @@ DvtNBoxDataUtils.isCellMinimized = function(nbox, cellIndex) {
 /**
  * Returns whether or not the specified cell is maximized
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {number} cellIndex the index of the specified cell
  * @return {boolean} true if the cell is maximized, false otherwise
  */
@@ -9094,15 +9337,15 @@ DvtNBoxDataUtils.isCellMaximized = function(nbox, cellIndex) {
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-  var cellRow = cell[DvtNBoxConstants.ROW];
-  var cellColumn = cell[DvtNBoxConstants.COLUMN];
+  var cellRow = cell[dvt.NBoxConstants.ROW];
+  var cellColumn = cell[dvt.NBoxConstants.COLUMN];
   return (maximizedRow == cellRow && maximizedColumn == cellColumn);
 };
 
 /**
  * Returns the legend data object
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {object} the legend data object
  */
 DvtNBoxDataUtils.getLegend = function(nbox) {
@@ -9113,45 +9356,45 @@ DvtNBoxDataUtils.getLegend = function(nbox) {
 /**
  * Determines whether the specified node has been hidden (e.g. via legend filtering)
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data object
  * @return {boolean} true if the node has been hidden, false otherwise
  */
 DvtNBoxDataUtils.isNodeHidden = function(nbox, node) {
   var options = nbox.getOptions();
-  if (options[DvtNBoxConstants.HIDDEN_CATEGORIES] && !options['__hiddenMap']) {
-    options['__hiddenMap'] = DvtArrayUtils.createBooleanMap(options[DvtNBoxConstants.HIDDEN_CATEGORIES]);
+  if (options[dvt.NBoxConstants.HIDDEN_CATEGORIES] && !options['__hiddenMap']) {
+    options['__hiddenMap'] = dvt.ArrayUtils.createBooleanMap(options[dvt.NBoxConstants.HIDDEN_CATEGORIES]);
   }
   // Null checking done by util function
-  return DvtArrayUtils.hasAnyMapItem(options['__hiddenMap'], node[DvtNBoxConstants.CATEGORIES]);
+  return dvt.ArrayUtils.hasAnyMapItem(options['__hiddenMap'], node[dvt.NBoxConstants.CATEGORIES]);
 };
 
 /**
  * Determines whether the specified node has been highlighted (e.g. via legend filtering)
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data object
  * @return {boolean} true if the node has been highlighted, false otherwise
  */
 DvtNBoxDataUtils.isNodeHighlighted = function(nbox, node) {
   var options = nbox.getOptions();
-  if (options[DvtNBoxConstants.HIGHLIGHTED_CATEGORIES] && !options['__highlightedMap']) {
-    options['__highlightedMap'] = DvtArrayUtils.createBooleanMap(options[DvtNBoxConstants.HIGHLIGHTED_CATEGORIES]);
+  if (options[dvt.NBoxConstants.HIGHLIGHTED_CATEGORIES] && !options['__highlightedMap']) {
+    options['__highlightedMap'] = dvt.ArrayUtils.createBooleanMap(options[dvt.NBoxConstants.HIGHLIGHTED_CATEGORIES]);
   }
   // Null checking done by util functions
-  if (options[DvtNBoxConstants.HIGHLIGHT_MATCH] == 'all')
-    return DvtArrayUtils.hasAllMapItems(options['__highlightedMap'], node[DvtNBoxConstants.CATEGORIES]);
+  if (options[dvt.NBoxConstants.HIGHLIGHT_MATCH] == 'all')
+    return dvt.ArrayUtils.hasAllMapItems(options['__highlightedMap'], node[dvt.NBoxConstants.CATEGORIES]);
   else
-    return DvtArrayUtils.hasAnyMapItem(options['__highlightedMap'], node[DvtNBoxConstants.CATEGORIES]);
+    return dvt.ArrayUtils.hasAnyMapItem(options['__highlightedMap'], node[dvt.NBoxConstants.CATEGORIES]);
 };
 
 /**
  * Returns the DvtSimpleScrollable container the given node
  * resides in, if it exists.
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data object
- * @return {DvtSimpleScrollableContainer} scrollable container
+ * @return {dvt.SimpleScrollableContainer} scrollable container
  */
 DvtNBoxDataUtils.getNodeScrollableContainer = function(nbox, node) {
   if (!node)
@@ -9173,66 +9416,65 @@ DvtNBoxDataUtils.getNodeScrollableContainer = function(nbox, node) {
 
 
 /**
- * Returns the DvtOutputText node label
+ * Returns the dvt.OutputText node label
  * Creates it if it does not already exist
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data object
- * @return {DvtOutputText} label
+ * @return {dvt.OutputText} label
  */
 DvtNBoxDataUtils.getNodeLabel = function(nbox, node) {
-  if (!node[DvtNBoxConstants.LABEL]) {
+  if (!node[dvt.NBoxConstants.LABEL]) {
     return null;
   }
-  var label = DvtNBoxDataUtils.getDisplayable(nbox, node, DvtNBoxConstants.LABEL);
+  var label = DvtNBoxDataUtils.getDisplayable(nbox, node, dvt.NBoxConstants.LABEL);
   if (label) {
     return label;
   }
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
-  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
-  label = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
+  var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
+  label = DvtNBoxRenderer.createText(nbox.getCtx(), node[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getNodeLabelStyle(nbox, node), halign, dvt.OutputText.V_ALIGN_MIDDLE);
 
-  DvtNBoxDataUtils.setDisplayable(nbox, node, label, DvtNBoxConstants.LABEL);
+  DvtNBoxDataUtils.setDisplayable(nbox, node, label, dvt.NBoxConstants.LABEL);
   return label;
 };
 
 
 /**
- * Returns the DvtOutputText node secondary label
+ * Returns the dvt.OutputText node secondary label
  * Creates it if it does not already exist
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} node the node data object
- * @return {DvtOutputText} secondary label
+ * @return {dvt.OutputText} secondary label
  */
 DvtNBoxDataUtils.getNodeSecondaryLabel = function(nbox, node) {
-  if (!node[DvtNBoxConstants.SECONDARY_LABEL]) {
+  if (!node[dvt.NBoxConstants.SECONDARY_LABEL]) {
     return null;
   }
-  var secondaryLabel = DvtNBoxDataUtils.getDisplayable(nbox, node, DvtNBoxConstants.SECONDARY_LABEL);
+  var secondaryLabel = DvtNBoxDataUtils.getDisplayable(nbox, node, dvt.NBoxConstants.SECONDARY_LABEL);
   if (secondaryLabel) {
     return secondaryLabel;
   }
 
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
-  var halign = rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
-  secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[DvtNBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), halign, DvtOutputText.V_ALIGN_MIDDLE);
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
+  var halign = rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
+  secondaryLabel = DvtNBoxRenderer.createText(nbox.getCtx(), node[dvt.NBoxConstants.SECONDARY_LABEL], DvtNBoxStyleUtils.getNodeSecondaryLabelStyle(nbox, node), halign, dvt.OutputText.V_ALIGN_MIDDLE);
 
-  DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, DvtNBoxConstants.SECONDARY_LABEL);
+  DvtNBoxDataUtils.setDisplayable(nbox, node, secondaryLabel, dvt.NBoxConstants.SECONDARY_LABEL);
   return secondaryLabel;
 };
 
 /**
- * Fires a DvtSetPropertyEvent to the nbox
+ * Fires an adfPropertyChange event to the nbox
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {string} key the property name
  * @param {object} value the property value
  */
 DvtNBoxDataUtils.fireSetPropertyEvent = function(nbox, key, value) {
-  var event = new DvtSetPropertyEvent();
-  event.addParam(key, value);
+  var event = dvt.EventFactory.newAdfPropertyChangeEvent(key, value);
   nbox.processEvent(event);
 };
 
@@ -9240,7 +9482,7 @@ DvtNBoxDataUtils.fireSetPropertyEvent = function(nbox, key, value) {
 /**
  * Gets a cell index for the maximized cell
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {?number} the index for the maximized cell or null if such cell does not exist
  */
 DvtNBoxDataUtils.getMaximizedCellIndex = function(nbox) {
@@ -9258,7 +9500,7 @@ DvtNBoxDataUtils.getMaximizedCellIndex = function(nbox) {
 /**
  * Check whether a specified drawer is selected - all nodes that belong to the drawer are selected
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {DvtNBoxCategoryNode} categoryNode the category node that represents the drawer
  * @return {boolen} true if the drawer is selected
  */
@@ -9274,7 +9516,7 @@ DvtNBoxDataUtils.isDrawerSelected = function(nbox, categoryNode) {
     selected = true;
     for (var j = 0; j < nodeIndices.length; j++) {
       var node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j]);
-      if (!selectedMap[node[DvtNBoxConstants.ID]]) {
+      if (!selectedMap[node[dvt.NBoxConstants.ID]]) {
         selected = false;
         break;
       }
@@ -9286,7 +9528,7 @@ DvtNBoxDataUtils.isDrawerSelected = function(nbox, categoryNode) {
 
 /**
  * Builds a description used for the aria-label attribute
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {DvtNBoxNode|DvtNBoxCategoryNode|DvtNBoxDrawer} object an object that need a description
  * @param {string} datatip a datatip to use as part of description
  * @param {boolean} selected true if the object is selected
@@ -9294,34 +9536,34 @@ DvtNBoxDataUtils.isDrawerSelected = function(nbox, categoryNode) {
  */
 DvtNBoxDataUtils.buildAriaDesc = function(nbox, object, datatip, selected) {
   var baseDesc = (object instanceof DvtNBoxCategoryNode || object instanceof DvtNBoxDrawer) ?
-      DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'GROUP_NODE'), datatip]) :
+      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'GROUP_NODE'), datatip]) :
       datatip;
 
   var states = [];
   if (selected)
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_SELECTED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_SELECTED'));
   else
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_UNSELECTED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_UNSELECTED'));
 
   if (object instanceof DvtNBoxCategoryNode) {
     var nodeCount = object.getData()['nodeIndices'].length;
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_COLLAPSED'));
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_COLLAPSED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
   }
   else if (object instanceof DvtNBoxDrawer) {
-    var categoryNodeData = DvtNBoxDataUtils.getCategoryNode(nbox, object.getData()[DvtNBoxConstants.ID]);
+    var categoryNodeData = DvtNBoxDataUtils.getCategoryNode(nbox, object.getData()[dvt.NBoxConstants.ID]);
     var nodeCount = categoryNodeData['nodeIndices'].length;
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'STATE_EXPANDED'));
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST', [DvtBundle.getTranslatedString(DvtBundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'STATE_EXPANDED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [dvt.Bundle.getTranslatedString(dvt.Bundle.NBOX_PREFIX, 'SIZE'), nodeCount]));
   }
 
-  return DvtDisplayable.generateAriaLabel(baseDesc, states);
+  return dvt.Displayable.generateAriaLabel(baseDesc, states);
 };
 
 /**
  * Finds first individual node in the container
- * @param {DvtNBox} nbox The owning NBox component
- * @param {DvtContainer} container parent container
+ * @param {dvt.NBox} nbox The owning NBox component
+ * @param {dvt.Container} container parent container
  * @return {DvtNBoxNode|DvtNBoxNodeOverflow} The first object in the container that can get keyboard focus
  */
 DvtNBoxDataUtils.getFirstNavigableNode = function(nbox, container) {
@@ -9346,8 +9588,8 @@ DvtNBoxDataUtils.getFirstNavigableNode = function(nbox, container) {
 
 /**
  * Finds last individual node in the container
- * @param {DvtNBox} nbox The owning NBox component
- * @param {DvtContainer} container parent container
+ * @param {dvt.NBox} nbox The owning NBox component
+ * @param {dvt.Container} container parent container
  * @return {DvtNBoxNode|DvtNBoxNodeOverflow} The last object in the container that can get keyboard focus
  */
 DvtNBoxDataUtils.getLastNavigableNode = function(nbox, container) {
@@ -9373,13 +9615,13 @@ DvtNBoxDataUtils.getLastNavigableNode = function(nbox, container) {
 
 /**
  * Finds next navigable node based on direction
- * @param {DvtNBox} nbox The owning NBox component
+ * @param {dvt.NBox} nbox The owning NBox component
  * @param {DvtNBoxNode|DvtNBoxNodeOverflow} object current object that has get keyboard focus
- * @param {DvtKeyboardEvent} event keyboard event
+ * @param {dvt.KeyboardEvent} event keyboard event
  * @return {DvtNBoxNode|DvtNBoxNodeOverflow} next object can get keyboard focus
  */
 DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
-  var bNext = (event.keyCode == DvtKeyboardEvent.RIGHT_ARROW || event.keyCode == DvtKeyboardEvent.DOWN_ARROW) ? true : false;
+  var bNext = (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
   var nextData;
   if (object instanceof DvtNBoxNode) {
     nextData = bNext ? object.getData()['__next'] : object.getData()['__prev'];
@@ -9395,25 +9637,25 @@ DvtNBoxDataUtils.getNextNavigableNode = function(nbox, object, event) {
 
 
 /**
- * Style related utility functions for DvtNBox.
+ * Style related utility functions for dvt.NBox.
  * @class
  */
 var DvtNBoxStyleUtils = new Object();
 
-DvtObj.createSubclass(DvtNBoxStyleUtils, DvtObj, 'DvtNBoxStyleUtils');
+dvt.Obj.createSubclass(DvtNBoxStyleUtils, dvt.Obj);
 
 
 /**
  * Returns the display animation for the specified nbox.
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string}
  */
 DvtNBoxStyleUtils.getAnimationOnDisplay = function(nbox) {
   if (!nbox.isAnimationAllowed())
     return 'none';
-  var animationOnDisplay = nbox.getOptions()[DvtNBoxConstants.ANIMATION_ON_DISPLAY];
+  var animationOnDisplay = nbox.getOptions()[dvt.NBoxConstants.ANIMATION_ON_DISPLAY];
   if (animationOnDisplay == 'auto') {
-    animationOnDisplay = DvtBlackBoxAnimationHandler.ALPHA_FADE;
+    animationOnDisplay = dvt.BlackBoxAnimationHandler.ALPHA_FADE;
   }
   return animationOnDisplay;
 };
@@ -9421,13 +9663,13 @@ DvtNBoxStyleUtils.getAnimationOnDisplay = function(nbox) {
 
 /**
  * Returns the data change animation for the specified nbox.
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string}
  */
 DvtNBoxStyleUtils.getAnimationOnDataChange = function(nbox) {
   if (!nbox.isAnimationAllowed())
     return 'none';
-  return nbox.getOptions()[DvtNBoxConstants.ANIMATION_ON_DATA_CHANGE];
+  return nbox.getOptions()[dvt.NBoxConstants.ANIMATION_ON_DATA_CHANGE];
 };
 
 
@@ -9435,26 +9677,26 @@ DvtNBoxStyleUtils.getAnimationOnDataChange = function(nbox) {
  * Returns the animation duration in seconds for the specified nbox.  This duration is
  * intended to be passed to the animation handler, and is not in the same units
  * as the API.
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {number} The animation duration in seconds.
  */
 DvtNBoxStyleUtils.getAnimationDuration = function(nbox) {
-  return DvtStyleUtils.getTimeMilliseconds(nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.ANIMATION_DURATION]) / 1000;
+  return dvt.StyleUtils.getTimeMilliseconds(nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.ANIMATION_DURATION]) / 1000;
 };
 
 
 /**
  * Returns the label style for the specified column index
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {number} columnIndex the specified column index
- * @return {DvtCSSStyle} the label style for the specified column index
+ * @return {dvt.CSSStyle} the label style for the specified column index
  */
 DvtNBoxStyleUtils.getColumnLabelStyle = function(nbox, columnIndex) {
   var options = nbox.getOptions();
-  var defaults = options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.COLUMN_LABEL_STYLE];
+  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.COLUMN_LABEL_STYLE];
   var column = DvtNBoxDataUtils.getColumn(nbox, columnIndex);
-  if (column[DvtNBoxConstants.LABEL_STYLE]) {
-    return DvtJSONUtils.merge(new DvtCSSStyle(column[DvtNBoxConstants.LABEL_STYLE]), defaults);
+  if (column[dvt.NBoxConstants.LABEL_STYLE]) {
+    return dvt.JsonUtils.merge(new dvt.CSSStyle(column[dvt.NBoxConstants.LABEL_STYLE]), defaults);
   }
   return defaults;
 };
@@ -9462,16 +9704,16 @@ DvtNBoxStyleUtils.getColumnLabelStyle = function(nbox, columnIndex) {
 
 /**
  * Returns the label style for the specified row index
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {number} rowIndex the specified row index
- * @return {DvtCSSStyle} the label style for the specified row index
+ * @return {dvt.CSSStyle} the label style for the specified row index
  */
 DvtNBoxStyleUtils.getRowLabelStyle = function(nbox, rowIndex) {
   var options = nbox.getOptions();
-  var defaults = options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.ROW_LABEL_STYLE];
+  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.ROW_LABEL_STYLE];
   var row = DvtNBoxDataUtils.getRow(nbox, rowIndex);
-  if (row[DvtNBoxConstants.LABEL_STYLE]) {
-    return DvtJSONUtils.merge(new DvtCSSStyle(row[DvtNBoxConstants.LABEL_STYLE]), defaults);
+  if (row[dvt.NBoxConstants.LABEL_STYLE]) {
+    return dvt.JsonUtils.merge(new dvt.CSSStyle(row[dvt.NBoxConstants.LABEL_STYLE]), defaults);
   }
   return defaults;
 };
@@ -9479,13 +9721,13 @@ DvtNBoxStyleUtils.getRowLabelStyle = function(nbox, rowIndex) {
 
 /**
  * Returns the cell style for the specified cell index
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {number} cellIndex the specified cell index
- * @return {DvtCSSStyle} the cell style for the specified cell index
+ * @return {dvt.CSSStyle} the cell style for the specified cell index
  */
 DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
-  var styleKey = DvtNBoxConstants.STYLE;
+  var styleKey = dvt.NBoxConstants.STYLE;
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
   if (DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
@@ -9494,10 +9736,10 @@ DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     styleKey = 'maximizedStyle';
   }
-  var defaults = options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS][styleKey];
+  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][styleKey];
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
   if (cell[styleKey]) {
-    return DvtJSONUtils.merge(new DvtCSSStyle(cell[styleKey]), defaults);
+    return dvt.JsonUtils.merge(new dvt.CSSStyle(cell[styleKey]), defaults);
   }
 
   return defaults;
@@ -9506,202 +9748,202 @@ DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
 
 /**
  * Returns the label style for the specified cell index
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {number} cellIndex the specified cell index
- * @return {DvtCSSStyle} the label style for the specified cell index
+ * @return {dvt.CSSStyle} the label style for the specified cell index
  */
 DvtNBoxStyleUtils.getCellLabelStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
-  var defaults = options[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS][DvtNBoxConstants.LABEL_STYLE];
+  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][dvt.NBoxConstants.LABEL_STYLE];
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-  if (cell[DvtNBoxConstants.LABEL_STYLE]) {
-    return DvtJSONUtils.merge(new DvtCSSStyle(cell[DvtNBoxConstants.LABEL_STYLE]), defaults);
+  if (cell[dvt.NBoxConstants.LABEL_STYLE]) {
+    return dvt.JsonUtils.merge(new dvt.CSSStyle(cell[dvt.NBoxConstants.LABEL_STYLE]), defaults);
   }
   return defaults;
 };
 
 /**
  * Returns whether to show cell node count
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} cell the cell data
  * @return {boolean} whether to show cell node count
  */
 DvtNBoxStyleUtils.getCellShowCount = function(nbox, cell) {
-  return cell[DvtNBoxConstants.SHOW_COUNT] ? cell[DvtNBoxConstants.SHOW_COUNT] :
-      nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS][DvtNBoxConstants.SHOW_COUNT];
+  return cell[dvt.NBoxConstants.SHOW_COUNT] ? cell[dvt.NBoxConstants.SHOW_COUNT] :
+      nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][dvt.NBoxConstants.SHOW_COUNT];
 };
 
 
 /**
  * Returns the count label style for nbox cells
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the count label style for nbox cells
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the count label style for nbox cells
  */
 DvtNBoxStyleUtils.getCellCountLabelStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS]['countLabelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['countLabelStyle'];
 };
 
 
 /**
  * Returns the body count label style for nbox cells
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the count label style for nbox cells
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the count label style for nbox cells
  */
 DvtNBoxStyleUtils.getCellBodyCountLabelStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS]['bodyCountLabelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['bodyCountLabelStyle'];
 };
 
 
 /**
  * Returns the drop target style for nbox cells
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the drop target style for nbox cells
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the drop target style for nbox cells
  */
 DvtNBoxStyleUtils.getCellDropTargetStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS]['dropTargetStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['dropTargetStyle'];
 };
 
 
 /**
  * Returns the label style for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
- * @return {DvtCSSStyle} the label style for the specified node
+ * @return {dvt.CSSStyle} the label style for the specified node
  */
 DvtNBoxStyleUtils.getNodeLabelStyle = function(nbox, node) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.LABEL_STYLE];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.LABEL_STYLE];
 };
 
 
 /**
  * Returns the secondary label style for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
- * @return {DvtCSSStyle} the secondary label style for the specified node
+ * @return {dvt.CSSStyle} the secondary label style for the specified node
  */
 DvtNBoxStyleUtils.getNodeSecondaryLabelStyle = function(nbox, node) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.SECONDARY_LABEL_STYLE];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.SECONDARY_LABEL_STYLE];
 };
 
 
 /**
  * Returns the color for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
  * @return {string} the color for the specified node
  */
 DvtNBoxStyleUtils.getNodeColor = function(nbox, node) {
-  if (node[DvtNBoxConstants.COLOR])
-    return node[DvtNBoxConstants.COLOR];
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.COLOR];
+  if (node[dvt.NBoxConstants.COLOR])
+    return node[dvt.NBoxConstants.COLOR];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.COLOR];
 };
 
 
 /**
  * Returns the border color for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
  * @return {string} the border color for the specified node
  */
 DvtNBoxStyleUtils.getNodeBorderColor = function(nbox, node) {
-  var color = node[DvtNBoxConstants.BORDER_COLOR] ? node[DvtNBoxConstants.BORDER_COLOR] :
-      nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.BORDER_COLOR];
+  var color = node[dvt.NBoxConstants.BORDER_COLOR] ? node[dvt.NBoxConstants.BORDER_COLOR] :
+      nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.BORDER_COLOR];
   return color ? color : null;
 };
 
 
 /**
  * Returns the border width for the specified nodeb
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
  * @return {number} the border width for the specified node
  */
 DvtNBoxStyleUtils.getNodeBorderWidth = function(nbox, node) {
-  var width = node[DvtNBoxConstants.BORDER_WIDTH] ? node[DvtNBoxConstants.BORDER_WIDTH] :
-      nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.BORDER_WIDTH];
+  var width = node[dvt.NBoxConstants.BORDER_WIDTH] ? node[dvt.NBoxConstants.BORDER_WIDTH] :
+      nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.BORDER_WIDTH];
   return width ? width : null;
 };
 
 
 /**
  * Returns the indicator color for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} node the specified node data
  * @return {string} the indicator color for the specified node
  */
 DvtNBoxStyleUtils.getNodeIndicatorColor = function(nbox, node) {
-  if (node[DvtNBoxConstants.INDICATOR_COLOR])
-    return node[DvtNBoxConstants.INDICATOR_COLOR];
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_COLOR];
+  if (node[dvt.NBoxConstants.INDICATOR_COLOR])
+    return node[dvt.NBoxConstants.INDICATOR_COLOR];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_COLOR];
 };
 
 
 /**
  * Fills out any default style properties for the specified icon
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} icon the specified icon data
  * @return {object} the icon data, including default style properties
  */
 DvtNBoxStyleUtils.getStyledIcon = function(nbox, icon) {
-  return DvtJSONUtils.merge(icon, nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.ICON_DEFAULTS]);
+  return dvt.JsonUtils.merge(icon, nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.ICON_DEFAULTS]);
 };
 
 
 /**
  * Fills out any default style properties for the specified indicator icon
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} indicatorIcon the specified indicator data
  * @return {object} the indicator icon data, including default style properties
  */
 DvtNBoxStyleUtils.getStyledIndicatorIcon = function(nbox, indicatorIcon) {
-  return DvtJSONUtils.merge(indicatorIcon, nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_ICON_DEFAULTS]);
+  return dvt.JsonUtils.merge(indicatorIcon, nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS]);
 };
 
 
 /**
  * Returns the alpha value for non-highlighted nodes.
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {number} the alpha value for non-highlighted nodes.
  */
 DvtNBoxStyleUtils.getFadedNodeAlpha = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS]['alphaFade'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS]['alphaFade'];
 };
 
 
 /**
  * Returns a map containing scrollbar styles
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {object} a map containing scrollbar styles
  */
 DvtNBoxStyleUtils.getScrollbarStyleMap = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__scrollbar'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__scrollbar'];
 };
 
 
 /**
  * Returns the color for the specified category node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} categoryNode the specified category node data
  * @return {string} the color for the specified node
  */
 DvtNBoxStyleUtils.getCategoryNodeColor = function(nbox, categoryNode) {
   if (DvtNBoxDataUtils.getGroupBehavior(nbox) == 'none' ||
       (DvtNBoxDataUtils.getGroupAttributes(nbox) && DvtNBoxDataUtils.getGroupAttributes(nbox).indexOf('color') == -1)) {
-    return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.COLOR];
+    return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.COLOR];
   }
   if (categoryNode['otherNode']) {
     return DvtNBoxDataUtils.getOtherColor(nbox);
   }
   // if all nodes have same color, return that value, otherwise return default.
   var nodeIndices = categoryNode['nodeIndices'];
-  var color = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[DvtNBoxConstants.COLOR];
+  var color = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[dvt.NBoxConstants.COLOR];
   if (!color)
-    return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.COLOR];
+    return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.COLOR];
 
   for (var i = 1; i < nodeIndices.length; i++) {
     var node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[i]);
-    if (color != node[DvtNBoxConstants.COLOR])
-      return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.COLOR];
+    if (color != node[dvt.NBoxConstants.COLOR])
+      return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.COLOR];
   }
   return color;
 };
@@ -9709,7 +9951,7 @@ DvtNBoxStyleUtils.getCategoryNodeColor = function(nbox, categoryNode) {
 
 /**
  * Returns the indicator color for the specified node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} categoryNode the specified category node data
  * @return {string} the indicator color for the specified node
  */
@@ -9720,14 +9962,14 @@ DvtNBoxStyleUtils.getCategoryNodeIndicatorColor = function(nbox, categoryNode) {
   }
   // if all nodes have same indicator color, return that value, otherwise return default.
   var nodeIndices = categoryNode['nodeIndices'];
-  var color = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[DvtNBoxConstants.INDICATOR_COLOR];
+  var color = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[dvt.NBoxConstants.INDICATOR_COLOR];
   if (!color)
-    return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_COLOR];
+    return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_COLOR];
 
   for (var i = 1; i < nodeIndices.length; i++) {
     var node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[i]);
-    if (color != node[DvtNBoxConstants.INDICATOR_COLOR])
-      return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_COLOR];
+    if (color != node[dvt.NBoxConstants.INDICATOR_COLOR])
+      return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_COLOR];
   }
   return color;
 };
@@ -9735,7 +9977,7 @@ DvtNBoxStyleUtils.getCategoryNodeIndicatorColor = function(nbox, categoryNode) {
 
 /**
  * Gets the styled indicator icon (if any) for the specified category node
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @param {object} categoryNode the category node data
  * @return {object} the styled indicator icon data
  */
@@ -9754,182 +9996,190 @@ DvtNBoxStyleUtils.getStyledCategoryIndicatorIcon = function(nbox, categoryNode) 
   var indicatorIcon = {};
   var nodeIndices = categoryNode['nodeIndices'];
 
-  var baseIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[DvtNBoxConstants.INDICATOR_ICON];
+  var baseIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[0])[dvt.NBoxConstants.INDICATOR_ICON];
   if (!baseIcon)
     return null;
+
+  // Border properties
+  if (baseIcon['width']) indicatorIcon['width'] = baseIcon['width'];
+  if (baseIcon['height']) indicatorIcon['height'] = baseIcon['height'];
+  if (baseIcon['borderWidth']) indicatorIcon['borderWidth'] = baseIcon['borderWidth'];
+  if (baseIcon['borderStyle']) indicatorIcon['borderStyle'] = baseIcon['borderStyle'];
+  if (baseIcon['borderColor']) indicatorIcon['borderColor'] = baseIcon['borderColor'];
+  if (baseIcon['borderRadius']) indicatorIcon['borderRadius'] = baseIcon['borderRadius'];
 
   // Shape
   var match = true;
   if (!DvtNBoxDataUtils.getGroupAttributes(nbox) || DvtNBoxDataUtils.getGroupAttributes(nbox).indexOf('indicatorIconShape') != -1) {
-    var shape = baseIcon[DvtNBoxConstants.SHAPE];
+    var shape = baseIcon[dvt.NBoxConstants.SHAPE];
     for (var i = 1; i < nodeIndices.length; i++) {
-      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[i])[DvtNBoxConstants.INDICATOR_ICON];
-      if (nodeIcon && shape != nodeIcon[DvtNBoxConstants.SHAPE])
+      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[i])[dvt.NBoxConstants.INDICATOR_ICON];
+      if (nodeIcon && shape != nodeIcon[dvt.NBoxConstants.SHAPE])
         match = false;
     }
-    indicatorIcon[DvtNBoxConstants.SHAPE] = match ? shape : nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_ICON_DEFAULTS][DvtNBoxConstants.SHAPE];
+    indicatorIcon[dvt.NBoxConstants.SHAPE] = match ? shape : nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS][dvt.NBoxConstants.SHAPE];
   }
 
   // Color
   match = true;
   if (!DvtNBoxDataUtils.getGroupAttributes(nbox) || DvtNBoxDataUtils.getGroupAttributes(nbox).indexOf('indicatorIconColor') != -1) {
-    var color = baseIcon[DvtNBoxConstants.COLOR];
+    var color = baseIcon[dvt.NBoxConstants.COLOR];
     for (var j = 1; j < nodeIndices.length; j++) {
-      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j])[DvtNBoxConstants.INDICATOR_ICON];
-      if (nodeIcon && color != nodeIcon[DvtNBoxConstants.COLOR])
+      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j])[dvt.NBoxConstants.INDICATOR_ICON];
+      if (nodeIcon && color != nodeIcon[dvt.NBoxConstants.COLOR])
         match = false;
     }
-    indicatorIcon[DvtNBoxConstants.COLOR] = match ? color : nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_ICON_DEFAULTS][DvtNBoxConstants.COLOR];
+    indicatorIcon[dvt.NBoxConstants.COLOR] = match ? color : nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS][dvt.NBoxConstants.COLOR];
   }
 
   // Pattern
   match = true;
   if (!DvtNBoxDataUtils.getGroupAttributes(nbox) || DvtNBoxDataUtils.getGroupAttributes(nbox).indexOf('indicatorIconPattern') != -1) {
-    var pattern = baseIcon[DvtNBoxConstants.PATTERN];
+    var pattern = baseIcon[dvt.NBoxConstants.PATTERN];
     for (var k = 1; k < nodeIndices.length; k++) {
-      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[k])[DvtNBoxConstants.INDICATOR_ICON];
-      if (nodeIcon && pattern != nodeIcon[DvtNBoxConstants.PATTERN])
+      var nodeIcon = DvtNBoxDataUtils.getNode(nbox, nodeIndices[k])[dvt.NBoxConstants.INDICATOR_ICON];
+      if (nodeIcon && pattern != nodeIcon[dvt.NBoxConstants.PATTERN])
         match = false;
     }
-    indicatorIcon[DvtNBoxConstants.PATTERN] = match ? pattern : nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_ICON_DEFAULTS][DvtNBoxConstants.PATTERN];
+    indicatorIcon[dvt.NBoxConstants.PATTERN] = match ? pattern : nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS][dvt.NBoxConstants.PATTERN];
   }
-  return DvtJSONUtils.merge(indicatorIcon, nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.INDICATOR_ICON_DEFAULTS]);
+  return dvt.JsonUtils.merge(indicatorIcon, nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.INDICATOR_ICON_DEFAULTS]);
 };
 
 
 /**
  * Returns the background for the drawer
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string} the background for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBackground = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['background'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['background'];
 };
 
 
 /**
  * Returns the header background for the drawer
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string} the header background for the drawer
  */
 DvtNBoxStyleUtils.getDrawerHeaderBackground = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['headerBackground'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['headerBackground'];
 };
 
 
 /**
  * Returns the border color for the drawer
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string} the border color for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBorderColor = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][DvtNBoxConstants.BORDER_COLOR];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.BORDER_COLOR];
 };
 
 
 /**
  * Returns the border radius for the drawer
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {number} the border radius for the drawer
  */
 DvtNBoxStyleUtils.getDrawerBorderRadius = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][DvtNBoxConstants.BORDER_RADIUS];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.BORDER_RADIUS];
 };
 
 
 /**
  * Returns the label style for the drawer
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the label style for the drawer
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the label style for the drawer
  */
 DvtNBoxStyleUtils.getDrawerLabelStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][DvtNBoxConstants.LABEL_STYLE];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults'][dvt.NBoxConstants.LABEL_STYLE];
 };
 
 
 /**
  * Returns the count label style the drawer
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the count label style the drawer
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the count label style the drawer
  */
 DvtNBoxStyleUtils.getDrawerCountLabelStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countLabelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countLabelStyle'];
 };
 
 
 /**
  * Returns the count border radius for the drawer
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {number} the count border radius for the drawer
  */
 DvtNBoxStyleUtils.getDrawerCountBorderRadius = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countBorderRadius'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__drawerDefaults']['countBorderRadius'];
 };
 
 
 /**
  * Returns the label style for category nodes
- * @param {DvtNBox} nbox
- * @return {DvtCSSStyle} the label style for category nodes
+ * @param {dvt.NBox} nbox
+ * @return {dvt.CSSStyle} the label style for category nodes
  */
 DvtNBoxStyleUtils.getCategoryNodeLabelStyle = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS]['__categoryNodeDefaults']['labelStyle'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS]['__categoryNodeDefaults']['labelStyle'];
 };
 
 
 /**
  * Returns the border radius for nodes
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {number} the border radius
  */
 DvtNBoxStyleUtils.getNodeBorderRadius = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS][DvtNBoxConstants.BORDER_RADIUS];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS][dvt.NBoxConstants.BORDER_RADIUS];
 };
 
 
 /**
  * Returns the hover color for nodes
- * @param {DvtNBox} nbox
+ * @param {dvt.NBox} nbox
  * @return {string} the hover color
  */
 DvtNBoxStyleUtils.getNodeHoverColor = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS]['hoverColor'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS]['hoverColor'];
 };
 
 
 /**
  * Returns the selection color for nodes
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @return {string} the selection color
  */
 DvtNBoxStyleUtils.getNodeSelectionColor = function(nbox) {
-  return nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.NODE_DEFAULTS]['selectionColor'];
+  return nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.NODE_DEFAULTS]['selectionColor'];
 };
 
 
 /**
  * Returns a left/center/right halign value based upon the current reading direction
  *
- * @param {DvtNBox} nbox the nbox component
+ * @param {dvt.NBox} nbox the nbox component
  * @param {object} data for object with a label
  *
  * @return {string} the reading-direction-aware halign value
  */
 DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
-  var halign = data[DvtNBoxConstants.LABEL_HALIGN];
+  var halign = data[dvt.NBoxConstants.LABEL_HALIGN];
   if (!halign)
-    halign = nbox.getOptions()[DvtNBoxConstants.STYLE_DEFAULTS][DvtNBoxConstants.CELL_DEFAULTS][DvtNBoxConstants.LABEL_HALIGN];
-  var rtl = DvtAgent.isRightToLeft(nbox.getCtx());
+    halign = nbox.getOptions()[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][dvt.NBoxConstants.LABEL_HALIGN];
+  var rtl = dvt.Agent.isRightToLeft(nbox.getCtx());
   if (halign == 'end') {
-    return rtl ? DvtOutputText.H_ALIGN_LEFT : DvtOutputText.H_ALIGN_RIGHT;
+    return rtl ? dvt.OutputText.H_ALIGN_LEFT : dvt.OutputText.H_ALIGN_RIGHT;
   }
   else if (halign == 'center') {
-    return DvtOutputText.H_ALIGN_CENTER;
+    return dvt.OutputText.H_ALIGN_CENTER;
   }
   else { // halign == "start"
-    return rtl ? DvtOutputText.H_ALIGN_RIGHT : DvtOutputText.H_ALIGN_LEFT;
+    return rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   }
 };
 
-  return D;
+  return dvt;
 });

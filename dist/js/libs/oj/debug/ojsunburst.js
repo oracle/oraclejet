@@ -3,8 +3,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtSunburst'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
 {
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -151,7 +152,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtSunburst.newInstance(context, callback, callbackObj);
+    return dvt.Sunburst.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -236,18 +237,12 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtSelectionEvent.TYPE) {
-      // update the options selection state
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else if(type === dvt.DvtSunburstRotationEvent.TYPE) {
-      // Fired after the rotate interaction is complete
-      this._UserOptionChange('startAngle', event.getStartAngle());
-    }
-    else if(type === dvt.DvtSunburstRotationEvent.TYPE_INPUT) {
-      // Fired during the rotate interaction for each change
-      this._trigger('rotateInput', null, {'value': event.getStartAngle()});
+    var type = event['type'];
+    if(type === 'rotation') {
+      if(event['complete'])
+        this._UserOptionChange('startAngle', event['startAngle']);
+      else
+        this._trigger('rotateInput', null, {'value': event['startAngle']});
     }
     else {
       this._super(event);

@@ -48,7 +48,7 @@ oj.PagingTableDataSource = function(dataSource, options)
   }
   this.dataSource = dataSource;
   this._startIndex = 0;
-  this._endIndex = 0;
+  this._endIndex = -1;
   this.Init();
 };
 
@@ -136,7 +136,7 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
       self.dataSource.fetch(options).then(function(result)
       {
         result['startIndex'] = 0;
-        self._updateEndIndex();
+        self._updateEndIndex(result['data'].length);
         oj.PagingTableDataSource.superclass.handleEvent.call(self, oj.PagingModel.EventType['PAGE'], {'page' : self._getPageFromStartIndex(), 'previousPage' : previousPage});
         resolve(null);
       },
@@ -171,7 +171,8 @@ oj.PagingTableDataSource.prototype.getStartItemIndex = function()
 };
 
 /**
- * Get the current page end index
+ * Get the current page end index. If there are no rows in the current page then
+ * return -1.
  * @return {number} The current page end index
  * @export
  * @expose
@@ -267,7 +268,7 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
     {
       self.dataSource.fetch(options).then(function(result)
       {
-        self._updateEndIndex();
+        self._updateEndIndex(result['data'].length);
         resolve(result);
       },
       function(e)
@@ -483,7 +484,7 @@ oj.PagingTableDataSource.prototype._handleRowEvent = function(event, eventHandle
     }
   }
   
-  this._updateEndIndex();
+  this._updateEndIndex(event['data'].length);
   
   event['startIndex'] = this._startIndex;
   eventHandler(event);
@@ -497,7 +498,7 @@ oj.PagingTableDataSource.prototype._handleSyncEvent = function(event, eventHandl
   {
     this._startIndex = event['startIndex'];
   }
-  this._updateEndIndex();
+  this._updateEndIndex(event['data'].length);
   
   if (this._fetchType == 'page')
   {
@@ -514,14 +515,28 @@ oj.PagingTableDataSource.prototype._handleSyncEvent = function(event, eventHandl
   }
 };
 
-oj.PagingTableDataSource.prototype._updateEndIndex = function()
+oj.PagingTableDataSource.prototype._updateEndIndex = function(resultSize)
 {
   var totalSize = this.totalSize();
-  this._endIndex = this._startIndex + this._pageSize - 1;
   
   if (totalSize > 0)
   {
+    this._endIndex = this._startIndex + this._pageSize - 1;
     this._endIndex = this._endIndex > totalSize - 1 ? totalSize - 1 : this._endIndex;
+  }
+  else
+  {
+    // if we have unknown total size then use the resultSize to constrain the end index
+    // if resultSize < pageSize then we have less than a full page of results
+    if (resultSize > 0)
+    {
+      this._endIndex = this._startIndex + resultSize - 1;
+    }
+    else
+    {
+      // we don't have any records in the fetch so the indexes should be -1;   
+      this._endIndex = -1;
+    }
   }
 };
 

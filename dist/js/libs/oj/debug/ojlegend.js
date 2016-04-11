@@ -145,17 +145,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @ojcomponent oj.ojLegend
  * @augments oj.dvtBaseComponent
  * @since 0.7
- * 
+ *
  * @classdesc
  * <h3 id="legendOverview-section">
  *   JET Legend Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#legendOverview-section"></a>
  * </h3>
- * 
+ *
  * <p>Legend component for JET.</p>
- * 
+ *
  * {@ojinclude "name":"warning"}
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;div data-bind="ojComponent: {
@@ -167,44 +167,44 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * }"/>
  * </code>
  * </pre>
- * 
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"touchDoc"}
- * 
+ *
  * <h3 id="keyboard-section">
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * 
+ *
  * {@ojinclude "name":"keyboardDoc"}
- * 
+ *
  * {@ojinclude "name":"rtl"}
- * 
+ *
  * @desc Creates a JET Legend.
  * @example <caption>Initialize the Legend with no options specified:</caption>
  * $(".selector").ojLegend();
- * 
+ *
  * @example <caption>Initialize the Legend with some options:</caption>
  * $(".selector").ojLegend({orientation: 'vertical', sections: [{text : "Database"}, {text : "Middleware"}, {text : "Applications"}});
- * 
+ *
  * @example <caption>Initialize the Legend via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojLegend'}">
  */
-oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'], 
+oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
 {
-  widgetEventPrefix : "oj",  
+  widgetEventPrefix : "oj",
   options: {
     /**
      * Triggered when a category of data items is hidden or shown.
-     * 
+     *
      * @property {Object} ui event payload
      * @property {Object} ui.category the category that was filtered on
      * @property {string} ui.type specifies whether the category is being filtered 'in' or 'out'
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">categoryFilter</code> callback specified:</caption>
      * $(".selector").ojLegend({
      *   "categoryFilter": function(event, ui){}
@@ -212,22 +212,22 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
      *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryfilter</code> event:</caption>
      * $(".selector").on("ojcategoryfilter", function(event, ui){});
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojLegend
      * @instance
      * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">hiddenCategories</code> property instead.
      */
     categoryFilter : null,
-    
+
     /**
      * Triggered when a category of data items is highlighted.
-     * 
+     *
      * @property {Object} ui event payload
      * @property {Array} ui.categories the categories that are being highlighted
      * @property {string} ui.type specifies whether highlighting is being turned 'on' or 'off'
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">categoryHighlight</code> callback specified:</caption>
      * $(".selector").ojLegend({
      *   "categoryHighlight": function(event, ui){}
@@ -235,21 +235,21 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
      *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryhighlight</code> event:</caption>
      * $(".selector").on("ojcategoryhighlight", function(event, ui){});
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojLegend
      * @instance
      * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">highlightedCategories</code> property instead.
      */
     categoryHighlight : null,
-    
+
     /**
      * Triggered during a drill gesture (single click on the legend item).
-     * 
+     *
      * @property {Object} ui event payload
      * @property {string} ui.id the id of the drilled object
-     * 
+     *
      * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
      * $(".selector").ojLegend({
      *   "drill": function(event, ui){}
@@ -257,25 +257,25 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
      *
      * @example <caption>Bind an event listener to the <code class="prettyprint">ojdrill</code> event:</caption>
      * $(".selector").on("ojdrill", function(event, ui){});
-     * 
-     * @expose 
-     * @event 
+     *
+     * @expose
+     * @event
      * @memberof oj.ojLegend
      * @instance
      */
     drill: null
   },
-  
+
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtLegend.newInstance(context, callback, callbackObj);
+    return dvt.Legend.newInstance(context, callback, callbackObj);
   },
-  
-  
+
+
   //** @inheritdoc */
   _ConvertLocatorToSubId : function(locator) {
     var subId = locator['subId'];
-    
+
     // Convert the supported locators
     if(subId == 'oj-legend-section') {
       // section[sectionIndex0][sectionIndex1]...[sectionIndexN]
@@ -293,17 +293,17 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     // support for the old subId syntax in 1.2.0.
     return subId;
   },
-  
+
   //** @inheritdoc */
   _ConvertSubIdToLocator : function(subId) {
     var locator = {};
-    
+
     if(subId.indexOf(':item') > 0) {
       // section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
       var itemStartIndex = subId.indexOf(':item');
       var sectionSubstr = subId.substring(0, itemStartIndex);
       var itemSubstr = subId.substring(itemStartIndex);
-      
+
       locator['subId'] = 'oj-legend-item';
       locator['sectionIndexPath'] = this._GetIndexPath(sectionSubstr);
       locator['itemIndex'] = this._GetFirstIndex(itemSubstr);
@@ -318,68 +318,68 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     }
     return locator;
   },
-  
+
   //** @inheritdoc */
 	_GetComponentStyleClasses: function() {
 		var styleClasses = this._super();
 		styleClasses.push('oj-legend');
 		return styleClasses;
 	},
-    
+
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses['oj-legend'] = {'path' : 'textStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-legend-title'] = {'path' : 'titleStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-legend-section-title'] = {'path' : '_sectionTitleStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    
+
     styleClasses['oj-legend-section-close-icon'] = {'path': '_resources/closedEnabled', 'property': 'CSS_URL'};
     styleClasses['oj-legend-section-close-icon oj-hover'] = {'path': '_resources/closedOver', 'property': 'CSS_URL'};
     styleClasses['oj-legend-section-close-icon oj-active'] = {'path': '_resources/closedDown', 'property': 'CSS_URL'};
-    
+
     styleClasses['oj-legend-section-open-icon'] = {'path': '_resources/openEnabled', 'property': 'CSS_URL'};
     styleClasses['oj-legend-section-open-icon oj-hover'] = {'path': '_resources/openOver', 'property': 'CSS_URL'};
     styleClasses['oj-legend-section-open-icon oj-active'] = {'path': '_resources/openDown', 'property': 'CSS_URL'};
     return styleClasses;
-  },  
-  
+  },
+
   //** @inheritdoc */
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
-    
+
     // Safe to modify super's map because function guarentees a new map is returned
     var ret = this._super();
     ret['DvtUtilBundle.LEGEND'] = translations['componentName'];
     return ret;
   },
-  
+
   //** @inheritdoc */
   _GetEventTypes : function() {
     return ['categoryFilter', 'categoryHighlight', 'drill'];
   },
-    
+
   //** @inheritdoc */
   _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null, filterType, highlightType;
-    if (type === dvt.DvtCategoryHideShowEvent.TYPE_HIDE || type === dvt.DvtCategoryHideShowEvent.TYPE_SHOW) {
-      filterType = (type === dvt.DvtCategoryHideShowEvent.TYPE_HIDE) ? 'out' : 'in';
-      this._trigger('categoryFilter', null, {'category': event.getCategory(), 'type': filterType});
+    var type = event['type'];
+    if (type === 'categoryHide' || type === 'categoryShow') {
+      var filterType = (type === 'categoryHide') ? 'out' : 'in';
+      this._trigger('categoryFilter', null, {'category': event['category'], 'type': filterType});
       this._UserOptionChange('hiddenCategories', event['hiddenCategories']);
     }
-    else if (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER || type === dvt.DvtCategoryRolloverEvent.TYPE_OUT) {
-      highlightType = (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER) ? 'on' : 'off';
+    else if (type === 'categoryHighlight') {
+      var highlightType = event['categories'] && event['categories'].length > 0 ? 'on' : 'off';
       this._trigger('categoryHighlight', null, {'categories': event['categories'], 'type': highlightType});
       this._UserOptionChange('highlightedCategories', event['categories']);
     }
-    else if (type === dvt.DvtDrillEvent.TYPE) {
-      this._trigger('drill', null, {'id': event.getId()});
+    else if (type === 'drill') {
+      this._trigger('drill', null, {'id': event['id']});
     }
     else {
       this._super(event);
     }
   },
-  
+
   //** @inheritdoc */
   _LoadResources: function() {
     // Ensure the resources object exists
@@ -392,17 +392,17 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     // TODO these should be defined in the skin instead
     resources['overviewGrippy'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
   },
-  
+
   //** @inheritdoc */
   _Render: function() {
     this._super();
-    
+
     // Remove the tabindex from the element to disable keyboard handling if the component
     // does not have a role on the parent element like for non-interactive legends
     if (!this.element.attr("role"))
       this.element.attr("tabIndex", null);
   },
-    
+
   /**
    * Returns the legend title for automation testing verification.
    * @return {String} The legend title
@@ -414,78 +414,78 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     var auto = this._component.getAutomation();
     return auto.getTitle();
   },
-  
+
   /**
    * Returns an object with the following properties for automation testing verification of the legend section with
    * the specified subid path.
-   * 
+   *
    * @param {Array} subIdPath The array of indices in the subId for the desired legend section.
    * @property {string} title
-   * @property {Function(number)} getSection Returns the section with the specified index. 
+   * @property {Function(number)} getSection Returns the section with the specified index.
    * @property {string} getSection.title
    * @property {string} getSection.getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
    * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
-   * @return {Object|null} An object containing properties for the legend section at the given subIdPath, or null if 
+   * @return {Object|null} An object containing properties for the legend section at the given subIdPath, or null if
    *   none exists.
    * @expose
    * @instance
    * @memberof oj.ojLegend
-   */     
+   */
   getSection : function(subIdPath) {
     var ret = this._component.getAutomation().getSection(subIdPath);
     if(ret) {
       var ojComponent = this;
-    
+
       // : Provide backwards compatibility for getters until 1.2.0.
       this._AddAutomationGetters(ret);
-      
+
       // Support for getSection(sectionIndex)
       ret['getSection'] = function(sectionIndex) {
         var section = ret['sections'] ? ret['sections'][sectionIndex] : null;
-        
+
         // : Provide backwards compatibility for getters until 1.2.0.
         if(section)
           ojComponent._AddAutomationGetters(section);
-          
+
         return section;
       }
-      
+
       // Support for getSection(itemIndex)
       ret['getItem'] = function(itemIndex) {
         var item = ret['items'] ? ret['items'][itemIndex] : null;
-        
+
         // : Provide backwards compatibility for getters until 1.2.0.
         if(item)
           ojComponent._AddAutomationGetters(item);
-          
+
         return item;
       }
-    }   
+    }
     return ret;
   },
-  
+
   /**
    * Returns an object with the following properties for automation testing verification of the legend item with
    * the specified subid path.
-   * 
+   *
    * @param {Array} subIdPath The array of indices in the subId for the desired legend item.
    * @property {string} text
    * @property {Function} getText <b>Deprecated</b>: Use <code class="prettyprint">text</code> instead.
-   * @return {Object|null} An object containing properties for the legend item at the given subIdPath, or null if 
+   * @return {Object|null} An object containing properties for the legend item at the given subIdPath, or null if
    *   none exists.
    * @expose
    * @instance
    * @memberof oj.ojLegend
-   */      
+   */
   getItem : function(subIdPath) {
     var ret = this._component.getAutomation().getItem(subIdPath);
-    
+
     // : Provide backwards compatibility for getters until 1.2.0.
     this._AddAutomationGetters(ret);
-    
+
     return ret;
   },
-          
+
   /**
    * Returns the preferred size of the legend, given the available width and height. A re-render must be triggered
    * by calling <code class="prettyprint">refresh</code> after invoking this function.
@@ -500,28 +500,28 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     var dims = this._component.getPreferredSize(this.options, width, height);
     return {'width': dims.getWidth(), 'height': dims.getHeight()};
   },
-    
-  /** 
+
+  /**
    * {@ojinclude "name":"nodeContextDoc"}
    * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
    * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   * 
+   *
    * @example {@ojinclude "name":"nodeContextExample"}
-   * 
+   *
    * @expose
    * @instance
    * @memberof oj.ojLegend
    */
   getContextByNode: function(node)
   {
-    // context objects are documented with @ojnodecontext 
+    // context objects are documented with @ojnodecontext
    var context = this.getSubIdByNode(node);
    if (context && context['subId'] !== 'oj-legend-tooltip')
      return context;
-    
+
    return null;
   },
-  
+
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'sections': ['items']};

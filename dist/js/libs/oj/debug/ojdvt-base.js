@@ -545,24 +545,25 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._referenceDiv.attr("style", "visibility:hidden;");
     this.element.append(this._referenceDiv); // @HTMLUpdateOK
 
-    // Create the DvtContext, which creates the svg element and adds it to the DOM.
+    // Create the dvt.Context, which creates the svg element and adds it to the DOM.
     var parentElement = this.element[0].parentElement;
     if (parentElement && parentElement._dvtcontext)
       this._context = parentElement._dvtcontext;
     else
-      this._context = new dvt.DvtContext(this.element[0], null, this._referenceDiv[0]);
+      this._context = new dvt.Context(this.element[0], null, this._referenceDiv[0]);
 
     // Set the reading direction on the context
     this._context.setReadingDirection(this._GetReadingDirection());
 
     // Set the tooltip and datatip callbacks and div style classes
     this._context.setTooltipAttachedCallback(oj.Components.subtreeAttached);
+    this._context.setOverlayAttachedCallback(oj.Components.subtreeAttached);
     this._context.setTooltipStyleClass('oj-dvt-tooltip');
     this._context.setDatatipStyleClass('oj-dvt-datatip');
 
     // Set high contrast mode if needed
     if ($(document.body).hasClass('oj-hicontrast'))
-      dvt.DvtAgent.setHighContrast(true);
+      dvt.Agent.setHighContrast(true);
 
     // Create and cache the component instance
     this._component = this._CreateDvtComponent(this._context, this._HandleEvent, this);
@@ -786,7 +787,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     var translationMap = this._GetTranslationMap();
 
     // Register with the DvtBundle
-    dvt.DvtBundle.addLocalizedStrings(translationMap);
+    dvt.Bundle.addLocalizedStrings(translationMap);
   },
 
   /**
@@ -886,7 +887,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
   /**
    * Called by _create to instantiate the specific DVT component instance.  Subclasses must override.
-   * @param {dvt.DvtContext} context
+   * @param {dvt.Context} context
    * @param {Function} callback
    * @param {Object} callbackObj
    * @protected
@@ -906,20 +907,23 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _HandleEvent : function(event) {
-    // TODO: hiddenCategories and highlightedCategories should use DvtOptionChangeEvent
+    // TODO: hiddenCategories and highlightedCategories should use the option change event
 
-    var type = event && event.getType ? event.getType() : null;
-    if (type === dvt.DvtCategoryHideShowEvent.TYPE_HIDE || type === dvt.DvtCategoryHideShowEvent.TYPE_SHOW) {
+    var type = event['type'];
+    if(type === 'selection') {
+      this._UserOptionChange('selection', event['selection']);
+    }
+    else if (type === 'categoryHide' || type === 'categoryShow') {
       this._UserOptionChange('hiddenCategories', event['hiddenCategories']);
     }
-    else if (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER || type === dvt.DvtCategoryRolloverEvent.TYPE_OUT) {
+    else if (type === 'categoryHighlight') {
       this._UserOptionChange('highlightedCategories', event['categories']);
     }
-    else if (type === dvt.DvtOptionChangeEvent.TYPE) {
+    else if (type === 'optionChange') {
       this._UserOptionChange(event['key'], event['value'], event['optionMetadata']);
     }
-    else if (this.options['contextMenu'] && type === dvt.DvtComponentTouchEvent.TOUCH_HOVER_END_TYPE) {
-      this._OpenContextMenu($.Event(event.getNativeEvent()), 'touch');
+    else if (type === 'touchHoldRelease' && this.options['contextMenu']) {
+      this._OpenContextMenu($.Event(event['nativeEvent']), 'touch');
     }
     else if (type === 'ready' && this._numDeferredObjs === 0) {
       if (this._promiseResolve) {
@@ -991,9 +995,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _Render : function(isResize) {
-    // Starting a new render- no longer ready	
+    // Starting a new render- no longer ready
     this._ready = false;
-    
+
     // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
     // getBBox calls will not return the correct values.
     // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
@@ -1299,7 +1303,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     if (!this._optionsCopy) {
       var optionValue = new DvtJsonPath(options, path).getValue();
       if (optionValue && (optionValue instanceof Function || optionValue instanceof Promise))
-        this._optionsCopy = dvt.DvtJSONUtils.clone(this.options);
+        this._optionsCopy = dvt.JsonUtils.clone(this.options);
     }
     return this._optionsCopy !== null;
   },

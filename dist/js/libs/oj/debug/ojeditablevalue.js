@@ -6490,6 +6490,7 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
   {
     this.$messagingContentRoot = $(this._getInlineContentHtml());
     this._addAriaDescribedBy(this.$messagingContentRoot);
+    this._addAriaLive(this.$messagingContentRoot);
 
     // append content that goes in inline messaging div
     // make it the very LAST child of the widget.
@@ -6544,8 +6545,9 @@ oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function (
   {
     if (this.$messagingContentRoot)
     {
-      this._removeAriaDescribedBy(this.$messagingContentRoot);
-      this.$messagingContentRoot.remove();
+    this._removeAriaDescribedBy(this.$messagingContentRoot);
+    this._removeAriaLive(this.$messagingContentRoot);
+    this.$messagingContentRoot.remove();
       this.$messagingContentRoot = null;
     }
   }
@@ -6578,6 +6580,21 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
 };
 
 /**
+ * aria-live: polite
+ * This is needed so a screen reader will read the inline message without the user needing to
+ * set focus to the input field.
+ * @return {void}
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ * @private
+ */
+oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
+{
+  oj.Assert.assertPrototype(messagingRoot, jQuery);
+  messagingRoot.attr("aria-live", "polite");
+};
+
+/**
  * Removes the aria-describedby that was added by _addAriaDescribedBy
  * return {void}
  * @memberof oj.InlineMessagingStrategy
@@ -6602,6 +6619,19 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
      launcher.attr("aria-describedby", describedby);
    else
      launcher.removeAttr("aria-describedby");
+ };
+
+ /**
+ * Removes the aria-live that was added by _addAriaLive
+ * return {void}
+ * @memberof oj.InlineMessagingStrategy
+ * @instance
+ * @private
+ */
+ oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot) 
+ {
+   oj.Assert.assertPrototype(messagingRoot, jQuery);
+   messagingRoot.removeAttr("aria-live");
  };
 
 /**

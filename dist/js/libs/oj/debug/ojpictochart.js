@@ -164,7 +164,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtPictoChart.newInstance(context, callback, callbackObj);
+    return dvt.PictoChart.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -222,15 +222,9 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtSelectionEvent.TYPE) {
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else if (type === dvt.DvtCategoryRolloverEvent.TYPE_OVER || type === dvt.DvtCategoryRolloverEvent.TYPE_OUT) {
-      this._UserOptionChange('highlightedCategories', event['categories']);
-    }
-    else if (type === dvt.DvtDrillEvent.TYPE) {
-      this._trigger('drill', null, {'id': event.getId()});
+    var type = event['type'];
+    if (type === 'drill') {
+      this._trigger('drill', null, {'id': event['id']});
     }
     else {
       this._super(event);

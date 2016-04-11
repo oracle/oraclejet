@@ -36,7 +36,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
     flags['_context'] = {writeback: true, internalSet: true};
     this.option("rawValue",this.options['value'], flags);
   },
-	
+
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
@@ -67,22 +67,22 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtValueChangeEvent.TYPE) {
-      // Fired after the value change interaction is complete
-      this._UserOptionChange('value', event.getNewValue());
-    }
-    else if(type === dvt.DvtValueChangeEvent.TYPE_INPUT) {
-      // Fired during the value change interaction for each change
-      var newValue = event.getNewValue();
-      this._trigger('input', null, {'value': newValue});
-      this._UserOptionChange('rawValue', event.getNewValue());
+    var type = event['type'];
+    if(type === 'valueChange') {
+      var newValue = event['newValue'];
+      if(event['complete'])
+        this._UserOptionChange('value', newValue);
+      else {
+        // Fired during the value change interaction for each change
+        this._trigger('input', null, {'value': newValue});
+        this._UserOptionChange('rawValue', newValue);
+      }
     }
     else {
       this._super(event);
     }
   },
-  
+
   /**
    * @override
    * @private
@@ -94,14 +94,14 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
       oj.Logger.error("'rawValue' is a read-only option and cannot be set");
       return;
     }
-    
+
     if(key === "value") {
       var rawValueFlags = {};
       rawValueFlags['_context'] = {writeback: true, internalSet: true};
       this.option("rawValue", value, rawValueFlags);
     }
 
-    this._super(key, value, flags);  
+    this._super(key, value, flags);
   },
 
   //** @inheritdoc */
@@ -189,7 +189,7 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtLedGauge.newInstance(context, callback, callbackObj);
+    return dvt.LedGauge.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -368,7 +368,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtRatingGauge.newInstance(context, callback, callbackObj);
+    return dvt.RatingGauge.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -669,7 +669,7 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtDialGauge.newInstance(context, callback, callbackObj);
+    return dvt.DialGauge.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -999,7 +999,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtStatusMeterGauge.newInstance(context, callback, callbackObj);
+    return dvt.StatusMeterGauge.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */

@@ -8,12 +8,13 @@ requirejs.config({
     'knockout': 'libs/knockout/knockout-3.4.0',
     'jquery': 'libs/jquery/jquery-2.1.3.min',
     'jqueryui-amd': 'libs/jquery/jqueryui-amd-1.11.4.min',
-    'ojs': 'libs/oj/v2.0.0/min',
-    'ojL10n': 'libs/oj/v2.0.0/ojL10n',
-    'ojtranslations': 'libs/oj/v2.0.0/resources',
+    'ojs': 'libs/oj/v2.0.1/min',
+    'ojL10n': 'libs/oj/v2.0.1/ojL10n',
+    'ojtranslations': 'libs/oj/v2.0.1/resources',
     'text': 'libs/require/text',
     'promise': 'libs/es6-promise/promise-1.0.0.min',
     'hammerjs': 'libs/hammer/hammer-2.0.4.min',
+    'signals': 'libs/js-signals/signals.min',    
     'ojdnd': 'libs/dnd-polyfill/dnd-polyfill-1.0.0.min'
   },
   // Shim configurations for modules that do not expose AMD

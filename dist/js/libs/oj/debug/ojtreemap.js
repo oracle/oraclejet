@@ -3,8 +3,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreemap'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
 {
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -78,7 +79,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *    take advantage of these higher level attributes to apply the style properties on containers, saving expensive DOM
  *    calls.
  * </p>
- * 
+ *
  * {@ojinclude "name":"trackResize"}
  *
  * {@ojinclude "name":"rtl"}
@@ -131,7 +132,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _CreateDvtComponent: function(context, callback, callbackObj) {
-      return dvt.DvtTreemap.newInstance(context, callback, callbackObj);
+      return dvt.Treemap.newInstance(context, callback, callbackObj);
     },
 
     //** @inheritdoc */
@@ -236,21 +237,18 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _HandleEvent: function(event) {
-      var type = event && event.getType ? event.getType() : null, isolatedNodes, isolatedNode, isolateType;
-      if (type === dvt.DvtSelectionEvent.TYPE) {
-        // update the options selection state
-        this._UserOptionChange('selection', event.getSelection());
-      }
-      else if (type === dvt.DvtTreemapIsolateEvent.TYPE) {
+      var type = event['type'];
+      if (type === 'isolate') {
         // Keep track of all isolated nodes
-        isolatedNodes = this.options._isolatedNodes;
+        var isolatedNodes = this.options._isolatedNodes;
         if (!isolatedNodes) {
           this.options._isolatedNodes = [];
           isolatedNodes = this.options._isolatedNodes;
         }
 
         // If event has id, it's an isolate.  If null id, then restore.
-        isolatedNode = event.getId();
+        var isolateType;
+        var isolatedNode = event['id'];
         if (isolatedNode) {
           isolateType = "on";
           isolatedNodes.push(isolatedNode);

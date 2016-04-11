@@ -2949,7 +2949,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         // select the previous valid value to get rid off the invalid style and message.
         /*if (!(old === this.id(data)))*/
         this.setVal(this.id(data).length === 0 ? [] : this.id(data), event, context);
-        this._focusSearch();
+        if (event.type !== "blur")
+		  this._focusSearch();
       },
 
       //_AbstractSingleChoice

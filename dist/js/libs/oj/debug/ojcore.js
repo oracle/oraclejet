@@ -45,9 +45,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.0.0",
-  'build' : "1",
-  'revision': "23446",
+  'version': "2.0.1",
+  'build' : "213",
+  'revision': "24518",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -1969,6 +1969,31 @@ oj.Config.logVersionInfo = function()
 {
     console.log(oj.Config.getVersionInfo());
 };
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+**
+**
+*/
+
+// CustomEvent()
+(function () {  
+  if (window === undefined || (typeof window['CustomEvent'] === "function")) {
+    return;
+  }
+  
+  function CustomEvent (event, params) {
+    params = params || {bubbles: false, cancelable: false, detail: undefined};
+    
+    var evt = document.createEvent('CustomEvent');
+    
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window['CustomEvent'] = CustomEvent;
+})();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.

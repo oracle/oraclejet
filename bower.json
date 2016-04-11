@@ -1,13 +1,20 @@
 {
   "name": "oraclejet",
+  "version": "2.0.1",
   "description": "Oracle JET distribution",
-  "version": "2.0.0",
-  "authors": [
+    "authors": [
     "Oracle"
   ],
-  "license": "UPL",
+  "license": "UPL-1.0",
   "homepage": "http://oraclejet.org",
-  "moduleType": [],
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oracle/oraclejet.git"
+  },
   "ignore":["samples"],
   "main":[],
   "dependencies": 

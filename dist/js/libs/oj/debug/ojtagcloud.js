@@ -277,7 +277,7 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtTagCloud.newInstance(context, callback, callbackObj);
+    return dvt.TagCloud.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -342,18 +342,6 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
     var ret = this._super();
     ret['DvtUtilBundle.TAG_CLOUD'] = translations['componentName'];
     return ret;
-  },
-
-  //** @inheritdoc */
-  _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtSelectionEvent.TYPE) {
-      // update the options selection state
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else {
-      this._super(event);
-    }
   },
 
   /**

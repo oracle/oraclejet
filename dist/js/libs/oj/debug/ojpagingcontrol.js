@@ -711,7 +711,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       {  
         this._super();
         this._registerSwipeHandler();
-        this._invokeDataPage(0, true);
+        this._setInitialPage();
       },
       /**
        * @override
@@ -1033,7 +1033,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         if (this._data != this.options['data'])
         {
           this._clearCachedDataMetadata();
-          this._invokeDataPage(0, true);
+          this._setInitialPage();
         }
         
         var size = 0;
@@ -1261,7 +1261,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           }
           else
           {
-            itemRangeCurrentText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT, {'pageFrom': pageFrom, 'pageTo': pageTo});
+            if (size == 0)
+            {
+              itemRangeCurrentText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE, {'pageFrom': 0});
+            }
+            else
+            {
+              itemRangeCurrentText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT, {'pageFrom': pageFrom, 'pageTo': pageTo});
+            }
             var itemRangeItemsText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_ITEMS);
             var itemRangeItemsSpan = $(document.createElement('span'));
             itemRangeItemsSpan.text(" " + itemRangeItemsText);
@@ -1874,6 +1881,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _refreshPagingControlNavArrows: function(size, startIndex)
       {
+        var pageSize = this.options['pageSize'];
         var pagingControlNavArrowSection = this._getPagingControlNavArrowSection();
         var pagingControlNavFirst = pagingControlNavArrowSection.children('.' + this._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS);
         if (pagingControlNavFirst && pagingControlNavFirst.length > 0)
@@ -1944,8 +1952,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           var navNextPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_NEXT_PAGE);
           pagingControlNavNext.attr('title', navNextPageTip);
           
-          if ((this._getCurrentPage() == this._getTotalPages() - 1 && this._isTotalSizeConfidenceActual()) || this._getTotalPages() === 0 ||
-              (this._getTotalPages() < 0 && size === 0))
+          if ((this._getCurrentPage() == this._getTotalPages() - 1 && this._isTotalSizeConfidenceActual()) || 
+              this._getTotalPages() === 0 ||
+              (this._getTotalPages() < 0 && size === 0) ||
+              (this._getTotalPages() < 0 && size < pageSize))
           {
             pagingControlNavNext.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
             pagingControlNavNext.removeClass(this._MARKER_STYLE_CLASSES._ENABLED);
@@ -2186,6 +2196,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               }
             }
           }
+        }
+      },
+      /**
+       * Set the initial page.
+       * @private
+       */
+      _setInitialPage: function()
+      {
+        var currentPage = this._getCurrentPage();
+        
+        if (currentPage > 0)
+        {
+          this._invokeDataPage(currentPage, true);
+        }
+        else
+        {
+          this._invokeDataPage(0, true);
         }
       },
       /**
@@ -2674,6 +2701,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         parentDiv.append(pagingControlNavPagesLinks); //@HTMLUpdateOK
         var totalPages = this._getTotalPages();
         var currentPage = this._getCurrentPage();
+        var pageSize = this.options['pageSize'];
         
         var numPagesToAdd = numLinks;
         // this will hold our page list
@@ -2733,7 +2761,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             // if unknown row count, only add one page after current if there is data
             if (totalPages == -1)
             {
-              if (size > 0)
+              if (size > 0 && size >= pageSize)
               {
                 numPagesToAdd = 1;
               }
@@ -2770,7 +2798,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               }
             }
           }
-          if (!this._isTotalSizeConfidenceActual())
+          if (!this._isTotalSizeConfidenceActual() && size >= pageSize)
           {
             this._createPagingControlNavPage(pagingControlNavPagesLinks, -1);
           }

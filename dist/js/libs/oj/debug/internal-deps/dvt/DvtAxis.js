@@ -6,32 +6,28 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
+(function(dvt) {
 /**
  * Axis component.  This class should never be instantiated directly.  Use the
  * newInstance function instead.
  * @class
  * @constructor
- * @extends {DvtBaseComponent}
- * @export
+ * @extends {dvt.BaseComponent}
  */
-var DvtAxis = function() {};
+dvt.Axis = function() {};
 
-DvtObj.createSubclass(DvtAxis, DvtBaseComponent, 'DvtAxis');
+dvt.Obj.createSubclass(dvt.Axis, dvt.BaseComponent);
 
 
 /**
- * Returns a new instance of DvtAxis.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.Axis.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtAxis}
- * @export
+ * @return {dvt.Axis}
  */
-DvtAxis.newInstance = function(context, callback, callbackObj) {
-  var axis = new DvtAxis();
+dvt.Axis.newInstance = function(context, callback, callbackObj) {
+  var axis = new dvt.Axis();
   axis.Init(context, callback, callbackObj);
   return axis;
 };
@@ -41,9 +37,8 @@ DvtAxis.newInstance = function(context, callback, callbackObj) {
  * Returns a copy of the default options for the specified skin.
  * @param {string} skin The skin whose defaults are being returned.
  * @return {object} The object containing defaults for this component.
- * @export
  */
-DvtAxis.getDefaults = function(skin) 
+dvt.Axis.getDefaults = function(skin) 
 {
   return (new DvtAxisDefaults()).getDefaults(skin);
 };
@@ -53,8 +48,8 @@ DvtAxis.getDefaults = function(skin)
  * @override
  * @protected
  */
-DvtAxis.prototype.Init = function(context, callback, callbackObj) {
-  DvtAxis.superclass.Init.call(this, context, callback, callbackObj);
+dvt.Axis.prototype.Init = function(context, callback, callbackObj) {
+  dvt.Axis.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
   this.Defaults = new DvtAxisDefaults();
@@ -64,7 +59,7 @@ DvtAxis.prototype.Init = function(context, callback, callbackObj) {
   this._eventManager.addListeners(this);
 
   // Set up keyboard handler on non-touch devices if the axis is interactive
-  if (!DvtAgent.isTouchDevice())
+  if (!dvt.Agent.isTouchDevice())
     this._eventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this._eventManager, this));
 
   this._bounds = null;
@@ -74,14 +69,14 @@ DvtAxis.prototype.Init = function(context, callback, callbackObj) {
 /**
  * Minimum buffer for horizontal axis.
  */
-DvtAxis.MINIMUM_AXIS_BUFFER = 10;
+dvt.Axis.MINIMUM_AXIS_BUFFER = 10;
 
 
 /**
  * @override
  * @protected
  */
-DvtAxis.prototype.SetOptions = function(options) {
+dvt.Axis.prototype.SetOptions = function(options) {
   if (options) {
     // Combine the user options with the defaults and store. If the axis isn't rendered, no need to apply defaults.
     this.Options = (options['rendered'] == 'off') ? options : this.Defaults.calcOptions(options);
@@ -96,9 +91,9 @@ DvtAxis.prototype.SetOptions = function(options) {
  * @param {object} options The object containing specifications and data for this component.
  * @param {Number} maxWidth The maximum width available.
  * @param {Number} maxHeight The maximum height available.
- * @return {DvtDimension} The preferred dimensions for the object.
+ * @return {dvt.Dimension} The preferred dimensions for the object.
  */
-DvtAxis.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
+dvt.Axis.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
   // Update the options object.
   this.SetOptions(options);
 
@@ -114,9 +109,8 @@ DvtAxis.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
  * @param {number} height The height of the component.
  * @param {number=} x x position of the component.
  * @param {number=} y y position of the component.
- * @export
  */
-DvtAxis.prototype.render = function(options, width, height, x, y) 
+dvt.Axis.prototype.render = function(options, width, height, x, y) 
 {
   // Update the options object.
   this.SetOptions(options);
@@ -138,7 +132,7 @@ DvtAxis.prototype.render = function(options, width, height, x, y)
   }
 
   // Render the axis
-  var availSpace = new DvtRectangle(x, y, width, height);
+  var availSpace = new dvt.Rectangle(x, y, width, height);
   DvtAxisRenderer.render(this, availSpace);
 };
 
@@ -147,7 +141,7 @@ DvtAxis.prototype.render = function(options, width, height, x, y)
  * in interactivity.
  * @param {DvtAxisObjPeer} peer
  */
-DvtAxis.prototype.__registerObject = function(peer) {
+dvt.Axis.prototype.__registerObject = function(peer) {
   // peer is navigable if associated with axis item using datatip or drilling is enabled
   if (peer.getDatatip() != null || peer.getAction() != null || peer.isDrillable())
     this._navigablePeers.push(peer);
@@ -157,7 +151,7 @@ DvtAxis.prototype.__registerObject = function(peer) {
  * Returns the keyboard navigables within the axis.
  * @return {array}
  */
-DvtAxis.prototype.__getKeyboardObjects = function() {
+dvt.Axis.prototype.__getKeyboardObjects = function() {
   return this._navigablePeers;
 };
 
@@ -165,7 +159,7 @@ DvtAxis.prototype.__getKeyboardObjects = function() {
  * Returns whether or not the axis has navigable peers
  * @return {boolean}
  */
-DvtAxis.prototype.isNavigable = function() {
+dvt.Axis.prototype.isNavigable = function() {
   return this._navigablePeers.length > 0;
 };
 
@@ -173,7 +167,7 @@ DvtAxis.prototype.isNavigable = function() {
  * Returns the keyboard-focused object of the axis
  * @return {DvtKeyboardNavigable} The focused object.
  */
-DvtAxis.prototype.getKeyboardFocus = function() {
+dvt.Axis.prototype.getKeyboardFocus = function() {
   if (this._eventManager != null)
     return this._eventManager.getFocus();
   return null;
@@ -184,7 +178,7 @@ DvtAxis.prototype.getKeyboardFocus = function() {
  * @param {DvtKeyboardNavigable} navigable The focused object.
  * @param {boolean} isShowingFocusEffect Whether the keyboard focus effect should be used.
  */
-DvtAxis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
+dvt.Axis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
   if (this._eventManager == null)
     return;
 
@@ -193,7 +187,7 @@ DvtAxis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
   var matchFound = false;
   for (var i = 0; i < peers.length; i++) {
     var otherId = peers[i].getId();
-    if ((id instanceof Array && otherId instanceof Array && DvtArrayUtils.equals(id, otherId)) || id === otherId) {
+    if ((id instanceof Array && otherId instanceof Array && dvt.ArrayUtils.equals(id, otherId)) || id === otherId) {
       this._eventManager.setFocusObj(peers[i]);
       matchFound = true;
       if (isShowingFocusEffect)
@@ -218,7 +212,7 @@ DvtAxis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
  * @param {object} event
  * @param {object} source The component that is the source of the event, if available.
  */
-DvtAxis.prototype.processEvent = function(event, source) {
+dvt.Axis.prototype.processEvent = function(event, source) {
   // Dispatch the event to the callback if it originated from within this component.
   if (this === source) {
     this.dispatchEvent(event);
@@ -228,16 +222,16 @@ DvtAxis.prototype.processEvent = function(event, source) {
 /**
  * @override
  */
-DvtAxis.prototype.getEventManager = function() {
+dvt.Axis.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
 
 /**
  * Returns the axisInfo for the axis
- * @return {DvtAxisInfo} the axisInfo
+ * @return {dvt.AxisInfo} the axisInfo
  */
-DvtAxis.prototype.getInfo = function() {
+dvt.Axis.prototype.getInfo = function() {
   return this.Info;
 };
 
@@ -245,9 +239,9 @@ DvtAxis.prototype.getInfo = function() {
 /**
  * Sets the object containing calculated axis information and support
  * for creating drawables.
- * @param {DvtAxisInfo} axisInfo
+ * @param {dvt.AxisInfo} axisInfo
  */
-DvtAxis.prototype.__setInfo = function(axisInfo) {
+dvt.Axis.prototype.__setInfo = function(axisInfo) {
   this.Info = axisInfo;
 };
 
@@ -255,7 +249,7 @@ DvtAxis.prototype.__setInfo = function(axisInfo) {
  * Returns the axis width
  * @return {number}
  */
-DvtAxis.prototype.getWidth = function() {
+dvt.Axis.prototype.getWidth = function() {
   return this.Width;
 };
 
@@ -264,7 +258,7 @@ DvtAxis.prototype.getWidth = function() {
  * Returns the axis height
  * @return {number}
  */
-DvtAxis.prototype.getHeight = function() {
+dvt.Axis.prototype.getHeight = function() {
   return this.Height;
 };
 
@@ -272,7 +266,7 @@ DvtAxis.prototype.getHeight = function() {
 /**
  * @override
  */
-DvtAxis.prototype.destroy = function() {
+dvt.Axis.prototype.destroy = function() {
   if (this._eventManager) {
     this._eventManager.removeListeners(this);
     this._eventManager.destroy();
@@ -280,31 +274,30 @@ DvtAxis.prototype.destroy = function() {
   }
 
   // Call super last during destroy
-  DvtAxis.superclass.destroy.call(this);
+  dvt.Axis.superclass.destroy.call(this);
 };
 
 /**
  * Stores the bounds for this axis
- * @param {DvtRectangle} bounds
+ * @param {dvt.Rectangle} bounds
  */
-DvtAxis.prototype.__setBounds = function(bounds) {
+dvt.Axis.prototype.__setBounds = function(bounds) {
   this._bounds = bounds;
 };
 
 /**
  * Returns the bounds for this axis
- * @return {DvtRectangle} the object containing the bounds for this axis
+ * @return {dvt.Rectangle} the object containing the bounds for this axis
  */
-DvtAxis.prototype.__getBounds = function() {
+dvt.Axis.prototype.__getBounds = function() {
   return this._bounds;
 };
 
 /**
  * Returns the automation object for this axis
- * @return {DvtAutomation} The automation object
- * @export
+ * @return {dvt.Automation} The automation object
  */
-DvtAxis.prototype.getAutomation = function() {
+dvt.Axis.prototype.getAutomation = function() {
   return new DvtAxisAutomation(this);
 };
 /**
@@ -313,7 +306,7 @@ DvtAxis.prototype.getAutomation = function() {
  */
 var DvtAxisConstants = {};
 
-DvtObj.createSubclass(DvtAxisConstants, DvtObj, 'DvtAxisConstants');
+dvt.Obj.createSubclass(DvtAxisConstants, dvt.Obj);
 
 /**
  * @const
@@ -325,31 +318,11 @@ DvtAxisConstants.TICK_LABEL = 'tickLabel';
  */
 DvtAxisConstants.TITLE = 'title';
 /**
- * Abstact formatter for an axis label value.
- *
- * @constructor
- */
-var DvtAbstractAxisValueFormatter = function() {
-};
-
-DvtObj.createSubclass(DvtAbstractAxisValueFormatter, DvtObj, 'DvtAbstractAxisValueFormatter');
-
-
-/**
- * Abstract method which purpose is to format given numeric value.
- * @param {number} value value to be formatted
- * @return {string} formatted value as string
- */
-DvtAbstractAxisValueFormatter.prototype.format = function(value) {
-};
-
-/**
  *  Provides automation services for a DVT component.
  *  @class DvtAxisAutomation
- *  @param {DvtAxis} dvtComponent
- *  @implements {DvtAutomation}
+ *  @param {dvt.Axis} dvtComponent
+ *  @implements {dvt.Automation}
  *  @constructor
- *  @export
  */
 var DvtAxisAutomation = function(dvtComponent) {
   this._axis = dvtComponent;
@@ -358,7 +331,7 @@ var DvtAxisAutomation = function(dvtComponent) {
   this._axisInfo = this._axis.getInfo();
 };
 
-DvtObj.createSubclass(DvtAxisAutomation, DvtAutomation, 'DvtAxisAutomation');
+dvt.Obj.createSubclass(DvtAxisAutomation, dvt.Automation);
 
 
 /**
@@ -371,7 +344,7 @@ DvtObj.createSubclass(DvtAxisAutomation, DvtAutomation, 'DvtAxisAutomation');
  */
 DvtAxisAutomation.prototype.GetSubIdForDomElement = function(displayable) {
   var logicalObj = this._axis.getEventManager().GetLogicalObject(displayable);
-  if (logicalObj && (logicalObj instanceof DvtSimpleObjPeer)) {
+  if (logicalObj && (logicalObj instanceof dvt.SimpleObjPeer)) {
     if (logicalObj.getParams()['type'] == DvtAxisConstants.TITLE) // return chart axis title subId
       return 'title';
     else if (this._options['groups']) { // return group axis label subId
@@ -405,7 +378,6 @@ DvtAxisAutomation.prototype.GetSubIdForDomElement = function(displayable) {
  * <li>title</li>
  * </ul>
  * @override
- * @export
  */
 DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
   if (subId == 'title') { // process chart axis title subId
@@ -413,7 +385,7 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
     if (title)
       return title.getElem();
   }
-  else if (this._axisInfo instanceof DvtGroupAxisInfo) { // process group axis label subId
+  else if (this._axisInfo instanceof dvt.GroupAxisInfo) { // process group axis label subId
     var numIndices = subId.split('[').length - 1;
     var labelLevel = numIndices - 1;
     var labelIndex = 0;
@@ -453,19 +425,19 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
- * @extends {DvtBaseComponentDefaults}
+ * @extends {dvt.BaseComponentDefaults}
  */
 var DvtAxisDefaults = function() {
   this.Init({'skyros': DvtAxisDefaults.VERSION_1, 'alta': DvtAxisDefaults.SKIN_ALTA, 'next': DvtAxisDefaults.SKIN_NEXT});
 };
 
-DvtObj.createSubclass(DvtAxisDefaults, DvtBaseComponentDefaults, 'DvtAxisDefaults');
+dvt.Obj.createSubclass(DvtAxisDefaults, dvt.BaseComponentDefaults);
 
 /**
  * Contains overrides for the next generation skin.
  */
 DvtAxisDefaults.SKIN_NEXT = {
-  'skin': DvtCSSStyle.SKIN_NEXT,
+  'skin': dvt.CSSStyle.SKIN_NEXT,
   'layout': {
     'titleGap': 6
   }
@@ -479,8 +451,8 @@ DvtAxisDefaults.SKIN_ALTA = {
   'axisLine': {'lineColor': '#9E9E9E'},
   'majorTick': {'lineColor': 'rgba(196,206,215,0.4)', 'baselineColor': 'auto'},
   'minorTick': {'lineColor': 'rgba(196,206,215,0.2)'},
-  'tickLabel': {'style': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; white-space:normal;")},
-  'titleStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px;")
+  'tickLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'white-space:normal;')},
+  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
 };
 
 
@@ -495,9 +467,9 @@ DvtAxisDefaults.VERSION_1 = {
   'minorTick': {'lineColor': 'rgba(138,141,172,0.20)', 'lineWidth': 1, 'rendered': 'off', 'lineStyle': 'solid'},
   'tickLabel': {
     'scaling': 'auto',
-    'style': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px; color: #333333;'), 'rotation': 'auto', 'rendered': 'on'
+    'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 11px; color: #333333;'), 'rotation': 'auto', 'rendered': 'on'
   },
-  'titleStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px; color: #737373;'),
+  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 11px; color: #737373;'),
 
   // For group axis, an optional offset expressed as a factor of the group size.
   'startGroupOffset': 0, 'endGroupOffset': 0,
@@ -510,21 +482,21 @@ DvtAxisDefaults.VERSION_1 = {
 
 /**
  * Adjusts the gap size based on the component options.
- * @param {DvtContext} context The axis component context.
+ * @param {dvt.Context} context The axis component context.
  * @param {Object} options The axis options.
  * @param {Number} defaultSize The default gap size.
  * @return {Number}
  */
 DvtAxisDefaults.getGapSize = function(context, options, defaultSize) {
   // adjust based on tick label font size
-  var scalingFactor = Math.min(DvtTextUtils.getTextStringHeight(context, options['tickLabel']['style']) / 14, 1);
+  var scalingFactor = Math.min(dvt.TextUtils.getTextStringHeight(context, options['tickLabel']['style']) / 14, 1);
   return Math.ceil(defaultSize * scalingFactor);
 };
 /**
- * Event Manager for DvtAxis.
- * @param {DvtAxis} axis
+ * Event Manager for dvt.Axis.
+ * @param {dvt.Axis} axis
  * @class
- * @extends {DvtEventManager}
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtAxisEventManager = function(axis) {
@@ -532,7 +504,7 @@ var DvtAxisEventManager = function(axis) {
   this._axis = axis;
 };
 
-DvtObj.createSubclass(DvtAxisEventManager, DvtEventManager, 'DvtAxisEventManager');
+dvt.Obj.createSubclass(DvtAxisEventManager, dvt.EventManager);
 
 
 /**
@@ -585,13 +557,13 @@ DvtAxisEventManager.prototype.HandleTouchClickInternal = function(evt) {
  */
 DvtAxisEventManager.prototype.processActionEvent = function(obj) {
   if (obj && obj.getAction && obj.getAction()) {
-    this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()), this._axis);
+    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()), this._axis);
     return true;
   }
 
   // Drill Support
   if (obj instanceof DvtAxisObjPeer && obj.isDrillable()) {
-    this.FireEvent(new DvtDrillEvent(obj.getId(), null, obj.getGroup()), this._axis);
+    this.FireEvent(dvt.EventFactory.newChartDrillEvent(obj.getId(), null, obj.getGroup()), this._axis);
     return true;
   }
 
@@ -599,14 +571,11 @@ DvtAxisEventManager.prototype.processActionEvent = function(obj) {
 };
 
 
-/*---------------------------------------------------------------------------------*/
-/*  DvtAxisKeyboardHandler     Keyboard handler for Axis                       */
-/*---------------------------------------------------------------------------------*/
 /**
-  *  @param {DvtEventManager} manager The owning DvtEventManager
-  *  @param {DvtAxis} axis
+  *  @param {dvt.EventManager} manager The owning dvt.EventManager
+  *  @param {dvt.Axis} axis
   *  @class DvtAxisKeyboardHandler
-  *  @extends {DvtKeyboardHandler}
+  *  @extends {dvt.KeyboardHandler}
   *  @constructor
   */
 var DvtAxisKeyboardHandler = function(manager, axis)
@@ -614,7 +583,7 @@ var DvtAxisKeyboardHandler = function(manager, axis)
   this.Init(manager, axis);
 };
 
-DvtObj.createSubclass(DvtAxisKeyboardHandler, DvtKeyboardHandler, 'DvtAxisKeyboardHandler');
+dvt.Obj.createSubclass(DvtAxisKeyboardHandler, dvt.KeyboardHandler);
 
 
 /**
@@ -634,23 +603,23 @@ DvtAxisKeyboardHandler.prototype.processKeyDown = function(event) {
   var currentNavigable = this._eventManager.getFocus();
   var nextNavigable = null;
 
-  if (keyCode == DvtKeyboardEvent.TAB) {
+  if (keyCode == dvt.KeyboardEvent.TAB) {
     if (currentNavigable) {
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
       nextNavigable = currentNavigable;
     }
 
     // navigate to the default
     var navigables = this._axis.__getKeyboardObjects();
     if (navigables.length > 0) {
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
       nextNavigable = this.getDefaultNavigable(navigables);
     }
   }
-  else if (keyCode == DvtKeyboardEvent.ENTER) {
+  else if (keyCode == dvt.KeyboardEvent.ENTER) {
     if (currentNavigable) {
       this._eventManager.processActionEvent(currentNavigable);
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
     }
   }
   else
@@ -659,24 +628,24 @@ DvtAxisKeyboardHandler.prototype.processKeyDown = function(event) {
   return nextNavigable;
 };
 /**
- * Renderer for DvtAxis.
+ * Renderer for dvt.Axis.
  * @class
  */
 var DvtAxisRenderer = new Object();
 
-DvtObj.createSubclass(DvtAxisRenderer, DvtObj, 'DvtAxisRenderer');
+dvt.Obj.createSubclass(DvtAxisRenderer, dvt.Obj);
 
 /**
  * Returns the preferred dimensions for this component given the maximum available space. This will never be called for
  * radial axis.
- * @param {DvtAxis} axis
+ * @param {dvt.Axis} axis
  * @param {number} availWidth
  * @param {number} availHeight
- * @return {DvtDimension} The preferred dimensions for the object.
+ * @return {dvt.Dimension} The preferred dimensions for the object.
  */
 DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
   // Calculate the axis extents and increments
-  var axisInfo = DvtAxisRenderer._createAxisInfo(axis, new DvtRectangle(0, 0, availWidth, availHeight));
+  var axisInfo = DvtAxisRenderer._createAxisInfo(axis, new dvt.Rectangle(0, 0, availWidth, availHeight));
   var context = axis.getCtx();
   var options = axis.getOptions();
 
@@ -687,50 +656,50 @@ DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
 
   // No size if not rendered or either dimension is 0
   if (options['rendered'] == 'off' || availWidth <= 0 || availHeight <= 0)
-    return bHoriz ? new DvtDimension(availWidth, 0) : new DvtDimension(0, availHeight);
+    return bHoriz ? new dvt.Dimension(availWidth, 0) : new dvt.Dimension(0, availHeight);
 
   // Allocate space for the title
   if (options['title'])
-    size = DvtTextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisRenderer._getTitleGap(axis);
+    size = dvt.TextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisRenderer._getTitleGap(axis);
 
   // Allocate space for the tick labels
   if (options['tickLabel']['rendered'] == 'on' && options['tickLabel']['position'] != 'inside') {
     if (bHoriz) {
       // Horizontal Axis
-      var labelHeight = DvtTextUtils.getTextStringHeight(context, options['tickLabel']['style']);
-      if (axisInfo instanceof DvtDataAxisInfo)
+      var labelHeight = dvt.TextUtils.getTextStringHeight(context, options['tickLabel']['style']);
+      if (axisInfo instanceof dvt.DataAxisInfo)
         size += labelHeight;
-      else if (axisInfo instanceof DvtTimeAxisInfo)
+      else if (axisInfo instanceof dvt.TimeAxisInfo)
         size += (axisInfo.getLabels(context, 1) != null ? labelHeight * 2 : labelHeight);
-      else if (axisInfo instanceof DvtGroupAxisInfo)
+      else if (axisInfo instanceof dvt.GroupAxisInfo)
         size = DvtAxisRenderer._getGroupAxisPreferredSize(axis, axisInfo, size, availHeight, bHoriz);
     }
     else {
       // Vertical Axis
-      if (axisInfo instanceof DvtDataAxisInfo)
-        size += DvtTextUtils.getMaxTextDimensions(axisInfo.getLabels(context)).w;
-      else if (axisInfo instanceof DvtTimeAxisInfo) {
+      if (axisInfo instanceof dvt.DataAxisInfo)
+        size += dvt.TextUtils.getMaxTextDimensions(axisInfo.getLabels(context)).w;
+      else if (axisInfo instanceof dvt.TimeAxisInfo) {
         var innerLabels = axisInfo.getLabels(context);
-        var innerLabelWidth = DvtTextUtils.getMaxTextDimensions(innerLabels).w;
+        var innerLabelWidth = dvt.TextUtils.getMaxTextDimensions(innerLabels).w;
         var outerLabels = axisInfo.getLabels(context, 1);
-        var outerLabelWidth = outerLabels != null ? DvtTextUtils.getMaxTextDimensions(outerLabels).w : 0;
+        var outerLabelWidth = outerLabels != null ? dvt.TextUtils.getMaxTextDimensions(outerLabels).w : 0;
         size += Math.max(innerLabelWidth, outerLabelWidth);
       }
-      else if (axisInfo instanceof DvtGroupAxisInfo)
+      else if (axisInfo instanceof dvt.GroupAxisInfo)
         size = DvtAxisRenderer._getGroupAxisPreferredSize(axis, axisInfo, size, availWidth, bHoriz);
     }
   }
 
   if (bHoriz)
-    return new DvtDimension(availWidth, Math.min(size, availHeight));
+    return new dvt.Dimension(availWidth, Math.min(size, availHeight));
   else
-    return new DvtDimension(Math.min(size, availWidth), availHeight);
+    return new dvt.Dimension(Math.min(size, availWidth), availHeight);
 };
 
 /**
  * Renders the axis and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
  */
 DvtAxisRenderer.render = function(axis, availSpace) {
   // Calculate the axis extents and increments
@@ -750,21 +719,21 @@ DvtAxisRenderer.render = function(axis, availSpace) {
 };
 
 /**
- * Creates and returns the DvtAxisInfo for the specified axis.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtRectangle} availSpace The available space.
- * @return {DvtAxisInfo}
+ * Creates and returns the dvt.AxisInfo for the specified axis.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @return {dvt.AxisInfo}
  * @private
  */
 DvtAxisRenderer._createAxisInfo = function(axis, availSpace) {
-  var axisInfo = DvtAxisInfo.newInstance(axis.getCtx(), axis.getOptions(), availSpace);
+  var axisInfo = dvt.AxisInfo.newInstance(axis.getCtx(), axis.getOptions(), availSpace);
   axis.__setInfo(axisInfo);
   return axisInfo;
 };
 
 /**
  * Returns the gap between the title and the tick labels.
- * @param {DvtAxis} axis
+ * @param {dvt.Axis} axis
  * @return {number}
  * @private
  */
@@ -775,9 +744,9 @@ DvtAxisRenderer._getTitleGap = function(axis) {
 
 /**
  * Renders the axis title and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderTitle = function(axis, axisInfo, availSpace) {
@@ -803,8 +772,8 @@ DvtAxisRenderer._renderTitle = function(axis, axisInfo, availSpace) {
     // Position the title based on text size and axis position
     var gap = DvtAxisRenderer._getTitleGap(axis);
     var overflow = (axisInfo.getStartOverflow() - axisInfo.getEndOverflow()) / 2;
-    var isRTL = DvtAgent.isRightToLeft(axis.getCtx());
-    var titleHeight = DvtTextUtils.getTextHeight(title);
+    var isRTL = dvt.Agent.isRightToLeft(axis.getCtx());
+    var titleHeight = dvt.TextUtils.getTextHeight(title);
     title.alignCenter();
 
     // Position the label and update the space
@@ -840,9 +809,9 @@ DvtAxisRenderer._renderTitle = function(axis, axisInfo, availSpace) {
 
 /**
  * Renders the tick labels and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderLabels = function(axis, axisInfo, availSpace) {
@@ -868,9 +837,9 @@ DvtAxisRenderer._renderLabels = function(axis, axisInfo, availSpace) {
 
 /**
  * Renders tick labels for a horizontal axis and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
@@ -880,8 +849,8 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
   var options = axis.getOptions();
   var position = options['position'];
   var isTickInside = options['tickLabel']['position'] == 'inside';
-  var isRTL = DvtAgent.isRightToLeft(context);
-  var isGroupAxis = axisInfo instanceof DvtGroupAxisInfo;
+  var isRTL = dvt.Agent.isRightToLeft(context);
+  var isGroupAxis = axisInfo instanceof dvt.GroupAxisInfo;
   var isHierarchical = isGroupAxis && axisInfo.getNumLevels() > 1;
 
   var levelIdx = isHierarchical ? 0 : null;
@@ -898,12 +867,12 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
       if (label == null)
         continue;
 
-      var isMultiline = label instanceof DvtMultilineText || label instanceof DvtBackgroundMultilineText;
+      var isMultiline = label instanceof dvt.MultilineText || label instanceof dvt.BackgroundMultilineText;
 
       if (axisInfo.isLabelRotated(levelIdx)) {
         // Truncate to fit. Multiline texts only need fitting here if wrap was disabled.
         var fitText = !isMultiline || (isMultiline && !label.isWrapEnabled());
-        if (fitText && !DvtTextUtils.fitText(label, availSpace.h, availSpace.w, axis))
+        if (fitText && !dvt.TextUtils.fitText(label, availSpace.h, availSpace.w, axis))
           continue;
 
         //position and add the axis labels
@@ -913,7 +882,7 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
           label.alignLeft();
 
         if (isHierarchical) {
-          height = DvtTextUtils.getTextWidth(label);
+          height = dvt.TextUtils.getTextWidth(label);
           label.setTranslateY(availSpace.h - height);
           maxLvlHeight = Math.max(maxLvlHeight, height);
         }
@@ -922,7 +891,7 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
 
       }
       else { // not rotated
-        if (!isTickInside && DvtTextUtils.guessTextDimensions(label).h - 1 > availSpace.h) // -1 to prevent rounding error ()
+        if (!isTickInside && dvt.TextUtils.guessTextDimensions(label).h - 1 > availSpace.h) // -1 to prevent rounding error ()
           continue;
 
         if (isHierarchical && position == 'bottom')
@@ -940,7 +909,7 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
           label.alignBottom();
 
         if (isHierarchical)
-          maxLvlHeight = Math.max(maxLvlHeight, DvtTextUtils.guessTextDimensions(label).h);
+          maxLvlHeight = Math.max(maxLvlHeight, dvt.TextUtils.guessTextDimensions(label).h);
         else if (isTickInside) {
           var gap = DvtAxisDefaults.getGapSize(context, options, options['layout']['insideLabelGapWidth']);
           isRTL ? label.alignRight() : label.alignLeft();
@@ -967,7 +936,7 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
       axis.getEventManager().associate(label, new DvtAxisObjPeer(axis, label, group, action, drillable, tooltip, datatip, params));
 
       if (!isHierarchical)
-        maxLvlHeight = Math.max(maxLvlHeight, DvtTextUtils.guessTextDimensions(label).h);
+        maxLvlHeight = Math.max(maxLvlHeight, dvt.TextUtils.guessTextDimensions(label).h);
       else
         axisInfo.setLastRenderedLevel(levelIdx);
 
@@ -1004,7 +973,7 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
   }
 
   // Render the nested labels (level 2) for time axis.
-  if (axisInfo instanceof DvtTimeAxisInfo) {
+  if (axisInfo instanceof dvt.TimeAxisInfo) {
     labels = axisInfo.getLabels(axis.getCtx());
     var lv2Labels = axisInfo.getLabels(axis.getCtx(), 1);
     var offset = 0;
@@ -1014,11 +983,11 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
         label = lv2Labels[i];
         if (label == null)
           continue;
-        if (DvtTextUtils.guessTextDimensions(label).h - 1 > availSpace.h) // -1 to prevent rounding error ()
+        if (dvt.TextUtils.guessTextDimensions(label).h - 1 > availSpace.h) // -1 to prevent rounding error ()
           continue;
 
         // Associate with logical object to support automation and tooltips
-        axis.getEventManager().associate(label, new DvtSimpleObjPeer(null, null, null, DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString())));
+        axis.getEventManager().associate(label, new dvt.SimpleObjPeer(null, null, null, DvtAxisEventManager.getUIParams(DvtAxisConstants.TICK_LABEL, label.getTextString())));
 
         // align with level 1 label
         var overflow1 = 0;
@@ -1063,9 +1032,9 @@ DvtAxisRenderer._renderLabelsHoriz = function(axis, axisInfo, availSpace) {
 
 /**
  * Renders tick labels for a vertical axis and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
@@ -1073,13 +1042,13 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
   var options = axis.getOptions();
   var position = options['position'];
   var context = axis.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
-  var isNumerical = axisInfo instanceof DvtDataAxisInfo;
+  var isRTL = dvt.Agent.isRightToLeft(context);
+  var isNumerical = axisInfo instanceof dvt.DataAxisInfo;
   var isTickInside = options['tickLabel']['position'] == 'inside';
   var labels;
   var gap;
   var maxLvlWidth;
-  var isGroupAxis = axisInfo instanceof DvtGroupAxisInfo;
+  var isGroupAxis = axisInfo instanceof dvt.GroupAxisInfo;
   var isHierarchical = isGroupAxis && axisInfo.getNumLevels() > 1;
 
   // Hierarchical group axis labels
@@ -1094,34 +1063,34 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
       gap = DvtAxisDefaults.getGapSize(context, options, options['layout']['radialLabelGap']);
       labelX = availSpace.x + availSpace.w / 2;
       if (isRTL)
-        labelX += gap + DvtTextUtils.getMaxTextDimensions(labels).w;
+        labelX += gap + dvt.TextUtils.getMaxTextDimensions(labels).w;
       else
         labelX -= gap;
     }
     else if (position == 'left') {
       labelX = availSpace.x + availSpace.w;
       if (isNumerical && isTickInside)
-        labelX += DvtTextUtils.getMaxTextDimensions(labels).w;
+        labelX += dvt.TextUtils.getMaxTextDimensions(labels).w;
     }
     else { // position == 'right'
       labelX = availSpace.x;
       if (isNumerical && !isTickInside)
-        labelX += DvtTextUtils.getMaxTextDimensions(labels).w;
+        labelX += dvt.TextUtils.getMaxTextDimensions(labels).w;
     }
   }
   else {
     gap = DvtAxisDefaults.getGapSize(context, options, options['layout']['hierarchicalLabelGapWidth']);
-    maxLvlWidth = DvtTextUtils.getMaxTextDimensions(labels).w;
+    maxLvlWidth = dvt.TextUtils.getMaxTextDimensions(labels).w;
   }
 
 
   var formatLabelVert = function(label, index) {
-    var isMultiline = label instanceof DvtMultilineText || label instanceof DvtBackgroundMultilineText;
+    var isMultiline = label instanceof dvt.MultilineText || label instanceof dvt.BackgroundMultilineText;
     var fitText = !isMultiline || (isMultiline && !label.isWrapEnabled()); // Multiline texts only need fitting if wrap was disabled.
 
-    if (isHierarchical && DvtTextUtils.getMaxTextDimensions(labels).w - 1 > availSpace.w) // -1 to prevent rounding error ()
+    if (isHierarchical && dvt.TextUtils.getMaxTextDimensions(labels).w - 1 > availSpace.w) // -1 to prevent rounding error ()
       return;
-    else if (!isHierarchical && !isTickInside && fitText && !DvtTextUtils.fitText(label, availSpace.w, availSpace.h, axis))
+    else if (!isHierarchical && !isTickInside && fitText && !dvt.TextUtils.fitText(label, availSpace.w, availSpace.h, axis))
       return;
 
     // group axis labels store the true index of a label in the hierarchy of levels
@@ -1161,9 +1130,9 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
         // draw bounding box to improve readability
         var bboxDims = label.getDimensions();
         var padding = bboxDims.h * 0.15;
-        var cmd = DvtPathUtils.roundedRectangle(bboxDims.x - padding, bboxDims.y, bboxDims.w + 2 * padding, bboxDims.h, 2, 2, 2, 2);
-        var bbox = new DvtPath(axis.getCtx(), cmd);
-        var bgColor = label.getCSSStyle().getStyle(DvtCSSStyle.BACKGROUND_COLOR);
+        var cmd = dvt.PathUtils.roundedRectangle(bboxDims.x - padding, bboxDims.y, bboxDims.w + 2 * padding, bboxDims.h, 2, 2, 2, 2);
+        var bbox = new dvt.Path(axis.getCtx(), cmd);
+        var bgColor = label.getCSSStyle().getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
         var opacity = labelY + bboxDims.h / 2 > axisInfo.getEndCoord() && axis.getOptions()['polarGridShape'] == 'circle' ? 1 : 0.3;
         if (bgColor)
           bbox.setSolidFill(bgColor);
@@ -1191,13 +1160,13 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
       availSpace.w -= maxLvlWidth + gap;
       levelIdx++;
       labels = axisInfo.getLabels(axis.getCtx(), levelIdx);
-      maxLvlWidth = labels ? DvtTextUtils.getMaxTextDimensions(labels).w : null;
+      maxLvlWidth = labels ? dvt.TextUtils.getMaxTextDimensions(labels).w : null;
     }
     else
       break;
   }
 
-  if (axisInfo instanceof DvtTimeAxisInfo) {
+  if (axisInfo instanceof dvt.TimeAxisInfo) {
     // Render the nested labels (level 2).
     var lv2Labels = axisInfo.getLabels(axis.getCtx(), 1);
     if (lv2Labels != null) {
@@ -1213,9 +1182,9 @@ DvtAxisRenderer._renderLabelsVert = function(axis, axisInfo, availSpace) {
 
 /**
  * Renders tick labels for a tangential axis and updates the available space.
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
@@ -1226,11 +1195,11 @@ DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
       continue;
     var maxWidth = availSpace.w / 2 - Math.abs(label.getX());
     var maxHeight = availSpace.h / 2 - Math.abs(label.getY());
-    if (DvtTextUtils.fitText(label, maxWidth, maxHeight, axis)) { // truncation
+    if (dvt.TextUtils.fitText(label, maxWidth, maxHeight, axis)) { // truncation
 
       // group axis labels store the true index of a label in the hierarchy of levels
       // true index necessary for getting proper attributes from axisInfo
-      var index = axisInfo instanceof DvtGroupAxisInfo ? axisInfo.getLabelIndex(label) : i;
+      var index = axisInfo instanceof dvt.GroupAxisInfo ? axisInfo.getLabelIndex(label) : i;
 
       // support for categorical axis tooltip and datatip
       var datatip = axisInfo.getDatatip(index);
@@ -1255,24 +1224,24 @@ DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
 
 /**
  * Creates and adds a DvtText object to a container. Will truncate and add tooltip as necessary.
- * @param {DvtEventManager} eventManager
- * @param {DvtContainer} container The container to add the text object to.
+ * @param {dvt.EventManager} eventManager
+ * @param {dvt.Container} container The container to add the text object to.
  * @param {String} textString The text string of the text object.
- * @param {DvtCSSStyle} cssStyle The css style to apply to the text object.
+ * @param {dvt.CSSStyle} cssStyle The css style to apply to the text object.
  * @param {number} x The x coordinate of the text object.
  * @param {number} y The y coordinate of the text object.
  * @param {number} width The width of available text space.
  * @param {number} height The height of the available text space.
  * @param {object} params Additional parameters that will be passed to the logical object.
- * @return {DvtOutputText} The created text object. Can be null if no text object could be created in the given space.
+ * @return {dvt.OutputText} The created text object. Can be null if no text object could be created in the given space.
  * @private
  */
 DvtAxisRenderer._createText = function(eventManager, container, textString, cssStyle, x, y, width, height, params) {
-  var text = new DvtOutputText(container.getCtx(), textString, x, y);
+  var text = new dvt.OutputText(container.getCtx(), textString, x, y);
   text.setCSSStyle(cssStyle);
-  if (DvtTextUtils.fitText(text, width, height, container)) {
+  if (dvt.TextUtils.fitText(text, width, height, container)) {
     // Associate with logical object to support automation and truncation
-    eventManager.associate(text, new DvtSimpleObjPeer(text.getUntruncatedTextString(), null, null, params));
+    eventManager.associate(text, new dvt.SimpleObjPeer(text.getUntruncatedTextString(), null, null, params));
     return text;
   }
   else
@@ -1282,13 +1251,13 @@ DvtAxisRenderer._createText = function(eventManager, container, textString, cssS
 
 /**
  * Renders the separators between group labels
- * @param {DvtAxis} axis The axis being rendered.
- * @param {DvtAxisInfo} axisInfo The axis model.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.AxisInfo} axisInfo The axis model.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
-  if (axisInfo instanceof DvtGroupAxisInfo && axisInfo.areSeparatorsRendered()) {
+  if (axisInfo instanceof dvt.GroupAxisInfo && axisInfo.areSeparatorsRendered()) {
     var numLevels = axisInfo.getNumLevels();
     if (numLevels <= 1 || axisInfo.getLastRenderedLevel() <= 0) // only draw separators when there is more than one level
       return;
@@ -1297,10 +1266,10 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
     var position = options['position'];
     var isHoriz = (position == 'top' || position == 'bottom');
     var context = axis.getCtx();
-    var isRTL = DvtAgent.isRightToLeft(context);
+    var isRTL = dvt.Agent.isRightToLeft(context);
 
     var color = axisInfo.getSeparatorColor();
-    var lineStroke = new DvtSolidStroke(color, 1, 1);
+    var lineStroke = new dvt.SolidStroke(color, 1, 1);
     var prevLevelSize = 0;
     var gap = isHoriz ? DvtAxisDefaults.getGapSize(context, options, options['layout']['hierarchicalLabelGapHeight']) : DvtAxisDefaults.getGapSize(context, options, options['layout']['hierarchicalLabelGapWidth']);
     var startOffset = options['startGroupOffset'];
@@ -1328,7 +1297,7 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
     // process from the innermost level that was rendered
     for (var level = axisInfo.getLastRenderedLevel(); level >= 0; level--) {
       var labels = axisInfo.getLabels(axis.getCtx(), level);
-      var maxDims = DvtTextUtils.getMaxTextDimensions(labels);
+      var maxDims = dvt.TextUtils.getMaxTextDimensions(labels);
       var isRotated = axisInfo.isLabelRotated(level);
       var levelSize = isRotated || !isHoriz ? maxDims.w : maxDims.h;
 
@@ -1368,7 +1337,7 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
             // draw vertical lines, when necessary, around label
             if (label) {
               var yCoord;
-              if (label instanceof DvtMultilineText || label instanceof DvtBackgroundMultilineText)
+              if (label instanceof dvt.MultilineText || label instanceof dvt.BackgroundMultilineText)
                 yCoord = label.getYAlignCoord();
               else
                 yCoord = label.getY();
@@ -1389,7 +1358,7 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
             if (!isEmptyLabel) {
 
               if (label)
-                var labelWidth = isRotated ? DvtTextUtils.getTextHeight(label) : DvtTextUtils.getTextWidth(label);
+                var labelWidth = isRotated ? dvt.TextUtils.getTextHeight(label) : dvt.TextUtils.getTextWidth(label);
 
               x1 = (isFirstLabel && prevLabelEmpty == false) ? axisInfo.getStartCoord() : axisInfo.getBoundedCoordAt(start - startOffset);
               if (isFirstLabel)
@@ -1404,7 +1373,7 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
                 if (isRotated) // draw horizontal line beneath rotated label
                   DvtAxisRenderer._addSeparatorLine(axis, lineStroke, x1, y2, x2, y2);
                 else { // draw horizontal lines on either size of rendered label
-                  var spacing = isRTL ? -DvtTextUtils.getTextHeight(label) * .5 : DvtTextUtils.getTextHeight(label) * .5; // small space between end of horizontal lines and label
+                  var spacing = isRTL ? -dvt.TextUtils.getTextHeight(label) * .5 : dvt.TextUtils.getTextHeight(label) * .5; // small space between end of horizontal lines and label
                   var drawRightLine = isRTL ? x1 > x3 - spacing : x1 < x3 - spacing;
                   var drawLeftLine = isRTL ? x4 + spacing > x2 : x4 + spacing < x2;
 
@@ -1459,8 +1428,8 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
 
 /**
  * Renders separator line
- * @param {DvtAxis} axis The axis on which the separators are rendered.
- * @param {DvtSolidStroke} lineStroke The stroke for the line.
+ * @param {dvt.Axis} axis The axis on which the separators are rendered.
+ * @param {dvt.SolidStroke} lineStroke The stroke for the line.
  * @param {Number} x1 The first xCoordinate of the line.
  * @param {Number} y1 The first yCoordinate of the line.
  * @param {Number} x2 The second xCoordinate of the line.
@@ -1468,7 +1437,7 @@ DvtAxisRenderer._renderGroupSeparators = function(axis, axisInfo, availSpace) {
  * @private
  */
 DvtAxisRenderer._addSeparatorLine = function(axis, lineStroke, x1, y1, x2, y2) {
-  var line = new DvtLine(axis.getCtx(), x1, y1, x2, y2);
+  var line = new dvt.Line(axis.getCtx(), x1, y1, x2, y2);
   line.setStroke(lineStroke);
   line.setPixelHinting(true);
   axis.addChild(line);
@@ -1478,8 +1447,8 @@ DvtAxisRenderer._addSeparatorLine = function(axis, lineStroke, x1, y1, x2, y2) {
 
 /**
  * Gets the preferred size for a group axis, which may include hierarchical labels
- * @param {DvtAxis} axis The axis
- * @param {DvtGroupAxisInfo} axisInfo The group axis info
+ * @param {dvt.Axis} axis The axis
+ * @param {dvt.GroupAxisInfo} axisInfo The group axis info
  * @param {Number} size The current preferred size of the axis
  * @param {Number} availSize The maximum availHeight or availWidth of the axis
  * @param {Boolean} bHoriz Whether or not the axis is vertical of horizontal
@@ -1497,11 +1466,11 @@ DvtAxisRenderer._getGroupAxisPreferredSize = function(axis, axisInfo, size, avai
     var labelSize; // corresponds to label height if bHoriz, label width if not
 
     if (bHoriz) {
-      var maxDims = DvtTextUtils.getMaxTextDimensions(labels);
+      var maxDims = dvt.TextUtils.getMaxTextDimensions(labels);
       labelSize = axisInfo.isLabelRotated(level) ? maxDims.w : maxDims.h;
     }
     else
-      labelSize = DvtTextUtils.getMaxTextDimensions(labels).w;
+      labelSize = dvt.TextUtils.getMaxTextDimensions(labels).w;
 
     if (size + labelSize <= availSize)
       size += labelSize + gap;
@@ -1521,38 +1490,38 @@ DvtAxisRenderer._getGroupAxisPreferredSize = function(axis, axisInfo, size, avai
  * not be instantiated directly.
  * @class
  * @constructor
- * @extends {DvtObj}
+ * @extends {dvt.Obj}
  */
-var DvtAxisInfo = function() {};
+dvt.AxisInfo = function() {};
 
-DvtObj.createSubclass(DvtAxisInfo, DvtObj, 'DvtAxisInfo');
+dvt.Obj.createSubclass(dvt.AxisInfo, dvt.Obj);
 
 
 /**
- * Creates an appropriate instance of DvtAxisInfo with the specified parameters.
- * @param {DvtContext} context
+ * Creates an appropriate instance of dvt.AxisInfo with the specified parameters.
+ * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
- * @param {DvtRectangle} availSpace The available space.
- * @return {DvtAxisInfo}
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @return {dvt.AxisInfo}
  */
-DvtAxisInfo.newInstance = function(context, options, availSpace) {
+dvt.AxisInfo.newInstance = function(context, options, availSpace) {
   if (options['timeAxisType'] && options['timeAxisType'] != 'disabled')
-    return new DvtTimeAxisInfo(context, options, availSpace);
+    return new dvt.TimeAxisInfo(context, options, availSpace);
   else if (isNaN(options['dataMin']) && isNaN(options['dataMax']))
-    return new DvtGroupAxisInfo(context, options, availSpace);
+    return new dvt.GroupAxisInfo(context, options, availSpace);
   else
-    return new DvtDataAxisInfo(context, options, availSpace);
+    return new dvt.DataAxisInfo(context, options, availSpace);
 };
 
 
 /**
  * Calculates and stores the axis information.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @protected
  */
-DvtAxisInfo.prototype.Init = function(context, options, availSpace) {
+dvt.AxisInfo.prototype.Init = function(context, options, availSpace) {
   this._context = context;
 
   // Figure out the start and end coordinate of the axis
@@ -1573,7 +1542,7 @@ DvtAxisInfo.prototype.Init = function(context, options, availSpace) {
     this.EndCoord = this._radius;
   }
   else if (this.Position == 'tangential') {
-    if (DvtAgent.isRightToLeft(context)) {
+    if (dvt.Agent.isRightToLeft(context)) {
       this.StartCoord = 2 * Math.PI;
       this.EndCoord = 0;
     }
@@ -1610,10 +1579,10 @@ DvtAxisInfo.prototype.Init = function(context, options, availSpace) {
 
 
 /**
- * Returns the DvtContext associated with this instance.
- * @return {DvtContext}
+ * Returns the dvt.Context associated with this instance.
+ * @return {dvt.Context}
  */
-DvtAxisInfo.prototype.getCtx = function() {
+dvt.AxisInfo.prototype.getCtx = function() {
   return this._context;
 };
 
@@ -1622,18 +1591,18 @@ DvtAxisInfo.prototype.getCtx = function() {
  * Returns the options settings for the axis.
  * @return {object} The options for the axis.
  */
-DvtAxisInfo.prototype.getOptions = function() {
+dvt.AxisInfo.prototype.getOptions = function() {
   return this.Options;
 };
 
 
 /**
  * Returns an array containing the tick labels for this axis.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {Number} levelIdx The level index (optional). 0 indicates the first level, 1 the second, etc. If skipped, 0 (the first level) is assumed.
  * @return {Array} The Array of DvtText objects.
  */
-DvtAxisInfo.prototype.getLabels = function(context, levelIdx) {
+dvt.AxisInfo.prototype.getLabels = function(context, levelIdx) {
   return null; // subclasses should override
 };
 
@@ -1642,7 +1611,7 @@ DvtAxisInfo.prototype.getLabels = function(context, levelIdx) {
  * Returns the title for this axis.
  * @return {DvtText} The DvtText object, if it exists.
  */
-DvtAxisInfo.prototype.getTitle = function() {
+dvt.AxisInfo.prototype.getTitle = function() {
   return this._title;
 };
 
@@ -1650,7 +1619,7 @@ DvtAxisInfo.prototype.getTitle = function() {
  * Sets the title for this axis.
  * @param {DvtText} title The axis title.
  */
-DvtAxisInfo.prototype.setTitle = function(title) {
+dvt.AxisInfo.prototype.setTitle = function(title) {
   this._title = title;
 };
 
@@ -1659,7 +1628,7 @@ DvtAxisInfo.prototype.setTitle = function(title) {
  * Returns the coordinates of the major ticks.
  * @return {array} Array of coords.
  */
-DvtAxisInfo.prototype.getMajorTickCoords = function() {
+dvt.AxisInfo.prototype.getMajorTickCoords = function() {
   return []; // subclasses should override
 };
 
@@ -1667,7 +1636,7 @@ DvtAxisInfo.prototype.getMajorTickCoords = function() {
  * Returns the coordinates of the minor ticks.
  * @return {array} Array of coords.
  */
-DvtAxisInfo.prototype.getMinorTickCoords = function() {
+dvt.AxisInfo.prototype.getMinorTickCoords = function() {
   return []; // subclasses should override
 };
 
@@ -1676,7 +1645,7 @@ DvtAxisInfo.prototype.getMinorTickCoords = function() {
  * Returns the coordinates of the baseline (value = 0). Only applies to numerical axis.
  * @return {number} Baseline coord.
  */
-DvtAxisInfo.prototype.getBaselineCoord = function() {
+dvt.AxisInfo.prototype.getBaselineCoord = function() {
   return null; // subclasses should override
 };
 
@@ -1687,7 +1656,7 @@ DvtAxisInfo.prototype.getBaselineCoord = function() {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-DvtAxisInfo.prototype.getValueAt = function(coord) {
+dvt.AxisInfo.prototype.getValueAt = function(coord) {
   if (coord == null)
     return null;
 
@@ -1708,7 +1677,7 @@ DvtAxisInfo.prototype.getValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-DvtAxisInfo.prototype.getCoordAt = function(value) {
+dvt.AxisInfo.prototype.getCoordAt = function(value) {
   if (value == null)
     return null;
 
@@ -1725,7 +1694,7 @@ DvtAxisInfo.prototype.getCoordAt = function(value) {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-DvtAxisInfo.prototype.getBoundedValueAt = function(coord) {
+dvt.AxisInfo.prototype.getBoundedValueAt = function(coord) {
   if (coord == null)
     return null;
 
@@ -1747,7 +1716,7 @@ DvtAxisInfo.prototype.getBoundedValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-DvtAxisInfo.prototype.getBoundedCoordAt = function(value) {
+dvt.AxisInfo.prototype.getBoundedCoordAt = function(value) {
   if (value == null)
     return null;
 
@@ -1765,7 +1734,7 @@ DvtAxisInfo.prototype.getBoundedCoordAt = function(value) {
  * @param {number} coord The coordinate along the axis.
  * @return {object} The value at that coordinate.
  */
-DvtAxisInfo.prototype.getUnboundedValueAt = function(coord) {
+dvt.AxisInfo.prototype.getUnboundedValueAt = function(coord) {
   return null; // subclasses should override
 };
 
@@ -1775,7 +1744,7 @@ DvtAxisInfo.prototype.getUnboundedValueAt = function(coord) {
  * @param {object} value The value to locate.
  * @return {number} The coordinate for the value.
  */
-DvtAxisInfo.prototype.getUnboundedCoordAt = function(value) {
+dvt.AxisInfo.prototype.getUnboundedCoordAt = function(value) {
   return null; // subclasses should override
 };
 
@@ -1786,18 +1755,18 @@ DvtAxisInfo.prototype.getUnboundedCoordAt = function(value) {
  * @param {number} level
  * @return {string} The datatip.
  */
-DvtAxisInfo.prototype.getDatatip = function(index, level) {
+dvt.AxisInfo.prototype.getDatatip = function(index, level) {
   return null; // subclasses should override
 };
 
 
 /**
  * Returns an object with the label's background labelStyles applied
- * @param {DvtOutputText} label The label.
- * @param {DvtContext} context
- * @return {DvtRect} The object to be rendered behind the label.
+ * @param {dvt.OutputText} label The label.
+ * @param {dvt.Context} context
+ * @return {dvt.Rect} The object to be rendered behind the label.
  */
-DvtAxisInfo.prototype.getLabelBackground = function(label, context) {
+dvt.AxisInfo.prototype.getLabelBackground = function(label, context) {
   return null; // subclasses should override
 };
 
@@ -1807,7 +1776,7 @@ DvtAxisInfo.prototype.getLabelBackground = function(label, context) {
  * @param {number} index The label index.
  * @return {object} The action
  */
-DvtAxisInfo.prototype.getAction = function(index) {
+dvt.AxisInfo.prototype.getAction = function(index) {
   return null; // subclasses should override
 };
 
@@ -1816,7 +1785,7 @@ DvtAxisInfo.prototype.getAction = function(index) {
  * @param {number} index The label index.
  * @return {boolean} Whether the label is drillable.
  */
-DvtAxisInfo.prototype.isDrillable = function(index) {
+dvt.AxisInfo.prototype.isDrillable = function(index) {
   return null; // subclasses should override
 };
 
@@ -1825,7 +1794,7 @@ DvtAxisInfo.prototype.isDrillable = function(index) {
  * Returns the baseline coordinate for the axis, if applicable.
  * @return {number} The baseline coordinate for the axis.
  */
-DvtAxisInfo.prototype.getBaselineCoord = function() {
+dvt.AxisInfo.prototype.getBaselineCoord = function() {
   return null;
 };
 
@@ -1834,22 +1803,22 @@ DvtAxisInfo.prototype.getBaselineCoord = function() {
  * Returns if the labels of the horizontal axis are rotated by 90 degrees.
  * @return {boolean} Whether the labels are rotated.
  */
-DvtAxisInfo.prototype.isLabelRotated = function() {
+dvt.AxisInfo.prototype.isLabelRotated = function() {
   return false;
 };
 
 
 /**
  * Creates a DvtText instance for the specified text label.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {string} label The label string.
  * @param {number} coord The coordinate for the text.
- * @param {DvtCSSStyle=} style Optional style for the text label.
- * @param {boolean=} bMultiline Optional boolean to create DvtMultilineText
- * @return {DvtOutputText|DvtBackgroundOutputText|DvtMultilineText}
+ * @param {dvt.CSSStyle=} style Optional style for the text label.
+ * @param {boolean=} bMultiline Optional boolean to create dvt.MultilineText
+ * @return {dvt.OutputText|dvt.BackgroundOutputText|dvt.MultilineText}
  * @protected
  */
-DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMultiline) {
+dvt.AxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMultiline) {
   var text;
 
   if (this.Position == 'tangential') {
@@ -1863,7 +1832,7 @@ DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMult
 
     var xcoord = Math.round(dist * Math.sin(coord));
     var ycoord = Math.round(-dist * Math.cos(coord));
-    text = style ? new DvtBackgroundOutputText(context, label, xcoord, ycoord, style) : new DvtOutputText(context, label, xcoord, ycoord);
+    text = style ? new dvt.BackgroundOutputText(context, label, xcoord, ycoord, style) : new dvt.OutputText(context, label, xcoord, ycoord);
 
     // Align the label according to the angular position
     if (coord < hTol || Math.abs(coord - Math.PI) < hTol || coord > 2 * Math.PI - hTol)
@@ -1882,14 +1851,14 @@ DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMult
   }
   else {
     if (bMultiline)
-      text = style ? new DvtBackgroundMultilineText(context, label, coord, coord, style) : new DvtMultilineText(context, label, coord, coord);
+      text = style ? new dvt.BackgroundMultilineText(context, label, coord, coord, style) : new dvt.MultilineText(context, label, coord, coord);
     else {
-      text = style ? new DvtBackgroundOutputText(context, label, coord, coord, style) : new DvtOutputText(context, label, coord, coord);
+      text = style ? new dvt.BackgroundOutputText(context, label, coord, coord, style) : new dvt.OutputText(context, label, coord, coord);
       text.alignMiddle();
     }
     text.alignCenter();
   }
-  if ((text instanceof DvtOutputText) || (text instanceof DvtMultilineText)) // DvtBackgroundTexts already created with its CSSStyle
+  if ((text instanceof dvt.OutputText) || (text instanceof dvt.MultilineText)) // DvtBackgroundTexts already created with its CSSStyle
     text.setCSSStyle(this.Options['tickLabel']['style']);
   return text;
 };
@@ -1897,18 +1866,18 @@ DvtAxisInfo.prototype.CreateLabel = function(context, label, coord, style, bMult
 
 /**
  * Checks all the labels for the axis and returns whether they overlap.
- * @param {Array} labelDims An array of DvtRectangle objects that describe the x, y, height, width of the axis labels.
+ * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @param {number} skippedLabels The number of labels to skip. If skippedLabels is 1 then every other label will be skipped.
  * @return {boolean} True if any labels overlap.
  * @protected
  */
-DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels) {
+dvt.AxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels) {
   // If there are no labels, return
   if (!labelDims || labelDims.length <= 0)
     return false;
 
   var isVert = (this.Position == 'left' || this.Position == 'right' || this.Position == 'radial');
-  var isRTL = DvtAgent.isRightToLeft(this.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   var gap = this.GetTickLabelGapSize();
 
   var pointA1, pointA2, pointB1, pointB2;
@@ -1963,7 +1932,7 @@ DvtAxisInfo.prototype.IsOverlapping = function(labelDims, skippedLabels) {
  * @return {boolean} True if the label dimensions overlap.
  * @protected
  */
-DvtAxisInfo.prototype.IsOverlappingDims = function(labelDims1, labelDims2) {
+dvt.AxisInfo.prototype.IsOverlappingDims = function(labelDims1, labelDims2) {
   if (!labelDims1 || !labelDims2)
     return false;
 
@@ -1992,12 +1961,12 @@ DvtAxisInfo.prototype.IsOverlappingDims = function(labelDims1, labelDims2) {
  * @return {number}
  * @protected
  */
-DvtAxisInfo.prototype.GetTickLabelGapSize = function() {
+dvt.AxisInfo.prototype.GetTickLabelGapSize = function() {
   // Create gap based on tick label height
   // GroupAxis and TimeAxis have smaller gaps since these axes become less useable as more labels are dropped
   var labelHeight = this.getTickLabelHeight();
-  var gapHoriz = (this instanceof DvtGroupAxisInfo) ? labelHeight * 0.24 : labelHeight * 0.79;
-  var gapVert = (this instanceof DvtGroupAxisInfo) ? labelHeight * 0.08 : labelHeight * 0.28;
+  var gapHoriz = (this instanceof dvt.GroupAxisInfo) ? labelHeight * 0.24 : labelHeight * 0.79;
+  var gapVert = (this instanceof dvt.GroupAxisInfo) ? labelHeight * 0.08 : labelHeight * 0.28;
 
   var isVert = (this.Position == 'left' || this.Position == 'right' || this.Position == 'radial');
   return (isVert || this.isLabelRotated()) ? gapVert : gapHoriz;
@@ -2007,19 +1976,19 @@ DvtAxisInfo.prototype.GetTickLabelGapSize = function() {
  * Returns the tick label height in px.
  * @return {number}
  */
-DvtAxisInfo.prototype.getTickLabelHeight = function() {
-  return DvtTextUtils.getTextStringHeight(this.getCtx(), this.Options['tickLabel']['style']);
+dvt.AxisInfo.prototype.getTickLabelHeight = function() {
+  return dvt.TextUtils.getTextStringHeight(this.getCtx(), this.Options['tickLabel']['style']);
 };
 
 
 /**
  * Checks the labels for the axis and skips them as necessary.
  * @param {Array} labels An array of DvtText labels for the axis.
- * @param {Array} labelDims An array of DvtRectangle objects that describe the x, y, height, width of the axis labels.
+ * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @return {Array} The array of DvtText labels for the axis.
  * @protected
  */
-DvtAxisInfo.prototype.SkipLabels = function(labels, labelDims) {
+dvt.AxisInfo.prototype.SkipLabels = function(labels, labelDims) {
   var skippedLabels = 0;
   var bOverlaps = this.IsOverlapping(labelDims, skippedLabels);
   while (bOverlaps) {
@@ -2042,11 +2011,11 @@ DvtAxisInfo.prototype.SkipLabels = function(labels, labelDims) {
 /**
  * Checks the labels for the tangential axis and skips them as necessary.
  * @param {Array} labels An array of DvtText labels for the axis.
- * @param {Array} labelDims An array of DvtRectangle objects that describe the x, y, height, width of the axis labels.
+ * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @return {Array} The array of DvtText labels for the tangential axis.
  * @protected
  */
-DvtAxisInfo.prototype.SkipTangentialLabels = function(labels, labelDims) {
+dvt.AxisInfo.prototype.SkipTangentialLabels = function(labels, labelDims) {
   var renderedLabels = [];
   var numLabels = labels.length;
   var firstLabelDims = null;
@@ -2076,13 +2045,13 @@ DvtAxisInfo.prototype.SkipTangentialLabels = function(labels, labelDims) {
 
 
 /**
- * Returns an array of DvtRectangle objects that describe the x, y, width, height of the axis labels.
+ * Returns an array of dvt.Rectangle objects that describe the x, y, width, height of the axis labels.
  * @param {Array} labels An array of DvtText labels for the axis.
- * @param {DvtContainer} container
- * @return {Array} An array of DvtRectangle objects
+ * @param {dvt.Container} container
+ * @return {Array} An array of dvt.Rectangle objects
  * @protected
  */
-DvtAxisInfo.prototype.GetLabelDims = function(labels, container) {
+dvt.AxisInfo.prototype.GetLabelDims = function(labels, container) {
   var labelDims = [];
 
   // Get the text dimensions
@@ -2104,16 +2073,16 @@ DvtAxisInfo.prototype.GetLabelDims = function(labels, container) {
 
 
 /**
- * Returns an array of DvtRectangle objects that contains a conservative guess the x, y, width, height of the axis labels.
+ * Returns an array of dvt.Rectangle objects that contains a conservative guess the x, y, width, height of the axis labels.
  * Assumes that the labels are center-middle aligned.
  * @param {Array} labels An array of DvtText labels for the axis.
- * @param {DvtContainer} container
+ * @param {dvt.Container} container
  * @param {Number} fudgeFactor (optional) A factor the would be multiplied to the text width. If not provided, assumed to be 1.
  * @param {Number} level (optional) Used for group axis hierarchical labels
- * @return {Array} An array of DvtRectangle objects
+ * @return {Array} An array of dvt.Rectangle objects
  * @protected
  */
-DvtAxisInfo.prototype.GuessLabelDims = function(labels, container, fudgeFactor, level) {
+dvt.AxisInfo.prototype.GuessLabelDims = function(labels, container, fudgeFactor, level) {
   var labelDims = [];
   if (typeof fudgeFactor == 'undefined')
     fudgeFactor = 1;
@@ -2126,16 +2095,16 @@ DvtAxisInfo.prototype.GuessLabelDims = function(labels, container, fudgeFactor, 
     } else {
       // get a conservative estimate of the dimensions
       container.addChild(text);
-      var estimatedSize = DvtTextUtils.guessTextDimensions(text);
+      var estimatedSize = dvt.TextUtils.guessTextDimensions(text);
       var estW = estimatedSize.w * fudgeFactor;
       var estH = estimatedSize.h;
       container.removeChild(text);
 
       var dims;
       if (this.isLabelRotated(level)) {
-        dims = new DvtRectangle(text.getTranslateX() - estH / 2, text.getTranslateY() - estW / 2, estH, estW);
+        dims = new dvt.Rectangle(text.getTranslateX() - estH / 2, text.getTranslateY() - estW / 2, estH, estW);
       } else {
-        dims = new DvtRectangle(text.getX() - estW / 2, text.getY() - estH / 2, estW, estH);
+        dims = new dvt.Rectangle(text.getX() - estW / 2, text.getY() - estH / 2, estW, estH);
       }
       labelDims.push(dims);
     }
@@ -2149,7 +2118,7 @@ DvtAxisInfo.prototype.GuessLabelDims = function(labels, container, fudgeFactor, 
  * Returns the number of major tick counts for the axis.
  * @return {number} The number of major tick counts.
  */
-DvtAxisInfo.prototype.getMajorTickCount = function() {
+dvt.AxisInfo.prototype.getMajorTickCount = function() {
   return null; // subclasses that allow major gridlines should implement
 };
 
@@ -2158,7 +2127,7 @@ DvtAxisInfo.prototype.getMajorTickCount = function() {
  * Returns the number of minor tick counts for the axis.
  * @return {number} The number of minor tick counts.
  */
-DvtAxisInfo.prototype.getMinorTickCount = function() {
+dvt.AxisInfo.prototype.getMinorTickCount = function() {
   return null; // subclasses that allow minor gridlines should implement
 };
 
@@ -2167,7 +2136,7 @@ DvtAxisInfo.prototype.getMinorTickCount = function() {
  * Returns the major increment for the axis.
  * @return {number} The major increment.
  */
-DvtAxisInfo.prototype.getMajorIncrement = function() {
+dvt.AxisInfo.prototype.getMajorIncrement = function() {
   return null; // subclasses that allow major gridlines should implement
 };
 
@@ -2176,7 +2145,7 @@ DvtAxisInfo.prototype.getMajorIncrement = function() {
  * Returns the minor increment for the axis.
  * @return {number} The minor increment.
  */
-DvtAxisInfo.prototype.getMinorIncrement = function() {
+dvt.AxisInfo.prototype.getMinorIncrement = function() {
   return null; // subclasses that allow minor gridlines should implement
 };
 
@@ -2185,7 +2154,7 @@ DvtAxisInfo.prototype.getMinorIncrement = function() {
  * Returns the global min value of the axis.
  * @return {number} The global min value.
  */
-DvtAxisInfo.prototype.getGlobalMin = function() {
+dvt.AxisInfo.prototype.getGlobalMin = function() {
   return this.GlobalMin;
 };
 
@@ -2194,7 +2163,7 @@ DvtAxisInfo.prototype.getGlobalMin = function() {
  * Returns the global max value of the axis.
  * @return {number} The global max value.
  */
-DvtAxisInfo.prototype.getGlobalMax = function() {
+dvt.AxisInfo.prototype.getGlobalMax = function() {
   return this.GlobalMax;
 };
 
@@ -2203,7 +2172,7 @@ DvtAxisInfo.prototype.getGlobalMax = function() {
  * Returns the viewport min value of the axis.
  * @return {number} The viewport min value.
  */
-DvtAxisInfo.prototype.getViewportMin = function() {
+dvt.AxisInfo.prototype.getViewportMin = function() {
   return this.MinValue;
 };
 
@@ -2212,7 +2181,7 @@ DvtAxisInfo.prototype.getViewportMin = function() {
  * Returns the viewport max value of the axis.
  * @return {number} The viewport max value.
  */
-DvtAxisInfo.prototype.getViewportMax = function() {
+dvt.AxisInfo.prototype.getViewportMax = function() {
   return this.MaxValue;
 };
 
@@ -2221,7 +2190,7 @@ DvtAxisInfo.prototype.getViewportMax = function() {
  * Returns the data min value of the axis.
  * @return {number} The data min value.
  */
-DvtAxisInfo.prototype.getDataMin = function() {
+dvt.AxisInfo.prototype.getDataMin = function() {
   return this.DataMin;
 };
 
@@ -2230,7 +2199,7 @@ DvtAxisInfo.prototype.getDataMin = function() {
  * Returns the data max value of the axis.
  * @return {number} The data max value.
  */
-DvtAxisInfo.prototype.getDataMax = function() {
+dvt.AxisInfo.prototype.getDataMax = function() {
   return this.DataMax;
 };
 
@@ -2239,7 +2208,7 @@ DvtAxisInfo.prototype.getDataMax = function() {
  * Returns the minimum extent of the axis, i.e. the (maxLinearValue - minLinearValue) during maximum zoom.
  * @return {number} The minimum extent.
  */
-DvtAxisInfo.prototype.getMinimumExtent = function() {
+dvt.AxisInfo.prototype.getMinimumExtent = function() {
   return 0;
 };
 
@@ -2248,7 +2217,7 @@ DvtAxisInfo.prototype.getMinimumExtent = function() {
  * Returns the start coord.
  * @return {number}
  */
-DvtAxisInfo.prototype.getStartCoord = function() {
+dvt.AxisInfo.prototype.getStartCoord = function() {
   return this.StartCoord;
 };
 
@@ -2257,7 +2226,7 @@ DvtAxisInfo.prototype.getStartCoord = function() {
  * Returns the end coord.
  * @return {number}
  */
-DvtAxisInfo.prototype.getEndCoord = function() {
+dvt.AxisInfo.prototype.getEndCoord = function() {
   return this.EndCoord;
 };
 
@@ -2266,7 +2235,7 @@ DvtAxisInfo.prototype.getEndCoord = function() {
  * Returns how much the axis labels overflow over the start coord.
  * @return {number}
  */
-DvtAxisInfo.prototype.getStartOverflow = function() {
+dvt.AxisInfo.prototype.getStartOverflow = function() {
   return this.StartOverflow;
 };
 
@@ -2275,7 +2244,7 @@ DvtAxisInfo.prototype.getStartOverflow = function() {
  * Returns how much the axis labels overflow over the end coord.
  * @return {number}
  */
-DvtAxisInfo.prototype.getEndOverflow = function() {
+dvt.AxisInfo.prototype.getEndOverflow = function() {
   return this.EndOverflow;
 };
 
@@ -2283,7 +2252,7 @@ DvtAxisInfo.prototype.getEndOverflow = function() {
  * Gets the width of a group (for rendering bar chart)
  * @return {Number} the width of a group
  */
-DvtAxisInfo.prototype.getGroupWidth = function() {
+dvt.AxisInfo.prototype.getGroupWidth = function() {
   return 0;
 };
 
@@ -2294,7 +2263,7 @@ DvtAxisInfo.prototype.getGroupWidth = function() {
  * @return {String|Array} The group name/id, or an array of group names/ids.
  * @override
  */
-DvtAxisInfo.prototype.getGroup = function(index, level) {
+dvt.AxisInfo.prototype.getGroup = function(index, level) {
   // only applies to group axis
   return null;
 };
@@ -2306,7 +2275,7 @@ DvtAxisInfo.prototype.getGroup = function(index, level) {
  * @param {number} value The linear value.
  * @return {number} The actual value.
  */
-DvtAxisInfo.prototype.linearToActual = function(value) {
+dvt.AxisInfo.prototype.linearToActual = function(value) {
   return value;
 };
 
@@ -2317,48 +2286,48 @@ DvtAxisInfo.prototype.linearToActual = function(value) {
  * @param {number} value The actual value.
  * @return {number} The linear value.
  */
-DvtAxisInfo.prototype.actualToLinear = function(value) {
+dvt.AxisInfo.prototype.actualToLinear = function(value) {
   return value;
 };
 /**
  * Calculated axis information and drawable creation for a data axis.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @class
  * @constructor
- * @extends {DvtAxisInfo}
+ * @extends {dvt.AxisInfo}
  */
-var DvtDataAxisInfo = function(context, options, availSpace) {
+dvt.DataAxisInfo = function(context, options, availSpace) {
   this.Init(context, options, availSpace);
 };
 
-DvtObj.createSubclass(DvtDataAxisInfo, DvtAxisInfo, 'DvtDataAxisInfo');
+dvt.Obj.createSubclass(dvt.DataAxisInfo, dvt.AxisInfo);
 
 /** @private @const */
-DvtDataAxisInfo._MAX_NUMBER_OF_GRIDS_AUTO = 10;
+dvt.DataAxisInfo._MAX_NUMBER_OF_GRIDS_AUTO = 10;
 /** @private @const */
-DvtDataAxisInfo._MINOR_TICK_COUNT = 2;
+dvt.DataAxisInfo._MINOR_TICK_COUNT = 2;
 /** @private @const */
-DvtDataAxisInfo._MAX_ZOOM_FACTOR = 64;
+dvt.DataAxisInfo._MAX_ZOOM_FACTOR = 64;
 
 
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.Init = function(context, options, availSpace) {
-  DvtDataAxisInfo.superclass.Init.call(this, context, options, availSpace);
+dvt.DataAxisInfo.prototype.Init = function(context, options, availSpace) {
+  dvt.DataAxisInfo.superclass.Init.call(this, context, options, availSpace);
 
   // Figure out the coords for the min/max values
   if (this.Position == 'top' || this.Position == 'bottom') {
     // Provide at least the minimum buffer at each side to accommodate labels
     if (options['tickLabel']['rendered'] != 'off' && options['rendered'] != 'off') {
-      this.StartOverflow = Math.max(DvtAxis.MINIMUM_AXIS_BUFFER - options['leftBuffer'], 0);
-      this.EndOverflow = Math.max(DvtAxis.MINIMUM_AXIS_BUFFER - options['rightBuffer'], 0);
+      this.StartOverflow = Math.max(dvt.Axis.MINIMUM_AXIS_BUFFER - options['leftBuffer'], 0);
+      this.EndOverflow = Math.max(dvt.Axis.MINIMUM_AXIS_BUFFER - options['rightBuffer'], 0);
     }
 
     // Axis is horizontal, so flip for BIDI if needed
-    if (DvtAgent.isRightToLeft(context)) {
+    if (dvt.Agent.isRightToLeft(context)) {
       this._minCoord = this.EndCoord - this.EndOverflow;
       this._maxCoord = this.StartCoord + this.StartOverflow;
     }
@@ -2412,7 +2381,7 @@ DvtDataAxisInfo.prototype.Init = function(context, options, availSpace) {
  * Returns the value correspoding to the first tick label (or gridline) of the axis.
  * @return {number} The value of the min label.
  */
-DvtDataAxisInfo.prototype.getMinLabel = function() {
+dvt.DataAxisInfo.prototype.getMinLabel = function() {
   if (this._zeroBaseline || (this.Options['_continuousExtent'] == 'on' && this.Options['min'] == null)) {
     // the tickLabels and gridlines should be at integer intervals from zero
     return Math.ceil(this._minValue / this._majorIncrement) * this._majorIncrement;
@@ -2426,7 +2395,7 @@ DvtDataAxisInfo.prototype.getMinLabel = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getLabels = function(context, levelIdx) {
+dvt.DataAxisInfo.prototype.getLabels = function(context, levelIdx) {
   if (levelIdx && levelIdx > 0) // data axis has only one level
     return null;
 
@@ -2437,7 +2406,7 @@ DvtDataAxisInfo.prototype.getLabels = function(context, levelIdx) {
   // when scaling is set then init formatter
   if (this.Options['tickLabel'] && this.Options['tickLabel']['scaling']) {
     var autoPrecision = this.Options['tickLabel']['autoPrecision'] ? this.Options['tickLabel']['autoPrecision'] : 'on';
-    this._axisValueFormatter = new DvtLinearScaleAxisValueFormatter(context, this._minValue, this._maxValue, this._majorIncrement, this.Options['tickLabel']['scaling'], autoPrecision);
+    this._axisValueFormatter = new dvt.LinearScaleAxisValueFormatter(context, this._minValue, this._maxValue, this._majorIncrement, this.Options['tickLabel']['scaling'], autoPrecision);
   }
 
   // Iterate on an integer to reduce rounding error.  We use <= since the first
@@ -2459,7 +2428,7 @@ DvtDataAxisInfo.prototype.getLabels = function(context, levelIdx) {
     if (this._isLog) {
       // for log scale, format each label individually as the scaling don't need to match across labels
       value = this.linearToActual(value);
-      this._axisValueFormatter = new DvtLinearScaleAxisValueFormatter(context, value, value, value, this.Options['tickLabel']['scaling'], autoPrecision);
+      this._axisValueFormatter = new dvt.LinearScaleAxisValueFormatter(context, value, value, value, this.Options['tickLabel']['scaling'], autoPrecision);
       label = this._formatValue(value);
     }
     else
@@ -2481,7 +2450,7 @@ DvtDataAxisInfo.prototype.getLabels = function(context, levelIdx) {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMajorTickCoords = function() {
+dvt.DataAxisInfo.prototype.getMajorTickCoords = function() {
   var coords = [];
 
   // Iterate on an integer to reduce rounding error.  We use <= since the first
@@ -2503,7 +2472,7 @@ DvtDataAxisInfo.prototype.getMajorTickCoords = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMinorTickCoords = function() {
+dvt.DataAxisInfo.prototype.getMinorTickCoords = function() {
   var coords = [];
 
   // Iterate on an integer to reduce rounding error.  We use <= since the first
@@ -2514,7 +2483,7 @@ DvtDataAxisInfo.prototype.getMinorTickCoords = function() {
     if (this._isLog && this._majorIncrement == 1 && this._minorIncrement == 1) {
       // draw linear ticks from 2 to 9
       for (var j = 2; j <= 9; j++) {
-        var linearValue = value + DvtMath.log10(j);
+        var linearValue = value + dvt.Math.log10(j);
         if (linearValue > this._maxValue)
           break;
         if (linearValue < this._minValue)
@@ -2543,7 +2512,7 @@ DvtDataAxisInfo.prototype.getMinorTickCoords = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getBaselineCoord = function() {
+dvt.DataAxisInfo.prototype.getBaselineCoord = function() {
   return this._isLog ? this._minCoord : this.getBoundedCoordAt(0);
 };
 
@@ -2551,7 +2520,7 @@ DvtDataAxisInfo.prototype.getBaselineCoord = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getUnboundedValueAt = function(coord) {
+dvt.DataAxisInfo.prototype.getUnboundedValueAt = function(coord) {
   if (coord == null)
     return null;
 
@@ -2564,7 +2533,7 @@ DvtDataAxisInfo.prototype.getUnboundedValueAt = function(coord) {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getUnboundedCoordAt = function(value) {
+dvt.DataAxisInfo.prototype.getUnboundedCoordAt = function(value) {
   return this._getUnboundedCoordAt(this.actualToLinear(value));
 };
 
@@ -2575,7 +2544,7 @@ DvtDataAxisInfo.prototype.getUnboundedCoordAt = function(value) {
  * @return {number}
  * @private
  */
-DvtDataAxisInfo.prototype._getUnboundedCoordAt = function(value) {
+dvt.DataAxisInfo.prototype._getUnboundedCoordAt = function(value) {
   if (value == null)
     return null;
 
@@ -2589,7 +2558,7 @@ DvtDataAxisInfo.prototype._getUnboundedCoordAt = function(value) {
  * @return {string} Formatted value.
  * @private
  */
-DvtDataAxisInfo.prototype._formatValue = function(value) {
+dvt.DataAxisInfo.prototype._formatValue = function(value) {
 
   if (this._converter && (this._converter['getAsString'] || this._converter['format'])) {
     if (this._axisValueFormatter)
@@ -2605,7 +2574,7 @@ DvtDataAxisInfo.prototype._formatValue = function(value) {
 
   else {
     // set the # of decimals of the value to the # of decimals of the major increment
-    var t = DvtMath.log10(this._majorIncrement);
+    var t = dvt.Math.log10(this._majorIncrement);
     var decimals = Math.max(Math.ceil(-t), 0);
     return value.toFixed(decimals);
   }
@@ -2618,7 +2587,7 @@ DvtDataAxisInfo.prototype._formatValue = function(value) {
  * @param {number} scaleUnit The scale unit of the axis.
  * @private
  */
-DvtDataAxisInfo.prototype._calcMajorMinorIncr = function(scaleUnit) {
+dvt.DataAxisInfo.prototype._calcMajorMinorIncr = function(scaleUnit) {
   if (!this._majorIncrement) {
     if (this._majorTickCount)
       this._majorIncrement = (this._maxValue - this._minValue) / this._majorTickCount;
@@ -2635,7 +2604,7 @@ DvtDataAxisInfo.prototype._calcMajorMinorIncr = function(scaleUnit) {
     else if (this._isLog)
       this._minorTickCount = this._majorIncrement;
     else
-      this._minorTickCount = DvtDataAxisInfo._MINOR_TICK_COUNT;
+      this._minorTickCount = dvt.DataAxisInfo._MINOR_TICK_COUNT;
   }
 
   if (!this._minorIncrement)
@@ -2648,7 +2617,7 @@ DvtDataAxisInfo.prototype._calcMajorMinorIncr = function(scaleUnit) {
  * or calculated from the min and max data values of the chart.
  * @private
  */
-DvtDataAxisInfo.prototype._calcAxisExtents = function() {
+dvt.DataAxisInfo.prototype._calcAxisExtents = function() {
   var continuousExtent = this.Options['_continuousExtent'] == 'on';
 
   // Include 0 in the axis if we're scaling from the baseline
@@ -2721,7 +2690,7 @@ DvtDataAxisInfo.prototype._calcAxisExtents = function() {
   if (this._globalMax == this._globalMin) { // happens if this._dataMin == this._dataMax == 0
     this._globalMax = 100;
     this._globalMin = 0;
-    scaleUnit = (this._globalMax - this._globalMin) / DvtDataAxisInfo._MAX_NUMBER_OF_GRIDS_AUTO;
+    scaleUnit = (this._globalMax - this._globalMin) / dvt.DataAxisInfo._MAX_NUMBER_OF_GRIDS_AUTO;
   }
 
   if (this._minValue == null)
@@ -2751,7 +2720,7 @@ DvtDataAxisInfo.prototype._calcAxisExtents = function() {
  * @return {number} The scale unit of the axis.
  * @private
  */
-DvtDataAxisInfo.prototype._calcAxisScale = function(min, max) {
+dvt.DataAxisInfo.prototype._calcAxisScale = function(min, max) {
   if (this._majorIncrement)
     return this._majorIncrement;
 
@@ -2764,13 +2733,13 @@ DvtDataAxisInfo.prototype._calcAxisScale = function(min, max) {
     if (min == 0)
       return 10;
     else
-      return Math.pow(10, Math.floor(DvtMath.log10(min)) - 1);
+      return Math.pow(10, Math.floor(dvt.Math.log10(min)) - 1);
   }
 
   if (this._majorTickCount) {
     //  - y2 axis should show better labels when tick marks are aligned
     var increment = spread / this._majorTickCount;
-    var testVal = Math.pow(10, Math.ceil(DvtMath.log10(increment) - 1));
+    var testVal = Math.pow(10, Math.ceil(dvt.Math.log10(increment) - 1));
     var firstDigit = increment / testVal;
     if (firstDigit > 1 && firstDigit <= 1.5)
       firstDigit = 1.5;
@@ -2781,7 +2750,7 @@ DvtDataAxisInfo.prototype._calcAxisScale = function(min, max) {
     return firstDigit * testVal;
   }
 
-  var t = DvtMath.log10(spread);
+  var t = dvt.Math.log10(spread);
   var testVal = Math.pow(10, Math.ceil(t) - 2);
   var first2Digits = Math.round(spread / testVal);
 
@@ -2807,7 +2776,7 @@ DvtDataAxisInfo.prototype._calcAxisScale = function(min, max) {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMajorTickCount = function() {
+dvt.DataAxisInfo.prototype.getMajorTickCount = function() {
   return this._majorTickCount;
 };
 
@@ -2815,7 +2784,7 @@ DvtDataAxisInfo.prototype.getMajorTickCount = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMinorTickCount = function() {
+dvt.DataAxisInfo.prototype.getMinorTickCount = function() {
   return this._minorTickCount;
 };
 
@@ -2823,7 +2792,7 @@ DvtDataAxisInfo.prototype.getMinorTickCount = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMajorIncrement = function() {
+dvt.DataAxisInfo.prototype.getMajorIncrement = function() {
   return this.linearToActual(this._majorIncrement);
 };
 
@@ -2831,7 +2800,7 @@ DvtDataAxisInfo.prototype.getMajorIncrement = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMinorIncrement = function() {
+dvt.DataAxisInfo.prototype.getMinorIncrement = function() {
   return this.linearToActual(this._minorIncrement);
 };
 
@@ -2839,16 +2808,16 @@ DvtDataAxisInfo.prototype.getMinorIncrement = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getMinimumExtent = function() {
-  return (this._globalMax - this._globalMin) / DvtDataAxisInfo._MAX_ZOOM_FACTOR;
+dvt.DataAxisInfo.prototype.getMinimumExtent = function() {
+  return (this._globalMax - this._globalMin) / dvt.DataAxisInfo._MAX_ZOOM_FACTOR;
 };
 
 
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getStartOverflow = function() {
-  if ((this.Position == 'top' || this.Position == 'bottom') && DvtAgent.isRightToLeft(this.getCtx()))
+dvt.DataAxisInfo.prototype.getStartOverflow = function() {
+  if ((this.Position == 'top' || this.Position == 'bottom') && dvt.Agent.isRightToLeft(this.getCtx()))
     return this.EndOverflow;
   else
     return this.StartOverflow;
@@ -2858,8 +2827,8 @@ DvtDataAxisInfo.prototype.getStartOverflow = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.getEndOverflow = function() {
-  if ((this.Position == 'top' || this.Position == 'bottom') && DvtAgent.isRightToLeft(this.getCtx()))
+dvt.DataAxisInfo.prototype.getEndOverflow = function() {
+  if ((this.Position == 'top' || this.Position == 'bottom') && dvt.Agent.isRightToLeft(this.getCtx()))
     return this.StartOverflow;
   else
     return this.EndOverflow;
@@ -2868,7 +2837,7 @@ DvtDataAxisInfo.prototype.getEndOverflow = function() {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.linearToActual = function(value) {
+dvt.DataAxisInfo.prototype.linearToActual = function(value) {
   if (value == null)
     return null;
   return this._isLog ? Math.pow(10, value) : value;
@@ -2877,43 +2846,43 @@ DvtDataAxisInfo.prototype.linearToActual = function(value) {
 /**
  * @override
  */
-DvtDataAxisInfo.prototype.actualToLinear = function(value) {
+dvt.DataAxisInfo.prototype.actualToLinear = function(value) {
   if (value == null)
     return null;
   if (this._isLog)
-    return value > 0 ? DvtMath.log10(value) : null;
+    return value > 0 ? dvt.Math.log10(value) : null;
   return value;
 };
 /**
  * Calculated axis information and drawable creation for a group axis.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @class
  * @constructor
- * @extends {DvtAxisInfo}
+ * @extends {dvt.AxisInfo}
  */
-var DvtGroupAxisInfo = function(context, options, availSpace) {
+dvt.GroupAxisInfo = function(context, options, availSpace) {
   this.Init(context, options, availSpace);
 };
 
-DvtObj.createSubclass(DvtGroupAxisInfo, DvtAxisInfo, 'DvtGroupAxisInfo');
+dvt.Obj.createSubclass(dvt.GroupAxisInfo, dvt.AxisInfo);
 
 /**
  * The max amount of lines we allow in label wrapping.
  * Needed to prevent rotated labels from greedily wrapping along the length of the xAxis
  * @private
  */
-DvtGroupAxisInfo._MAX_LINE_WRAP = 3;
+dvt.GroupAxisInfo._MAX_LINE_WRAP = 3;
 
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.Init = function(context, options, availSpace) {
-  DvtGroupAxisInfo.superclass.Init.call(this, context, options, availSpace);
+dvt.GroupAxisInfo.prototype.Init = function(context, options, availSpace) {
+  dvt.GroupAxisInfo.superclass.Init.call(this, context, options, availSpace);
 
   // Flip horizontal axes for BIDI
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
   var isHoriz = this.Position == 'top' || this.Position == 'bottom';
   if (isHoriz && isRTL) {
     var temp = this.StartCoord;
@@ -2982,9 +2951,9 @@ DvtGroupAxisInfo.prototype.Init = function(context, options, availSpace) {
   // Initial height/width that will be available for the labels. Used for text wrapping.
   this._maxSpace = isHoriz ? availSpace.h : availSpace.w;
   if (options['title'])
-    this._maxSpace -= DvtTextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisDefaults.getGapSize(context, options, options['layout']['titleGap']);
+    this._maxSpace -= dvt.TextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisDefaults.getGapSize(context, options, options['layout']['titleGap']);
 
-  this._maxLineWrap = DvtGroupAxisInfo._MAX_LINE_WRAP;
+  this._maxLineWrap = dvt.GroupAxisInfo._MAX_LINE_WRAP;
 };
 
 
@@ -2992,7 +2961,7 @@ DvtGroupAxisInfo.prototype.Init = function(context, options, availSpace) {
  * Processes group width ratios to support bar chart with varying widths.
  * @private
  */
-DvtGroupAxisInfo.prototype._processGroupWidthRatios = function() {
+dvt.GroupAxisInfo.prototype._processGroupWidthRatios = function() {
   // Edge case: less than two groups
   if (!this._groupWidthRatios || this._groupWidthRatios.length < 2) {
     this._groupWidthRatios = null;
@@ -3011,7 +2980,7 @@ DvtGroupAxisInfo.prototype._processGroupWidthRatios = function() {
 
   // Divide the total viewport length (in pixels) proportionally based on the group width ratios.
   var totalWidth = this.EndCoord - this.StartCoord;
-  this._groupWidths = DvtArrayUtils.map(this._groupWidthRatios, function(ratio) {return ratio * totalWidth / sum;});
+  this._groupWidths = dvt.ArrayUtils.map(this._groupWidthRatios, function(ratio) {return ratio * totalWidth / sum;});
 
   // Construct borderValues array which stores the the value location of the group boundaries.
   this._borderValues = [];
@@ -3033,17 +3002,17 @@ DvtGroupAxisInfo.prototype._processGroupWidthRatios = function() {
 /**
  * Rotates the labels of the horizontal axis by 90 degrees and skips the labels if necessary.
  * @param {Array} labels An array of DvtText labels for the axis.
- * @param {DvtContainer} container
+ * @param {dvt.Container} container
  * @param {number} overflow How much overflow the rotated labels will have.
  * @param {number} level The level the labels array corresponds to
  * @return {Array} The array of DvtText labels for the axis.
  * @private
  */
-DvtGroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow, level) {
+dvt.GroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow, level) {
   var text;
   var x;
   var context = this.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
   var isHierarchical = this._numLevels > 1;
 
   if (level == null)
@@ -3063,14 +3032,14 @@ DvtGroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow,
     x = text.getX();
 
     // Wrap multiline text in new height/width dimensions
-    var isMultiline = text instanceof DvtMultilineText || text instanceof DvtBackgroundMultilineText;
+    var isMultiline = text instanceof dvt.MultilineText || text instanceof dvt.BackgroundMultilineText;
     if (isMultiline) {
       var groupSpan = this.getGroupWidth() * (this.getEndIndex(i, level) - this.getStartIndex(i, level) + 1);
       // Estimate if there is room for at least one wrap, and either attempt to wrap or disable wrap on the text
       // Note: This estimate may end up disabling wrap for text that may have just fit, but sufficiently excludes text that
       // will have definitely not fit.
       if (text.getLineHeight() * 2 < groupSpan)
-        text.wrapText(this._maxSpace, text.getLineHeight() * DvtGroupAxisInfo._MAX_LINE_WRAP, 1);
+        text.wrapText(this._maxSpace, text.getLineHeight() * dvt.GroupAxisInfo._MAX_LINE_WRAP, 1);
       else
         text.setWrapEnabled(false);
     }
@@ -3087,7 +3056,7 @@ DvtGroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow,
   var labelDims = this.GuessLabelDims(labels, container, null, level); // the guess returns the exact heights
 
   // Wrapped labels
-  if (this.Options['tickLabel']['style'].getStyle(DvtCSSStyle.WHITE_SPACE) == 'normal') {
+  if (this.Options['tickLabel']['style'].getStyle(dvt.CSSStyle.WHITE_SPACE) == 'normal') {
     var updateLabelDims = this._sanitizeWrappedText(context, labelDims, labels, true, isHierarchical);
     // Recalculate label dims for skipping
     if (updateLabelDims)
@@ -3100,7 +3069,7 @@ DvtGroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow,
 /**
  * Checks if any label should be re-wrapped due to overlap and re-wraps text if needed to minimize overlap.
  * Updates remaining space available for wrapping hierarchical labels.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {Array} labelDims An array of DvtText dimensions for the axis.
  * @param {Array} labels An array of DvtText labels for the axis.
  * @param {Boolean} isRotated Whether or not labels are horizontal and rotated, or vertical.
@@ -3108,7 +3077,7 @@ DvtGroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow,
  * @return {Boolean} Whether or not labels were re-wrapped
  * @private
  */
-DvtGroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, labels, isRotated, isHierarchical) {
+dvt.GroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, labels, isRotated, isHierarchical) {
   // Check any label should be wrapped
   var updateLabelDims = this._calculateMaxWrap(labelDims, labels, isRotated);
 
@@ -3119,7 +3088,7 @@ DvtGroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, l
     if (!text)
       continue;
 
-    var isMultiline = text instanceof DvtMultilineText || text instanceof DvtBackgroundMultilineText;
+    var isMultiline = text instanceof dvt.MultilineText || text instanceof dvt.BackgroundMultilineText;
 
     // Re-wrap to minimize overlap
     if (updateLabelDims && isMultiline && text.isWrapEnabled())
@@ -3127,7 +3096,7 @@ DvtGroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, l
 
     // Keep track of maximum height of this rotated level.
     if (isHierarchical)
-      totalSpace = Math.max(totalSpace, DvtTextUtils.getTextWidth(text));
+      totalSpace = Math.max(totalSpace, dvt.TextUtils.getTextWidth(text));
 
     // Make sure texts, which may or may not have been re-wrapped are aligned center
     text.alignMiddle();
@@ -3151,7 +3120,7 @@ DvtGroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, l
  * @return {Boolean} Whether or not labels will need to be re-wrapped
  * @private
  */
-DvtGroupAxisInfo.prototype._calculateMaxWrap = function(labelDims, labels, isRotated) {
+dvt.GroupAxisInfo.prototype._calculateMaxWrap = function(labelDims, labels, isRotated) {
   var updateLabelDims = false;
 
   // Estimate and update label dims of text if they were to be wrapped with current maxLineWrap
@@ -3160,7 +3129,7 @@ DvtGroupAxisInfo.prototype._calculateMaxWrap = function(labelDims, labels, isRot
     updateLabelDims = true;
     for (var i = 0; i < labels.length; i++) {
       var text = labels[i];
-      if ((text instanceof DvtMultilineText || text instanceof DvtBackgroundMultilineText)) {
+      if ((text instanceof dvt.MultilineText || text instanceof dvt.BackgroundMultilineText)) {
         if (text.getLineCount() == this._maxLineWrap) {
           var lineHeight = text.getLineHeight();
           if (isRotated)
@@ -3182,7 +3151,7 @@ DvtGroupAxisInfo.prototype._calculateMaxWrap = function(labelDims, labels, isRot
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.isLabelRotated = function(level) {
+dvt.GroupAxisInfo.prototype.isLabelRotated = function(level) {
   if (level == null)
     level = this._numLevels - 1;
   return this._isLabelRotated[level];
@@ -3196,7 +3165,7 @@ DvtGroupAxisInfo.prototype.isLabelRotated = function(level) {
  * @param {array} labels An array of DvtText labels for a specific level. The x coordinated of the labels will be recalculated.
  * @private
  */
-DvtGroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, labels) {
+dvt.GroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, labels) {
   // TODO: hierarchical labels -- when more than one level is rotated, _setOverflow is incorrect
   //       due to text.setX(coord) (should be setting the translateX instead).
 
@@ -3204,7 +3173,7 @@ DvtGroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, l
   endOverflow = Math.max(endOverflow - this._endBuffer, 0);
 
   // Revert the start/endCoord to the original positions before applying the new overflow values
-  var isRTL = DvtAgent.isRightToLeft(this.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   this.StartCoord += (startOverflow - this.StartOverflow) * (isRTL ? -1 : 1);
   this.EndCoord -= (endOverflow - this.EndOverflow) * (isRTL ? -1 : 1);
 
@@ -3231,7 +3200,7 @@ DvtGroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, l
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getLabels = function(context, level) {
+dvt.GroupAxisInfo.prototype.getLabels = function(context, level) {
   if (level == null) // Default to returning inner most labels
     level = this._numLevels - 1;
 
@@ -3249,7 +3218,7 @@ DvtGroupAxisInfo.prototype.getLabels = function(context, level) {
  * @private
  * @return {number} The label coord
  */
-DvtGroupAxisInfo.prototype._getLabelCoord = function(level, index) {
+dvt.GroupAxisInfo.prototype._getLabelCoord = function(level, index) {
   var startValue = this.getStartIndex(index, level);
   var endValue = this.getEndIndex(index, level);
   if (startValue == null || endValue == null)
@@ -3266,15 +3235,15 @@ DvtGroupAxisInfo.prototype._getLabelCoord = function(level, index) {
 
 /**
  * Generates the labels
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @private
  */
-DvtGroupAxisInfo.prototype._generateLabels = function(context) {
+dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
   var labels = [];
   this._labels = [];
   var container = context.getStage();
   var isHoriz = this.Position == 'top' || this.Position == 'bottom';
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
   var isHierarchical = this._numLevels > 1;
   var groupWidth = this.getGroupWidth();
   var availSize = this._maxSpace;
@@ -3287,7 +3256,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
   // 2. vertical or horizontal axis
   // 3. groupWidth > textHeight -> wrapping is only necessary when more than one text line can tentatively fit in the groupWidth
   var tickLabelStyle = this.Options['tickLabel']['style'];
-  var wrapping = tickLabelStyle.getStyle(DvtCSSStyle.WHITE_SPACE) == 'normal' && this.Position != 'tangential' && groupWidth > DvtTextUtils.getTextStringHeight(context, tickLabelStyle);
+  var wrapping = tickLabelStyle.getStyle(dvt.CSSStyle.WHITE_SPACE) == 'normal' && this.Position != 'tangential' && groupWidth > dvt.TextUtils.getTextStringHeight(context, tickLabelStyle);
 
   // Iterate and create the labels
   var label, firstLabel, lastLabel;
@@ -3310,7 +3279,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
         if (coord != null) {
           // get categorical axis label style, if it exists
           cssStyle = this.getLabelStyleAt(i, level);
-          var bMultiline = wrapping && isNaN(label) && label.indexOf(' ') >= 0;
+          var bMultiline = wrapping && typeof(label) != 'number' && label.indexOf(' ') >= 0;
           text = this.CreateLabel(context, label, coord, cssStyle, bMultiline);
 
           var groupSpan = groupWidth * (this.getEndIndex(i, level) - this.getStartIndex(i, level) + 1);
@@ -3444,7 +3413,7 @@ DvtGroupAxisInfo.prototype._generateLabels = function(context) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getMajorTickCoords = function() {
+dvt.GroupAxisInfo.prototype.getMajorTickCoords = function() {
   var coords = [], coord;
 
   // when drawing lines between labels, polar charts need gridline drawn after last label, cartesian charts do not.
@@ -3471,7 +3440,7 @@ DvtGroupAxisInfo.prototype.getMajorTickCoords = function() {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getMinorTickCoords = function() {
+dvt.GroupAxisInfo.prototype.getMinorTickCoords = function() {
   var coords = [], coord;
   if (!this._levelsArray[1]) // minor ticks only rendered if two levels exist
     return coords;
@@ -3498,7 +3467,7 @@ DvtGroupAxisInfo.prototype.getMinorTickCoords = function() {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getUnboundedValueAt = function(coord) {
+dvt.GroupAxisInfo.prototype.getUnboundedValueAt = function(coord) {
   if (coord == null)
     return null;
 
@@ -3528,7 +3497,7 @@ DvtGroupAxisInfo.prototype.getUnboundedValueAt = function(coord) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getUnboundedCoordAt = function(value) {
+dvt.GroupAxisInfo.prototype.getUnboundedCoordAt = function(value) {
   if (value == null)
     return null;
 
@@ -3561,7 +3530,7 @@ DvtGroupAxisInfo.prototype.getUnboundedCoordAt = function(value) {
  * @param {number} level (optional) The level of the group label.
  * @return {string} The group label.
  */
-DvtGroupAxisInfo.prototype.getLabelAt = function(index, level) {
+dvt.GroupAxisInfo.prototype.getLabelAt = function(index, level) {
   if (level == null)
     level = this._numLevels - 1;
 
@@ -3586,7 +3555,7 @@ DvtGroupAxisInfo.prototype.getLabelAt = function(index, level) {
  * @param {number} level (optional) The level of the group label.
  * @return {string} The group name or id.
  */
-DvtGroupAxisInfo.prototype.getGroupAt = function(index, level) {
+dvt.GroupAxisInfo.prototype.getGroupAt = function(index, level) {
   if (level == null)
     level = this._numLevels - 1;
 
@@ -3610,14 +3579,14 @@ DvtGroupAxisInfo.prototype.getGroupAt = function(index, level) {
  * Returns the style for the group label at the specified index and level.
  * @param {number} index The group index.
  * @param {number} level (optional) The level of the group label.
- * @return {DvtCSSStyle}
+ * @return {dvt.CSSStyle}
  */
-DvtGroupAxisInfo.prototype.getLabelStyleAt = function(index, level) {
+dvt.GroupAxisInfo.prototype.getLabelStyleAt = function(index, level) {
   var labelStyle = this._getGroupAttribute(index, level, 'labelStyle');
 
   if (labelStyle) {
-    var cssStyle = new DvtCSSStyle(labelStyle);
-    if (!cssStyle.getStyle('font-size')) // DvtBackgroundOutputText needs font-size for adjusting select browser mis-alignment cases
+    var cssStyle = new dvt.CSSStyle(labelStyle);
+    if (!cssStyle.getStyle('font-size')) // dvt.BackgroundOutputText needs font-size for adjusting select browser mis-alignment cases
       cssStyle.setStyle('font-size', this.Options['tickLabel']['style'].getStyle('font-size'));
     return cssStyle;
   }
@@ -3627,7 +3596,7 @@ DvtGroupAxisInfo.prototype.getLabelStyleAt = function(index, level) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getDatatip = function(index, level) {
+dvt.GroupAxisInfo.prototype.getDatatip = function(index, level) {
   // categorical label datatip is the given shortDesc if it exists
   return this._getGroupAttribute(index, level, 'shortDesc');
 };
@@ -3635,14 +3604,14 @@ DvtGroupAxisInfo.prototype.getDatatip = function(index, level) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getAction = function(index, level) {
+dvt.GroupAxisInfo.prototype.getAction = function(index, level) {
   return this._getGroupAttribute(index, level, 'action');
 };
 
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.isDrillable = function(index, level) {
+dvt.GroupAxisInfo.prototype.isDrillable = function(index, level) {
   var drilling = this._getGroupAttribute(index, level, 'drilling');
 
   if (drilling == 'on')
@@ -3660,7 +3629,7 @@ DvtGroupAxisInfo.prototype.isDrillable = function(index, level) {
  * @return {String|Array} The group name/id, or an array of group names/ids.
  * @override
  */
-DvtGroupAxisInfo.prototype.getGroup = function(index, level) {
+dvt.GroupAxisInfo.prototype.getGroup = function(index, level) {
   if (index < 0 || index > this.getGroupCount() - 1)
     return null;
 
@@ -3685,35 +3654,35 @@ DvtGroupAxisInfo.prototype.getGroup = function(index, level) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getLabelBackground = function(label, context, level) {
+dvt.GroupAxisInfo.prototype.getLabelBackground = function(label, context, level) {
   if (level == null)
     level = this._numLevels - 1;
   var style = label.getCSSStyle();
   if (style) {
-    var bgColor = style.getStyle(DvtCSSStyle.BACKGROUND_COLOR);
-    var borderColor = style.getStyle(DvtCSSStyle.BORDER_COLOR);
-    var borderWidth = style.getStyle(DvtCSSStyle.BORDER_WIDTH);
-    var borderRadius = style.getStyle(DvtCSSStyle.BORDER_RADIUS);
+    var bgColor = style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+    var borderColor = style.getStyle(dvt.CSSStyle.BORDER_COLOR);
+    var borderWidth = style.getStyle(dvt.CSSStyle.BORDER_WIDTH);
+    var borderRadius = style.getStyle(dvt.CSSStyle.BORDER_RADIUS);
 
     // Create element for label background if group labelStyle has the background-related attributes that we support
     if (bgColor != null || borderColor != null || borderWidth != null || borderRadius != null) {
       var bboxDims = label.getDimensions();
       var padding = bboxDims.h * 0.15;
 
-      // Chrome & IE handle 'vAlign = bottom' in a way that label and the background are misaligned, this corrects the DvtRect
-      if ((DvtAgent.isBrowserChrome() || DvtAgent.isPlatformIE()) && label.getVertAlignment() === DvtOutputText.V_ALIGN_BOTTOM)
+      // Chrome & IE handle 'vAlign = bottom' in a way that label and the background are misaligned, this corrects the dvt.Rect
+      if ((dvt.Agent.isBrowserChrome() || dvt.Agent.isPlatformIE()) && label.getVertAlignment() === dvt.OutputText.V_ALIGN_BOTTOM)
         bboxDims.y += bboxDims.h / 2;
 
-      var bbox = new DvtRect(context, bboxDims.x - padding, bboxDims.y, bboxDims.w + 2 * padding, bboxDims.h);
+      var bbox = new dvt.Rect(context, bboxDims.x - padding, bboxDims.y, bboxDims.w + 2 * padding, bboxDims.h);
 
-      var bgStyle = new DvtCSSStyle();
+      var bgStyle = new dvt.CSSStyle();
       if (bgColor != null)
-        bgStyle.setStyle(DvtCSSStyle.BACKGROUND_COLOR, bgColor);
+        bgStyle.setStyle(dvt.CSSStyle.BACKGROUND_COLOR, bgColor);
       else
         bbox.setInvisibleFill();
-      bgStyle.setStyle(DvtCSSStyle.BORDER_COLOR, borderColor);
-      bgStyle.setStyle(DvtCSSStyle.BORDER_WIDTH, borderWidth);
-      bgStyle.setStyle(DvtCSSStyle.BORDER_RADIUS, borderRadius);
+      bgStyle.setStyle(dvt.CSSStyle.BORDER_COLOR, borderColor);
+      bgStyle.setStyle(dvt.CSSStyle.BORDER_WIDTH, borderWidth);
+      bgStyle.setStyle(dvt.CSSStyle.BORDER_RADIUS, borderRadius);
       bbox.setCSSStyle(bgStyle);
 
       if (this._isLabelRotated[level])
@@ -3732,14 +3701,14 @@ DvtGroupAxisInfo.prototype.getLabelBackground = function(label, context, level) 
  * @param {string} group The group.
  * @return {number} The group index. -1 if the group doesn't exist.
  */
-DvtGroupAxisInfo.prototype.getGroupIndex = function(group) {
+dvt.GroupAxisInfo.prototype.getGroupIndex = function(group) {
   if (group == null)
     return -1;
 
   var index = -1;
   for (var i = 0; i < this._groupCount; i++) {
     var curGroup = this.getGroup(i);
-    var matches = (group instanceof Array && curGroup instanceof Array) ? DvtArrayUtils.equals(group, curGroup) : group == curGroup;
+    var matches = (group instanceof Array && curGroup instanceof Array) ? dvt.ArrayUtils.equals(group, curGroup) : group == curGroup;
     if (matches) {
       index = i;
       break;
@@ -3752,7 +3721,7 @@ DvtGroupAxisInfo.prototype.getGroupIndex = function(group) {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getMinimumExtent = function() {
+dvt.GroupAxisInfo.prototype.getMinimumExtent = function() {
   return 1;
 };
 
@@ -3760,7 +3729,7 @@ DvtGroupAxisInfo.prototype.getMinimumExtent = function() {
 /**
  * @override
  */
-DvtGroupAxisInfo.prototype.getGroupWidth = function() {
+dvt.GroupAxisInfo.prototype.getGroupWidth = function() {
   // returns the average group width
   return Math.abs(this.EndCoord - this.StartCoord) / Math.abs(this.MaxValue - this.MinValue);
 };
@@ -3769,7 +3738,7 @@ DvtGroupAxisInfo.prototype.getGroupWidth = function() {
  * Returns the number of groups in the specified chart.
  * @return {number}
  */
-DvtGroupAxisInfo.prototype.getGroupCount = function() {
+dvt.GroupAxisInfo.prototype.getGroupCount = function() {
   return this._groupCount;
 };
 
@@ -3778,7 +3747,7 @@ DvtGroupAxisInfo.prototype.getGroupCount = function() {
  * Returns the number of label levels
  * @return {number}
  */
-DvtGroupAxisInfo.prototype.getNumLevels = function() {
+dvt.GroupAxisInfo.prototype.getNumLevels = function() {
   return this._numLevels;
 };
 
@@ -3792,7 +3761,7 @@ DvtGroupAxisInfo.prototype.getNumLevels = function() {
  * @return {groupIndex} A running count of the number of leaf groups
  * @private
  */
-DvtGroupAxisInfo.prototype._generateLevelsArray = function(groupsArray, level, levelsArray, groupIndex) {
+dvt.GroupAxisInfo.prototype._generateLevelsArray = function(groupsArray, level, levelsArray, groupIndex) {
   for (var i = 0; i < groupsArray.length; i++) {
 
     // Add new array if at first group in a new level
@@ -3823,7 +3792,7 @@ DvtGroupAxisInfo.prototype._generateLevelsArray = function(groupsArray, level, l
  * @return {string} The value of the desires attribute
  * @private
  */
-DvtGroupAxisInfo.prototype._getGroupAttribute = function(index, level, attribute) {
+dvt.GroupAxisInfo.prototype._getGroupAttribute = function(index, level, attribute) {
   if (level == null)
     level = this._numLevels - 1;
   var groupItem = (this._levelsArray[level] && this._levelsArray[level][index]) ? this._levelsArray[level][index]['item'] : null;
@@ -3834,7 +3803,7 @@ DvtGroupAxisInfo.prototype._getGroupAttribute = function(index, level, attribute
  * Returns whether or not to render group separators
  * @return {boolean}
  */
-DvtGroupAxisInfo.prototype.areSeparatorsRendered = function() {
+dvt.GroupAxisInfo.prototype.areSeparatorsRendered = function() {
   return this._areSeparatorsRendered;
 };
 
@@ -3842,7 +3811,7 @@ DvtGroupAxisInfo.prototype.areSeparatorsRendered = function() {
  * Returns the color of the group separators
  * @return {boolean}
  */
-DvtGroupAxisInfo.prototype.getSeparatorColor = function() {
+dvt.GroupAxisInfo.prototype.getSeparatorColor = function() {
   return this._separatorColor;
 };
 
@@ -3852,7 +3821,7 @@ DvtGroupAxisInfo.prototype.getSeparatorColor = function() {
  * @param {number} level
  * @return {number} The start index
  */
-DvtGroupAxisInfo.prototype.getStartIndex = function(index, level) {
+dvt.GroupAxisInfo.prototype.getStartIndex = function(index, level) {
   if (level == null)
     level = this._numLevels - 1;
   var startIndex = (this._levelsArray[level] && this._levelsArray[level][index]) ? this._levelsArray[level][index]['start'] : null;
@@ -3865,7 +3834,7 @@ DvtGroupAxisInfo.prototype.getStartIndex = function(index, level) {
  * @param {number} level
  * @return {number} The end index
  */
-DvtGroupAxisInfo.prototype.getEndIndex = function(index, level) {
+dvt.GroupAxisInfo.prototype.getEndIndex = function(index, level) {
   if (level == null)
     level = this._numLevels - 1;
   var endIndex = (this._levelsArray[level] && this._levelsArray[level][index]) ? this._levelsArray[level][index]['end'] : null;
@@ -3878,7 +3847,7 @@ DvtGroupAxisInfo.prototype.getEndIndex = function(index, level) {
  * @param {number} level
  * @return {number} The position of the group item in it's parent's array of children
  */
-DvtGroupAxisInfo.prototype.getPosition = function(index, level) {
+dvt.GroupAxisInfo.prototype.getPosition = function(index, level) {
   if (level == null)
     level = this._numLevels - 1;
   var endIndex = (this._levelsArray[level] && this._levelsArray[level][index]) ? this._levelsArray[level][index]['position'] : null;
@@ -3889,7 +3858,7 @@ DvtGroupAxisInfo.prototype.getPosition = function(index, level) {
  * Returns whether or not the axis is shifted
  * @return {boolean}
  */
-DvtGroupAxisInfo.prototype.isRenderGridAtLabels = function() {
+dvt.GroupAxisInfo.prototype.isRenderGridAtLabels = function() {
   return this._renderGridAtLabels;
 };
 
@@ -3897,7 +3866,7 @@ DvtGroupAxisInfo.prototype.isRenderGridAtLabels = function() {
  * Store the index of the innermost level that was able to be rendered
  * @param {number} level The innermost level rendered
  */
-DvtGroupAxisInfo.prototype.setLastRenderedLevel = function(level) {
+dvt.GroupAxisInfo.prototype.setLastRenderedLevel = function(level) {
   this._lastRenderedLevel = level;
 };
 
@@ -3905,16 +3874,16 @@ DvtGroupAxisInfo.prototype.setLastRenderedLevel = function(level) {
  * Returns the index of the innermost level that was able to be rendered
  * @return {number} The innermost level rendered
  */
-DvtGroupAxisInfo.prototype.getLastRenderedLevel = function() {
+dvt.GroupAxisInfo.prototype.getLastRenderedLevel = function() {
   return this._lastRenderedLevel;
 };
 
 /**
  * Returns the true index of the given group label
- * @param {DvtOutputText} label The group label
+ * @param {dvt.OutputText} label The group label
  * @return {Number} The index of teh group label in regards to it's position in it's level of labels
  */
-DvtGroupAxisInfo.prototype.getLabelIndex = function(label) {
+dvt.GroupAxisInfo.prototype.getLabelIndex = function(label) {
   return label._index >= 0 ? label._index : null;
 };
 
@@ -3922,22 +3891,22 @@ DvtGroupAxisInfo.prototype.getLabelIndex = function(label) {
  * Returns the maximum lines allowed for wrapped labels.
  * @return {number}
  */
-DvtGroupAxisInfo.prototype.getMaxLineWrap = function() {
+dvt.GroupAxisInfo.prototype.getMaxLineWrap = function() {
   return this._maxLineWrap;
 };
 
 /**
  * Returns whether or not we should attempt to wrap a horizontal multiline text object
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {String} label The label string of the text object
- * @param {DvtCSSStyle} style The cssstyle of the text object
+ * @param {dvt.CSSStyle} style The cssstyle of the text object
  * @param {Boolean} rotationEnabled Whether or not the text object is on an axis that enables label rotation
  * @param {Number} maxWidth The maximum width that will be given to the text object to wrap horizontally
  * @return {boolean}
  * @private
  */
-DvtGroupAxisInfo.prototype._isTextWrapNeeded = function(context, label, style, rotationEnabled, maxWidth) {
-  var textWidth = DvtTextUtils.getTextStringWidth(context, label, style);
+dvt.GroupAxisInfo.prototype._isTextWrapNeeded = function(context, label, style, rotationEnabled, maxWidth) {
+  var textWidth = dvt.TextUtils.getTextStringWidth(context, label, style);
 
   // Only attempt to wrap text horizontally if:
   // 1. The textWidth is longer that the maxWidth.
@@ -3951,8 +3920,8 @@ DvtGroupAxisInfo.prototype._isTextWrapNeeded = function(context, label, style, r
 };
 /**
  * Simple logical object for tooltip support.
- * @param {DvtAxis} axis The axis.
- * @param {DvtOutputText} label The owning text instance.
+ * @param {dvt.Axis} axis The axis.
+ * @param {dvt.OutputText} label The owning text instance.
  * @param {string|Array} group A string or an array of groups names/ids of the label and the ancestors.
  * @param {object} action The action associated with the label.
  * @param {object} drillable Whether the label is drillable.
@@ -3961,19 +3930,19 @@ DvtGroupAxisInfo.prototype._isTextWrapNeeded = function(context, label, style, r
  * @param {object=} params Optional object containing additional parameters for use by component.
  * @class DvtAxisObjPeer
  * @constructor
- * @implements {DvtSimpleObjPeer}
+ * @implements {dvt.SimpleObjPeer}
  * @implements {DvtLogicalObject}
  */
 var DvtAxisObjPeer = function(axis, label, group, action, drillable, tooltip, datatip, params) {
   this.Init(axis, label, group, action, drillable, tooltip, datatip, params);
 };
 
-DvtObj.createSubclass(DvtAxisObjPeer, DvtSimpleObjPeer, 'DvtAxisObjPeer');
+dvt.Obj.createSubclass(DvtAxisObjPeer, dvt.SimpleObjPeer);
 
 
 /**
- * @param {DvtAxis} axis The axis.
- * @param {DvtOutputText} label The owning text instance.
+ * @param {dvt.Axis} axis The axis.
+ * @param {dvt.OutputText} label The owning text instance.
  * @param {string|Array} group A string or an array of groups names/ids of the label and the ancestors.
  * @param {object} action The action associated with the label.
  * @param {object} drillable Whether the label is drillable.
@@ -3992,7 +3961,7 @@ DvtAxisObjPeer.prototype.Init = function(axis, label, group, action, drillable, 
 
   // Apply the cursor for the action if specified
   if (this._action || this._drillable)
-    label.setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+    label.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
 
   axis.__registerObject(this);
 };
@@ -4000,7 +3969,7 @@ DvtAxisObjPeer.prototype.Init = function(axis, label, group, action, drillable, 
 
 /**
  * Returns the label for this object.
- * @return {DvtOutputText}
+ * @return {dvt.OutputText}
  */
 DvtAxisObjPeer.prototype.getLabel = function() {
   return this._label;
@@ -4051,11 +4020,11 @@ DvtAxisObjPeer.prototype.getGroup = function() {
  */
 DvtAxisObjPeer.prototype.getNextNavigable = function(event) {
   // TODO: Figure out if this is necessary
-  if (event.type == DvtMouseEvent.CLICK)
+  if (event.type == dvt.MouseEvent.CLICK)
     return this;
 
   var navigables = this._axis.__getKeyboardObjects();
-  return DvtKeyboardHandler.getNextNavigable(this, event, navigables);
+  return dvt.KeyboardHandler.getNextNavigable(this, event, navigables);
 };
 
 /**
@@ -4065,7 +4034,7 @@ DvtAxisObjPeer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace
   if (this._label)
     return this._label.getDimensions(targetCoordinateSpace);
   else
-    return new DvtRectangle(0, 0, 0, 0);
+    return new dvt.Rectangle(0, 0, 0, 0);
 };
 
 /**
@@ -4091,8 +4060,8 @@ DvtAxisObjPeer.prototype.showKeyboardFocusEffect = function() {
   this._isShowingKeyboardFocusEffect = true;
   if (this._label) {
     var bounds = this.getKeyboardBoundingBox();
-    this._overlayRect = new DvtRect(this._axis.getCtx(), bounds.x, bounds.y, bounds.w, bounds.h);
-    this._overlayRect.setSolidStroke(DvtAgent.getFocusColor());
+    this._overlayRect = new dvt.Rect(this._axis.getCtx(), bounds.x, bounds.y, bounds.w, bounds.h);
+    this._overlayRect.setSolidStroke(dvt.Agent.getFocusColor());
     this._overlayRect.setInvisibleFill();
     this._axis.addChild(this._overlayRect);
   }
@@ -4128,13 +4097,13 @@ DvtAxisObjPeer.prototype.isShowingKeyboardFocusEffect = function() {
 DvtAxisObjPeer.prototype.getAriaLabel = function() {
   var states;
   if (this.isDrillable())
-    states = [DvtBundle.getTranslation(this._axis.getOptions(), 'stateDrillable', DvtBundle.UTIL_PREFIX, 'STATE_DRILLABLE')];
+    states = [dvt.Bundle.getTranslation(this._axis.getOptions(), 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE')];
 
   if (this.getDatatip() != null) {
-    return DvtDisplayable.generateAriaLabel(this.getDatatip() , states);
+    return dvt.Displayable.generateAriaLabel(this.getDatatip() , states);
   }
   else if (states != null) {
-    return DvtDisplayable.generateAriaLabel(this.getLabel().getTextString(), states);
+    return dvt.Displayable.generateAriaLabel(this.getLabel().getTextString(), states);
   }
 
 };
@@ -4152,7 +4121,7 @@ DvtAxisObjPeer.prototype.getAriaLabel = function() {
  *    minValue = 0, maxValue=10000, tickStep=1000, scale="thousand" -> formatted axis values: 0K , ..., 10K
  *    minValue = 0, maxValue=100, tickStep=10, scale="thousand" -> formatted axis values: 0.00K, 0.01K, ..., 0.10K
  *
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {number} minValue the minimum value on the axis
  * @param {number} maxValue the maximum value on the axis
  * @param {number} tickStep the tick step between values on the axis
@@ -4160,30 +4129,34 @@ DvtAxisObjPeer.prototype.getAriaLabel = function() {
  * @param {string} autoPrecision "on" if auto precision should be applied otherwise "off"; if null or undefined then auto precision is applied.
  * @constructor
  */
-var DvtLinearScaleAxisValueFormatter = function(context, minValue, maxValue, tickStep, scale, autoPrecision) {
-  DvtAbstractAxisValueFormatter.call(this);
+dvt.LinearScaleAxisValueFormatter = function(context, minValue, maxValue, tickStep, scale, autoPrecision) {
   this.Init(context, minValue, maxValue, tickStep, scale, autoPrecision);
 };
 
-DvtObj.createSubclass(DvtLinearScaleAxisValueFormatter, DvtAbstractAxisValueFormatter, 'DvtLinearScaleAxisValueFormatter');
+dvt.Obj.createSubclass(dvt.LinearScaleAxisValueFormatter, dvt.Obj);
 
-
-/**
- * Allowed scales that can be used as formatter scale param values
- */
-DvtLinearScaleAxisValueFormatter.SCALE_NONE = 'none';
-DvtLinearScaleAxisValueFormatter.SCALE_AUTO = 'auto';
-DvtLinearScaleAxisValueFormatter.SCALE_THOUSAND = 'thousand';
-DvtLinearScaleAxisValueFormatter.SCALE_MILLION = 'million';
-DvtLinearScaleAxisValueFormatter.SCALE_BILLION = 'billion';
-DvtLinearScaleAxisValueFormatter.SCALE_TRILLION = 'trillion';
-DvtLinearScaleAxisValueFormatter.SCALE_QUADRILLION = 'quadrillion';
+// Allowed scales that can be used as formatter scale param values
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_NONE = 'none';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_AUTO = 'auto';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_THOUSAND = 'thousand';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_MILLION = 'million';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_BILLION = 'billion';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_TRILLION = 'trillion';
+/** @const **/
+dvt.LinearScaleAxisValueFormatter.SCALE_QUADRILLION = 'quadrillion';
+/** @const **/
 
 
 /**
  * The scaling factor difference between successive scale values
  */
-DvtLinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE = 3;
+dvt.LinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE = 3;
 
 
 /**
@@ -4195,7 +4168,7 @@ DvtLinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE = 3;
  * @param {number} scale
  * @param {number} autoPrecision
  */
-DvtLinearScaleAxisValueFormatter.prototype.Init = function(context, minValue, maxValue, tickStep, scale, autoPrecision) {
+dvt.LinearScaleAxisValueFormatter.prototype.Init = function(context, minValue, maxValue, tickStep, scale, autoPrecision) {
   this._context = context;
   // array of successive scale values
   this._scales = {
@@ -4216,18 +4189,19 @@ DvtLinearScaleAxisValueFormatter.prototype.Init = function(context, minValue, ma
  * @protected
  *
  */
-DvtLinearScaleAxisValueFormatter.prototype.InitScales = function() {
+dvt.LinearScaleAxisValueFormatter.prototype.InitScales = function() {
   /**
    * Creates scale object and refreshes formatter properties using it.
-   * @param {string} scaleName one of allowed scale names (e.g. DvtLinearScaleAxisValueFormatter.SCALE_THOUSAND)
-   * @param {number} scaleFactor scale factor of corresponding scale, i.e. 'x' such that 10^x represents corresponding scale (e.g. for scale DvtLinearScaleAxisValueFormatter.SCALE_THOUSAND x = 3)
-   * @param {string} scaleKey translation key which value (translated) represents given scale (e.g. for DvtLinearScaleAxisValueFormatter.SCALE_THOUSAND an translated english suffix is 'K')
+   * @param {string} scaleName one of allowed scale names (e.g. dvt.LinearScaleAxisValueFormatter.SCALE_THOUSAND)
+   * @param {number} scaleFactor scale factor of corresponding scale, i.e. 'x' such that 10^x represents corresponding scale (e.g. for scale dvt.LinearScaleAxisValueFormatter.SCALE_THOUSAND x = 3)
+   * @param {string} scaleKey translation key which value (translated) represents given scale (e.g. for dvt.LinearScaleAxisValueFormatter.SCALE_THOUSAND an translated english suffix is 'K')
+   * @this {dvt.LinearScaleAxisValueFormatter}
    */
   var createScale = function(scaleName, scaleFactor, scaleKey) {
     var suffix;
     if (scaleKey) {
       // when bundle and bundle suffix is defined then init suffix
-      suffix = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, scaleKey);
+      suffix = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, scaleKey);
     }
 
     var scale = {
@@ -4240,14 +4214,14 @@ DvtLinearScaleAxisValueFormatter.prototype.InitScales = function() {
     this._factorToScaleMapping[scaleFactor] = scale;
   };
 
-  var diff = DvtLinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE;
+  var diff = dvt.LinearScaleAxisValueFormatter.SCALING_FACTOR_DIFFERENCE;
 
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_NONE, 0 * diff);
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_THOUSAND, 1 * diff, 'SCALING_SUFFIX_THOUSAND');
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_MILLION, 2 * diff, 'SCALING_SUFFIX_MILLION');
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_BILLION, 3 * diff, 'SCALING_SUFFIX_BILLION');
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_TRILLION, 4 * diff, 'SCALING_SUFFIX_TRILLION');
-  createScale.call(this, DvtLinearScaleAxisValueFormatter.SCALE_QUADRILLION, 5 * diff, 'SCALING_SUFFIX_QUADRILLION');
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_NONE, 0 * diff);
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_THOUSAND, 1 * diff, 'SCALING_SUFFIX_THOUSAND');
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_MILLION, 2 * diff, 'SCALING_SUFFIX_MILLION');
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_BILLION, 3 * diff, 'SCALING_SUFFIX_BILLION');
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_TRILLION, 4 * diff, 'SCALING_SUFFIX_TRILLION');
+  createScale.call(this, dvt.LinearScaleAxisValueFormatter.SCALE_QUADRILLION, 5 * diff, 'SCALING_SUFFIX_QUADRILLION');
 
   // sort _scalesOrder array
   this._scalesOrder.sort(function(scale1, scale2) {
@@ -4275,7 +4249,7 @@ DvtLinearScaleAxisValueFormatter.prototype.InitScales = function() {
  * @protected
  *
  */
-DvtLinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, maxValue, tickStep, scale, autoPrecision) {
+dvt.LinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, maxValue, tickStep, scale, autoPrecision) {
   var findScale = false, decimalPlaces, scaleFactor, useAutoPrecision = false;
 
   // if autoPrecision doesn't equal "off" (i.e. is "on", null, undefined) then auto precision should be used.
@@ -4334,7 +4308,7 @@ DvtLinearScaleAxisValueFormatter.prototype.InitFormatter = function(minValue, ma
  * @return {number} a scale factor 'x' such that x <= value
  * @private
  */
-DvtLinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function(value) {
+dvt.LinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function(value) {
   var scaleFactor = 0;
 
   if (value <= this._scalesOrder[0].scaleFactor) {
@@ -4361,13 +4335,14 @@ DvtLinearScaleAxisValueFormatter.prototype._findNearestLEScaleFactor = function(
 
 /**
  * Returns scale factor of scale given by scale name.
- * @return scale factor of scale given by scale name
+ * @param {string} scaleName
+ * @return {number} scale factor of scale given by scale name
  * @private
  */
-DvtLinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName) {
+dvt.LinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName) {
   // If no scaling factor defined, use auto by default.
   if (!scaleName)
-    scaleName = DvtLinearScaleAxisValueFormatter.SCALE_AUTO;
+    scaleName = dvt.LinearScaleAxisValueFormatter.SCALE_AUTO;
 
   var scaleFactor, scale = this._scales[scaleName];
   if (scale) {
@@ -4383,7 +4358,7 @@ DvtLinearScaleAxisValueFormatter.prototype._getScaleFactor = function(scaleName)
  * @param {object} value to be formatted.
  * @return {string} formatted value as string
  */
-DvtLinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
+dvt.LinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
   var parsed = parseFloat(value);
   if (!isNaN(parsed)) {
     // Find the suffix for the scale factor
@@ -4429,7 +4404,7 @@ DvtLinearScaleAxisValueFormatter.prototype.format = function(value, converter) {
  * @return {string} number with fraction part formatted as string
  * @private
  */
-DvtLinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
+dvt.LinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
   var formatted = value.toString();
 
   // Don't format scientific notation (e.g. '1e-7')
@@ -4437,7 +4412,7 @@ DvtLinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
     return formatted;
 
   var decimalSep = '.';
-  decimalSep = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'NUMBER_FORMAT_DECIMAL_SEPARATOR');
+  decimalSep = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NUMBER_FORMAT_DECIMAL_SEPARATOR');
   if (this._decimalPlaces > 0) {
     if (formatted.indexOf('.') == -1) {
       formatted += decimalSep;
@@ -4462,7 +4437,7 @@ DvtLinearScaleAxisValueFormatter.prototype._formatFraction = function(value) {
  * @return {number} order of magnitude for given value
  * @private
  */
-DvtLinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
+dvt.LinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
   // more comprehensive and easier than working with value returned by Math.log(value)/Math.log(10)
   value = (value >= 0) ? value : - value;
   var power = 0;
@@ -4492,55 +4467,55 @@ DvtLinearScaleAxisValueFormatter.prototype._getPowerOfTen = function(value) {
 };
 /**
  * Calculated axis information and drawable creation for a time axis.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {object} options The object containing specifications and data for this component.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @class
  * @constructor
- * @extends {DvtAxisInfo}
+ * @extends {dvt.AxisInfo}
  */
-var DvtTimeAxisInfo = function(context, options, availSpace) {
+dvt.TimeAxisInfo = function(context, options, availSpace) {
   this.Init(context, options, availSpace);
 };
 
-DvtObj.createSubclass(DvtTimeAxisInfo, DvtAxisInfo, 'DvtTimeAxisInfo');
+dvt.Obj.createSubclass(dvt.TimeAxisInfo, dvt.AxisInfo);
 
 // ------------------------
 // Constants
 //
 /** @const */
-DvtTimeAxisInfo.TIME_SECOND = 1000;
+dvt.TimeAxisInfo.TIME_SECOND = 1000;
 /** @const */
-DvtTimeAxisInfo.TIME_MINUTE = 60 * DvtTimeAxisInfo.TIME_SECOND;
+dvt.TimeAxisInfo.TIME_MINUTE = 60 * dvt.TimeAxisInfo.TIME_SECOND;
 /** @const */
-DvtTimeAxisInfo.TIME_HOUR = 60 * DvtTimeAxisInfo.TIME_MINUTE;
+dvt.TimeAxisInfo.TIME_HOUR = 60 * dvt.TimeAxisInfo.TIME_MINUTE;
 /** @const */
-DvtTimeAxisInfo.TIME_DAY = 24 * DvtTimeAxisInfo.TIME_HOUR;
+dvt.TimeAxisInfo.TIME_DAY = 24 * dvt.TimeAxisInfo.TIME_HOUR;
 /** @const */
-DvtTimeAxisInfo.TIME_MONTH_MIN = 28 * DvtTimeAxisInfo.TIME_DAY;
+dvt.TimeAxisInfo.TIME_MONTH_MIN = 28 * dvt.TimeAxisInfo.TIME_DAY;
 /** @const */
-DvtTimeAxisInfo.TIME_MONTH_MAX = 31 * DvtTimeAxisInfo.TIME_DAY;
+dvt.TimeAxisInfo.TIME_MONTH_MAX = 31 * dvt.TimeAxisInfo.TIME_DAY;
 /** @const */
-DvtTimeAxisInfo.TIME_YEAR_MIN = 365 * DvtTimeAxisInfo.TIME_DAY;
+dvt.TimeAxisInfo.TIME_YEAR_MIN = 365 * dvt.TimeAxisInfo.TIME_DAY;
 /** @const */
-DvtTimeAxisInfo.TIME_YEAR_MAX = 366 * DvtTimeAxisInfo.TIME_DAY;
+dvt.TimeAxisInfo.TIME_YEAR_MAX = 366 * dvt.TimeAxisInfo.TIME_DAY;
 
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.Init = function(context, options, availSpace) {
-  DvtTimeAxisInfo.superclass.Init.call(this, context, options, availSpace);
+dvt.TimeAxisInfo.prototype.Init = function(context, options, availSpace) {
+  dvt.TimeAxisInfo.superclass.Init.call(this, context, options, availSpace);
 
   // Figure out the coords for the min/max values
   if (this.Position == 'top' || this.Position == 'bottom') {
     // Provide at least the minimum buffer at each side to accommodate labels
     if (!options['_isOverview'] && options['tickLabel']['rendered'] == 'on') {
-      this.StartOverflow = Math.max(DvtAxis.MINIMUM_AXIS_BUFFER - options['leftBuffer'], 0);
-      this.EndOverflow = Math.max(DvtAxis.MINIMUM_AXIS_BUFFER - options['rightBuffer'], 0);
+      this.StartOverflow = Math.max(dvt.Axis.MINIMUM_AXIS_BUFFER - options['leftBuffer'], 0);
+      this.EndOverflow = Math.max(dvt.Axis.MINIMUM_AXIS_BUFFER - options['rightBuffer'], 0);
     }
 
     // Axis is horizontal, so flip for BIDI if needed
-    if (DvtAgent.isRightToLeft(context)) {
+    if (dvt.Agent.isRightToLeft(context)) {
       this._startCoord = this.EndCoord - this.EndOverflow;
       this._endCoord = this.StartCoord + this.StartOverflow;
     }
@@ -4574,7 +4549,7 @@ DvtTimeAxisInfo.prototype.Init = function(context, options, availSpace) {
   else if (this.DataMax - this.DataMin > 0)
     this._averageInterval = this.DataMax - this.DataMin;
   else
-    this._averageInterval = 6 * DvtTimeAxisInfo.TIME_MINUTE; // to get the time axis to show YMDHM information
+    this._averageInterval = 6 * dvt.TimeAxisInfo.TIME_MINUTE; // to get the time axis to show YMDHM information
   this._step = options['step'];
 
   // Calculate the increment and add offsets if specified
@@ -4623,18 +4598,18 @@ DvtTimeAxisInfo.prototype.Init = function(context, options, availSpace) {
   this._locale = options['_locale'].toLowerCase();
 
   this._monthResources = [
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_JANUARY'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_FEBRUARY'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_MARCH'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_APRIL'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_MAY'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_JUNE'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_JULY'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_AUGUST'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_SEPTEMBER'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_OCTOBER'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_NOVEMBER'),
-    DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'MONTH_SHORT_DECEMBER')
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JANUARY'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_FEBRUARY'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MARCH'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_APRIL'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MAY'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JUNE'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JULY'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_AUGUST'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_SEPTEMBER'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_OCTOBER'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_NOVEMBER'),
+    dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_DECEMBER')
   ];
 };
 
@@ -4644,7 +4619,7 @@ DvtTimeAxisInfo.prototype.Init = function(context, options, availSpace) {
  * @return {String} the string representing "am"
  * @private
  */
-DvtTimeAxisInfo._getAMString = function(locale) {
+dvt.TimeAxisInfo._getAMString = function(locale) {
   var language = locale.substring(0, 2);
   if (locale == 'en-au' || locale == 'en-ie' || locale == 'en-ph')
     return 'am';
@@ -4672,7 +4647,7 @@ DvtTimeAxisInfo._getAMString = function(locale) {
  * @return {String} the string representing "pm"
  * @private
  */
-DvtTimeAxisInfo._getPMString = function(locale) {
+dvt.TimeAxisInfo._getPMString = function(locale) {
   var language = locale.substring(0, 2);
   if (locale == 'en-au' || locale == 'en-ie' || locale == 'en-ph')
     return 'pm';
@@ -4700,7 +4675,7 @@ DvtTimeAxisInfo._getPMString = function(locale) {
  * @return {boolean} whether the AM/PM string before the time.
  * @private
  */
-DvtTimeAxisInfo._getAMPMBefore = function(locale) {
+dvt.TimeAxisInfo._getAMPMBefore = function(locale) {
   var language = locale.substring(0, 2);
   if (language == 'ko' || language == 'zh')
     return true;
@@ -4714,7 +4689,7 @@ DvtTimeAxisInfo._getAMPMBefore = function(locale) {
  * @return {String} the order of date, month and year
  * @private
  */
-DvtTimeAxisInfo._getDMYOrder = function(locale) {
+dvt.TimeAxisInfo._getDMYOrder = function(locale) {
   var language = locale.substring(0, 2);
   if (locale == 'en-us' || locale == 'en-ph')
     return 'MDY';
@@ -4730,7 +4705,7 @@ DvtTimeAxisInfo._getDMYOrder = function(locale) {
  * @return {String} the year trailing character by locale
  * @private
  */
-DvtTimeAxisInfo._getYearTrailingCharacters = function(locale) {
+dvt.TimeAxisInfo._getYearTrailingCharacters = function(locale) {
   if (locale.indexOf('ja') == 0 || locale.indexOf('zh') == 0)
     return '\u5e74';
   else if (locale.indexOf('ko') == 0)
@@ -4745,7 +4720,7 @@ DvtTimeAxisInfo._getYearTrailingCharacters = function(locale) {
  * @return {String} the day trailing character by locale
  * @private
  */
-DvtTimeAxisInfo._getDayTrailingCharacters = function(locale) {
+dvt.TimeAxisInfo._getDayTrailingCharacters = function(locale) {
   if (locale.indexOf('ja') == 0 || locale.indexOf('zh') == 0)
     return '\u65e5';
   else if (locale.indexOf('ko') == 0)
@@ -4759,11 +4734,11 @@ DvtTimeAxisInfo._getDayTrailingCharacters = function(locale) {
  * @param {Number} axisValue The axis value (in milliseconds)
  * @return {String} A formatted axis label
  */
-DvtTimeAxisInfo.prototype.formatLabel = function(axisValue) {
+dvt.TimeAxisInfo.prototype.formatLabel = function(axisValue) {
   var date = new Date(axisValue);
   var twoLabels = this._formatAxisLabel(date, null, true);
   if (twoLabels[1] != null) {
-    if (DvtTimeAxisInfo._getDMYOrder(this._locale) == 'YMD' || (this._timeRange < DvtTimeAxisInfo.TIME_MONTH_MIN && this._step < DvtTimeAxisInfo.TIME_DAY)) // time showing HH:MM:SS or YMD order
+    if (dvt.TimeAxisInfo._getDMYOrder(this._locale) == 'YMD' || (this._timeRange < dvt.TimeAxisInfo.TIME_MONTH_MIN && this._step < dvt.TimeAxisInfo.TIME_DAY)) // time showing HH:MM:SS or YMD order
       return twoLabels[1] + ' ' + twoLabels[0];
     else
       return twoLabels[0] + ' ' + twoLabels[1];
@@ -4780,7 +4755,7 @@ DvtTimeAxisInfo.prototype.formatLabel = function(axisValue) {
  * @return {String} An axis label
  * @private
  */
-DvtTimeAxisInfo.prototype._formatAxisLabelWithConverter = function(date, prevDate, converter) {
+dvt.TimeAxisInfo.prototype._formatAxisLabelWithConverter = function(date, prevDate, converter) {
   if (converter) {
     var label = null;
     var prevLabel = null;
@@ -4806,7 +4781,7 @@ DvtTimeAxisInfo.prototype._formatAxisLabelWithConverter = function(date, prevDat
  * @return {Array} An array [level1Label, level2Label]
  * @private
  */
-DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel) {
+dvt.TimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel) {
   var label1 = null;// level 1 label
   var label2 = null;// level 2 label
   var isVert = this.Position == 'left' || this.Position == 'right';
@@ -4821,11 +4796,11 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
     return [label1, label2];
   }
 
-  if (this._step >= DvtTimeAxisInfo.TIME_YEAR_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_YEAR_MIN) {
+  if (this._step >= dvt.TimeAxisInfo.TIME_YEAR_MIN || this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_YEAR_MIN) {
     label1 = this._formatDate(date, false, false, true);// Year
   }
 
-  else if (this._step >= DvtTimeAxisInfo.TIME_MONTH_MIN || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MONTH_MIN) {
+  else if (this._step >= dvt.TimeAxisInfo.TIME_MONTH_MIN || this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_MONTH_MIN) {
     if (prevDate == null || prevDate.getMonth() != date.getMonth())
       label1 = this._formatDate(date, false, true, false);// Month
 
@@ -4833,7 +4808,7 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
       label2 = this._formatDate(date, false, false, true);// Year
   }
 
-  else if (this._step >= DvtTimeAxisInfo.TIME_DAY || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_DAY) {
+  else if (this._step >= dvt.TimeAxisInfo.TIME_DAY || this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_DAY) {
     if (bOneLabel) {
       label1 = this._formatDate(date, true, true, true);// Day, Month, Year
     }
@@ -4849,11 +4824,11 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
   }
 
   else {
-    if (this._step >= DvtTimeAxisInfo.TIME_HOUR || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_HOUR) {
+    if (this._step >= dvt.TimeAxisInfo.TIME_HOUR || this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_HOUR) {
       if (prevDate == null || (prevDate.getHours() != date.getHours()))
         label1 = this._formatTime(date, false, false);// HH AM/PM or HH:MM
     }
-    else if (this._step >= DvtTimeAxisInfo.TIME_MINUTE || this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MINUTE) {
+    else if (this._step >= dvt.TimeAxisInfo.TIME_MINUTE || this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_MINUTE) {
       if (prevDate == null || (prevDate.getMinutes() != date.getMinutes()))
         label1 = this._formatTime(date, true, false);// HH:MM
     }
@@ -4890,7 +4865,7 @@ DvtTimeAxisInfo.prototype._formatAxisLabel = function(date, prevDate, bOneLabel)
  * @return {string} The formatted string
  * @private
  */
-DvtTimeAxisInfo.prototype._formatDate = function(date, showDay, showMonth, showYear) {
+dvt.TimeAxisInfo.prototype._formatDate = function(date, showDay, showMonth, showYear) {
   // . Manually add 543 years to the Gregorian year if using a Thai locale.
   // Should use date.toLocaleDateString once it's available on Safari
   var yearStr = (this._locale.substring(0, 2) == 'th' && this.Options['_environment'] != 'jet') ? date.getFullYear() + 543 : date.getFullYear();
@@ -4904,11 +4879,11 @@ DvtTimeAxisInfo.prototype._formatDate = function(date, showDay, showMonth, showY
 
   // Add the day and year trailing characters if needed
   // These will be "" if not needed
-  yearStr += DvtTimeAxisInfo._getYearTrailingCharacters(this._locale);
-  dayStr += DvtTimeAxisInfo._getDayTrailingCharacters(this._locale);
+  yearStr += dvt.TimeAxisInfo._getYearTrailingCharacters(this._locale);
+  dayStr += dvt.TimeAxisInfo._getDayTrailingCharacters(this._locale);
 
   // Process the DMY Order
-  var dmyOrder = DvtTimeAxisInfo._getDMYOrder(this._locale);
+  var dmyOrder = dvt.TimeAxisInfo._getDMYOrder(this._locale);
 
   var dateStr = '';
 
@@ -4936,20 +4911,20 @@ DvtTimeAxisInfo.prototype._formatDate = function(date, showDay, showMonth, showY
  * @return {string} The formatted string
  * @private
  */
-DvtTimeAxisInfo.prototype._formatTime = function(date, showMinute, showSecond) {
+dvt.TimeAxisInfo.prototype._formatTime = function(date, showMinute, showSecond) {
   var hours = date.getHours();
   var mins = date.getMinutes();
   var secs = date.getSeconds();
 
-  var am = DvtTimeAxisInfo._getAMString(this._locale);
-  var pm = DvtTimeAxisInfo._getPMString(this._locale);
-  var ampmBefore = DvtTimeAxisInfo._getAMPMBefore(this._locale);
+  var am = dvt.TimeAxisInfo._getAMString(this._locale);
+  var pm = dvt.TimeAxisInfo._getPMString(this._locale);
+  var ampmBefore = dvt.TimeAxisInfo._getAMPMBefore(this._locale);
 
   var b12HFormat = (am != '' && pm != '');
   var ampm;
   var timeLabel = '';
 
-  if (DvtAgent.isRightToLeft(this.getCtx()))
+  if (dvt.Agent.isRightToLeft(this.getCtx()))
     timeLabel = '\u200F';
 
   if (b12HFormat) {
@@ -4993,7 +4968,7 @@ DvtTimeAxisInfo.prototype._formatTime = function(date, showMinute, showSecond) {
  * @return {String} A double-digit number string
  * @private
  */
-DvtTimeAxisInfo.prototype._doubleDigit = function(num) {
+dvt.TimeAxisInfo.prototype._doubleDigit = function(num) {
   if (num < 10) {
     return '0' + num;
   }
@@ -5007,28 +4982,28 @@ DvtTimeAxisInfo.prototype._doubleDigit = function(num) {
  * @return {number} The interval.
  * @private
  */
-DvtTimeAxisInfo.prototype._getMixedFrequencyStep = function() {
-  if (this._timeRange >= 6 * DvtTimeAxisInfo.TIME_YEAR_MIN)
-    return DvtTimeAxisInfo.TIME_YEAR_MIN;
-  if (this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MONTH_MIN)
-    return DvtTimeAxisInfo.TIME_MONTH_MIN;
-  if (this._timeRange >= 6 * DvtTimeAxisInfo.TIME_DAY)
-    return DvtTimeAxisInfo.TIME_DAY;
-  if (this._timeRange >= DvtTimeAxisInfo.TIME_DAY)
-    return 3 * DvtTimeAxisInfo.TIME_HOUR;
-  if (this._timeRange >= 6 * DvtTimeAxisInfo.TIME_HOUR)
-    return DvtTimeAxisInfo.TIME_HOUR;
-  if (this._timeRange >= DvtTimeAxisInfo.TIME_HOUR)
-    return 15 * DvtTimeAxisInfo.TIME_MINUTE;
-  if (this._timeRange >= 30 * DvtTimeAxisInfo.TIME_MINUTE)
-    return 5 * DvtTimeAxisInfo.TIME_MINUTE;
-  if (this._timeRange >= 6 * DvtTimeAxisInfo.TIME_MINUTE)
-    return DvtTimeAxisInfo.TIME_MINUTE;
-  if (this._timeRange >= DvtTimeAxisInfo.TIME_MINUTE)
-    return 15 * DvtTimeAxisInfo.TIME_SECOND;
-  if (this._timeRange >= 30 * DvtTimeAxisInfo.TIME_SECOND)
-    return 5 * DvtTimeAxisInfo.TIME_SECOND;
-  return DvtTimeAxisInfo.TIME_SECOND;
+dvt.TimeAxisInfo.prototype._getMixedFrequencyStep = function() {
+  if (this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_YEAR_MIN)
+    return dvt.TimeAxisInfo.TIME_YEAR_MIN;
+  if (this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_MONTH_MIN)
+    return dvt.TimeAxisInfo.TIME_MONTH_MIN;
+  if (this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_DAY)
+    return dvt.TimeAxisInfo.TIME_DAY;
+  if (this._timeRange >= dvt.TimeAxisInfo.TIME_DAY)
+    return 3 * dvt.TimeAxisInfo.TIME_HOUR;
+  if (this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_HOUR)
+    return dvt.TimeAxisInfo.TIME_HOUR;
+  if (this._timeRange >= dvt.TimeAxisInfo.TIME_HOUR)
+    return 15 * dvt.TimeAxisInfo.TIME_MINUTE;
+  if (this._timeRange >= 30 * dvt.TimeAxisInfo.TIME_MINUTE)
+    return 5 * dvt.TimeAxisInfo.TIME_MINUTE;
+  if (this._timeRange >= 6 * dvt.TimeAxisInfo.TIME_MINUTE)
+    return dvt.TimeAxisInfo.TIME_MINUTE;
+  if (this._timeRange >= dvt.TimeAxisInfo.TIME_MINUTE)
+    return 15 * dvt.TimeAxisInfo.TIME_SECOND;
+  if (this._timeRange >= 30 * dvt.TimeAxisInfo.TIME_SECOND)
+    return 5 * dvt.TimeAxisInfo.TIME_SECOND;
+  return dvt.TimeAxisInfo.TIME_SECOND;
 };
 
 
@@ -5040,7 +5015,7 @@ DvtTimeAxisInfo.prototype._getMixedFrequencyStep = function() {
  * @return {array} A list of label positions.
  * @private
  */
-DvtTimeAxisInfo._getLabelPositions = function(start, end, step) {
+dvt.TimeAxisInfo._getLabelPositions = function(start, end, step) {
   // The time positions has to be at even intervals from the beginning of a year (January 1, 12:00:00 AM), otherwise
   // we may have labels such as [2013, 2014, 2015, ...] that are drawn at [June 8 2013, June 8 2014, June 8 2015, ...],
   // which is data misrepresentation.
@@ -5050,22 +5025,22 @@ DvtTimeAxisInfo._getLabelPositions = function(start, end, step) {
   var time = anchor.getTime();
 
   var times = [];
-  if (step >= DvtTimeAxisInfo.TIME_YEAR_MIN && step <= DvtTimeAxisInfo.TIME_YEAR_MAX) {
+  if (step >= dvt.TimeAxisInfo.TIME_YEAR_MIN && step <= dvt.TimeAxisInfo.TIME_YEAR_MAX) {
     // Assume that the step is one year, which can mean different # of days depending on the year
     while (time < start)
-      time = DvtTimeAxisInfo._addOneYear(time);
+      time = dvt.TimeAxisInfo._addOneYear(time);
     while (time <= end) {
       times.push(time);
-      time = DvtTimeAxisInfo._addOneYear(time);
+      time = dvt.TimeAxisInfo._addOneYear(time);
     }
   }
-  else if (step >= DvtTimeAxisInfo.TIME_MONTH_MIN && step <= DvtTimeAxisInfo.TIME_MONTH_MAX) {
+  else if (step >= dvt.TimeAxisInfo.TIME_MONTH_MIN && step <= dvt.TimeAxisInfo.TIME_MONTH_MAX) {
     // Assume that the step is one month, which can mean different # of days depending on the month
     while (time < start)
-      time = DvtTimeAxisInfo._addOneMonth(time);
+      time = dvt.TimeAxisInfo._addOneMonth(time);
     while (time <= end) {
       times.push(time);
-      time = DvtTimeAxisInfo._addOneMonth(time);
+      time = dvt.TimeAxisInfo._addOneMonth(time);
     }
   }
   else {
@@ -5085,7 +5060,7 @@ DvtTimeAxisInfo._getLabelPositions = function(start, end, step) {
  * @return {number} Next year
  * @private
  */
-DvtTimeAxisInfo._addOneYear = function(time) {
+dvt.TimeAxisInfo._addOneYear = function(time) {
   var date = new Date(time);
   date.setFullYear(date.getFullYear() + 1);
   return date.getTime();
@@ -5097,7 +5072,7 @@ DvtTimeAxisInfo._addOneYear = function(time) {
  * @return {number} Next month
  * @private
  */
-DvtTimeAxisInfo._addOneMonth = function(time) {
+dvt.TimeAxisInfo._addOneMonth = function(time) {
   var date = new Date(time);
   date.setMonth(date.getMonth() + 1);
   return date.getTime();
@@ -5106,10 +5081,10 @@ DvtTimeAxisInfo._addOneMonth = function(time) {
 
 /**
  * Generates the level 1 and level 2 tick labels
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @private
  */
-DvtTimeAxisInfo.prototype._generateLabels = function(context) {
+dvt.TimeAxisInfo.prototype._generateLabels = function(context) {
   var labels1 = [];
   var labels2 = [];
   var labelInfos1 = [];
@@ -5119,25 +5094,25 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
   var c1 = 0;// number of level 1 labels
   var c2 = 0;// number of level 2 labels
   var container = context.getStage(context);
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
   var isVert = (this.Position == 'left' || this.Position == 'right');
   var scrollable = this.Options['zoomAndScroll'] != 'off';
   var first = true;
 
   //  : On Chrome, creating a gap value to be used for spacing level1 labels and level2 labels
   var levelsGap = 0;
-  if (isVert && DvtAgent.isBrowserChrome()) {
+  if (isVert && dvt.Agent.isBrowserChrome()) {
     levelsGap = this.getTickLabelHeight() * 0.16;
   }
 
   // Find the time positions where labels are located
   var times = [];
   if (this._step != null) {
-    times = DvtTimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
+    times = dvt.TimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
   }
   else if (this._mixedFrequency) {
     this._step = this._getMixedFrequencyStep();
-    times = DvtTimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
+    times = dvt.TimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
   }
   else {
     for (var i = 0; i < this._groups.length; i++) {
@@ -5149,13 +5124,13 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
     if (!this._skipGaps) {
       // Check the width of the first level1 label. If we expect that we'll have more group labels than we can fit in the
       // available space, then render the time labels at a regular interval (using mixed freq algorithm).
-      var firstLabel = new DvtOutputText(context, this._formatAxisLabel(new Date(times[0]))[0], 0, 0);
-      var labelWidth = isVert ? DvtTextUtils.guessTextDimensions(firstLabel).h : firstLabel.measureDimensions().w;
+      var firstLabel = new dvt.OutputText(context, this._formatAxisLabel(new Date(times[0]))[0], 0, 0);
+      var labelWidth = isVert ? dvt.TextUtils.guessTextDimensions(firstLabel).h : firstLabel.measureDimensions().w;
       var totalWidth = (labelWidth + this.GetTickLabelGapSize()) * (times.length - 1);
       var availWidth = Math.abs(this._endCoord - this._startCoord);
       if (totalWidth > availWidth) {
         this._step = this._getMixedFrequencyStep();
-        times = DvtTimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
+        times = dvt.TimeAxisInfo._getLabelPositions(this.MinValue, this.MaxValue, this._step);
       }
     }
   }
@@ -5257,7 +5232,7 @@ DvtTimeAxisInfo.prototype._generateLabels = function(context) {
  * @return {Boolean} whether rectangle A and B overlap
  * @private
  */
-DvtTimeAxisInfo._isOverlapping = function(pointA1, pointA2, pointB1, pointB2, gap) {
+dvt.TimeAxisInfo._isOverlapping = function(pointA1, pointA2, pointB1, pointB2, gap) {
   if (pointB1 >= pointA1 && pointB1 - gap < pointA2)
     return true;
   else if (pointB1 < pointA1 && pointB2 + gap > pointA1)
@@ -5274,7 +5249,7 @@ DvtTimeAxisInfo._isOverlapping = function(pointA1, pointA2, pointB1, pointB2, ga
  * @return {Number} The label overflow
  * @private
  */
-DvtTimeAxisInfo.prototype._getLabelOverflow = function(coord, labelLength, isStartAligned, isRTL) {
+dvt.TimeAxisInfo.prototype._getLabelOverflow = function(coord, labelLength, isStartAligned, isRTL) {
   var minOverflow = coord - (isStartAligned ? (isRTL ? labelLength : 0) : labelLength * 0.5);
   if (minOverflow < this.Options['_minOverflowCoord']) // Negative overflow : Label overflows the beginning of the axis
     return Math.floor(minOverflow - this.Options['_minOverflowCoord']);
@@ -5289,13 +5264,13 @@ DvtTimeAxisInfo.prototype._getLabelOverflow = function(coord, labelLength, isSta
 /**
  * Skip labels greedily. Delete all labels that overlap with the last rendered label.
  * @param {Array} labels An array of DvtText labels for the axis. This array will be modified by the method.
- * @param {Array} labelDims An array of DvtRectangle objects that describe the x, y, height, width of the axis labels.
+ * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @param {boolean} isStartAligned Whether or not the labels are text-anchored start, assumes center alignment if false.
  * @param {boolean} isRTL Whether or not the context is right to left.
  * @return {Number} The number of remaining labels after skipping.
  * @private
  */
-DvtTimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStartAligned, isRTL) {
+dvt.TimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStartAligned, isRTL) {
   // If there are no labels, return
   if (!labelDims || labelDims.length <= 0)
     return false;
@@ -5315,7 +5290,7 @@ DvtTimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStar
     this._level2Overflow.push(0);
     if (labels[j] != null) {
       label = labels[j];
-      var labelLength = DvtTextUtils.getTextWidth(label);
+      var labelLength = dvt.TextUtils.getTextWidth(label);
 
       if (labelDims[j].w > availWidth)
         labels[j] = null;
@@ -5343,7 +5318,7 @@ DvtTimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStar
       pointB2 = labelDims[j].x + labelDims[j].w;
     }
 
-    if (pointA1 != null && pointA2 != null && DvtTimeAxisInfo._isOverlapping(pointA1, pointA2, pointB1, pointB2, gap))
+    if (pointA1 != null && pointA2 != null && dvt.TimeAxisInfo._isOverlapping(pointA1, pointA2, pointB1, pointB2, gap))
       labels[j] = null;
 
     if (labels[j] != null) {
@@ -5361,13 +5336,13 @@ DvtTimeAxisInfo.prototype._skipLabelsGreedy = function(labels, labelDims, isStar
 /**
  * Skip labels uniformly (every regular interval).
  * @param {array} labelInfos An array of object containing text (the label text string) and coord (the label coordinate).
- * @param {array} labels An array of DvtOutputText labels for the axis (initially empty). This array will be populated by the method.
- * @param {DvtContainer} container The label container.
+ * @param {array} labels An array of dvt.OutputText labels for the axis (initially empty). This array will be populated by the method.
+ * @param {dvt.Container} container The label container.
  * @param {boolean} isRTL Whether or not the context is right to left.
  * @return {number} The number of remaining labels after skipping.
  * @private
  */
-DvtTimeAxisInfo.prototype._skipLabelsUniform = function(labelInfos, labels, container, isRTL) {
+dvt.TimeAxisInfo.prototype._skipLabelsUniform = function(labelInfos, labels, container, isRTL) {
   var rLabelInfos = []; // contains rendered labels only
   var rLabelDims = [];
 
@@ -5447,15 +5422,15 @@ DvtTimeAxisInfo.prototype._skipLabelsUniform = function(labelInfos, labels, cont
  * Format the alignments of the vertical axis labels and skip them accordingly so that level1 and level2 don't overlap.
  * @param {Array} labels1 An array of level 1 DvtText labels for the axis. This array will be modified by the method.
  * @param {Array} labels2 An array of level 2 DvtText labels for the axis. This array will be modified by the method.
- * @param {DvtContainer} container
+ * @param {dvt.Container} container
  * @private
  */
-DvtTimeAxisInfo.prototype._skipVertLabels = function(labels1, labels2, container) {
+dvt.TimeAxisInfo.prototype._skipVertLabels = function(labels1, labels2, container) {
   var gap = this.getTickLabelHeight() * 0.08;
 
   // returns if two rectangles (dimsA and dimsB) overlap vertically
   var isOverlapping = function(dimsA, dimsB) {
-    return DvtTimeAxisInfo._isOverlapping(dimsA.y, dimsA.y + dimsA.h, dimsB.y, dimsB.y + dimsB.h, gap);
+    return dvt.TimeAxisInfo._isOverlapping(dimsA.y, dimsA.y + dimsA.h, dimsB.y, dimsB.y + dimsB.h, gap);
   };
 
   var lastDims = null;
@@ -5521,7 +5496,7 @@ DvtTimeAxisInfo.prototype._skipVertLabels = function(labels1, labels2, container
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getLabels = function(context, levelIdx) {
+dvt.TimeAxisInfo.prototype.getLabels = function(context, levelIdx) {
   if (levelIdx && levelIdx > 1)// time axis has no more than two levels
     return null;
 
@@ -5539,7 +5514,7 @@ DvtTimeAxisInfo.prototype.getLabels = function(context, levelIdx) {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getMajorTickCoords = function() {
+dvt.TimeAxisInfo.prototype.getMajorTickCoords = function() {
   var coords = [];
   if (this._isOneLevel) { // only one level, level1 is majorTick
     for (var i = 0; i < this._level1Coords.length; i++) {
@@ -5562,7 +5537,7 @@ DvtTimeAxisInfo.prototype.getMajorTickCoords = function() {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getMinorTickCoords = function() {
+dvt.TimeAxisInfo.prototype.getMinorTickCoords = function() {
   if (this._isOneLevel) // minorTick only applies on timeAxis if there is more than one level
     return [];
 
@@ -5579,7 +5554,7 @@ DvtTimeAxisInfo.prototype.getMinorTickCoords = function() {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getUnboundedValueAt = function(coord) {
+dvt.TimeAxisInfo.prototype.getUnboundedValueAt = function(coord) {
   if (coord == null)
     return null;
 
@@ -5598,7 +5573,7 @@ DvtTimeAxisInfo.prototype.getUnboundedValueAt = function(coord) {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getUnboundedCoordAt = function(value) {
+dvt.TimeAxisInfo.prototype.getUnboundedCoordAt = function(value) {
   if (value == null)
     return null;
 
@@ -5619,7 +5594,7 @@ DvtTimeAxisInfo.prototype.getUnboundedCoordAt = function(value) {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.linearToActual = function(value) {
+dvt.TimeAxisInfo.prototype.linearToActual = function(value) {
   if (value == null)
     return null;
   return this._skipGaps ? this._indexToTime(value) : value;
@@ -5628,7 +5603,7 @@ DvtTimeAxisInfo.prototype.linearToActual = function(value) {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.actualToLinear = function(value) {
+dvt.TimeAxisInfo.prototype.actualToLinear = function(value) {
   if (value == null)
     return null;
   return this._skipGaps ? this._timeToIndex(value) : value;
@@ -5641,7 +5616,7 @@ DvtTimeAxisInfo.prototype.actualToLinear = function(value) {
  * @return {number} index
  * @private
  */
-DvtTimeAxisInfo.prototype._timeToIndex = function(time) {
+dvt.TimeAxisInfo.prototype._timeToIndex = function(time) {
   var endIndex = this._groups.length;
   for (var i = 0; i < this._groups.length; i++) {
     if (time <= this._groups[i]) {
@@ -5664,7 +5639,7 @@ DvtTimeAxisInfo.prototype._timeToIndex = function(time) {
  * @return {number} time
  * @private
  */
-DvtTimeAxisInfo.prototype._indexToTime = function(index) {
+dvt.TimeAxisInfo.prototype._indexToTime = function(index) {
   var endIndex = Math.min(Math.max(Math.ceil(index), 0), this._groups.length);
   var startIndex = endIndex - 1;
 
@@ -5678,7 +5653,7 @@ DvtTimeAxisInfo.prototype._indexToTime = function(index) {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getGroupWidth = function() {
+dvt.TimeAxisInfo.prototype.getGroupWidth = function() {
   if (this._skipGaps)
     return Math.abs(this.getUnboundedCoordAt(this._indexToTime(1)) - this.getUnboundedCoordAt(this._indexToTime(0)));
   else
@@ -5689,7 +5664,7 @@ DvtTimeAxisInfo.prototype.getGroupWidth = function() {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getMinimumExtent = function() {
+dvt.TimeAxisInfo.prototype.getMinimumExtent = function() {
   return this._skipGaps ? 1 : this._mixedFrequency ? Math.min(this._timeRange / 8, this._averageInterval) : this._averageInterval;
 };
 
@@ -5697,8 +5672,8 @@ DvtTimeAxisInfo.prototype.getMinimumExtent = function() {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getStartOverflow = function() {
-  if ((this.Position == 'top' || this.Position == 'bottom') && DvtAgent.isRightToLeft(this.getCtx()))
+dvt.TimeAxisInfo.prototype.getStartOverflow = function() {
+  if ((this.Position == 'top' || this.Position == 'bottom') && dvt.Agent.isRightToLeft(this.getCtx()))
     return this.EndOverflow;
   else
     return this.StartOverflow;
@@ -5708,12 +5683,13 @@ DvtTimeAxisInfo.prototype.getStartOverflow = function() {
 /**
  * @override
  */
-DvtTimeAxisInfo.prototype.getEndOverflow = function() {
-  if ((this.Position == 'top' || this.Position == 'bottom') && DvtAgent.isRightToLeft(this.getCtx()))
+dvt.TimeAxisInfo.prototype.getEndOverflow = function() {
+  if ((this.Position == 'top' || this.Position == 'bottom') && dvt.Agent.isRightToLeft(this.getCtx()))
     return this.StartOverflow;
   else
     return this.EndOverflow;
 };
+})(dvt);
 
-  return D;
+  return dvt;
 });

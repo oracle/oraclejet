@@ -32,8 +32,15 @@ js/libs/oj/v1.1.0/min/ojselectcombobox.js (Select2.js)					Apache 2.0
 js/libs/oj/v1.1.0/min/ojtree.js (jsTree.js)								MIT
 js/libs/oj/v1.1.0/ojL10n.js (requireJS i18n)							MIT
 js/libs/hammer/hammer-2.0.4.js											MIT
+js/libs/require-css/css.js (require-css)				  MIT
 scss/oj/v1.1.0/3rdparty/normalize/normalize.scss						MIT
 
+/*
+ * require-css - v0.1.8
+ * https://github.com/guybedford/require-css
+ * Copyright (C) 2013 Guy Bedford;
+ * Licensed under the MIT license
+ */
 
 /*! Hammer.JS - v2.0.4 - 2014-09-28
  * http://hammerjs.github.io/
@@ -41,7 +48,7 @@ scss/oj/v1.1.0/3rdparty/normalize/normalize.scss						MIT
  * Copyright (c) 2014 Jorik Tangelder;
  * Licensed under the MIT license */
 
- 
+
 /*
  * Foundation Responsive Library
  * http://foundation.zurb.com
@@ -75,12 +82,12 @@ Copyright (c) Nicolas Gallagher and Jonathan Neal
  * General Public License version 2 (the "GPL License"). You may choose either license to govern your
  * use of this software only upon the condition that you accept all of the terms of either the Apache
  * License or the GPL License.
- * 
+ *
  * You may obtain a copy of the Apache License and the GPL License at:
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
  * http://www.gnu.org/licenses/gpl-2.0.html
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the
  * Apache License or the GPL Licesnse is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the Apache License and the GPL License for
@@ -175,7 +182,7 @@ The following applies to all products licensed under the Apache 2.0 License:
 
 You may not use the identified files except in compliance with the Apache
 License, Version 2.0 (the "License.")
- 
+
 You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
 A copy of the license is also reproduced below.
 

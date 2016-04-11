@@ -2001,6 +2001,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (this.m_contentHandler != null)
         {
             this.m_contentHandler.Destroy();
+            delete this.m_contentHandler;
             this.m_contentHandler = null;
         }
 
@@ -4936,7 +4937,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         {
             groupItem.css("maxHeight", "0px");
 
-            this.AnimateCollapseComplete(item);
+            this.AnimateCollapseComplete(groupItem);
         }
     },
 

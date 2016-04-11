@@ -287,7 +287,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _CreateDvtComponent: function(context, callback, callbackObj) {
-      return dvt.DvtThematicMap.newInstance(context, callback, callbackObj);
+      return dvt.ThematicMap.newInstance(context, callback, callbackObj);
     },
 
     //** @inheritdoc */
@@ -368,6 +368,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       return ['load', 'optionChange'];
     },
 
+
     //** @inheritdoc */
     _setOptions : function (options, flags) {
       // determine if option change is a data layer update and save data to call data layer update API instead of render in _Render
@@ -414,6 +415,21 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
 
       // parse the top level selection map and populate data layer selection option
       this._updateDataLayerSelection();
+
+      // wrap tooltip function in try catch
+      var tooltipFun = this.options['tooltip'];
+      if (tooltipFun) {
+        this.options['_tooltip'] = function(context) {
+          var defaultTooltip = context['tooltip'];
+          try {
+            var tooltip = tooltipFun(context);
+            return tooltip || defaultTooltip;
+          } catch (error) {
+            oj.Logger.warn("Showing default tooltip. " + error);
+            return defaultTooltip;
+          }
+        }
+      }
 
       // call custom renderers
       var areaLayers = this.options['areaLayers'];
@@ -486,6 +502,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
           // The dummy div can be removed for custom svg elements, but need to be
           // kept around for stamped DVTs so the oj components aren't removed.
           if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+            dummyDiv.removeChild(elem);
             $(dummyDiv).remove();
             return elem;
           } else {
@@ -704,11 +721,11 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _HandleEvent: function(event) {
-      var type = event && event.getType ? event.getType() : null, selection, id;
-      if (type === dvt.DvtSelectionEvent.TYPE) {
-        selection = {};
-        id = event.getParamValue('clientId');
-        selection[id] = event.getSelection();
+      var type = event['type'];
+      if (type === 'selection') {
+        var selection = {};
+        var id = event['clientId'];
+        selection[id] = event['selection'];
         if (this.options['selection']) {
           for (var dataLayerId in this.options['selection']) {
             if (id !== dataLayerId)

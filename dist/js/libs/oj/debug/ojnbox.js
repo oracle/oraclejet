@@ -136,7 +136,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.DvtNBox.newInstance(context, callback, callbackObj);
+    return dvt.NBox.newInstance(context, callback, callbackObj);
   },
 
   //** @inheritdoc */
@@ -318,25 +318,15 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _HandleEvent : function(event) {
-    var type = event && event.getType ? event.getType() : null;
-    if(type === dvt.DvtSelectionEvent.TYPE) {
-      // update the options selection state
-      this._UserOptionChange('selection', event.getSelection());
-    }
-    else if (type === dvt.DvtSetPropertyEvent.TYPE) {
-      var keys = event.getParamKeys();
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var value = event.getParamValue(key);
-        if (key == '_drawer') {
-          if (value)
-            value = {'id': value};
-          this.options[key] = value;
-        }
-        else if (key == 'maximizedRow' ||
-                 key == 'maximizedColumn') {
+    var type = event['type'];
+    if (type === 'adfPropertyChange') {
+      var properties = event['properties'];
+      for (var key in properties) {
+        var value = properties[key];
+        if (key == '_drawer')
+          this.options[key] = value ? {'id': value} : null;
+        else if (key == 'maximizedRow' || key == 'maximizedColumn')
           this._UserOptionChange(key, value);
-        }
       }
     }
     else {

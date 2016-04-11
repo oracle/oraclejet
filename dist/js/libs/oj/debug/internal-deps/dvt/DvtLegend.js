@@ -6,32 +6,28 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
+(function(dvt) {
 /**
  * Legend component.  This class should never be instantiated directly.  Use the
  * newInstance function instead.
  * @class
  * @constructor
- * @extends {DvtBaseComponent}
- * @export
+ * @extends {dvt.BaseComponent}
  */
-var DvtLegend = function() {};
+dvt.Legend = function() {};
 
-DvtObj.createSubclass(DvtLegend, DvtBaseComponent, 'DvtLegend');
+dvt.Obj.createSubclass(dvt.Legend, dvt.BaseComponent);
 
 
 /**
- * Returns a new instance of DvtLegend.
- * @param {DvtContext} context The rendering context.
+ * Returns a new instance of dvt.Legend.
+ * @param {dvt.Context} context The rendering context.
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {DvtLegend}
- * @export
+ * @return {dvt.Legend}
  */
-DvtLegend.newInstance = function(context, callback, callbackObj) {
-  var legend = new DvtLegend();
+dvt.Legend.newInstance = function(context, callback, callbackObj) {
+  var legend = new dvt.Legend();
   legend.Init(context, callback, callbackObj);
   return legend;
 };
@@ -41,9 +37,8 @@ DvtLegend.newInstance = function(context, callback, callbackObj) {
  * Returns a copy of the default options for the specified skin.
  * @param {string} skin The skin whose defaults are being returned.
  * @return {object} The object containing defaults for this component.
- * @export
  */
-DvtLegend.getDefaults = function(skin) 
+dvt.Legend.getDefaults = function(skin) 
 {
   return (new DvtLegendDefaults()).getDefaults(skin);
 };
@@ -53,8 +48,8 @@ DvtLegend.getDefaults = function(skin)
  * @override
  * @protected
  */
-DvtLegend.prototype.Init = function(context, callback, callbackObj) {
-  DvtLegend.superclass.Init.call(this, context, callback, callbackObj);
+dvt.Legend.prototype.Init = function(context, callback, callbackObj) {
+  dvt.Legend.superclass.Init.call(this, context, callback, callbackObj);
   this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
   // Create the defaults object
@@ -90,7 +85,7 @@ DvtLegend.prototype.Init = function(context, callback, callbackObj) {
 /**
  * @override
  */
-DvtLegend.prototype.SetOptions = function(options) {
+dvt.Legend.prototype.SetOptions = function(options) {
   if (options) {
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
@@ -108,10 +103,9 @@ DvtLegend.prototype.SetOptions = function(options) {
  * @param {object} options The object containing specifications and data for this component.
  * @param {Number} maxWidth The maximum width available.
  * @param {Number} maxHeight The maximum height available.
- * @return {DvtDimension} The preferred dimensions for the object.
- * @export
+ * @return {dvt.Dimension} The preferred dimensions for the object.
  */
-DvtLegend.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
+dvt.Legend.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
   // Update the options object.
   this.SetOptions(options);
 
@@ -119,22 +113,21 @@ DvtLegend.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
   this.getOptions()['isLayout'] = true;
 
   // Ask the legend to render its contents in the max space and find the space used.
-  var availSpace = new DvtRectangle(0, 0, maxWidth, maxHeight);
+  var availSpace = new dvt.Rectangle(0, 0, maxWidth, maxHeight);
   var dim = DvtLegendRenderer.render(this, availSpace);
 
   // Clear the rendered contents and reset state
   this.getOptions()['isLayout'] = false;
 
   // Return the space used
-  return new DvtDimension(dim.w, dim.h);
+  return new dvt.Dimension(dim.w, dim.h);
 };
 
 
 /**
  * @override
- * @export
  */
-DvtLegend.prototype.render = function(options, width, height) 
+dvt.Legend.prototype.render = function(options, width, height) 
 {
   // Update the options object if provided.
   this.SetOptions(options);
@@ -156,13 +149,13 @@ DvtLegend.prototype.render = function(options, width, height)
   this._titles = [];
 
   // Set up keyboard handler on non-touch devices if the legend is interactive
-  if (!DvtAgent.isTouchDevice())
+  if (!dvt.Agent.isTouchDevice())
     this._eventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this._eventManager, this));
 
   this.UpdateAriaAttributes();
 
   // Render the legend
-  var availSpace = new DvtRectangle(0, 0, this.Width, this.Height);
+  var availSpace = new dvt.Rectangle(0, 0, this.Width, this.Height);
   this._contentDimensions = DvtLegendRenderer.render(this, availSpace);
 
   // Process highlightedCategories
@@ -175,14 +168,13 @@ DvtLegend.prototype.render = function(options, width, height)
 
 /**
  * @override
- * @export
  */
-DvtLegend.prototype.highlight = function(categories) {
+dvt.Legend.prototype.highlight = function(categories) {
   // Update the options. Legend checks for any category instead of all, so we need to convert empty to null.
   this.getOptions()['highlightedCategories'] = (categories && categories.length > 0) ? categories.slice() : null;
 
   // Perform the highlighting
-  DvtCategoryRolloverHandler.highlight(categories, this.__getObjects(), true);
+  dvt.CategoryRolloverHandler.highlight(categories, this.__getObjects(), true);
 };
 
 
@@ -191,9 +183,9 @@ DvtLegend.prototype.highlight = function(categories) {
  * @param {object} event
  * @param {object} source The component that is the source of the event, if available.
  */
-DvtLegend.prototype.processEvent = function(event, source) {
-  var type = event.getType();
-  if (type == DvtCategoryRolloverEvent.TYPE_OVER || type == DvtCategoryRolloverEvent.TYPE_OUT) {
+dvt.Legend.prototype.processEvent = function(event, source) {
+  var type = event['type'];
+  if (type == 'categoryHighlight') {
     if (this.getOptions()['hoverBehavior'] == 'dim') {
       var peers = this.__getObjects();
 
@@ -202,7 +194,7 @@ DvtLegend.prototype.processEvent = function(event, source) {
         this.highlight(event['categories']);
 
       for (var i = 0; i < peers.length; i++) {
-        if (peers[i].getId() == event.getCategory()) {
+        if (peers[i].getId() == event['categories']) {
           this.container.scrollIntoView(peers[i].getDisplayables()[0]);
           break;
         }
@@ -211,7 +203,7 @@ DvtLegend.prototype.processEvent = function(event, source) {
   }
 
   // Dispatch the event to the callback if it originated from this component or it is a popup/rollover event.
-  if (this == source || type == DvtShowPopupEvent.TYPE || type == DvtHidePopupEvent.TYPE) {
+  if (this == source || type == 'adfShowPopup' || type == 'adfHidePopup') {
     this.dispatchEvent(event);
   }
 };
@@ -219,7 +211,7 @@ DvtLegend.prototype.processEvent = function(event, source) {
 /**
  * @override
  */
-DvtLegend.prototype.getEventManager = function() {
+dvt.Legend.prototype.getEventManager = function() {
   return this._eventManager;
 };
 
@@ -229,8 +221,8 @@ DvtLegend.prototype.getEventManager = function() {
  * in interactivity.
  * @param {DvtLegendObjPeer} peer
  */
-DvtLegend.prototype.__registerObject = function(peer) {
-  if (peer.getDisplayables()[0] instanceof DvtButton)
+dvt.Legend.prototype.__registerObject = function(peer) {
+  if (peer.getDisplayables()[0] instanceof dvt.Button)
     this._navigablePeers.push(peer); // peer is navigable if associated with button
   else {
     // peer is navigable if associated with legend item using datatip, action, drilling, or hideShow is enabled
@@ -247,7 +239,7 @@ DvtLegend.prototype.__registerObject = function(peer) {
  * Returns the peers for all objects within the legend.
  * @return {array}
  */
-DvtLegend.prototype.__getObjects = function() {
+dvt.Legend.prototype.__getObjects = function() {
   return this._peers;
 };
 
@@ -255,16 +247,15 @@ DvtLegend.prototype.__getObjects = function() {
  * Returns the keyboard navigables within the legend.
  * @return {array}
  */
-DvtLegend.prototype.__getKeyboardObjects = function() {
+dvt.Legend.prototype.__getKeyboardObjects = function() {
   return this._navigablePeers;
 };
 
 /**
  * Releases all component resources to prevent memory leaks.
  * @override
- * @export
  */
-DvtLegend.prototype.destroy = function() {
+dvt.Legend.prototype.destroy = function() {
   if (this._eventManager) {
     this._eventManager.removeListeners(this);
     this._eventManager.destroy();
@@ -272,14 +263,14 @@ DvtLegend.prototype.destroy = function() {
   }
 
   // Call super last during destroy
-  DvtLegend.superclass.destroy.call(this);
+  dvt.Legend.superclass.destroy.call(this);
 };
 
 /**
  * Stores the bounds for this legend
  * @param {Object} bounds
  */
-DvtLegend.prototype.__setBounds = function(bounds) {
+dvt.Legend.prototype.__setBounds = function(bounds) {
   this._bounds = bounds;
 };
 
@@ -288,7 +279,7 @@ DvtLegend.prototype.__setBounds = function(bounds) {
  * Returns the bounds for this legend
  * @return {Object} the object containing the bounds for this legend
  */
-DvtLegend.prototype.__getBounds = function() {
+dvt.Legend.prototype.__getBounds = function() {
   return this._bounds;
 };
 
@@ -296,7 +287,7 @@ DvtLegend.prototype.__getBounds = function() {
  * Adds a title object to be stored by the legend
  * @param {object} title An object containing the text and the alignment
  */
-DvtLegend.prototype.__registerTitle = function(title) {
+dvt.Legend.prototype.__registerTitle = function(title) {
   this._titles.push(title);
 };
 
@@ -305,16 +296,15 @@ DvtLegend.prototype.__registerTitle = function(title) {
  * Returns the title objects for this legend
  * @return {array} An array containing the title objects for this legend
  */
-DvtLegend.prototype.__getTitles = function() {
+dvt.Legend.prototype.__getTitles = function() {
   return this._titles;
 };
 
 /**
  * Returns the automation object for this chart
- * @return {DvtAutomation} The automation object
- * @export
+ * @return {dvt.Automation} The automation object
  */
-DvtLegend.prototype.getAutomation = function() {
+dvt.Legend.prototype.getAutomation = function() {
   return new DvtLegendAutomation(this);
 };
 
@@ -322,7 +312,7 @@ DvtLegend.prototype.getAutomation = function() {
  * Returns the keyboard-focused object of the legend
  * @return {DvtKeyboardNavigable} The focused object.
  */
-DvtLegend.prototype.getKeyboardFocus = function() {
+dvt.Legend.prototype.getKeyboardFocus = function() {
   if (this._eventManager != null)
     return this._eventManager.getFocus();
   return null;
@@ -334,7 +324,7 @@ DvtLegend.prototype.getKeyboardFocus = function() {
  * @param {DvtKeyboardNavigable} navigable The focused object.
  * @param {boolean} isShowingFocusEffect Whether the keyboard focus effect should be used.
  */
-DvtLegend.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
+dvt.Legend.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
   if (this._eventManager == null)
     return;
 
@@ -361,8 +351,8 @@ DvtLegend.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect)
 /**
  * @override
  */
-DvtLegend.prototype.getDimensions = function(targetCoordinateSpace) {
-  var bounds = new DvtRectangle(0, 0, this.Width, this.Height);
+dvt.Legend.prototype.getDimensions = function(targetCoordinateSpace) {
+  var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
   if (!targetCoordinateSpace || targetCoordinateSpace === this)
     return bounds;
   else { // Calculate the bounds relative to the target space
@@ -372,10 +362,10 @@ DvtLegend.prototype.getDimensions = function(targetCoordinateSpace) {
 
 /**
  * Returns the dimensions of the legend contents.
- * @param {DvtDisplayable} targetCoordinateSpace The displayable defining the target coordinate space.
- * @return {DvtRectangle} The bounds of the legend contents relative to the target coordinate space.
+ * @param {dvt.Displayable} targetCoordinateSpace The displayable defining the target coordinate space.
+ * @return {dvt.Rectangle} The bounds of the legend contents relative to the target coordinate space.
  */
-DvtLegend.prototype.getContentDimensions = function(targetCoordinateSpace) {
+dvt.Legend.prototype.getContentDimensions = function(targetCoordinateSpace) {
   if (!targetCoordinateSpace || targetCoordinateSpace === this)
     return this._contentDimensions;
   else { // Calculate the bounds relative to the target space
@@ -386,8 +376,8 @@ DvtLegend.prototype.getContentDimensions = function(targetCoordinateSpace) {
 /**
  * @override
  */
-DvtLegend.prototype.GetComponentDescription = function() {
-  return DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'LEGEND');
+dvt.Legend.prototype.GetComponentDescription = function() {
+  return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'LEGEND');
 };
 
 /**
@@ -395,7 +385,7 @@ DvtLegend.prototype.GetComponentDescription = function() {
  * @param {array} sections The array of legend section definitions
  * @private
  */
-DvtLegend.prototype._transferVisibilityProperties = function(sections) {
+dvt.Legend.prototype._transferVisibilityProperties = function(sections) {
   if (!sections || sections.length <= 0)
     return;
 
@@ -416,7 +406,7 @@ DvtLegend.prototype._transferVisibilityProperties = function(sections) {
       var item = items[j];
       var itemCategory = DvtLegendRenderer.getItemCategory(item);
 
-      if (item['categoryVisibility'] == 'hidden' && DvtArrayUtils.getIndex(hiddenCategories, itemCategory) < 0)
+      if (item['categoryVisibility'] == 'hidden' && dvt.ArrayUtils.getIndex(hiddenCategories, itemCategory) < 0)
         hiddenCategories.push(itemCategory);
 
       item['categoryVisibility'] = null;
@@ -427,14 +417,14 @@ DvtLegend.prototype._transferVisibilityProperties = function(sections) {
 /**
  * @override
  */
-DvtLegend.prototype.UpdateAriaAttributes = function() {
+dvt.Legend.prototype.UpdateAriaAttributes = function() {
   if (this.IsParentRoot()) {
     var options = this.getOptions();
     var hideAndShow = options['hideAndShowBehavior'];
     if ((hideAndShow != 'off' && hideAndShow != 'none') || options['hoverBehavior'] == 'dim') {
       this.getCtx().setAriaRole('application');
-      this.getCtx().setAriaLabel(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'COLON_SEP_LIST',
-          [DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), DvtStringUtils.processAriaLabel(this.GetComponentDescription())]));
+      this.getCtx().setAriaLabel(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST',
+          [dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DATA_VISUALIZATION'), dvt.StringUtils.processAriaLabel(this.GetComponentDescription())]));
     }
   }
 };
@@ -443,23 +433,22 @@ DvtLegend.prototype.UpdateAriaAttributes = function() {
  * Returns whether or not the legend has navigable peers
  * @return {boolean}
  */
-DvtLegend.prototype.isNavigable = function() {
+dvt.Legend.prototype.isNavigable = function() {
   return this._navigablePeers.length > 0;
 };
 /**
  *  Provides automation services for a DVT component.
  *  @class DvtLegendAutomation
- *  @param {DvtLegend} dvtComponent
- *  @implements {DvtAutomation}
+ *  @param {dvt.Legend} dvtComponent
+ *  @implements {dvt.Automation}
  *  @constructor
- *  @export
  */
 var DvtLegendAutomation = function(dvtComponent) {
   this._legend = dvtComponent;
   this._options = this._legend.getOptions();
 };
 
-DvtObj.createSubclass(DvtLegendAutomation, DvtAutomation, 'DvtLegendAutomation');
+dvt.Obj.createSubclass(DvtLegendAutomation, dvt.Automation);
 
 /**
  * Valid subIds inlcude:
@@ -575,11 +564,10 @@ DvtLegendAutomation.prototype.getLegendItem = function(options, subId) {
  * <li>tooltip</li>
  * </ul>
  * @override
- * @export
  */
 DvtLegendAutomation.prototype.getDomElementForSubId = function(subId) {
   // tooltip
-  if (subId == DvtAutomation.TOOLTIP_SUBID)
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
     return this.GetTooltipElement(this._legend);
 
   var legendItem = this.getLegendItem(this._options, subId);
@@ -598,7 +586,6 @@ DvtLegendAutomation.prototype.getDomElementForSubId = function(subId) {
 /**
  * Returns the legend title. Used for verification.
  * @return {String} The legend title
- * @export
  */
 DvtLegendAutomation.prototype.getTitle = function() {
   return this._options['title'];
@@ -613,7 +600,6 @@ DvtLegendAutomation.prototype.getTitle = function() {
  * </ul>
  * @param {String} subIdPath The array of indices in the subId for the desired legend item
  * @return {Object} An object containing data for the legend item
- * @export
  */
 DvtLegendAutomation.prototype.getItem = function(subIdPath) {
   var item;
@@ -641,7 +627,6 @@ DvtLegendAutomation.prototype.getItem = function(subIdPath) {
  * </ul>
  * @param {String} subIdPath The array of indices in the subId for the desired legend section
  * @return {Object} An object containing data for the legend section
- * @export
  */
 DvtLegendAutomation.prototype.getSection = function(subIdPath) {
   var section;
@@ -702,21 +687,21 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
- * @extends {DvtBaseComponentDefaults}
+ * @extends {dvt.BaseComponentDefaults}
  */
 var DvtLegendDefaults = function() {
   this.Init({'skyros': DvtLegendDefaults.VERSION_1, 'alta': DvtLegendDefaults.SKIN_ALTA, 'next': DvtLegendDefaults.SKIN_NEXT});
 };
 
-DvtObj.createSubclass(DvtLegendDefaults, DvtBaseComponentDefaults, 'DvtLegendDefaults');
+dvt.Obj.createSubclass(DvtLegendDefaults, dvt.BaseComponentDefaults);
 
 /**
  * Contains overrides for the 'next' skin.
  */
 DvtLegendDefaults.SKIN_NEXT = {
-  'skin': DvtCSSStyle.SKIN_NEXT,
-  'titleStyle': new DvtCSSStyle('color: #737373;'),
-  '_sectionTitleStyle': new DvtCSSStyle('color: #737373;'),
+  'skin': dvt.CSSStyle.SKIN_NEXT,
+  'titleStyle': new dvt.CSSStyle('color: #737373;'),
+  '_sectionTitleStyle': new dvt.CSSStyle('color: #737373;'),
   'layout': {
     'titleGapWidth': 17, 'titleGapHeight': 9,
     'symbolGapWidth': 7, 'symbolGapHeight': 4,
@@ -730,10 +715,10 @@ DvtLegendDefaults.SKIN_NEXT = {
  * Contains overrides for the 'alta' skin.
  */
 DvtLegendDefaults.SKIN_ALTA = {
-  'skin': DvtCSSStyle.SKIN_ALTA,
-  'textStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;"),
-  'titleStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #333333;"),
-  '_sectionTitleStyle': new DvtCSSStyle("font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #333333;")
+  'skin': dvt.CSSStyle.SKIN_ALTA,
+  'textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
+  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #333333;'),
+  '_sectionTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11 + 'color: #333333;')
 };
 
 
@@ -741,13 +726,13 @@ DvtLegendDefaults.SKIN_ALTA = {
  * Defaults for version 1.
  */
 DvtLegendDefaults.VERSION_1 = {
-  'skin': DvtCSSStyle.SKIN_SKYROS,
+  'skin': dvt.CSSStyle.SKIN_SKYROS,
   'orientation': 'vertical',
   'position': null,
   'backgroundColor': null,
   'borderColor': null,
-  'textStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 11px; color: #333333;'),
-  'titleStyle': new DvtCSSStyle('font-family: tahoma, sans-serif; font-size: 12px; color: #003d5b;'),
+  'textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 11px; color: #333333;'),
+  'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + 'font-size: 12px; color: #003d5b;'),
   'titleHalign': 'start',
   'hiddenCategories': [],
   'hideAndShowBehavior': 'off',
@@ -778,20 +763,20 @@ DvtLegendDefaults.VERSION_1 = {
 
 /**
  * Adjusts the gap size based on the component options.
- * @param {DvtLegend} legend The legend component.
+ * @param {dvt.Legend} legend The legend component.
  * @param {Number} defaultSize The default gap size.
  * @return {Number}
  */
 DvtLegendDefaults.getGapSize = function(legend, defaultSize) {
   // adjust based on legend text font size
-  var scalingFactor = Math.min(DvtTextUtils.getTextStringHeight(legend.getCtx(), legend.getOptions()['textStyle']) / 14, 1);
+  var scalingFactor = Math.min(dvt.TextUtils.getTextStringHeight(legend.getCtx(), legend.getOptions()['textStyle']) / 14, 1);
   return Math.ceil(defaultSize * scalingFactor);
 };
 /**
- * Event Manager for DvtLegend.
- * @param {DvtLegend} legend
+ * Event Manager for dvt.Legend.
+ * @param {dvt.Legend} legend
  * @class
- * @extends {DvtEventManager}
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtLegendEventManager = function(legend) {
@@ -799,7 +784,7 @@ var DvtLegendEventManager = function(legend) {
   this._legend = legend;
 };
 
-DvtObj.createSubclass(DvtLegendEventManager, DvtEventManager, 'DvtLegendEventManager');
+dvt.Obj.createSubclass(DvtLegendEventManager, dvt.EventManager);
 
 /**
  * @override
@@ -830,6 +815,13 @@ DvtLegendEventManager.prototype.OnMouseOver = function(event) {
   if (!obj)
     return;
 
+  var params = obj instanceof dvt.SimpleObjPeer ? obj.getParams() : null;
+  // Activate button hover state for collapsible section title
+  if (params && params['isCollapsible'] && params['button']) {
+    var button = params['button'];
+    button.drawOverState();
+  }
+
   // Accessibility Support
   this.UpdateActiveElement(obj);
 };
@@ -844,6 +836,12 @@ DvtLegendEventManager.prototype.OnMouseOut = function(event) {
   var obj = this.GetLogicalObject(event.target);
   if (!obj)
     return;
+
+  var params = obj instanceof dvt.SimpleObjPeer ? obj.getParams() : null;
+  if (params && params['isCollapsible'] && params['button']) {
+    var button = params['button'];
+    button.drawUpState();
+  }
 };
 
 
@@ -888,9 +886,9 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
   var displayables = obj.getDisplayables();
   for (var i = 0; i < displayables.length; i++) {
     var displayable = displayables[i];
-    if (displayable instanceof DvtSimpleMarker) // setHollow is a toggle
+    if (displayable instanceof dvt.SimpleMarker) // setHollow is a toggle
       displayable.setHollow(obj.getColor());
-    else if (displayable instanceof DvtRect)
+    else if (displayable instanceof dvt.Rect)
       obj.updateAriaLabel();
   }
 
@@ -898,14 +896,12 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
   var id = categories[0];
   var event;
   if (DvtLegendRenderer.isCategoryHidden(category, this._legend)) {
-    hiddenCategories.splice(DvtArrayUtils.getIndex(hiddenCategories, category), 1);
-    event = new DvtCategoryHideShowEvent(DvtCategoryHideShowEvent.TYPE_SHOW, id);
+    hiddenCategories.splice(dvt.ArrayUtils.getIndex(hiddenCategories, category), 1);
+    event = dvt.EventFactory.newCategoryShowEvent(id, hiddenCategories);
   } else {
     hiddenCategories.push(category);
-    event = new DvtCategoryHideShowEvent(DvtCategoryHideShowEvent.TYPE_HIDE, id);
+    event = dvt.EventFactory.newCategoryHideEvent(id, hiddenCategories);
   }
-
-  event['hiddenCategories'] = hiddenCategories;
 
   this._legend.getOptions()['hiddenCategories'] = hiddenCategories;
   this.FireEvent(event, this._legend);
@@ -918,24 +914,24 @@ DvtLegendEventManager.prototype.processHideShowEvent = function(obj) {
 /**
  * Helper for processing click event. Handles action, drilling and section collapse.  Returns true if click is handled.
  * @param {DvtLegendObjPeer} obj The legend item that was clicked.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean} True if an event was fired.
  */
 DvtLegendEventManager.prototype.handleClick = function(obj, event) {
   if (obj && obj.getAction && obj.getAction()) {
-    this.FireEvent(new DvtActionEvent(DvtActionEvent.SUBTYPE_ACTION, obj.getAction(), obj.getId()), this._legend);
+    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()), this._legend);
     return true;
   }
 
   // Drill support
   if (obj instanceof DvtLegendObjPeer && obj.isDrillable()) {
     var id = obj.getId();
-    this.FireEvent(new DvtDrillEvent(id, id, null), this._legend);
+    this.FireEvent(dvt.EventFactory.newChartDrillEvent(id, id, null), this._legend);
     return true;
   }
 
-  var params = obj instanceof DvtSimpleObjPeer ? obj.getParams() : null;
-  if (params && params['type'] == 'title' && params['isCollapsible']) {
+  var params = obj instanceof dvt.SimpleObjPeer ? obj.getParams() : null;
+  if (params && params['isCollapsible']) {
     this.toggleSectionCollapse(event, params['id']);
     return true;
   }
@@ -950,7 +946,7 @@ DvtLegendEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOve
   // Don't continue if not enabled
   var options = this._legend.getOptions();
   // Do not fire rollover event for section collapse/expand button
-  if (options['hoverBehavior'] == 'none' || (obj.getDisplayables && obj.getDisplayables()[0] instanceof DvtButton))
+  if (options['hoverBehavior'] == 'none' || (obj.getDisplayables && obj.getDisplayables()[0] instanceof dvt.Button))
     return;
 
   // Compute the new highlighted categories and update the options
@@ -958,16 +954,15 @@ DvtLegendEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOve
   options['highlightedCategories'] = bOver ? categories.slice() : null;
 
   // Fire the event to the rollover handler, who will fire to the component callback.
-  var type = bOver ? DvtCategoryRolloverEvent.TYPE_OVER : DvtCategoryRolloverEvent.TYPE_OUT;
-  var rolloverEvent = new DvtCategoryRolloverEvent(type, options['highlightedCategories']);
-  var hoverBehaviorDelay = DvtStyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
+  var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
+  var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._legend.__getObjects(), hoverBehaviorDelay, true);
 };
 
 /**
  * Collapses or expands a legend section when collapse button is clicked.
- * @param {DvtBaseEvent} event
- * @param {DvtButton} button The button that calls the method.
+ * @param {dvt.BaseEvent} event
+ * @param {dvt.Button} button The button that calls the method.
  */
 DvtLegendEventManager.prototype.onCollapseButtonClick = function(event, button) {
   // Find the section based on the buttonId, which is an array of section indices
@@ -977,7 +972,7 @@ DvtLegendEventManager.prototype.onCollapseButtonClick = function(event, button) 
 
 /**
  * Collapses or expands a legend section.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @param {Number} sectionIdArray The id of the section.
  */
 DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionIdArray) {
@@ -989,7 +984,7 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
   section['expanded'] = (section['expanded'] == 'off') ? 'on' : 'off';
 
   // Set the keyboard focus on a mouse click
-  if (event.type == DvtMouseEvent.CLICK) {
+  if (event.type == dvt.MouseEvent.CLICK) {
     var peer = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
     if (peer.getNextNavigable)
       this.setFocusObj(peer.getNextNavigable(event));
@@ -1009,7 +1004,7 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
 
   // Fire resize event
   var bounds = this._legend.getContentDimensions();
-  this.FireEvent(new DvtResizeEvent(bounds.w, bounds.h, bounds.x, bounds.y), this._legend);
+  this.FireEvent(new dvt.ResizeEvent(bounds.w, bounds.h, bounds.x, bounds.y), this._legend);
 };
 
 /**
@@ -1017,18 +1012,15 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
  */
 DvtLegendEventManager.prototype.GetTouchResponse = function() {
   if (this._legend.getOptions()['_isScrollingLegend'])
-    return DvtEventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+    return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
   else
-    return DvtEventManager.TOUCH_RESPONSE_TOUCH_START;
+    return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
 };
-/*---------------------------------------------------------------------------------*/
-/*  DvtLegendKeyboardHandler     Keyboard handler for Legend                       */
-/*---------------------------------------------------------------------------------*/
 /**
-  *  @param {DvtEventManager} manager The owning DvtEventManager
-  *  @param {DvtLegend} legend
+  *  @param {dvt.EventManager} manager The owning dvt.EventManager
+  *  @param {dvt.Legend} legend
   *  @class DvtLegendKeyboardHandler
-  *  @extends {DvtKeyboardHandler}
+  *  @extends {dvt.KeyboardHandler}
   *  @constructor
   */
 var DvtLegendKeyboardHandler = function(manager, legend)
@@ -1036,7 +1028,7 @@ var DvtLegendKeyboardHandler = function(manager, legend)
   this.Init(manager, legend);
 };
 
-DvtObj.createSubclass(DvtLegendKeyboardHandler, DvtKeyboardHandler, 'DvtLegendKeyboardHandler');
+dvt.Obj.createSubclass(DvtLegendKeyboardHandler, dvt.KeyboardHandler);
 
 
 /**
@@ -1054,25 +1046,25 @@ DvtLegendKeyboardHandler.prototype.Init = function(manager, legend) {
 DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
   var keyCode = event.keyCode;
   var currentNavigable = this._eventManager.getFocus();
-  var isButton = currentNavigable && currentNavigable.getDisplayables()[0] instanceof DvtButton;
+  var isButton = currentNavigable && currentNavigable.getDisplayables()[0] instanceof dvt.Button;
   var nextNavigable = null;
 
-  if (currentNavigable == null && keyCode == DvtKeyboardEvent.TAB) {
+  if (currentNavigable == null && keyCode == dvt.KeyboardEvent.TAB) {
     // navigate to the default
     var navigables = this._legend.__getKeyboardObjects();
     if (navigables.length > 0) {
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
       nextNavigable = this.getDefaultNavigable(navigables);
     }
   }
   else if (currentNavigable) {
-    if (keyCode == DvtKeyboardEvent.TAB) {
-      DvtEventManager.consumeEvent(event);
+    if (keyCode == dvt.KeyboardEvent.TAB) {
+      dvt.EventManager.consumeEvent(event);
       nextNavigable = currentNavigable;
     }
-    else if (keyCode == DvtKeyboardEvent.ENTER || keyCode == DvtKeyboardEvent.SPACE) {
+    else if (keyCode == dvt.KeyboardEvent.ENTER || keyCode == dvt.KeyboardEvent.SPACE) {
       // Process driling and action events if enter
-      if (keyCode == DvtKeyboardEvent.ENTER) {
+      if (keyCode == dvt.KeyboardEvent.ENTER) {
         this._eventManager.handleClick(currentNavigable, event);
       }
 
@@ -1080,11 +1072,11 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
         this._eventManager.onCollapseButtonClick(event, currentNavigable.getDisplayables()[0]);
       else
         this._eventManager.processHideShowEvent(currentNavigable);
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
     }
-    else if (isButton && (keyCode == DvtKeyboardEvent.LEFT_ARROW || keyCode == DvtKeyboardEvent.RIGHT_ARROW)) {
+    else if (isButton && (keyCode == dvt.KeyboardEvent.LEFT_ARROW || keyCode == dvt.KeyboardEvent.RIGHT_ARROW)) {
       this._eventManager.onCollapseButtonClick(event, currentNavigable.getDisplayables()[0]);
-      DvtEventManager.consumeEvent(event);
+      dvt.EventManager.consumeEvent(event);
     }
     else
       nextNavigable = DvtLegendKeyboardHandler.superclass.processKeyDown.call(this, event);
@@ -1097,7 +1089,7 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
 };
 /**
  * Logical object for legend data object displayables.
- * @param {DvtLegend} legend The owning legend instance.
+ * @param {dvt.Legend} legend The owning legend instance.
  * @param {array} displayables The array of associated DvtDisplayables.
  * @param {string} id The id of the legend item.
  * @param {string} tooltip The tooltip of the legend item.
@@ -1113,11 +1105,11 @@ var DvtLegendObjPeer = function(legend, displayables, id, tooltip, datatip, dril
   this.Init(legend, displayables, id, tooltip, datatip, drillable);
 };
 
-DvtObj.createSubclass(DvtLegendObjPeer, DvtObj, 'DvtLegendObjPeer');
+dvt.Obj.createSubclass(DvtLegendObjPeer, dvt.Obj);
 
 
 /**
- * @param {DvtLegend} legend The owning legend instance.
+ * @param {dvt.Legend} legend The owning legend instance.
  * @param {array} displayables The array of associated DvtDisplayables.
  * @param {object} item The definition of the legend item.
  * @param {string} tooltip The tooltip of the legend item.
@@ -1140,7 +1132,7 @@ DvtLegendObjPeer.prototype.Init = function(legend, displayables, item, tooltip, 
   // Apply the cursor for the action if specified
   if (this._action || this._drillable) {
     for (var i = 0; i < this._displayables.length; i++) {
-      this._displayables[i].setCursor(DvtSelectionEffectUtils.getSelectingCursor());
+      this._displayables[i].setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
     }
   }
 };
@@ -1149,7 +1141,7 @@ DvtLegendObjPeer.prototype.Init = function(legend, displayables, item, tooltip, 
 /**
  * Creates a data item to identify the specified displayable and registers it with the legend.
  * @param {array} displayables The displayables to associate.
- * @param {DvtLegend} legend The owning legend instance.
+ * @param {dvt.Legend} legend The owning legend instance.
  * @param {object} item The definition of the legend item.
  * @param {string} tooltip The tooltip of the legend item.
  * @param {string} datatip The datatip of the legend item.
@@ -1267,21 +1259,21 @@ DvtLegendObjPeer.prototype.getAriaLabel = function() {
   var bHiddenCategory = DvtLegendRenderer.isCategoryHidden(this._category, this._legend);
   var data = this.getData();
 
-  if (this._displayables[0] instanceof DvtButton) {
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, data['expanded'] == 'off' ? 'STATE_COLLAPSED' : 'STATE_EXPANDED'));
-    return DvtDisplayable.generateAriaLabel(data['title'], states);
+  if (this._displayables[0] instanceof dvt.Button) {
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, data['expanded'] == 'off' ? 'STATE_COLLAPSED' : 'STATE_EXPANDED'));
+    return dvt.Displayable.generateAriaLabel(data['title'], states);
   }
 
   if (hideAndShow != 'off' && hideAndShow != 'none')
-    states.push(DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, bHiddenCategory ? 'STATE_HIDDEN' : 'STATE_VISIBLE'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, bHiddenCategory ? 'STATE_HIDDEN' : 'STATE_VISIBLE'));
   if (this.isDrillable())
-    states.push(DvtBundle.getTranslation(options, 'stateDrillable', DvtBundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
+    states.push(dvt.Bundle.getTranslation(options, 'stateDrillable', dvt.Bundle.UTIL_PREFIX, 'STATE_DRILLABLE'));
 
   if (data['shortDesc'] != null) {
-    return DvtDisplayable.generateAriaLabel(data['shortDesc'], states);
+    return dvt.Displayable.generateAriaLabel(data['shortDesc'], states);
   }
   else if (states.length > 0) {
-    return DvtDisplayable.generateAriaLabel(data['text'], states);
+    return dvt.Displayable.generateAriaLabel(data['text'], states);
   }
 
   return null;
@@ -1291,7 +1283,7 @@ DvtLegendObjPeer.prototype.getAriaLabel = function() {
  * Updates the aria label for a map data object
  */
 DvtLegendObjPeer.prototype.updateAriaLabel = function() {
-  if (!DvtAgent.deferAriaCreation() && this._displayables[0])
+  if (!dvt.Agent.deferAriaCreation() && this._displayables[0])
     this._displayables[0].setAriaProperty('label', this.getAriaLabel());
 };
 
@@ -1303,11 +1295,11 @@ DvtLegendObjPeer.prototype.updateAriaLabel = function() {
  * @override
  */
 DvtLegendObjPeer.prototype.getNextNavigable = function(event) {
-  if (event.type == DvtMouseEvent.CLICK)
+  if (event.type == dvt.MouseEvent.CLICK)
     return this;
 
   var navigables = this._legend.__getKeyboardObjects();
-  return DvtKeyboardHandler.getNextNavigable(this, event, navigables, true);
+  return dvt.KeyboardHandler.getNextNavigable(this, event, navigables, true);
 };
 
 
@@ -1318,7 +1310,7 @@ DvtLegendObjPeer.prototype.getKeyboardBoundingBox = function(targetCoordinateSpa
   if (this._displayables[0])
     return this._displayables[0].getDimensions(targetCoordinateSpace);
   else
-    return new DvtRectangle(0, 0, 0, 0);
+    return new dvt.Rectangle(0, 0, 0, 0);
 };
 
 /**
@@ -1336,10 +1328,10 @@ DvtLegendObjPeer.prototype.getTargetElem = function() {
 DvtLegendObjPeer.prototype.showKeyboardFocusEffect = function() {
   this._isShowingKeyboardFocusEffect = true;
   if (this._displayables[0]) {
-    if (this._displayables[0] instanceof DvtButton)
+    if (this._displayables[0] instanceof dvt.Button)
       this._displayables[0].drawOverState();
     else
-      this._displayables[0].setSolidStroke(DvtAgent.getFocusColor());
+      this._displayables[0].setSolidStroke(dvt.Agent.getFocusColor());
   }
 };
 
@@ -1350,7 +1342,7 @@ DvtLegendObjPeer.prototype.showKeyboardFocusEffect = function() {
 DvtLegendObjPeer.prototype.hideKeyboardFocusEffect = function() {
   this._isShowingKeyboardFocusEffect = false;
   if (this._displayables[0]) {
-    if (this._displayables[0] instanceof DvtButton)
+    if (this._displayables[0] instanceof dvt.Button)
       this._displayables[0].drawUpState();
     else
       this._displayables[0].setStroke(null);
@@ -1391,17 +1383,15 @@ DvtLegendObjPeer.prototype.getDatatipColor = function(target) {
   return this._item['color'];
 };
 /**
- * Renderer for DvtLegend.
+ * Renderer for dvt.Legend.
  * @class
  */
 var DvtLegendRenderer = new Object();
 
-DvtObj.createSubclass(DvtLegendRenderer, DvtObj, 'DvtLegendRenderer');
+dvt.Obj.createSubclass(DvtLegendRenderer, dvt.Obj);
 
 /** @private */
-DvtLegendRenderer._MAX_LINE_WIDTH = 5;
-/** @private */
-DvtLegendRenderer._MAX_LINE_WIDTH_WITH_MARKER = 2;
+DvtLegendRenderer._DEFAULT_LINE_WIDTH_WITH_MARKER = 2;
 /** @private */
 DvtLegendRenderer._LINE_MARKER_SIZE_FACTOR = 0.6;
 /** @private */
@@ -1414,20 +1404,20 @@ DvtLegendRenderer._FOCUS_GAP = 2;
 
 /**
  * Renders the legend.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtRectangle} availSpace The available space.
- * @return {DvtRectangle} The dimensions of the legend content.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @return {dvt.Rectangle} The dimensions of the legend content.
  */
 DvtLegendRenderer.render = function(legend, availSpace) {
   var options = legend.getOptions();
   var context = legend.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
 
   if (!options['isLayout'])
     DvtLegendRenderer._renderBackground(legend, availSpace);
 
-  var container = new DvtSimpleScrollableContainer(context, availSpace.w, availSpace.h);
-  var contentContainer = new DvtContainer(context);
+  var container = new dvt.SimpleScrollableContainer(context, availSpace.w, availSpace.h);
+  var contentContainer = new dvt.Container(context);
   container.getScrollingPane().addChild(contentContainer);
   legend.addChild(container);
   legend.container = container;
@@ -1442,12 +1432,12 @@ DvtLegendRenderer.render = function(legend, availSpace) {
 
   // Return if there's no space
   if (availSpace.w <= 0 || availSpace.h <= 0)
-    return new DvtDimension(0, 0);
+    return new dvt.Dimension(0, 0);
 
-  var totalDim = DvtLegendRenderer._renderContents(legend, contentContainer, new DvtRectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h));
+  var totalDim = DvtLegendRenderer._renderContents(legend, contentContainer, new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h));
 
   if (totalDim.w == 0 || totalDim.h == 0) // drop legend
-    return new DvtDimension(0, 0);
+    return new dvt.Dimension(0, 0);
 
   container.prepareContentPane();
 
@@ -1475,7 +1465,7 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   else if (valign == 'bottom')
     translateY = availSpace.y - totalDim.y + availSpace.h - totalDim.h;
 
-  var contentDims = new DvtRectangle(
+  var contentDims = new dvt.Rectangle(
       totalDim.x + translateX - gapWidth, totalDim.y + translateY - gapHeight,
       totalDim.w + 2 * gapWidth, totalDim.h + 2 * gapHeight
       );
@@ -1489,17 +1479,17 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   // Align the titles now after we know the total width
   var titles = legend.__getTitles();
   for (var i = 0; i < titles.length; i++)
-    DvtLayoutUtils.align(totalDim, titles[i].halign, titles[i].text, titles[i].text.measureDimensions().w);
+    dvt.LayoutUtils.align(totalDim, titles[i].halign, titles[i].text, titles[i].text.measureDimensions().w);
 
   return contentDims;
 };
 
 /**
  * Renders the legend title and sections.
- * @param {DvtLegend} legend
- * @param {DvtContainer} container
- * @param {DvtRectangle} availSpace
- * @return {DvtRectangle} The total dimensions of the title and the sections.
+ * @param {dvt.Legend} legend
+ * @param {dvt.Container} container
+ * @param {dvt.Rectangle} availSpace
+ * @return {dvt.Rectangle} The total dimensions of the title and the sections.
  * @private
  */
 DvtLegendRenderer._renderContents = function(legend, container, availSpace) {
@@ -1522,8 +1512,8 @@ DvtLegendRenderer._renderContents = function(legend, container, availSpace) {
 
 /**
  * Renders the legend background/border colors.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @private
  */
 DvtLegendRenderer._renderBackground = function(legend, availSpace) {
@@ -1532,7 +1522,7 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
   var borderColor = options['borderColor'];
 
   if (backgroundColor || borderColor) {
-    var rect = new DvtRect(legend.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
+    var rect = new dvt.Rect(legend.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
 
     if (backgroundColor)
       rect.setSolidFill(backgroundColor);
@@ -1551,43 +1541,44 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
 
 /**
  * Renders the legend title and updates the available space.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtContainer} container The title container.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Container} container The title container.
  * @param {string} titleStr
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {object} section The section attributes, if this is a section
  * @param {boolean} isAligned Whether the title supports halign (done at the end of render call).
  * @param {number} id The id of the section, if this is a section.
- * @return {DvtRectangle} The dimension of the title.
+ * @param {dvt.Button} button The button associated with the legend title
+ * @return {dvt.Rectangle} The dimension of the title.
  * @private
  */
-DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpace, section, isAligned, id) {
+DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpace, section, isAligned, id, button) {
   var options = legend.getOptions();
   var context = container.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
 
   if (!titleStr)
     return null;
 
   // Create the title object and add to legend
-  var title = new DvtOutputText(context, titleStr, availSpace.x, availSpace.y);
+  var title = new dvt.OutputText(context, titleStr, availSpace.x, availSpace.y);
   var titleStyle = options['titleStyle'];
   if (section && section['titleStyle'])
-    titleStyle = new DvtCSSStyle(section['titleStyle']);
+    titleStyle = new dvt.CSSStyle(section['titleStyle']);
   else if (section && options['_sectionTitleStyle'])
     titleStyle = options['_sectionTitleStyle'];
 
   title.setCSSStyle(titleStyle);
 
-  if (DvtTextUtils.fitText(title, availSpace.w, Infinity, container)) {
+  if (dvt.TextUtils.fitText(title, availSpace.w, Infinity, container)) {
     if (isRTL) // align right first to get the dims for preferred size
       title.setX(availSpace.x + availSpace.w - title.measureDimensions().w);
 
     if (!options['isLayout']) {
       // Associate with logical object to support tooltips
-      var params = {};
+      var params = {'id': id, 'button': button};
       params['isCollapsible'] = section && (section['collapsible'] == 'on' || section['collapsible'] == true);
-      legend.getEventManager().associate(title, new DvtSimpleObjPeer(title.getUntruncatedTextString(), null, null, params));
+      legend.getEventManager().associate(title, new dvt.SimpleObjPeer(title.getUntruncatedTextString(), null, null, params));
 
       if (isAligned) {
         // title alignment will be deferred until we know the total width of the legend content
@@ -1607,12 +1598,12 @@ DvtLegendRenderer._renderTitle = function(legend, container, titleStr, availSpac
 
 /**
  * Renders a legend section.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtContainer} container The container of the section.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Container} container The container of the section.
  * @param {Array} sections The array of section objects.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {Array} id The id of the parent section calling this method.
- * @return {DvtRectangle} The total dimension of the sections.
+ * @return {dvt.Rectangle} The total dimension of the sections.
  * @private
  */
 DvtLegendRenderer._renderSections = function(legend, container, sections, availSpace, id) {
@@ -1669,7 +1660,7 @@ DvtLegendRenderer._renderSections = function(legend, container, sections, availS
       }
       else {
         horizAvailSpace.w -= sectionDim.w + gapWidth;
-        if (!DvtAgent.isRightToLeft(legend.getCtx()))
+        if (!dvt.Agent.isRightToLeft(legend.getCtx()))
           horizAvailSpace.x += sectionDim.w + gapWidth;
       }
     }
@@ -1688,8 +1679,8 @@ DvtLegendRenderer._renderSections = function(legend, container, sections, availS
 
 /**
  * Creates the legend button.
- * @param {DvtContext} context
- * @param {DvtLegend} legend
+ * @param {dvt.Context} context
+ * @param {dvt.Legend} legend
  * @param {object} item The relevant data object for the button peer.
  * @param {object} resources The object containing the button image resources.
  * @param {string} prefix The prefix of the image resource name.
@@ -1699,7 +1690,7 @@ DvtLegendRenderer._renderSections = function(legend, container, sections, availS
  * @param {string} id The button id.
  * @param {function} callback The button callback function.
  * @param {object} callbackObj The button callback object.
- * @return {DvtButton} The button.
+ * @return {dvt.Button} The button.
  * @private
  */
 DvtLegendRenderer._createButton = function(context, legend, item, resources, prefix, x, y, tooltip, id, callback, callbackObj) {
@@ -1707,7 +1698,7 @@ DvtLegendRenderer._createButton = function(context, legend, item, resources, pre
   var overState = DvtLegendRenderer._createButtonImage(context, resources, prefix + 'Over', x, y);
   var downState = DvtLegendRenderer._createButtonImage(context, resources, prefix + 'Down', x, y);
 
-  var button = new DvtButton(context, upState, overState, downState, null, id, callback, callbackObj);
+  var button = new dvt.Button(context, upState, overState, downState, null, id, callback, callbackObj);
 
   var peer = DvtLegendObjPeer.associate([button], legend, item, tooltip, null, false);
   button.setAriaRole('button');
@@ -1718,33 +1709,33 @@ DvtLegendRenderer._createButton = function(context, legend, item, resources, pre
 
 /**
  * Creates a button image.
- * @param {DvtContext} context
+ * @param {dvt.Context} context
  * @param {object} resources The object containing the button image resources.
  * @param {string} name The image resource name.
  * @param {number} x The button x position.
  * @param {number} y The button y position.
- * @return {DvtImage} .
+ * @return {dvt.Image} .
  * @private
  */
 DvtLegendRenderer._createButtonImage = function(context, resources, name, x, y) {
-  var suffix = DvtAgent.isRightToLeft(context) ? 'RTL' : '';
+  var suffix = dvt.Agent.isRightToLeft(context) ? 'RTL' : '';
   var src = resources[name + suffix] ? resources[name + suffix] : resources[name];
-  var image = new DvtImage(context, src, x, y, DvtLegendRenderer._BUTTON_SIZE, DvtLegendRenderer._BUTTON_SIZE);
+  var image = new dvt.Image(context, src, x, y, DvtLegendRenderer._BUTTON_SIZE, DvtLegendRenderer._BUTTON_SIZE);
   image.setInvisibleFill();
   return image;
 };
 
 /**
  * Renders a vertical legend section.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtContainer} container The container of the section.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Container} container The container of the section.
  * @param {object} section The section from the options object.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {Number} rowHeight The height of a row of legend items.
  * @param {Array} id The section id, in the form of section index array. For example, if id=[0,1], then this is
  *  the second nested section of the first section.
  * @param {boolean} minimizeNumRows Whether the number of rows should be minimized.
- * @return {DvtRectangle} The total dimension of the section.
+ * @return {dvt.Rectangle} The total dimension of the section.
  * @private
  */
 DvtLegendRenderer._renderVerticalSection = function(legend, container, section, availSpace, rowHeight, id, minimizeNumRows) {
@@ -1756,7 +1747,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   var rowGap = DvtLegendDefaults.getGapSize(legend, options['layout']['rowGap']);
   var colGap = DvtLegendDefaults.getGapSize(legend, options['layout']['columnGap']);
   var context = legend.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
 
   var sectionSpace = availSpace.clone();
   if (options['scrolling'] != 'off')
@@ -1765,19 +1756,20 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   // Render collapse button
   var buttonDim;
   var isCollapsible = section['collapsible'] == 'on' || section['collapsible'] == true;
+  var button;
   if (isCollapsible) {
     var buttonX = isRTL ? sectionSpace.x + sectionSpace.w - DvtLegendRenderer._BUTTON_SIZE : sectionSpace.x;
     if (!options['isLayout']) {
       var isCollapsed = section['expanded'] == 'off' || section['expanded'] == false;
       var buttonType = isCollapsed ? 'closed' : 'open';
-      var buttonTooltip = DvtBundle.getTranslatedString(DvtBundle.UTIL_PREFIX, isCollapsed ? 'EXPAND' : 'COLLAPSE', null);
+      var buttonTooltip = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, isCollapsed ? 'EXPAND' : 'COLLAPSE', null);
       var em = legend.getEventManager();
 
-      var button = DvtLegendRenderer._createButton(context, legend, section, options['_resources'], buttonType,
+      button = DvtLegendRenderer._createButton(context, legend, section, options['_resources'], buttonType,
           buttonX, sectionSpace.y, buttonTooltip, id, em.onCollapseButtonClick, em);
       container.addChild(button);
     }
-    buttonDim = new DvtRectangle(buttonX, sectionSpace.y, DvtLegendRenderer._BUTTON_SIZE, DvtLegendRenderer._BUTTON_SIZE);
+    buttonDim = new dvt.Rectangle(buttonX, sectionSpace.y, DvtLegendRenderer._BUTTON_SIZE, DvtLegendRenderer._BUTTON_SIZE);
 
     // Indent the section
     var buttonGap = DvtLegendDefaults.getGapSize(legend, options['layout']['symbolGapWidth']);
@@ -1787,8 +1779,8 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   }
 
   // Render legend section title. Only support titleHalign if the section is not collapsible and not nested.
-  var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], sectionSpace, section, !isCollapsible && id.length <= 1, id);
-  var titleDim = title ? title.measureDimensions() : new DvtRectangle(isRTL ? sectionSpace.x + sectionSpace.w : sectionSpace.x, sectionSpace.y, 0, 0);
+  var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], sectionSpace, section, !isCollapsible && id.length <= 1, id, button);
+  var titleDim = title ? title.measureDimensions() : new dvt.Rectangle(isRTL ? sectionSpace.x + sectionSpace.w : sectionSpace.x, sectionSpace.y, 0, 0);
   var sectionDim = buttonDim ? titleDim.getUnion(buttonDim) : titleDim;
 
   // See if this is a section group which contains more legend sections
@@ -1824,7 +1816,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
 
   var contentHeight = numRows * (rowHeight + rowGap) - rowGap;
   var contentWidth = Math.min(numCols * (colWidth + colGap) - colGap, sectionSpace.w);
-  var contentDim = new DvtRectangle(isRTL ? sectionSpace.x + sectionSpace.w - contentWidth : sectionSpace.x, sectionSpace.y, contentWidth, contentHeight);
+  var contentDim = new dvt.Rectangle(isRTL ? sectionSpace.x + sectionSpace.w - contentWidth : sectionSpace.x, sectionSpace.y, contentWidth, contentHeight);
   sectionDim = sectionDim.getUnion(contentDim);
 
   // No need to render during layout pass
@@ -1866,12 +1858,12 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
 
 /**
  * Renders a horizontal legend section.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtContainer} container The container of the section.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Container} container The container of the section.
  * @param {object} section The section from the options object.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {number} rowHeight The height of a row of legend items.
- * @return {DvtRectangle} The total dimension of the section.
+ * @return {dvt.Rectangle} The total dimension of the section.
  * @private
  */
 DvtLegendRenderer._renderHorizontalSection = function(legend, container, section, availSpace, rowHeight) {
@@ -1884,12 +1876,12 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
   var colGap = DvtLegendDefaults.getGapSize(legend, options['layout']['columnGap']);
   var titleGap = DvtLegendDefaults.getGapSize(legend, options['layout']['titleGapWidth']);
   var numItems = section['items'].length;
-  var isRTL = DvtAgent.isRightToLeft(legend.getCtx());
+  var isRTL = dvt.Agent.isRightToLeft(legend.getCtx());
   var sectionSpace = availSpace.clone();
 
   // Determine legend section title
   var title = DvtLegendRenderer._renderTitle(legend, container, section['title'], availSpace, section, false);
-  var titleDim = title ? title.measureDimensions() : new DvtRectangle(isRTL ? availSpace.x + availSpace.w : availSpace.x, availSpace.y, 0, 0);
+  var titleDim = title ? title.measureDimensions() : new dvt.Rectangle(isRTL ? availSpace.x + availSpace.w : availSpace.x, availSpace.y, 0, 0);
   if (!section['items'])
     return titleDim;
   else if (titleDim.w > 0) {
@@ -1904,7 +1896,7 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
   var item, textWidth, i;
   for (i = 0; i < numItems; i++) {
     item = section['items'][i];
-    textWidth = Math.ceil(DvtTextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']));
+    textWidth = Math.ceil(dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']));
     totalWidth += textWidth + symbolWidth + symbolGap + colGap;
     textWidths.push(textWidth);
   }
@@ -1912,7 +1904,7 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
     totalWidth -= colGap;
 
   // Don't render during layout pass, or if the totalWidth exceeds the available space
-  var sectionDim = new DvtRectangle(isRTL ? availSpace.x + availSpace.w - totalWidth : availSpace.x, availSpace.y, totalWidth, Math.max(rowHeight, titleDim.h));
+  var sectionDim = new dvt.Rectangle(isRTL ? availSpace.x + availSpace.w - totalWidth : availSpace.x, availSpace.y, totalWidth, Math.max(rowHeight, titleDim.h));
   if (options['isLayout'] || totalWidth > availSpace.w) {
     container.removeChild(title);
     return sectionDim;
@@ -1935,8 +1927,8 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
 
 /**
  * Returns the space required for a legend section.
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {number} rowHeight The height of a legend row.
  * @param {object} items The legend items to be rendered.
  * @param {boolean} minimizeNumRows Whether the number of rows should be minimized.
@@ -1950,7 +1942,7 @@ DvtLegendRenderer._calcColumns = function(legend, availSpace, rowHeight, items, 
   var textWidth = 0;
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    var tempWidth = DvtTextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']);
+    var tempWidth = dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']);
     if (tempWidth > textWidth) {
       textWidth = tempWidth;
     }
@@ -2000,7 +1992,7 @@ DvtLegendRenderer._calcColumns = function(legend, availSpace, rowHeight, items, 
 
 /**
  * Returns the height of a single item in the legend.
- * @param {DvtLegend} legend The legend being rendered.
+ * @param {dvt.Legend} legend The legend being rendered.
  * @return {number} The height of a legend item.
  * @private
  */
@@ -2008,10 +2000,10 @@ DvtLegendRenderer._getRowHeight = function(legend) {
   var options = legend.getOptions();
 
   // Figure out the legend item height
-  var text = new DvtOutputText(legend.getCtx(), 'Test');
+  var text = new dvt.OutputText(legend.getCtx(), 'Test');
   text.setCSSStyle(options['textStyle']);
   text.alignMiddle();
-  var textHeight = DvtTextUtils.guessTextDimensions(text).h;
+  var textHeight = dvt.TextUtils.guessTextDimensions(text).h;
   var symbolHeight = options['symbolHeight'] + DvtLegendDefaults.getGapSize(legend, options['layout']['symbolGapHeight']);
   return Math.ceil(Math.max(textHeight, symbolHeight));
 };
@@ -2019,10 +2011,10 @@ DvtLegendRenderer._getRowHeight = function(legend) {
 
 /**
  * Creates a legend item (symbol + text).
- * @param {DvtLegend} legend The legend being rendered.
- * @param {DvtContainer} container The container of the legend item.
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @param {dvt.Container} container The container of the legend item.
  * @param {object} item The item in the options object.
- * @param {DvtRectangle} availSpace The available space.
+ * @param {dvt.Rectangle} availSpace The available space.
  * @param {number} textSpace The maximum text width.
  * @param {object} rowHeight The height of the legend item.
  * @param {number} i The item index.
@@ -2031,7 +2023,7 @@ DvtLegendRenderer._getRowHeight = function(legend) {
 DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpace, textSpace, rowHeight, i) {
   var options = legend.getOptions();
   var context = legend.getCtx();
-  var isRTL = DvtAgent.isRightToLeft(context);
+  var isRTL = dvt.Agent.isRightToLeft(context);
   var symbolWidth = options['symbolWidth'];
   var symbolGap = DvtLegendDefaults.getGapSize(legend, options['layout']['symbolGapWidth']);
 
@@ -2050,7 +2042,7 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
     if (text) {
       text.setX(textX);
       // Maintaining old behaviour for IE since dominant-baseline is buggy. 
-      DvtTextUtils.centerTextVertically(text, availSpace.y + rowHeight / 2);
+      dvt.TextUtils.centerTextVertically(text, availSpace.y + rowHeight / 2);
       if (isRTL)
         text.alignRight();
     }
@@ -2061,7 +2053,7 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
 
   // Draw a rectangle on top of the legend item.  This rectangle is used for interactivity and to ensure that
   // rollover is smooth when moving across legend items.
-  var itemRect = new DvtRect(context,
+  var itemRect = new dvt.Rect(context,
       isRTL ? textX - textSpace - DvtLegendRenderer._FOCUS_GAP : symbolX - DvtLegendRenderer._FOCUS_GAP,
       availSpace.y - DvtLegendRenderer._FOCUS_GAP,
       symbolWidth + symbolGap + textSpace + 2 * DvtLegendRenderer._FOCUS_GAP,
@@ -2090,7 +2082,7 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
 
 /**
  * Returns whether the item is drillable.
- * @param {DvtLegend} legend
+ * @param {dvt.Legend} legend
  * @param {Object} item
  * @return {boolean}
  * @private
@@ -2106,7 +2098,7 @@ DvtLegendRenderer._isItemDrillable = function(legend, item) {
 
 /**
  * Creates a legend text. Adds the text to the legend if it's not empty.
- * @param {DvtContainer} container The text container.
+ * @param {dvt.Container} container The text container.
  * @param {number} textSpace The width allowed for text.
  * @param {String} label The content of the text object.
  * @param {String} style The CSS style string to apply to the text object.
@@ -2115,27 +2107,29 @@ DvtLegendRenderer._isItemDrillable = function(legend, item) {
  */
 DvtLegendRenderer._createLegendText = function(container, textSpace, label, style) {
   // Draw the legend text.
-  var text = new DvtOutputText(container.getCtx(), label);
+  var text = new dvt.OutputText(container.getCtx(), label);
   text.setCSSStyle(style);
-  text = DvtTextUtils.fitText(text, textSpace, Infinity, container) ? text : null;
+  text = dvt.TextUtils.fitText(text, textSpace, Infinity, container) ? text : null;
   return text;
 };
 
 
 /**
  * Creates a legend symbol.
- * @param {DvtLegend} legend The legend being rendered.
+ * @param {dvt.Legend} legend The legend being rendered.
  * @param {number} x The x coordinate of the legend symbol.
  * @param {number} y The y coordinate of the legend symbol.
  * @param {number} rowHeight The height of the legend item.
  * @param {object} item The data for the legend item.
  * @param {number} i The index of the legend item. Used for determining the default color.
- * @return {DvtShape}
+ * @return {dvt.Shape}
  * @private
  */
 DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, i) {
   // Apply the default styles
   var legendOptions = legend.getOptions();
+  var symbolType = item['type'] != null ? item['type'] : item['symbolType'];
+
   if (!item['markerShape'])
     item['markerShape'] = legendOptions['_markerShape'];
 
@@ -2143,7 +2137,7 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
     item['color'] = legendOptions['_color'];
 
   if (!item['lineWidth'])
-    item['lineWidth'] = legendOptions['_lineWidth'];
+    item['lineWidth'] = symbolType == 'lineWithMarker' ? DvtLegendRenderer._DEFAULT_LINE_WIDTH_WITH_MARKER : legendOptions['_lineWidth'];
 
   var symbolWidth = legendOptions['symbolWidth'];
   var symbolHeight = legendOptions['symbolHeight'];
@@ -2152,14 +2146,11 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
   var cy = y + rowHeight / 2;
   var cx = x + symbolWidth / 2;
 
-  var symbolType = item['type'] != null ? item['type'] : item['symbolType'];
   var symbol;
   if (symbolType == 'line') {
-    item['lineWidth'] = Math.min(item['lineWidth'], DvtLegendRenderer._MAX_LINE_WIDTH);
     symbol = DvtLegendRenderer._createLine(legend.getCtx(), x, y, symbolWidth, rowHeight, item);
   }
   else if (symbolType == 'lineWithMarker') {
-    item['lineWidth'] = Math.min(item['lineWidth'], DvtLegendRenderer._MAX_LINE_WIDTH_WITH_MARKER);
     symbol = DvtLegendRenderer._createLine(legend.getCtx(), x, y, symbolWidth, rowHeight, item);
 
     // only if not found in hiddenCategories
@@ -2177,33 +2168,34 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
 
 /**
  * Creates a image symbol
- * @param {DvtLegend} legend The legend being rendered.
+ * @param {dvt.Legend} legend The legend being rendered.
  * @param {number} x The x coordinate of the legend symbol.
  * @param {number} y The y coordinate of the legend symbol.
  * @param {number} symbolWidth Image width.
  * @param {number} symbolHeight Image height.
  * @param {number} rowHeight Height of row (impacted by font size).
  * @param {object} item The data for the legend item.
- * @return {DvtImage}
+ * @return {dvt.ImageMarker}
  * @private
  */
 DvtLegendRenderer._createImage = function(legend, x, y, symbolWidth, symbolHeight, rowHeight, item) {
   var context = legend.getCtx();
 
-  var imageY = y + ((rowHeight - symbolHeight) / 2);
+  var imageY = y + (rowHeight) / 2;
+  var imageX = x + (symbolWidth) / 2;
 
-  return new DvtImage(context, item['source'], x, imageY, symbolWidth, symbolHeight);
+  return new dvt.ImageMarker(context, imageX, imageY, symbolWidth, symbolHeight, null, item['source']);
 };
 
 /**
  * Creates a marker symbol.
- * @param {DvtLegend} legend The legend being rendered.
+ * @param {dvt.Legend} legend The legend being rendered.
  * @param {number} cx The x coordinate of the legend symbol.
  * @param {number} cy The y coordinate of the legend symbol.
  * @param {number} symbolWidth The column width allocated to the legend symbol.
  * @param {number} symbolHeight The height of the legend item.
  * @param {object} item The data for the legend item.
- * @return {DvtSimpleMarker}
+ * @return {dvt.SimpleMarker}
  * @private
  */
 DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHeight, item) {
@@ -2219,12 +2211,12 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   var legendMarker;
   if (pattern && (pattern != 'none')) {
     // Pattern markers must be translated, since the pattern starts at the origin of the shape
-    legendMarker = new DvtSimpleMarker(context, shape, legendOptions['skin'], 0, 0, symbolWidth, symbolHeight);
-    legendMarker.setFill(new DvtPatternFill(pattern, color, '#FFFFFF'));
+    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], 0, 0, symbolWidth, symbolHeight);
+    legendMarker.setFill(new dvt.PatternFill(pattern, color, '#FFFFFF'));
     legendMarker.setTranslate(cx, cy);
   }
   else {
-    legendMarker = new DvtSimpleMarker(context, shape, legendOptions['skin'], cx, cy, symbolWidth, symbolHeight);
+    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], cx, cy, symbolWidth, symbolHeight);
     legendMarker.setSolidFill(color);
   }
 
@@ -2243,26 +2235,26 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
 
 /**
  * Creates a line symbol.
- * @param {DvtContext} context The context in which to create the legend item.
+ * @param {dvt.Context} context The context in which to create the legend item.
  * @param {number} x The x coordinate of the legend symbol.
  * @param {number} y The y coordinate of the legend symbol.
  * @param {number} colWidth The column width allocated to the legend symbol.
  * @param {number} rowHeight The height of the legend item.
  * @param {object} item The data for the legend item.
- * @return {DvtLine}
+ * @return {dvt.Line}
  * @private
  */
 DvtLegendRenderer._createLine = function(context, x, y, colWidth, rowHeight, item) {
   var lineY = y + rowHeight / 2;
-  var line = new DvtLine(context, x, lineY, x + colWidth, lineY);
-  var stroke = new DvtSolidStroke(item['color'], 1, item['lineWidth']);
+  var line = new dvt.Line(context, x, lineY, x + colWidth, lineY);
+  var stroke = new dvt.SolidStroke(item['color'], 1, item['lineWidth']);
 
   // Set the line style. The size and the spacing of the dash/dot has to be shrunk so that it's readable inside the 10px box.
   var style = item['lineStyle'];
   if (style == 'dashed')
-    stroke.setType(DvtStroke.convertTypeString(style), '4,2,4');
+    stroke.setType(dvt.Stroke.convertTypeString(style), '4,2,4');
   else if (style == 'dotted')
-    stroke.setType(DvtStroke.convertTypeString(style), '2');
+    stroke.setType(dvt.Stroke.convertTypeString(style), '2');
 
   line.setStroke(stroke);
   line.setPixelHinting(true);
@@ -2287,7 +2279,7 @@ DvtLegendRenderer.getItemCategory = function(item) {
 /**
  * Helper function to check if category is hidden
  * @param {String} category the category string
- * @param {DvtLegend} legend The legend being rendered.
+ * @param {dvt.Legend} legend The legend being rendered.
  * @return {boolean} true if the category is in the hiddenCategories array
  */
 DvtLegendRenderer.isCategoryHidden = function(category, legend) {
@@ -2296,10 +2288,23 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
   if (!hiddenCategories || hiddenCategories.length <= 0)
     return false;
 
-  return DvtArrayUtils.getIndex(hiddenCategories, category) !== -1;
+  return dvt.ArrayUtils.getIndex(hiddenCategories, category) !== -1;
 };
 
 
+dvt.exportProperty(dvt, 'Legend', dvt.Legend);
+dvt.exportProperty(dvt.Legend, 'newInstance', dvt.Legend.newInstance);
+dvt.exportProperty(dvt.Legend.prototype, 'destroy', dvt.Legend.prototype.destroy);
+dvt.exportProperty(dvt.Legend.prototype, 'getAutomation', dvt.Legend.prototype.getAutomation);
+dvt.exportProperty(dvt.Legend.prototype, 'getPreferredSize', dvt.Legend.prototype.getPreferredSize);
+dvt.exportProperty(dvt.Legend.prototype, 'highlight', dvt.Legend.prototype.highlight);
+dvt.exportProperty(dvt.Legend.prototype, 'render', dvt.Legend.prototype.render);
 
-  return D;
+dvt.exportProperty(DvtLegendAutomation.prototype, 'getDomElementForSubId', DvtLegendAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtLegendAutomation.prototype, 'getItem', DvtLegendAutomation.prototype.getItem);
+dvt.exportProperty(DvtLegendAutomation.prototype, 'getSection', DvtLegendAutomation.prototype.getSection);
+dvt.exportProperty(DvtLegendAutomation.prototype, 'getTitle', DvtLegendAutomation.prototype.getTitle);
+})(dvt);
+
+  return dvt;
 });

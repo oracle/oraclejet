@@ -6,18 +6,16 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
-  // Map the D namespace to dvt, which is used to provide access across partitions.
-  var D = dvt;
-  
+(function(dvt) {
 /** Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved. */
-var DvtTimeUtils = new Object();
+dvt.OverviewUtils = new Object();
 
-DvtTimeUtils.supportsTouch = function()
+dvt.OverviewUtils.supportsTouch = function()
 {
-  return DvtAgent.isTouchDevice();
+  return dvt.Agent.isTouchDevice();
 };
 
-DvtObj.createSubclass(DvtTimeUtils, DvtObj, 'DvtTimeUtils');
+dvt.Obj.createSubclass(dvt.OverviewUtils, dvt.Obj);
 
 
 /**
@@ -28,7 +26,7 @@ DvtObj.createSubclass(DvtTimeUtils, DvtObj, 'DvtTimeUtils');
  *
  * @return the position relative to the width of the element
  */
-DvtTimeUtils.getDatePosition = function(startTime, endTime, time, width)
+dvt.OverviewUtils.getDatePosition = function(startTime, endTime, time, width)
 {
   var number = (time - startTime) * width;
   var denominator = (endTime - startTime);
@@ -42,7 +40,7 @@ DvtTimeUtils.getDatePosition = function(startTime, endTime, time, width)
 /**
  * @return time in millis
  */
-DvtTimeUtils.getPositionDate = function(startTime, endTime, pos, width)
+dvt.OverviewUtils.getPositionDate = function(startTime, endTime, pos, width)
 {
   var number = pos * (endTime - startTime);
   if (number == 0 || width == 0)
@@ -52,49 +50,48 @@ DvtTimeUtils.getPositionDate = function(startTime, endTime, pos, width)
 };
 /**
  * Overview component.
- * @param {DvtContext} context The rendering context.
+ * @param {dvt.Context} context The rendering context.
  * @param {object} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The object context for the callback function
  * @class Overview component.
  * @constructor
- * @extends {DvtContainer}
- * @export
+ * @extends {dvt.Container}
  */
-var DvtOverview = function(context, callback, callbackObj) {
+dvt.Overview = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
 };
 
-DvtObj.createSubclass(DvtOverview, DvtContainer, 'DvtOverview');
+dvt.Obj.createSubclass(dvt.Overview, dvt.Container);
 
-DvtOverview.MIN_WINDOW_SIZE = 10;
-DvtOverview.DEFAULT_VERTICAL_TIMEAXIS_SIZE = 40;
-DvtOverview.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE = 20;
-DvtOverview.HANDLE_PADDING_SIZE = 20;
+dvt.Overview.MIN_WINDOW_SIZE = 10;
+dvt.Overview.DEFAULT_VERTICAL_TIMEAXIS_SIZE = 40;
+dvt.Overview.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE = 20;
+dvt.Overview.HANDLE_PADDING_SIZE = 20;
 
 /**
  * Attribute for axis label padding.
  * @const
  * @private
  */
-DvtOverview._DEFAULT_AXIS_LABEL_PADDING = 5;
+dvt.Overview._DEFAULT_AXIS_LABEL_PADDING = 5;
 
 /**
  * Attribute for default window border width.
  * @const
  * @private
  */
-DvtOverview._DEFAULT_WINDOW_BORDER_WIDTH = 1;
+dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH = 1;
 
 /**
  * Initializes the view.
- * @param {DvtContext} context The rendering context.
+ * @param {dvt.Context} context The rendering context.
  * @param {object} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The object context for the callback function
  * @protected
  */
-DvtOverview.prototype.Init = function(context, callback, callbackObj) 
+dvt.Overview.prototype.Init = function(context, callback, callbackObj) 
 {
-  DvtOverview.superclass.Init.call(this, context);
+  dvt.Overview.superclass.Init.call(this, context);
   this._callback = callback;
   this._callbackObj = callbackObj;
 
@@ -109,20 +106,20 @@ DvtOverview.prototype.Init = function(context, callback, callbackObj)
     this.EventManager = new DvtOverviewEventManager(this, context, callback, callbackObj);
     this.EventManager.addListeners(this);
     // register listeners
-    if (DvtTimeUtils.supportsTouch())
+    if (dvt.OverviewUtils.supportsTouch())
     {
-      this.addEvtListener(DvtTouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-      this.addEvtListener(DvtTouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-      this.addEvtListener(DvtTouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-      this.addEvtListener(DvtMouseEvent.CLICK, this.HandleShapeClick, false, this);
+      this.addEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+      this.addEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+      this.addEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+      this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
     }
     else
     {
-      this.addEvtListener(DvtMouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-      this.addEvtListener(DvtMouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-      this.addEvtListener(DvtMouseEvent.CLICK, this.HandleShapeClick, false, this);
-      this.addEvtListener(DvtKeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
-      this.addEvtListener(DvtKeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
+      this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+      this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+      this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
+      this.addEvtListener(dvt.KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
+      this.addEvtListener(dvt.KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
     }
   }
 
@@ -137,7 +134,7 @@ DvtOverview.prototype.Init = function(context, callback, callbackObj)
  * @param end - the viewport end time
  * @param overviewLength - the size of the overview along the axis direction
  */
-DvtOverview.prototype.setViewportRange = function(start, end, overviewLength)
+dvt.Overview.prototype.setViewportRange = function(start, end, overviewLength)
 {
   if (overviewLength == null)
     overviewLength = this.Width;
@@ -170,7 +167,7 @@ DvtOverview.prototype.setViewportRange = function(start, end, overviewLength)
 /**
  * Sets the initial position of the overview window
  */
-DvtOverview.prototype.setInitialPosition = function(pos)
+dvt.Overview.prototype.setInitialPosition = function(pos)
 {
   // make sure initial position is within bound
   if (pos >= this.getMinimumPosition() && pos <= this.getMaximumPosition())
@@ -181,19 +178,19 @@ DvtOverview.prototype.setInitialPosition = function(pos)
 /**
  * Checks whether a particular feature is turned off
  */
-DvtOverview.prototype.isFeatureOff = function(feature)
+dvt.Overview.prototype.isFeatureOff = function(feature)
 {
   if (this._featuresOff == null)
     return false;
 
-  return (DvtArrayUtils.getIndex(this._featuresOff, feature) != -1);
+  return (dvt.ArrayUtils.getIndex(this._featuresOff, feature) != -1);
 };
 
 
 /**
  * Checks whether sliding window should animate when move
  */
-DvtOverview.prototype.isAnimationOnClick = function()
+dvt.Overview.prototype.isAnimationOnClick = function()
 {
   return !(this._animationOnClick === 'off');
 };
@@ -206,9 +203,8 @@ DvtOverview.prototype.isAnimationOnClick = function()
  * @param {obj} obj Either the component xml or json object
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
- * @export
  */
-DvtOverview.prototype.render = function(obj, width, height) 
+dvt.Overview.prototype.render = function(obj, width, height) 
 {
   if (obj == null)
   {
@@ -221,7 +217,7 @@ DvtOverview.prototype.render = function(obj, width, height)
     if (slidingWindow != null && slidingWindowPos != 0)
     {
       // note this.Width references the old width
-      this._renderStart = DvtTimeUtils.getPositionDate(start, end, slidingWindowPos, this.Width);
+      this._renderStart = dvt.OverviewUtils.getPositionDate(start, end, slidingWindowPos, this.Width);
     }
 
     // clean out existing elements since they will be regenerate
@@ -275,18 +271,18 @@ DvtOverview.prototype.render = function(obj, width, height)
   }
 
   if (this._initialFocusTime != null)
-    this._initPos = Math.max(0, DvtTimeUtils.getDatePosition(this._start, this._end, this._initialFocusTime, this._width));
+    this._initPos = Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, this._initialFocusTime, this._width));
 
   if (this._initPos > 0)
     this.longScrollToPos(this._initPos);
 };
 
-DvtOverview.prototype.getParser = function(obj)
+dvt.Overview.prototype.getParser = function(obj)
 {
   return new DvtOverviewParser(this);
 };
 
-DvtOverview.prototype.Parse = function(obj) 
+dvt.Overview.prototype.Parse = function(obj) 
 {
   var parser = this.getParser(obj);
   return parser.parse(obj);
@@ -298,7 +294,7 @@ DvtOverview.prototype.Parse = function(obj)
  * @param {object} props An object containing the parsed properties for this component.
  * @private
  */
-DvtOverview.prototype._applyParsedProperties = function(props) 
+dvt.Overview.prototype._applyParsedProperties = function(props) 
 {
   this._start = props.start;
   this._end = props.end;
@@ -365,38 +361,38 @@ DvtOverview.prototype._applyParsedProperties = function(props)
 
 
 /***************************** common helper methods *********************************************/
-DvtOverview.prototype.getDatePosition = function(date)
+dvt.Overview.prototype.getDatePosition = function(date)
 {
-  return Math.max(0, DvtTimeUtils.getDatePosition(this._start, this._end, date, this.getOverviewSize())) + this._leftMargin;
+  return Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, date, this.getOverviewSize())) + this._leftMargin;
 };
 
-DvtOverview.prototype.getPositionDate = function(pos)
+dvt.Overview.prototype.getPositionDate = function(pos)
 {
-  return DvtTimeUtils.getPositionDate(this._start, this._end, Math.max(0, pos - this._leftMargin), this.getOverviewSize());
+  return dvt.OverviewUtils.getPositionDate(this._start, this._end, Math.max(0, pos - this._leftMargin), this.getOverviewSize());
 };
 
-DvtOverview.prototype.isRTL = function()
+dvt.Overview.prototype.isRTL = function()
 {
   return this._isRtl == 'true';
 };
 
-DvtOverview.prototype.isHorizontalRTL = function()
+dvt.Overview.prototype.isHorizontalRTL = function()
 {
   return (this.isRTL() && !this.isVertical());
 };
 
-DvtOverview.prototype.isVertical = function()
+dvt.Overview.prototype.isVertical = function()
 {
   return (this._orientation == 'vertical');
 };
 
-DvtOverview.prototype.isOverviewAbove = function()
+dvt.Overview.prototype.isOverviewAbove = function()
 {
   return (this._overviewPosition == 'above');
 };
 
 // Sets the left and right margins, used by chart
-DvtOverview.prototype.setMargins = function(leftMargin, rightMargin)
+dvt.Overview.prototype.setMargins = function(leftMargin, rightMargin)
 {
   if (!isNaN(leftMargin) && leftMargin != null && leftMargin > 0)
     this._leftMargin = leftMargin;
@@ -406,7 +402,7 @@ DvtOverview.prototype.setMargins = function(leftMargin, rightMargin)
 };
 
 // returns the width of the overview, taking margins into account
-DvtOverview.prototype.getOverviewSize = function()
+dvt.Overview.prototype.getOverviewSize = function()
 {
   if (this.isVertical())
     return this.Height - this._leftMargin - this._rightMargin;
@@ -415,13 +411,13 @@ DvtOverview.prototype.getOverviewSize = function()
 };
 
 // return the minmum position where the sliding window can reach
-DvtOverview.prototype.getMinimumPosition = function()
+dvt.Overview.prototype.getMinimumPosition = function()
 {
   return this._leftMargin;
 };
 
 // return the maximum position where the sliding window can reach
-DvtOverview.prototype.getMaximumPosition = function()
+dvt.Overview.prototype.getMaximumPosition = function()
 {
   if (this.isVertical())
     return this.Height - this._rightMargin;
@@ -430,50 +426,50 @@ DvtOverview.prototype.getMaximumPosition = function()
 };
 
 // returns the minimum size of the sliding window
-DvtOverview.prototype.getMinimumWindowSize = function()
+dvt.Overview.prototype.getMinimumWindowSize = function()
 {
   if (this._minWinSize != null)
     return this._minWinSize;
   else if (this._minimumWindowSize != null)
   {
-    this._minWinSize = DvtTimeUtils.getDatePosition(this._start, this._end, this._start + this._minimumWindowSize, this.getOverviewSize());
+    this._minWinSize = dvt.OverviewUtils.getDatePosition(this._start, this._end, this._start + this._minimumWindowSize, this.getOverviewSize());
     return this._minWinSize;
   }
   else
-    return DvtOverview.MIN_WINDOW_SIZE;
+    return dvt.Overview.MIN_WINDOW_SIZE;
 };
 
-DvtOverview.prototype.getGrippySize = function()
+dvt.Overview.prototype.getGrippySize = function()
 {
   return 10;
 };
 
 // return the start of the resize handle
-DvtOverview.prototype.getHandleStart = function()
+dvt.Overview.prototype.getHandleStart = function()
 {
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.OverviewUtils.supportsTouch())
     return this.getHandleSize() / 2;
   else
     return 0;
 };
 
 // return the size of the resize handle, which is wider on touch devices
-DvtOverview.prototype.getHandleSize = function() 
+dvt.Overview.prototype.getHandleSize = function() 
 {
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.OverviewUtils.supportsTouch())
     return 30;
   else
     return 10;
 };
 
-DvtOverview.prototype.isHandle = function(drawable) 
+dvt.Overview.prototype.isHandle = function(drawable) 
 {
   var id = drawable.getId();
   return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' || id == 'grpy' || id == 'lbgrh' || id == 'rbgrh' || (drawable.getParent() != null && drawable.getParent().getId() == 'grpy'));
 };
 
 // for vertical
-DvtOverview.prototype.getTimeAxisWidth = function()
+dvt.Overview.prototype.getTimeAxisWidth = function()
 {
   // checks if there is a time axis
   if (this._timeAxisInfo == null)
@@ -486,13 +482,13 @@ DvtOverview.prototype.getTimeAxisWidth = function()
     if (!isNaN(width) && width < this.Width)
       this._timeAxisWidth = width;
     else
-      this._timeAxisWidth = DvtOverview.DEFAULT_VERTICAL_TIMEAXIS_SIZE;
+      this._timeAxisWidth = dvt.Overview.DEFAULT_VERTICAL_TIMEAXIS_SIZE;
   }
 
   return this._timeAxisWidth;
 };
 
-DvtOverview.prototype.getTimeAxisHeight = function()
+dvt.Overview.prototype.getTimeAxisHeight = function()
 {
   // checks if there is a time axis
   if (this._timeAxisInfo == null)
@@ -505,15 +501,15 @@ DvtOverview.prototype.getTimeAxisHeight = function()
     if (!isNaN(height) && height < this.Height)
       this._timeAxisHeight = height;
     else
-      this._timeAxisHeight = DvtOverview.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE;
+      this._timeAxisHeight = dvt.Overview.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE;
   }
 
   return this._timeAxisHeight;
 };
 
-DvtOverview.prototype.getPageX = function(event)
+dvt.Overview.prototype.getPageX = function(event)
 {
-  if (DvtTimeUtils.supportsTouch() && event.targetTouches != null)
+  if (dvt.OverviewUtils.supportsTouch() && event.targetTouches != null)
   {
     if (event.targetTouches.length > 0)
       return event.targetTouches[0].pageX;
@@ -524,9 +520,9 @@ DvtOverview.prototype.getPageX = function(event)
     return event.pageX;
 };
 
-DvtOverview.prototype.getPageY = function(event)
+dvt.Overview.prototype.getPageY = function(event)
 {
-  if (DvtTimeUtils.supportsTouch() && event.targetTouches != null)
+  if (dvt.OverviewUtils.supportsTouch() && event.targetTouches != null)
   {
     if (event.targetTouches.length > 0)
       return event.targetTouches[0].pageY;
@@ -543,17 +539,17 @@ DvtOverview.prototype.getPageY = function(event)
  * By default they are not rendered.
  * @protected
  */
-DvtOverview.prototype.isLeftAndRightFilterRendered = function()
+dvt.Overview.prototype.isLeftAndRightFilterRendered = function()
 {
   return false;
 };
 
-DvtOverview.prototype.getSlidingWindow = function()
+dvt.Overview.prototype.getSlidingWindow = function()
 {
   return this.getChildAt(1);
 };
 
-DvtOverview.prototype.getLeftBackground = function()
+dvt.Overview.prototype.getLeftBackground = function()
 {
   if (this.isLeftAndRightFilterRendered())
     return this.getChildAt(3);
@@ -561,7 +557,7 @@ DvtOverview.prototype.getLeftBackground = function()
     return null;
 };
 
-DvtOverview.prototype.getRightBackground = function()
+dvt.Overview.prototype.getRightBackground = function()
 {
   if (this.isLeftAndRightFilterRendered())
     return this.getChildAt(4);
@@ -569,7 +565,7 @@ DvtOverview.prototype.getRightBackground = function()
     return null;
 };
 
-DvtOverview.prototype.getLeftBackgroundHandle = function()
+dvt.Overview.prototype.getLeftBackgroundHandle = function()
 {
   if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
     return this.getChildAt(5);
@@ -577,7 +573,7 @@ DvtOverview.prototype.getLeftBackgroundHandle = function()
     return null;
 };
 
-DvtOverview.prototype.getRightBackgroundHandle = function()
+dvt.Overview.prototype.getRightBackgroundHandle = function()
 {
   if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
     return this.getChildAt(6);
@@ -585,43 +581,43 @@ DvtOverview.prototype.getRightBackgroundHandle = function()
     return null;
 };
 
-DvtOverview.prototype.getLeftHandle = function()
+dvt.Overview.prototype.getLeftHandle = function()
 {
   var offset = this._lastChildIndex;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.getRightHandle = function()
+dvt.Overview.prototype.getRightHandle = function()
 {
   var offset = this._lastChildIndex - 1;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.getLeftTopBar = function()
+dvt.Overview.prototype.getLeftTopBar = function()
 {
   var offset = this._lastChildIndex - 2;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.getRightTopBar = function()
+dvt.Overview.prototype.getRightTopBar = function()
 {
   var offset = this._lastChildIndex - 3;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.getBottomBar = function()
+dvt.Overview.prototype.getBottomBar = function()
 {
   var offset = this._lastChildIndex - 4;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.getTopBar = function()
+dvt.Overview.prototype.getTopBar = function()
 {
   var offset = this._lastChildIndex - 5;
   return this.getChildAt(this.getNumChildren() - offset);
 };
 
-DvtOverview.prototype.setLinePos = function(line, pos1, pos2)
+dvt.Overview.prototype.setLinePos = function(line, pos1, pos2)
 {
   if (this.isVertical())
   {
@@ -639,7 +635,7 @@ DvtOverview.prototype.setLinePos = function(line, pos1, pos2)
   }
 };
 
-DvtOverview.prototype.getLinePos1 = function(line)
+dvt.Overview.prototype.getLinePos1 = function(line)
 {
   if (this.isVertical())
     return line.getY1();
@@ -652,7 +648,7 @@ DvtOverview.prototype.getLinePos1 = function(line)
  * Returns the drawable that is the target of the event.
  * @return {DvtBaseTreeNode} the target of the event
  */
-DvtOverview.prototype._findDrawable = function(event) 
+dvt.Overview.prototype._findDrawable = function(event) 
 {
   var target = event.target;
   if (target != null)
@@ -673,7 +669,7 @@ DvtOverview.prototype._findDrawable = function(event)
   return null;
 };
 
-DvtOverview.prototype.isMovable = function(drawable)
+dvt.Overview.prototype.isMovable = function(drawable)
 {
   if (drawable.getId() == 'window' ||
       drawable.getId() == 'ftr' ||
@@ -684,7 +680,7 @@ DvtOverview.prototype.isMovable = function(drawable)
   return false;
 };
 
-DvtOverview.prototype.isFlashEnvironment = function()
+dvt.Overview.prototype.isFlashEnvironment = function()
 {
   return (window && window.isFlashEnvironment);
 };
@@ -693,10 +689,10 @@ DvtOverview.prototype.isFlashEnvironment = function()
 
 
 /***************************** marker creation and event handling *********************************************/
-DvtOverview.prototype.createBackground = function(width, height)
+dvt.Overview.prototype.createBackground = function(width, height)
 {
   // draw a background shape covering all area to capture all mouse events
-  var background = new DvtRect(this.getCtx(), 0, 0, width, height, 'bg');
+  var background = new dvt.Rect(this.getCtx(), 0, 0, width, height, 'bg');
   background.setSolidFill(this._overviewBackgroundColor);
 
   // Do not antialias the background
@@ -706,15 +702,15 @@ DvtOverview.prototype.createBackground = function(width, height)
   return background;
 };
 
-DvtOverview.prototype.createSlidingWindow = function(width, height)
+dvt.Overview.prototype.createSlidingWindow = function(width, height)
 {
   var vertical = this.isVertical();
 
   // draw sliding window first so that it is under the markers
   if (vertical)
-    var slidingWindow = new DvtRect(this.getCtx(), 0, 0, width, 0, 'window');
+    var slidingWindow = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'window');
   else
-    slidingWindow = new DvtRect(this.getCtx(), 0, 0, 0, height, 'window');
+    slidingWindow = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'window');
   slidingWindow.setSolidFill(this._windowBackgroundColor, this._windowBackgroundAlpha);
 
   // Do not antialias the Timeline Overview
@@ -728,18 +724,18 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
     if (vertical)
     {
       var handleX = (width - 36) / 2;
-      var leftHandleCmds = DvtPathUtils.moveTo(handleX, 0) +
-          DvtPathUtils.quadTo(handleX + 3, 6, handleX + 8, 8) +
-                  DvtPathUtils.lineTo(handleX + 28, 8) +
-                  DvtPathUtils.quadTo(handleX + 33, 6, handleX + 36, 0);
-      DvtPathUtils.closePath();
-      var rightHandleCmds = DvtPathUtils.moveTo(handleX, 0) +
-          DvtPathUtils.quadTo(handleX + 3, -6, handleX + 8, -8) +
-                  DvtPathUtils.lineTo(handleX + 28, -8) +
-                  DvtPathUtils.quadTo(handleX + 33, -6, handleX + 36, 0);
-      DvtPathUtils.closePath();
-      var leftHandleBackground = new DvtRect(this.getCtx(), 0, 0, width, handleSize, 'lhb');
-      var rightHandleBackground = new DvtRect(this.getCtx(), 0, 0, width, handleSize, 'rhb');
+      var leftHandleCmds = dvt.PathUtils.moveTo(handleX, 0) +
+          dvt.PathUtils.quadTo(handleX + 3, 6, handleX + 8, 8) +
+                  dvt.PathUtils.lineTo(handleX + 28, 8) +
+                  dvt.PathUtils.quadTo(handleX + 33, 6, handleX + 36, 0);
+      dvt.PathUtils.closePath();
+      var rightHandleCmds = dvt.PathUtils.moveTo(handleX, 0) +
+          dvt.PathUtils.quadTo(handleX + 3, -6, handleX + 8, -8) +
+                  dvt.PathUtils.lineTo(handleX + 28, -8) +
+                  dvt.PathUtils.quadTo(handleX + 33, -6, handleX + 36, 0);
+      dvt.PathUtils.closePath();
+      var leftHandleBackground = new dvt.Rect(this.getCtx(), 0, 0, width, handleSize, 'lhb');
+      var rightHandleBackground = new dvt.Rect(this.getCtx(), 0, 0, width, handleSize, 'rhb');
       var cursor = 'row-resize';
 
       if (this._handleBackgroundImage)
@@ -756,18 +752,18 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
     else
     {
       var handleY = (height - 36) / 2;
-      leftHandleCmds = DvtPathUtils.moveTo(0, handleY) +
-          DvtPathUtils.quadTo(6, handleY + 3, 8, handleY + 8) +
-                  DvtPathUtils.lineTo(8, handleY + 28) +
-                  DvtPathUtils.quadTo(6, handleY + 33, 0, handleY + 36);
-      DvtPathUtils.closePath();
-      rightHandleCmds = DvtPathUtils.moveTo(0, handleY) +
-          DvtPathUtils.quadTo(-6, handleY + 3, -8, handleY + 8) +
-                  DvtPathUtils.lineTo(-8, handleY + 28) +
-                  DvtPathUtils.quadTo(-6, handleY + 33, 0, handleY + 36);
-      DvtPathUtils.closePath();
-      leftHandleBackground = new DvtRect(this.getCtx(), 0 - handleStart, 0, handleSize, height, 'lhb');
-      rightHandleBackground = new DvtRect(this.getCtx(), handleStart, 0, handleSize, height, 'rhb');
+      leftHandleCmds = dvt.PathUtils.moveTo(0, handleY) +
+          dvt.PathUtils.quadTo(6, handleY + 3, 8, handleY + 8) +
+                  dvt.PathUtils.lineTo(8, handleY + 28) +
+                  dvt.PathUtils.quadTo(6, handleY + 33, 0, handleY + 36);
+      dvt.PathUtils.closePath();
+      rightHandleCmds = dvt.PathUtils.moveTo(0, handleY) +
+          dvt.PathUtils.quadTo(-6, handleY + 3, -8, handleY + 8) +
+                  dvt.PathUtils.lineTo(-8, handleY + 28) +
+                  dvt.PathUtils.quadTo(-6, handleY + 33, 0, handleY + 36);
+      dvt.PathUtils.closePath();
+      leftHandleBackground = new dvt.Rect(this.getCtx(), 0 - handleStart, 0, handleSize, height, 'lhb');
+      rightHandleBackground = new dvt.Rect(this.getCtx(), handleStart, 0, handleSize, height, 'rhb');
       cursor = 'col-resize';
 
       if (this._handleBackgroundImage)
@@ -789,8 +785,8 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
     leftHandleBackground.setPixelHinting(true);
     rightHandleBackground.setPixelHinting(true);
 
-    var leftHandle = new DvtPath(this.getCtx(), leftHandleCmds, 'lh');
-    var rightHandle = new DvtPath(this.getCtx(), rightHandleCmds, 'rh');
+    var leftHandle = new dvt.Path(this.getCtx(), leftHandleCmds, 'lh');
+    var rightHandle = new dvt.Path(this.getCtx(), rightHandleCmds, 'rh');
     leftHandle.setSolidFill(this._handleFillColor);
     leftHandle.setSolidStroke(this._handleFillColor);
     rightHandle.setSolidFill(this._handleFillColor);
@@ -827,16 +823,16 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
   if (vertical)
   {
     if (this.isRTL())
-      var timeAxisTopBar = new DvtLine(this.getCtx(), this.getTimeAxisWidth(), 0, this.getTimeAxisWidth(), height, 'tab');
+      var timeAxisTopBar = new dvt.Line(this.getCtx(), this.getTimeAxisWidth(), 0, this.getTimeAxisWidth(), height, 'tab');
     else
-      timeAxisTopBar = new DvtLine(this.getCtx(), width - this.getTimeAxisWidth(), 0, width - this.getTimeAxisWidth(), height, 'tab');
+      timeAxisTopBar = new dvt.Line(this.getCtx(), width - this.getTimeAxisWidth(), 0, width - this.getTimeAxisWidth(), height, 'tab');
   }
   else
   {
     if (this.isOverviewAbove())
-      timeAxisTopBar = new DvtLine(this.getCtx(), 0, this.getTimeAxisHeight(), width, this.getTimeAxisHeight(), 'tab');
+      timeAxisTopBar = new dvt.Line(this.getCtx(), 0, this.getTimeAxisHeight(), width, this.getTimeAxisHeight(), 'tab');
     else
-      timeAxisTopBar = new DvtLine(this.getCtx(), 0, height - this.getTimeAxisHeight(), width, height - this.getTimeAxisHeight(), 'tab');
+      timeAxisTopBar = new dvt.Line(this.getCtx(), 0, height - this.getTimeAxisHeight(), width, height - this.getTimeAxisHeight(), 'tab');
   }
   timeAxisTopBar.setSolidStroke(this._timeAxisBarColor, this._timeAxisBarOpacity);
 
@@ -850,13 +846,13 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
   {
     if (vertical)
     {
-      var leftBackground = new DvtRect(this.getCtx(), 0, 0, width, 0, 'lbg');
-      var rightBackground = new DvtRect(this.getCtx(), 0, 0, width, 0, 'rbg');
+      var leftBackground = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'lbg');
+      var rightBackground = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'rbg');
     }
     else
     {
-      leftBackground = new DvtRect(this.getCtx(), 0, 0, 0, height, 'lbg');
-      rightBackground = new DvtRect(this.getCtx(), 0, 0, 0, height, 'rbg');
+      leftBackground = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'lbg');
+      rightBackground = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'rbg');
     }
 
     leftBackground.setSolidFill(this._leftFilterPanelColor, this._leftFilterPanelAlpha);
@@ -866,18 +862,18 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
 
     // the left and right background resize handle are needed for touch because the touch area for resize handle goes
     // beyond the handle and into the left and right background area, so we'll need something on top of the background
-    if (DvtTimeUtils.supportsTouch() && handleStart != undefined)
+    if (dvt.OverviewUtils.supportsTouch() && handleStart != undefined)
     {
       var handleSize = this.getHandleStart();
       if (vertical)
       {
-        var leftBackgroundResizeHandle = new DvtRect(this.getCtx(), 0, 0, width, handleStart, 'lbgrh');
-        var rightBackgroundResizeHandle = new DvtRect(this.getCtx(), 0, 0, width, handleStart, 'rbgrh');
+        var leftBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, width, handleStart, 'lbgrh');
+        var rightBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, width, handleStart, 'rbgrh');
       }
       else
       {
-        leftBackgroundResizeHandle = new DvtRect(this.getCtx(), 0, 0, handleStart, height, 'lbgrh');
-        rightBackgroundResizeHandle = new DvtRect(this.getCtx(), 0, 0, handleStart, height, 'rbgrh');
+        leftBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, handleStart, height, 'lbgrh');
+        rightBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, handleStart, height, 'rbgrh');
       }
 
       leftBackgroundResizeHandle.setSolidFill(this._leftFilterPanelColor, 0);
@@ -889,19 +885,19 @@ DvtOverview.prototype.createSlidingWindow = function(width, height)
 };
 
 // renders the grippy from an image
-DvtOverview.prototype.createGrippyImage = function(width, height)
+dvt.Overview.prototype.createGrippyImage = function(width, height)
 {
   var posX = (width - this._handleWidth) / 2;
   var posY = (height - this._handleHeight) / 2;
-  var grippy = new DvtImage(this.getCtx(), this._handleBackgroundImage, posX, posY, this._handleWidth, this._handleHeight, 'grpy');
+  var grippy = new dvt.Image(this.getCtx(), this._handleBackgroundImage, posX, posY, this._handleWidth, this._handleHeight, 'grpy');
   grippy.setMouseEnabled(false);
   return grippy;
 };
 
 // renders the dots in the grippy
-DvtOverview.prototype.createGrippy = function(handlePos)
+dvt.Overview.prototype.createGrippy = function(handlePos)
 {
-  var grippy = new DvtContainer(this.getCtx(), 'grpy');
+  var grippy = new dvt.Container(this.getCtx(), 'grpy');
   var gap = 2; // gap between dots
   var count = 9;  // how many dots to draw
   var color = this._handleTextureColor; // color of the dots
@@ -912,28 +908,28 @@ DvtOverview.prototype.createGrippy = function(handlePos)
     var starty = 3;  // start y location of dots relative to container
     for (var i = 0; i < count; i++)
     {
-      var dot = new DvtLine(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot1' + i);
+      var dot = new dvt.Line(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot1' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       starty = starty + gap;
-      dot = new DvtLine(this.getCtx(), (startx + 1) + i * gap, starty, (startx + 1) + i * gap + 1, starty, 'dot2' + i);
+      dot = new dvt.Line(this.getCtx(), (startx + 1) + i * gap, starty, (startx + 1) + i * gap + 1, starty, 'dot2' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       starty = starty + gap;
-      dot = new DvtLine(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot3' + i);
+      dot = new dvt.Line(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot3' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       starty = 3;
     }
 
-    dot = new DvtLine(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot4');
+    dot = new dvt.Line(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot4');
     dot.setSolidStroke(color);
     grippy.addChild(dot);
     starty = starty + gap * 2;
-    dot = new DvtLine(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot5');
+    dot = new dvt.Line(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot5');
     dot.setSolidStroke(color);
     grippy.addChild(dot);
   }
@@ -943,28 +939,28 @@ DvtOverview.prototype.createGrippy = function(handlePos)
     starty = 8 + handlePos;  // start y location of dots relative to container
     for (i = 0; i < count; i++)
     {
-      dot = new DvtLine(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot1' + i);
+      dot = new dvt.Line(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot1' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       startx = startx + gap;
-      dot = new DvtLine(this.getCtx(), startx, (starty + 1) + i * gap, startx, (starty + 1) + i * gap + 1, 'dot2' + i);
+      dot = new dvt.Line(this.getCtx(), startx, (starty + 1) + i * gap, startx, (starty + 1) + i * gap + 1, 'dot2' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       startx = startx + gap;
-      dot = new DvtLine(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot3' + i);
+      dot = new dvt.Line(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot3' + i);
       dot.setSolidStroke(color);
       grippy.addChild(dot);
 
       startx = 3;
     }
 
-    dot = new DvtLine(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot4');
+    dot = new dvt.Line(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot4');
     dot.setSolidStroke(color);
     grippy.addChild(dot);
     startx = startx + gap * 2;
-    dot = new DvtLine(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot5');
+    dot = new dvt.Line(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot5');
     dot.setSolidStroke(color);
     grippy.addChild(dot);
   }
@@ -975,7 +971,7 @@ DvtOverview.prototype.createGrippy = function(handlePos)
   return grippy;
 };
 
-DvtOverview.prototype.updateSlidingWindow = function(width, height)
+dvt.Overview.prototype.updateSlidingWindow = function(width, height)
 {
   var vertical = this.isVertical();
 
@@ -989,8 +985,8 @@ DvtOverview.prototype.updateSlidingWindow = function(width, height)
   var renderStart = this._renderStart;
 
   // first get the date using the width of timeline overview as position relative to the overall timeline
-  var rangeStartTime = DvtTimeUtils.getPositionDate(start, end, 0, timelineWidth);
-  var rangeEndTime = DvtTimeUtils.getPositionDate(start, end, actualSize, timelineWidth);
+  var rangeStartTime = dvt.OverviewUtils.getPositionDate(start, end, 0, timelineWidth);
+  var rangeEndTime = dvt.OverviewUtils.getPositionDate(start, end, actualSize, timelineWidth);
 
   // now find the position relative to the width of timeline overview
   var rangeStartPos = this.getDatePosition(rangeStartTime);
@@ -1012,11 +1008,11 @@ DvtOverview.prototype.updateSlidingWindow = function(width, height)
   this._increment = this.calculateIncrement(size);
 };
 
-DvtOverview.prototype.createBorderAroundSlidingWindow = function(width, height)
+dvt.Overview.prototype.createBorderAroundSlidingWindow = function(width, height)
 {
   // add the left and right grip last since we want them over the markers
   var slidingWindow = this.getSlidingWindow();
-  var halfBorderWidth = DvtOverview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
+  var halfBorderWidth = dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
   if (this.isVertical())
   {
     var top = slidingWindow.getY();
@@ -1028,15 +1024,15 @@ DvtOverview.prototype.createBorderAroundSlidingWindow = function(width, height)
     var right = width;
     var rightCenter = right - halfBorderWidth;
 
-    var leftHandle = new DvtLine(this.getCtx(), left, topCenter, width, topCenter, 'lh');
-    var rightHandle = new DvtLine(this.getCtx(), left, bottomCenter, width, bottomCenter, 'rh');
+    var leftHandle = new dvt.Line(this.getCtx(), left, topCenter, width, topCenter, 'lh');
+    var rightHandle = new dvt.Line(this.getCtx(), left, bottomCenter, width, bottomCenter, 'rh');
 
     // leftTopBar and rightTopBar are only visible in fusion skins
-    var leftTopBar = new DvtLine(this.getCtx(), leftCenter, 0, leftCenter, top, 'ltb');
-    var rightTopBar = new DvtLine(this.getCtx(), leftCenter, bottom, leftCenter, height, 'rtb');
+    var leftTopBar = new dvt.Line(this.getCtx(), leftCenter, 0, leftCenter, top, 'ltb');
+    var rightTopBar = new dvt.Line(this.getCtx(), leftCenter, bottom, leftCenter, height, 'rtb');
 
-    var bottomBar = new DvtLine(this.getCtx(), rightCenter, top, rightCenter, bottom, 'bb');
-    var topBar = new DvtLine(this.getCtx(), leftCenter, top, leftCenter, bottom, 'tb');
+    var bottomBar = new dvt.Line(this.getCtx(), rightCenter, top, rightCenter, bottom, 'bb');
+    var topBar = new dvt.Line(this.getCtx(), leftCenter, top, leftCenter, bottom, 'tb');
   }
   else
   {
@@ -1049,25 +1045,25 @@ DvtOverview.prototype.createBorderAroundSlidingWindow = function(width, height)
     right = left + slidingWindow.getWidth();
     rightCenter = right - halfBorderWidth;
 
-    leftHandle = new DvtLine(this.getCtx(), leftCenter, top, leftCenter, bottom, 'lh');
-    rightHandle = new DvtLine(this.getCtx(), rightCenter, top, rightCenter, bottom, 'rh');
+    leftHandle = new dvt.Line(this.getCtx(), leftCenter, top, leftCenter, bottom, 'lh');
+    rightHandle = new dvt.Line(this.getCtx(), rightCenter, top, rightCenter, bottom, 'rh');
 
     /* This mode is not currently implemented ...
     if (this.isOverviewAbove())
     {
-        leftTopBar = new DvtLine(this.getCtx(), 0, height-1, left, height-1, "ltb");
-        rightTopBar = new DvtLine(this.getCtx(), right, height-1, width, height-1, "rtb");
-        bottomBar = new DvtLine(this.getCtx(), left, 1, right, 1, "bb");
-        topBar = new DvtLine(this.getCtx(), left, height-1, right, height-1, "tb");
+        leftTopBar = new dvt.Line(this.getCtx(), 0, height-1, left, height-1, "ltb");
+        rightTopBar = new dvt.Line(this.getCtx(), right, height-1, width, height-1, "rtb");
+        bottomBar = new dvt.Line(this.getCtx(), left, 1, right, 1, "bb");
+        topBar = new dvt.Line(this.getCtx(), left, height-1, right, height-1, "tb");
     }
     else ... */
 
     // leftTopBar and rightTopBar are only visible in fusion skins
-    leftTopBar = new DvtLine(this.getCtx(), 0, topCenter, left + 1, topCenter, 'ltb');
-    rightTopBar = new DvtLine(this.getCtx(), right - 1, topCenter, width, topCenter, 'rtb');
+    leftTopBar = new dvt.Line(this.getCtx(), 0, topCenter, left + 1, topCenter, 'ltb');
+    rightTopBar = new dvt.Line(this.getCtx(), right - 1, topCenter, width, topCenter, 'rtb');
 
-    bottomBar = new DvtLine(this.getCtx(), left, bottomCenter, right, bottomCenter, 'bb');
-    topBar = new DvtLine(this.getCtx(), left, topCenter, right, topCenter, 'tb');
+    bottomBar = new dvt.Line(this.getCtx(), left, bottomCenter, right, bottomCenter, 'bb');
+    topBar = new dvt.Line(this.getCtx(), left, topCenter, right, topCenter, 'tb');
   }
 
   // Do not antialias the sliding window borders
@@ -1103,39 +1099,39 @@ DvtOverview.prototype.createBorderAroundSlidingWindow = function(width, height)
   this.addChild(topBar);
 };
 
-DvtOverview.prototype.createResizeArrow = function()
+dvt.Overview.prototype.createResizeArrow = function()
 {
   if (this.isVertical())
   {
-    var arrowCmds = DvtPathUtils.moveTo(6, 0) +
-        DvtPathUtils.lineTo(0, 5) +
-        DvtPathUtils.lineTo(5, 5) +
-        DvtPathUtils.lineTo(5, 17) +
-        DvtPathUtils.lineTo(0, 17) +
-        DvtPathUtils.lineTo(6, 22) +
-        DvtPathUtils.lineTo(12, 17) +
-        DvtPathUtils.lineTo(7, 17) +
-        DvtPathUtils.lineTo(7, 5) +
-        DvtPathUtils.lineTo(12, 5) +
-        DvtPathUtils.closePath();
+    var arrowCmds = dvt.PathUtils.moveTo(6, 0) +
+        dvt.PathUtils.lineTo(0, 5) +
+        dvt.PathUtils.lineTo(5, 5) +
+        dvt.PathUtils.lineTo(5, 17) +
+        dvt.PathUtils.lineTo(0, 17) +
+        dvt.PathUtils.lineTo(6, 22) +
+        dvt.PathUtils.lineTo(12, 17) +
+        dvt.PathUtils.lineTo(7, 17) +
+        dvt.PathUtils.lineTo(7, 5) +
+        dvt.PathUtils.lineTo(12, 5) +
+        dvt.PathUtils.closePath();
   }
   else
   {
-    arrowCmds = DvtPathUtils.moveTo(5, 0) +
-        DvtPathUtils.lineTo(0, 6) +
-        DvtPathUtils.lineTo(5, 12) +
-        DvtPathUtils.lineTo(5, 7) +
-        DvtPathUtils.lineTo(17, 7) +
-        DvtPathUtils.lineTo(17, 12) +
-        DvtPathUtils.lineTo(22, 6) +
-        DvtPathUtils.lineTo(17, 0) +
-        DvtPathUtils.lineTo(17, 4) +
-        DvtPathUtils.lineTo(5, 4) +
-        DvtPathUtils.lineTo(5, 0) +
-        DvtPathUtils.closePath();
+    arrowCmds = dvt.PathUtils.moveTo(5, 0) +
+        dvt.PathUtils.lineTo(0, 6) +
+        dvt.PathUtils.lineTo(5, 12) +
+        dvt.PathUtils.lineTo(5, 7) +
+        dvt.PathUtils.lineTo(17, 7) +
+        dvt.PathUtils.lineTo(17, 12) +
+        dvt.PathUtils.lineTo(22, 6) +
+        dvt.PathUtils.lineTo(17, 0) +
+        dvt.PathUtils.lineTo(17, 4) +
+        dvt.PathUtils.lineTo(5, 4) +
+        dvt.PathUtils.lineTo(5, 0) +
+        dvt.PathUtils.closePath();
   }
 
-  var arrow = new DvtPath(this.getCtx(), arrowCmds, 'arr');
+  var arrow = new dvt.Path(this.getCtx(), arrowCmds, 'arr');
   arrow.setSolidFill('#ffffff');
   arrow.setSolidStroke('#000000');
   arrow.setVisible(false);
@@ -1145,7 +1141,7 @@ DvtOverview.prototype.createResizeArrow = function()
 };
 
 // orientation independent method
-DvtOverview.prototype.setRectPos = function(rect, pos)
+dvt.Overview.prototype.setRectPos = function(rect, pos)
 {
   if (this.isVertical())
     rect.setY(pos);
@@ -1153,7 +1149,7 @@ DvtOverview.prototype.setRectPos = function(rect, pos)
     rect.setX(pos);
 };
 
-DvtOverview.prototype.getRectPos = function(rect)
+dvt.Overview.prototype.getRectPos = function(rect)
 {
   if (this.isVertical())
     return rect.getY();
@@ -1161,7 +1157,7 @@ DvtOverview.prototype.getRectPos = function(rect)
     return rect.getX();
 };
 
-DvtOverview.prototype.getRectSize = function(rect)
+dvt.Overview.prototype.getRectSize = function(rect)
 {
   if (this.isVertical())
     return rect.getHeight();
@@ -1169,7 +1165,7 @@ DvtOverview.prototype.getRectSize = function(rect)
     return rect.getWidth();
 };
 
-DvtOverview.prototype.setRectSize = function(rect, size)
+dvt.Overview.prototype.setRectSize = function(rect, size)
 {
   if (this.isVertical())
     rect.setHeight(size);
@@ -1177,7 +1173,7 @@ DvtOverview.prototype.setRectSize = function(rect, size)
     rect.setWidth(size);
 };
 
-DvtOverview.prototype.getSlidingWindowPos = function(slidingWindow)
+dvt.Overview.prototype.getSlidingWindowPos = function(slidingWindow)
 {
   if (this.isVertical())
     return slidingWindow.getTranslateY();
@@ -1185,7 +1181,7 @@ DvtOverview.prototype.getSlidingWindowPos = function(slidingWindow)
     return slidingWindow.getTranslateX();
 };
 
-DvtOverview.prototype.setSlidingWindowPos = function(slidingWindow, pos)
+dvt.Overview.prototype.setSlidingWindowPos = function(slidingWindow, pos)
 {
   // make sure it cannot be negative
   pos = Math.max(0, pos);
@@ -1205,7 +1201,7 @@ DvtOverview.prototype.setSlidingWindowPos = function(slidingWindow, pos)
     rightBackground.setWidth(Math.max(0, this.Width - rightStart));
 
     // updates the background resize handle for touch
-    if (DvtTimeUtils.supportsTouch() && !this.isFeatureOff('zoom'))
+    if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
     {
       var handleStart = this.getHandleStart();
       var leftBackgroundHandle = this.getLeftBackgroundHandle();
@@ -1216,12 +1212,12 @@ DvtOverview.prototype.setSlidingWindowPos = function(slidingWindow, pos)
   }
 };
 
-DvtOverview.prototype.getSlidingWindowSize = function(slidingWindow)
+dvt.Overview.prototype.getSlidingWindowSize = function(slidingWindow)
 {
   return this.getRectSize(slidingWindow);
 };
 
-DvtOverview.prototype.setSlidingWindowSize = function(slidingWindow, size)
+dvt.Overview.prototype.setSlidingWindowSize = function(slidingWindow, size)
 {
   // make sure it's greater than the minimum window size
   size = Math.max(this.getMinimumWindowSize(), size);
@@ -1240,7 +1236,7 @@ DvtOverview.prototype.setSlidingWindowSize = function(slidingWindow, size)
     rightBackground.setWidth(Math.max(0, this.Width - rightStart));
 
     // updates the background resize handle for touch
-    if (DvtTimeUtils.supportsTouch() && !this.isFeatureOff('zoom'))
+    if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
     {
       var rightBackgroundHandle = this.getRightBackgroundHandle();
       rightBackgroundHandle.setX(rightStart);
@@ -1269,25 +1265,25 @@ DvtOverview.prototype.setSlidingWindowSize = function(slidingWindow, size)
   }
 };
 
-DvtOverview.prototype.calculateIncrement = function(overviewWidth)
+dvt.Overview.prototype.calculateIncrement = function(overviewWidth)
 {
   var timelineWidth = this._width;
   var start = this._start;
   var end = this._end;
 
   // get the date diff for 1 pixel
-  var day1 = DvtTimeUtils.getPositionDate(start, end, 1, overviewWidth);
-  var day2 = DvtTimeUtils.getPositionDate(start, end, 2, overviewWidth);
+  var day1 = dvt.OverviewUtils.getPositionDate(start, end, 1, overviewWidth);
+  var day2 = dvt.OverviewUtils.getPositionDate(start, end, 2, overviewWidth);
 
   // now map it back to whole timeline for position
-  var pos1 = DvtTimeUtils.getDatePosition(start, end, day1, timelineWidth);
-  var pos2 = DvtTimeUtils.getDatePosition(start, end, day2, timelineWidth);
+  var pos1 = dvt.OverviewUtils.getDatePosition(start, end, day1, timelineWidth);
+  var pos2 = dvt.OverviewUtils.getDatePosition(start, end, day2, timelineWidth);
 
   var inc = pos2 - pos1;
   return inc;
 };
 
-DvtOverview.prototype.updateTimeAxis = function(width, height)
+dvt.Overview.prototype.updateTimeAxis = function(width, height)
 {
   if (this._ticks == null)
     return;
@@ -1325,21 +1321,21 @@ DvtOverview.prototype.updateTimeAxis = function(width, height)
     if (vertical)
       maxWidth = this.Width;
 
-    maxWidth -= (DvtOverview._DEFAULT_AXIS_LABEL_PADDING * 2);
+    maxWidth -= (dvt.Overview._DEFAULT_AXIS_LABEL_PADDING * 2);
     this.addTick(time_pos, width, height, 'tick' + i);
     this.addLabel(time_pos, label, width, height, maxWidth, 'label' + i);
   }
 };
 
 // adds a tick mark
-DvtOverview.prototype.addTick = function(pos, width, height, id)
+dvt.Overview.prototype.addTick = function(pos, width, height, id)
 {
   if (this.isVertical())
-    var line = new DvtLine(this.getCtx(), 0, pos, width, pos, id);
+    var line = new dvt.Line(this.getCtx(), 0, pos, width, pos, id);
   else
-    line = new DvtLine(this.getCtx(), pos, 0, pos, height, id);
-  var stroke = new DvtSolidStroke(this._timeIndicatorColor);
-  stroke.setStyle(DvtStroke.DASHED, 3);
+    line = new dvt.Line(this.getCtx(), pos, 0, pos, height, id);
+  var stroke = new dvt.SolidStroke(this._timeIndicatorColor);
+  stroke.setStyle(dvt.Stroke.DASHED, 3);
   line.setStroke(stroke);
 
   // Do not antialias tick marks
@@ -1349,13 +1345,13 @@ DvtOverview.prototype.addTick = function(pos, width, height, id)
 };
 
 // add a label in time axis
-DvtOverview.prototype.addLabel = function(pos, text, width, height, maxWidth, id, labelStyle)
+dvt.Overview.prototype.addLabel = function(pos, text, width, height, maxWidth, id, labelStyle)
 {
-  labelStyle = labelStyle || new DvtCSSStyle('font-weight:bold');
+  labelStyle = labelStyle || new dvt.CSSStyle('font-weight:bold');
 
   if (this.isVertical())
   {
-    var label = new DvtOutputText(this.getCtx(), text, 4, pos, id);
+    var label = new dvt.OutputText(this.getCtx(), text, 4, pos, id);
     label.setCSSStyle(labelStyle);
     if (this.isRTL())
     {
@@ -1372,8 +1368,8 @@ DvtOverview.prototype.addLabel = function(pos, text, width, height, maxWidth, id
     else
       y = height - this.getTimeAxisHeight() + 2;
 
-    var padding = DvtOverview._DEFAULT_AXIS_LABEL_PADDING;
-    label = new DvtOutputText(this.getCtx(), text, pos + padding, y, id);
+    var padding = dvt.Overview._DEFAULT_AXIS_LABEL_PADDING;
+    label = new dvt.OutputText(this.getCtx(), text, pos + padding, y, id);
     label.setCSSStyle(labelStyle);
     if (this.isHorizontalRTL())
     {
@@ -1384,13 +1380,13 @@ DvtOverview.prototype.addLabel = function(pos, text, width, height, maxWidth, id
     }
   }
 
-  DvtTextUtils.fitText(label, maxWidth, Infinity, this);
+  dvt.TextUtils.fitText(label, maxWidth, Infinity, this);
 
   // save the raw text for tooltip
   label._rawText = label.getUntruncatedTextString();
 };
 
-DvtOverview.prototype.updateCurrentTime = function(width, height)
+dvt.Overview.prototype.updateCurrentTime = function(width, height)
 {
   if (this._currentTime == null || isNaN(this._currentTime))
     return;
@@ -1398,12 +1394,12 @@ DvtOverview.prototype.updateCurrentTime = function(width, height)
   var time_pos = this.getDatePosition(this._currentTime);
 
   if (this.isVertical())
-    var line = new DvtLine(this.getCtx(), 0, time_pos, width, time_pos, 'ocd');
+    var line = new dvt.Line(this.getCtx(), 0, time_pos, width, time_pos, 'ocd');
   else
   {
     if (this.isRTL())
       time_pos = width - time_pos;
-    line = new DvtLine(this.getCtx(), time_pos, 0, time_pos, height, 'ocd');
+    line = new dvt.Line(this.getCtx(), time_pos, 0, time_pos, height, 'ocd');
   }
   line.setSolidStroke(this._currentTimeIndicatorColor);
 
@@ -1413,7 +1409,7 @@ DvtOverview.prototype.updateCurrentTime = function(width, height)
   this.addChild(line);
 };
 
-DvtOverview.prototype.parseFilledTimeRangesXML = function(width, height)
+dvt.Overview.prototype.parseFilledTimeRangesXML = function(width, height)
 {
   if (this._formattedTimeRanges == null)
     return;
@@ -1429,7 +1425,7 @@ DvtOverview.prototype.parseFilledTimeRangesXML = function(width, height)
   }
 };
 
-DvtOverview.prototype.addFilledTimeRange = function(elem, start, end, width, height)
+dvt.Overview.prototype.addFilledTimeRange = function(elem, start, end, width, height)
 {
   var rangeStart = parseInt(elem.getAttr('rs'), 10);
   var rangeEnd = parseInt(elem.getAttr('re'), 10);
@@ -1449,9 +1445,9 @@ DvtOverview.prototype.addFilledTimeRange = function(elem, start, end, width, hei
     }
 
     if (this.isVertical())
-      var displayable = new DvtRect(this.getCtx(), 0, rangeStart_pos, width - this.getTimeAxisWidth(), rangeWidth, 'ftr');
+      var displayable = new dvt.Rect(this.getCtx(), 0, rangeStart_pos, width - this.getTimeAxisWidth(), rangeWidth, 'ftr');
     else
-      displayable = new DvtRect(this.getCtx(), rangeStart_pos, this.isOverviewAbove() ? this.getTimeAxisHeight() : 0, rangeWidth, height - this.getTimeAxisHeight(), 'ftr');
+      displayable = new dvt.Rect(this.getCtx(), rangeStart_pos, this.isOverviewAbove() ? this.getTimeAxisHeight() : 0, rangeWidth, height - this.getTimeAxisHeight(), 'ftr');
 
     if (color != null)
       displayable.setSolidFill(color, 0.4);
@@ -1464,13 +1460,13 @@ DvtOverview.prototype.addFilledTimeRange = function(elem, start, end, width, hei
   }
 };
 
-DvtOverview.prototype.parseDataXML = function(width, height)
+dvt.Overview.prototype.parseDataXML = function(width, height)
 {
 };
 
 
 /************************** sliding window animation *********************************************/
-DvtOverview.prototype.animateSlidingWindow = function(newLeft, newWidth)
+dvt.Overview.prototype.animateSlidingWindow = function(newLeft, newWidth)
 {
   var slidingWindow = this.getSlidingWindow();
   var handleBackground = slidingWindow.getChildAt(3);
@@ -1569,7 +1565,7 @@ DvtOverview.prototype.animateSlidingWindow = function(newLeft, newWidth)
     newLeft = Math.max(minPos, Math.min(maxPos - slidingWindowSize, newLeft));
 
   // sliding window
-  var animator = this.isAnimationOnClick() ? new DvtAnimator(this.getCtx(), 0.5, 0, DvtEasing.linear) : null;
+  var animator = this.isAnimationOnClick() ? new dvt.Animator(this.getCtx(), 0.5, 0, dvt.Easing.linear) : null;
   this.animateProperty(animator, slidingWindow, posGetter, posSetter, newLeft);
   if (newWidth != undefined)
   {
@@ -1640,7 +1636,7 @@ DvtOverview.prototype.animateSlidingWindow = function(newLeft, newWidth)
     this.animateProperty(animator, rightBackground, rightBackgroundGetter, rightBackgroundSetter, timelineSize - rightStart);
     this.animateProperty(animator, rightBackground, rightBackgroundPosGetter, rightBackgroundPosSetter, rightStart);
 
-    if (DvtTimeUtils.supportsTouch() && !this.isFeatureOff('zoom'))
+    if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
     {
       var handleStart = this.getHandleStart();
       var leftBackgroundHandle = this.getLeftBackgroundHandle();
@@ -1659,10 +1655,10 @@ DvtOverview.prototype.animateSlidingWindow = function(newLeft, newWidth)
     animator.play();
 };
 
-DvtOverview.prototype.animateProperty = function(animator, obj, getter, setter, value)
+dvt.Overview.prototype.animateProperty = function(animator, obj, getter, setter, value)
 {
   if (animator != null)
-    animator.addProp(DvtAnimator.TYPE_NUMBER, obj, getter, setter, value);
+    animator.addProp(dvt.Animator.TYPE_NUMBER, obj, getter, setter, value);
   else
     setter.call(obj, value);
 };
@@ -1670,7 +1666,7 @@ DvtOverview.prototype.animateProperty = function(animator, obj, getter, setter, 
 
 
 /************************** event handling *********************************************/
-DvtOverview.prototype.HandleShapeMouseOver = function(event)
+dvt.Overview.prototype.HandleShapeMouseOver = function(event)
 {
   var drawable = this._findDrawable(event);
   // Return if no drawable is found
@@ -1678,7 +1674,7 @@ DvtOverview.prototype.HandleShapeMouseOver = function(event)
     return;
 
   // if it is a label, show a tooltip of the label if it is truncated
-  if (drawable.getId().substr(0, 5) == 'label' && (drawable instanceof DvtOutputText || drawable instanceof DvtBackgroundOutputText))
+  if (drawable.getId().substr(0, 5) == 'label' && (drawable instanceof dvt.OutputText || drawable instanceof dvt.BackgroundOutputText))
   {
     if (drawable.isTruncated())
       this.getCtx().getTooltipManager().showDatatip(event.pageX, event.pageY, drawable._rawText, '#000000');
@@ -1711,7 +1707,7 @@ DvtOverview.prototype.HandleShapeMouseOver = function(event)
   return drawable;
 };
 
-DvtOverview.prototype.HandleShapeMouseOut = function(event)
+dvt.Overview.prototype.HandleShapeMouseOut = function(event)
 {
   // don't change cursor yet if we are in a moving state
   if (this._moveDrawable == null)
@@ -1728,7 +1724,7 @@ DvtOverview.prototype.HandleShapeMouseOut = function(event)
   return drawable;
 };
 
-DvtOverview.prototype.HandleShapeClick = function(event, pageX, pageY)
+dvt.Overview.prototype.HandleShapeClick = function(event, pageX, pageY)
 {
   // so that graph will not get a click event and clear selection
   event.stopPropagation();
@@ -1771,7 +1767,7 @@ DvtOverview.prototype.HandleShapeClick = function(event, pageX, pageY)
     var time = this.getPositionDate(pos);
 
     // scroll timeline
-    var evt = new DvtOverviewEvent(DvtOverviewEvent.SUBTYPE_SCROLL_TIME);
+    var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_TIME);
     evt.setTime(time);
 
     // make sure position is in bound
@@ -1800,12 +1796,12 @@ DvtOverview.prototype.HandleShapeClick = function(event, pageX, pageY)
 
 /**
  * Begins a drag pan of the overview window if applicable.
- * @param {DvtBaseEvent} event The dispatched event to be processed by the object.
+ * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
  * @param {number} compX The x coordinate of the event with relative to the stage.
  * @param {number} compY The y coordinate of the event with relative to the stage.
  * @return {boolean} true iff a drag pan operation is started, false otherwise.
  */
-DvtOverview.prototype.beginDragPan = function(event, compX, compY)
+dvt.Overview.prototype.beginDragPan = function(event, compX, compY)
 {
   var drawable = this._findDrawable(event);
   if (drawable != null && this.isMovable(drawable))
@@ -1857,17 +1853,17 @@ DvtOverview.prototype.beginDragPan = function(event, compX, compY)
       // drawable should be lhb or rhb
       // temporarily increase size of handle to capture wider area and prevent cursor from changing
       // only do this for non touch since we won't run into cursor issue
-      if (!DvtTimeUtils.supportsTouch())
+      if (!dvt.OverviewUtils.supportsTouch())
       {
         if (this.isVertical())
         {
-          drawable.setY(0 - DvtOverview.HANDLE_PADDING_SIZE);
-          drawable.setHeight((drawable.getHeight() + DvtOverview.HANDLE_PADDING_SIZE) * 2);
+          drawable.setY(0 - dvt.Overview.HANDLE_PADDING_SIZE);
+          drawable.setHeight((drawable.getHeight() + dvt.Overview.HANDLE_PADDING_SIZE) * 2);
         }
         else
         {
-          drawable.setX(0 - DvtOverview.HANDLE_PADDING_SIZE);
-          drawable.setWidth((drawable.getWidth() + DvtOverview.HANDLE_PADDING_SIZE) * 2);
+          drawable.setX(0 - dvt.Overview.HANDLE_PADDING_SIZE);
+          drawable.setWidth((drawable.getWidth() + dvt.Overview.HANDLE_PADDING_SIZE) * 2);
         }
       }
 
@@ -1879,7 +1875,7 @@ DvtOverview.prototype.beginDragPan = function(event, compX, compY)
 
     // ask the overview peer to notify us if the release happened outside of the overview
     // see stopDragAction method
-    var evt = new DvtOverviewEvent(DvtOverviewEvent.SUBTYPE_PRE_RANGECHANGE);
+    var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_PRE_RANGECHANGE);
     this.dispatchEvent(evt);
     return true;
   }
@@ -1888,7 +1884,7 @@ DvtOverview.prototype.beginDragPan = function(event, compX, compY)
 };
 
 // Change the cursor of the sliding window and the left and right backgrounds
-DvtOverview.prototype.overrideCursors = function(cursor)
+dvt.Overview.prototype.overrideCursors = function(cursor)
 {
   var slidingWindow = this.getSlidingWindow();
   if (slidingWindow != null)
@@ -1907,7 +1903,7 @@ DvtOverview.prototype.overrideCursors = function(cursor)
 };
 
 // reset the cursor to what it was original state
-DvtOverview.prototype.resetCursors = function()
+dvt.Overview.prototype.resetCursors = function()
 {
   var slidingWindow = this.getSlidingWindow();
   if (slidingWindow != null)
@@ -1928,7 +1924,7 @@ DvtOverview.prototype.resetCursors = function()
 /**
  * Ends a drag pan of the overview window if applicable.
  */
-DvtOverview.prototype.endDragPan = function()
+dvt.Overview.prototype.endDragPan = function()
 {
   if (this._moveDrawable != null)
   {
@@ -1939,7 +1935,7 @@ DvtOverview.prototype.endDragPan = function()
       this.finishHandleDrag(0, 0);
 
       // reset the temporarily resized handle
-      if (!DvtTimeUtils.supportsTouch())
+      if (!dvt.OverviewUtils.supportsTouch())
       {
         if (this.isVertical())
         {
@@ -1964,11 +1960,11 @@ DvtOverview.prototype.endDragPan = function()
 
 /**
  * Continues a drag pan of the overview window if applicable.
- * @param {DvtBaseEvent} event The dispatched event to be processed by the object.
+ * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
  * @param {number} compX The x coordinate of the event with relative to the stage.
  * @param {number} compY The y coordinate of the event with relative to the stage.
  */
-DvtOverview.prototype.contDragPan = function(event, compX, compY)
+dvt.Overview.prototype.contDragPan = function(event, compX, compY)
 {
   if (this._moveDrawable != null && this._initX != -1)
   {
@@ -1992,7 +1988,7 @@ DvtOverview.prototype.contDragPan = function(event, compX, compY)
   }
 };
 
-DvtOverview.prototype.HandleTouchStart = function(event)
+dvt.Overview.prototype.HandleTouchStart = function(event)
 {
   var touches = event.touches;
   this._touchStartX = touches[0].pageX;
@@ -2019,7 +2015,7 @@ DvtOverview.prototype.HandleTouchStart = function(event)
   }
 };
 
-DvtOverview.prototype.HandleTouchMove = function(event)
+dvt.Overview.prototype.HandleTouchMove = function(event)
 {
   event.preventDefault();
   var touches = event.touches;
@@ -2056,7 +2052,7 @@ DvtOverview.prototype.HandleTouchMove = function(event)
   }
 };
 
-DvtOverview.prototype.HandleTouchEnd = function(event)
+dvt.Overview.prototype.HandleTouchEnd = function(event)
 {
   if (this._touchStartX2 != null && this._touchStartY2 != null)
   {
@@ -2076,7 +2072,7 @@ DvtOverview.prototype.HandleTouchEnd = function(event)
 };
 
 // called externally from overview peer to stop all dragging if the drop action happened outside of the overview
-DvtOverview.prototype.stopDragAction = function()
+dvt.Overview.prototype.stopDragAction = function()
 {
   this.endDragPan();
 };
@@ -2086,13 +2082,13 @@ DvtOverview.prototype.stopDragAction = function()
  * Handles keyboard event on the overview.
  * @param {Event} event the keyboard event
  */
-DvtOverview.prototype.HandleKeyDown = function(event) 
+dvt.Overview.prototype.HandleKeyDown = function(event) 
 {
   var keyCode = event.keyCode;
-  if (keyCode === DvtKeyboardEvent.LEFT_ARROW || keyCode === DvtKeyboardEvent.RIGHT_ARROW)
+  if (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW)
   {
     var func = event.shiftKey ? this.handleRightHandleDragPositioning : this.handleWindowDragPositioning;
-    var delta = keyCode === DvtKeyboardEvent.LEFT_ARROW ? -1 : 1;
+    var delta = keyCode === dvt.KeyboardEvent.LEFT_ARROW ? -1 : 1;
     func.call(this, event, delta, delta);
   }
 };
@@ -2102,13 +2098,13 @@ DvtOverview.prototype.HandleKeyDown = function(event)
  * Handles keyboard event on the overview.
  * @param {Event} event the keyboard event
  */
-DvtOverview.prototype.HandleKeyUp = function(event) 
+dvt.Overview.prototype.HandleKeyUp = function(event) 
 {
   var keyCode = event.keyCode;
-  if (keyCode === DvtKeyboardEvent.LEFT_ARROW || keyCode === DvtKeyboardEvent.RIGHT_ARROW)
+  if (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW)
   {
     var func = event.shiftKey ? this.finishHandleDrag : this.finishWindowDrag;
-    var delta = keyCode === DvtKeyboardEvent.LEFT_ARROW ? -1 : 1;
+    var delta = keyCode === dvt.KeyboardEvent.LEFT_ARROW ? -1 : 1;
     func.call(this, delta, delta);
   }
 };
@@ -2116,7 +2112,7 @@ DvtOverview.prototype.HandleKeyUp = function(event)
 
 /***************************** window scrolling triggered by timeline *********************************************/
 // called by peer
-DvtOverview.prototype.ScrollToStart = function()
+dvt.Overview.prototype.ScrollToStart = function()
 {
   var slidingWindow = this.getSlidingWindow();
   var totalWidth = this.Width;
@@ -2128,7 +2124,7 @@ DvtOverview.prototype.ScrollToStart = function()
   this.ScrollTimeAxis();
 };
 
-DvtOverview.prototype.ScrollToEnd = function()
+dvt.Overview.prototype.ScrollToEnd = function()
 {
   var slidingWindow = this.getSlidingWindow();
   var totalWidth = this.Width;
@@ -2140,7 +2136,7 @@ DvtOverview.prototype.ScrollToEnd = function()
   this.ScrollTimeAxis();
 };
 
-DvtOverview.prototype.ScrollByAmount = function(amount)
+dvt.Overview.prototype.ScrollByAmount = function(amount)
 {
   var slidingWindow = this.getSlidingWindow();
   // todo: rounding makes this inaccurate at some point, perhaps a way to sync up the scroll pos with actual data points?
@@ -2161,7 +2157,7 @@ DvtOverview.prototype.ScrollByAmount = function(amount)
 };
 
 // called by timeline peer keyboard navigation methods
-DvtOverview.prototype.longScrollToPos = function(pos)
+dvt.Overview.prototype.longScrollToPos = function(pos)
 {
   var actualAmount = pos / this._increment;
   if (this.isHorizontalRTL())
@@ -2171,7 +2167,7 @@ DvtOverview.prototype.longScrollToPos = function(pos)
 };
 
 // called by timeline peer on restore position after zoom
-DvtOverview.prototype.ScrollToPos = function(pos)
+dvt.Overview.prototype.ScrollToPos = function(pos)
 {
   var slidingWindow = this.getSlidingWindow();
   var actualAmount = pos / this._increment;
@@ -2187,26 +2183,26 @@ DvtOverview.prototype.ScrollToPos = function(pos)
  * Called by apps to scroll the overview window to a particular time
  * @public
  */
-DvtOverview.prototype.scrollToTime = function(time)
+dvt.Overview.prototype.scrollToTime = function(time)
 {
-  var pos = Math.max(0, DvtTimeUtils.getDatePosition(this._start, this._end, time, this._width));
+  var pos = Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, time, this._width));
   this.longScrollToPos(pos);
 };
 /************************** end window scrolling triggered by timeline *********************************************/
 
 
 /***************************** window scrolling and resizing *********************************************/
-DvtOverview.prototype.handleWindowDragPositioning = function(event, deltaX, deltaY)
+dvt.Overview.prototype.handleWindowDragPositioning = function(event, deltaX, deltaY)
 {
-  this.fireScrollEvent(DvtOverviewEvent.SUBTYPE_SCROLL_POS, deltaX, deltaY);
+  this.fireScrollEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_POS, deltaX, deltaY);
 };
 
-DvtOverview.prototype.finishWindowDrag = function(deltaX, deltaY)
+dvt.Overview.prototype.finishWindowDrag = function(deltaX, deltaY)
 {
-  this.fireScrollEvent(DvtOverviewEvent.SUBTYPE_SCROLL_END, deltaX, deltaY);
+  this.fireScrollEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_END, deltaX, deltaY);
 };
 
-DvtOverview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
+dvt.Overview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
 {
   var slidingWindow = this.getSlidingWindow();
   var pos = this.getSlidingWindowPos(slidingWindow);
@@ -2224,18 +2220,18 @@ DvtOverview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
     // hit the top
     this.setSlidingWindowPos(slidingWindow, minPos);
     if (this.isHorizontalRTL())
-      var scrollTo = DvtOverviewEvent.END_POS;
+      var scrollTo = dvt.OverviewEvent.END_POS;
     else
-      scrollTo = DvtOverviewEvent.START_POS;
+      scrollTo = dvt.OverviewEvent.START_POS;
   }
   else if (pos + size + delta >= maxPos)
   {
     // hit the bottom
     this.setSlidingWindowPos(slidingWindow, maxPos - size);
     if (this.isHorizontalRTL())
-      scrollTo = DvtOverviewEvent.START_POS;
+      scrollTo = dvt.OverviewEvent.START_POS;
     else
-      scrollTo = DvtOverviewEvent.END_POS;
+      scrollTo = dvt.OverviewEvent.END_POS;
   }
   else
   {
@@ -2250,7 +2246,7 @@ DvtOverview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
   this.ScrollTimeAxis();
 
   // scroll timeline
-  var evt = new DvtOverviewEvent(type);
+  var evt = new dvt.OverviewEvent(type);
   evt.setPosition(scrollTo);
 
   if (this.isHorizontalRTL())
@@ -2269,17 +2265,17 @@ DvtOverview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
   this.dispatchEvent(evt);
 };
 
-DvtOverview.prototype.handleLeftHandleDragPositioning = function(event, deltaX, deltaY)
+dvt.Overview.prototype.handleLeftHandleDragPositioning = function(event, deltaX, deltaY)
 {
   this.handleLeftOrRightHandleDragPositioning(event, deltaX, deltaY, true);
 };
 
-DvtOverview.prototype.handleRightHandleDragPositioning = function(event, deltaX, deltaY)
+dvt.Overview.prototype.handleRightHandleDragPositioning = function(event, deltaX, deltaY)
 {
   this.handleLeftOrRightHandleDragPositioning(event, deltaX, deltaY, false);
 };
 
-DvtOverview.prototype.handleLeftOrRightHandleDragPositioning = function(event, deltaX, deltaY, isLeft)
+dvt.Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, deltaX, deltaY, isLeft)
 {
   var size = this.getOverviewSize();
   if (this.isVertical())
@@ -2355,7 +2351,7 @@ DvtOverview.prototype.handleLeftOrRightHandleDragPositioning = function(event, d
   // tell event handler that time range is changing
   if (this.isRangeChangingSupported())
   {
-    var evt = new DvtOverviewEvent(DvtOverviewEvent.SUBTYPE_RANGECHANGING);
+    var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGING);
     evt.setNewSize(newSize);
     evt.setEndHandle(this.isHorizontalRTL() ? isLeft : !isLeft);
     if (isLeft)
@@ -2381,12 +2377,12 @@ DvtOverview.prototype.handleLeftOrRightHandleDragPositioning = function(event, d
 };
 
 // whether to fire a range changing event, which will be fired continuously when the sliding window is resize
-DvtOverview.prototype.isRangeChangingSupported = function()
+dvt.Overview.prototype.isRangeChangingSupported = function()
 {
   return true;
 };
 
-DvtOverview.prototype.finishHandleDrag = function(deltaX, deltaY)
+dvt.Overview.prototype.finishHandleDrag = function(deltaX, deltaY)
 {
   var start = this._start;
   var end = this._end;
@@ -2413,7 +2409,7 @@ DvtOverview.prototype.finishHandleDrag = function(deltaX, deltaY)
   }
 
   // alert peer of time range change
-  var evt = new DvtOverviewEvent(DvtOverviewEvent.SUBTYPE_RANGECHANGE);
+  var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGE);
   evt.setOldSize(oldSize);
   evt.setNewSize(newSize);
   evt.setOldStartTime(oldStartTime);
@@ -2425,10 +2421,10 @@ DvtOverview.prototype.finishHandleDrag = function(deltaX, deltaY)
 
 // scroll time axis to match sliding window
 // sync all parts of overview
-DvtOverview.prototype.ScrollTimeAxis = function()
+dvt.Overview.prototype.ScrollTimeAxis = function()
 {
   var slidingWindow = this.getSlidingWindow();
-  var halfBorderWidth = DvtOverview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
+  var halfBorderWidth = dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
   var left = this.getSlidingWindowPos(slidingWindow);
   var leftCenter = left + halfBorderWidth;
   var right = left + this.getSlidingWindowSize(slidingWindow);
@@ -2455,15 +2451,15 @@ DvtOverview.prototype.ScrollTimeAxis = function()
  * Dispatches the event to the callback function.  This enables callback function on the peer.
  * @param {object} event The event to be dispatched.
  */
-DvtOverview.prototype.dispatchEvent = function(event) 
+dvt.Overview.prototype.dispatchEvent = function(event) 
 {
-  DvtEventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, event);
+  dvt.EventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, event);
 };
 
 /**
  * @override
  */
-DvtOverview.prototype.destroy = function() {
+dvt.Overview.prototype.destroy = function() {
   // Remove listeners
   if (this.EventManager)
   {
@@ -2472,38 +2468,38 @@ DvtOverview.prototype.destroy = function() {
     this.EventManager = null;
   }
 
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.OverviewUtils.supportsTouch())
   {
-    this.removeEvtListener(DvtTouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
-    this.removeEvtListener(DvtTouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
-    this.removeEvtListener(DvtTouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
-    this.removeEvtListener(DvtMouseEvent.CLICK, this.HandleShapeClick, false, this);
+    this.removeEvtListener(dvt.TouchEvent.TOUCHSTART, this.HandleTouchStart, false, this);
+    this.removeEvtListener(dvt.TouchEvent.TOUCHMOVE, this.HandleTouchMove, false, this);
+    this.removeEvtListener(dvt.TouchEvent.TOUCHEND, this.HandleTouchEnd, false, this);
+    this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
   }
   else
   {
-    this.removeEvtListener(DvtMouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
-    this.removeEvtListener(DvtMouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
-    this.removeEvtListener(DvtMouseEvent.CLICK, this.HandleShapeClick, false, this);
-    this.removeEvtListener(DvtKeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
-    this.removeEvtListener(DvtKeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
+    this.removeEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
+    this.removeEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
+    this.removeEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
+    this.removeEvtListener(dvt.KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
+    this.removeEvtListener(dvt.KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
   }
 
   // Call super last during destroy
-  DvtOverview.superclass.destroy.call(this);
+  dvt.Overview.superclass.destroy.call(this);
 };
 /**
  * Overview JSON Parser
- * @param {DvtOverview} overview The owning Overview component.
+ * @param {dvt.Overview} overview The owning Overview component.
  * @class
  * @constructor
- * @extends {DvtObj}
+ * @extends {dvt.Obj}
  */
 var DvtOverviewParser = function(view) 
 {
   this.Init(view);
 };
 
-DvtObj.createSubclass(DvtOverviewParser, DvtObj, 'DvtOverviewParser');
+dvt.Obj.createSubclass(DvtOverviewParser, dvt.Obj);
 
 DvtOverviewParser.prototype.Init = function(view) 
 {
@@ -2528,7 +2524,7 @@ DvtOverviewParser.prototype.parse = function(data)
 
 /**
  * Parses the attributes on the root node.
- * @param {DvtXmlNode} xmlNode The xml node defining the root
+ * @param {dvt.XmlNode} xmlNode The xml node defining the root
  * @return {object} An object containing the parsed properties
  * @protected
  */
@@ -2593,7 +2589,7 @@ DvtOverviewParser.prototype.ParseRootAttributes = function(options)
 
   ret.overviewPosition = 'below';
   ret.selectionMode = 'none';
-  ret.isRtl = DvtAgent.isRightToLeft(this._view.getCtx()).toString();
+  ret.isRtl = dvt.Agent.isRightToLeft(this._view.getCtx()).toString();
   if (options['rtl'] != null)
     ret.isRtl = options['rtl'].toString();
 
@@ -2709,162 +2705,162 @@ DvtOverviewParser.prototype.calculateWidth = function(startTime, endTime, viewpo
  * @class
  * @constructor
  */
-var DvtOverviewEvent = function(type) {
-  this.Init(DvtOverviewEvent.TYPE);
+dvt.OverviewEvent = function(type) {
+  this.Init(dvt.OverviewEvent.TYPE);
   this._subtype = type;
 };
 
-DvtObj.createSubclass(DvtOverviewEvent, DvtBaseComponentEvent, 'DvtOverviewEvent');
+dvt.Obj.createSubclass(dvt.OverviewEvent, dvt.BaseComponentEvent);
 
-DvtOverviewEvent.TYPE = 'overview';
+dvt.OverviewEvent.TYPE = 'overview';
 
 // fired when user initiate range change
-DvtOverviewEvent.SUBTYPE_PRE_RANGECHANGE = 'dropCallback';
+dvt.OverviewEvent.SUBTYPE_PRE_RANGECHANGE = 'dropCallback';
 
 // fired when user clicks on an empty area which cause overview to scroll to where user clicks
-DvtOverviewEvent.SUBTYPE_SCROLL_TIME = 'scrollTime';
+dvt.OverviewEvent.SUBTYPE_SCROLL_TIME = 'scrollTime';
 // fired when user scrolls the overview window
-DvtOverviewEvent.SUBTYPE_SCROLL_POS = 'scrollPos';
+dvt.OverviewEvent.SUBTYPE_SCROLL_POS = 'scrollPos';
 // fired when user finish scrolling the overview window
-DvtOverviewEvent.SUBTYPE_SCROLL_END = 'scrollEnd';
+dvt.OverviewEvent.SUBTYPE_SCROLL_END = 'scrollEnd';
 // fired when user finish resizing the overview window
-DvtOverviewEvent.SUBTYPE_RANGECHANGE = 'rangeChange';
+dvt.OverviewEvent.SUBTYPE_RANGECHANGE = 'rangeChange';
 // fired when user resizes the overview window
-DvtOverviewEvent.SUBTYPE_RANGECHANGING = 'rangeChanging';
+dvt.OverviewEvent.SUBTYPE_RANGECHANGING = 'rangeChanging';
 
 // keys to look up value
-DvtOverviewEvent.TIME_KEY = 'time';
-DvtOverviewEvent.POS_KEY = 'pos';
+dvt.OverviewEvent.TIME_KEY = 'time';
+dvt.OverviewEvent.POS_KEY = 'pos';
 
-DvtOverviewEvent.OLD_SIZE_KEY = 'oldSize';
-DvtOverviewEvent.NEW_SIZE_KEY = 'newSize';
-DvtOverviewEvent.OLD_START_TIME_KEY = 'oldStartTime';
-DvtOverviewEvent.NEW_START_TIME_KEY = 'newStartTime';
-DvtOverviewEvent.OLD_END_TIME_KEY = 'oldEndTime';
-DvtOverviewEvent.NEW_END_TIME_KEY = 'newEndTime';
+dvt.OverviewEvent.OLD_SIZE_KEY = 'oldSize';
+dvt.OverviewEvent.NEW_SIZE_KEY = 'newSize';
+dvt.OverviewEvent.OLD_START_TIME_KEY = 'oldStartTime';
+dvt.OverviewEvent.NEW_START_TIME_KEY = 'newStartTime';
+dvt.OverviewEvent.OLD_END_TIME_KEY = 'oldEndTime';
+dvt.OverviewEvent.NEW_END_TIME_KEY = 'newEndTime';
 
-DvtOverviewEvent.EXPAND_KEY = 'expand';
-DvtOverviewEvent.END_HANDLE_KEY = 'endHandle';
+dvt.OverviewEvent.EXPAND_KEY = 'expand';
+dvt.OverviewEvent.END_HANDLE_KEY = 'endHandle';
 
-DvtOverviewEvent.START_POS = -1;
-DvtOverviewEvent.END_POS = -2;
+dvt.OverviewEvent.START_POS = -1;
+dvt.OverviewEvent.END_POS = -2;
 
-DvtOverviewEvent.prototype.getSubType = function() 
+dvt.OverviewEvent.prototype.getSubType = function() 
 {
   return this._subtype;
 };
 
 
 /****** scroll to time **************/
-DvtOverviewEvent.prototype.setTime = function(time) 
+dvt.OverviewEvent.prototype.setTime = function(time) 
 {
-  this.addParam(DvtOverviewEvent.TIME_KEY, time);
+  this.addParam(dvt.OverviewEvent.TIME_KEY, time);
 };
 
-DvtOverviewEvent.prototype.getTime = function() 
+dvt.OverviewEvent.prototype.getTime = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.TIME_KEY);
 };
 
 
 /*********** range change ************/
-DvtOverviewEvent.prototype.setOldSize = function(oldSize) 
+dvt.OverviewEvent.prototype.setOldSize = function(oldSize) 
 {
-  this.addParam(DvtOverviewEvent.OLD_SIZE_KEY, oldSize);
+  this.addParam(dvt.OverviewEvent.OLD_SIZE_KEY, oldSize);
 };
 
-DvtOverviewEvent.prototype.getOldSize = function() 
+dvt.OverviewEvent.prototype.getOldSize = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.OLD_SIZE_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_SIZE_KEY);
 };
 
-DvtOverviewEvent.prototype.setNewSize = function(newSize) 
+dvt.OverviewEvent.prototype.setNewSize = function(newSize) 
 {
-  this.addParam(DvtOverviewEvent.NEW_SIZE_KEY, newSize);
+  this.addParam(dvt.OverviewEvent.NEW_SIZE_KEY, newSize);
 };
 
-DvtOverviewEvent.prototype.getNewSize = function() 
+dvt.OverviewEvent.prototype.getNewSize = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.NEW_SIZE_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_SIZE_KEY);
 };
 
-DvtOverviewEvent.prototype.setOldStartTime = function(oldStartTime) 
+dvt.OverviewEvent.prototype.setOldStartTime = function(oldStartTime) 
 {
-  this.addParam(DvtOverviewEvent.OLD_START_TIME_KEY, oldStartTime);
+  this.addParam(dvt.OverviewEvent.OLD_START_TIME_KEY, oldStartTime);
 };
 
-DvtOverviewEvent.prototype.getOldStartTime = function() 
+dvt.OverviewEvent.prototype.getOldStartTime = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.OLD_START_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_START_TIME_KEY);
 };
 
-DvtOverviewEvent.prototype.setNewStartTime = function(newStartTime) 
+dvt.OverviewEvent.prototype.setNewStartTime = function(newStartTime) 
 {
-  this.addParam(DvtOverviewEvent.NEW_START_TIME_KEY, newStartTime);
+  this.addParam(dvt.OverviewEvent.NEW_START_TIME_KEY, newStartTime);
 };
 
-DvtOverviewEvent.prototype.getNewStartTime = function() 
+dvt.OverviewEvent.prototype.getNewStartTime = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.NEW_START_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_START_TIME_KEY);
 };
 
-DvtOverviewEvent.prototype.setOldEndTime = function(oldEndTime) 
+dvt.OverviewEvent.prototype.setOldEndTime = function(oldEndTime) 
 {
-  this.addParam(DvtOverviewEvent.OLD_END_TIME_KEY, oldEndTime);
+  this.addParam(dvt.OverviewEvent.OLD_END_TIME_KEY, oldEndTime);
 };
 
-DvtOverviewEvent.prototype.getOldEndTime = function() 
+dvt.OverviewEvent.prototype.getOldEndTime = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.OLD_END_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_END_TIME_KEY);
 };
 
-DvtOverviewEvent.prototype.setNewEndTime = function(newEndTime) 
+dvt.OverviewEvent.prototype.setNewEndTime = function(newEndTime) 
 {
-  this.addParam(DvtOverviewEvent.NEW_END_TIME_KEY, newEndTime);
+  this.addParam(dvt.OverviewEvent.NEW_END_TIME_KEY, newEndTime);
 };
 
-DvtOverviewEvent.prototype.getNewEndTime = function() 
+dvt.OverviewEvent.prototype.getNewEndTime = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.NEW_END_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_END_TIME_KEY);
 };
 
 
 /*********** range changing ************/
-DvtOverviewEvent.prototype.setExpand = function(expand) 
+dvt.OverviewEvent.prototype.setExpand = function(expand) 
 {
-  this.addParam(DvtOverviewEvent.EXPAND_KEY, expand);
+  this.addParam(dvt.OverviewEvent.EXPAND_KEY, expand);
 };
 
-DvtOverviewEvent.prototype.isExpand = function() 
+dvt.OverviewEvent.prototype.isExpand = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.EXPAND_KEY);
+  return this.getParamValue(dvt.OverviewEvent.EXPAND_KEY);
 };
 
-DvtOverviewEvent.prototype.setEndHandle = function(endHandle) 
+dvt.OverviewEvent.prototype.setEndHandle = function(endHandle) 
 {
-  this.addParam(DvtOverviewEvent.END_HANDLE_KEY, endHandle);
+  this.addParam(dvt.OverviewEvent.END_HANDLE_KEY, endHandle);
 };
 
-DvtOverviewEvent.prototype.isEndHandle = function() 
+dvt.OverviewEvent.prototype.isEndHandle = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.END_HANDLE_KEY);
+  return this.getParamValue(dvt.OverviewEvent.END_HANDLE_KEY);
 };
 
 
 /************* scroll to pos ***************/
-DvtOverviewEvent.prototype.setPosition = function(pos) 
+dvt.OverviewEvent.prototype.setPosition = function(pos) 
 {
-  this.addParam(DvtOverviewEvent.POS_KEY, pos);
+  this.addParam(dvt.OverviewEvent.POS_KEY, pos);
 };
 
-DvtOverviewEvent.prototype.getPosition = function() 
+dvt.OverviewEvent.prototype.getPosition = function() 
 {
-  return this.getParamValue(DvtOverviewEvent.POS_KEY);
+  return this.getParamValue(dvt.OverviewEvent.POS_KEY);
 };
 /**
  * Overview event manager.
- * @param {DvtOverview} overview The owning DvtOverview.
- * @extends {DvtEventManager}
+ * @param {dvt.Overview} overview The owning dvt.Overview.
+ * @extends {dvt.EventManager}
  * @constructor
  */
 var DvtOverviewEventManager = function(overview)
@@ -2873,7 +2869,7 @@ var DvtOverviewEventManager = function(overview)
   this._overview = overview;
 };
 
-DvtObj.createSubclass(DvtOverviewEventManager, DvtEventManager, 'DvtOverviewEventManager');
+dvt.Obj.createSubclass(DvtOverviewEventManager, dvt.EventManager);
 
 /**
  * @override
@@ -2881,18 +2877,18 @@ DvtObj.createSubclass(DvtOverviewEventManager, DvtEventManager, 'DvtOverviewEven
 DvtOverviewEventManager.prototype.addListeners = function(displayable)
 {
   DvtOverviewEventManager.superclass.addListeners.call(this, displayable);
-  DvtSvgDocumentUtils.addDragListeners(this._overview, this._onDragStart, this._onDragMove, this._onDragEnd, this);
+  dvt.SvgDocumentUtils.addDragListeners(this._overview, this._onDragStart, this._onDragMove, this._onDragEnd, this);
 };
 
 /**
  * Drag start callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean} Whether drag is initiated.
  * @private
  */
 DvtOverviewEventManager.prototype._onDragStart = function(event)
 {
-  if (DvtAgent.isTouchDevice())
+  if (dvt.Agent.isTouchDevice())
     return this._onTouchDragStart(event);
   else
     return this._onMouseDragStart(event);
@@ -2900,13 +2896,13 @@ DvtOverviewEventManager.prototype._onDragStart = function(event)
 
 /**
  * Drag move callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean}
  * @private
  */
 DvtOverviewEventManager.prototype._onDragMove = function(event)
 {
-  if (DvtAgent.isTouchDevice())
+  if (dvt.Agent.isTouchDevice())
     return this._onTouchDragMove(event);
   else
     return this._onMouseDragMove(event);
@@ -2914,13 +2910,13 @@ DvtOverviewEventManager.prototype._onDragMove = function(event)
 
 /**
  * Drag end callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean}
  * @private
  */
 DvtOverviewEventManager.prototype._onDragEnd = function(event)
 {
-  if (DvtAgent.isTouchDevice())
+  if (dvt.Agent.isTouchDevice())
     return this._onTouchDragEnd(event);
   else
     return this._onMouseDragEnd(event);
@@ -2930,28 +2926,28 @@ DvtOverviewEventManager.prototype._onDragEnd = function(event)
  * Return the relative position relative to the stage, based on the cached stage absolute position.
  * @param {number} pageX
  * @param {number} pageY
- * @return {DvtPoint} The relative position.
+ * @return {dvt.Point} The relative position.
  * @private
  */
 DvtOverviewEventManager.prototype._getRelativePosition = function(pageX, pageY) {
   if (!this._stageAbsolutePosition)
     this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
 
-  return new DvtPoint(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
+  return new dvt.Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
 };
 
 /**
  * Mouse drag start callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean} Whether drag is initiated.
  * @private
  */
 DvtOverviewEventManager.prototype._onMouseDragStart = function(event)
 {
-  if (event.button != DvtMouseEvent.RIGHT_CLICK_BUTTON)
+  if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON)
   {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
-    DvtEventManager.consumeEvent(event);
+    dvt.EventManager.consumeEvent(event);
     // since event propagation is stopped, need to manually set focus
     var stage = this.getCtx().getStage();
     var wrappingDiv = stage.getSVGRoot().parentNode;
@@ -2963,7 +2959,7 @@ DvtOverviewEventManager.prototype._onMouseDragStart = function(event)
 
 /**
  * Mouse drag move callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @private
  */
 DvtOverviewEventManager.prototype._onMouseDragMove = function(event)
@@ -2976,7 +2972,7 @@ DvtOverviewEventManager.prototype._onMouseDragMove = function(event)
 
 /**
  * Mouse drag end callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @private
  */
 DvtOverviewEventManager.prototype._onMouseDragEnd = function(event)
@@ -2989,7 +2985,7 @@ DvtOverviewEventManager.prototype._onMouseDragEnd = function(event)
 
 /**
  * Touch drag start callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @return {boolean} Whether drag is initiated.
  * @private
  */
@@ -3008,7 +3004,7 @@ DvtOverviewEventManager.prototype._onTouchDragStart = function(event)
 
 /**
  * Touch drag move callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @private
  */
 DvtOverviewEventManager.prototype._onTouchDragMove = function(event)
@@ -3026,17 +3022,20 @@ DvtOverviewEventManager.prototype._onTouchDragMove = function(event)
 
 /**
  * Touch drag end callback.
- * @param {DvtBaseEvent} event
+ * @param {dvt.BaseEvent} event
  * @private
  */
 DvtOverviewEventManager.prototype._onTouchDragEnd = function(event)
 {
   this._overview.endDragPan();
-  DvtEventManager.consumeEvent(event);
+  dvt.EventManager.consumeEvent(event);
 
   // Clear the stage absolute position cache
   this._stageAbsolutePosition = null;
 };
+dvt.exportProperty(dvt, 'Overview', dvt.Overview);
+dvt.exportProperty(dvt.Overview.prototype, 'render', dvt.Overview.prototype.render);
+})(dvt);
 
-  return D;
+  return dvt;
 });

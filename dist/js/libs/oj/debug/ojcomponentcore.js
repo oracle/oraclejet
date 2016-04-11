@@ -3665,9 +3665,15 @@ oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
 
 /**
  * Returns <code>true</code> if the jquery element is visible within overflow
- * areas. The second argument extends the check to the browser viewport.  The second argument
+ * areas. The check only considers statically positioned elements.  The first positioned
+ * ancestor is treated as the root viewport. Positioned elements would need to be
+ * compared with the window viewport versus its ancestors.  Visibility of positioned
+ * elements would also need to compare the stacking context of the document to determine
+ * what is visible.
+ *
+ * The second argument extends the check to the browser viewport.  The second argument
  * is not enabled by default as it plays havic qunit tests that position the "qunit-fixture"
- * off screen.
+ * off screen. This is also another reason for not trying to consider positioned elements.
  *
  * @param {jQuery} element jquery element to test
  * @param {boolean=} checkBrowserViewport if <code>true</code> the check will include the
@@ -3733,6 +3739,15 @@ oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
     return {'height': 0, 'width': 0};
   };
 
+  function isPositioned(element)
+  {
+    return ["fixed", "absolute", "relative"].indexOf(element.css("position")) > -1 &&
+           (Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("top"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("bottom"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("left"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("right"))) > 0);
+  };
+
   if (!element)
     return false;
 
@@ -3745,7 +3760,7 @@ oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
   // check that the element is not hidden in overflow
   var isWithinViewPort = true;
   var parent = element.parent();
-  while (isWithinViewPort && parent && parent.length > 0 && parent[0].nodeType === 1)
+  while (isWithinViewPort && parent && parent.length > 0 && parent[0].nodeType === 1 && !isPositioned(parent))
   {
     if (hasOverflow(parent))
     {
