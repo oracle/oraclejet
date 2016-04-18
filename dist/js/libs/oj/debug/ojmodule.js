@@ -1161,6 +1161,18 @@ oj.ModuleBinding.defaults =
     * @memberof ojModule.LifecycleListener
     * @instance
     */
+    
+   /**
+    * Invoked after the bidnings for the new View are applied. 
+    * If the current View is retrieved from cache, the bindings will not be re-applied, and this callback will not be invoked.
+    * @method bindingsApplied
+    * @param {Object} info  - an object with the following key-value pairs:
+    * @param {Node} info.element DOM element or where the binding is attached. This may be a 'virtual' element (comment node)
+    * @param {Function} info.valueAccessor binding's value accessor
+    * @param {Object} info.viewMode ViewModel for the new View
+    * @memberof ojModule.LifecycleListener
+    * @instance
+    */
   
    /**
     * Invoked after transition to the new View is complete. That includes any possible animation
