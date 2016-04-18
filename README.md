@@ -35,10 +35,10 @@ npm install -g generator-oraclejet
 
 yo oraclejet <app name>
 ```
-See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet200/jet/) for complete installation details, including prerequisites.
+See the [Oracle JET Developer Guide](http://docs.oracle.com/middleware/jet201/jet/) for complete installation details, including prerequisites.
 
-## [Documentation](http://docs.oracle.com/middleware/jet200/jet/)
-Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet200/jet/) to help with Getting Started and many common issues.
+## [Documentation](http://docs.oracle.com/middleware/jet201/jet/)
+Oracle JET comes with a full [Developers Guide](http://docs.oracle.com/middleware/jet201/jet/) to help with Getting Started and many common issues.
 
 ## [Contributing](https://github.com/oracle/oraclejet/tree/master/CONTRIBUTING.md)
 Oracle JET is an open source project. Pull Requests are currently not being accepted. See 
