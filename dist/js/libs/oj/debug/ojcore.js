@@ -45,9 +45,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.0.1",
-  'build' : "2",
-  'revision': "24669",
+  'version': "2.0.2",
+  'build' : "294",
+  'revision': "26305",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -276,7 +276,7 @@ oj.Logger._getWriter = function()
   if (oj.Logger.option("writer")) {
     writer =  oj.Logger.option("writer");
   }
-  else if (window !== undefined && window.console !== undefined) {
+  else if (typeof window !== 'undefined' && window.console !== undefined) {
     writer = window.console;
   }
   return writer;
@@ -1933,8 +1933,10 @@ oj.Config.getVersionInfo = function()
     var info = "Oracle JET Version: " + oj['version'] + '\n';
     info += "Oracle JET Revision: " + oj['revision'] + '\n';
     
+    var windowDefined = (typeof window !== 'undefined');
+    
     // Browser information
-    if (window.navigator) {
+    if (windowDefined && window.navigator) {
         info += "Browser: " + window.navigator.userAgent +'\n';
         info += "Browser Platform: " + window.navigator.platform +'\n';
     }
@@ -1953,7 +1955,7 @@ oj.Config.getVersionInfo = function()
     }
     
     // Local require doesn't have version #
-    if (window.require) {
+    if (windowDefined && window.require) {
         info += "Require Version: " + window.require['version'] + '\n';
     }
     
@@ -1977,7 +1979,7 @@ oj.Config.logVersionInfo = function()
 
 // CustomEvent()
 (function () {  
-  if (window === undefined || (typeof window['CustomEvent'] === "function")) {
+  if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
     return;
   }
   

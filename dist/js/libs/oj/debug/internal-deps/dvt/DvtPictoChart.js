@@ -100,10 +100,7 @@ dvt.PictoChart.prototype.render = function(options, width, height) {
     this._container.removeChild(this._emptyText);
     this._emptyText = null;
   }
-  if (this._animation) {
-    this._animationStopped = true;
-    this._animation.stop();
-  }
+  this.StopAnimation();
 
   // Update if a new options object has been provided or initialize with defaults if needed
   this.SetOptions(options);
@@ -162,17 +159,17 @@ dvt.PictoChart.prototype.render = function(options, width, height) {
 
   // Construct the new animation playable
   if (!this._oldContainer) {
-    this._animation = this._getAnimationOnDisplay();
+    this.Animation = this._getAnimationOnDisplay();
   }
   else if (this.Options['animationOnDataChange'] != 'none' && options) {
     // Treat layout changes as data change animations and animate to new positions
     var animHandler = new dvt.DataAnimationHandler(context, null);
     animHandler.constructAnimation(oldMarkers, this._markers);
-    this._animation = animHandler.getAnimation();
+    this.Animation = animHandler.getAnimation();
   }
 
   // If an animation was created, play it
-  if (this._animation) {
+  if (this.Animation) {
     // Temporarily set the SVG size to max(oldSize, newSize) to ensure that the animation isn't truncated
     dvt.ToolkitUtils.setSvgSize(context, Math.max(oldWidth, this.Width), Math.max(oldHeight, this.Height));
 
@@ -181,8 +178,8 @@ dvt.PictoChart.prototype.render = function(options, width, height) {
     if (this._emptyText)
       this._container.removeChild(this._emptyText);
 
-    this._animation.setOnEnd(this._onRenderEnd, this);
-    this._animation.play();
+    this.Animation.setOnEnd(this._onRenderEnd, this);
+    this.Animation.play();
   }
   else
     this._onRenderEnd();
@@ -230,9 +227,7 @@ dvt.PictoChart.prototype._onRenderEnd = function() {
     this._oldContainer = null;
   }
 
-  if (this._animation) {
-    this._animation = null;
-
+  if (this.Animation) {
     // Restore event listeners and empty text
     this.EventManager.addListeners(this);
     if (this._emptyText)
@@ -243,7 +238,13 @@ dvt.PictoChart.prototype._onRenderEnd = function() {
   dvt.ToolkitUtils.setSvgSize(this.getCtx(), this.Width, this.Height);
 
   // Set the initial keyboard focus
-  this.EventManager.setFocusObj(this._items[0]);
+  var initialFocus;
+  for (var i = 0; i < this._items.length; i++) {
+    initialFocus = this._items[i];
+    if (initialFocus.getShape() != 'none')
+      break;
+  }
+  this.EventManager.setFocusObj(initialFocus);
 
   // Set initial selection
   if (this._selectionHandler)
@@ -254,16 +255,12 @@ dvt.PictoChart.prototype._onRenderEnd = function() {
 
   this.UpdateAriaAttributes();
 
-  if (!this._animationStopped)
+  if (!this.AnimationStopped)
     this.RenderComplete();
-  this._animationStopped = null;
-};
 
-/**
- * @return {DvtPictoChartEventManager}
- */
-dvt.PictoChart.prototype.getEventManager = function() {
-  return this.EventManager;
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 /**
@@ -368,20 +365,6 @@ dvt.PictoChart.prototype._getAnimationOnDisplay = function() {
     return new dvt.ParallelPlayable(context, playables);
   else
     return null;
-};
-
-/**
- * @override
- */
-dvt.PictoChart.prototype.destroy = function() {
-  if (this.EventManager) {
-    this.EventManager.removeListeners(this);
-    this.EventManager.destroy();
-    this.EventManager = null;
-  }
-
-  // Call super last during destroy
-  dvt.PictoChart.superclass.destroy.call(this);
 };
 
 /**
@@ -655,6 +638,7 @@ DvtPictoChartDefaults.VERSION_1 = {
   'selectionMode': 'none',
 
   '_defaultColor': '#a6acb1',
+  '_noneShapeColor': 'rgba(255,255,255,0)',
   '_defaultSize': 32,
   '_defaultShape': 'rectangle',
   '_gapRatio': 0.25,
@@ -784,6 +768,7 @@ DvtPictoChartItem.prototype.Init = function(picto, item) {
   this._id = (item['id'] != null) ? item['id'] : (item['name'] != null) ? item['name'] : '_defaultId' + DvtPictoChartItem._counter;
   DvtPictoChartItem._counter++;
 
+  this._isNoneShape = item['shape'] == 'none';
   this._isSelected = false;
   this._isShowingKeyboardFocusEffect = false;
   this._keyboardTooltipLocation = new dvt.Point(0, 0);
@@ -836,6 +821,8 @@ DvtPictoChartItem.prototype.getShape = function() {
  * @return {string}
  */
 DvtPictoChartItem.prototype.getColor = function() {
+  if (this._isNoneShape)
+    return this._picto.getOptions()['_noneShapeColor'];
   return this._item['color'] || this._picto.getOptions()['_defaultColor'];
 };
 
@@ -916,6 +903,8 @@ DvtPictoChartItem.prototype.getShortDesc = function() {
  * @return {boolean}
  */
 DvtPictoChartItem.prototype.isDrillable = function() {
+  if (this._isNoneShape)
+    return false;
   var drilling = this._item['drilling'];
   if (drilling && drilling != 'inherit')
     return drilling == 'on';
@@ -929,7 +918,7 @@ DvtPictoChartItem.prototype.isDrillable = function() {
  */
 DvtPictoChartItem.prototype.isDoubleClickable = function() {
   // : IE double clicking workaround in dvt.EventManager.
-  return this.isSelectable() && this.isDrillable();
+  return this.isSelectable() && this.isDrillable() && !this._isNoneShape;
 };
 
 /**
@@ -950,9 +939,13 @@ DvtPictoChartItem.prototype.updateAriaAttributes = function() {
  * @override
  */
 DvtPictoChartItem.prototype.getDatatip = function(target) {
+  if (this._isNoneShape)
+    return '';
+
   // Custom Tooltip via Function
   var options = this._picto.getOptions();
-  var tooltipFunc = this._picto.getOptions()['tooltip'];
+  var customTooltip = this._picto.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc) {
     var tooltipManager = this._picto.getCtx().getTooltipManager();
     var dataContext = {
@@ -1007,7 +1000,7 @@ DvtPictoChartItem.prototype._getCountString = function() {
  * @override
  */
 DvtPictoChartItem.prototype.isSelectable = function() {
-  return this._picto.getOptions()['selectionMode'] != 'none';
+  return this._picto.getOptions()['selectionMode'] != 'none' && !this._isNoneShape;
 };
 
 /**
@@ -1146,16 +1139,20 @@ DvtPictoChartItem.prototype.getTargetElem = function() {
  * @override
  */
 DvtPictoChartItem.prototype.showKeyboardFocusEffect = function() {
-  this._isShowingKeyboardFocusEffect = true;
-  this.showHoverEffect();
+  if (!this._isNoneShape) {
+    this._isShowingKeyboardFocusEffect = true;
+    this.showHoverEffect();
+  }
 };
 
 /**
  * @override
  */
 DvtPictoChartItem.prototype.hideKeyboardFocusEffect = function() {
-  this._isShowingKeyboardFocusEffect = false;
-  this.hideHoverEffect();
+  if (!this._isNoneShape) {
+    this._isShowingKeyboardFocusEffect = false;
+    this.hideHoverEffect();
+  }
 };
 
 /**
@@ -1210,11 +1207,26 @@ DvtPictoChartKeyboardHandler.prototype.isMultiSelectEvent = function(event) {
  * @param {dvt.PictoChart} picto The component.
  * @param {DvtKeyboardNavigable} currentNavigable The navigable item with current focus.
  * @param {dvt.KeyboardEvent} event The keyboard event.
+ * @param {DvtKeyboardNavigable=} originalNavigable The original item that initaited navigation.
  * @return {DvtKeyboardNavigable} The next navigable.
  */
-DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable, event) {
+DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable, event, originalNavigable) {
+  var navigableItems = picto.getItems();
+
+  if (!originalNavigable)
+    originalNavigable = currentNavigable;
+
+  // Handle edge cases where shape==none is the first or last item
+  if (currentNavigable.getShape() == 'none' && currentNavigable != originalNavigable) {
+    var currentIdx = dvt.ArrayUtils.getIndex(navigableItems, currentNavigable);
+    if (currentIdx == 0 || currentIdx == (navigableItems.length - 1))
+      return originalNavigable;
+  }
+
   var isOriginRight = DvtPictoChartRenderer.isOriginRight(picto);
   var isOriginBottom = DvtPictoChartRenderer.isOriginBottom(picto);
+  var isVertical = DvtPictoChartRenderer.isVertical(picto);
+  var nextItem = currentNavigable; // Set it by default to the current item
 
   var isForward =
       (event.keyCode == dvt.KeyboardEvent.LEFT_ARROW && isOriginRight) ||
@@ -1222,12 +1234,27 @@ DvtPictoChartKeyboardHandler.getNextNavigable = function(picto, currentNavigable
       (event.keyCode == dvt.KeyboardEvent.UP_ARROW && isOriginBottom) ||
       (event.keyCode == dvt.KeyboardEvent.DOWN_ARROW && !isOriginBottom);
 
-  var navigableItems = picto.getItems();
+  var isDirectional =
+      (event.keyCode == dvt.KeyboardEvent.LEFT_ARROW && isVertical) ||
+      (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW && isVertical) ||
+      (event.keyCode == dvt.KeyboardEvent.UP_ARROW && !isVertical) ||
+      (event.keyCode == dvt.KeyboardEvent.DOWN_ARROW && !isVertical);
+
   var nextIdx = dvt.ArrayUtils.getIndex(navigableItems, currentNavigable) + (isForward ? 1 : -1);
-  if (nextIdx < navigableItems.length && nextIdx >= 0)
-    return navigableItems[nextIdx];
-  else
-    return currentNavigable;
+
+  if (isDirectional)
+    nextItem = dvt.KeyboardHandler.getNextNavigable(currentNavigable, event, navigableItems);
+  else if (nextIdx < navigableItems.length && nextIdx >= 0)
+    nextItem = navigableItems[nextIdx];
+
+  if (nextItem.getShape() == 'none') {
+    // Recurse till next item in that direction that is not shape==none is found
+    if (nextItem != currentNavigable)
+      nextItem = DvtPictoChartKeyboardHandler.getNextNavigable(picto, nextItem, event, originalNavigable);
+    else // Handle edge case where shape==none is on the border
+      nextItem = originalNavigable;
+  }
+  return nextItem;
 };
 
 /**
@@ -1257,7 +1284,7 @@ DvtPictoChartKeyboardHandler.prototype.processKeyDown = function(event) {
  *  @constructor
  */
 var DvtPictoChartShapeMarker = function(picto, shape, cx, cy, width, height, id) {
-  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape, dvt.CSSStyle.SKIN_ALTA, cx, cy, width, height, null, true, id);
+  DvtPictoChartShapeMarker.superclass.Init.call(this, picto.getCtx(), shape == 'none' ? null : shape, dvt.CSSStyle.SKIN_ALTA, cx, cy, width, height, null, true, id);
   this._picto = picto;
 };
 
@@ -1429,7 +1456,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
       else {
         // Set a random ID so that fractional markers don't get animateUpdate (only animateInsert and animateDelete)
         // This is a workaround for not animating the clipPath
-        markerId = Math.random();
+        markerId = Math.random(); // @randomNumberOk
       }
 
       var marker;

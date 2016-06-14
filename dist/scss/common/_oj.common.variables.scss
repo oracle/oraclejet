@@ -8,7 +8,7 @@
 //       you can set the path to your image directory
 // - ABSTRACT: in general these "abstract" variables are not used directly
 //       in the widget files, rather they are referred to by
-//       other variables.
+//       other variables. 
 // - GENERAL: these variables are used broadly in the widget files.
 //       Examples are text, link and icon colors.
 // - CATEGORY AND WIDGET: these variables are widget
@@ -167,8 +167,8 @@ $initialVisibility: hidden !default;
 //----------------------------------------------------------------
 // "ABSTRACT" STYLING
 //     in general these "abstract" variables are not used directly
-//     in the widget files, rather they are referred to by
-//     other variables.
+//       in the widget files, rather they are referred to by
+//       other variables. 
 //----------------------------------------------------------------
 
 
@@ -583,9 +583,7 @@ $appLayoutHybridFooterBgColor: $appLayoutHybridHeaderBgColor !default;
 $appLayoutHybridFooterMinHeight: 48px !default;
 
 // Nav Bar
-// Used for positioning the nav bar either at the top or bottom of the page on native platforms
-$appLayoutNavBarAlignment: bottom !default;
-$appLayoutHybridNavBarItemBorderStyle: null !default;
+$appLayoutHybridNavBarBoxShadow: none !default;
 
 // Nav Drawer
 // We don't want nav drawer width to be relative to root font size so using a fixed px
@@ -1341,8 +1339,8 @@ $trainBgColorDisabled:      $buttonBgColorDisabled !default;
 $trainBorderColorDisabled:  $buttonBorderColorDisabled !default;
 
 // hover
-$trainBgColorHover:         $iconColorHover !default;
-$trainBorderColorHover:     $trainBgColorHover !default;
+$trainBgColorHover:                       $iconColorHover !default;
+$trainBorderColorHover:                   $trainBgColorHover !default;
 
 // selected
 $trainBgColorSelected:      $iconColorSelected !default;
@@ -1474,16 +1472,16 @@ $pagingControlPadding: 5px !default;
 // LISTVIEW
 //----------------------------------------------------------------
 
-$listViewAnimationDuration: $animationDurationMedium !default;
-$listViewHeaderBorderWidth: 0 0 1px !default;
-$listViewHeaderFontSize:    $header3FontSize !default;
-$listViewHeaderOpacity:     1 !default;
-$listViewHeaderFontWeight:  $headerFontWeight !default;
+$listViewAnimationDuration:    $animationDurationMedium !default;
+$listViewHeaderBorderWidth:    0 0 1px !default;
+$listViewHeaderFontSize:       $header3FontSize !default;
+$listViewHeaderOpacity:        1 !default;
+$listViewHeaderFontWeight:     $headerFontWeight !default;
 // the right and left margins will be flipped in rtl languanges
-$listViewCardMargin:        $spacingMedium $spacingMedium $spacingMedium 0 !default;
-$listViewCardWidth:         240px !default;
-$listViewCardHeight:        auto !default;
-$listViewDrillIconColor:    $iconColorDefault !default;
+$listViewCardMargin:           $spacingMedium $spacingMedium $spacingMedium 0 !default;
+$listViewCardWidth:            240px !default;
+$listViewCardHeight:           auto !default;
+$listViewDrillIconColor:       $iconColorDefault !default;
 
 // PULL TO REFRESH
 //----------------------------------------------------------------
@@ -1563,7 +1561,7 @@ $conveyorBeltOverflowIndicatorHeight: $buttonHeight !default;
 
 //sizing
 $navigationListItemMinHeight: 2.688rem !default; // only applies to vertical navlist. 43px  when root font 16px
-
+ 
 //------Start of Common variables----
 
 //Default
@@ -1640,9 +1638,11 @@ $navigationListPageLevelItemBorderColorActive:   null !default;
 
 //sizing
 $navigationListPageLevelItemFontWeightSelected:  normal !default;
-$navigationListPageLevelItemBorderRadius:        0 !default;
+$navigationListPageLevelItemBorderRadius:        null !default;
 // the right and left borders will be flipped in rtl languanges
 $navigationListPageLevelItemBorderWidth:         0 0 0 $navigationListItemAccentBorderWidth !default;// used only for vertical navlist
+$navigationListPageLevelItemMinHeight: $navigationListItemMinHeight !default;
+$navigationListPageLevelItemFontSize: null !default;
 //----------End of Common page level variables
 
 
@@ -1710,6 +1710,10 @@ $navigationBarPageLevelIconOnlyItemBorderWidth: 0 0 $navigationListItemAccentBor
 
 //----------Page level variables
 $navigationBarPageLevelItemBorderWidth: 0 0 $navigationListItemAccentBorderWidth 0 !default;//horizontal
+$navigationBarPageLevelItemFontSize: null !default;
+$navigationBarPageLevelItemMinHeight: $navigationBarMinHeight !default;
+$navigationBarPageLevelItemStackedIconMinHeight: $navigationBarStackedIconMinHeight !default;
+
 //------End of Horizontal list variables----
 // END of NavigationList variables
 

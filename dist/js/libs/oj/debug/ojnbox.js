@@ -901,4 +901,28 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojNBox
  */
 
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> 
+ *   <li>id: The id of the hovered node.</li> 
+ *   <li>label: The label of the hovered node.</li> 
+ *   <li>secondaryLabel: The secondary label of the hovered node.</li> 
+ *   <li>color: The color of the hovered node.</li> 
+ *   <li>indicatorColor: The indicator color of the hovered node.</li> 
+ *   <li>row: The id of the row containing the hovered node.</li> 
+ *   <li>column: The id of the column containing the hovered node.</li>
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojNBox
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
 });

@@ -677,14 +677,27 @@ $navigationListPageLevelItemIconColorSelected: $contrastTextColor !default;
 $navigationListPageLevelItemBgColorActive: $background6Color !default;
 
 //Sizing
+$navigationListItemStartEndPadding:         0.625rem !default; //10px when root font 16px
 $navigationListIconOnlyIconStartEndPadding: 10px !default;
-$navigationListPageLevelItemBorderRadius: 5px !default;
+$navigationListPageLevelItemBorderRadius: 4px !default;
 $navigationListPageLevelItemBorderWidth: 1px !default;
 $navigationListPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationListPageLevelItemMinHeight: 1.75rem !default; // 28px when root font size is 16px
+$navigationListPageLevelItemFontSize: 0.8125rem !default;//13px when root font size is 16px
+
 $navigationBarIconOnlyItemMargin: 0 !default;
 $navigationBarItemBorderWidth: 0 0 0 0  !default;
+$navigationBarMinHeight: 2.75rem !default;//44 px height when root font 16px
+$navigationBarStackedIconMinHeight: 3.0625rem !default; //49 px height when root font 16px
+$navigationBarFontSize: 0.625rem !default;//10px px when root font is 16px
+$navigationBarItemPadding: 0 $navigationListItemStartEndPadding 0 !default;
+$navigationBarIconMargin: 5px 4px 4px;
+
 $navigationBarPageLevelItemBorderWidth: 1px !default;
 $navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationBarPageLevelItemFontSize: 0.8125rem !default; //13 px when root font is 16px
+$navigationBarPageLevelItemStackedIconMinHeight: 3.9375rem !default;//63px when root font is 16px
+$navigationBarPageLevelItemMinHeight: 1.8125rem !default; //29px when root font is 16px;
 // END of NavigationList variables
 
 

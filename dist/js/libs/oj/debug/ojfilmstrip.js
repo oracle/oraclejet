@@ -104,6 +104,12 @@ oj.FilmStripPagingModel.prototype.setPage = function(page, options)
     if (options && options.pageSize)
       pageSize = options.pageSize;
     
+    //FIX : if the paging model hasn't been initialized yet, 
+    //just return a resolved promise instead of throwing the invalid page
+    //error below
+    if (this._totalSize === 0 && pageSize === -1)
+      return Promise.resolve();
+    
     var newPageCount = Math.ceil(this._totalSize / pageSize);
     if (page < 0 || page > newPageCount - 1)
       throw new Error("JET FilmStrip: Invalid 'page' set: " + page);
@@ -146,6 +152,12 @@ oj.FilmStripPagingModel.prototype.setPage = function(page, options)
  */
 oj.FilmStripPagingModel.prototype.getStartItemIndex = function()
 {
+  //FIX : if there is no data yet, explicitly return -1 for 
+  //start index, because otherwise the calculated value would incorrectly
+  //be 1
+  if (this._page === -1 && this._pageSize === -1)
+    return -1;
+  
   return this._page * this._pageSize;
 };
 
@@ -735,6 +747,16 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _setup: function(isInit) // Private, not an override (not in base class).  
   {
+    //FIX : always create paging model, even if filmstrip is
+    //detached or hidden, so that it's available for an assocated paging
+    //control
+    //(Note: Check whether paging model is null, because if the filmstrip
+    //was created while detached or hidden, then when it's attached or
+    //shown, _setup will be called again with isInit=true, and we don't
+    //want to create a different instance of the paging model.)
+    if (isInit && !this._pagingModel)
+      this._pagingModel = new oj.FilmStripPagingModel();
+    
     //if filmStrip is detached or hidden, we can't layout correctly, so 
     //defer layout until filmStrip is attached or shown
     if (!this._canCalculateSizes())
@@ -758,7 +780,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     {
       this._itemsPerPage = 0;
       this._handlePageFunc = function(event) {self._handlePage(event);};
-      this._pagingModel = new oj.FilmStripPagingModel();
       this._componentSize = 0;
       this._itemSize = -1;
       this._handleTransitionEndFunc = function(event) {self._handleTransitionEnd();};
@@ -787,25 +808,33 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     for (var i = 0; i < originalItems.length; i++)
       oj.Components.subtreeDetached(originalItems[i]);
     
-    //initialize the paging model with the total number of items
+    var pagingModel = this._pagingModel;
     if (isInit)
     {
-      var pagingModel = this._pagingModel;
-      pagingModel.setTotalSize(originalItems.length);
       //register the page change listener
       pagingModel.on("page", this._handlePageFunc);
     }
+    //initialize the paging model with the total number of items
+    //FIX : always set total size on paging model in case
+    //items have been appended and filmstrip has been refreshed
+    pagingModel.setTotalSize(originalItems.length);
     
     //wrap the original child DOM BEFORE adding the resize listener
     this._wrapChildren();
-    this._adjustSizes();
     
-    //notify the original children of the filmStrip that they were attached
-    //again after wrapping them
-    for (var i = 0; i < originalItems.length; i++)
-      oj.Components.subtreeAttached(originalItems[i]);
+    //FIX : only need to calculate layout if the filmstrip is
+    //not empty
+    if (originalItems.length > 0)
+    {
+      this._adjustSizes();
 
-    oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc);
+      //notify the original children of the filmStrip that they were attached
+      //again after wrapping them
+      for (var i = 0; i < originalItems.length; i++)
+        oj.Components.subtreeAttached(originalItems[i]);
+
+      oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc);
+    }
   },
 
   /** 
@@ -1092,7 +1121,10 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (!bHorizontal)
       elem.addClass(_OJ_FILMSTRIP_VERTICAL);
     
-    if (options.arrowVisibility !== _HIDDEN)
+    //FIX : only need to create nav buttons if the filmstrip 
+    //is not empty
+    if (options.arrowVisibility !== _HIDDEN &&
+        originalItems.length > 0)
     {
       this._prevButton = this._createPrevNavArrow();
       this._nextButton = this._createNextNavArrow();
@@ -1846,7 +1878,10 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (currItemPage != pageIndex)
     {
       var newFirstItem = this._getFirstItemOnPage(pageIndex);
-      this.option(_CURRENT_ITEM, newFirstItem, {'_context': {writeback: true}});
+      //FIX : only update currentItem option if the filmstrip
+      //is not empty
+      if (newFirstItem !== -1)
+        this.option(_CURRENT_ITEM, newFirstItem, {'_context': {writeback: true}});
     }
   },
   

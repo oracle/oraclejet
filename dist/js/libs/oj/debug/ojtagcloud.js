@@ -150,6 +150,26 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @memberof oj.ojTagCloud
  */
 
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> 
+ *   <li>id: The id of the hovered item.</li> 
+ *   <li>label: The data label of the hovered item.</li> 
+ *   <li>color: The color of the hovered item.</li> 
+ *   <li>value: The value of the hovered item.</li>
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojTagCloud
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
 /**This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.

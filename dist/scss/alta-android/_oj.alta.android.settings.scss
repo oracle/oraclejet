@@ -8,7 +8,7 @@
 //       you can set the path to your image directory
 // - ABSTRACT: in general these "abstract" variables are not used directly
 //       in the widget files, rather they are referred to by
-//       other variables.
+//       other variables. 
 // - GENERAL: these variables are used broadly in the widget files.
 //       Examples are text, link and icon colors.
 // - CATEGORY AND WIDGET: these variables are widget
@@ -167,8 +167,8 @@
 //----------------------------------------------------------------
 // "ABSTRACT" STYLING
 //     in general these "abstract" variables are not used directly
-//     in the widget files, rather they are referred to by
-//     other variables.
+//       in the widget files, rather they are referred to by
+//       other variables. 
 //----------------------------------------------------------------
 
 
@@ -583,9 +583,7 @@
 // $appLayoutHybridFooterMinHeight: 48px !default;
 
 // Nav Bar
-// Used for positioning the nav bar either at the top or bottom of the page on native platforms
-// $appLayoutNavBarAlignment: top !default;
-// $appLayoutHybridNavBarItemBorderStyle: solid !default;
+// $appLayoutHybridNavBarBoxShadow: 0 -10px 10px rgba(0,0,0,.05) !default;
 
 // Nav Drawer
 // We don't want nav drawer width to be relative to root font size so using a fixed px
@@ -1341,8 +1339,8 @@
 // $trainBorderColorDisabled:  $buttonBorderColorDisabled !default;
 
 // hover
-// $trainBgColorHover:         $iconColorHover !default;
-// $trainBorderColorHover:     $trainBgColorHover !default;
+// $trainBgColorHover:                       $iconColorHover !default;
+// $trainBorderColorHover:                   $trainBgColorHover !default;
 
 // selected
 // $trainBgColorSelected:      $iconColorSelected !default;
@@ -1474,16 +1472,16 @@
 // LISTVIEW
 //----------------------------------------------------------------
 
-// $listViewAnimationDuration: $animationDurationMedium !default;
-// $listViewHeaderBorderWidth: 0 0 1px !default;
-// $listViewHeaderFontSize: $header5FontSize !default;
-// $listViewHeaderOpacity:     1 !default;
-// $listViewHeaderFontWeight:  $headerFontWeight !default;
+// $listViewAnimationDuration:    $animationDurationMedium !default;
+// $listViewHeaderBorderWidth:    0 0 1px !default;
+// $listViewHeaderFontSize:   $header5FontSize !default;
+// $listViewHeaderOpacity:        1 !default;
+// $listViewHeaderFontWeight:     $headerFontWeight !default;
 // the right and left margins will be flipped in rtl languanges
-// $listViewCardMargin: 8px 8px 8px 0 !default;
-// $listViewCardWidth:         240px !default;
-// $listViewCardHeight:        auto !default;
-// $listViewDrillIconColor:    $iconColorDefault !default;
+// $listViewCardMargin:       8px 8px 8px 0 !default;
+// $listViewCardWidth:            240px !default;
+// $listViewCardHeight:           auto !default;
+// $listViewDrillIconColor:       $iconColorDefault !default;
 
 // PULL TO REFRESH
 //----------------------------------------------------------------
@@ -1563,7 +1561,7 @@
 
 //sizing
 // $navigationListItemMinHeight: 2.688rem !default; // only applies to vertical navlist. 43px  when root font 16px
-
+ 
 //------Start of Common variables----
 
 //Default
@@ -1640,9 +1638,11 @@
 
 //sizing
 // $navigationListPageLevelItemFontWeightSelected:  normal !default;
-// $navigationListPageLevelItemBorderRadius:        0 !default;
+// $navigationListPageLevelItemBorderRadius:        null !default;
 // the right and left borders will be flipped in rtl languanges
-// $navigationListPageLevelItemBorderWidth:         0 0 0 $navigationListItemAccentBorderWidth !default;// used only for vertical navlist
+// $navigationListPageLevelItemBorderWidth:    0 0 0 2px !default;
+// $navigationListPageLevelItemMinHeight: 2.9375rem !default; // 47px when root font size is 16px
+// $navigationListPageLevelItemFontSize: 0.875rem !default; //14px when root font size is 16px;
 //----------End of Common page level variables
 
 
@@ -1688,14 +1688,14 @@
 // $navigationBarItemBorderColorSelected:  $interaction1Color !default;
 
 //Sizing
-// $navigationBarFontSize: 0.812rem !default;// 10px when root font is 16px
-// $navigationBarMinHeight: 2.375rem !default;//38 px height when root font 16px
-// $navigationBarStackedIconMinHeight: 3.375rem !default; //54 px height when root font 16px
+// $navigationBarFontSize: 0.75rem !default;// 12px when root font is 16px
+// $navigationBarMinHeight: 3.5rem !default;//56 px height when root font 16px
+// $navigationBarStackedIconMinHeight: 3.5rem !default; //56 px height when root font 16px
 
 // the right and left borders will be flipped in rtl languanges
-// $navigationBarItemBorderWidth:   0 0 $navigationListItemAccentBorderWidth 0 !default;
+// $navigationBarItemBorderWidth: 0 !default;
 // the right and left will be flipped in rtl languanges
-// $navigationBarItemPadding: 4px $navigationListItemStartEndPadding 4px !default;
+// $navigationBarItemPadding: 2px $navigationListItemStartEndPadding 6px !default;
 // $navigationBarIconMargin: 4px !default;
 // $navigationBarIconToTextPadding: 2px !default;
 
@@ -1709,7 +1709,11 @@
 //----------End of Navigation bar icon only variables
 
 //----------Page level variables
-// $navigationBarPageLevelItemBorderWidth: 0 0 $navigationListItemAccentBorderWidth 0 !default;//horizontal
+// $navigationBarPageLevelItemBorderWidth: 0 0 2px 0 !default;
+// $navigationBarPageLevelItemFontSize: 0.875rem !default; //14 px when root font is 16px
+// $navigationBarPageLevelItemMinHeight: 3rem !default; //48px when root font is 16px;
+// $navigationBarPageLevelItemStackedIconMinHeight: 3rem !default;//48px when root font is 16px
+
 //------End of Horizontal list variables----
 // END of NavigationList variables
 
@@ -1996,3 +2000,4 @@
 // $borderRadiusGeneration: slowOverride !default;
 // $boxShadowGeneration: slowOverride !default;
 // $gradientGeneration: slowOverride !default;
+

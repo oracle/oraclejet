@@ -313,7 +313,7 @@ oj.ComponentBinding.prototype._update = function(element, valueAccessor, allBind
     componentComputeds.forEach(function(computed){ computed['dispose'](); });
     componentComputeds = [];
     
-    // when cleanup() is called by the node desposal, there is no need to destroy the component because cleanNode() will
+    // when cleanup() is called by the node disposal, there is no need to destroy the component because cleanNode() will
     // do it for us
     if (destroyComponent && component)
     {
@@ -445,7 +445,7 @@ oj.ComponentBinding.prototype._update = function(element, valueAccessor, allBind
   );
     
   // cleanup() called by the node disposal should not be destroying components, as they will be destroyed by .cleanNode()
-  ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup.bind(this, [false /*detsroyComponent flag*/]));
+  ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup.bind(this, false /*detsroyComponent flag*/));
 };
 
 
@@ -465,9 +465,11 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
   var componentName = ctx.componentName;
   
   var self = this;
+  
+  var destroyEventType = "_ojDestroy";
 
       
-  jelem.on("ojdestroy" + oj.ComponentBinding._HANDLER_NAMESPACE,
+  var destroyListener = 
     function(evt)
     {
       if (evt.target && evt.target == element)
@@ -487,9 +489,11 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
         
         disposed = true;
         ctx.changeTracker.dispose();
+        element.removeEventListener(destroyEventType, destroyListener);
       }
-    }
-  );
+    };
+  
+  element.addEventListener(destroyEventType, destroyListener);
       
   var managedAttrMap = oj.ComponentBinding._resolveManagedAttributes(this._managedAttrOptions, ctx.specifiedOptions, componentName);
       
@@ -1392,6 +1396,73 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   'for': 'ojThematicMap'
 });
+
+/**
+ * Returns a data layer renderer function and executes the template specified in
+ * the binding attribute. (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getTooltipRenderer(bindingContext, template) {
+  return function (context) {
+    // runs the template
+    var dummyDiv = document.createElement("div");
+    dummyDiv.style.display = "none";
+    var model = bindingContext['createChildContext'](context);
+    ko['renderTemplate'](template, model, {
+                            'afterRender': function(renderedElement)
+                            {
+                                $(renderedElement)['_ojDetectCleanData']();
+                            }}, dummyDiv);
+    var elem = dummyDiv.children[0];
+    if (elem) {
+      dummyDiv.removeChild(elem);
+      $(dummyDiv).remove();
+      return elem;
+    }
+    return null;
+  };
+}
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedTooltipAttribute(name, value, bindingContext) {
+  if (name === "tooltip" && value['template']) {
+     value['renderer'] = _getTooltipRenderer(bindingContext, value['template']);
+  }   
+  return {'tooltip': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["tooltip"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTooltipAttribute(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTooltipAttribute(name, value, bindingContext);
+  },
+  'for': "tooltipOptionRenderer"
+});
+
+// Default declarations for all components supporting tooltips
+(function() {
+  var componentsArray = ['ojChart', 'ojDiagram', 'ojNBox', 'ojPictoChart', 'ojSunburst', 'ojTagCloud', 'ojThematicMap', 'ojTreemap',
+                         'ojDialGauge', 'ojLedGauge', 'ojRatingGauge','ojSparkChart', 'ojStatusMeterGauge'];
+  for(var i = 0; i < componentsArray.length; i++) {
+    oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({ 
+      "for": componentsArray[i],
+      "use": "tooltipOptionRenderer"
+    });
+  }                   
+})();
 
 /**
  * Returns a data layer renderer function and executes the template specified in
@@ -2549,11 +2620,13 @@ function _getTableColumnTemplateRenderer(bindingContext, type, template)
       var parentElement = null;
       if (type == 'header')
       {
-        // calling bindingContext.extend() creates a context with 
-        // new properties without adding extra level to the parent hierarchy
-        childContext = bindingContext['extend']({'$columnIndex': params['columnIndex'],
-                                                 '$headerContext': params['headerContext'],
-                                                 '$data': params['data']});
+        childContext = bindingContext['createChildContext'](null, null,
+          function(binding)
+          {
+            binding['$columnIndex'] = params['columnIndex'];
+            binding['$headerContext'] = params['headerContext'];
+            binding['$data'] = params['data'];
+          });
         parentElement = params['headerContext']['parentElement'];
       }
       else if (type == 'cell')
@@ -2570,10 +2643,12 @@ function _getTableColumnTemplateRenderer(bindingContext, type, template)
       }
       if (type == 'footer')
       {
-        // calling bindingContext.extend() creates a context with 
-        // new properties without adding extra level to the parent hierarchy
-        childContext = bindingContext['extend']({'$columnIndex': params['columnIndex'],
-                                                 '$footerContext': params['footerContext']});
+        childContext = bindingContext['createChildContext'](null, null,
+          function(binding)
+          {
+            binding['$columnIndex'] = params['columnIndex'];
+            binding['$footerContext'] = params['footerContext'];
+          });
         parentElement = params['footerContext']['parentElement'];
       }
       ko['renderTemplate'](template, childContext, {

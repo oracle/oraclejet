@@ -15,8 +15,8 @@ $imageDir: "images/" !default;
 //----------------------------------------------------------------
 // "ABSTRACT" STYLING
 //     in general these "abstract" variables are not used directly
-//     in the widget files, rather they are referred to by
-//     other variables.
+//       in the widget files, rather they are referred to by
+//       other variables. 
 //----------------------------------------------------------------
 
 
@@ -617,9 +617,20 @@ $navigationListPageLevelItemBorderColorSelected: transparent !default;
 $navigationListPageLevelItemBgColorSelected: transparent !default;
 
 //Sizing
+$navigationListItemStartEndPadding:  0.625rem !default; //10px when root font 16px
 $navigationListPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationListPageLevelItemMinHeight: 3.333rem !default; // 50px when root font size is 15px
+$navigationListPageLevelItemFontSize: 1.067rem !default; //16px when root font size is 15px;
+
 $navigationBarPageLevelItemBorderWidth: 0 !default;
 $navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
+
+$navigationBarFontSize: 0.8rem !default;// 12px when root font is 15px
+$navigationBarMinHeight: 3.2rem !default;//48 px height when root font 15px
+$navigationBarStackedIconMinHeight: 4rem !default; //60 px height when root font 15px
+$navigationBarItemPadding: 4px $navigationListItemStartEndPadding 2px !default;
+$navigationBarItemBorderWidth: 0 !default;
+$navigationBarPageLevelItemFontSize: 1.067rem !default; // 16px when root font size is 15px;
 // END of NavigationList variables
 
 
@@ -659,10 +670,6 @@ $appLayoutHybridPadding: 1.333rem !default;
 $appLayoutHybridHeaderOpacity: 1 !default;
 $appLayoutHybridHeaderMinHeight: 48px !default;
 $appLayoutHybridHeaderTitleFontSize: 1rem !default;
-// Nav Bar
-// Used for positioning the nav bar either at the top or bottom of the page on native platforms
-$appLayoutNavBarAlignment: top !default;
-$appLayoutHybridNavBarItemBorderStyle: solid !default;
 // Nav Drawer
 $appLayoutHybridOffcanvasWidth: 400px !default;
 

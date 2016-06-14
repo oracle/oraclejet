@@ -56,8 +56,8 @@ dvt.Legend.prototype.Init = function(context, callback, callbackObj) {
   this.Defaults = new DvtLegendDefaults();
 
   // Create the event handler and add event listeners
-  this._eventManager = new DvtLegendEventManager(this);
-  this._eventManager.addListeners(this);
+  this.EventManager = new DvtLegendEventManager(this);
+  this.EventManager.addListeners(this);
 
   /**
    * The array of logical objects that corresponds to legend items.
@@ -86,6 +86,9 @@ dvt.Legend.prototype.Init = function(context, callback, callbackObj) {
  * @override
  */
 dvt.Legend.prototype.SetOptions = function(options) {
+  // Reset options cache
+  this.getOptionsCache().clearCache();
+
   if (options) {
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
@@ -129,6 +132,8 @@ dvt.Legend.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
  */
 dvt.Legend.prototype.render = function(options, width, height) 
 {
+  this.getCache().clearCache();
+
   // Update the options object if provided.
   this.SetOptions(options);
 
@@ -150,7 +155,7 @@ dvt.Legend.prototype.render = function(options, width, height)
 
   // Set up keyboard handler on non-touch devices if the legend is interactive
   if (!dvt.Agent.isTouchDevice())
-    this._eventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this._eventManager, this));
+    this.EventManager.setKeyboardHandler(new DvtLegendKeyboardHandler(this.EventManager, this));
 
   this.UpdateAriaAttributes();
 
@@ -163,6 +168,7 @@ dvt.Legend.prototype.render = function(options, width, height)
   if (highlightedCategories && highlightedCategories.length > 0)
     this.highlight(highlightedCategories);
 
+  this.RenderComplete();
   return this._contentDimensions;
 };
 
@@ -209,14 +215,6 @@ dvt.Legend.prototype.processEvent = function(event, source) {
 };
 
 /**
- * @override
- */
-dvt.Legend.prototype.getEventManager = function() {
-  return this._eventManager;
-};
-
-
-/**
  * Registers the object peer with the legend.  The peer must be registered to participate
  * in interactivity.
  * @param {DvtLegendObjPeer} peer
@@ -252,26 +250,11 @@ dvt.Legend.prototype.__getKeyboardObjects = function() {
 };
 
 /**
- * Releases all component resources to prevent memory leaks.
- * @override
- */
-dvt.Legend.prototype.destroy = function() {
-  if (this._eventManager) {
-    this._eventManager.removeListeners(this);
-    this._eventManager.destroy();
-    this._eventManager = null;
-  }
-
-  // Call super last during destroy
-  dvt.Legend.superclass.destroy.call(this);
-};
-
-/**
  * Stores the bounds for this legend
  * @param {Object} bounds
  */
 dvt.Legend.prototype.__setBounds = function(bounds) {
-  this._bounds = bounds;
+  this._bounds = bounds.clone();
 };
 
 
@@ -313,8 +296,8 @@ dvt.Legend.prototype.getAutomation = function() {
  * @return {DvtKeyboardNavigable} The focused object.
  */
 dvt.Legend.prototype.getKeyboardFocus = function() {
-  if (this._eventManager != null)
-    return this._eventManager.getFocus();
+  if (this.EventManager != null)
+    return this.EventManager.getFocus();
   return null;
 };
 
@@ -325,13 +308,13 @@ dvt.Legend.prototype.getKeyboardFocus = function() {
  * @param {boolean} isShowingFocusEffect Whether the keyboard focus effect should be used.
  */
 dvt.Legend.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
-  if (this._eventManager == null)
+  if (this.EventManager == null)
     return;
 
   var peers = this.__getKeyboardObjects();
   for (var i = 0; i < peers.length; i++) {
     if (peers[i].getId() == navigable.getId()) {
-      this._eventManager.setFocusObj(peers[i]);
+      this.EventManager.setFocusObj(peers[i]);
       if (isShowingFocusEffect)
         peers[i].showKeyboardFocusEffect();
       break;
@@ -435,6 +418,44 @@ dvt.Legend.prototype.UpdateAriaAttributes = function() {
  */
 dvt.Legend.prototype.isNavigable = function() {
   return this._navigablePeers.length > 0;
+};
+
+/**
+ * Returns the number of items in the legend
+ * @param {object} legend
+ * @return {Number} number of items
+ */
+dvt.Legend.getItemCount = function(legend) {
+  var itemsCount = legend.getOptionsCache().getFromCache('itemsCount');
+  if (itemsCount != null)
+    return itemsCount;
+  itemsCount = 0;
+  var sections = legend.getOptions()['sections'];
+  for (var i = 0; i < sections.length; i++) {
+    var section = sections[i];
+    itemsCount += dvt.Legend.getSectionItemsCount(section);
+  }
+  legend.getOptionsCache().putToCache('itemsCount', itemsCount);
+  return itemsCount;
+};
+
+/**
+ * Returns the number of items in the section
+ * @param {object} section
+ * @return {Number} number of items in section
+ */
+dvt.Legend.getSectionItemsCount = function(section) {
+  var itemsCount = 0;
+  if (section.items) {
+    itemsCount += section.items.length;
+  }
+  if (section.sections) {
+    var sections = section.sections;
+    for (var i = 0; i < sections.length; i++) {
+      itemsCount += dvt.Legend.getSectionItemsCount(sections[i]);
+    }
+  }
+  return itemsCount;
 };
 /**
  *  Provides automation services for a DVT component.
@@ -857,7 +878,7 @@ DvtLegendEventManager.prototype.HandleTouchClickInternal = function(evt) {
   // action is handled in handleClick
   var touchEvent = evt.touchEvent;
   var hideShow = this.processHideShowEvent(obj);
-  var processEvt = this.handleClick(obj, event);
+  var processEvt = this.handleClick(obj, evt);
   if ((hideShow || processEvt) && touchEvent)
     touchEvent.preventDefault();
 };
@@ -1016,6 +1037,85 @@ DvtLegendEventManager.prototype.GetTouchResponse = function() {
   else
     return dvt.EventManager.TOUCH_RESPONSE_TOUCH_START;
 };
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.getComponent = function() {
+  return this._legend;
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.isDndSupported = function() {
+  return true;
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.GetDragSourceType = function(event) {
+  var obj = this.DragSource.getDragObject();
+  if (obj instanceof DvtLegendObjPeer && obj.getData()['_dataContext'] != null)
+    return 'series';
+  return null;
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.GetDragDataContexts = function() {
+  var obj = this.DragSource.getDragObject();
+  if (obj instanceof DvtLegendObjPeer)
+    return [obj.getData()['_dataContext']];
+  return [];
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.GetDropTargetType = function(event) {
+  var relPos = this._legend.stageToLocal(this.getCtx().pageToStageCoords(event.pageX, event.pageY));
+  var bounds = this._legend.__getBounds();
+  if (bounds.containsPoint(relPos.x, relPos.y))
+    return 'legend';
+  return null;
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.GetDropEventPayload = function(event) {
+  return {};
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.ShowDropEffect = function(event) {
+  var dropTargetType = this.GetDropTargetType(event);
+  if (dropTargetType == 'legend') {
+    var dropColor = this._legend.getOptions()['_dropColor'];
+    var background = this._legend.getCache().getFromCache('background');
+    if (background)
+      background.setSolidFill(dropColor);
+  }
+};
+
+/**
+ * @override
+ */
+DvtLegendEventManager.prototype.ClearDropEffect = function() {
+  var background = this._legend.getCache().getFromCache('background');
+  if (background) {
+    var backgroundColor = this._legend.getOptions()['backgroundColor'];
+    if (backgroundColor)
+      background.setSolidFill(backgroundColor);
+    else
+      background.setInvisibleFill();
+  }
+};
 /**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {dvt.Legend} legend
@@ -1091,7 +1191,7 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
  * Logical object for legend data object displayables.
  * @param {dvt.Legend} legend The owning legend instance.
  * @param {array} displayables The array of associated DvtDisplayables.
- * @param {string} id The id of the legend item.
+ * @param {object} item The definition of the legend item.
  * @param {string} tooltip The tooltip of the legend item.
  * @param {string} datatip The datatip of the legend item.
  * @param {boolean} drillable Whether the legend item is drillable.
@@ -1101,8 +1201,8 @@ DvtLegendKeyboardHandler.prototype.processKeyDown = function(event) {
  * @implements {DvtCategoricalObject}
  * @implements {DvtTooltipSource}
  */
-var DvtLegendObjPeer = function(legend, displayables, id, tooltip, datatip, drillable) {
-  this.Init(legend, displayables, id, tooltip, datatip, drillable);
+var DvtLegendObjPeer = function(legend, displayables, item, tooltip, datatip, drillable) {
+  this.Init(legend, displayables, item, tooltip, datatip, drillable);
 };
 
 dvt.Obj.createSubclass(DvtLegendObjPeer, dvt.Obj);
@@ -1382,6 +1482,32 @@ DvtLegendObjPeer.prototype.getDatatip = function(target) {
 DvtLegendObjPeer.prototype.getDatatipColor = function(target) {
   return this._item['color'];
 };
+
+
+//---------------------------------------------------------------------//
+// DnD Support: DvtDraggable impl                                      //
+//---------------------------------------------------------------------//
+
+/**
+ * @override
+ */
+DvtLegendObjPeer.prototype.isDragAvailable = function(clientIds) {
+  return true;
+};
+
+/**
+ * @override
+ */
+DvtLegendObjPeer.prototype.getDragTransferable = function(mouseX, mouseY) {
+  return [this.getId()];
+};
+
+/**
+ * @override
+ */
+DvtLegendObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
+  return this.getDisplayables();
+};
 /**
  * Renderer for dvt.Legend.
  * @class
@@ -1412,6 +1538,7 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   var options = legend.getOptions();
   var context = legend.getCtx();
   var isRTL = dvt.Agent.isRightToLeft(context);
+  legend.__setBounds(availSpace);
 
   if (!options['isLayout'])
     DvtLegendRenderer._renderBackground(legend, availSpace);
@@ -1428,7 +1555,6 @@ DvtLegendRenderer.render = function(legend, availSpace) {
   availSpace.y += gapHeight;
   availSpace.w -= 2 * gapWidth;
   availSpace.h -= 2 * gapHeight;
-  legend.__setBounds(availSpace);
 
   // Return if there's no space
   if (availSpace.w <= 0 || availSpace.h <= 0)
@@ -1520,8 +1646,9 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
   var options = legend.getOptions();
   var backgroundColor = options['backgroundColor'];
   var borderColor = options['borderColor'];
+  var legendDrop = options['dnd'] ? options['dnd']['drop']['legend'] : {}; // for drop effect
 
-  if (backgroundColor || borderColor) {
+  if (backgroundColor || borderColor || Object.keys(legendDrop).length > 0) {
     var rect = new dvt.Rect(legend.getCtx(), availSpace.x, availSpace.y, availSpace.w, availSpace.h);
 
     if (backgroundColor)
@@ -1535,6 +1662,8 @@ DvtLegendRenderer._renderBackground = function(legend, availSpace) {
     }
 
     legend.addChild(rect);
+
+    legend.getCache().putToCache('background', rect);
   }
 };
 
@@ -1937,12 +2066,22 @@ DvtLegendRenderer._renderHorizontalSection = function(legend, container, section
  */
 DvtLegendRenderer._calcColumns = function(legend, availSpace, rowHeight, items, minimizeNumRows) {
   var options = legend.getOptions();
+  var hasLargeItemsCount = dvt.Legend.getItemCount(legend) > 100;
 
   // Use widest text since using # of chars can be wrong for unicode
   var textWidth = 0;
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    var tempWidth = dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']);
+    var tempWidth;
+    if (hasLargeItemsCount) {
+      var outputText = new dvt.OutputText(legend.getCtx(), item['text']);
+      outputText.setCSSStyle(options['textStyle']);
+      tempWidth = dvt.TextUtils.guessTextDimensions(outputText).w;
+    }
+    else {
+      tempWidth = dvt.TextUtils.getTextStringWidth(legend.getCtx(), item['text'], options['textStyle']);
+    }
+
     if (tempWidth > textWidth) {
       textWidth = tempWidth;
     }
@@ -2071,8 +2210,11 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
 
   var peer = DvtLegendObjPeer.associate(displayables, legend, item, text != null ? text.getUntruncatedTextString() : null, item['shortDesc'], DvtLegendRenderer._isItemDrillable(legend, item));
 
-  if (DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item), legend))
+  if (DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item), legend)) {
     marker.setHollow(peer.getColor());
+    // Don't apply style and className
+    marker.setStyle().setClassName();
+  }
 
   if ((hideAndShow != 'none' && hideAndShow != 'off') || item['shortDesc'] != null) {
     itemRect.setAriaRole('img');
@@ -2205,18 +2347,21 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   // Find the style values
   var shape = item['markerShape'];
   var color = item['markerColor'] ? item['markerColor'] : item['color'];
-  var pattern = item['pattern'];
+  var style = item['markerStyle'] ? item['markerStyle'] : item['style'];
+  var className = item['markerClassName'] ? item['markerClassName'] : item['className'];
 
+
+  var pattern = item['pattern'];
 
   var legendMarker;
   if (pattern && (pattern != 'none')) {
     // Pattern markers must be translated, since the pattern starts at the origin of the shape
-    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], 0, 0, symbolWidth, symbolHeight);
+    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], 0, 0, symbolWidth, symbolHeight, null, null, true);
     legendMarker.setFill(new dvt.PatternFill(pattern, color, '#FFFFFF'));
     legendMarker.setTranslate(cx, cy);
   }
   else {
-    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], cx, cy, symbolWidth, symbolHeight);
+    legendMarker = new dvt.SimpleMarker(context, shape, legendOptions['skin'], cx, cy, symbolWidth, symbolHeight, null, null, true);
     legendMarker.setSolidFill(color);
   }
 
@@ -2228,6 +2373,8 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   // Use pixel hinting for crisp squares
   if (shape == 'square')
     legendMarker.setPixelHinting(true);
+
+  legendMarker.setClassName(className).setStyle(style);
 
   return legendMarker;
 };
@@ -2256,8 +2403,12 @@ DvtLegendRenderer._createLine = function(context, x, y, colWidth, rowHeight, ite
   else if (style == 'dotted')
     stroke.setType(dvt.Stroke.convertTypeString(style), '2');
 
+  // set custom style and class
+  line.setClassName(item['className']).setStyle(item['style']);
+
   line.setStroke(stroke);
   line.setPixelHinting(true);
+
   return line;
 };
 

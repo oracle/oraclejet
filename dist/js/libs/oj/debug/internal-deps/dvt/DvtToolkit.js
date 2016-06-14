@@ -628,6 +628,8 @@ dvt.Context = function(container, id, referenceDiv) {
   this._keyboardFocusArray = [];
   this._keyboardFocusIndex = 0;
 
+  this._dndEventManagers = [];
+
   this.Init(this._implFactory, this._root, id);
 
   // Add the stage element
@@ -785,6 +787,16 @@ dvt.Context.prototype.getReadingDirection = function() {
 /**
   * Adds a reference count for the global def element with the given id
   * @param {string} id The id of the global def element
+  * @return {boolean} Whether the global def element exists in the map
+  */
+dvt.Context.prototype.existsGlobalDefReference = function(id) {
+  return this._globalDefsMap[id] > 0;
+};
+
+
+/**
+  * Adds a reference count for the global def element with the given id
+  * @param {string} id The id of the global def element
   */
 dvt.Context.prototype.increaseGlobalDefReference = function(id) {
   // The id of the element must be valid to continue
@@ -792,7 +804,7 @@ dvt.Context.prototype.increaseGlobalDefReference = function(id) {
     return;
 
   if (this._globalDefsMap[id])
-    this._globalDefsMap[id] = this._globalDefsMap[id]++;
+    this._globalDefsMap[id]++;
   else
     this._globalDefsMap[id] = 1;
 };
@@ -813,7 +825,7 @@ dvt.Context.prototype.decreaseGlobalDefReference = function(id) {
     if (refCount == 1)
       delete this._globalDefsMap[id];
     else
-      this._globalDefsMap[id] = refCount--;
+      this._globalDefsMap[id] = refCount - 1;
   }
 
   // If no longer referenced, remove the clip path from the defs
@@ -1001,6 +1013,8 @@ dvt.Context.prototype.getImplFactory = function()
   */
 dvt.Context.prototype.removeDefs = function(elem)
 {
+  if (elem._obj)
+    elem._obj.destroy();
   this._defs.removeChild(elem);
 };
 
@@ -1016,7 +1030,7 @@ dvt.Context.prototype.removeDefsById = function(id)
   for (var i = 0; i < len; i++) {
     var def = defs[i];
     if (def.id === id) {
-      this._defs.removeChild(def);
+      this.removeDefs(def);
       return;
     }
   }
@@ -1061,7 +1075,6 @@ dvt.Context.resetCaches = function() {
     DvtAfStyleUtils.resetStyles();
   dvt.OutputText._cache = null;
   dvt.TextUtils._cachedTextDimensions = {};
-  dvt.MarkerUtils._cache = {};
 
   if (dvt.LedGaugeRenderer)
     dvt.LedGaugeRenderer._cache = null;
@@ -1353,6 +1366,34 @@ dvt.Context.prototype.setOverlayAttachedCallback = function(callback) {
  */
 dvt.Context.prototype.getOverlayAttachedCallback = function() {
   return this._overlayAttachedCallback;
+};
+
+/**
+ * Registers an event manager that supports DnD. When there are multiple event managers, they all listen to the same
+ * DnD events since the the events are fired by the outerDiv, so this keeps track of the order in which the listeners
+ * would be called.
+ * @param {dvt.EventManager} em
+ */
+dvt.Context.prototype.addDndEventManager = function(em) {
+  this._dndEventManagers.push(em);
+};
+
+/**
+ * Unregister a DnD event manager.
+ * @param {dvt.EventManager} em
+ */
+dvt.Context.prototype.removeDndEventManager = function(em) {
+  var index = this._dndEventManagers.indexOf(em);
+  this._dndEventManagers.splice(index, 1);
+};
+
+/**
+ * Returns whether this is the last event manager that would be fired when there's a DnD event.
+ * @param {dvt.EventManager} em
+ * @return {boolean}
+ */
+dvt.Context.prototype.isLastDndEventManager = function(em) {
+  return this._dndEventManagers[this._dndEventManagers.length - 1] === em;
 };
 /**
  * A base class for shape fills, strokes, shadows, etc.
@@ -2766,19 +2807,24 @@ dvt.ParallelPlayable.prototype.play = function(bImmediate)
  */
 dvt.ParallelPlayable.prototype._play = function() {
   var playable;
-  for (var i = 0; i < this._arPlayables.length; i++)
-  {
-    playable = this._arPlayables[i];
-    if (playable instanceof dvt.Playable)
-    {
-      if (!this._bStarted)
-      {
+
+  if (!this._bStarted) {
+    for (var i = 0; i < this._arPlayables.length; i++) {
+      playable = this._arPlayables[i];
+      if (playable instanceof dvt.Playable) {
         this._runningCounter++;
 
         //call internal onEnd function when each Playable ends
         dvt.Playable.appendOnEnd(playable, this.OnPlayableEnd, this);
       }
+    }
+  }
 
+  for (var i = 0; i < this._arPlayables.length; i++)
+  {
+    playable = this._arPlayables[i];
+    if (playable instanceof dvt.Playable)
+    {
       // Perform the animation immediately since this is not part of a slow component render operation.
       playable.play(true);
     }
@@ -13795,10 +13841,17 @@ dvt.TouchManager.prototype.cancelTouchHold = function() {
 
 };
 
+/**
+ * Processes a touch end event
+ * @param {object} touch The touch info object
+ * @param {string} uniqueKey The touch id
+ * @param {TouchEvent} event The touch event to process
+ */
 dvt.TouchManager.prototype.performAssociatedTouchEnd = function(touch, uniqueKey, event) {
   var identifier = touch.identifier;
-  var savedInfo = this.getSavedTouchInfo(identifier, uniqueKey);
-  if (savedInfo) {
+  var savedInfoObjs = this._getSavedTouchInfo(identifier, uniqueKey);
+  for (var i = 0; i < savedInfoObjs.length; i++) {
+    var savedInfo = savedInfoObjs[i];
     var listenerObj = savedInfo['listenerObj'];
     var endListener = savedInfo['endListener'];
 
@@ -13821,6 +13874,11 @@ dvt.TouchManager.prototype.processAssociatedTouchAttempt = function(event, uniqu
   }
 };
 
+/**
+ * Processes a touch move event
+ * @param {TouchEvent} event The touch event to process
+ * @param {string} uniqueKey The touch id
+ */
 dvt.TouchManager.prototype.processAssociatedTouchMove = function(event, uniqueKey) {
   var touchIds = this.getTouchIdsForObj(uniqueKey);
   for (var i = 0; i < touchIds.length; i++) {
@@ -13828,8 +13886,9 @@ dvt.TouchManager.prototype.processAssociatedTouchMove = function(event, uniqueKe
     if (touchId != null && !isNaN(touchId)) {
       var touch = dvt.TouchManager.getTouchById(touchId, this._getStoredTouches(event.changedTouches));
       if (touch) {
-        var savedInfo = this.getSavedTouchInfo(touch.identifier, uniqueKey);
-        if (savedInfo) {
+        var savedInfoObjs = this._getSavedTouchInfo(touch.identifier, uniqueKey);
+        for (var i = 0; i < savedInfoObjs.length; i++) {
+          var savedInfo = savedInfoObjs[i];
           var listenerObj = savedInfo['listenerObj'];
           var moveListener = savedInfo['moveListener'];
 
@@ -13875,16 +13934,23 @@ dvt.TouchManager.prototype._findMatches = function(matchProp, matchValue) {
 };
 
 
-
-dvt.TouchManager.prototype.getSavedTouchInfo = function(touchId, uniqueKey) {
+/**
+ * Returns an array of touch info objects matching the unique key.
+ * @param {string} touchId The touch info identifier
+ * @param {string} uniqueKey The id used to find the matching touch info
+ * @return {array}
+ * @private
+ */
+dvt.TouchManager.prototype._getSavedTouchInfo = function(touchId, uniqueKey) {
   var matches = this._findMatches('touchId', touchId);
+  var touchInfoObjs = [];
   for (var i = 0; i < matches.length; i++) {
     var info = matches[i];
     if (info['touchObj'] == uniqueKey) {
-      return info;
+      touchInfoObjs.push(info);
     }
   }
-  return null;
+  return touchInfoObjs;
 };
 dvt.TouchManager.prototype.containsTouchId = function(touchId) {
   var matches = this._findMatches('touchId', touchId);
@@ -15015,6 +15081,236 @@ dvt.DomEventFactory.generateMouseEventFromKeyboardEvent = function(keyboardEvent
   else
     return null;
 };
+/**
+ * A pan event.
+ * @param {string}  subType  subtype of the event; one of the constants
+ *        defined in this class
+ * @param {number}  newX  new x-coord
+ * @param {number}  newY  new y-coord
+ * @param {number}  oldX  old x-coord
+ * @param {number}  oldY  old y-coord
+ * @param {dvt.Animator}  animator  optional animator used to animate the zoom
+ * @class
+ * @constructor
+ */
+dvt.PanEvent = function(subType, newX, newY, oldX, oldY, animator) {
+  this.Init(dvt.PanEvent.TYPE);
+  this.type = this.getType();
+  this._subtype = subType;
+  this._newX = newX;
+  this._newY = newY;
+  this._oldX = oldX;
+  this._oldY = oldY;
+  this._animator = animator;
+};
+
+dvt.Obj.createSubclass(dvt.PanEvent, dvt.BaseComponentEvent);
+
+/** @const **/
+dvt.PanEvent.TYPE = 'dvtPan';
+
+/** @const **/
+dvt.PanEvent.SUBTYPE_DRAG_PAN_BEGIN = 'dragPanBegin';
+/** @const **/
+dvt.PanEvent.SUBTYPE_DRAG_PAN_END = 'dragPanEnd';
+/** @const **/
+dvt.PanEvent.SUBTYPE_PANNED = 'panned';
+/** @const **/
+dvt.PanEvent.SUBTYPE_PANNING = 'panning';
+/** @const **/
+dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_BEGIN = 'elasticAnimBegin';
+/** @const **/
+dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_END = 'elasticAnimEnd';
+
+/**
+ * Returns the pan event sub type
+ * @return {string}
+ */
+dvt.PanEvent.prototype.getSubType = function() {
+  return this._subtype;
+};
+
+/**
+ * Returns the new x coordinate of the pan event
+ * @return {number}
+ */
+dvt.PanEvent.prototype.getNewX = function() {
+  return this._newX;
+};
+
+/**
+ * Returns the new y coordinate of the pan event
+ * @return {number}
+ */
+dvt.PanEvent.prototype.getNewY = function() {
+  return this._newY;
+};
+
+/**
+ * Returns the old x coordinate of the pan event
+ * @return {number}
+ */
+dvt.PanEvent.prototype.getOldX = function() {
+  return this._oldX;
+};
+
+/**
+ * Returns the old y coordinate of the pan event
+ * @return {number}
+ */
+dvt.PanEvent.prototype.getOldY = function() {
+  return this._oldY;
+};
+
+/**
+ * Returns the animator of the pan event
+ * @return {dvt.Animator}
+ */
+dvt.PanEvent.prototype.getAnimator = function() {
+  return this._animator;
+};
+/**
+ * A zoom event.
+ * @param {string}  subType  subtype of the event; one of the constants
+ *        defined in this class
+ * @param {number}  newZoom  new zoom factor
+ * @param {number}  oldZoom  old zoom factor
+ * @param {dvt.Animator}  animator  optional animator used to animate the zoom
+ * @param {dvt.Rectangle}  zoomToFitBounds  bounds to use for zoom-to-fit
+ * @param {dvt.Point}  centerPoint  center of zoom
+ * @param {number}  tx  the horizontal translation applied after the zoom
+ * @param {number}  ty  the vertical translation applied after the zoom
+ * @class
+ * @constructor
+ */
+dvt.ZoomEvent = function(subType, newZoom, oldZoom, animator, zoomToFitBounds, centerPoint, tx, ty) {
+  this.Init(dvt.ZoomEvent.TYPE);
+  this.type = this.getType();
+  this._subtype = subType;
+  this._newZoom = newZoom;
+  this._oldZoom = oldZoom;
+  this._animator = animator;
+  this._zoomToFitBounds = zoomToFitBounds;
+  this._centerPoint = centerPoint;
+  this._tx = tx;
+  this._ty = ty;
+};
+
+dvt.Obj.createSubclass(dvt.ZoomEvent, dvt.BaseComponentEvent);
+/** @const **/
+dvt.ZoomEvent.TYPE = 'dvtZoom';
+/**
+ * Zoomed event - component might need to rerender on this event
+ * @const
+ */
+dvt.ZoomEvent.SUBTYPE_ZOOMED = 'zoomed';
+/**
+ * Zooming event - used to notify a component of zooming event
+ * @const
+ */
+dvt.ZoomEvent.SUBTYPE_ZOOMING = 'zooming';
+/**
+ * ZoomEnd event - it is the end of the zoom event. The difference between "zoomed" and "zoomEnd" is on touch device.
+ * A component gets "zoomed" events for appropriate "touchmove" events. When all touches are released on "touchend"  the component will get "zoomEnd" notification.
+ * @const
+ */
+dvt.ZoomEvent.SUBTYPE_ZOOM_END = 'zoomEnd';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_BEGIN = 'dragZoomBegin';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_END = 'dragZoomEnd';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ZOOM_AND_CENTER = 'zoomAndCenter';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS = 'zoomToFitCalcBounds';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN = 'zoomToFitBegin';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END = 'zoomToFitEnd';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ELASTIC_ANIM_BEGIN = 'elasticAnimBegin';
+/** @const **/
+dvt.ZoomEvent.SUBTYPE_ELASTIC_ANIM_END = 'elasticAnimEnd';
+/**
+ * Subtype representing a zoom event fired before the SUBTYPE_ZOOMING event to give components a chance adjust the
+ * pan constraints
+ * @const
+ */
+dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS = 'adjustPanConstraints';
+
+/**
+ * Returns the zoom event sub type
+ * @return {string}
+ */
+dvt.ZoomEvent.prototype.getSubType = function() {
+  return this._subtype;
+};
+
+/**
+ * Returns the new zoom
+ * @return {number}
+ */
+dvt.ZoomEvent.prototype.getNewZoom = function() {
+  return this._newZoom;
+};
+
+/**
+ * Returns the old zoom
+ * @return {number}
+ */
+dvt.ZoomEvent.prototype.getOldZoom = function() {
+  return this._oldZoom;
+};
+
+/**
+ * Returns the animator for this zoom event
+ * @return {dvt.Animator}
+ */
+dvt.ZoomEvent.prototype.getAnimator = function() {
+  return this._animator;
+};
+
+/**
+ * Sets the bounds of this zoom event
+ * @param {dvt.Rectangle} bounds The bounds
+ */
+dvt.ZoomEvent.prototype.setZoomToFitBounds = function(bounds) {
+  this._zoomToFitBounds = bounds;
+};
+
+/**
+ * Returns the bounds of this zoom event
+ * @return {dvt.Rectangle}
+ */
+dvt.ZoomEvent.prototype.getZoomToFitBounds = function() {
+  return this._zoomToFitBounds;
+};
+
+/**
+ * Returns the center point of this zoom event
+ * @return {dvt.Point}
+ */
+dvt.ZoomEvent.prototype.getCenterPoint = function() {
+  return this._centerPoint;
+};
+
+
+/**
+ * Gets the horizontal translation applied after the zoom
+ * @return {number} the horizontal translation applied after the zoom
+ */
+dvt.ZoomEvent.prototype.getTx = function() {
+  return this._tx;
+};
+
+
+/**
+ * Gets the vertical translation applied after the zoom
+ * @return {number} the vertical translation applied after the zoom
+ */
+dvt.ZoomEvent.prototype.getTy = function() {
+  return this._ty;
+};
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -15318,6 +15614,24 @@ dvt.PathUtils.quadTo = function(x1,y1,x,y) {
       dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y);
 };
 
+/**
+ * Returns a path command for a vertical line to the specified x coordinate
+ * @param {integer} x the destination x coordinate
+ * @return {string} the horizontal line path command
+ */
+dvt.PathUtils.horizontalLineTo = function(x) {
+  return 'H' + dvt.ToolkitUtils.roundDecimal(x);
+};
+
+/**
+ * Returns a path command for a horizontal line to the specified y coordinate
+ * @param {integer} y the destination y coordinate
+ * @return {string} the vertical line path command
+ */
+dvt.PathUtils.verticalLineTo = function(y) {
+  return 'V' + dvt.ToolkitUtils.roundDecimal(y);
+};
+
 dvt.PathUtils.cubicTo = function(x1,y1,x2,y2,x,y) {
   return 'C' + dvt.ToolkitUtils.roundDecimal(x1) + ',' + dvt.ToolkitUtils.roundDecimal(y1) + ',' +
       dvt.ToolkitUtils.roundDecimal(x2) + ',' + dvt.ToolkitUtils.roundDecimal(y2) + ',' +
@@ -15464,6 +15778,9 @@ dvt.PathUtils.rectangleWithBorderRadius = function(x, y, w, h, radius, multiplie
       }
     }
   }
+
+  if (!radius || radius == '0')
+    return dvt.PathUtils._rectangle(x, y, w, h);
 
   return dvt.PathUtils._roundedRectangle(x, y, w, h,
       dvt.PathUtils._parseBorderRadiusItem(topLeftX, multiplier),
@@ -16003,571 +16320,41 @@ dvt.PathUtils.simplifyPath = function(cmdAr, scale) {
   }
   return simplifiedCmdStr;
 };
-/**
- * @constructor
- * DvtMarkerDefElem
- */
-var DvtMarkerDefElem = function() {
-  this.Init();
-};
-
-/*
- * make DvtMarkerDefElem a subclass of dvt.Obj
- */
-dvt.Obj.createSubclass(DvtMarkerDefElem, dvt.PropMap);
-
-// dvt.MarkerDef Attributes
-DvtMarkerDefElem.ATTR_ELEMENTS = 'elements';
-DvtMarkerDefElem.ATTR_SHAPE = 'shape';
-DvtMarkerDefElem.ATTR_BORDER_COLOR = 'bc';
-DvtMarkerDefElem.ATTR_FILL_COLOR = 'fc';
-DvtMarkerDefElem.ATTR_FILL_PATTERN = 'fp';
-DvtMarkerDefElem.ATTR_FILL_GRADIENT = 'fg';
-DvtMarkerDefElem.ATTR_DATA = 'd';
-DvtMarkerDefElem.ATTR_POINTS = 'p';
-DvtMarkerDefElem.ATTR_LINE_WIDTH = 'lw';
-
-DvtMarkerDefElem.ATTR_FILL_GRAD_COLORS = 'c';
-DvtMarkerDefElem.ATTR_FILL_GRAD_STOPS = 'p';
-DvtMarkerDefElem.ATTR_FILL_GRAD_BOUNDS = 'b';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR = 'dir';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_RADIAL = 'gdR';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_RIGHT = 'gdRi';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_DOWN = 'gdD';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_45 = 'gdD45';
-DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_135 = 'gdD135';
-DvtMarkerDefElem.ATTR_FILL_GRAD_CX = 'cx';
-DvtMarkerDefElem.ATTR_FILL_GRAD_CY = 'cy';
-DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUS = 'r';
-DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUSX = 'rx';
-DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUSY = 'ry';
-
-DvtMarkerDefElem.ATTR_ANGLES = 'ang';
-DvtMarkerDefElem.ATTR_CLOSURE_TYPE = 'ct';
-
-DvtMarkerDefElem.ATTR_TRANSFORM = 'transform';
-
-
-/*
- * Initializes the instance.
- */
-DvtMarkerDefElem.prototype.Init = function() {
-  DvtMarkerDefElem.superclass.Init.call(this);
-};
-
-
-/*-------------------------------------------------------------------------*/
-/*   dvt.MarkerDef attributes                                                */
-/*-------------------------------------------------------------------------*/
-
 
 /**
- * Gets the shape of the marker. The list of shapes are :
- * "circle"
- * "ellipse"
- * "line"
- * "path"
- * "polygone"
- * "polyline"
- * "rectangle"
- *
- * @return the shape of the marker
+ * Returns a path command for a rectangle.
+ * @param {number} x Rectangle x.
+ * @param {number} y Rectangle y.
+ * @param {number} w Rectangle width.
+ * @param {number} h Rectangle height.
+ * @return {string} Path command.
+ * @private
  */
-DvtMarkerDefElem.prototype.getShape = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_SHAPE);
+dvt.PathUtils._rectangle = function(x, y, w, h) {
+  var cmd = dvt.PathUtils.moveTo(x, y) +
+            dvt.PathUtils.horizontalLineTo(x + w) +
+            dvt.PathUtils.verticalLineTo(y + h) +
+            dvt.PathUtils.horizontalLineTo(x) +
+            dvt.PathUtils.closePath();
+
+  return cmd;
 };
-
-
 /**
- * Specifies the shape of the marker. The list of shapes are :
- * "circle"
- * "ellipse"
- * "line"
- * "path"
- * "polygone"
- * "polyline"
- * "rectangle"
- *
- * @param shape the shape of the marker
+ * Utility class to help create marker gradient fills
+ *  @extends {dvt.Obj}
+ *  @constructor
  */
-DvtMarkerDefElem.prototype.setShape = function(shape) {
-  this.setProperty(DvtMarkerDefElem.ATTR_SHAPE, shape);
-};
-
-
-/**
- * Gets the data of the component.
- * @return data of the component
- */
-DvtMarkerDefElem.prototype.getData = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_DATA);
-};
-
-
-/**
- * Sets the data of the component.
- * @param data data of the component
- */
-DvtMarkerDefElem.prototype.setData = function(data) {
-  return this.setProperty(DvtMarkerDefElem.ATTR_DATA, data);
-};
-
-
-/**
- * Gets the points of the component.
- * @return points of the component
- */
-DvtMarkerDefElem.prototype.getPoints = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_POINTS);
-};
-
-
-/**
- * Sets the points of the component.
- * @param points points of the component
- */
-DvtMarkerDefElem.prototype.setPoints = function(points) {
-  this.setProperty(DvtMarkerDefElem.ATTR_POINTS, points);
-};
-
-
-/**
- * Gets the closure type of the component.
- * @return closure type of the component
- */
-DvtMarkerDefElem.prototype.getClosureType = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_CLOSURE_TYPE);
-};
-
-
-/**
- * Sets the closure type of the component.
- * @param closureType closure type of the component
- */
-DvtMarkerDefElem.prototype.setClosureType = function(closureType) {
-  this.setProperty(DvtMarkerDefElem.ATTR_CLOSURE_TYPE, closureType);
-};
-
-
-/**
- * Gets the angles of the component.
- * @return angles of the component
- */
-DvtMarkerDefElem.prototype.getAngles = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_ANGLES);
-};
-
-
-/**
- * Sets the angles of the component.
- * @param angles angles of the component
- */
-DvtMarkerDefElem.prototype.setAngles = function(angles) {
-  return this.setProperty(DvtMarkerDefElem.ATTR_ANGLES, angles);
-};
-
-
-/**
- * Gets the border color of the component.
- * @return border color of the component
- */
-DvtMarkerDefElem.prototype.getBorderColor = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_BORDER_COLOR);
-};
-
-
-/**
- * Sets the border color of the component.
- * @param borderColor border color of the component
- */
-DvtMarkerDefElem.prototype.setBorderColor = function(borderColor) {
-  this.setProperty(DvtMarkerDefElem.ATTR_BORDER_COLOR, borderColor);
-};
-
-
-/**
- * Gets the line width of the component.
- * @return line width of the component
- */
-DvtMarkerDefElem.prototype.getLineWidth = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_LINE_WIDTH);
-};
-
-
-/**
- * Sets the line width of the component.
- * @param lineWidth line width of the component
- */
-DvtMarkerDefElem.prototype.setLineWidth = function(lineWidth) {
-  this.setProperty(DvtMarkerDefElem.ATTR_LINE_WIDTH, lineWidth);
-};
-
-
-/**
- * Gets the fill color of the component.
- * @return fill color of the component
- */
-DvtMarkerDefElem.prototype.getFillColor = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_COLOR);
-};
-
-
-/**
- * Sets the fill color of the component.
- * @param fillColor fill color of the component
- */
-DvtMarkerDefElem.prototype.setFillColor = function(fillColor) {
-  this.setProperty(DvtMarkerDefElem.ATTR_FILL_COLOR, fillColor);
-};
-
-
-/**
- * Gets the fill pattern of the component.
- * @return fill pattern of the component
- */
-DvtMarkerDefElem.prototype.getFillPattern = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_PATTERN);
-};
-
-
-/**
- * Sets the fill pattern of the component.
- * @param fillPattern fill pattern of the component
- */
-DvtMarkerDefElem.prototype.setFillPattern = function(fillPattern) {
-  this.setProperty(DvtMarkerDefElem.ATTR_FILL_PATTERN, fillPattern);
-};
-
-
-/**
- * Gets the fill gradient of the component.
- * @return fill gradient of the component
- */
-DvtMarkerDefElem.prototype.getFillGradient = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRADIENT);
-};
-
-
-/**
- * Sets the fill gradient of the component.
- * @param fillGradient fill gradient of the component
- */
-DvtMarkerDefElem.prototype.setFillGradient = function(fillGradient) {
-  this.setProperty(DvtMarkerDefElem.ATTR_FILL_GRADIENT, fillGradient);
-};
-
-
-/**
- *   Gets the gradient color array of the component.
- */
-
-DvtMarkerDefElem.prototype.getGradColors = function() {
-  var s = this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_COLORS);
-  var a = s.split(',');
-  return a;
-};
-
-/**
- *   Gets the gradient stops of the component.
- */
-
-DvtMarkerDefElem.prototype.getGradStops = function() {
-  var s = this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_STOPS);
-  var a = s.split(',');
-  dvt.ArrayUtils.toFloat(a);
-
-  return a;
-};
-
-/**
- *   Gets the gradient bounds of the component.
- */
-
-DvtMarkerDefElem.prototype.getGradBounds = function() {
-  var s = this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_BOUNDS);
-  var a = s.split(',');
-  dvt.ArrayUtils.toFloat(a);
-  return a;
-};
-
-
-/**
- *   Gets the gradient direction.
- */
-
-DvtMarkerDefElem.prototype.getGradDir = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_DIR);
-};
-
-
-
-/**
- *   Gets the radial gradient radius
- */
-
-DvtMarkerDefElem.prototype.getGradRadius = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUS);
-};
-
-
-/**
- *   Gets the radial gradient x-radius
- */
-
-DvtMarkerDefElem.prototype.getGradRadiusX = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUSX);
-};
-
-
-/**
- *   Gets the radial gradient y-radius
- */
-
-DvtMarkerDefElem.prototype.getGradRadiusY = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_RADIUSY);
-};
-
-/**
- *   Gets the radial gradient cx.
- */
-
-DvtMarkerDefElem.prototype.getGradCx = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_CX);
-};
-
-
-/**
- *   Gets the radial gradient cxy
- */
-
-DvtMarkerDefElem.prototype.getGradCy = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_FILL_GRAD_CY);
-};
-
-
-/**
- * Gets the transform of the component.
- * @return transform of the component
- */
-DvtMarkerDefElem.prototype.getTransform = function() {
-  return this.getProperty(DvtMarkerDefElem.ATTR_TRANSFORM);
-};
-
-
-/**
- * Sets the transform of the component.
- * @param transform transform of the component
- */
-DvtMarkerDefElem.prototype.setTransform = function(transform) {
-  return this.setProperty(DvtMarkerDefElem.ATTR_TRANSFORM, transform);
-};
-
-/**
- * @constructor
- * dvt.MarkerDef
- */
-dvt.MarkerDef = function() {
-  this.Init();
-};
-
-/*
- * make dvt.MarkerDef a subclass of dvt.Obj
- */
-dvt.Obj.createSubclass(dvt.MarkerDef, dvt.PropMap);
-
-dvt.MarkerDef.MARKER_DEF = 'markerDef';
-
-// List of marker shapes
-dvt.MarkerDef.MARKER_DEF_CIRCLE = 'c';
-dvt.MarkerDef.MARKER_DEF_ELLIPSE = 'o';
-dvt.MarkerDef.MARKER_DEF_LINE = 'l';
-dvt.MarkerDef.MARKER_DEF_PATH = 'p';
-dvt.MarkerDef.MARKER_DEF_POLYGON = 'pg';
-dvt.MarkerDef.MARKER_DEF_POLYLINE = 'pl';
-dvt.MarkerDef.MARKER_DEF_RECT = 'r';
-
-
-// dvt.MarkerDef Attributes
-dvt.MarkerDef.ATTR_ELEMENTS = 'elements';
-dvt.MarkerDef.ATTR_BORDER_COLOR = 'bc';
-dvt.MarkerDef.ATTR_LINE_WIDTH = 'lw';
-dvt.MarkerDef.ATTR_FILL_COLOR = 'fc';
-dvt.MarkerDef.ATTR_FILL_PATTERN = 'fp';
-dvt.MarkerDef.ATTR_FILL_GRADIENT = 'fg';
-
-
-
-dvt.MarkerDef.BI_DEFAULT_MARKER_SIZE = 9;
-
-dvt.MarkerDef.HUMAN_CMDS = 'M 38.07,36.467856 q 13.414,0 13.414,-13.406 l 0,-9.258 q 0,-13.4039999 -13.414,' +
-    '-13.4039999 -13.414,0 -13.414,13.4039999 l 0,9.258 q 0,13.406 13.414,13.406 l 0,0 z m 16.219,7.275 -32.435999,' +
-    '0 q -10.139552,0 -15.9400009,7.443875 Q 0.5,58.133383 0.5,69.156856 l 0,54.396004 12.746001,0 0,-51.609004 q 0,' +
-    '-2.824 0.793,-2.824 0.742,0 0.742,2.709 l 0,124.267994 q 0,2.82401 2.823999,2.82401 l 12.531,0 q 2.824,0 2.824,' +
-    '-2.824 l 0,-66.25 10.219,0 0,66.25 q 0,2.824 2.824,2.824 l 12.528,0 q 2.825,0 2.825,-2.824 l 0,-124.268004 q 0,' +
-    '-2.709 0.839,-2.709 0.792,0 0.792,2.824 l 0,51.609004 12.65,0 0,-54.396004 Q 75.6386,58.132927 70.227626,' +
-    '51.186731 64.428999,43.742856 54.289,43.742856 l 0,0 z';
-
-dvt.MarkerDef.HUMAN2_CMDS = 'M 306.40625 386.78125 C 304.19988 386.78125 302.40625 389.07579 302.40625 391.90625 ' +
-    'C 302.40625 394.73671 304.19988 397.03125 306.40625 397.03125 C 308.61263 397.03125 310.40625 394.73671 310.40625 ' +
-    '391.90625 C 310.40625 389.07579 308.61263 386.78125 306.40625 386.78125 z M 301.78125 396.0625 C 300.43025 397.2945 ' +
-    '298.28125 400.28125 298.90625 403.15625 C 302.41725 405.79925 309.20225 406.154 314.03125 403 C 314.21825 399.828 ' +
-    '312.68325 397.5635 310.90625 396.0625 C 308.65625 400.7185 304.28125 399.7815 301.78125 396.0625 z ';
-
-/** Commands for creating a star shape */
-dvt.MarkerDef.SHAPE_STAR_CMDS = [- 50, - 11.22, - 16.69, - 17.94, 0, - 47.55, 16.69, - 17.94, 50, - 11.22, 26.69, 13.8,
-  30.9, 47.56, 0, 33.42, - 30.9, 47.56, - 26.69, 13.8];
-
-/*
- * Initializes the instance.
- */
-dvt.MarkerDef.prototype.Init = function() {
-  dvt.MarkerDef.superclass.Init.call(this);
-};
-
-
-
-/*-------------------------------------------------------------------------*/
-/*   dvt.MarkerDef attributes                                                */
-/*-------------------------------------------------------------------------*/
-
-
-/**
- * Gets the border color of the component.
- * @return border color of the component
- */
-dvt.MarkerDef.prototype.getBorderColor = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_BORDER_COLOR);
-};
-
-
-/**
- * Sets the border color of the component.
- * @param borderColor border color of the component
- */
-dvt.MarkerDef.prototype.setBorderColor = function(borderColor) {
-  this.setProperty(dvt.MarkerDef.ATTR_BORDER_COLOR, borderColor);
-};
-
-
-/**
- * Gets the line width of the component.
- * @return line width of the component
- */
-dvt.MarkerDef.prototype.getLineWidth = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_LINE_WIDTH);
-};
-
-
-/**
- * Sets the line width of the component.
- * @param lineWidth line width of the component
- */
-dvt.MarkerDef.prototype.setLineWidth = function(lineWidth) {
-  this.setProperty(dvt.MarkerDef.ATTR_LINE_WIDTH, lineWidth);
-};
-
-
-/**
- * Gets the fill color of the component.
- * @return fill color of the component
- */
-dvt.MarkerDef.prototype.getFillColor = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_FILL_COLOR);
-};
-
-
-/**
- * Sets the fill color of the component.
- * @param fillColor fill color of the component
- */
-dvt.MarkerDef.prototype.setFillColor = function(fillColor) {
-  this.setProperty(dvt.MarkerDef.ATTR_FILL_COLOR, fillColor);
-};
-
-
-/**
- * Gets the fill pattern of the component.
- * @return fill pattern of the component
- */
-dvt.MarkerDef.prototype.getFillPattern = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_FILL_PATTERN);
-};
-
-
-/**
- * Sets the fill pattern of the component.
- * @param fillPattern fill pattern of the component
- */
-dvt.MarkerDef.prototype.setFillPattern = function(fillPattern) {
-  this.setProperty(dvt.MarkerDef.ATTR_FILL_PATTERN, fillPattern);
-};
-
-
-/**
- * Gets the fill gradient of the component.
- * @return fill gradient of the component
- */
-dvt.MarkerDef.prototype.getFillGradient = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_FILL_GRADIENT);
-};
-
-
-/**
- * Sets the fill gradient of the component.
- * @param fillGradient fill gradient of the component
- */
-dvt.MarkerDef.prototype.setFillGradient = function(fillGradient) {
-  this.setProperty(dvt.MarkerDef.ATTR_FILL_GRADIENT, fillGradient);
-};
-
-
-/**
- * Gets the dimensions of the component.
- * @return dimensions of the component
- */
-dvt.MarkerDef.prototype.getDimensions = function() {
-  var x = this.getProperty('dx');
-  var y = this.getProperty('dy');
-  var w = this.getProperty('dw');
-  var h = this.getProperty('dh');
-
-  if (w && h) {
-    return new dvt.Rectangle(x, y, w, h);
-  }
-  return null;
-};
-
-
-/**
- * Gets the elements of the marker. The list of elementss are :
- *
- * @return the elements of the marker
- */
-dvt.MarkerDef.prototype.getElements = function() {
-  return this.getProperty(dvt.MarkerDef.ATTR_ELEMENTS);
-};
-
-
-/**
- * Add an element to the marker.
- *
- * @param {DvtMarkerDefElem} element to be added
- */
-dvt.MarkerDef.prototype.addElement = function(element) {
-  var elems = this.getElements();
-  if (! elems) {
-    elems = [];
-    this.setProperty(dvt.MarkerDef.ATTR_ELEMENTS, elems);
-  }
-  elems.push(element);
-};
-
-
-// TODO NAMESPACE: Candidate for move to DvtAfComponent
 dvt.MarkerGradient = function() {};
 
 dvt.Obj.createSubclass(dvt.MarkerGradient, dvt.Obj);
 
+/**
+ * Creates a marker gradient fill based on the marker type and color.
+ * @param {string} color The color string to create gradient from
+ * @param {dvt.SimpleMarker} marker The marker to create the fill for
+ * @param {number} opacity The fill opacity
+ * @return {dvt.GradientFill}
+ */
 dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
 {
   var arColors = [];
@@ -16580,7 +16367,7 @@ dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
   var center = dim.getCenter();
   var size = Math.min(dim.w, dim.h);
 
-  if (shapeType != dvt.Marker.HUMAN)
+  if (shapeType != dvt.SimpleMarker.HUMAN)
   {
     arRatios = [0.0, 0.5, 0.75, 1];
     var c0 = dvt.ColorUtils.getPastel(color, 0.20);
@@ -16608,365 +16395,6 @@ dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
 
   return gfs;
 };
-/**
- * dvt.MarkerUtils
- */
-dvt.MarkerUtils = {_cache: {}};
-
-dvt.Obj.createSubclass(dvt.MarkerUtils, dvt.Obj);
-
-
-/**
- * @this {dvt.MarkerUtils}
- * parse markerDefXmlString and return a markerDef object
- */
-dvt.MarkerUtils.createMarkerDef = function(context, markerDefNode) {
-
-  var markerDef = new dvt.MarkerDef();
-  markerDef.setProperties(markerDefNode.getAttributes());
-
-  var childNodes = markerDefNode.getChildNodes();
-  var childElems;
-
-  for (var i = 0; i < childNodes.length; i++) {
-    var child = childNodes[i];
-    if (child) {
-      childElems = new DvtMarkerDefElem();
-
-      if (child.getName() == 'fillDef') {
-        if (child.getChildNodes()) {
-          child = child.getChildNodes()[0];    // want the child ( e.g. <g> )
-        }
-      }
-
-      childElems.setProperties(child.getAttributes());
-      childElems.setShape(child.getName());
-      markerDef.addElement(childElems);
-    }
-  }
-
-  if (markerDef) {
-    this._addMarkerDef(context, markerDef);
-  }
-  return markerDef;
-};
-
-
-/**
- * @this {dvt.MarkerUtils}
- * add a markerDef object to the marker list
- */
-dvt.MarkerUtils._addMarkerDef = function(context, markerDef) {
-  var stageId = context.getStage().getId();
-  var markerId = markerDef.getId();
-  var markerList = dvt.MarkerUtils.getMarkerList(stageId);
-
-  //first look for a cached copy of the custom marker
-  //if not found, add to the custom marker list
-  if (! markerList[markerId]) {
-    var marker = this.createMultiPaths(context, markerDef, markerId);
-    if (marker) {
-      // set id on the root
-      marker.setId('custom' + markerId);
-      markerList[markerId] = marker;
-
-      // get custom dimensions and cache it in the shape object
-      var dim = markerDef.getDimensions();
-      if (dim) {
-        dvt.DisplayableUtils._setDimForced(marker, dim);
-      }
-    }
-  }
-};
-
-
-/**
- * @this {dvt.MarkerUtils}
- * Get Custom Marker List
- */
-dvt.MarkerUtils.getMarkerList = function(stageId)
-{
-  if (!this._cache[stageId]) {
-    this._cache[stageId] = {};
-  }
-  return this._cache[stageId];
-};
-
-
-/**
- * @this {dvt.MarkerUtils}
- * Returns a dvt.Path
- *
- * @param context  the context
- * @param markerDef the custom marker definition
- */
-dvt.MarkerUtils.createMarkerShape = function(context, markerDefElem, markerDef, markerId) {
-
-  var marker;
-  var type = markerDefElem.getShape();
-
-  if (type == dvt.MarkerDef.MARKER_DEF_PATH) {
-    marker = this.createPathMarker(context, markerDefElem, markerId);
-  }
-  /*
-  else if (type == dvt.MarkerDef.MARKER_DEF_CIRCLE ||
-      type == dvt.MarkerDef.MARKER_DEF_ELLIPSE) {
-    marker = this.createCircleMarker(context, markerDef, markerId, type);
-  }
-  else if (type == dvt.MarkerDef.MARKER_DEF_LINE) {
-    marker = this.createLineMarker(context, markerDef, markerId);
-  }
-  else if (type == dvt.MarkerDef.MARKER_DEF_POLYGON) {
-    marker = this.createPolygoneMarker(context, markerDef, markerId);
-  }
-  else if (type == dvt.MarkerDef.MARKER_DEF_POLYLINE) {
-    marker = this.createPolylineMarker(context, markerDef, markerId);
-  }
-  else if (type == dvt.MarkerDef.MARKER_DEF_RECT_TYPE) {
-    marker = this.createRectMarker(context, markerDef, markerId);
-  }
-  */
-
-  //set common attributes
-  if (marker) {
-    dvt.MarkerUtils.setCommonAttrs(markerDefElem, markerDef, marker);
-  }
-
-  return marker;
-};
-
-
-/**
- * @type {dvt.Path or dvt.Container (contains a list of DvtPaths)}
- */
-dvt.MarkerUtils.createMultiPaths = function(context, markerDef, markerId) {
-  var shapes = markerDef.getElements();
-  if (! shapes || shapes.length == 0)
-    return null;
-
-  var root;
-  if (shapes.length == 1) {
-    root = dvt.MarkerUtils.createMarkerShape(context, shapes[0], markerDef, markerId);
-  }
-  else {
-    root = new dvt.Container(context, markerId);
-    var child;
-    var childElem;
-    for (var i = 0; i < shapes.length; i++) {
-      child = shapes[i];
-      childElem = dvt.MarkerUtils.createMarkerShape(context, child, markerDef, markerId + '_' + i);
-      if (childElem)
-        root.addChild(childElem);
-    }
-  }
-  return root;
-
-};
-
-// type: circle or ellipse
-dvt.MarkerUtils.createCircleMarker = function(context, markerDef, markerId, type) {
-  var points = markerDef.getPoints();
-  var cx = points[0];
-  var cy = points[1];
-  var rx = points[2];
-  var ry;
-  if (type == dvt.MarkerDef.MARKER_DEF_ELLIPSE) {
-    ry = points[3];
-  }
-  var marker;
-  var closureType = markerDef.getClosureType();
-  if (closureType) {
-    var angles = markerDef.getAngles();
-    var anglesStart;
-    var anglesExtent;
-    if (angles) {
-      anglesStart = angles[0];
-      anglesExtent = angles[1];
-    }
-    marker = new dvt.Arc(context, cx, cy, rx, ry,
-        anglesStart, anglesExtent, closureType, markerId);
-  }
-  else {
-    marker = new dvt.Circle(context, cx, cy, rx, markerId);
-  }
-
-  return marker;
-};
-
-
-dvt.MarkerUtils.createRectMarker = function(context, markerDef, markerId) {
-  var points = markerDef.getPoints();
-  var x = points[0];
-  var y = points[1];
-  var w = points[2];
-  var h = points[3];
-
-  return new dvt.Rect(context, x, y, w, h, markerId);
-};
-
-
-dvt.MarkerUtils.createLineMarker = function(context, markerDef, markerId) {
-  var points = markerDef.getPoints();
-  var x1 = points[0];
-  var y1 = points[1];
-  var x2 = points[2];
-  var y2 = points[3];
-
-  return new dvt.Line(context, x1, y1, x2, y2, markerId);
-};
-
-dvt.MarkerUtils.createPathMarker = function(context, markerDefElem, markerId) {
-  var data = markerDefElem.getData();
-
-  return new dvt.Path(context, data, markerId);
-};
-
-
-dvt.MarkerUtils.createPolygoneMarker = function(context, markerDef, markerId) {
-  var points = markerDef.getPoints();
-
-  return new dvt.Polygon(context, points, markerId);
-};
-
-
-dvt.MarkerUtils.createPolylineMarker = function(context, markerDef, markerId) {
-  var points = markerDef.getPoints();
-
-  return new dvt.Polyline(context, points, markerId);
-};
-
-
-dvt.MarkerUtils.setCommonAttrs = function(markerDefElem, markerDef, marker) {
-  // solid, gradient, pattern fill?
-  var fc = markerDefElem.getFillColor();
-  var fa = null; //TODO getAlpha
-  var fg = markerDefElem.getFillGradient();
-  var fp = markerDefElem.getFillPattern();
-
-  if (fp) {
-    marker.setFill(new dvt.PatternFill(fp, fc));
-  }
-  else if (fg) {                           // look for matching fillDef gradient id
-    var elems = markerDef.getElements();
-    var fd;
-    var len = elems.length;
-    for (var i = 0; i < len; i++) {
-      var fillDef = elems[i];
-      if (fillDef.getShape() == 'g' && fillDef.getId() == fg) {
-        fd = fillDef;
-        break;
-      }
-    }
-
-    var stops;
-    var bounds;
-    var dir;
-    var gradCx;
-    var gradCy;
-    var rad;
-    if (fd) {
-      fc = fd.getGradColors();
-      stops = fd.getGradStops();
-      bounds = fd.getGradBounds();
-      dir = fd.getGradDir();
-      if (dir == DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_RADIAL) {
-        gradCx = parseFloat(fd.getGradCx());
-        gradCy = parseFloat(fd.getGradCy());
-        rad = parseFloat(fd.getGradRadius());
-        if (! rad) {
-          var radX = parseFloat(fd.getGradRadiusX());    // svg doesn't support rx, ry
-          var radY = parseFloat(fd.getGradRadiusY());
-          rad = Math.max(radX, radY);
-        }
-        marker.setFill(new dvt.RadialGradientFill(fc, fa, stops, gradCx, gradCy, rad, bounds));
-      }
-      else {
-        var angle = 0;
-        if (dir == DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_45)
-          angle = -135;
-        else if (dir == DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_135)
-          angle = -45;
-        else if (dir == DvtMarkerDefElem.ATTR_FILL_GRAD_DIR_DOWN)
-          angle = -90;
-        marker.setFill(new dvt.LinearGradientFill(angle, fc, fa, stops, bounds));
-      }
-    }
-    else {
-      marker.setFill(new dvt.LinearGradientFill(0, ['#000', '#fff']));
-    }
-  }
-  else if (fc || fa) {
-    marker.setSolidFill(fc, fa);
-  }
-
-  var lw = parseFloat(markerDefElem.getLineWidth());
-  var bc = markerDefElem.getBorderColor();
-
-  if (lw || bc) {
-    if (! lw)
-      lw = 1;
-    if (! bc)
-      bc = 'black';
-
-    var stroke = new dvt.SolidStroke(bc, 1, lw);
-    marker.setStroke(stroke);
-  }
-
-};
-
-
-/**
- * get a markerDef from the marker list
- * @type {dvt.Path or dvt.Container (contains a list of DvtPaths)}
- */
-dvt.MarkerUtils.getCustomMarkerInfo = function(context, markerId) {
-  var stageId = context.getStage().getId();
-  var markerList = dvt.MarkerUtils.getMarkerList(stageId);
-
-  if (markerList) {
-    return markerList[markerId];
-  }
-  else {
-    return undefined;
-  }
-};
-
-
-/**
- * Returns the built in marker shape given the marker type and skin
- * @param {dvt.Context} The platform specific context object
- * @param {String} markerType The marker type
- * @param {String} skin The skin name
- * @return {dvt.Shape} The built in marker shape
- */
-dvt.MarkerUtils.getBuiltinMarkerInfo = function(context, markerType, skin) {
-  var stageId = context.getStage().getId();
-  var markerList = dvt.MarkerUtils.getMarkerList(stageId);
-  var markerId = skin ? markerType + '_' + skin : markerType;
-  var defId = markerList[markerId];
-  // if the marker is not in cache, add it to markerList
-  if (! defId) {
-    if (markerType) {
-      var tmarker = new dvt.Path(context, dvt.CSSStyle.afterSkinAlta(skin) ? dvt.MarkerDef.HUMAN2_CMDS : dvt.MarkerDef.HUMAN_CMDS, 'dvtHuman');
-      // cache the dimensions in the shape object
-      dvt.DisplayableUtils.getDimForced(context, tmarker);
-      markerList[markerId] = tmarker;
-    }
-  }
-  return markerList[markerId];
-};
-
-
-/**
- * @this {dvt.MarkerUtils}
- * For internal use only
- */
-dvt.MarkerUtils.clearCached = function(context) {
-  var stageId = context.getStage().getId();
-  this._cache[stageId] = undefined;
-};
-
-
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -17156,16 +16584,7 @@ dvt.TextUtils.getTextHeight = function(text) {
  * @return {number} The text height.
  */
 dvt.TextUtils.getTextStringHeight = function(context, cssStyle) {
-  // Check whether a cached size is already available
-  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
-  var cachedDims = dvt.TextUtils._cachedTextDimensions[cssStyleKey];
-  if (cachedDims == null) {
-    var text = new dvt.OutputText(context);
-    text.setCSSStyle(cssStyle);
-    cachedDims = dvt.TextUtils._cacheRepresentativeDimensions(text, cssStyleKey);
-  }
-
-  return cachedDims.h;
+  return dvt.TextUtils._getRepresentativeDimensions(context, cssStyle).h;
 };
 
 /**
@@ -17183,15 +16602,7 @@ dvt.TextUtils.getTextStringHeight = function(context, cssStyle) {
  */
 dvt.TextUtils.guessTextDimensions = function(text, minChars) {
   var textString = text.getTextString();
-  var cssStyle = text.getCSSStyle();
-  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
-
-  // Check whether a cached size is already available
-  var cachedDims = dvt.TextUtils._cachedTextDimensions[cssStyleKey];
-
-  // Compute the dimensions of a representative character and add to the cache
-  if (cachedDims == null)
-    cachedDims = dvt.TextUtils._cacheRepresentativeDimensions(text, cssStyleKey);
+  var cachedDims = dvt.TextUtils._getRepresentativeDimensions(text.getCtx(), text.getCSSStyle());
 
   // Use the cached size to guess at the string length
   var w = cachedDims.w * dvt.TextUtils._getTextLength(textString);
@@ -17289,26 +16700,6 @@ dvt.TextUtils.renderEmptyText = function(container, textStr, space, eventManager
     text.setAriaProperty('hidden', null);
   }
   return text;
-};
-
-/**
- * Caches the size of representative characters for the cssStyleKey using the dvt.OutputText instance.
- * @param {dvt.OutputText} text
- * @param {string} cssStyleKey The key to use for caching.
- * @return {object} An object with fields w and h.
- * @private
- */
-dvt.TextUtils._cacheRepresentativeDimensions = function(text, cssStyleKey) {
-  // Measure M and W, which are usually the longest characters. Also safe for CJK, which is always monospace.
-  var textString = text.getTextString();
-  text.setTextString(dvt.OutputText.REPRESENTATIVE_TEXT);
-  var dims = text.measureDimensions();
-  text.setTextString(textString);
-
-  // Cache the dims of a single character. Conservative because real strings are not solely longest characters.
-  var cachedDims = {w: 0.50 * dims.w, h: dims.h};
-  dvt.TextUtils._cachedTextDimensions[cssStyleKey] = cachedDims;
-  return cachedDims;
 };
 
 /**
@@ -17449,6 +16840,51 @@ dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
 dvt.TextUtils._getTextLength = function(textString) {
   textString = textString.replace(/[\u200A\u200B\u200C\u200D\u200E\u200F\uFEFF]/g, '');
   return textString.length;
+};
+
+/**
+ * Gets the dimensions of auto-aligned representative characters for the specified cssStyle.
+ * @param {dvt.Context} context
+ * @param {dvt.CSSStyle} cssStyle
+ * @return {object} The representative dimensions
+ * @private
+ */
+dvt.TextUtils._getRepresentativeDimensions = function(context, cssStyle) {
+  // Check whether a cached size is already available
+  var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
+  var cachedDims = dvt.TextUtils._cachedTextDimensions[cssStyleKey];
+  if (cachedDims == null) {
+    var text = new dvt.OutputText(context, dvt.OutputText.REPRESENTATIVE_TEXT);
+    text.alignAuto();
+    text.setCSSStyle(cssStyle);
+    var dims = text.measureDimensions();
+    // Cache the dims of a single character. Conservative because real strings are not solely longest characters.
+    cachedDims = {x: dims.x, y: dims.y, w: 0.50 * dims.w, h: dims.h};
+    dvt.TextUtils._cachedTextDimensions[cssStyleKey] = cachedDims;
+  }
+  return cachedDims;
+};
+
+/**
+ * Gets the required baseline translation for the specified dvt.OutputText for environments that don't support dominant-baseline.
+ * @param {dvt.OutputText} text
+ * @return {number} The necessary baseline translation
+ */
+dvt.TextUtils.getBaselineTranslation = function(text) {
+  var valign = text.getVertAlignment();
+  if (valign != dvt.OutputText.V_ALIGN_AUTO) {
+    var cachedDims = dvt.TextUtils._getRepresentativeDimensions(text.getCtx(), text.getCSSStyle());
+    if (valign == dvt.OutputText.V_ALIGN_TOP) {
+      return -cachedDims.y;
+    }
+    else if (valign == dvt.OutputText.V_ALIGN_MIDDLE) {
+      return -cachedDims.y - cachedDims.h / 2;
+    }
+    else if (valign == dvt.OutputText.V_ALIGN_BOTTOM) {
+      return -cachedDims.y - cachedDims.h;
+    }
+  }
+  return 0;
 };
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -17916,7 +17352,7 @@ dvt.Displayable.prototype.getVisible = function() {
 dvt.Displayable.prototype.setVisible = function(bVis) {
   if (this._bVisible !== bVis) {
     this._bVisible = bVis;
-    var elem = (this instanceof dvt.Marker) ? this._elem : this.getElem();
+    var elem = this.getElem();
 
     // - HTML5: VISIBILITY="VISIBLE" LEFT ON ELEMENT AFTER ANIMATION
     //Since the default value for visibility is true, just remove the 'visibility' attribute.
@@ -19132,6 +18568,50 @@ dvt.Displayable.prototype.setFill = function(fill) {
   this.UpdateSelectionEffect();
 };
 
+/**
+ * Returns the class name for this shape.
+ * @return {String}
+ */
+dvt.Displayable.prototype.getClassName = function() {
+  return this._className;
+};
+
+/**
+ * Specifies a class name to be applied to the shape.
+ * @param {String} className
+ * @return {dvt.Displayable}
+ */
+dvt.Displayable.prototype.setClassName = function(className) {
+  if (this._className && !className)
+    dvt.ToolkitUtils.removeAttrNullNS(this._elem, 'class');
+  else if (className)
+    this.SetSvgProperty('class', className);
+  this._className = className;
+  return this;
+};
+
+/**
+ * Returns the style for this shape.
+ * @return {object}
+ */
+dvt.Displayable.prototype.getStyle = function() {
+  return this._style;
+};
+
+/**
+ * Specifies a class name to be applied to the shape.
+ * @param {object} style
+ * @return {dvt.Displayable}
+ */
+dvt.Displayable.prototype.setStyle = function(style) {
+  if (this._style && !style)
+    dvt.ToolkitUtils.removeAttrNullNS(this._elem, 'style');
+  else if (style)
+    this.SetSvgProperty('style', dvt.CSSStyle.cssObjectToString(style));
+  this._style = style;
+  return this;
+};
+
 
 /**
  *  Sets a solid fill on this shape.
@@ -19586,7 +19066,7 @@ dvt.Container.prototype.Init = function(context, type, id) {
  * tag to the group when this shape becomes a group (when children
  * are added to it).
  */
-dvt.Container.AttributesTransferableToGroup = ['transform', 'opacity', 'style', 'visibility', 'pointer-events', 'clip-path', 'cursor'];
+dvt.Container.AttributesTransferableToGroup = ['transform', 'opacity', 'visibility', 'pointer-events', 'clip-path', 'cursor'];
 
 
 /**
@@ -20082,6 +19562,13 @@ dvt.Container.prototype.dispatchNativeEvent = function(event) {
   if (target.dispatchEvent)
     target.dispatchEvent(nativeEvent);
 };
+
+/**
+ * Updates the geometries of the dvt.Shape used for the selection effects.
+ */
+dvt.Container.prototype.UpdateSelectionEffect = function() {
+  // Needed for setFill function
+};
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Top level container for all displayables contained within the SVG document.  This class should not be extended.
@@ -20304,6 +19791,8 @@ dvt.Shape.prototype.UpdateSelectionEffect = function() {
     this.InnerShape = this.copyShape();
     this.InnerShape.setMouseEnabled(false);
     this.InnerShape.setFill(this.getFill());
+    this.InnerShape.setStyle(this.getStyle()).setClassName(this.getClassName());
+
     if (stroke)
       this.InnerShape.setStroke(stroke);
     this.InnerShape.setMouseEnabled(false);
@@ -21589,1115 +21078,35 @@ dvt.Line.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(x, y, w, h);
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-/**
-  *  A marker object for lines, scatter and bubble charts and legend areas.
-  *  @param {dvt.Context} context
-  *  @param {Object} type An string representing the type of the marker (see {@link dvt.Marker}),
-  *                       a string URI for the shape path for a custom svg marker,
-  *                       or an array of image URIs for each of the 4 marker states (active, hover, selected, hoverSelected).
-  *  @param {number} x  The x position of the top left corner of the marker.
-  *  @param {number} y  The y position of the top left corner of the marker.
-  *  @param {number} w  The width of the marker.
-  *  @param {number} h  The height of the marker.
-  *  @param {number} sx  Optional The horizontal scale factor of the marker.
-  *  @param {number} sy  Optional The vertical scale factor of the marker.
-  *  @param {String} id  Optional ID for the shape (see {@link  dvt.Displayable#setId}).
-  *  @param {boolean} maintainAspect Optional Indicates whether aspect ratio should be maintained (false is not specified)
-  *  @class dvt.Marker A marker object for lines, scatter and bubble charts and legend areas.
-  *  @extends {dvt.Shape}
-  *  @constructor
-  */
-dvt.Marker = function(context, type, skin, x, y, w, h, id, sx, sy, maintainAspect) {
-  this.Init(context, type, skin, x, y, w, h, id, sx, sy, maintainAspect);
-};
-
-dvt.Obj.createSubclass(dvt.Marker, dvt.Shape);
-
-
-// TODO : This class is a mess after collapsing the toolkit, but that reflects its state before the collapse.  We
-// should refactor the code for creating a marker shape into a separate, simple marker class.
-/**
- * No marker shape defined.
- */
-dvt.Marker.NONE = 'none';
-
 
 /**
- * A circular marker.
- */
-dvt.Marker.CIRCLE = 'circle';
-
-
-/**
- * A square marker.
- */
-dvt.Marker.SQUARE = 'square';
-
-
-/**
- * A diamond shaped marker.
- */
-dvt.Marker.DIAMOND = 'diamond';
-
-
-/**
- * A triangular shaped marker with a vertex at the top.
- */
-dvt.Marker.TRIANGLE_UP = 'triangleUp';
-
-
-/**
- * A triangular shaped marker with a vertex at the bottom.
- */
-dvt.Marker.TRIANGLE_DOWN = 'triangleDown';
-
-
-/**
- * A plus-shaped marker.
- */
-dvt.Marker.PLUS = 'plus';
-
-
-/**
- * A human figure shaped marker.
- */
-dvt.Marker.HUMAN = 'human';
-
-
-/**
- * A rectangular marker with rounded corners.
- */
-dvt.Marker.ROUNDED_RECTANGLE = 'roundedRect';
-
-
-/**
- * A custom svg shaped marker.
- */
-dvt.Marker.CUSTOM = 'custom';
-
-
-/**
- * An image marker.
- */
-dvt.Marker.IMAGE = 'image';
-
-
-/**
- * @protected
- */
-dvt.Marker.SELECTION_STROKE_COLOR = '#000000';
-
-
-/**
- * @protected
- */
-dvt.Marker.SELECTION_STROKE_ALPHA = 1;
-
-// Array indicies if an array of image URIs are passed in type parameter
-dvt.Marker.IMAGE_SOURCE = 0;
-dvt.Marker.IMAGE_SOURCE_SELECTED = 1;
-dvt.Marker.IMAGE_SOURCE_HOVER = 2;
-dvt.Marker.IMAGE_SOURCE_HOVER_SELECTED = 3;
-
-// The reference coords and sizes that the shapes will be initialized to.
-dvt.Marker._REFERENCE_X = 0;
-dvt.Marker._REFERENCE_Y = 0;
-dvt.Marker._REFERENCE_W = 10;
-dvt.Marker._REFERENCE_H = 10;
-
-dvt.Marker.MARKER_CIRCLE_ELEM_NAME = 'circle';
-dvt.Marker.MARKER_ELLIPSE_ELEM_NAME = 'ellipse';
-dvt.Marker.MARKER_LINE_ELEM_NAME = 'line';
-dvt.Marker.MARKER_PATH_ELEM_NAME = 'path';
-dvt.Marker.MARKER_POLYGON_ELEM_NAME = 'polygon';
-dvt.Marker.MARKER_POLYLINE_ELEM_NAME = 'polyline';
-dvt.Marker.MARKER_RECT_ELEM_NAME = 'rect';
-
-
-/**
- *  Object initializer.
- *  @protected
- */
-dvt.Marker.prototype.Init = function(context, type, skin, x, y, w, h, id, sx, sy, maintainAspect) {
-  //: save initial parameters in case we want to create
-  //a copy of this marker
-  this._skin = skin;
-  this._xx = x;
-  this._yy = y;
-  this._ww = w;
-  this._hh = h;
-  this._sx = sx ? sx : 1;
-  this._sy = sy ? sy : 1;
-  this._maintainAspect = maintainAspect;
-  this._initType = type;
-
-  var etype;
-  var markerDef;
-
-  if (type instanceof Array) {
-    this._setMarkerImageStates(type);
-    type = dvt.Marker.IMAGE;
-  }
-  else {
-    if (!dvt.Marker.isBuiltInShape(type)) {
-      markerDef = dvt.MarkerUtils.getCustomMarkerInfo(context, type);
-      if (markerDef) {
-        // Custom marker is always dvt.Path or dvt.Container containing a collection of DvtPaths
-        etype = (markerDef instanceof dvt.Path ? 'path' : 'g');
-        if (!w || !h) {
-          var dim = dvt.DisplayableUtils.getDimForced(context, markerDef);
-          w = w ? w : dim.w;
-          h = h ? h : dim.h;
-          this._ww = w;
-          this._hh = h;
-        }
-        type = dvt.Marker.CUSTOM;
-      }
-      else {
-        // no markerDef found, default to rect
-        type = dvt.Marker.SQUARE;
-      }
-    }
-    else {
-      type = dvt.Marker.convertShapeString(type);
-    }
-  }
-
-  // Create the impl shape
-  var elemType;
-  if (etype) {
-    elemType = etype;
-  }
-  else {
-    elemType = (type === dvt.Marker.CIRCLE ? 'ellipse' : (type === dvt.Marker.SQUARE ? 'rect' : (type === dvt.Marker.ROUNDED_RECTANGLE ? 'rect' : (type === dvt.Marker.TRIANGLE_UP ? 'polygon' : (type === dvt.Marker.TRIANGLE_DOWN ? 'polygon' : (type === dvt.Marker.DIAMOND ? 'polygon' : (type === dvt.Marker.PLUS ? 'polygon' : (type === dvt.Marker.HUMAN ? 'path' : (type === dvt.Marker.IMAGE ? 'image' : 'rect')))))))));
-  }
-  dvt.Marker.superclass.Init.call(this, context, elemType, id);
-
-  // Store the type
-  this._type = type;
-
-  //default scale of the marker used to force it to the reference size
-  this._defaultScale = 1;
-
-  if (type === dvt.Marker.HUMAN) {
-    markerDef = dvt.MarkerUtils.getBuiltinMarkerInfo(context, 'human', this.getSkin());
-  }
-
-  // Update the width and height with the scale factors
-  var ww = this.getScaledWidth();
-  var hh = this.getScaledHeight();
-  this._size = Math.max(ww, hh);
-
-  // Position and size the marker
-  this.setBounds(x, y, ww, hh, markerDef);
-
-  // Store other params
-  this._dataColor = '#000000';
-
-  //properties related to selection
-  this._savedStroke = null;
-  this._savedFill = null;
-  this._bSavedStroke = false;
-  this._bSavedFill = false;
-  this._selStrokeWidth = null;
-  this._selStrokeColor = null;
-  this._selStrokeAlpha = null;
-};
-
-
-/**
- *  Returns the greater of the width and height measurement.
- *  @return {number} the size of the marker.
- */
-dvt.Marker.prototype.getSize = function() {
-  return this._size;
-};
-
-
-/**
- *  Returns the type of the marker that was passed into the constructor.
- *  The type can be a string indicating a built-in marker type, an array of image paths,
- *  or a single path for custom svg marker.
- *  @return {Object} the type of the marker
- */
-dvt.Marker.prototype.getInitType = function() {
-  return this._initType;
-};
-
-
-/**
- * Sets the position and size of the marker.
- * @param {number} x The top left x-coordinate of the marker's bounding rectangle.
- * @param {number} y The top left y-coordinate of the marker's bounding rectangle.
- * @param {number} w The width of the marker's bounding rectangle.
- * @param {number} h The height of the marker's bounding rectangle.
- * @param {dvt.MarkerDef} markerDef
- */
-dvt.Marker.prototype.setBounds = function(x, y, w, h, markerDef) {
-  // Initialize the shape to the reference coords
-  if (!this._shapeInitialized)
-    this.InitShape(this._type, markerDef, x, y, w, h);
-};
-
-
-/**
- * Initializes the shape to the specified coordinates.
- * @param {string} type The marker type
- * @param {dvt.MarkerDef} markerDef The marker definition used for custom markers generated on the server
- * @param {number} x The top left x-coordinate of the marker's bounding rectangle.
- * @param {number} y The top left y-coordinate of the marker's bounding rectangle.
- * @param {number} w The width of the marker's bounding rectangle.
- * @param {number} h The height of the marker's bounding rectangle.
+ * SVG does not set style properties when a line has 0 width or height and only uses stroke width.
+ * This function works around this SVG issue by adding a small variation to eliminate the 0 dimension.
  * @private
  */
-dvt.Marker.prototype.InitShape = function(type, markerDef, x, y, w, h) {
-  // Only need to do this once
-  this._shapeInitialized = true;
-
-  // Save info for underlay positioning
-  this._x = x;
-  this._y = y;
-  this._w = w;
-  this._h = h;
-
-  var multiPathRoot;
-  if (type === dvt.Marker.CUSTOM || type === dvt.Marker.HUMAN) {
-    // Calculate the scale factor to get to the right size
-    var dim = dvt.DisplayableUtils.getDimForced(this.getCtx(), markerDef);
-    var maxDim = Math.max(dim.w, dim.h);
-
-    var sx = 1;
-    var sy = 1;
-
-    // Calculate the transform to get to the right position
-    if (type === dvt.Marker.CUSTOM) {
-      sx = w / (this.getMaintainAspect() ? maxDim : dim.w);
-      sy = h / (this.getMaintainAspect() ? maxDim : dim.h);
-      var dx = x + (- dim.x * sx) + (w - (dim.w * sx)) / 2;
-      var dy = y + (- dim.y * sy) + (h - (dim.h * sy)) / 2;
-      multiPathRoot = this._setCustomMarker(markerDef, dx, dy, sx, sy);
-    }
-    else if (type === dvt.Marker.HUMAN) {
-      sx = w / maxDim;
-      sy = h / maxDim;
-      var dx = x + (- dim.x * sx) + (w - (dim.w * sx)) / 2;
-      var dy = y + (- dim.y * sy) + (h - (dim.h * sy)) / 2;
-      var humanCmds = dvt.CSSStyle.afterSkinAlta(this.getSkin()) ? dvt.MarkerDef.HUMAN2_CMDS : dvt.MarkerDef.HUMAN_CMDS;
-      this._setCmds(dvt.PathUtils.transformPath(humanCmds, dx, dy, sx, sy));
-    }
-    var scale = (dim.h === maxDim) ? (h / maxDim) : (w / maxDim);
-    //save the default scale used to force the marker to the reference size
-    //because we may need it later for inversely scaling the selection stroke
-    this._defaultScale = scale;
-  }
-  else if (type === dvt.Marker.IMAGE) {
-    var src = this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE);
-    this._setX(x);
-    this._setY(y);
-    this._setWidth(w);
-    this._setHeight(h);
-    this.setSource(src);
-    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'preserveAspectRatio', 'none');
-    // IE doesn't allow interactivity unless there's a fill
-    if (dvt.Agent.isPlatformIE()) {
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'fill', '#FFFFFF');
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'fill-opacity', '0');
-    }
-  }
-  else if (type === dvt.Marker.SQUARE) {
-    this._setX(x);
-    this._setY(y);
-    this._setWidth(w);
-    this._setHeight(h);
-  }
-  else if (type === dvt.Marker.ROUNDED_RECTANGLE) {
-    this._setX(x);
-    this._setY(y);
-    this._setWidth(w);
-    this._setHeight(h);
-    var rx = 6;
-    var ry = 6;
-    if (w / 4 < rx || h / 4 < ry) {
-      rx = Math.min(w, h) / 4;
-      ry = rx;
-    }
-    this._setRX(rx);
-    this._setRY(ry);
-  }
-  else if (type === dvt.Marker.CIRCLE) {
-    this._setCx(x + w / 2);
-    this._setCy(y + h / 2);
-    this._setRX(w / 2);
-    this._setRY(h / 2);
-  }
-  else {
-    var ar = [];
-    var halfWidth = w / 2;
-    var halfHeight = h / 2;
-
-    if (type === dvt.Marker.TRIANGLE_UP) {
-      ar.push(x);
-      ar.push(y + h);
-      ar.push(x + w);
-      ar.push(y + h);
-      ar.push(x + halfWidth);
-      ar.push(y);
-      this._setPolygon(ar);
-    }
-    else if (type === dvt.Marker.TRIANGLE_DOWN) {
-      ar.push(x);
-      ar.push(y);
-      ar.push(x + w);
-      ar.push(y);
-      ar.push(x + halfWidth);
-      ar.push(y + h);
-      this._setPolygon(ar);
-    }
-    else if (type === dvt.Marker.DIAMOND) {
-      ar.push(x + halfWidth);
-      ar.push(y);
-      ar.push(x + w);
-      ar.push(y + halfHeight);
-      ar.push(x + halfWidth);
-      ar.push(y + h);
-      ar.push(x);
-      ar.push(y + halfHeight);
-      this._setPolygon(ar);
-    }
-    else if (type === dvt.Marker.PLUS) {
-      var wThird = w / 3;
-      var wTwoThird = 2 * wThird;
-      var hThird = h / 3;
-      var hTwoThird = 2 * hThird;
-
-      ar.push(x + wThird);
-      ar.push(y);
-      ar.push(x + wTwoThird);
-      ar.push(y);
-      ar.push(x + wTwoThird);
-      ar.push(y + hThird);
-      ar.push(x + w);
-      ar.push(y + hThird);
-      ar.push(x + w);
-      ar.push(y + hTwoThird);
-      ar.push(x + wTwoThird);
-      ar.push(y + hTwoThird);
-      ar.push(x + wTwoThird);
-      ar.push(y + h);
-      ar.push(x + wThird);
-      ar.push(y + h);
-      ar.push(x + wThird);
-      ar.push(y + hTwoThird);
-      ar.push(x);
-      ar.push(y + hTwoThird);
-      ar.push(x);
-      ar.push(y + hThird);
-      ar.push(x + wThird);
-      ar.push(y + hThird);
-      ar.push(x + wThird);
-      ar.push(y);
-      this._setPolygon(ar);
-    }
-  }
+dvt.Line.prototype._adjustDimensionsForStyle = function() {
+  if (this.getX1() == this.getX2())
+    this.setX2(this.getX2() + .001);
+  else if (this.getY1() == this.getY2())
+    this.setY2(this.getY2() + .001);
 };
-
-
-/**
- *  Returns the default scale of the marker used to force it to the
- *  reference size.
- *  @type {number}
- */
-dvt.Marker.prototype.getDefaultScale = function() {
-  return this._defaultScale;
-};
-
-
-/**
- *  Returns the skin of the marker.
- *  @return {String} the skin name
- */
-dvt.Marker.prototype.getSkin = function() {
-  return this._skin;
-};
-
-
-/**
- *  Returns the x-coord of the marker.
- *  @return {number} the x-coord of the marker
- */
-dvt.Marker.prototype.getX = function() {
-  return this._xx;
-};
-
-
-/**
- *  Returns the y-coord of the marker.
- *  @return {number} the y-coord of the marker
- */
-dvt.Marker.prototype.getY = function() {
-  return this._yy;
-};
-
-
-/**
- *  Returns the width of the marker, before any scale is applied.
- *  @return {number} the width of the marker
- */
-dvt.Marker.prototype.getWidth = function() {
-  return this._ww;
-};
-
-
-/**
- *  Returns the height of the marker, before any scale is applied.
- *  @return {number} the height of the marker
- */
-dvt.Marker.prototype.getHeight = function() {
-  return this._hh;
-};
-
-
-/**
- *  Returns the width of the marker, after any scale is applied.
- *  @return {number} the scaled width of the marker
- */
-dvt.Marker.prototype.getScaledWidth = function() {
-  return this._sx ? this._ww * this._sx : this._ww;
-};
-
-
-/**
- *  Returns the height of the marker, after any scale is applied.
- *  @return {number} the scaled height of the marker
- */
-dvt.Marker.prototype.getScaledHeight = function() {
-  return this._sy ? this._hh * this._sy : this._hh;
-};
-
-
-/**
- *  Returns the type of the marker (such as {@link dvt.Marker#CIRCLE}.
- *  @type {number}
- */
-dvt.Marker.prototype.getType = function() {
-  return this._type;
-};
-
-
-/**
- *  Returns the horizontal scale of the marker.
- *  @return {number} the horizontal scale of the marker
- */
-dvt.Marker.prototype.getSx = function() {
-  return this._sx;
-};
-
-
-/**
- *  Returns the vertical scale of the marker.
- *  @return {number} the vertical scale of the marker
- */
-dvt.Marker.prototype.getSy = function() {
-  return this._sy;
-};
-
-
-/**
- *  Returns whether aspect ratio should be maintained.
- *  @return {boolean} whether aspect ratio should be maintained
- */
-dvt.Marker.prototype.getMaintainAspect = function() {
-  return this._maintainAspect == true;
-};
-
-
-/**
- * @protected
- */
-dvt.Marker.prototype.SetStrokeWidth = function(sw) {
-  var stroke = this.getStroke();
-  if (stroke) {
-    stroke = stroke.clone();
-    stroke.setWidth(sw);
-    this.setStroke(stroke);
-  }
-};
-
-
-/**
- * @protected
- */
-dvt.Marker.prototype.GetStrokeWidth = function() {
-  var stroke = this.getStroke();
-  if (stroke) {
-    return stroke.getWidth();
-  }
-  return 0;
-};
-
 
 /**
  * @override
  */
-dvt.Marker.prototype.showHoverEffect = function() {
-  if (this.getType() === dvt.Marker.IMAGE) {
-    this.IsShowingHoverEffect = true;
-    if (this.isSelected())
-      this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE_HOVER_SELECTED));
-    else
-      this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE_HOVER));
-  }
-  else
-    dvt.Marker.superclass.showHoverEffect.call(this);
+dvt.Line.prototype.setStyle = function(style) {
+  if (style)
+    this._adjustDimensionsForStyle();
+  return dvt.Line.superclass.setStyle.call(this, style);
 };
-
 
 /**
  * @override
  */
-dvt.Marker.prototype.hideHoverEffect = function() {
-  if (this.getType() === dvt.Marker.IMAGE) {
-    this.IsShowingHoverEffect = false;
-    if (this.isSelected())
-      this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE_SELECTED));
-    else
-      this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE));
-  }
-  else
-    dvt.Marker.superclass.hideHoverEffect.call(this);
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.setSelected = function(selected) {
-  if (this.IsSelected == selected)
-    return;
-
-  if (this.getType() === dvt.Marker.IMAGE) {
-    this.IsSelected = selected;
-    if (selected) {
-      if (this.isHoverEffectShown())
-        this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE_HOVER_SELECTED));
-      else
-        this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE_SELECTED));
-    }
-    else {
-      this.setSource(this.GetMarkerImage(dvt.Marker.IMAGE_SOURCE));
-    }
-  }
-  else
-    dvt.Marker.superclass.setSelected.call(this, selected);
-};
-
-
-/**
- * Specifies the color of the data item and its selection feedback, if different from the default.
- * @param {string} dataColor The CSS color string of the primary color of the data item.
- * @param {boolean} bSkipStroke True if the hover and selected stroke creation should be skipped.
- */
-dvt.Marker.prototype.setDataColor = function(dataColor, bSkipStroke) {
-  this._dataColor = dataColor;
-  if (!bSkipStroke) {
-    var hoverColor = dvt.ColorUtils.adjustHSL(dataColor, 0, 0, 0.15);
-    var sis = new dvt.SolidStroke('#FFFFFF', 1, 1.5);
-    this.setHoverStroke(new dvt.SolidStroke(hoverColor, 1, 2));
-    this.setSelectedStroke(sis, new dvt.SolidStroke('#5A5A5A', 1, 4.5));
-    this.setSelectedHoverStroke(sis, new dvt.SolidStroke(hoverColor, 1, 4.5));
-    this.HoverInnerStroke.setFixedWidth(true);
-    this.SelectedInnerStroke.setFixedWidth(true);
-    this.SelectedOuterStroke.setFixedWidth(true);
-    this.SelectedHoverInnerStroke.setFixedWidth(true);
-    this.SelectedHoverOuterStroke.setFixedWidth(true);
-  }
-};
-
-
-/**
- * Get the data color used as a base for selection colors.
- *
- * @type {string}
- */
-dvt.Marker.prototype.getDataColor = function() {
-  return this._dataColor;
-};
-
-
-/**
- * Changes the shape to an outline shape format.  Used for legend
- * markers that represent a hidden state for the associated series risers.
- * @param {String} color Border color for hollow shape in format of #aarrggbb
- * @override
- */
-dvt.Marker.prototype.setHollow = function(color) {
-  //scale the stroke width inversely proportional to the marker scale
-  //so that the stroke width appears to be the same for all markers
-  var scaleX = this.getScaleX();
-  var scaleY = this.getScaleY();
-  var scale = Math.min(scaleX, scaleY);
-  var strokeWidth = this.GetStrokeWidth();
-  strokeWidth = (strokeWidth ? strokeWidth : 1) / scale;
-
-  //save the stroke width so that we can reset it if needed
-  dvt.Marker.superclass.setHollow.call(this, color, strokeWidth);
-};
-
-
-/**  Adds reference for legend text to marker
- *  @param {DvtText} text Legend text
- */
-dvt.Marker.prototype.setText = function(text) {
-  this._markerText = text;
-};
-
-
-/**  Adds reference for legend text to marker
- *  @param {number} alpha Opacity of object
- *  @override
- */
-dvt.Marker.prototype.setAlpha = function(alpha) {
-  dvt.Marker.superclass.setAlpha.call(this, alpha);
-  if (this._markerText)
-    this._markerText.setAlpha(alpha);
-  this.UpdateSelectionEffect();
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setCx = function(cx) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'cx', cx);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setCy = function(cy) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'cy', cy);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setX = function(x) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'x', x);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setY = function(y) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'y', y);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setWidth = function(w) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'width', w);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setHeight = function(h) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'height', h);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setRadius = function(r) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'r', r);
-};
-
-
-/**
- *   @private
- */
-dvt.Marker.prototype._setPolygon = function(ar) {
-  var sPoints = dvt.SvgShapeUtils.convertPointsArray(ar);
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'points', sPoints);
-};
-
-
-/**
- *   @private
- */
-dvt.Marker.prototype._setCmds = function(cmds) {
-  if (cmds !== this._cmds) {
-    this._cmds = cmds;
-    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'd', cmds);
-  }
-};
-
-dvt.Marker.prototype.UpdateMarkerImage = function(imgSrc) {
-  this.setSource(imgSrc);
-};
-
-
-/**
- * Updates the marker image source based on the current selection state
- * @param {string} src The image uri to set for the current marker state
- */
-dvt.Marker.prototype.setSource = function(src) {
-  if (dvt.Agent.isEnvironmentBatik()) {
-    var imageInfo = dvt.JavaImageLoader.getImageInfo(src);
-    if (imageInfo)
-      src = imageInfo.uri;
-  }
-  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', src);
-};
-
-
-/**
- * Converts the specified shape string to its constant value.
- * @param {string} shape The shape string.
- * @return {number} The corresponding constant value.
- */
-dvt.Marker.convertShapeString = function(shape) {
-  if (shape == dvt.Marker.CIRCLE || shape == 'c')
-    return dvt.Marker.CIRCLE;
-  else if (shape == dvt.Marker.SQUARE || shape == 's')
-    return dvt.Marker.SQUARE;
-  else if (shape == dvt.Marker.DIAMOND || shape == 'd')
-    return dvt.Marker.DIAMOND;
-  else if (shape == dvt.Marker.TRIANGLE_UP || shape == 'tu' || shape == 't')
-    return dvt.Marker.TRIANGLE_UP;
-  else if (shape == dvt.Marker.TRIANGLE_DOWN || shape == 'td')
-    return dvt.Marker.TRIANGLE_DOWN;
-  else if (shape == dvt.Marker.PLUS || shape == 'p')
-    return dvt.Marker.PLUS;
-  else if (shape == dvt.Marker.HUMAN || shape == 'h')
-    return dvt.Marker.HUMAN;
-  else if (shape == dvt.Marker.ROUNDED_RECTANGLE || shape == 'rr')
-    return dvt.Marker.ROUNDED_RECTANGLE;
-  else
-    return dvt.Marker.NONE;
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.GetAttributesTransferableToGroup = function() {
-  var attrNames = dvt.Container.AttributesTransferableToGroup.slice(0);
-  // Check to see if matrix set since we don't transfer the 'transform' attr, bc it affects the clip path for custom markers.
-  if (!this.getMatrix()) {
-    var transformIndex = dvt.ArrayUtils.getIndex(attrNames, 'transform');
-    attrNames.splice(transformIndex, 1);
-  }
-  var visibilityIndex = dvt.ArrayUtils.getIndex(attrNames, 'visibility');
-  attrNames.splice(visibilityIndex, 1);
-  return attrNames;
-};
-
-
-/**
- * Sets whether mouse events are enabled on this object.
- * @param {boolean} whether mouse events are enabled
- */
-dvt.Marker.prototype.setMouseEnabled = function(bEnabled) {
-  dvt.Marker.superclass.setMouseEnabled.call(this, bEnabled);
-  if (this._childGroupElem) {
-    var val;
-    if (bEnabled) {
-      val = 'visiblePainted';
-    }
-    else {
-      val = 'none';
-    }
-    dvt.ToolkitUtils.setAttrNullNS(this._childGroupElem, 'pointer-events', val);
-  }
-};
-
-dvt.Marker.prototype._setCustomMarker = function(markerDef, x, y, sx, sy) {
-  if (this._isMultiPaths()) {
-    var root = this._cloneMultiPaths(markerDef, x, y, sx, sy);
-    this.addChild(root);
-
-    // return container of multi paths
-    return root;
-  }
-  else {
-    this._setSingleShape(markerDef, x, y, sx, sy);
-    return null;
-  }
-};
-
-dvt.Marker.prototype._setSingleShape = function(markerDef, x, y, sx, sy) {
-  var type = markerDef.getElem().nodeName;
-
-  if (type == dvt.Marker.MARKER_PATH_ELEM_NAME) {
-    this._setCmds(dvt.PathUtils.transformPath(markerDef.getCmds(), x, y, sx, sy));
-  }
-  /*
-  else if (type == dvt.Marker.MARKER_CIRCLE_ELEM_NAME ||
-           type == dvt.Marker.MARKER_ELLIPSE_ELEM_NAME) {
-    this._setCx(markerDef.getCx());
-    this._setCy(markerDef.getCy());
-    this._setRadius(markerDef.getRadius());
-  }
-
-  else if (type == dvt.Marker.MARKER_LINE_ELEM_NAME) {
-    this._setX1(defImpl.getX1());
-    this._setX2(defImpl.getX2());
-    this._setY1(defImpl.getY1());
-    this._setY2(defImpl.getY2());
-  }
-  else if (type == dvt.Marker.MARKER_POLYGON_ELEM_NAME) {
-    this._setPoints(defImpl._sPoints);
-  }
-  else if (type == dvt.Marker.MARKER_POLYLINE_ELEM_NAME) {
-    this._setPoints(defImpl._sPoints);
-  }
-  else if (type == dvt.Marker.MARKER_RECT_TYPE_ELEM_NAME) {
-    this._setX(markerDef.getX());
-    this._setY(markerDef.getY());
-    this._setWidth(markerDef.getWidth());
-    this._setHeight(markerDef.getHeight());
-  }
-  */
-
-  var fill = markerDef.getFill();
-  if (fill) {
-    this.setFill(fill);
-  }
-  var alpha = markerDef.getAlpha();
-  if (alpha) {
-    this.setAlpha(alpha);
-  }
-  var stroke = markerDef.getStroke();
-  if (stroke) {
-    var scaledStroke = stroke.clone();
-    scaledStroke.setWidth(Math.min(sx, sy) * scaledStroke.getWidth());
-    this.setStroke(scaledStroke);
-  }
-};
-
-
-/**
- *   @private
- */
-dvt.Marker.prototype._setPoints = function(points) {
-  if (points !== this._points) {
-    this._points = points;
-    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'points', points);
-  }
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setX1 = function(x1) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'x1', x1);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setY1 = function(y1) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'y1', y1);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setX2 = function(x2) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'x2', x2);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setY2 = function(y2) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'y2', y2);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setRX = function(rx) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'rx', rx);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._setRY = function(ry) {
-  dvt.ToolkitUtils.setAttrNullNS(this._elem, 'ry', ry);
-};
-
-
-/**
- * @private
- */
-dvt.Marker.prototype._cloneMultiPaths = function(markerDef, x, y, sx, sy) {
-  var context = this.getCtx();
-  var root = new dvt.Container(context, markerDef.getId() + '_x');
-
-  var childCnt = markerDef.getNumChildren();
-  var childDef;
-  var child;
-  for (var i = 0; i < childCnt; i++) {
-    childDef = markerDef.getChildAt(i);
-    child = new dvt.Path(context, dvt.PathUtils.transformPath(childDef.getCmds(), x, y, sx, sy), childDef.getId());
-
-    if (childDef.getFill()) {
-      child.setFill(childDef.getFill());
-    }
-    if (childDef.getAlpha()) {
-      child.setAlpha(childDef.getAlpha());
-    }
-    if (childDef.getStroke()) {
-      var scaledStroke = childDef.getStroke().clone();
-      scaledStroke.setWidth(Math.min(sx, sy) * scaledStroke.getWidth());
-      child.setStroke(scaledStroke);
-    }
-    root.addChild(child);
-  }
-
-  return root;
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.addChild = function(obj) {
-  // if this marker has multi paths, don't add an additonal childGroupElem
-  if (this._isMultiPaths()) {
-    dvt.ToolkitUtils.appendChildElem(this.getElem(), obj.getOuterElem());
-  }
-  else {
-    dvt.Marker.superclass.addChild.call(this, obj);
-  }
-};
-
-dvt.Marker.prototype._isMultiPaths = function() {
-  return (this.getElem().nodeName == 'g' && this.getType() != dvt.Marker.IMAGE);
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.getDimensions = function() {
-  // Added in order to prevent getDimensions returning null or a 0 width and height while waiting for an image load
-  if (this._type == dvt.Marker.IMAGE) {
-    var w = this.getScaledWidth();
-    var h = this.getScaledHeight();
-    return new dvt.Rectangle(this._x, this._y, w, h);
-  }
-  else {
-    return dvt.Marker.superclass.getDimensions.call(this);
-  }
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.GetElemDimensionsWithStroke = function() {
-  if (this._type == dvt.Marker.IMAGE)
-    return this.getDimensions();// images don't have borders
-  else
-    return dvt.Marker.superclass.GetElemDimensionsWithStroke.call(this);
-};
-
-
-/**
- *  Enables/disables the visibility of marker and text if reference exists.
- *  @param {Boolean}  bVis  True if the object is to be visible, else false if
- *  it is to be hidden.
- *  @override
- */
-dvt.Marker.prototype.setVisible = function(bVis) {
-  dvt.Marker.superclass.setVisible.call(this, bVis);
-  if (this._markerText)
-    this._markerText.setVisible(bVis);
-};
-
-dvt.Marker.prototype._setMarkerImageStates = function(imageURIs) {
-  // at a minimum an image URI will be provided for the active marker state
-  var sourceImage = imageURIs[0];
-  this._imageStates = [sourceImage];
-  this._imageStates.push(imageURIs[1] ? imageURIs[1] : sourceImage);// sourceSelected
-  this._imageStates.push(imageURIs[2] ? imageURIs[2] : sourceImage);// sourceHover
-  this._imageStates.push(imageURIs[3] ? imageURIs[3] : this._imageStates[1]);// sourceHoverSelected
-};
-
-dvt.Marker.prototype.GetMarkerImage = function(state) {
-  if (this._imageStates)
-    return this._imageStates[state];
-  return null;
-};
-
-
-/**
- * Determines if the specified marker shape is a built-in shape.
- * @param {string} shape The shape. For custom markers this would be the shape path.
- * @return {boolean} True if shape is built-in.
- */
-dvt.Marker.isBuiltInShape = function(shape) {
-  var shp = dvt.Marker.convertShapeString(shape);
-  if (shp == dvt.Marker.CIRCLE || shp == dvt.Marker.SQUARE || shp == dvt.Marker.DIAMOND || shp == dvt.Marker.TRIANGLE_UP || shp == dvt.Marker.TRIANGLE_DOWN || shp == dvt.Marker.PLUS || shp == dvt.Marker.HUMAN || shp == dvt.Marker.ROUNDED_RECTANGLE) {
-    return true;
-  }
-  else {
-    return false;
-  }
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.copyShape = function() {
-  return new dvt.Marker(this.getCtx(), this.getInitType(), this.getSkin(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), null, this.getSx(), this.getSy(), this.getMaintainAspect());
-};
-
-
-/**
- * @override
- */
-dvt.Marker.prototype.getDimensions = function(targetCoordinateSpace) {
-  // Transforms on markers are not transferred to the outer group element so we must return dimensions of child
-  // element which has the matrix
-  if (this.InnerShape && this.InnerShape.getParent())
-    return this.InnerShape.getDimensions(targetCoordinateSpace);
-  else
-    return dvt.Marker.superclass.getDimensions.call(this, targetCoordinateSpace);
-};
-
-
-/**
- * Returns the bounds of the displayable relative to the target coordinate space.  If the target
- * coordinate space is not specified, returns the bounds relative to this displayable.  This function does not take
- * into account any child displayables.
- * @param {dvt.Displayable} targetCoordinateSpace The displayable defining the target coordinate space.
- * @return {dvt.Rectangle} The bounds of the displayable relative to the target coordinate space.
- */
-dvt.Marker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
-  // Note: In the near future, we will not support children for shapes, so this routine will be refactored into the
-  //       existing getDimensions calls.  For now, components must be aware of the presence of children to use this.
-  var bounds = new dvt.Rectangle(this.getX(), this.getY(), this.getScaledWidth(), this.getScaledHeight());
-  return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
+dvt.Line.prototype.setClassName = function(className) {
+  if (className)
+    this._adjustDimensionsForStyle();
+  return dvt.Line.superclass.setClassName.call(this, className);
 };
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 
@@ -22712,13 +21121,13 @@ dvt.Marker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
  *  @param {string=} borderRadius Optional border radius value. Example values '5px', '50% 50% 0 0', '5px / 10px', '50% 50% 25% 25% / 25% 25% 50% 50%'
  *  @param {boolean=} bMaintainAspectRatio Optional boolean true if keeping aspect ratio.  True by default
  *  and only applies to built-in non-human shapes
+ *  @param {boolean=} bUseIntegerCoords Optional specify whether to use integer coords in path
  *  @param {String=} id  Optional ID for the shape.
- *
  *  @extends {dvt.Shape}
  *  @constructor
  */
-dvt.SimpleMarker = function(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, id) {
-  this.Init(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, id);
+dvt.SimpleMarker = function(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, bUseIntegerCoords, id) {
+  this.Init(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, bUseIntegerCoords, id);
 };
 
 dvt.Obj.createSubclass(dvt.SimpleMarker, dvt.Shape);
@@ -22741,21 +21150,9 @@ dvt.SimpleMarker.ELLIPSE = 'ellipse';
 dvt.SimpleMarker.SQUARE = 'square';
 
 /**
- * A square marker with rounded corners.
- * @private
- */
-dvt.SimpleMarker._ROUNDED_SQUARE = 'roundedSquare';
-
-/**
  * A rectangular marker.
  */
 dvt.SimpleMarker.RECTANGLE = 'rectangle';
-
-/**
- * A rectangular marker with rounded corners.
- * @private
- */
-dvt.SimpleMarker._ROUNDED_RECT = 'roundedRect';
 
 /**
  * A diamond shaped marker.
@@ -22824,10 +21221,8 @@ dvt.SimpleMarker._POLYGON_ELEM = 'polygon';
 dvt.SimpleMarker._SHAPE_ELEM_MAP = {};
 dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.CIRCLE] = dvt.SimpleMarker._CIRCLE_ELEM;
 dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.ELLIPSE] = dvt.SimpleMarker._ELLIPSE_ELEM;
-dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.SQUARE] = dvt.SimpleMarker._RECT_ELEM;
-dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker._ROUNDED_SQUARE] = dvt.SimpleMarker._PATH_ELEM;
-dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.RECTANGLE] = dvt.SimpleMarker._RECT_ELEM;
-dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker._ROUNDED_RECT] = dvt.SimpleMarker._PATH_ELEM;
+dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.SQUARE] = dvt.SimpleMarker._PATH_ELEM;
+dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.RECTANGLE] = dvt.SimpleMarker._PATH_ELEM;
 dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.DIAMOND] = dvt.SimpleMarker._POLYGON_ELEM;
 dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.TRIANGLE_UP] = dvt.SimpleMarker._POLYGON_ELEM;
 dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.TRIANGLE_DOWN] = dvt.SimpleMarker._POLYGON_ELEM;
@@ -22840,6 +21235,25 @@ dvt.SimpleMarker._SHAPE_ELEM_MAP[dvt.SimpleMarker.STAR] = dvt.SimpleMarker._POLY
  */
 dvt.SimpleMarker.DEFAULT_BORDER_RADIUS = '6';
 
+/** @const @private **/
+dvt.SimpleMarker._HUMAN_CMDS = 'M 38.07,36.467856 q 13.414,0 13.414,-13.406 l 0,-9.258 q 0,-13.4039999 -13.414,' +
+    '-13.4039999 -13.414,0 -13.414,13.4039999 l 0,9.258 q 0,13.406 13.414,13.406 l 0,0 z m 16.219,7.275 -32.435999,' +
+    '0 q -10.139552,0 -15.9400009,7.443875 Q 0.5,58.133383 0.5,69.156856 l 0,54.396004 12.746001,0 0,-51.609004 q 0,' +
+    '-2.824 0.793,-2.824 0.742,0 0.742,2.709 l 0,124.267994 q 0,2.82401 2.823999,2.82401 l 12.531,0 q 2.824,0 2.824,' +
+    '-2.824 l 0,-66.25 10.219,0 0,66.25 q 0,2.824 2.824,2.824 l 12.528,0 q 2.825,0 2.825,-2.824 l 0,-124.268004 q 0,' +
+    '-2.709 0.839,-2.709 0.792,0 0.792,2.824 l 0,51.609004 12.65,0 0,-54.396004 Q 75.6386,58.132927 70.227626,' +
+    '51.186731 64.428999,43.742856 54.289,43.742856 l 0,0 z';
+
+/** @const @private **/
+dvt.SimpleMarker._HUMAN2_CMDS = 'M 306.40625 386.78125 C 304.19988 386.78125 302.40625 389.07579 302.40625 391.90625 ' +
+    'C 302.40625 394.73671 304.19988 397.03125 306.40625 397.03125 C 308.61263 397.03125 310.40625 394.73671 310.40625 ' +
+    '391.90625 C 310.40625 389.07579 308.61263 386.78125 306.40625 386.78125 z M 301.78125 396.0625 C 300.43025 397.2945 ' +
+    '298.28125 400.28125 298.90625 403.15625 C 302.41725 405.79925 309.20225 406.154 314.03125 403 C 314.21825 399.828 ' +
+    '312.68325 397.5635 310.90625 396.0625 C 308.65625 400.7185 304.28125 399.7815 301.78125 396.0625 z ';
+
+/** @const @private **/
+dvt.SimpleMarker._SHAPE_STAR_CMDS = [- 50, - 11.22, - 16.69, - 17.94, 0, - 47.55, 16.69, - 17.94, 50, - 11.22, 26.69, 13.8,
+  30.9, 47.56, 0, 33.42, - 30.9, 47.56, - 26.69, 13.8];
 
 /**
  * Object initializer.
@@ -22853,10 +21267,21 @@ dvt.SimpleMarker.DEFAULT_BORDER_RADIUS = '6';
  * @param {string=} borderRadius Optional border radius value. Example values '5px', '50% 50% 0 0', '5px / 10px', '50% 50% 25% 25% / 25% 25% 50% 50%'
  * @param {boolean=} bMaintainAspectRatio Optional boolean true if keeping aspect ratio. True by default
  * and only applies to built-in non-human shapes
+ * @param {boolean=} bUseIntegerCoords Optional specify whether to use integer coords in path
  * @param {String=} id  Optional ID for the shape.
  * @protected
  */
-dvt.SimpleMarker.prototype.Init = function(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, id) {
+dvt.SimpleMarker.prototype.Init = function(context, shape, skin, cx, cy, width, height, borderRadius, bMaintainAspectRatio, bUseIntegerCoords, id) {
+  if (bUseIntegerCoords) {
+    cx = Math.round(cx);
+    cy = Math.round(cy);
+    width = Math.round(width);
+    height = Math.round(height);
+
+    // Dimensions have to be even to prevent floating numbers when calculating x and y
+    height = height % 2 == 1 ? height + 1 : height;
+    width = width % 2 == 1 ? width + 1 : width;
+  }
 
   this._bMaintainAspectRatio = true;
   if (bMaintainAspectRatio === false) {
@@ -22868,16 +21293,12 @@ dvt.SimpleMarker.prototype.Init = function(context, shape, skin, cx, cy, width, 
 
   if (borderRadius && borderRadius != '0') {
     this._borderRadius = borderRadius;
-    if (shape === dvt.SimpleMarker.SQUARE)
-      shape = dvt.SimpleMarker._ROUNDED_SQUARE;
-    if (shape === dvt.SimpleMarker.RECTANGLE)
-      shape = dvt.SimpleMarker._ROUNDED_RECT;
   }
 
   this._skin = skin;
   this._shape = shape ? shape : dvt.SimpleMarker.RECTANGLE;
   this._dataColor = '#000000';
-  var type = shape ? dvt.SimpleMarker._SHAPE_ELEM_MAP[shape] : dvt.SimpleMarker._RECT_ELEM;
+  var type = shape ? dvt.SimpleMarker._SHAPE_ELEM_MAP[shape] : dvt.SimpleMarker._PATH_ELEM;
 
 
   if (type == null) {
@@ -22888,11 +21309,11 @@ dvt.SimpleMarker.prototype.Init = function(context, shape, skin, cx, cy, width, 
 
   dvt.SimpleMarker.superclass.Init.call(this, context, type, id);
 
-  if (this._shape == dvt.SimpleMarker._ROUNDED_SQUARE || this._shape == dvt.SimpleMarker._ROUNDED_RECT)
+  if (this._shape == dvt.SimpleMarker.SQUARE || this._shape == dvt.SimpleMarker.RECTANGLE)
     this._path = this._getBorderRadiusPath(context, cx, cy, width, height, borderRadius);
 
   if (this._shape == dvt.SimpleMarker.HUMAN)
-    this._path = dvt.MarkerUtils.getBuiltinMarkerInfo(context, dvt.SimpleMarker.HUMAN, this._skin);
+    this._path = new dvt.Path(context, dvt.CSSStyle.afterSkinAlta(this._skin) ? dvt.SimpleMarker._HUMAN2_CMDS : dvt.SimpleMarker._HUMAN_CMDS);
 
   this._propertyChange = {};
   this.setCenter(cx, cy, true).setSize(width, height);
@@ -22955,29 +21376,12 @@ dvt.SimpleMarker.prototype._updateSvgProperties = function() {
     this._s = s;
   }
 
-  if (this._shape == dvt.SimpleMarker.SQUARE) {
-    var width = this.getMaintainAspectRatio() ? this._s : this._width;
-    var height = this.getMaintainAspectRatio() ? this._s : this._height;
-    if (this._propertyChange.cx || this._propertyChange.s)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'x', this._cx - width / 2, 0);
-    if (this._propertyChange.cy || this._propertyChange.s)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'y', this._cy - height / 2, 0);
-    if (this.getMaintainAspectRatio() ? this._propertyChange.s :
-        (this._propertyChange.width || this._propertyChange.height)) {
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'width', width, 0);
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'height', height, 0);
+  if ((this._shape == dvt.SimpleMarker.RECTANGLE ||
+           this._shape == dvt.SimpleMarker.SQUARE) && !this._borderRadius) {
+    if (this._propertyChange.width || this._propertyChange.height || this._propertyChange.cx || this._propertyChange.cy) {
+      var cmds = dvt.PathUtils.rectangleWithBorderRadius(this._cx - this._width / 2, this._cy - this._height / 2, this._width, this._height);
+      this._setCmds(cmds);
     }
-  }
-
-  else if (this._shape == dvt.SimpleMarker.RECTANGLE) {
-    if (this._propertyChange.cx || this._propertyChange.width)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'x', this._cx - this._width / 2, 0);
-    if (this._propertyChange.cy || this._propertyChange.height)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'y', this._cy - this._height / 2, 0);
-    if (this._propertyChange.width)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'width', this._width, 0);
-    if (this._propertyChange.height)
-      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'height', this._height, 0);
   }
 
   else if (this._shape == dvt.SimpleMarker.CIRCLE ||
@@ -23184,7 +21588,7 @@ dvt.SimpleMarker.prototype._getPolygonArray = function() {
     ];
   }
   else if (this._shape == dvt.SimpleMarker.STAR) {
-    ar = dvt.MarkerDef.SHAPE_STAR_CMDS;
+    ar = dvt.SimpleMarker._SHAPE_STAR_CMDS;
 
     // Scale and translate from center of (0,0)
     ar = dvt.PolygonUtils.scale(ar, this.getMaintainAspectRatio() ? this._s / 100 : this._width / 100,
@@ -23214,7 +21618,7 @@ dvt.SimpleMarker.prototype._getCmds = function() {
 
   var max = Math.max(dim.w, dim.h);
   var maintain = this.getMaintainAspectRatio();
-  if (this._shape == dvt.SimpleMarker._ROUNDED_RECT)
+  if (this._shape == dvt.SimpleMarker.RECTANGLE)
     maintain = false;
   var scalex = maintain ? this._s / max : this._width / dim.w;
   var scaley = maintain ? this._s / max : this._height / dim.h;
@@ -23298,12 +21702,12 @@ dvt.SimpleMarker.prototype.GetStrokeWidth = function() {
  * @return {dvt.Path} marker path with border radius.
  */
 dvt.SimpleMarker.prototype._getBorderRadiusPath = function(context, cx, cy, width, height, borderRadius) {
-  if (this._shape == dvt.SimpleMarker._ROUNDED_SQUARE ||
-      this._shape == dvt.SimpleMarker._ROUNDED_RECT) {
+  if (this._shape == dvt.SimpleMarker.SQUARE ||
+      this._shape == dvt.SimpleMarker.RECTANGLE) {
 
     var s = Math.min(width, height);
-    var w = this._shape == dvt.SimpleMarker._ROUNDED_SQUARE ? s : width;
-    var h = this._shape == dvt.SimpleMarker._ROUNDED_SQUARE ? s : height;
+    var w = this._shape == dvt.SimpleMarker.SQUARE ? s : width;
+    var h = this._shape == dvt.SimpleMarker.SQUARE ? s : height;
     var x = cx - w / 2;
     var y = cy - h / 2;
     var cmds = dvt.PathUtils.rectangleWithBorderRadius(
@@ -24481,7 +22885,12 @@ dvt.OutputText.prototype.Init = function(context, textStr, x, y, id) {
   this._x = (x != null) ? x : 0;
 
   // - NODE RENDERED INCORRECTLY IN IE9+
-  this._baseline = null;
+  this._baseline = false;
+
+  // Fix for 14297988: BIDI and mixed text in IE
+  if (dvt.Agent.isRightToLeft(context) && dvt.Agent.isPlatformIE()) {
+    dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'unicode-bidi', 'embed');
+  }
 
   // Initialize the alignment attrs.  Our impl defaults to start and baseline, so set the alignment if the defaults
   // don't match the impl defaults.
@@ -24495,11 +22904,6 @@ dvt.OutputText.prototype.Init = function(context, textStr, x, y, id) {
   // TODO : Remove this workaround and the incorrect none default in DvtSvgShape.
   // Workaround to remove some strange defaulting for the fill, which is set to none in DvtSvgShape.Init.
   dvt.ToolkitUtils.removeAttrNullNS(this.getElem(), 'fill');
-
-  // Fix for 14297988: BIDI and mixed text in IE
-  if (dvt.Agent.isRightToLeft(context) && dvt.Agent.isPlatformIE()) {
-    dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'unicode-bidi', 'embed');
-  }
 
   // By default, hide text from VoiceOver
   this.setAriaProperty('hidden', 'true');
@@ -24779,14 +23183,13 @@ dvt.OutputText.prototype.alignTop = function() {
   if (this._vertAlign == dvt.OutputText.V_ALIGN_TOP)
     return;
   else if (this._vertAlign == dvt.OutputText.V_ALIGN_BOTTOM && dvt.Agent.isBrowserSafari())
-    this.SetBaseline(0);
+    this._setBaseline(false);
 
   this._vertAlign = dvt.OutputText.V_ALIGN_TOP;
 
   // - NODE RENDERED INCORRECTLY IN IE9+
   if (dvt.Agent.isPlatformIE()) {
-    //+ font-size
-    this.SetBaseline(1);
+    this._setBaseline(true);
   }
   else
     this.SetDominantBaselineAttr('text-before-edge');
@@ -24801,14 +23204,13 @@ dvt.OutputText.prototype.alignMiddle = function() {
   if (this._vertAlign == dvt.OutputText.V_ALIGN_MIDDLE)
     return;
   else if (this._vertAlign == dvt.OutputText.V_ALIGN_BOTTOM && dvt.Agent.isBrowserSafari())
-    this.SetBaseline(0);
+    this._setBaseline(false);
 
   this._vertAlign = dvt.OutputText.V_ALIGN_MIDDLE;
 
   // - NODE RENDERED INCORRECTLY IN IE9+
   if (dvt.Agent.isPlatformIE()) {
-    //+ 2/5 font-size
-    this.SetBaseline(.4);
+    this._setBaseline(true);
   }
   else
     this.SetDominantBaselineAttr('middle');
@@ -24827,12 +23229,11 @@ dvt.OutputText.prototype.alignBottom = function() {
 
   // - NODE RENDERED INCORRECTLY IN IE9+
   if (dvt.Agent.isPlatformIE()) {
-    //- 1/5 font-size
-    this.SetBaseline(-0.2);
+    this._setBaseline(true);
   }
   else if (dvt.Agent.isBrowserSafari()) {
     // : Safari bottom text alignment is broken and produces middle alignment instead.
-    this.SetBaseline(-0.2);
+    this._setBaseline(true);
     this.SetDominantBaselineAttr(null);
   }
   else
@@ -24847,22 +23248,22 @@ dvt.OutputText.prototype.alignAuto = function() {
   if (this._vertAlign == dvt.OutputText.V_ALIGN_AUTO)
     return;
   else if (this._vertAlign == dvt.OutputText.V_ALIGN_BOTTOM && dvt.Agent.isBrowserSafari())
-    this.SetBaseline(0);
+    this._setBaseline(false);
 
   this._vertAlign = dvt.OutputText.V_ALIGN_AUTO;
 
   if (dvt.Agent.isPlatformIE())
-    this.SetBaseline(0);
+    this._setBaseline(false);
   else
     this.SetDominantBaselineAttr(null);
 };
 
 /**
- * Save the baseline and adjust the matrix for vertical alignment in IE.
- * @param {string} baseline
- * @protected
+ * Specifies whether baseline should be manually adjusted and triggers an adjustment.
+ * @param {boolean} baseline
+ * @private
  */
-dvt.OutputText.prototype.SetBaseline = function(baseline) {
+dvt.OutputText.prototype._setBaseline = function(baseline) {
   this._baseline = baseline;
   this.setMatrix(this.getMatrix());
 };
@@ -24954,28 +23355,34 @@ dvt.OutputText.prototype.setCSSStyle = function(style) {
  */
 dvt.OutputText.prototype._getBaselineTranslation = function() {
   //if not in IE, no adjustment required
-  var dy = 0;
-  if (this._baseline != null) {
-    var size;
-
+  if (this._baseline) {
     // Use text height for baseline translation if not representative text, else use font-size
     if (this._textString && !this._isRepresentativeText())
-      size = dvt.TextUtils.getTextStringHeight(this.getCtx(), this.getCSSStyle());
+      return dvt.TextUtils.getBaselineTranslation(this);
     else {
-      size = dvt.ToolkitUtils.getAttrNullNS(this.getElem(), 'font-size');
+      var valign = this.getVertAlignment();
+      if (valign != dvt.OutputText.V_ALIGN_AUTO) {
+        var size = dvt.ToolkitUtils.getAttrNullNS(this.getElem(), 'font-size');
+        if (!size)
+          size = dvt.ToolkitUtils.getAttrNullNS(this.getOuterElem(), 'font-size');
+        if (!size || (isNaN(size) && size.indexOf('px') == -1))
+          size = dvt.StyleUtils.DEFAULT_FONT_SIZE;
+        size = parseFloat(size);
 
-      if (!size)
-        size = dvt.ToolkitUtils.getAttrNullNS(this.getOuterElem(), 'font-size');
-
-      if (!size || (isNaN(size) && size.indexOf('px') == -1))
-        size = dvt.StyleUtils.DEFAULT_FONT_SIZE;
+        if (valign == dvt.OutputText.V_ALIGN_TOP) {
+          return .8 * size;
+        }
+        else if (valign == dvt.OutputText.V_ALIGN_MIDDLE) {
+          return .3 * size;
+        }
+        else if (valign == dvt.OutputText.V_ALIGN_BOTTOM) {
+          return -.2 * size;
+        }
+      }
     }
-
-    dy = this._baseline * parseFloat(size);
   }
-  return dy;
+  return 0;
 };
-
 
 /**
  * Returns the specified matrix adjusted by the baseline (if any)
@@ -24984,7 +23391,7 @@ dvt.OutputText.prototype._getBaselineTranslation = function() {
  * @private
  */
 dvt.OutputText.prototype._getBaselineAdjustedMatrix = function(mat) {
-  if (this._baseline != null) {
+  if (this._baseline) {
     // this._baseline is only set for IE
     if (!mat) {
       mat = new dvt.Matrix();
@@ -25099,9 +23506,6 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
   var cssStyle = this.getCSSStyle();
   var cssStyleKey = (cssStyle != null) ? cssStyle.hashCodeForTextMeasurement() : '';
   var cacheKey = (textString.length > 0) ? textString + cssStyleKey : '';
-  // cache dominant-baseline='auto' dimensions seperately
-  if (vAlign === dvt.OutputText.V_ALIGN_AUTO)
-    cacheKey += dvt.OutputText.V_ALIGN_AUTO;
 
   // Look for the value in the cache and add it if not found. Calculate the localDims.
   var localDims;
@@ -25109,20 +23513,13 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
   if (stageDims != null) // Cache hit found, convert from stage coords to local and return.
     localDims = new dvt.Rectangle(stageDims.x + this.getX(), stageDims.y + this.getY(), stageDims.w, stageDims.h);
   else {
-    var bRTL = dvt.Agent.isRightToLeft(this.getCtx());
     // No cache hit.  Find the stage coords and add to cache.
     // Adjust the alignment to top-left for text caching
     if (!dvt.Agent.isPlatformIE()) { // avoid infinite recursion in IE
       this.alignLeft();
     }
-    else {
-      if (bRTL) {
-        // Force true left alignment to avoid storing incorrect values in the cache
-        dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'unicode-bidi', null);
-      }
-    }
-    if (vAlign !== dvt.OutputText.V_ALIGN_AUTO)
-      this.alignTop();
+
+    this.alignAuto();
 
     var attached = false;
     var stage = this.getCtx().getStage();
@@ -25165,9 +23562,6 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
 
     // Restore the alignment
     if (dvt.Agent.isPlatformIE()) { // avoid infinite recursion in IE
-      if (bRTL) {
-        dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'unicode-bidi', 'embed');
-      }
 
       // Adjust the dimensions that's stored in the cache so that it's the alignLeft value
       if (hAlign === dvt.OutputText.H_ALIGN_RIGHT) {
@@ -25183,8 +23577,9 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
     this.setVertAlignment(vAlign);
 
     // Convert to stage dims by removing own x and y.
-    stageDims = new dvt.Rectangle(localDims.x - this.getX(), localDims.y - this.getY(), localDims.w, localDims.h);
+    stageDims = new dvt.Rectangle(0, localDims.y - this.getY(), localDims.w, localDims.h);
     dvt.OutputText._cache.put(cacheKey, stageDims);
+    localDims.x = this.getX();
   }
 
   // Adjust dimensions for text alignment.  We do this because we don't take alignment into account in the cache, and
@@ -25194,10 +23589,12 @@ dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
   else if (hAlign === dvt.OutputText.H_ALIGN_CENTER)
     localDims.x -= localDims.w / 2;
 
-  if (vAlign === dvt.OutputText.V_ALIGN_BOTTOM)
-    localDims.y -= localDims.h;
+  if (vAlign === dvt.OutputText.V_ALIGN_TOP)
+    localDims.y -= stageDims.y;
+  else if (vAlign === dvt.OutputText.V_ALIGN_BOTTOM)
+    localDims.y -= (stageDims.y + stageDims.h);
   else if (vAlign === dvt.OutputText.V_ALIGN_MIDDLE)
-    localDims.y -= localDims.h / 2;
+    localDims.y -= (stageDims.y + stageDims.h / 2);
 
   // Transform to the target coord space and return
   return (!targetCoordinateSpace || targetCoordinateSpace === this) ? localDims : this.ConvertCoordSpaceRect(localDims, targetCoordinateSpace);
@@ -26573,6 +24970,100 @@ dvt.BackgroundMultilineText.prototype.isWrapEnabled = function() {
  */
 dvt.BackgroundMultilineText.prototype.UpdateSelectionEffect = function() {
   // noop: Does not participate in selection effects
+};
+
+// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/**
+ * Use element displayable.
+ * @param {dvt.Context} context
+ * @param {number} x The x-axis coordinate of one corner of the rectangular region into which the referenced element is placed.
+ * @param {number} y The y-axis coordinate of one corner of the rectangular region into which the referenced element is placed.
+ * @param {dvt.Displayable} target The target element.
+ * @param {string=} id The optional id for the corresponding DOM element.
+ * @extends {dvt.Displayable}
+ * @class
+ * @constructor
+ */
+dvt.Use = function(context, x, y, target, id) {
+  this.Init(context, x, y, target, id);
+};
+
+dvt.Obj.createSubclass(dvt.Use, dvt.Displayable);
+
+/** @private **/
+dvt.Use._uniqueSeed = 0;
+
+/**
+ * @param {dvt.Context} context
+ * @param {number} x
+ * @param {number} y
+ * @param {dvt.Displayable} target
+ * @param {string=} id The optional id for the corresponding DOM element.
+ * @protected
+ */
+dvt.Use.prototype.Init = function(context, x, y, target, id) {
+  dvt.Use.superclass.Init.call(this, context, 'use', id);
+
+  var targetId = target.getId();
+  if (!targetId) {
+    targetId = 'use' + dvt.Use._uniqueSeed++;
+    target.setId(targetId);
+  }
+
+  if (context.existsGlobalDefReference(targetId))
+    context.increaseGlobalDefReference(targetId);
+  else {
+    var targetElem = target.getElem();
+    dvt.ToolkitUtils.setAttrNullNS(targetElem, 'id', targetId);
+    context.appendDefs(targetElem);
+    context.increaseGlobalDefReference(targetId);
+  }
+
+  this._targetId = targetId;
+  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', '#' + targetId);
+  this.setX(x).setY(y);
+};
+
+/**
+ * Returns the x coordinate of the use element.
+ * @return {number}
+ */
+dvt.Use.prototype.getX = function() {
+  return this.GetProperty('x');
+};
+
+/**
+ * Specifies the x coordinate of the use element.
+ * @param {number} x
+ * @return {dvt.Use}
+ */
+dvt.Use.prototype.setX = function(x) {
+  return this.SetSvgProperty('x', x, 0);
+};
+
+/**
+ * Returns the y coordinate of the use element.
+ * @return {number}
+ */
+dvt.Use.prototype.getY = function() {
+  return this.GetProperty('y');
+};
+
+/**
+ * Specifies the y coordinate of the use element.
+ * @param {number} y
+ * @return {dvt.Use}
+ */
+dvt.Use.prototype.setY = function(y) {
+  return this.SetSvgProperty('y', y, 0);
+};
+
+/**
+ * @override
+ */
+dvt.Use.prototype.destroy = function() {
+  this.getCtx().decreaseGlobalDefReference(this._targetId);
+  dvt.Use.superclass.destroy.call(this);
 };
 /**
  * Style Utilities
@@ -28522,6 +27013,24 @@ dvt.CSSStyle.prototype.hashCodeForTextMeasurement = function() {
 dvt.CSSStyle.afterSkinAlta = function(skin) {
   return skin != null && skin != dvt.CSSStyle.SKIN_FUSION && skin != dvt.CSSStyle.SKIN_SKYROS;
 };
+
+/**
+ * Converts an object of CSS properties to a string. Object may contain both JS and CSS style attribute names
+ * @param {object} style The style object
+ * @return {string}
+ */
+dvt.CSSStyle.cssObjectToString = function(style) {
+  var styleString = '';
+  if (style) {
+    JSON.parse(JSON.stringify(style), function(key, value) {
+      if (key) {
+        key = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        styleString += key + ':' + value + ';';
+      }
+    });
+  }
+  return styleString;
+};
 /**
  * Base class for JSON components.
  * @class
@@ -28553,7 +27062,6 @@ dvt.BaseComponent.prototype.Init = function(context, callback, callbackObj) {
    * @protected
    */
   this.Defaults = null;
-
   /**
    * Reference to the options specifications for the component.
    * @protected
@@ -28570,15 +27078,28 @@ dvt.BaseComponent.prototype.Init = function(context, callback, callbackObj) {
    */
   this.Height = 0;
   /**
-   * Cache for the options. Resets when options are reset.
-   * @private
+   * Reference to the component event manager used for cleanup.
+   * @protected
    */
-  this._optionsCache = {};
+  this.EventManager = null;
   /**
-   * Cache for render. Resets when there is a render.
+   * Reference to the component animation. Used for cleanup.
+   * @protected
+   */
+  this.Animation = null;
+  /**
+   * Reference to the component animation stopped flag. Used for cleanup.
+   * @protected
+   */
+  this.AnimationStopped = false;
+  /**
    * @private
    */
-  this._renderCache = {};
+  this._optionsCache = new dvt.BaseComponentCache();
+  /**
+   * @private
+   */
+  this._cache = new dvt.BaseComponentCache();
 };
 
 
@@ -28679,6 +27200,9 @@ dvt.BaseComponent.prototype.render = function(options, width, height)
  */
 dvt.BaseComponent.prototype.RenderComplete = function() 
 {
+  // Reset the animation and reference
+  this.Animation = null;
+  this.AnimationStopped = false;
   this.dispatchEvent(dvt.EventFactory.newReadyEvent());
 };
 
@@ -28737,8 +27261,7 @@ dvt.BaseComponent.prototype.getDimensionsWithStroke = function(targetCoordinateS
  * @return {dvt.EventManager}
  */
 dvt.BaseComponent.prototype.getEventManager = function() {
-  // subclasses should override
-  return null;
+  return this.EventManager;
 };
 
 /**
@@ -28753,35 +27276,48 @@ dvt.BaseComponent.prototype.getKeyboardFocus = function() {
 };
 
 /**
- * Initialize/clear the render cache. Cleared on each render.
- * // TO DO: this will eventually be moved to the render method.
- */
-dvt.BaseComponent.prototype.clearRenderCache = function() {
-  this._renderCache = {};
-};
-
-/**
- * Initialize/clear the options cache. Cleared on each setOptions.
- * // TO DO: this will eventually be moved to the SetOptions method
- */
-dvt.BaseComponent.prototype.clearOptionsCache = function() {
-  this._optionsCache = {};
-};
-
-/**
- * Returns the render cache. Cleared on each render.
+ * Returns the cache. Cleared at anytime by the component.
  * @return {object}
  */
-dvt.BaseComponent.prototype.getRenderCache = function() {
-  return this._renderCache;
+dvt.BaseComponent.prototype.getCache = function() {
+  return this._cache;
 };
 
 /**
- * Returns the options cache. Cleared on each setOptions
+ * Returns the options cache. Cleared only when the component's options are reset.
  * @return {object}
  */
 dvt.BaseComponent.prototype.getOptionsCache = function() {
   return this._optionsCache;
+};
+
+/**
+ * Stops animation and resets animation object reference and flags
+ * @param {boolean=} bJumpToEnd Optional flag indicating whether to jump to 100% progress. False if not specified.
+ * @protected
+ */
+dvt.BaseComponent.prototype.StopAnimation = function(bJumpToEnd) {
+  if (this.Animation) {
+    this.AnimationStopped = true;
+    this.Animation.stop(bJumpToEnd || false);
+    this.Animation = null;
+  }
+};
+
+/**
+ * Component destroy function called to prevent memory leaks when component is no longer referenced.
+ * Subclasses should call superclass destroy last if overriding.
+ */
+dvt.BaseComponent.prototype.destroy = function() {
+  // Animation should stopped before the event manager is destroyed since it might access the event manager
+  this.StopAnimation();
+  if (this.EventManager) {
+    this.EventManager.removeListeners(this);
+    this.EventManager.destroy();
+    this.EventManager = null;
+  }
+  // Always call superclass last for destroy
+  dvt.BaseComponent.superclass.destroy.call(this);
 };
 /**
  * Base class for JSON component defaults.
@@ -28928,6 +27464,144 @@ dvt.BaseComponentDefaults.prototype.getNoCloneObject = function()
 {
   return {};
 };
+// DvtBaseComponentCache.js
+//
+// Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+//
+//    NAME
+//     DvtBaseComponentCache.js
+//
+//    DESCRIPTION
+//    Cache instance for dvt components to use
+//
+//    MODIFIED  (MM/DD/YY)
+//    esefah     04/16/16 - Created
+
+/**
+ * Cache for JSON components.
+ * @class
+ * @constructor
+ */
+dvt.BaseComponentCache = function() {
+  this.Init();
+};
+
+/**
+ * Initializes the cache.
+ * @protected
+ */
+dvt.BaseComponentCache.prototype.Init = function() {
+
+  /**
+   * Reference to the internal cache object.
+   * @type {Object}
+   * @protected
+   */
+  this.Cache = {};
+
+};
+
+/**
+ * Initialize/clear the component cache.
+ */
+dvt.BaseComponentCache.prototype.clearCache = function() {
+  this.Cache = {};
+};
+
+/**
+ * Retrieves the value corresponding to the key from the component cache.
+ * @param {object} key
+ * @return {object}
+ */
+dvt.BaseComponentCache.prototype.getFromCache = function(key) {
+  return this.Cache[key];
+};
+
+/**
+ * Stores the value corresponding to the key in the component cache.
+ * @param {object} key
+ * @param {object} value
+ */
+dvt.BaseComponentCache.prototype.putToCache = function(key, value) {
+  this.Cache[key] = value;
+};
+
+/**
+ * Retrieves the value corresponding to itemKey from the cached map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKey
+ * @return {object}
+ */
+dvt.BaseComponentCache.prototype.getFromCachedMap = function(mapKey, itemKey) {
+  return this._getCachedMap(mapKey)[itemKey];
+};
+
+/**
+ * Retrieves the cached map corresponding to mapKey.
+ * @param {object} mapKey
+ * @return {object}
+ *
+ * @private
+ */
+dvt.BaseComponentCache.prototype._getCachedMap = function(mapKey) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = {};
+    this.putToCache(mapKey, map);
+  }
+  return map;
+};
+
+/**
+ * Stores the value corresponding to itemKey to the cached map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKey
+ * @param {object} value
+ */
+dvt.BaseComponentCache.prototype.putToCachedMap = function(mapKey, itemKey, value) {
+  this._getCachedMap(mapKey)[itemKey] = value;
+};
+
+/**
+ * Retrieves the value corresponding to (itemKeyA, itemKeyB) from the cached 2D map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKeyA
+ * @param {object} itemKeyB
+ * @return {object}
+ */
+dvt.BaseComponentCache.prototype.getFromCachedMap2D = function(mapKey, itemKeyA, itemKeyB) {
+  var map = this._getCachedMap2D(mapKey);
+  return map.get(itemKeyA, itemKeyB);
+};
+
+/**
+ * Retrieves the cached 2D map corresponding to mapKey.
+ * @param {object} mapKey
+ * @return {object}
+ *
+ * @private
+ */
+dvt.BaseComponentCache.prototype._getCachedMap2D = function(mapKey) {
+  var map = this.getFromCache(mapKey);
+  if (!map) {
+    map = new dvt.Map2D();
+    this.putToCache(mapKey, map);
+  }
+  return map;
+};
+
+/**
+ * Stores the value corresponding to (itemKeyA, itemKeyB) to the cached 2D map corresponding to mapKey.
+ * @param {object} mapKey
+ * @param {object} itemKeyA
+ * @param {object} itemKeyB
+ * @param {object} value
+ */
+dvt.BaseComponentCache.prototype.putToCachedMap2D = function(mapKey, itemKeyA, itemKeyB, value) {
+  var map = this._getCachedMap2D(mapKey);
+  map.put(itemKeyA, itemKeyB, value);
+};
+
 /**
  * ShowPopupBehavior property bag.
  * @param {string} popupId The id of the popup that will be fired.
@@ -30584,21 +29258,7 @@ dvt.Obj.createSubclass(dvt.TransientButton, dvt.Button);
  * @const
  * @private
  */
-dvt.TransientButton._DEFAULT_RADIUS = 16;
-
-/**
- * Attribute for button background color.
- * @const
- * @private
- */
-dvt.TransientButton._DEFAULT_FILL_COLOR = '#ffffff';
-
-/**
- * Attribute for button border color.
- * @const
- * @private
- */
-dvt.TransientButton._DEFAULT_BORDER_COLOR = '#d6d7d8';
+dvt.TransientButton._DEFAULT_RADIUS = 15.5;
 
 /**
  * Helper method called by the constructor to initialize this object.
@@ -30638,17 +29298,21 @@ dvt.TransientButton.prototype.Init = function(context, upState, overState, downS
  * Creates and returns the dvt.Circle representing the button's given state.
  * @param {dvt.Context} context The rendering context.
  * @param {string} stateURL The string URL of the button's state.
+ * @param {number} imageWidth The width of the image.
+ * @param {number} imageHeight The height of the image.
+ * @param {string} fillColor The fill color of the button.
+ * @param {string} borderColor The border color of the button.
  * @return {dvt.Circle}
  */
-dvt.TransientButton.getStateFromURL = function(context, stateURL)
+dvt.TransientButton.getStateFromURL = function(context, stateURL, imageWidth, imageHeight, fillColor, borderColor)
 {
   var radius = dvt.TransientButton._DEFAULT_RADIUS;
   var halfRadius = radius / 2;
 
   var background = new dvt.Circle(context, radius, radius, radius);
-  background.setSolidFill(dvt.TransientButton._DEFAULT_FILL_COLOR);
-  background.setSolidStroke(dvt.TransientButton._DEFAULT_BORDER_COLOR);
-  var image = new dvt.Image(context, stateURL, halfRadius, halfRadius, radius, radius);
+  background.setSolidFill(fillColor);
+  background.setSolidStroke(borderColor);
+  var image = new dvt.Image(context, stateURL, halfRadius, halfRadius, imageWidth, imageHeight);
 
   background.addChild(image);
   return background;
@@ -31090,14 +29754,14 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
 /**
  * Simple logical object for custom datatip support.
  * @param {dvt.TooltipManager} tooltipManager
- * @param {function} tooltipFunction The callback function used to render the datatip content
+ * @param {object} tooltipObj The object containing the callback function used to render the datatip content
  * @param {string} datatipColor The border color of the datatip.
- * @param {object=} dataContext Object passed into the callback function
+ * @param {object} dataContext Object passed into the callback function
  * @class
  * @constructor
  */
-dvt.CustomDatatipPeer = function(tooltipManager, tooltipFunction, datatipColor, dataContext) {
-  this.Init(tooltipManager, tooltipFunction, datatipColor, dataContext);
+dvt.CustomDatatipPeer = function(tooltipManager, tooltipObj, datatipColor, dataContext) {
+  this.Init(tooltipManager, tooltipObj, datatipColor, dataContext);
 };
 
 dvt.Obj.createSubclass(dvt.CustomDatatipPeer, dvt.Obj);
@@ -31105,9 +29769,9 @@ dvt.Obj.createSubclass(dvt.CustomDatatipPeer, dvt.Obj);
 /**
  * @override
  */
-dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipFunction, datatipColor, dataContext) {
+dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipObj, datatipColor, dataContext) {
   this._tooltipManager = tooltipManager;
-  this._tooltipFunction = tooltipFunction;
+  this._tooltipObj = tooltipObj;
   this._datatipColor = datatipColor;
   this._dataContext = dataContext;
 };
@@ -31117,7 +29781,7 @@ dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipFunction,
  * @override
  */
 dvt.CustomDatatipPeer.prototype.getDatatip = function(target) {
-  return this._tooltipManager.getCustomTooltip(this._tooltipFunction, this._dataContext);
+  return this._tooltipManager.getCustomTooltip(this._tooltipObj, this._dataContext);
 };
 
 /**
@@ -31931,9 +30595,10 @@ dvt.Obj.createSubclass(DvtPopupBehaviorHandler, dvt.Obj);
  * @param {array} triggers The array of trigger types to process
  * @param {dvt.Point} position The position for placing the popup.
  * @param {object} event The mouse event
+ * @param {boolean} delayPopup A flag that indicates that popup event should be delayed. See .
  * @return {boolean} true if click event processed
  */
-DvtPopupBehaviorHandler.prototype.processPopupHelper = function(target, behaviors, triggers, position, event) {
+DvtPopupBehaviorHandler.prototype.processPopupHelper = function(target, behaviors, triggers, position, event, delayPopup) {
   var consumed = false;
   if (target && behaviors && behaviors.length > 0) {
     for (var i = 0; i < behaviors.length; i++) {
@@ -31944,7 +30609,23 @@ DvtPopupBehaviorHandler.prototype.processPopupHelper = function(target, behavior
         this._behavior = behavior;
         // Create and fire the popup event
         var popupEvent = this._createShowPopupEvent(target, behavior, position);
-        dvt.EventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, popupEvent);
+        var thisRef = this;
+        var dispatchEventFunc = function() {
+          dvt.EventDispatcher.dispatchEvent(thisRef._callback, thisRef._callbackObj, thisRef, popupEvent);
+        };
+        if (delayPopup) {
+          //  - the AdfShowPopupEvent for click popup on touch is created in OnComponentTouchClick()
+          // that corresponds to 'touchend' event. Mouse events such as 'mousedown', 'mouseup' and 'click'
+          // are generated after 'touchend' event. The popup dialog with corresponding 'mousedown' listener
+          // might be created before browser completes issuing mouse events from the original tap.
+          // As the result the popup is immediately dismissed by AdfAutoDismissalManager.
+          // The fix delays dispatching AdfShowPopupEvent for 100 ms which seems as enough time
+          // for mouse events to bubble up.
+          setTimeout(dispatchEventFunc, 100);
+        }
+        else {
+          dispatchEventFunc();
+        }
         consumed = true;
       }
     }
@@ -34022,6 +32703,9 @@ dvt.EventManager.prototype.Init = function(context, callback, callbackObj) {
   // index to the _keyboardHandlers array indicating the current handler
   // that receives keyboard events
   this._currentKeyboardHandlerIdx = -1;
+
+  // Map of DnD listeners
+  this._dndListeners = {};
 };
 
 
@@ -34097,6 +32781,40 @@ dvt.EventManager.prototype.addListeners = function(displayable) {
     displayable.addEvtListener(DvtFocusEvent.FOCUS, this.OnFocus, false, this);
     displayable.addEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
   }
+
+  if (this.isDndSupported()) {
+    var context = this.getCtx();
+    this.setDragSource(new dvt.DragSource(context));
+
+    // Add drag source listeners
+    this._addDndListener('dragstart', this.OnDndDragStart);
+    this._addDndListener('drag', this.OnDndDrag);
+    this._addDndListener('dragend', this.OnDndDragEnd);
+
+    // Add drop target listeners
+    this._addDndListener('dragenter', this.OnDndDragEnter);
+    this._addDndListener('dragover', this.OnDndDragOver);
+    this._addDndListener('dragleave', this.OnDndDragLeave);
+    this._addDndListener('drop', this.OnDndDrop);
+
+    var outerDiv = context.getContainer();
+    for (var eventType in this._dndListeners) {
+      dvt.ToolkitUtils.addDomEventListener(outerDiv, eventType, this._dndListeners[eventType], false);
+    }
+
+    this._context.addDndEventManager(this);
+  }
+};
+
+/**
+ * Add a drag & drop listener.
+ * @param {string} eventType Event type.
+ * @param {function} callback Callback function.
+ * @private
+ */
+dvt.EventManager.prototype._addDndListener = function(eventType, callback) {
+  var staticCallback = dvt.SvgDocumentUtils.createStaticCallback(this.getCtx(), callback, this);
+  this._dndListeners[eventType] = staticCallback;
 };
 
 
@@ -34142,6 +32860,16 @@ dvt.EventManager.prototype.removeListeners = function(displayable)
     displayable.removeEvtListener(DvtFocusEvent.BLUR, this.OnBlur, false, this);
   }
 
+  if (this.isDndSupported()) {
+    var outerDiv = this.getCtx().getContainer();
+    for (var eventType in this._dndListeners) {
+      dvt.ToolkitUtils.removeDomEventListener(outerDiv, eventType, this._dndListeners[eventType], false);
+    }
+
+    this._dndListeners = {};
+
+    this._context.removeDndEventManager(this);
+  }
 };
 
 
@@ -35632,7 +34360,7 @@ dvt.EventManager.prototype.OnComponentTouchClick = function(event) {
 
   if (!consumed) {
     if (this.PopupHandler.processPopupHelper(dlo, this._getShowPopupBehaviors(dlo), [dvt.ShowPopupBehavior.TRIGGER_TYPE_ACTION, dvt.ShowPopupBehavior.TRIGGER_TYPE_CLICK]
-        , position, event)) {
+        , position, event, true)) {
       this.SetEventInfo(event, dvt.EventManager._EVENT_INFO_POPUP_DISPLAYED_KEY, true);
       consumed = true;
     }
@@ -36663,7 +35391,7 @@ dvt.EventManager.prototype.HandleTouchActionsStart = function(event) {
     this._touchMap[touch.identifier][dvt.TouchManager.PREV_HOVER_OBJ] = obj;
   }
 
-  // Chart marquee selection
+  // Marquee selection
   if (this._marqueeHandler) {
     var relPos = this._context.pageToStageCoords(touchX, touchY);
     var marqueeEvent = this._marqueeHandler.processDragStart(relPos);
@@ -36862,10 +35590,12 @@ dvt.EventManager.prototype.HandleTouchActionsOver = function(event) {
     selectionHandler.processMouseOver(obj);
 
   // Popup Support for triggerType="hover"
-  var logObjAndDisp = this.GetLogicalObjectAndDisplayable(targetObj);
-  if (logObjAndDisp) {
-    if (this.PopupHandler.processMousePopup(obj, this._getShowPopupBehaviors(obj), position, logObjAndDisp.displayable, event, dvt.ShowPopupBehavior.TRIGGER_TYPE_MOUSE_OVER)) {
-      this.SetEventInfo(event, dvt.EventManager._EVENT_INFO_POPUP_DISPLAYED_KEY, true);
+  if (!this.GetEventInfo(event, dvt.EventManager._EVENT_INFO_POPUP_DISPLAYED_KEY)) {
+    var logObjAndDisp = this.GetLogicalObjectAndDisplayable(targetObj);
+    if (logObjAndDisp) {
+      if (this.PopupHandler.processMousePopup(obj, this._getShowPopupBehaviors(obj), position, logObjAndDisp.displayable, event, dvt.ShowPopupBehavior.TRIGGER_TYPE_MOUSE_OVER)) {
+        this.SetEventInfo(event, dvt.EventManager._EVENT_INFO_POPUP_DISPLAYED_KEY, true);
+      }
     }
   }
 };
@@ -36901,6 +35631,391 @@ dvt.EventManager.prototype.HandleTouchActionsOut = function(event, touch) {
       }
     }
   }
+};
+
+/**
+ * Returns the component that owns the event manager.
+ * @return {dvt.BaseComponent}
+ */
+dvt.EventManager.getComponent = function() {
+  return null;
+};
+
+
+// Drag & Drop Support
+
+/** dataType for storing offsetX in DnD dataTransfer */
+dvt.EventManager.DROP_OFFSET_X_DATA_TYPE = 'text/_dvtDropOffsetX';
+/** dataType for storing offsetY in DnD dataTransfer */
+dvt.EventManager.DROP_OFFSET_Y_DATA_TYPE = 'text/_dvtDropOffsetY';
+
+/**
+ * Returns whether drag & drop is supported.
+ * @return {boolean}
+ */
+dvt.EventManager.prototype.isDndSupported = function() {
+  return false;
+};
+
+/**
+ * Handles DnD dragStart event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDragStart = function(event) {
+  var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+  var dataTransfer = $event.dataTransfer;
+
+  // Pass if the dataTransfer is already loaded, since the event is already handled by another event manager
+  if ($event.dataTransfer.types && $event.dataTransfer.types.length > 0)
+    return;
+
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
+  var dragTransferable = this.DragSource.getDragTransferable(relPos.x, relPos.y);
+  var dragSourceType = this.GetDragSourceType(event);
+
+  // Cancel the event if drag can't be started
+  // Only call preventDefault if this is the last event manager because it's possible that the subsequent event
+  // managers can accept the drag (preventDefault can't be cancelled once called)
+  if (dragTransferable == null || dragSourceType == null) {
+    if (this._context.isLastDndEventManager(this))
+      event.preventDefault();
+    return;
+  }
+
+  this._context.getTooltipManager().hideTooltip();
+
+  // Provide data to the dataTransfer based on dataTypes
+  var dragOptions = this._getDragOptions();
+  var dataTypes = dragOptions['dataTypes'];
+  var callback = dragOptions['dragStart'];
+
+  // Cancel the both dataTypes and callback are undefined
+  if (dataTypes == null && !callback) {
+    if (this._context.isLastDndEventManager(this))
+      event.preventDefault();
+    return;
+  }
+
+  // If selection is enabled and the dragged object isn't selected, we should select the object
+  var obj = this.DragSource.getDragObject();
+  var selectionHandler = this.getSelectionHandler(obj);
+  if (selectionHandler) {
+    if (obj.isSelected && !obj.isSelected())
+      selectionHandler.processClick(obj, false);
+  }
+
+  if (obj.hideHoverEffect)
+    obj.hideHoverEffect();
+
+  if (dataTypes != null) {
+    // Support single data type that's defined as a string
+    if (!dvt.ArrayUtils.isArray(dataTypes))
+      dataTypes = [dataTypes];
+
+    var dragData = this._getDragData(event);
+
+    for (var i = 0; i < dataTypes.length; i++)
+      dataTransfer.setData(dataTypes[i], dragData);
+  }
+
+  // Create and set drag image
+  var dragFeedback = dvt.ToolkitUtils.getDragFeedback(this.DragSource.getDragOverFeedback(relPos.x, relPos.y), this._context.getStage());
+  var dragImage = dragFeedback.svg;
+  var dragOffset = this.DragSource.getDragOffset(relPos.x, relPos.y);
+
+  dragImage.style.width = dragFeedback.width + 'px';
+  dragImage.style.height = dragFeedback.height + 'px';
+  dragImage.style.left = event.pageX - dragOffset.x + 'px';
+  dragImage.style.top = event.pageY - dragOffset.y + 'px';
+  dragImage.style.position = 'absolute';
+  dragImage.style.fontFamily = this._context.getDefaultFontFamily();
+  dragImage.style.fontSize = this._context.getDefaultFontSize();
+
+  // Disable mouse events on the drag image so it doesn't interfere with the drag events.
+  dvt.SvgDocumentUtils.disableMouseEvents(dragImage);
+
+  // The drag image has to be in the DOM tree when being set, so we add it and remove it immediately.
+  document.body.appendChild(dragImage);
+  dvt.Context.requestAnimationFrame(function() {
+    document.body.removeChild(dragImage);
+  });
+
+  dataTransfer.setDragImage(dragImage, dragOffset.x, dragOffset.y);
+
+  // Store the drop offsets in the dataTransfer so we can position the item correctly if the drop happens on a DVT component
+  var dropOffset = this.GetDropOffset(event);
+  if (dropOffset) {
+    dataTransfer.setData(dvt.EventManager.DROP_OFFSET_X_DATA_TYPE, dropOffset.x);
+    dataTransfer.setData(dvt.EventManager.DROP_OFFSET_Y_DATA_TYPE, dropOffset.y);
+  }
+
+  // Handle the user-defined callback
+  if (callback) {
+    var eventPayload = this._getDragEventPayload(event);
+    callback($event, eventPayload);
+  }
+};
+
+/**
+ * Handles DnD drag event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDrag = function(event) {
+  this._handleDragSourceEvent(event, 'drag');
+};
+
+/**
+ * Handles DnD dragEnd event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDragEnd = function(event) {
+  this._handleDragSourceEvent(event, 'dragEnd');
+};
+
+/**
+ * Returns the type of the current drag source.
+ * @param {dvt.BaseEvent} event
+ * @return {string} The drag source type.
+ * @protected
+ */
+dvt.EventManager.prototype.GetDragSourceType = function(event) {
+  // subclasses should override
+  return null;
+};
+
+/**
+ * Returns the array of the data contexts of the current drag source.
+ * @return {Array}
+ * @protected
+ */
+dvt.EventManager.prototype.GetDragDataContexts = function() {
+  // subclasses should override
+  return [];
+};
+
+/**
+ * Returns the offset between the data location and the cursor location during drag.
+ * If provided, the offset will be included in the dataTransfer so that the drop target can take it into account.
+ * @param {dvt.BaseEvent} event
+ * @return {dvt.Point}
+ * @protected
+ */
+dvt.EventManager.prototype.GetDropOffset = function(event) {
+  // subclasses should override
+  return null;
+};
+
+/**
+ * Returns the drag options object of the current drag source.
+ * @param {dvt.BaseEvent} event
+ * @return {object}
+ * @private
+ */
+dvt.EventManager.prototype._getDragOptions = function(event) {
+  var dragSourceType = this.GetDragSourceType(event);
+  return this.getComponent().getOptions()['dnd']['drag'][dragSourceType];
+};
+
+/**
+ * Returns the ui param for the drag callback.
+ * @param {dvt.BaseEvent} event
+ * @return {object}
+ * @private
+ */
+dvt.EventManager.prototype._getDragEventPayload = function(event) {
+  var ui = {};
+  var dragSourceType = this.GetDragSourceType(event);
+  ui[dragSourceType] = this.GetDragDataContexts();
+  return ui;
+};
+
+/**
+ * Returns the data string to populate the DnD dataTransfer.
+ * @param {dvt.BaseEvent} event
+ * @return {object}
+ * @private
+ */
+dvt.EventManager.prototype._getDragData = function(event) {
+  // Remove widget constructors from the data contexts because they can't be stringified
+  var dataContexts = this.GetDragDataContexts();
+  for (var i = 0; i < dataContexts.length; i++) {
+    dataContexts[i]['component'] = undefined;
+  }
+
+  return JSON.stringify(dataContexts);
+};
+
+/**
+ * Handles drag or dragEnd event.
+ * @param {dvt.BaseEvent} event
+ * @param {string} eventType
+ * @private
+ */
+dvt.EventManager.prototype._handleDragSourceEvent = function(event, eventType) {
+  var dragSourceType = this.GetDragSourceType(event);
+  if (dragSourceType == null)
+    return;
+
+  var callback = this._getDragOptions(event)[eventType];
+  if (callback) {
+    var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+    callback($event);
+  }
+};
+
+// Drag source events above. Drop target events below.
+
+/**
+ * Handles DnD dragEnter event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDragEnter = function(event) {
+  this._handleDropTargetEvent(event, 'dragEnter', true);
+};
+
+/**
+ * Handles DnD dragOver event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDragOver = function(event) {
+  this._handleDropTargetEvent(event, 'dragOver', true);
+};
+
+/**
+ * Handles DnD dragLeave event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDragLeave = function(event) {
+  this._handleDropTargetEvent(event, 'dragLeave', false);
+};
+
+/**
+ * Handles DnD drop event.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.OnDndDrop = function(event) {
+  this._handleDropTargetEvent(event, 'drop', false);
+};
+
+/**
+ * Returns the type of the current drop target.
+ * @param {dvt.BaseEvent} event
+ * @return {string} The drop target type.
+ * @protected
+ */
+dvt.EventManager.prototype.GetDropTargetType = function(event) {
+  // subclasses should override
+  return null;
+};
+
+/**
+ * Returns the ui param for the drop callback.
+ * @param {dvt.BaseEvent} event
+ * @return {object}
+ * @protected
+ */
+dvt.EventManager.prototype.GetDropEventPayload = function(event) {
+  // subclasses should override
+  return null;
+};
+
+/**
+ * Shows the hover effect of the current drop target.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.ShowDropEffect = function(event) {
+  // subclasses should override
+  return;
+};
+
+/**
+ * Clears all hover effects from drop targets.
+ * @protected
+ */
+dvt.EventManager.prototype.ClearDropEffect = function() {
+  // subclasses should override
+  return;
+};
+
+/**
+ * Returns the drag options object of the current drop target.
+ * @param {dvt.BaseEvent} event
+ * @return {object}
+ * @private
+ */
+dvt.EventManager.prototype._getDropOptions = function(event) {
+  var dropTargetType = this.GetDropTargetType(event);
+  return this.getComponent().getOptions()['dnd']['drop'][dropTargetType];
+};
+
+/**
+ * Handles dragEnter, dragOver, dragLeave, or drop event.
+ * @param {dvt.BaseEvent} event
+ * @param {string} eventType
+ * @param {boolean} showEffect Whether the drop target hover effect should be shown.
+ * @private
+ */
+dvt.EventManager.prototype._handleDropTargetEvent = function(event, eventType, showEffect) {
+  var dropRejected = this._handleDropTargetEventHelper(event, eventType);
+
+  if (!dropRejected)
+    event.preventDefault();
+
+  if (!dropRejected && showEffect)
+    this.ShowDropEffect(event);
+  else
+    this.ClearDropEffect();
+};
+
+/**
+ * The main logic for _handleDropTargetEvent(). Determines whether the drop should be rejected.
+ * @param {dvt.BaseEvent} event
+ * @param {string} eventType
+ * @return {boolean} True if the drop is rejected. False if the drop is accepted.
+ * @private
+ */
+dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventType) {
+  var dropTargetType = this.GetDropTargetType(event);
+  if (dropTargetType == null)
+    return true;
+
+  var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+  var dropOptions = this._getDropOptions(event);
+
+  // Handle user-defined callback function
+  var callback = dropOptions[eventType];
+  if (callback) {
+    var eventPayload = this.GetDropEventPayload(event);
+    var callbackValue = callback($event, eventPayload);
+    if (callbackValue != null) {
+      // If there's a return value, don't handle dataTypes
+      return callbackValue;
+    }
+  }
+
+  // Handle dataTypes
+  var dataTypes = dropOptions['dataTypes'];
+  if (dataTypes != null) {
+    // Support single dataType that's defined as a string
+    if (!dvt.ArrayUtils.isArray(dataTypes))
+      dataTypes = [dataTypes];
+
+    // If there's at least one matching dataType, accept the drop
+    for (var i = 0; i < dataTypes.length; i++) {
+      if (dvt.ArrayUtils.getIndex($event.dataTransfer.types, dataTypes[i]) >= 0)
+        return false;
+    }
+  }
+
+  return true;
 };
 /**
  * Interactivity manager for custom tooltips and menus.  The two can be visually combined.
@@ -38838,232 +37953,6 @@ dvt.ClientBehaviorEvent.TYPE = 'clientBehavior';
 dvt.ClientBehaviorEvent.prototype.getClientBehavior = function() {
   return this._clientBehavior;
 };
-/**
- * A pan event.
- * @param {string}  subType  subtype of the event; one of the constants
- *        defined in this class
- * @param {number}  newX  new x-coord
- * @param {number}  newY  new y-coord
- * @param {number}  oldX  old x-coord
- * @param {number}  oldY  old y-coord
- * @param {dvt.Animator}  animator  optional animator used to animate the zoom
- * @class
- * @constructor
- */
-dvt.PanEvent = function(subType, newX, newY, oldX, oldY, animator) {
-  this.Init(dvt.PanEvent.TYPE);
-  this.type = this.getType();
-  this._subtype = subType;
-  this._newX = newX;
-  this._newY = newY;
-  this._oldX = oldX;
-  this._oldY = oldY;
-  this._animator = animator;
-};
-
-dvt.Obj.createSubclass(dvt.PanEvent, dvt.BaseComponentEvent);
-
-dvt.PanEvent.TYPE = 'dvtPan';
-
-dvt.PanEvent.SUBTYPE_DRAG_PAN_BEGIN = 'dragPanBegin';
-dvt.PanEvent.SUBTYPE_DRAG_PAN_END = 'dragPanEnd';
-dvt.PanEvent.SUBTYPE_PANNED = 'panned';
-dvt.PanEvent.SUBTYPE_PANNING = 'panning';
-dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_BEGIN = 'elasticAnimBegin';
-dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_END = 'elasticAnimEnd';
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getSubType = function() {
-  return this._subtype;
-};
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getNewX = function() {
-  return this._newX;
-};
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getNewY = function() {
-  return this._newY;
-};
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getOldX = function() {
-  return this._oldX;
-};
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getOldY = function() {
-  return this._oldY;
-};
-
-
-/**
- *
- */
-dvt.PanEvent.prototype.getAnimator = function() {
-  return this._animator;
-};
-/**
- * A zoom event.
- * @param {string}  subType  subtype of the event; one of the constants
- *        defined in this class
- * @param {number}  newZoom  new zoom factor
- * @param {number}  oldZoom  old zoom factor
- * @param {dvt.Animator}  animator  optional animator used to animate the zoom
- * @param {dvt.Rectangle}  zoomToFitBounds  bounds to use for zoom-to-fit
- * @param {dvt.Point}  centerPoint  center of zoom
- * @param {number}  tx  the horizontal translation applied after the zoom
- * @param {number}  ty  the vertical translation applied after the zoom
- * @class
- * @constructor
- */
-dvt.ZoomEvent = function(subType, newZoom, oldZoom, animator, zoomToFitBounds, centerPoint, tx, ty) {
-  this.Init(dvt.ZoomEvent.TYPE);
-  this.type = this.getType();
-  this._subtype = subType;
-  this._newZoom = newZoom;
-  this._oldZoom = oldZoom;
-  this._animator = animator;
-  this._zoomToFitBounds = zoomToFitBounds;
-  this._centerPoint = centerPoint;
-  this._tx = tx;
-  this._ty = ty;
-};
-
-dvt.Obj.createSubclass(dvt.ZoomEvent, dvt.BaseComponentEvent);
-
-dvt.ZoomEvent.TYPE = 'dvtZoom';
-
-
-/**
- * Zoomed event - component might need to rerender on this event
- * @const
- */
-dvt.ZoomEvent.SUBTYPE_ZOOMED = 'zoomed';
-
-
-/**
- * Zooming event - used to notify a component of zooming event
- * @const
- */
-dvt.ZoomEvent.SUBTYPE_ZOOMING = 'zooming';
-
-
-/**
- * ZoomEnd event - it is the end of the zoom event. The difference between "zoomed" and "zoomEnd" is on touch device.
- * A component gets "zoomed" events for appropriate "touchmove" events. When all touches are released on "touchend"  the component will get "zoomEnd" notification.
- * @const
- */
-dvt.ZoomEvent.SUBTYPE_ZOOM_END = 'zoomEnd';
-dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_BEGIN = 'dragZoomBegin';
-dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_END = 'dragZoomEnd';
-dvt.ZoomEvent.SUBTYPE_ZOOM_AND_CENTER = 'zoomAndCenter';
-dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS = 'zoomToFitCalcBounds';
-dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN = 'zoomToFitBegin';
-dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END = 'zoomToFitEnd';
-dvt.ZoomEvent.SUBTYPE_ELASTIC_ANIM_BEGIN = 'elasticAnimBegin';
-dvt.ZoomEvent.SUBTYPE_ELASTIC_ANIM_END = 'elasticAnimEnd';
-
-
-/**
- * Subtype representing a zoom event fired before the SUBTYPE_ZOOMING event to give components a chance adjust the
- * pan constraints
- *
- * @const
- */
-dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS = 'adjustPanConstraints';
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getSubType = function() {
-  return this._subtype;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getNewZoom = function() {
-  return this._newZoom;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getOldZoom = function() {
-  return this._oldZoom;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getAnimator = function() {
-  return this._animator;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.setZoomToFitBounds = function(bounds) {
-  this._zoomToFitBounds = bounds;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getZoomToFitBounds = function() {
-  return this._zoomToFitBounds;
-};
-
-
-/**
- *
- */
-dvt.ZoomEvent.prototype.getCenterPoint = function() {
-  return this._centerPoint;
-};
-
-
-/**
- * Gets the horizontal translation applied after the zoom
- *
- * @return {number} the horizontal translation applied after the zoom
- */
-dvt.ZoomEvent.prototype.getTx = function() {
-  return this._tx;
-};
-
-
-/**
- * Gets the vertical translation applied after the zoom
- *
- * @return {number} the vertical translation applied after the zoom
- */
-dvt.ZoomEvent.prototype.getTy = function() {
-  return this._ty;
-};
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utilities for dispatching events.
@@ -39422,6 +38311,23 @@ dvt.ToolkitUtils.getOuterDivSize = function(context) {
   return new dvt.Dimension(parseFloat(computedStyle.width), parseFloat(computedStyle.height));
 };
 
+/**
+ * Returns jQuery wrapped event. If jQuery is not available, returns the native event.
+ * @param {dvt.BaseEvent} event
+ * @return {$.Event}
+ */
+dvt.ToolkitUtils.getJQueryEvent = function(event) {
+  var nativeEvent = event.getNativeEvent();
+  if ($) {
+    // Use $.event.fix instead of $.Event so that the $event properties are populated
+    // The dataTransfer property has to be copied manually
+    var $event = $.event.fix(nativeEvent);
+    $event.dataTransfer = nativeEvent.dataTransfer;
+    return $event;
+  }
+  return nativeEvent;
+};
+
 
 dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'SCALING_SUFFIX_THOUSAND': 'K',
@@ -39666,11 +38572,7 @@ dvt.SvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback,
     }
   };
 
-  var dragMoveStaticCallback = function(event) {
-    // Convert the native event and call the callback
-    var dvtEvent = dvt.DomEventFactory.newEvent(event, context);
-    dragMoveCallback.call(callbackObj, dvtEvent);
-  };
+  var dragMoveStaticCallback = dvt.SvgDocumentUtils.createStaticCallback(context, dragMoveCallback, callbackObj);
 
   var dragEndStaticCallback = function(event) {
     // Clean up the dragMove and dragEnd event listeners
@@ -39728,6 +38630,38 @@ dvt.SvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback,
     bodyStyle.webkitUserSelect = dvt.SvgDocumentUtils._webkitUserSelect;
     bodyStyle.MozUserSelect = dvt.SvgDocumentUtils._mozUserSelect;
   };
+};
+
+/**
+ * Converts an instance callback that takes a DVT wrapped event to a static callback that takes the native event.
+ * @param {dvt.Context} context
+ * @param {function} callback
+ * @param {object} callbackObj
+ * @return {function}
+ */
+dvt.SvgDocumentUtils.createStaticCallback = function(context, callback, callbackObj) {
+  return function(event) {
+    // Convert the native event and call the callback
+    var dvtEvent = dvt.DomEventFactory.newEvent(event, context);
+    callback.call(callbackObj, dvtEvent);
+  };
+};
+
+/**
+ * Disables mouse events on the elem and all of its descendants.
+ * @param {Element} elem
+ */
+dvt.SvgDocumentUtils.disableMouseEvents = function(elem) {
+  if (elem.style)
+    elem.style.pointerEvents = 'none';
+
+  // Recursively disable mouse events on the children
+  // elem.children isn't defined for SVG in IE, so we have to use elem.childNodes
+  if (elem.childNodes) {
+    for (var i = 0; i < elem.childNodes.length; i++) {
+      dvt.SvgDocumentUtils.disableMouseEvents(elem.childNodes[i]);
+    }
+  }
 };
 /**
  * DvtSvgImageLoader.loadImage("pic.png", function(image) {

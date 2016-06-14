@@ -28,13 +28,13 @@ DvtTreeView.prototype.Init = function(context, callback, callbackObj) {
   DvtTreeView.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the event handler and add event listeners
-  this._eventHandler = this.CreateEventManager(this, context, this.dispatchEvent, this);
-  this._eventHandler.addListeners(this);
+  this.EventManager = this.CreateEventManager(this, context, this.dispatchEvent, this);
+  this.EventManager.addListeners(this);
 
   // Drag and drop support
   this._dragSource = new dvt.DragSource(context);
   this._dropTarget = new DvtTreeDropTarget(this);
-  this._eventHandler.setDragSource(this._dragSource);
+  this.EventManager.setDragSource(this._dragSource);
 
   /**
    * Field used to store the legend displayable during render.
@@ -96,8 +96,8 @@ DvtTreeView.prototype.render = function(options, width, height)
   }
 
   // Hide any currently shown tooltips
-  if (this._eventHandler)
-    this._eventHandler.hideTooltip();
+  if (this.EventManager)
+    this.EventManager.hideTooltip();
 
   // Relayout the component (for resize or new data)
   var availSpace = new dvt.Rectangle(0, 0, this.Width, this.Height);
@@ -109,7 +109,7 @@ DvtTreeView.prototype.render = function(options, width, height)
 
   // content facet: create afContext
   if (this._templates) {
-    this._afContext = new DvtAfContext(this.getCtx(), this._eventHandler);
+    this._afContext = new DvtAfContext(this.getCtx(), this.EventManager);
     //remove any components that don't fit in the tree node
     this._afContext.setRmIfNotFit(true);
   }
@@ -118,10 +118,7 @@ DvtTreeView.prototype.render = function(options, width, height)
 
   // Animation Support
   // Stop any animation in progress
-  if (this.Animation) {
-    this.AnimationStopped = true;
-    this.Animation.stop();
-  }
+  this.StopAnimation();
 
   // Construct the new animation playable
   var animationOnDataChange = this.getOptions()['animationOnDataChange'];
@@ -155,7 +152,7 @@ DvtTreeView.prototype.render = function(options, width, height)
   // If an animation was created, play it
   if (this.Animation) {
     // Disable event listeners temporarily
-    this._eventHandler.removeListeners(this);
+    this.EventManager.removeListeners(this);
 
     // Start the animation
     this.Animation.setOnEnd(this.OnAnimationEnd, this);
@@ -258,14 +255,14 @@ DvtTreeView.prototype.LayoutBreadcrumbs = function(availSpace) {
     var rootLabel = this._root ? this._root.getLabel() : null;
 
     if (this._breadcrumbs)
-      this._eventHandler.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
+      this.EventManager.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
 
     this._breadcrumbs = DvtTreeBreadcrumbsRenderer.render(this, availSpace, this._ancestors, rootLabel);
-    this._eventHandler.addComponentKeyboardHandlerAt(this._breadcrumbs.getEventManager(), 0);
+    this.EventManager.addComponentKeyboardHandlerAt(this._breadcrumbs.getEventManager(), 0);
   }
   else {
     if (this._breadcrumbs)
-      this._eventHandler.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
+      this.EventManager.removeComponentKeyboardHandler(this._breadcrumbs.getEventManager());
 
     this._breadcrumbs = null;
   }
@@ -370,7 +367,7 @@ DvtTreeView.prototype.OnAnimationEnd = function() {
   }
 
   // Restore event listeners
-  this._eventHandler.addListeners(this);
+  this.EventManager.addListeners(this);
 
   // Restore visual effects on node with keyboard focus
   this._processInitialFocus(true);
@@ -381,11 +378,9 @@ DvtTreeView.prototype.OnAnimationEnd = function() {
   if (!this.AnimationStopped)
     this.RenderComplete();
 
-  // Reset the animation stopped flag
-  this.AnimationStopped = false;
-
-  // Remove the animation reference
+  // Reset animation flags
   this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 
@@ -469,13 +464,6 @@ DvtTreeView.prototype.select = function(selection) {
 };
 
 /**
- * @override
- */
-DvtTreeView.prototype.getEventManager = function() {
-  return this._eventHandler;
-};
-
-/**
  * Returns the maximum depth of the tree.
  * @return {number} The maximum depth of the tree.
  */
@@ -531,10 +519,10 @@ DvtTreeView.prototype.ApplyParsedProperties = function(props) {
     this._selectionHandler = null;
 
   // Event Handler delegates to other handlers
-  this._eventHandler.setSelectionHandler(this._selectionHandler);
+  this.EventManager.setSelectionHandler(this._selectionHandler);
 
   // Keyboard Support
-  this._eventHandler.setKeyboardHandler(this.CreateKeyboardHandler(this._eventHandler));
+  this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
   // Attribute Groups and Legend Support
   this._legendSource = null;
@@ -572,7 +560,7 @@ DvtTreeView.prototype.ApplyParsedProperties = function(props) {
   var menus = options['_contextMenus'];
   if (menus && menus.length > 0) {
     var contextMenuHandler = new dvt.ContextMenuHandler(this.getCtx(), menus);
-    this._eventHandler.setContextMenuHandler(contextMenuHandler);
+    this.EventManager.setContextMenuHandler(contextMenuHandler);
   }
 
   // ADF Templates for Content Facet
@@ -636,7 +624,7 @@ DvtTreeView.prototype._processInitialFocus = function(applyVisualEffects) {
   if (id)
   {
     initialFocus = DvtTreeNode.getNodeById(this._root, id);
-    this._eventHandler.setFocus(initialFocus);
+    this.EventManager.setFocus(initialFocus);
   }
 
   if (applyVisualEffects)
@@ -650,7 +638,7 @@ DvtTreeView.prototype._processInitialFocus = function(applyVisualEffects) {
   {
     // set the item that has initial keyboard focus to a default if none was previously defined
     initialFocus = this.GetInitialFocusedItem(this._root);
-    this._eventHandler.setFocus(initialFocus);
+    this.EventManager.setFocus(initialFocus);
   }
 
   // have the event manager apply any needed visual effects
@@ -670,7 +658,7 @@ DvtTreeView.prototype._processInitialFocus = function(applyVisualEffects) {
 DvtTreeView.prototype.setFocused = function(isFocused)
 {
   this._hasFocus = isFocused;
-  this._eventHandler.setFocused(isFocused);
+  this.EventManager.setFocused(isFocused);
 };
 
 
@@ -743,7 +731,7 @@ DvtTreeView.prototype.__getDragTransferable = function(node) {
   // Select the node if not already selected
   if (!node.isSelected()) {
     this._selectionHandler.processClick(node, false);
-    this._eventHandler.fireSelectionEvent();
+    this.EventManager.fireSelectionEvent();
   }
 
   // Gather the rowKeys for the selected objects
@@ -840,7 +828,7 @@ DvtTreeView.prototype.__drill = function(id, bDrillUp) {
  */
 DvtTreeView.prototype.getLogicalObject = function(target)
 {
-  return this._eventHandler.GetLogicalObject(target);
+  return this.EventManager.GetLogicalObject(target);
 };
 
 
@@ -1796,7 +1784,8 @@ DvtTreeNode.prototype.getColor = function() {
  */
 DvtTreeNode.prototype.getDatatip = function() {
   // Custom Tooltip from Function
-  var tooltipFunc = this._view.getOptions()['tooltip'];
+  var customTooltip = this._view.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc)
     return this.getView().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
 
@@ -3692,7 +3681,7 @@ dvt.Treemap.prototype._renderIsolateRestore = function(node) {
     this.Animation.setOnEnd(this.OnAnimationEnd, this);
 
     // Disable event listeners temporarily
-    this._eventHandler.removeListeners(this);
+    this.getEventManager().removeListeners(this);
 
     // Start the animation
     this.Animation.play();
@@ -3731,7 +3720,7 @@ dvt.Treemap.prototype._processInitialIsolate = function(isolateRowKey) {
  */
 dvt.Treemap.prototype.__getDefaultNavigable = function(navigableItems)
 {
-  var keyboardHandler = this._eventHandler.getKeyboardHandler();
+  var keyboardHandler = this.getEventManager().getKeyboardHandler();
   if (keyboardHandler)
     return keyboardHandler.getDefaultNavigable(navigableItems);
   else if (navigableItems && navigableItems.length > 0)
@@ -6313,6 +6302,9 @@ DvtSunburstNode.prototype.render = function(container) {
 DvtSunburstNode.prototype.setSelected = function(selected) {
   // Delegate to super to store the state
   DvtSunburstNode.superclass.setSelected.call(this, selected);
+
+  if (this._shape == null)
+    return;
 
   // Update the visual feedback
   if (this.isSelected()) {

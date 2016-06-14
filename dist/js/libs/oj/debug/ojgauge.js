@@ -451,6 +451,26 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = $( ".selector" ).ojLedGauge( "getNodeBySubId", {'subId': 'oj-ledgauge-tooltip'} );
  */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *    <li>label: The computed metric label.</li> 
+ *    <li>color: The color of the gauge.</li> 
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojLedGauge
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -529,6 +549,52 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * 
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = $( ".selector" ).ojojStatusMeterGauge( "getNodeBySubId", {'subId': 'oj-statusmetergauge-tooltip'} );
+ */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *    <li>label: The computed metric label.</li> 
+ *    <li>color: The indicator color of the gauge.</li> 
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojStatusMeterGauge
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * The knockout template used to render the content of the center area.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the center area. 
+ *    The outer bounds are useful for creating background for the entire center area when used with a CSS border-radius. 
+ *    If the angleExtent isn't 360 then we will provide the clipped square. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the center area. 
+ *    The inner bounds are useful for inserting content that is guaranteed to fit within the center area. 
+ *    If the angleExtent isn't 360 then we will provide the clipped square. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>metricLabel: The computed metric label.</li> 
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name center.template
+ * @memberof! oj.ojStatusMeterGauge
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
  */
 /**
  * @ojcomponent oj.ojDialGauge
@@ -1140,6 +1206,25 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * var nodes = $( ".selector" ).ojRatingGauge( "getNodeBySubId", {'subId': 'oj-ratinggauge-item', index: 0} );
  */
  
+ /**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *    <li>label: The computed metric label.</li> 
+ *    <li>color: The indicator color of the gauge.</li> 
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojRatingGauge
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1218,5 +1303,24 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * 
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = $( ".selector" ).ojDialGauge( "getNodeBySubId", {'subId': 'oj-dialgauge-tooltip'} );
+ */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *    <li>label: The computed metric label.</li> 
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojDialGauge
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
  */
 });

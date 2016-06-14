@@ -443,4 +443,25 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  */
 
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> 
+ *   <li>id: The id of the hovered item.</li> 
+ *   <li>name: The name of the hovered item.</li> 
+ *   <li>count: The count of the hovered item.</li> 
+ *   <li>color: The color of the hovered item.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojPictoChart
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
 });

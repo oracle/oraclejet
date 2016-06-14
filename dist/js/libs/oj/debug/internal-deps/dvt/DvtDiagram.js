@@ -465,6 +465,8 @@ DvtDiagramLayoutContextLink.prototype.Init = function(link) {
   this._endId = link ? link._endId : null;
   this._points = link ? link._points : null;
   this._labelPosition = link ? link._labelPosition : null;
+  this._labelValign = link ? link._labelValign : null;
+  this._labelHalign = link ? link._labelHalign : null;
   this._labelBounds = link ? link._labelBounds : null;
   this._layoutAttrs = link ? link._layoutAttrs : null;
   this._startConnectorOffset = link ? link._startConnectorOffset : 0;
@@ -779,6 +781,47 @@ DvtDiagramLayoutContextLink.prototype.setPromoted = function(bPromoted) {
 DvtDiagramLayoutContextLink.prototype.isPromoted = function() {
   return this._bPromoted;
 };
+
+/**
+ * Sets the label valign
+ * default is top
+ * Only intended for JET Diagram
+ * @param {string} valign values can include top, middle, bottom, and baseline
+ * @export
+ */
+DvtDiagramLayoutContextLink.prototype.setLabelValign = function(valign) {
+  this._labelValign = valign;
+};
+/**
+ * Sets the label halign
+ * default depends on locale, left for LTR and right for RTL
+ * Only intended for JET Diagram
+ * @param {string} halign values can include left, right, and center
+ * @export
+ */
+DvtDiagramLayoutContextLink.prototype.setLabelHalign = function(halign) {
+  this._labelHalign = halign;
+};
+/**
+ * Gets the label valign
+ * default is top
+ * Only intended for JET Diagram
+ * @return {string} values can include top, middle, bottom, and baseline
+ * @export
+ */
+DvtDiagramLayoutContextLink.prototype.getLabelValign = function() {
+  return this._labelValign;
+};
+/**
+ * Gets the label halign
+ * default depends on locale, left for LTR and right for RTL
+ * Only intended for JET Diagram
+ * @return {string} values can include left, right, and center
+ * @export
+ */
+DvtDiagramLayoutContextLink.prototype.getLabelHalign = function() {
+  return this._labelHalign;
+};
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -813,6 +856,8 @@ DvtDiagramLayoutContextNode.prototype.Init = function(node) {
   this._position = node ? node._position : null;
   this._labelPosition = node ? node._labelPosition : null;
   this._labelBounds = node ? node._labelBounds : null;
+  this._labelValign = node ? node._labelValign : null;
+  this._labelHalign = node ? node._labelHalign : null;
   this._layoutAttrs = node ? node._layoutAttrs : null;
   this._bReadOnly = node ? node._bReadOnly : false;
   this._containerId = node ? node._containerId : null;
@@ -1266,6 +1311,47 @@ DvtDiagramLayoutContextNode.prototype._updateParentNodes = function(node) {
     this._updateParentNodes(parent);
   }
 };
+
+/**
+ * Sets the label valign
+ * default is top
+ * Only intended for JET Diagram
+ * @param {string} valign values can include top, middle, bottom, and baseline
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.setLabelValign = function(valign) {
+  this._labelValign = valign;
+};
+/**
+ * Sets the label halign
+ * default depends on locale, left for LTR and right for RTL
+ * Only intended for JET Diagram
+ * @param {string} halign values can include left, right, and center
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.setLabelHalign = function(halign) {
+  this._labelHalign = halign;
+};
+/**
+ * Gets the label valign
+ * default is top
+ * Only intended for JET Diagram
+ * @return {string} values can include top, middle, bottom, and baseline
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.getLabelValign = function() {
+  return this._labelValign;
+};
+/**
+ * Gets the label halign
+ * default depends on locale, left for LTR and right for RTL
+ * Only intended for JET Diagram
+ * @return {string} values can include left, right, and center
+ * @export
+ */
+DvtDiagramLayoutContextNode.prototype.getLabelHalign = function() {
+  return this._labelHalign;
+};
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -1598,10 +1684,6 @@ dvt.ShapeAnimationUtils.TransitionShapeToShapeUsingPaths = function(oldShape, ne
 dvt.ShapeAnimationUtils._convertShapeToPath = function(shape) {
   if (shape instanceof dvt.Path) {
     return shape;
-  }
-  else if ((shape instanceof dvt.Marker /*&& dvt.Marker.isBuiltInShape(shape.getType())*/) ||
-           shape instanceof dvt.Image) {
-    return null;
   }
   else {
     var points = dvt.ShapeAnimationUtils._getPathPoints(shape);
@@ -3251,6 +3333,24 @@ DvtBaseDiagram.prototype.IsPanningEnabled = function() {
 };
 
 /**
+ * Sets pan direction for diagram
+ * @param {string} panDirection the direction that panning is enabled
+ */
+DvtBaseDiagram.prototype.setPanDirection = function(panDirection) {
+  this._panDirection = panDirection;
+  if (this.getPanZoomCanvas()) {
+    this.getPanZoomCanvas().setPanDirection(panDirection);
+  }
+};
+
+/**
+ * Gets pan direction for diagram
+ * @return {string} the direction that panning is enabled
+ */
+DvtBaseDiagram.prototype.getPanDirection = function() {
+  return this._panDirection;
+};
+/**
  * Sets zooming option for diagram
  * @param {boolean} zoomingEnabled true if zooming enabled
  * @protected
@@ -3361,13 +3461,6 @@ DvtBaseDiagram.prototype.getSelectionMode = function() {
   */
 DvtBaseDiagram.prototype.isSelectionSupported = function() {
   return (this._selectionHandler ? true : false);
-};
-
-/**
- * @override
- */
-DvtBaseDiagram.prototype.getEventManager = function() {
-  return this._eventHandler;
 };
 
 /**
@@ -3554,48 +3647,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
     if (pos) {
       node.SetPosition(pos['x'] + tx, pos['y'] + ty, animator);
     }
-    var nodeLabelBounds = nc.getLabelBounds();
-    var nodeLabelPos = nc.getLabelPosition();
-    if (nodeLabelBounds && nodeLabelPos) {
-      // translate to make these relative to the node
-      var labelPos = new dvt.Point(nodeLabelPos['x'] - pos['x'], nodeLabelPos['y'] - pos['y']);
-      var labelRotAngle = nc.getLabelRotationAngle();
-      var labelRotPoint = DvtDiagramLayoutUtils.convertDiagramPointToPoint(nc.getLabelRotationPoint());
-      if (animator) {
-        animator.addProp(dvt.Animator.TYPE_RECTANGLE, node, node.getLabelBounds, node.setLabelBounds, nodeLabelBounds);
-
-        // If the label position hasn't been initialized, don't try to animate.
-        // This could happen if the container is initially collapsed.
-        if (!node.getLabelPosition()) {
-          node.setLabelPosition(labelPos);
-        }
-        else {
-          animator.addProp(dvt.Animator.TYPE_POINT, node, node.getLabelPosition, node.setLabelPosition, labelPos);
-        }
-
-        if (labelRotAngle != null) {
-          animator.addProp(dvt.Animator.TYPE_NUMBER, node, node.getLabelRotationAngle, node.setLabelRotationAngle, labelRotAngle);
-        }
-        if (labelRotPoint) {
-          if (!node.getLabelRotationPoint()) {
-            node.setLabelRotationPoint(labelRotPoint);
-          }
-          else {
-            animator.addProp(dvt.Animator.TYPE_POINT, node, node.getLabelRotationPoint, node.setLabelRotationPoint, labelRotPoint);
-          }
-        }
-      }
-      else {
-        node.setLabelBounds(nodeLabelBounds);
-        node.setLabelPosition(labelPos);
-        if (labelRotAngle != null) {
-          node.setLabelRotationAngle(labelRotAngle);
-        }
-        if (labelRotPoint) {
-          node.setLabelRotationPoint(labelRotPoint);
-        }
-      }
-    }
+    this.ApplyLabelPosition(nc, node, DvtDiagramLayoutUtils.convertDiagramPointToPoint(pos), animator);
 
     //apply new container padding
     if (node.isDisclosed()) {
@@ -3647,48 +3699,7 @@ DvtBaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, animator, 
           link.setPoints(translatedPoints);
         }
       }
-      var labelBounds = DvtDiagramLayoutUtils.convertDiagramRectToRect(lc.getLabelBounds());
-      var labelPos = lc.getLabelPosition();
-      var labelRotAngle = lc.getLabelRotationAngle();
-      var labelRotPoint = DvtDiagramLayoutUtils.convertDiagramPointToPoint(lc.getLabelRotationPoint());
-      if (labelBounds && labelPos) {
-        var translatedPos = new dvt.Point(labelPos['x'] + tx, labelPos['y'] + ty);
-        if (animator) {
-          animator.addProp(dvt.Animator.TYPE_RECTANGLE, link, link.getLabelBounds, link.setLabelBounds, labelBounds);
-
-          // If the link label position hasn't been initialized, don't try to animate.
-          // This could happen if the container is initially collapsed.
-          if (!link.getLabelPosition()) {
-            link.setLabelPosition(translatedPos);
-          }
-          else {
-            animator.addProp(dvt.Animator.TYPE_POINT, link, link.getLabelPosition, link.setLabelPosition, translatedPos);
-          }
-
-          if (labelRotAngle != null) {
-            animator.addProp(dvt.Animator.TYPE_NUMBER, link, link.getLabelRotationAngle, link.setLabelRotationAngle, labelRotAngle);
-          }
-          if (labelRotPoint) {
-
-            if (!link.getLabelRotationPoint()) {
-              link.setLabelRotationPoint(labelRotPoint);
-            }
-            else {
-              animator.addProp(dvt.Animator.TYPE_POINT, link, link.getLabelRotationPoint, link.setLabelRotationPoint, labelRotPoint);
-            }
-          }
-        }
-        else {
-          link.setLabelBounds(labelBounds);
-          link.setLabelPosition(translatedPos);
-          if (labelRotAngle != null) {
-            link.setLabelRotationAngle(labelRotAngle);
-          }
-          if (labelRotPoint) {
-            link.setLabelRotationPoint(labelRotPoint);
-          }
-        }
-      }
+      this.ApplyLabelPosition(lc, link, new dvt.Point(-tx, -ty), animator);
     }
   }
 
@@ -3791,15 +3802,24 @@ DvtBaseDiagram.prototype.CalcLayoutOffset = function(x, y) {
  * @protected
  */
 DvtBaseDiagram.prototype.AdjustMinZoom = function(animator, fitBounds) {
-  if (this._minZoom == 0.0) {
+  if (this.getMinZoom() == 0.0) {
     // Auto adjust minzoom of panzoomcanvas
     var panZoomCanvas = this.getPanZoomCanvas();
     var minZoomFitBounds = fitBounds ? fitBounds : this.GetViewBounds(animator);
     var minScale = this.CalculateMinimumScale(minZoomFitBounds);
-    panZoomCanvas.setMinZoom(.5 * Math.min(minScale, panZoomCanvas.getMaxZoom()));
+    panZoomCanvas.setMinZoom(this.GetMinZoomFactor() * Math.min(minScale, panZoomCanvas.getMaxZoom()));
     return minZoomFitBounds;
   }
   return null;
+};
+
+/**
+ * Return the factor of zoom to fit to set as min zoom
+ * @return {number} factor of zoom to fit to set as min zoom
+ * @protected
+ */
+DvtBaseDiagram.prototype.GetMinZoomFactor = function() {
+  return 1;
 };
 
 /**
@@ -4195,6 +4215,61 @@ DvtBaseDiagram.prototype.UpdateNodeLayoutContext = function(nodeContext, node) {
   nodeContext.setContentBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
   nodeContext.setLabelBounds(DvtDiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds()));
   nodeContext.IsRendered = true;
+};
+
+/**
+ * Updates layout context for the node/link
+ * @param {DvtDiagramLayoutContextNode | DvtDiagramLayoutContextNode} objc node or link context
+ * @param {DvtBaseDiagramNode | DvtBaseDiagramLink} obj diagram node or link
+ * @param {dvt.Point} pos position of node or link
+ * @param {dvt.Animator} animator The animator into which the transitions should be rendered (optional)
+ * @protected
+ */
+DvtBaseDiagram.prototype.ApplyLabelPosition = function(objc, obj, pos, animator) {
+  var labelBounds = objc.getLabelBounds();
+  labelBounds = DvtDiagramLayoutUtils.convertDiagramRectToRect(labelBounds);
+  var labelPos = objc.getLabelPosition();
+  if (labelBounds && labelPos) {
+    // translate to make these relative to the node or link
+    var translatedPos = new dvt.Point(labelPos['x'] - pos.x, labelPos['y'] - pos.y);
+    var labelRotAngle = objc.getLabelRotationAngle();
+    var labelRotPoint = DvtDiagramLayoutUtils.convertDiagramPointToPoint(objc.getLabelRotationPoint());
+    if (animator) {
+      animator.addProp(dvt.Animator.TYPE_RECTANGLE, obj, obj.getLabelBounds, obj.setLabelBounds, labelBounds);
+
+      // If the label position hasn't been initialized, don't try to animate.
+      // This could happen if the container is initially collapsed.
+      if (!obj.getLabelPosition()) {
+        obj.setLabelPosition(translatedPos);
+      }
+      else {
+        animator.addProp(dvt.Animator.TYPE_POINT, obj, obj.getLabelPosition, obj.setLabelPosition, translatedPos);
+      }
+
+      if (labelRotAngle != null) {
+        animator.addProp(dvt.Animator.TYPE_NUMBER, obj, obj.getLabelRotationAngle, obj.setLabelRotationAngle, labelRotAngle);
+      }
+      if (labelRotPoint) {
+        if (!obj.getLabelRotationPoint()) {
+          obj.setLabelRotationPoint(labelRotPoint);
+        }
+        else {
+          animator.addProp(dvt.Animator.TYPE_POINT, obj, obj.getLabelRotationPoint, obj.setLabelRotationPoint, labelRotPoint);
+        }
+      }
+    }
+    else {
+      obj.setLabelBounds(labelBounds);
+      obj.setLabelPosition(translatedPos);
+      obj.setLabelAlignments(objc.getLabelHalign(), objc.getLabelValign());
+      if (labelRotAngle != null) {
+        obj.setLabelRotationAngle(labelRotAngle);
+      }
+      if (labelRotPoint) {
+        obj.setLabelRotationPoint(labelRotPoint);
+      }
+    }
+  }
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 
@@ -4974,6 +5049,17 @@ DvtBaseDiagramNode.prototype.getInLinkIds = function()
 {
   return this._inLinkIds;
 };
+
+/**
+ * Sets the label alignments
+ * system of the node's container.
+ * label object guaranteed to be non-null if this method is called
+ * @param {string} halign halign of the node label
+ * @param {string} valign valign of the node label
+ */
+DvtBaseDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
+  //do nothing, only for DvtDiagramNode
+};
 /**
  * @constructor
  * @class The base class for diagram links
@@ -5702,6 +5788,17 @@ DvtBaseDiagramLink.prototype.getKeyboardFocusNode = function() {
  */
 DvtBaseDiagramLink.prototype.getCategories = function() {
   return null;
+};
+
+/**
+ * Sets the label alignments
+ * system of the link's container.
+ * label object guaranteed to be non-null if this method is called
+ * @param {string} halign halign of the link label
+ * @param {string} valign valign of the link label
+ */
+DvtBaseDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
+  //do nothing, only for DvtDiagramNode
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 var DvtDiagramLayoutUtils = {};
@@ -6622,12 +6719,12 @@ dvt.Diagram.prototype.Init = function(context, callback, callbackObj) {
   this.Defaults = new DvtDiagramDefaults();
 
   // Create the event handler and add event listeners
-  this._eventHandler = new DvtDiagramEventManager(context, this.processEvent, this);
-  this._eventHandler.addListeners(this);
+  this.EventManager = new DvtDiagramEventManager(context, this.processEvent, this);
+  this.EventManager.addListeners(this);
 
   // Set up keyboard handler on non-touch devices
   if (!dvt.Agent.isTouchDevice())
-    this._eventHandler.setKeyboardHandler(new DvtDiagramKeyboardHandler(this, this._eventHandler));
+    this.EventManager.setKeyboardHandler(new DvtDiagramKeyboardHandler(this, this.EventManager));
 
   this._nodes = {};
   this._arNodeIds = [];
@@ -6712,11 +6809,17 @@ dvt.Diagram.prototype._onAnimationEnd = function() {
   }
   this._deleteContainer = null;
 
-  if (this._animation) {
-    this._animation = null;
+  if (this.Animation) {
     // Restore event listeners
     this.getEventManager().addListeners(this);
   }
+  if (!this.AnimationStopped) {
+    this.RenderComplete();
+  }
+
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 /**
@@ -6811,28 +6914,26 @@ dvt.Diagram.prototype._processContent = function(animator, bEmptyDiagram) {
   if (!this._bRendered) {
     // Animation Support
     // Stop any animation in progress
-    if (this._animation) {
-      this._animation.stop(true);
-    }
+    this.StopAnimation(true);
 
     //initial animation
     if (dvt.Agent.isEnvironmentBrowser() && this.getInitAnim() && !this._oldDataAnimState) {
-      this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), this.getInitAnim(), this, null, this.getAnimationDuration());
+      this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), this.getInitAnim(), this, null, this.getAnimationDuration());
     }
     else if (this.getDataChangeAnim() != 'none' && this._oldDataAnimState) {
       this._deleteContainer = new dvt.Container(this.getCtx(), 'Delete Container');
       this.addChild(this._deleteContainer);
       var ah = new DvtDiagramDataAnimationHandler(this.getCtx(), this._deleteContainer, this._oldDataAnimState, this);
       ah.constructAnimation([this._oldDataAnimState], [this]);
-      this._animation = ah.getAnimation();
+      this.Animation = ah.getAnimation();
     }
     // If an animation was created, play it
-    if (this._animation) {
+    if (this.Animation) {
       this.getEventManager().hideTooltip();
       // Disable event listeners temporarily
       this.getEventManager().removeListeners(this);
-      this._animation.setOnEnd(this._onAnimationEnd, this);
-      this._animation.play();
+      this.Animation.setOnEnd(this._onAnimationEnd, this);
+      this.Animation.play();
     } else {
       this._onAnimationEnd();
     }
@@ -6876,6 +6977,7 @@ dvt.Diagram.prototype._fitContent = function(animator) {
     }
 
     pzc.setPanningEnabled(this.IsPanningEnabled());
+    pzc.setPanDirection(this.getPanDirection());
     pzc.setZoomingEnabled(this.IsZoomingEnabled());
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
   }
@@ -6936,9 +7038,16 @@ dvt.Diagram.prototype.getMinZoom = function() {
     }
     return minZoom;
   }
-  return null;
+  return 0.0;
 };
 
+
+/**
+ * @override
+ */
+dvt.Diagram.prototype.getPanDirection = function() {
+  return this.getOptions()['panDirection'];
+};
 /**
  * @override
  */
@@ -6954,7 +7063,7 @@ dvt.Diagram.prototype.getAnimationDuration = function() {
 dvt.Diagram.prototype.processEvent = function(event, source) {
   var type = event['type'];
   if (type == 'categoryHighlight') {
-    this._processHighlighting();
+    this._processHighlighting(true);
   }
   if (event) {
     this.dispatchEvent(event);
@@ -7220,9 +7329,18 @@ dvt.Diagram.prototype._processInitialSelections = function() {
 
 /**
  * Process highlighting
+ * @param {boolean} handleEventListeners a flag to remove, then reattach event listeners. The flag is set to true when highlight is caused by event.
  * @private
  */
-dvt.Diagram.prototype._processHighlighting = function() {
+dvt.Diagram.prototype._processHighlighting = function(handleEventListeners) {
+
+  //  - edge: highlight blinks on hover over node label positioned over the link
+  // We get extra mouseover/mouseout events as we reparent diagram objects in _updateAlphas()
+  // the problem is more prominent in IE
+  if (handleEventListeners) {
+    this.EventManager.removeListeners(this);
+  }
+
   //clear existing
   if (this._highlightedObjects) {
     this._updateAlphas(false, this._highlightedObjects);
@@ -7230,8 +7348,12 @@ dvt.Diagram.prototype._processHighlighting = function() {
   }
 
   var categories = this.Options['highlightedCategories'];
-  if (!categories)
+  if (!categories) {
+    if (handleEventListeners) {
+      this.EventManager.addListeners(this);
+    }
     return;
+  }
 
   var bAnyMatched = this.Options['highlightMatch'] == 'any';
   this._highlightedObjects = {};
@@ -7264,6 +7386,14 @@ dvt.Diagram.prototype._processHighlighting = function() {
   }
 
   this._updateAlphas(true, this._highlightedObjects);
+
+  //  - edge: highlight blinks on hover over node label positioned over the link
+  // Reattach the listenes after updating alphas. The timeout seems to alow extra time to finish
+  // a browser reparenting highlighted objects in DOM
+  if (handleEventListeners) {
+    var thisRef = this;
+    setTimeout(function() {thisRef.getEventManager().addListeners(thisRef);}, 0);
+  }
 };
 
 /**
@@ -8140,7 +8270,8 @@ DvtDiagramLink.prototype.hideHoverEffect = function() {
  */
 DvtDiagramLink.prototype.getDatatip = function(target, x, y) {
   // Custom Tooltip from Function
-  var tooltipFunc = this.GetDiagram().getOptions()['tooltip'];
+  var customTooltip = this.GetDiagram().getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc)
     return this.GetDiagram().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
 
@@ -8367,6 +8498,30 @@ DvtDiagramLink.prototype.animateInsert = function(animationHandler) {
  */
 DvtDiagramLink.prototype.getLayoutAttributes = function(layout) {
   return this.getData();
+};
+
+/**
+ * @override
+ */
+DvtDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
+  if (halign) {
+    if (halign == dvt.OutputText.H_ALIGN_LEFT)
+      this._labelObj.alignLeft();
+    else if (halign == dvt.OutputText.H_ALIGN_CENTER)
+      this._labelObj.alignCenter();
+    else if (halign == dvt.OutputText.H_ALIGN_RIGHT)
+      this._labelObj.alignRight();
+  }
+  if (valign) {
+    if (valign == dvt.OutputText.V_ALIGN_TOP)
+      this._labelObj.alignTop();
+    else if (valign == dvt.OutputText.V_ALIGN_MIDDLE)
+      this._labelObj.alignMiddle();
+    else if (valign == dvt.OutputText.V_ALIGN_BOTTOM)
+      this._labelObj.alignBottom();
+    else if (valign == 'baseline')
+      this._labelObj.alignAuto();
+  }
 };
 /**
  * @constructor
@@ -8834,7 +8989,8 @@ DvtDiagramNode.prototype.processDefaultHoverEffect = function(hovered) {
  */
 DvtDiagramNode.prototype.getDatatip = function(target, x, y) {
   // Custom Tooltip from Function
-  var tooltipFunc = this.GetDiagram().getOptions()['tooltip'];
+  var customTooltip = this.GetDiagram().getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc)
     return this.GetDiagram().getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
 
@@ -9115,6 +9271,29 @@ DvtDiagramNode.prototype.rerenderOnZoom = function(event) {
     var prevState = this._getState(event.getOldZoom());
     var state = this._getState(event.getNewZoom());
     this._applyCustomNodeContent(this._diagram.getOptions()['zoomRenderer'], state, prevState);
+  }
+};
+/**
+ * @override
+ */
+DvtDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
+  if (halign) {
+    if (halign == dvt.OutputText.H_ALIGN_LEFT)
+      this._labelObj.alignLeft();
+    else if (halign == dvt.OutputText.H_ALIGN_CENTER)
+      this._labelObj.alignCenter();
+    else if (halign == dvt.OutputText.H_ALIGN_RIGHT)
+      this._labelObj.alignRight();
+  }
+  if (valign) {
+    if (valign == dvt.OutputText.V_ALIGN_TOP)
+      this._labelObj.alignTop();
+    else if (valign == dvt.OutputText.V_ALIGN_MIDDLE)
+      this._labelObj.alignMiddle();
+    else if (valign == dvt.OutputText.V_ALIGN_BOTTOM)
+      this._labelObj.alignBottom();
+    else if (valign == 'baseline')
+      this._labelObj.alignAuto();
   }
 };
 /**

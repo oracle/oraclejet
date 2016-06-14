@@ -787,18 +787,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            */
           'click .oj-pagingcontrol-nav-dot': function(event)
           {
-            var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
-            var self = this;
-            this['page'](pageNum).then(
-              function(result)
-              {
-                return;
-              },
-              function(err)
-              {
-                var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
-                oj.Logger.error(errSummary + '\n' + err);
-              });  
+            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED))
+            {
+              var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
+              var self = this;
+              this['page'](pageNum).then(
+                function(result)
+                {
+                  return;
+                },
+                function(err)
+                {
+                  var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
+                  oj.Logger.error(errSummary + '\n' + err);
+                });  
+            }
             event.preventDefault();
           },
           /**
@@ -806,18 +809,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            */
           'click .oj-pagingcontrol-nav-page': function(event)
           {
-            var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
-            var self = this;
-            this['page'](pageNum).then(
-              function(result)
-              {
-                return;
-              },
-              function(err)
-              {
-                var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
-                oj.Logger.error(errSummary + '\n' + err);
-              });  
+            if (!$(event.currentTarget).hasClass(this._MARKER_STYLE_CLASSES._DISABLED))
+            {
+              var pageNum = $(event.currentTarget).attr('data-oj-pagenum');
+              var self = this;
+              this['page'](pageNum).then(
+                function(result)
+                {
+                  return;
+                },
+                function(err)
+                {
+                  var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
+                  oj.Logger.error(errSummary + '\n' + err);
+                });
+            }
             event.preventDefault();
           },
           /**
@@ -1645,14 +1651,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _isOperationOnCurrentPage: function(event)
       {
+        if (event == null)
+        {
+          return false;
+        }
+        
         var data = this._getData();
         var pageSize = this.options['pageSize'];
-        var i;
-        for (i = 0; i < event['indexes'].length; i++)
+        var startIndex = data.getStartItemIndex();
+        var endIndex = startIndex + pageSize;
+        var rowIdx;
+        
+        // check if one or more
+        if (event['index'] != null)
         {
-          var rowIdx = event['indexes'][i];
-          var startIndex = data.getStartItemIndex();
-          var endIndex = startIndex + pageSize;
+          rowIdx = event['index'];
           
           if (this.options['mode'] == this._MODE._LOAD_MORE)
           {
@@ -1662,6 +1675,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           if (rowIdx >= startIndex && rowIdx < endIndex)
           {
             return true;
+          }
+        }
+        else if (event['indexes'] != null)
+        {
+          var i;
+          for (i = 0; i < event['indexes'].length; i++)
+          {
+            rowIdx = event['indexes'][i];
+
+            if (this.options['mode'] == this._MODE._LOAD_MORE)
+            {
+              startIndex = 0;
+            }
+
+            if (rowIdx >= startIndex && rowIdx < endIndex)
+            {
+              return true;
+            }
           }
         }
         return false;

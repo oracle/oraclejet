@@ -4225,6 +4225,7 @@ OraNumberConverter = (function () {
   //minimumFractionDigits and maximumFractionDigits.
   _toRawFixed = function (number, options, numberSettings) {
     var curSize = numberSettings['groupingSize'];
+    var curSize0 = numberSettings['groupingSize0'];
     //First round the number based on maximumFractionDigits
     var numberString = number + "";
     var split = numberString.split(/e/i);
@@ -4299,6 +4300,9 @@ OraNumberConverter = (function () {
       ret = numberString.slice(stringIndex - curSize + 1, stringIndex + 1) +
         (ret.length ? (sep + ret) : "");
       stringIndex -= curSize;
+      if (curSize0 > 0 ) {
+        curSize = numberSettings['groupingSize0'];
+      }      
     }
     rets = numberString.slice(0, stringIndex + 1) + sep + ret + right;
     return rets;
@@ -4664,7 +4668,7 @@ OraNumberConverter = (function () {
       var decimalPos = -1;
       var multiplier = 1;
       var digitLeftCount = 0, zeroDigitCount = 0, digitRightCount = 0,
-        groupingCount = -1;
+        groupingCount = -1, groupingCount0= -1;
       var minExponentDigits;
       var phase = 0;
 
@@ -4809,6 +4813,7 @@ OraNumberConverter = (function () {
                 ++groupingCount;
               }
             } else if (ch === _GROUPING_SEPARATOR) {
+              groupingCount0 = groupingCount;
               groupingCount = 0;
             } else if (ch === _DECIMAL_SEPARATOR) {
               if (decimalPos >= 0) {
@@ -4892,6 +4897,7 @@ OraNumberConverter = (function () {
           (digitLeftCount + zeroDigitCount - decimalPos) : 0);
         numberSettings['groupingSize'] = (groupingCount > 0) ?
           groupingCount : 0;
+        numberSettings['groupingSize0'] = groupingCount0;
       } else {
         negPrefixPattern = prefix;
         negSuffixPattern = suffix;
@@ -7544,7 +7550,7 @@ OraDateTimeConverter =  (function() {
   //date all numbers. Ex: 5/3/2013
   //weekday is optional. If present it must match date. 
   //Ex:  Tuesday 11/19/2013
-  //if year > 2-digits it can be anywhere in the string. 
+  //if year is 3-digits it can be anywhere in the string. 
   //Otherwise assume its position based on pattern
   //if date > 12 it can be anywhere in the string. 
   //Otherwise assume its position based on pattern 
@@ -7576,20 +7582,20 @@ OraDateTimeConverter =  (function() {
       }
       return a[n1]-b[n2];
     });
-    var year, month, day, yearIndex, dayIndex, i, j;
+    var year, month, day, yearIndex, foundDayIndex, i, j;
+    var dayIndex = _getTokenIndex(tokenIndexes, 'd');
     var foundYear = false, foundDay = false;
     for(i =1; i <= 3; i++)
     {
       var tokenMatch =  match[i];
       //find year if year is yyy|yyyy
-      if(tokenMatch.length > 2 || tokenMatch > 31)
+      if(tokenMatch.length > 2)
       {
         year = tokenMatch;
         foundYear = true;
         yearIndex = i-1;
       }
     }
-
     if(!foundYear) {
       yearIndex = _getTokenIndex(tokenIndexes, 'y');
       year = match[_getTokenIndex(tokenIndexes, 'y')+1];
@@ -7599,7 +7605,7 @@ OraDateTimeConverter =  (function() {
       if(i!== yearIndex && match[i+1] > 12) {
         day = match[i+1];
         foundDay = true;
-        dayIndex = i;
+        foundDayIndex = i;
         break;
       }
     }
@@ -7622,7 +7628,7 @@ OraDateTimeConverter =  (function() {
     }
     else {
       for(i = 0; i < 3; i++) { 
-        if(i!== dayIndex && i !== yearIndex) {
+        if(i!== foundDayIndex && i !== yearIndex) {
           month = match[i+1];
           break;
         }
@@ -7633,6 +7639,11 @@ OraDateTimeConverter =  (function() {
     }
     month -= 1;
     var daysInMonth = _getDaysInMonth(year, month);
+    //if both month and day > 12 and swapped, throw exception
+    // based on original order
+    if(foundDay && dayIndex !== foundDayIndex && month > 12) {
+      _validateRange("month", day, 0, 11, day, 1, 12);
+    }
     _validateRange("month", month, 0, 11, month+1, 1, 12);
     _validateRange("day", day, 1, daysInMonth, day, 1, daysInMonth);
     var start2DigitYear = _get2DigitYearStart(options);
@@ -7641,7 +7652,7 @@ OraDateTimeConverter =  (function() {
     var parsedDate = new Date(year, month, day);
     //locate weekday
     var dName = _getWeekdayName(value, localeElements);
-    if(dName != null) {
+    if(dName !== null) {
       var weekDay = _getDayIndex1(localeElements, dName, 0);  
       // day of week does not match date
       if (parsedDate.getDay() !== weekDay) {
@@ -7720,7 +7731,7 @@ OraDateTimeConverter =  (function() {
         isDateTime);
     }
           
-    var month = _getMonthIndex(localeElements, mName, 2);          
+    var month = _getMonthIndex(localeElements, mName, 2);
     _validateRange("month", month, 0, 11, month, 1, 12);
 
     //locate weekday
@@ -7760,7 +7771,7 @@ OraDateTimeConverter =  (function() {
     {
       var tokenMatch =  match[i];
       //find year if year is yyy|yyyy
-      if(tokenMatch.length > 2 || tokenMatch > 31)
+      if(tokenMatch.length > 2)
       {
         year = tokenMatch;
         foundYear = true;
@@ -7783,7 +7794,7 @@ OraDateTimeConverter =  (function() {
     year = _expandYear(start2DigitYear, parseInt(year, 10));
     _validateRange("year", year, 0, 9999, year, 0, 9999);
     var parsedDate = new Date(year, month, day);
-    if(dName != null) {
+    if(dName !== null) {
       var weekDay = _getDayIndex1(localeElements, dName, 0);  
       // day of week does not match date
       if (parsedDate.getDay() !== weekDay) {

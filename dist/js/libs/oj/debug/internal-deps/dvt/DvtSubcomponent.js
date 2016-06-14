@@ -2485,7 +2485,7 @@ dvt.Obj.createSubclass(DvtPanelDrawerTab, dvt.Path);
  * @protected
  */
 DvtPanelDrawerTab.prototype.Init = function(context, cmds, id, panelDrawer) {
-  DvtPanelDrawerTab.superclass.Init.call(this, context, cmds, 'pdcp_tab_' + id);
+  DvtPanelDrawerTab.superclass.Init.call(this, context, cmds);
   this._panelDrawer = panelDrawer;
   this._isDisclosed = false;
   this._panelId = id;

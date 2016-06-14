@@ -40,12 +40,12 @@ DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRender
   this._bStaticRendering = bStaticRendering;
   if (!this._bStaticRendering) {
     // Create the event handler and add event listeners
-    this._eventManager = this.CreateEventManager();
-    this._eventManager.addListeners(this);
+    this.EventManager = this.CreateEventManager();
+    this.EventManager.addListeners(this);
 
     // Set up keyboard handler on non-touch devices
     if (!dvt.Agent.isTouchDevice())
-      this._eventManager.setKeyboardHandler(this.CreateKeyboardHandler(this._eventManager));
+      this.EventManager.setKeyboardHandler(this.CreateKeyboardHandler(this.EventManager));
 
     // Make sure the object has an id for clipRect naming
     this.setId('gauge' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
@@ -129,6 +129,8 @@ DvtGauge.prototype.render = function(options, width, height)
     this.getEventManager().associate(this._editingOverlay, this.__getLogicalObject(), true);
   }
 
+  this.UpdateAriaAttributes();
+
   if (!this._bStaticRendering && !this.Options['readOnly']) {
     container.setAriaRole('slider');
     container.setAriaProperty('valuemin', this.Options['min']);
@@ -158,9 +160,8 @@ DvtGauge.prototype.render = function(options, width, height)
   if (this.Options['_selectingCursor']) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
-  this.UpdateAriaAttributes();
 
-  if (!this._animation)
+  if (!this.Animation)
     // If not animating, that means we're done rendering, so fire the ready event.
     this.RenderComplete();
 };
@@ -170,8 +171,18 @@ DvtGauge.prototype.render = function(options, width, height)
  * @return {dvt.SimpleObjPeer}
  */
 DvtGauge.prototype.__getLogicalObject = function() {
-  var tooltip = DvtGaugeRenderer.getTooltipString(this);
+  var customTooltip = this.Options['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   var color = DvtGaugeStyleUtils.getColor(this);
+  if (tooltipFunc) {
+    var dataContext = {
+      'component': this.Options['_widgetConstructor'],
+      'label': DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this),
+      'color': color
+    };
+    return new dvt.CustomDatatipPeer(this.getCtx().getTooltipManager(), tooltipFunc, color, dataContext);
+  }
+  var tooltip = DvtGaugeRenderer.getTooltipString(this);
   return new dvt.SimpleObjPeer(null, tooltip, color);
 };
 
@@ -199,10 +210,7 @@ DvtGauge.prototype.Render = function(container, width, height)
  */
 DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, height) {
   // Stop any animation in progress before starting new animation
-  if (this._animation) {
-    this._animationStopped = true;
-    this._animation.stop();
-  }
+  this.StopAnimation();
 
   var bBlackBoxUpdate = false;
   var animationOnDataChange = (this._bEditing || this._bResizeRender) ? 'none' : this.getOptions()['animationOnDataChange'];
@@ -216,25 +224,27 @@ DvtGauge.prototype._setAnimation = function(container, bData, oldShapes, width, 
   var context = this.getCtx();
 
   if (!this._container && animationOnDisplay !== 'none' && this.__shapes[0] != null) { // animationOnDisplay
-    this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container, bounds, animationDuration);
-    if (!this._animation)
-      this._animation = this.CreateAnimationOnDisplay(this.__shapes, animationOnDisplay, animationDuration);
+    this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(context, animationOnDisplay, container, bounds, animationDuration);
+    if (!this.Animation)
+      this.Animation = this.CreateAnimationOnDisplay(this.__shapes, animationOnDisplay, animationDuration);
   }
   else if (this._container && animationOnDataChange != 'none' && bData && this.__shapes[0] != null) { // animationOnDataChange
-    this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange,
+    this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(context, animationOnDataChange,
         this._container, container, bounds, animationDuration);
-    if (this._animation)
+    if (this.Animation)
       bBlackBoxUpdate = true;
     else
-      this._animation = this.CreateAnimationOnDataChange(oldShapes, this.__shapes, animationOnDisplay, animationDuration);
+      this.Animation = this.CreateAnimationOnDataChange(oldShapes, this.__shapes, animationOnDisplay, animationDuration);
   }
 
-  if (!bBlackBoxUpdate)
+  if (!bBlackBoxUpdate && this._container) {
     this.removeChild(this._container);
+    this._container.destroy();
+  }
 
-  if (this._animation) {
-    this._animation.play();
-    this._animation.setOnEnd(this._onAnimationEnd, this);
+  if (this.Animation) {
+    this.Animation.play();
+    this.Animation.setOnEnd(this._onAnimationEnd, this);
   }
 
   if (bBlackBoxUpdate)
@@ -324,25 +334,18 @@ DvtGauge.prototype.UpdateAriaLiveValue = function(container, value) {
 DvtGauge.prototype._onAnimationEnd = function() {
   if (this._oldContainer) {
     this.removeChild(this._oldContainer);
+    this._oldContainer.destroy();
     this._oldContainer = null;
   }
 
   // Fire ready event saying animation is finished.
-  if (!this._animationStopped)
+  if (!this.AnimationStopped)
     this.RenderComplete();
 
-  // Reset the animation reference
-  this._animation = null;
-  this._animationStopped = null;
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
-
-/**
- * @override
- */
-DvtGauge.prototype.getEventManager = function() {
-  return this._eventManager;
-};
-
 
 /**
  * Handles the start of a value change update driven by a touch or mouse gesture at the specified coordinates.
@@ -673,10 +676,20 @@ DvtGaugeDataUtils.hasData = function(gauge) {
   var options = gauge.getOptions();
 
   // Check that there is a data object with a valid value
-  if (!options || isNaN(options['value']) || options['value'] === null)
-    return false;
-  else
-    return true;
+  return options && options['value'] != null && DvtGaugeDataUtils.hasValidData(gauge);
+};
+
+/**
+ * Returns true if the specified chart has valid data.
+ * @param {DvtGauge} gauge
+ * @return {boolean}
+ */
+DvtGaugeDataUtils.hasValidData = function(gauge) {
+  var options = gauge.getOptions();
+
+  // Check that the min and max are not equal to each other
+  return Number(options['min']) < Number(options['max']);
+
 };
 
 
@@ -1270,9 +1283,10 @@ DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
   // Get the empty text string
   var options = gauge.getOptions();
   var emptyTextStr = options['emptyText'];
-
   if (!emptyTextStr)
     emptyTextStr = dvt.Bundle.getTranslation(options, 'labelNoData', dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
+  if (!DvtGaugeDataUtils.hasValidData(gauge))
+    emptyTextStr = dvt.Bundle.getTranslation(options, 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA', null);
 
   // Set font size
   var labelStyle = options['_statusMessageStyle'];
@@ -4477,6 +4491,11 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
   if (selectedSource && preserveAspectRatio) {
     // Show images at the size of the selected shape if defined
     var onLoad = function(imageInfo) {
+      // IE11 gives a size of 0x0 for loaded images: https://connect.microsoft.com/IE/feedbackdetail/view/925655/svg-image-has-0x0-size-in-ie11
+      if (dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() == 11 && imageInfo && imageInfo.width == 0 && imageInfo.height == 0) {
+        imageInfo.width = 1;
+        imageInfo.height = 1;
+      }
       if (imageInfo && imageInfo.width && imageInfo.height) {
         var ratio = imageInfo.width / imageInfo.height;
         this.__shapeWidth = isVert ? Math.min(width - 2 * outerGap, (height - 2 * outerGap) * ratio / maxValue) : Math.min((height - 2 * outerGap) * ratio, (width - 2 * outerGap) / maxValue);
@@ -4509,6 +4528,17 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
  * @override
  */
 dvt.RatingGauge.prototype.__getLogicalObject = function() {
+  var customTooltip = this.Options['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
+  var color = DvtGaugeStyleUtils.getColor(this);
+  if (tooltipFunc) {
+    var dataContext = {
+      'component': this.Options['_widgetConstructor'],
+      'label': DvtGaugeRenderer.getFormattedMetricLabel(this.Options['value'], this),
+      'color': color
+    };
+    return new dvt.CustomDatatipPeer(this.getCtx().getTooltipManager(), tooltipFunc, color, dataContext);
+  }
   return new DvtRatingGaugePeer(this);
 };
 
@@ -4621,51 +4651,57 @@ dvt.RatingGauge.prototype.__updateClipRects = function(value, proc, container) {
   if (isVert) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new dvt.ClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath();
     unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w, this.__bounds.h - c);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new dvt.ClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath();
     selClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - a, this.__bounds.w, a);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new dvt.ClipPath('hover' + this.getId());
-    hoverClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - b, this.__bounds.w, b);
-    hoverContainer.setClipPath(hoverClip);
+    if (hoverContainer) {
+      var hoverClip = new dvt.ClipPath();
+      hoverClip.addRect(this.__bounds.x, this.__bounds.y + this.__bounds.h - b, this.__bounds.w, b);
+      hoverContainer.setClipPath(hoverClip);
+    }
   } else if (!isRTL) {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new dvt.ClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath();
     unselClip.addRect(this.__bounds.x + c, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new dvt.ClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath();
     selClip.addRect(this.__bounds.x, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new dvt.ClipPath('hover' + this.getId());
-    hoverClip.addRect(this.__bounds.x, this.__bounds.y, b, this.__bounds.h);
-    hoverContainer.setClipPath(hoverClip);
+    if (hoverContainer) {
+      var hoverClip = new dvt.ClipPath();
+      hoverClip.addRect(this.__bounds.x, this.__bounds.y, b, this.__bounds.h);
+      hoverContainer.setClipPath(hoverClip);
+    }
   } else {
     // Set the clip rect size.
     var unselContainer = container.getChildAt(0);
-    var unselClip = new dvt.ClipPath('unsel' + this.getId());
+    var unselClip = new dvt.ClipPath();
     unselClip.addRect(this.__bounds.x, this.__bounds.y, this.__bounds.w - c, this.__bounds.h);
     unselContainer.setClipPath(unselClip);
 
     var selContainer = container.getChildAt(1);
-    var selClip = new dvt.ClipPath('sel' + this.getId());
+    var selClip = new dvt.ClipPath();
     selClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, a, this.__bounds.h);
     selContainer.setClipPath(selClip);
 
     var hoverContainer = container.getChildAt(2);
-    var hoverClip = new dvt.ClipPath('hover' + this.getId());
-    hoverClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, b, this.__bounds.h);
-    hoverContainer.setClipPath(hoverClip);
+    if (hoverContainer) {
+      var hoverClip = new dvt.ClipPath();
+      hoverClip.addRect(this.__bounds.x + this.__bounds.w - c, this.__bounds.y, b, this.__bounds.h);
+      hoverContainer.setClipPath(hoverClip);
+    }
   }
   this.UpdateAriaLiveValue(container, value);
 };
@@ -4820,7 +4856,8 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
 
     DvtRatingGaugeRenderer._createShapes(gauge, container, unselectedOptions);
     DvtRatingGaugeRenderer._createShapes(gauge, container, options['changed'] ? changedOptions : selectedOptions);
-    DvtRatingGaugeRenderer._createShapes(gauge, container, hoverOptions);
+    if (!options['readOnly'])
+      DvtRatingGaugeRenderer._createShapes(gauge, container, hoverOptions);
 
     gauge.__updateClipRects(options['value'], 'render', container);
   }
@@ -4845,33 +4882,35 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
   var shapeWidth = gauge.__shapeWidth;
   var shapeHeight = gauge.__shapeHeight;
 
+  var shape;
+  if (stateOptions['source']) {
+    shape = new dvt.ImageMarker(context, shapeWidth / 2, shapeHeight / 2, shapeWidth, shapeHeight, null, stateOptions['source']);
+    shape.setPreserveAspectRatio('none');
+  }
+  else if (stateOptions['type'] != 'none') {
+    shape = dvt.LedGauge.newInstance(context, null, null, true);
+    shape.render(stateOptions, shapeWidth, shapeHeight);
+  }
+
   for (var i = 0; i < options['max']; i++) {
-    var cx, cy;
+    var x, y;
     if (options['orientation'] == 'vertical') {
-      cx = bounds.x + bounds.w / 2 - shapeWidth / 2;
-      cy = bounds.y + bounds.h - (i + 1) * shapeHeight;
+      x = bounds.x + bounds.w / 2 - shapeWidth / 2;
+      y = bounds.y + bounds.h - (i + 1) * shapeHeight;
     }
     else if (dvt.Agent.isRightToLeft(context)) {
-      cx = bounds.x + bounds.w - (i + 1) * shapeWidth;
-      cy = bounds.y + bounds.h / 2 - shapeHeight / 2;
+      x = bounds.x + bounds.w - (i + 1) * shapeWidth;
+      y = bounds.y + bounds.h / 2 - shapeHeight / 2;
     }
     else {
-      cx = bounds.x + i * shapeWidth;
-      cy = bounds.y + bounds.h / 2 - shapeHeight / 2;
+      x = bounds.x + i * shapeWidth;
+      y = bounds.y + bounds.h / 2 - shapeHeight / 2;
     }
 
-    var shape;
-    if (stateOptions['source']) {
-      shape = new dvt.ImageMarker(context, cx + shapeWidth / 2, cy + shapeHeight / 2, shapeWidth, shapeHeight, null, stateOptions['source']);
-      shape.setPreserveAspectRatio('none');
+    if (shape) {
+      var use = new dvt.Use(context, x, y, shape);
+      shapesContainer.addChild(use);
     }
-    else if (stateOptions['type'] != 'none') {
-      shape = dvt.LedGauge.newInstance(context, null, null, true);
-      shape.setTranslate(cx, cy);
-      shape.render(stateOptions, shapeWidth, shapeHeight);
-    }
-    if (shape)
-      shapesContainer.addChild(shape);
   }
 };
 /**

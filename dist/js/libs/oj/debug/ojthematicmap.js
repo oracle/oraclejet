@@ -113,6 +113,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *  [areaLayers]{@link oj.ojThematicMap#areaLayers} attribute and set the area layer object's
  *  [layer]{@link oj.ojThematicMap#areaLayers.layer} attribute to one of the
  *  supported values for that basemap.
+ * </p>
+ * <p>Applications are responsible for loading the necessary maps for a particular ojThematicMap component.
+ *  This can be done via RequireJS with the following module syntax 'basemaps/ojthematicmap-[basemap]-[layer]',
+ *  e.g. 'basemaps/ojthematicmap-world-countries'.
+ * </p>
  *  <ul>
  *    <li>usa
  *    <ul>
@@ -172,17 +177,45 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *  be used in a marker object's [location]{@link oj.ojThematicMap#pointDataLayers.markers.location}
  *  attribute instead of passing in longitude and latitude coordinates.
  *  See the Thematic Map <a href="../uiComponents-thematicMap-points.html">Points Demo</a> for an example.
- *  <ul>
- *    <li><a href="dvt/thematicMap/africa-cities-ids.json">Africa Cities</a></li>
- *    <li><a href="dvt/thematicMap/asia-cities-ids.json">Asia Cities</a></li>
- *    <li><a href="dvt/thematicMap/australia-cities-ids.json">Australia Cities</a></li>
- *    <li><a href="dvt/thematicMap/europe-cities-ids.json">Europe Cities</a></li>
- *    <li><a href="dvt/thematicMap/northAmerica-cities-ids.json">North America Cities</a></li>
- *    <li><a href="dvt/thematicMap/southAmerica-cities-ids.json">South America Cities</a></li>
- *    <li><a href="dvt/thematicMap/usa-cities-ids.json">USA Cities</a></li>
- *    <li><a href="dvt/thematicMap/world-cities-ids.json">World Cities</a></li>
- *  </ul>
  * </p>
+ * <p>Applications are responsible for loading the required cities basemap if needed.
+ *  This can be done via RequireJS with the following module syntax 'basemaps/ojthematicmap-[basemap]-cities',
+ *  e.g. 'basemaps/ojthematicmap-world-cities'.
+ * </p>
+ * <ul>
+ *   <li><a href="dvt/thematicMap/africa-cities-ids.json">Africa Cities</a></li>
+ *   <li><a href="dvt/thematicMap/asia-cities-ids.json">Asia Cities</a></li>
+ *  <li><a href="dvt/thematicMap/australia-cities-ids.json">Australia Cities</a></li>
+ *   <li><a href="dvt/thematicMap/europe-cities-ids.json">Europe Cities</a></li>
+ *   <li><a href="dvt/thematicMap/northAmerica-cities-ids.json">North America Cities</a></li>
+ *   <li><a href="dvt/thematicMap/southAmerica-cities-ids.json">South America Cities</a></li>
+ *   <li><a href="dvt/thematicMap/usa-cities-ids.json">USA Cities</a></li>
+ *   <li><a href="dvt/thematicMap/world-cities-ids.json">World Cities</a></li>
+ * </ul>
+ *
+ * <h3 id="mapprovider-section">
+ *   Custom Maps
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#mapprovider-section"></a>
+ * </h3>
+ *
+ * <p>
+ *   Instead of a built-in map, an application can specify a custom map using GeoJSON formatted geo data with
+ *   the [mapProvider]{@link oj.ojThematicMap#mapProvider} option. When using a custom map, the
+ *   [basemap]{@link oj.ojThematicMap#basemap} and [layer]{@link oj.ojThematicMap#areaLayers[].layer} options are still required.
+ * </p>
+ * <p>
+ *   Currently only GeoJSON objects of "type" Feature or FeatureCollection are supported. Each Feature object contains
+ *   the information to render a map area including the area id, coordinates, and optional short and long labels. Only Feature
+ *   "geometry" objects of "type" Polygon and MutliPolgyon will be used for defining area boundaries.  All other "type" values
+ *   will be skipped.  The Feature "properties" object is where the Thematic Map component will look up area info like id, short
+ *   label, and long label using the key mappings provided in the [propertiesKeys]{@link oj.ojThematicMap#mapProvider.propertiesKeys} option.
+ *   See the Thematic Map <a href="../uiComponents-thematicMap-mapProvider.html">Map Provider Demo</a> for an example.
+ * </p>
+ * <p>
+ *   If longitude/latitude coordinate data need to be rendered, the application should using a projection library like Proj4JS to
+ *   project the coordinates to the map projection.  The Thematic Map component will not project x/y values passed in to the data markers
+ *   option for custom maps.
+ * </p
  *
  * @desc Creates a JET Thematic Map.
  * @example <caption>Initialize the Thematic Map with no options specified:</caption>
@@ -201,17 +234,18 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       /**
        * Triggered after thematic map resources are loaded and the component has rendered.
        *
-       * @example <caption>Initialize the component with the <code class="prettyprint">select</code> callback specified:</caption>
+       * @example <caption>Initialize the component with the <code class="prettyprint">load</code> callback specified:</caption>
        * $(".selector").ojThematicMap({
        *   "load": function(){}
        * });
        *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojselect</code> event:</caption>
+       * @example <caption>Bind an event listener to the <code class="prettyprint">ojload</code> event:</caption>
        * $(".selector").on("ojload", function(){});
        *
        * @expose
        * @event
        * @memberof oj.ojThematicMap
+       * @deprecated Use the  <a href="#whenReady">whenReady</a> method instead
        * @instance
        */
       load: null,
@@ -248,6 +282,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
     },
     _currentLocale : '',
     _loadedBasemaps : [],
+    _basemapPath : 'resources/internal-deps/dvt/thematicMap/basemaps/',
     _supportedLocales: {
         'ar' : 'ar',
         'cs' : 'cs',
@@ -404,6 +439,12 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _Render: function() {
+      this._NotReady();
+      var areaLayers = this.options['areaLayers'];
+      // Don't render unless a basemap and area layer is at least specified
+      if (!this.options['basemap'] || !areaLayers || areaLayers.length < 1)
+        return;
+
       // For thematic map, we must ensure that all basemaps are loaded before rendering.  If basemaps are still loading,
       // return and wait for the load listener to call _Render again.
       this._loadBasemap();
@@ -413,72 +454,72 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       }
       this._checkBasemaps = [];
 
-      // parse the top level selection map and populate data layer selection option
-      this._updateDataLayerSelection();
+        // parse the top level selection map and populate data layer selection option
+        this._updateDataLayerSelection();
 
-      // wrap tooltip function in try catch
-      var tooltipFun = this.options['tooltip'];
-      if (tooltipFun) {
-        this.options['_tooltip'] = function(context) {
-          var defaultTooltip = context['tooltip'];
-          try {
-            var tooltip = tooltipFun(context);
-            return tooltip || defaultTooltip;
-          } catch (error) {
-            oj.Logger.warn("Showing default tooltip. " + error);
-            return defaultTooltip;
-          }
-        }
-      }
-
-      // call custom renderers
-      var areaLayers = this.options['areaLayers'];
-      if (areaLayers) {
-        for (var i = 0; i < areaLayers.length; i++) {
-          var areaDataLayer = areaLayers[i]['areaDataLayer'];
-          if (areaDataLayer) {
-            var renderer = areaDataLayer['_templateRenderer'];
-            if (renderer)
-              areaDataLayer['renderer'] = this._getTemplateRenderer(renderer, areaDataLayer['markers']);
-          }
-        }
-      }
-      var pointDataLayers = this.options['pointDataLayers'];
-      if (pointDataLayers) {
-        for (var i = 0; i < pointDataLayers.length; i++) {
-          var pointDataLayer = pointDataLayers[i];
-          if (pointDataLayer) {
-            var renderer = pointDataLayer['_templateRenderer'];
-            if (renderer) {
-              pointDataLayer['renderer'] = this._getTemplateRenderer(renderer, pointDataLayer['markers']);
+        // wrap tooltip function in try catch
+        var tooltipObj = this.options['tooltip'];
+        var tooltipFun = tooltipObj? tooltipObj['renderer'] : null;
+        if (tooltipFun) {
+          this.options['_tooltip'] = function(context) {
+            var defaultTooltip = context['tooltip'];
+            try {
+              var tooltip = tooltipFun(context);
+              return tooltip || defaultTooltip;
+            } catch (error) {
+              oj.Logger.warn("Showing default tooltip. " + error);
+              return defaultTooltip;
             }
           }
         }
-      }
 
-      // callback function for getting the context needed for custom renderers
-      this.options['_contextHandler'] = this._getContextHandler();
-
-      // do data layer updates only if we've already initially rendered the thematic map
-      if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
-        // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
-        // getBBox calls will not return the correct values.
-        // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-        if(this._context.isReadyToRender()) {
-          for (var i = 0; i < this._dataLayersToUpdate.length; i++) {
-            var dl = this._dataLayersToUpdate[i];
-            this._component.updateLayer(dl['options'], dl['parentLayer'], dl['isADL']);
+        // call custom renderers
+        if (areaLayers) {
+          for (var i = 0; i < areaLayers.length; i++) {
+            var areaDataLayer = areaLayers[i]['areaDataLayer'];
+            if (areaDataLayer) {
+              var renderer = areaDataLayer['_templateRenderer'];
+              if (renderer)
+                areaDataLayer['renderer'] = this._getTemplateRenderer(renderer, areaDataLayer['markers']);
+            }
           }
-          this._dataLayersToUpdate = [];
         }
-      } else {
-        // Delegate to the super to call the shared JS component for actual rendering.
-        this._super();
-        this._initiallyRendered = true;
-      }
+        var pointDataLayers = this.options['pointDataLayers'];
+        if (pointDataLayers) {
+          for (var i = 0; i < pointDataLayers.length; i++) {
+            var pointDataLayer = pointDataLayers[i];
+            if (pointDataLayer) {
+              var renderer = pointDataLayer['_templateRenderer'];
+              if (renderer) {
+                pointDataLayer['renderer'] = this._getTemplateRenderer(renderer, pointDataLayer['markers']);
+              }
+            }
+          }
+        }
 
-      // Send event once basemaps have been loaded and rendering is complete
-      this._trigger('load', null, null);
+        // callback function for getting the context needed for custom renderers
+        this.options['_contextHandler'] = this._getContextHandler();
+
+        // do data layer updates only if we've already initially rendered the thematic map
+        if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
+          // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+          // getBBox calls will not return the correct values.
+          // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+          if(this._context.isReadyToRender()) {
+            for (var i = 0; i < this._dataLayersToUpdate.length; i++) {
+              var dl = this._dataLayersToUpdate[i];
+              this._component.updateLayer(dl['options'], dl['parentLayer'], dl['isADL']);
+            }
+            this._dataLayersToUpdate = [];
+          }
+        } else {
+          // Delegate to the super to call the shared JS component for actual rendering.
+          this._super();
+          this._initiallyRendered = true;
+        }
+
+        // Send event once basemaps have been loaded and rendering is complete
+        this._trigger('load', null, null);
     },
 
     /**
@@ -638,15 +679,12 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         }
 
         // Track basemaps that need to be loaded before rendering
-        basemap = basemap.charAt(0).toUpperCase() + basemap.slice(1);
-
         var areaLayers = this.options['areaLayers'];
         // load area layer basemaps
         if (areaLayers) {
           for (var i = 0; i < areaLayers.length; i++) {
             var layer = areaLayers[i]['layer'];
             if (layer) {
-              layer = layer.charAt(0).toUpperCase() + layer.slice(1);
               this._loadBasemapHelper(basemap, layer, locale);
             }
           }
@@ -654,35 +692,62 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
 
         // load city basemap
         var pointDataLayers = this.options['pointDataLayers'];
-        if (pointDataLayers && pointDataLayers.length > 0)
-          this._loadBasemapHelper(basemap, 'Cities', locale);
+        // Don't try and load cities basemap if mapProvider is used
+        if (!this.options['mapProvider'] && pointDataLayers && pointDataLayers.length > 0)
+          this._loadBasemapHelper(basemap, 'cities', locale);
       }
     },
 
     /**
      * Utility function for loading resource bundles by url.
      * @param {string} url The url of the resource to load
+     * @param {boolean} bRenderOnFail True if we should render even if resource fails to load
      * @private
      */
-    _loadResourceByUrl: function(url) {
+    _loadResourceByUrl: function(url, bRenderOnFail) {
       // resource is already loaded or function tried to load this resource but failed
       if (this._loadedBasemaps[url])
         return;
 
-      var resolvedUrl = oj.Config.getResourceUrl(url);
       var thisRef = this;
-      var loadedBundles = this._loadedBasemaps;
-      $.getScript(resolvedUrl, function(data, textStatus, jqxhr) {
-        loadedBundles[url] = true;
+      var renderCallback = function () {
+        thisRef._loadedBasemaps[url] = true;
         thisRef._Render();
-      });
+      }
+      // TODO Update to use requirejs for internal resource bundle loading after 2.2.0(?)
+      var getScript = $.getScript(oj.Config.getResourceUrl(url), function(script, textStatus) {renderCallback();});
+      // Resource bundles might not get included, but this should not stop component rendering
+      if (bRenderOnFail) {
+        getScript.fail(function(jqxhr, settings, exception) {renderCallback();});
+      }
     },
 
+    /**
+     * Helper function to load a single layer basemap and resource bundle.
+     * @private
+     */
     _loadBasemapHelper: function(basemap, layer, locale) {
-      var relativeUrl = 'resources/internal-deps/dvt/thematicMap/basemaps/DvtBaseMap' + basemap + layer + '.js';
-      if (this._checkBasemaps.indexOf(relativeUrl) == -1) {
-        this._checkBasemaps.push(relativeUrl);
-        this._loadResourceByUrl(relativeUrl);
+      var isLoaded = true;
+      try {
+        // If the basemap is not loaded in DvtBaseMapManager then we'll get an error thrown
+        // so we need to catch and load the basemap
+        isLoaded = Object.keys(dvt.DvtBaseMapManager.getLayerIds(basemap, layer)).length > 0;
+      } catch (err) {
+        isLoaded = false;
+      }
+
+      if (!isLoaded) {
+        // Check to see if MapProvider
+        var mapProvider = this.options['mapProvider'];
+        if (mapProvider) {
+          oj.MapProviderUtils.geoJsonToBasemap(basemap, layer, mapProvider);
+        } else {
+          var relativeUrl = this._basemapPath + 'ojthematicmap-' + basemap + '-' + layer + '.js';
+          if (this._checkBasemaps.indexOf(relativeUrl) == -1) {
+            this._checkBasemaps.push(relativeUrl);
+            this._loadResourceByUrl(relativeUrl, false);
+          }
+        }
       }
 
       if (locale.indexOf('en') === -1) {
@@ -704,14 +769,16 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
           localeList.unshift(splitLocale[0]+'-'+splitLocale[2], splitLocale[0]+'-'+splitLocale[1]+'-'+splitLocale[2]);
         }
 
-        var bundleName = 'resources/internal-deps/dvt/thematicMap/resourceBundles/' + basemap + layer + 'Bundle';
+        basemap = basemap.charAt(0).toUpperCase() + basemap.slice(1);
+        layer = layer.charAt(0).toUpperCase() + layer.slice(1);
+        var bundleName = this._basemapPath + 'resourceBundles/' + basemap + layer + 'Bundle_';
         // Go thru list of supported DVT languages
         for (var i = 0; i < localeList.length; i++) {
           if (this._supportedLocales[localeList[i]]) {
-            var bundleUrl = bundleName + "_" + this._supportedLocales[localeList[i]] + ".js";
+            var bundleUrl = bundleName + this._supportedLocales[localeList[i]] + ".js";
             if (this._checkBasemaps.indexOf(bundleUrl) == -1) {
               this._checkBasemaps.push(bundleUrl);
-              this._loadResourceByUrl(bundleUrl);
+              this._loadResourceByUrl(bundleUrl, true);
             }
             break;
           }
@@ -1112,5 +1179,277 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  * @ojnodecontext oj-thematicmap-marker
  * @memberof oj.ojThematicMap
  */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>color: The color of the hovered item or null if the hovered item if not associated with any data.</li> 
+ *   <li>component: The widget constructor for the thematic map. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *   <li>data: The data object of the hovered item or null if the hovered item if not associated with any data.</li> 
+ *   <li>id: The id of the hovered item or null if the hovered item if not associated with any data.</li> 
+ *   <li>label: The data label of the hovered item or null if the hovered item if not associated with any data.</li> 
+ *   <li>location: The location id of the hovered item which can be null if x/y are set instead.</li> 
+ *   <li>locationName: The location name of the hovered item if location id is set.</li> 
+ *   <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *   <li>tooltip: The default tooltip string constructed by the component if any.</li> 
+ *   <li>x: The x coordinate of the hovered item which can be null if location is set instead.</li> 
+ *   <li>y: The y coordinate of the hovered item which can be null if location is set instead.</li>
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojThematicMap
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * The knockout template used for stamping other data visualizations within a data layer. Only data
+ * visualizations are currently supported. The markers.location or markers.x and markers.y options will be 
+ * used to determine the stamp placement within the Thematic Map. No other existing marker options will be used
+ * by the Thematic Map when a knockout template is provided.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option.
+ * 
+ * @ojbindingonly
+ * @name areaLayers.areaDataLayer.template
+ * @memberof! oj.ojThematicMap
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * The knockout template used for stamping other data visualizations within a data layer. Only data
+ * visualizations are currently supported. The markers.location or markers.x and markers.y options will be 
+ * used to determine the stamp placement within the Thematic Map. No other existing marker options will be used
+ * by the Thematic Map when a knockout template is provided.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option.
+ * 
+ * @ojbindingonly
+ * @name pointDataLayers.template
+ * @memberof! oj.ojThematicMap
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * Thematic Map MapProvider utility class for converting a GeoJSON object into a basemap.
+ * @ignore
+ * @since 2.1.0
+ */
+oj.MapProviderUtils = {};
+
+oj.MapProviderUtils._MANAGER = 'DvtBaseMapManager';
+oj.MapProviderUtils._UNPROCESSED = '_UNPROCESSED_MAPS';
+// GeoJSON keys
+oj.MapProviderUtils._TYPE = 'type';
+oj.MapProviderUtils._GEOMETRY = 'geometry';
+oj.MapProviderUtils._COORDINATES = 'coordinates';
+oj.MapProviderUtils._FEATURES = 'features';
+oj.MapProviderUtils._PROPERTIES = 'properties';
+// GeoJSON Types
+oj.MapProviderUtils._TYPE_FEATURE_COLLECTION = 'FeatureCollection';
+oj.MapProviderUtils._TYPE_GEOMETRY_COLLECTION = 'GeometryCollection';
+oj.MapProviderUtils._TYPE_FEATURE = 'Feature';
+oj.MapProviderUtils._TYPE_POLYGON = 'Polygon';
+oj.MapProviderUtils._TYPE_MULTI_POLYGON = 'MultiPolygon';
+// Our internal properties keys required for determining an area's id, shortLabel, and longLabel
+oj.MapProviderUtils._ID = 'id';
+oj.MapProviderUtils._SHORT_LABEL = 'shortLabel';
+oj.MapProviderUtils._LONG_LABEL = 'longLabel';
+
+/**
+ * Converts a GeoJSON object to a basemap layer
+ * @param {string} basemap The name of the basemap
+ * @param {string} layer The name of the layer
+ * @param  {Object} mapProvider The mapProvider object
+ * @ignore
+ */
+oj.MapProviderUtils.geoJsonToBasemap = function(basemap, layer, mapProvider) {
+  var labels = {};
+  var areas = {};
+  var geoJson = mapProvider['geo'];
+  var keys = mapProvider['propertiesKeys'] || {};
+
+  // Determine the GeoJSON top-level type
+  var type = geoJson[oj.MapProviderUtils._TYPE];
+  // Only a Feature will have a properties object which gives us a place to look up
+  // an area's id, shortLabel, and longLabel.
+  if (type === oj.MapProviderUtils._TYPE_FEATURE_COLLECTION) {
+    var features = geoJson[oj.MapProviderUtils._FEATURES];
+    // Check each feature for an ID and skip if not provided
+    features.forEach(function(feature) {
+      oj.MapProviderUtils.parseFeature(feature, keys, areas, labels);
+    });
+  }
+  else if (type === oj.MapProviderUtils._TYPE_FEATURE) {
+    oj.MapProviderUtils.parseFeature(geoJson, keys, areas, labels);
+  }
+  else {
+    oj.Logger.error('GeoJSON type of ' + type + ' is not supported. Only Feature and FeatureCollection types are supported.');
+    return;
+  }
+  
+  // Don't try and render if map didn't contain any valid areas
+  var numAreas = Object.keys(areas).length;
+  if (numAreas === 0) {
+    oj.Logger.error('No valid Features found in GeoJSON.');      return;
+  }
+
+  // Register the basemap with DvtBaseMapManager
+  if (!window[oj.MapProviderUtils._MANAGER ]) {
+    window[oj.MapProviderUtils._MANAGER] = {};
+    window[oj.MapProviderUtils._MANAGER ][oj.MapProviderUtils._UNPROCESSED] = [[], [], []];
+  }
+  window[oj.MapProviderUtils._MANAGER ][oj.MapProviderUtils._UNPROCESSED][0].push([basemap, layer, labels, areas, null, null, 0]);
+}
+
+/**
+ * Parses a GeoJSON Feature object and translates it to a Thematic Map area.
+ * @param  {Object} feature The Feature object
+ * @param  {Object} keys The object containing the properties keys mapping
+ * @param  {Object} areas   The areas map of area id to svg paths
+ * @param  {Object} labels  The labels map of area id to label info
+ */
+oj.MapProviderUtils.parseFeature = function(feature, keys, areas, labels) {
+  // A Feature has 'geometry' and 'properties' keys and maps to an area.
+  // Do not process a Feature if it does not have an id or is not a supported geometry type.
+  var props = feature[oj.MapProviderUtils._PROPERTIES];
+  var geom = feature[oj.MapProviderUtils._GEOMETRY];
+  if (!oj.MapProviderUtils.isSupportedGeometry(geom)) {
+    oj.Logger.warn("A geometry of type " + geom[oj.MapProviderUtils._TYPE] + " is not supported and will be skipped.");
+    return;
+  }
+
+  var id = props[keys[oj.MapProviderUtils._ID]];
+  if (!id) {
+    oj.Logger.warn("No 'id' value found in the mapProvider.propertiesKey object. " +
+      "A Feature's 'properties' object must have an id in the field specified by the mapProvider.propertiesKey.id value.");
+    return;
+  }
+
+  // Generate label info
+  var shortLabel = props[keys[oj.MapProviderUtils._SHORT_LABEL]];
+  var longLabel = props[keys[oj.MapProviderUtils._LONG_LABEL]];
+  if (shortLabel || longLabel) {
+    labels[id] = [shortLabel, longLabel];
+  }
+
+  // Generate area svg path
+  areas[id] = oj.MapProviderUtils.geomToPath(geom);
+}
+
+/**
+ * Returns true if the geometry object is a supported type
+ * @param  {Object}  geom The geometry object
+ * @return {boolean}
+ * @ignore
+ */
+oj.MapProviderUtils.isSupportedGeometry = function(geom) {
+  var type = geom[oj.MapProviderUtils._TYPE];
+  if (type === oj.MapProviderUtils._TYPE_POLYGON || type === oj.MapProviderUtils._TYPE_MULTI_POLYGON)
+    return true;
+  return false;
+}
+
+/**
+ * Converts a GeoJSON Polygon or MultiPolygon geometry to a string of relative path commands.
+ * Only Polygon and MultiPolygon geometry types are currently supported.
+ * @param {Array} geom The GeoJSON geometry to convert
+ * @return {string}
+ * @ignore
+ */
+oj.MapProviderUtils.geomToPath = function(geom) {
+  var path = '';
+  var type = geom[oj.MapProviderUtils._TYPE];
+  var coords = geom[oj.MapProviderUtils._COORDINATES];
+  if (type === oj.MapProviderUtils._TYPE_POLYGON) {
+    path = oj.MapProviderUtils.polygonToPath(coords);
+  }
+  else if (type === oj.MapProviderUtils._TYPE_MULTI_POLYGON) {
+    // The coordinates of a MultiPolygon are an array of Polygon coordinate arrays.
+    coords.forEach(function(polygonCoords) {
+      path += oj.MapProviderUtils.polygonToPath(polygonCoords);
+    });
+  }
+  return path;
+}
+
+/**
+ * Converts a GeoJSON Polygon coordinate array to a relative SVG path.
+ * @param  {Array} coords The coordinates array to convert
+ * @return {string}
+ */
+oj.MapProviderUtils.polygonToPath = function(coords) {
+  var path = '';
+  // The coordinates of a Polygon are an array of LinearRing coordinate arrays
+  // where the first element in the array represents the exterior ring and any subsequent 
+  // elements represent interior rings (or holes) e.g. 
+  // [ 
+  //   [[x1, y1], ...], (exterior ring)
+  //   [[x2, y2], ...]] (interior ring)
+  // ].
+  coords.forEach(function(linearArrayCoords) {
+    path += oj.MapProviderUtils.linearRingToPath(linearArrayCoords);
+  });
+  return path;
+}
+
+/**
+ * Converts a GeoJSON LinearRing coordinate array to a relative SVG path. 
+ * @param  {Array} coords The coordinates array to convert
+ * @return {string}
+ * @ignore
+ */
+oj.MapProviderUtils.linearRingToPath = function(coords) {
+  // [ [100.0, 0.0], [101.0, 1.0] ]
+  var path, prevX, prevY;
+  var prevCmd = 'M';
+  coords.forEach(function(coord) {
+    var x = coord[0];
+    var y = -coord[1]; // flip for svg because 0,0 is top left instead of bottom left
+    if (prevCmd === 'M') {
+      prevX = x;
+      prevY = y;
+      prevCmd = 'x'; // reset the previous command
+      path = 'M' + x + ' ' + y;
+      return;
+    }
+
+    var relX = x - prevX;
+    var relY = y - prevY;
+    // check to see if we can convert a l to a h/v command
+    if (prevCmd == 'l') {
+      if (prevX == x) { // vertical line
+        prevCmd = 'v';
+        prevY = y;
+        path = path + prevCmd + relY;
+        return;
+      } else if (prevY == y) { // horizontal line
+        prevCmd = 'h';
+        prevX = x;
+        path = path + prevCmd + relX;
+        return;
+      }
+      path = path + ' ' + relX + ' ' + relY;
+    } else {
+      prevCmd = 'l';
+      path = path + 'l' + relX + ' ' + relY;
+    }
+    prevX = x;
+    prevY = y;
+  });
+  return path + 'Z';
+}
+
 
 });

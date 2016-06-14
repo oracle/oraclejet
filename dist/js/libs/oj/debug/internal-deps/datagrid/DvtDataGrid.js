@@ -10182,7 +10182,7 @@ DvtDataGrid.prototype._findRowByKey = function(key)
 {
     var databodyContent, rows, row, i, rowKey;
 
-    if (this.m_databody == null)
+    if (this.m_databody == null || this.m_databody['firstChild'] == null)
     {
         return null;
     }

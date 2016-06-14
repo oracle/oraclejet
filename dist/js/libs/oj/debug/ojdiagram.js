@@ -173,6 +173,41 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  */
 
 /**
+ * The knockout template used for stamping an SVG fragment or other data visualization as a diagram node. 
+ * Only SVG fragments or data visualizations are currently supported.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option.
+ * 
+ * @ojbindingonly
+ * @name template
+ * @memberof! oj.ojDiagram
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. The function can directly modify or append content to this element. </li> 
+ *   <li>id: The id of the hovered diagram object </li> 
+ *   <li>type : The type of the hovered diagram object - "link" or "node" </li> 
+ *   <li>label: The label of the hovered diagram object.</li>
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojDiagram
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */

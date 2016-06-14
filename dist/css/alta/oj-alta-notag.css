@@ -2997,10 +2997,6 @@ html[dir="rtl"] .oj-menu-item > a {
 .oj-navigationlist-item-dividers .oj-navigationlist-divider {
   display: list-item; }
 
-.oj-navigationlist-horizontal .oj-navigationlist-element,
-.oj-navigationlist-icon-only .oj-navigationlist-element {
-  margin: 1px; }
-
 /* Basic styling  for all ul elements in list*/
 .oj-navigationlist-element, .oj-navigationlist-group {
   list-style-type: none;
@@ -3027,6 +3023,9 @@ html[dir="rtl"] .oj-menu-item > a {
   content: "";
   display: inline-block;
   visibility: hidden; }
+
+.oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
+  min-height: 3.142rem; }
 
 /* Styling for expand/collapse icons holder */
 .oj-navigationlist-collapse-icon,
@@ -3444,6 +3443,9 @@ a.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon.oj-popup-tail.oj-pop
   box-sizing: border-box;
   min-height: 2.714rem; }
 
+.oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
+  min-height: 2.714rem; }
+
 .oj-navigationlist-horizontal .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
   color: #045fab; }
 
@@ -3526,6 +3528,9 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
   min-height: 4.285rem; }
 
+.oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
+  min-height: 4.285rem; }
+
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-divider {
   height: 2.714rem; }
 
@@ -3582,21 +3587,11 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 
 html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html:not([dir="rtl"])
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
-  border-left-width: 0;
-  border-radius: 0 0 0 0; }
+  border-left-width: 0; }
 
 html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html[dir="rtl"]
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
-  border-right-width: 0;
-  border-radius: 0 0 0 0; }
-
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html:not([dir="rtl"])
-.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
-  border-radius: 0 0 0 0; }
-
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html[dir="rtl"]
-.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
-  border-radius: 0 0 0 0; }
+  border-right-width: 0; }
 
 .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
@@ -3813,6 +3808,10 @@ html:not([dir="ltr"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
 /* Override  default options*/
 .oj-navigationlist-option-defaults {
   font-family: '{"hierarchyMenuDisplayThresholdLevel":3}'; }
+
+.oj-navigationlist-horizontal .oj-navigationlist-element,
+.oj-navigationlist-icon-only .oj-navigationlist-element {
+  margin: 1px; }
 
 /* Styling for the collapse icon */
 /*
@@ -11977,9 +11976,9 @@ html[dir="rtl"] .oj-hybrid-padding-end, html[dir="rtl"] .oj-hybrid-applayout-hea
 
 .oj-hybrid-applayout-header, .oj-hybrid-applayout-header-no-border,
 .oj-hybrid-applayout-footer,
-.oj-hybrid-applayout-navbar,
 .oj-hybrid-applayout-navbar-fixed-top,
-.oj-hybrid-applayout-navbar-fixed-bottom {
+.oj-hybrid-applayout-navbar-fixed-bottom,
+.oj-hybrid-applayout-navbar {
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto; }
 
@@ -12050,26 +12049,31 @@ html[dir="rtl"] .oj-hybrid-applayout-header .oj-flex-bar-end .oj-button:last-chi
   box-sizing: border-box;
   margin: 0; }
 
-.oj-hybrid-applayout-navbar, .oj-hybrid-applayout-navbar-fixed-top, .oj-hybrid-applayout-navbar-fixed-bottom {
-  -webkit-order: 1;
-  order: 1;
-  border-top: 1px solid #d9dfe3;
+.oj-hybrid-applayout-navbar-fixed-top, .oj-hybrid-applayout-navbar-fixed-bottom, .oj-hybrid-applayout-navbar {
   background-color: #f9f9f9; }
+
+.oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element {
+  margin: 0; }
 
 .oj-hybrid-applayout-navbar-fixed-top {
   -webkit-order: -1;
   order: -1;
-  border-style: none; }
+  border-bottom: 1px solid #d9dfe3; }
 
-.oj-hybrid-applayout-navbar-fixed-bottom {
+.oj-hybrid-applayout-navbar-fixed-bottom, .oj-hybrid-applayout-navbar {
   -webkit-order: 1;
-  order: 1; }
+  order: 1;
+  box-shadow: none;
+  border-top: 1px solid #d9dfe3; }
 
-.oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-horizontal .oj-navigationlist-element {
-  margin: 0; }
-
-/* Apply to page when a header and non fixed nav bar are present
+/* Deprecated. Applications should use oj-hybrid-applayout-navbar-fixed-bottom or 
+      oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
+/* Deprecated. Apply to page when a header and non fixed nav bar are present
        so we can correctly style the header and nav bar borders */
+.oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-selected, .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-selected,
+.oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-hover, .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-hover {
+  border-color: transparent; }
+
 .oj-web-applayout-offcanvas {
   background-color: #313334;
   color: #ffffff; }

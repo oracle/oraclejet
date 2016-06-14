@@ -32,5 +32,12 @@
     .oj-hybrid-applayout-header-icon-back {
       @extend .oj-fwk-icon-caret-start;
     }
+
+    // NAV BAR
+    .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-selected,
+    .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-hover {
+      // override the Alta selection effect with just color so the position of the selected/hovered icon and text don't shift
+      border-color: transparent;
+    }
   }
 }

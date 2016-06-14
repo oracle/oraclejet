@@ -3790,6 +3790,18 @@ dvt.PanZoomComponent.prototype._getLegendMaxWidthValue = function(rawMaxWidthVal
   maxWidth = isNaN(parseFloat(maxWidth)) ? availableWidth : parseFloat(maxWidth);
   return Math.min(maxWidth, availableWidth);
 };
+
+/**
+ * @override
+ */
+dvt.PanZoomComponent.prototype.destroy = function() {
+  if (this._panZoomCanvas) {
+    this._panZoomCanvas.destroy();
+    this._panZoomCanvas = null;
+  }
+  // Always call superclass last for destroy
+  dvt.PanZoomComponent.superclass.destroy.call(this);
+};
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a canvas that supports panning and zooming.
@@ -3843,6 +3855,7 @@ dvt.PanZoomCanvas.prototype.Init = function(context, ww, hh, view)
   this._controlPanel = null;
 
   this._bPanningEnabled = true;
+  this._panDirection = 'auto';
   this._bZoomingEnabled = true;
   this._bZoomToFitEnabled = true;
 
@@ -4020,8 +4033,8 @@ dvt.PanZoomCanvas.prototype.panBy = function(dx, dy, animator)
 
   var oldX = this.getPanX(animator);
   var oldY = this.getPanY(animator);
-  var newX = this.ConstrainPanX(oldX + dx);
-  var newY = this.ConstrainPanY(oldY + dy);
+  var newX = this.getPanDirection() == 'y' ? oldX : this.ConstrainPanX(oldX + dx);
+  var newY = this.getPanDirection() == 'x' ? oldY : this.ConstrainPanY(oldY + dy);
 
   var deltaX = newX - oldX;
   var deltaY = newY - oldY;
@@ -4204,7 +4217,9 @@ dvt.PanZoomCanvas.prototype.zoomTo = function(zz, xx, yy, animator)
   */
 dvt.PanZoomCanvas.prototype.center = function(animator, fitBounds) {
   var panningEnabled = this.isPanningEnabled();
+  var panDirection = this.getPanDirection();
   this.setPanningEnabled(true);
+  this.setPanDirection('auto');
   var bounds = fitBounds;
   if (!bounds)
     bounds = this._contentPane.getDimensions();
@@ -4215,6 +4230,7 @@ dvt.PanZoomCanvas.prototype.center = function(animator, fitBounds) {
   var dy = (this._hh / 2) - cyBounds;
   this.panTo(dx, dy, animator);
   this.setPanningEnabled(panningEnabled);
+  this.setPanDirection(panDirection);
 };
 
 
@@ -4230,8 +4246,11 @@ dvt.PanZoomCanvas.prototype.zoomToFit = function(animator, fitBounds)
   }
 
   var panningEnabled = this.isPanningEnabled();
+  var panDirection = this.getPanDirection();
+
   var zoomingEnabled = this.isZoomingEnabled();
   this.setPanningEnabled(true);
+  this.setPanDirection('auto');
   this.setZoomingEnabled(true);
   try {
     var bounds = fitBounds ? fitBounds : this._contentPane.getDimensions();
@@ -4276,6 +4295,7 @@ dvt.PanZoomCanvas.prototype.zoomToFit = function(animator, fitBounds)
   }
   finally {
     this.setPanningEnabled(panningEnabled);
+    this.setPanDirection(panDirection);
     this.setZoomingEnabled(zoomingEnabled);
   }
 };
@@ -4878,13 +4898,38 @@ dvt.PanZoomCanvas.prototype.setAnimationDuration = function(animationDuration) {
 dvt.PanZoomCanvas.prototype.getAnimationDuration = function() {
   return this._animationDuration;
 };
-
+/**
+ * Sets whether panning is enabled
+ *
+ * @param {boolean} panningEnabled true if panning is enabled
+ */
 dvt.PanZoomCanvas.prototype.setPanningEnabled = function(panningEnabled) {
   this._bPanningEnabled = panningEnabled;
 };
-
+/**
+ * Returns true if panning is enabled
+ *
+ * @return {boolean} true if panning is enabled
+ */
 dvt.PanZoomCanvas.prototype.isPanningEnabled = function() {
   return this._bPanningEnabled;
+};
+
+/**
+ * Sets the direction panning is enabled
+ *
+ * @param {string} panDirection the direction panning is enabled
+ */
+dvt.PanZoomCanvas.prototype.setPanDirection = function(panDirection) {
+  this._panDirection = panDirection;
+};
+/**
+ * Returns direction panning is enabled
+ *
+ * @return {string} direction panning is enabled
+ */
+dvt.PanZoomCanvas.prototype.getPanDirection = function() {
+  return this._panDirection;
 };
 
 dvt.PanZoomCanvas.prototype.setZoomingEnabled = function(zoomingEnabled) {
@@ -4974,6 +5019,24 @@ dvt.PanZoomCanvas.prototype.setInteractionEnabled = function(bEnabled) {
     this._eventManager.removeListeners(this);
   else
     this._eventManager.addListeners(this);
+};
+
+/**
+ * Component destroy function called to prevent memory leaks when component is no longer referenced.
+ */
+dvt.PanZoomCanvas.prototype.destroy = function() {
+  // Animation should stopped before the event manager is destroyed since it might access the event manager
+  if (this._elasticConstraintsAnim) {
+    this._elasticConstraintsAnim.stop(true);
+    this._elasticConstraintsAnim = null;
+  }
+  if (this._eventManager) {
+    this._eventManager.removeListeners(this);
+    this._eventManager.destroy();
+    this._eventManager = null;
+  }
+  // Always call superclass last for destroy
+  dvt.PanZoomCanvas.superclass.destroy.call(this);
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -5196,10 +5259,6 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseWheel = function(event) {
   this._zoomAnimator = animator;
 
   var delta = event.wheelDelta;
-  //reverse the sign of the delta in Firefox so that mouse wheel up zooms in and mouse wheel down zooms out
-  if (dvt.Agent.isPlatformGecko()) {
-    delta = -delta;
-  }
 
   //: divide by the absolute value of the delta so that the zoom only changes by the increment,
   //just like in native Flash
@@ -5275,7 +5334,9 @@ dvt.PanZoomCanvasEventManager.prototype._handleMomentumTimer = function() {
     var currY = this._callbackObj.getPanY();
     //if the difference between the desired and actual pan positions is greater than the delta for this timer
     //iteration, we must be hitting the elastic constraints, so stop iterating
-    if (Math.abs(currX - newX) > Math.abs(dx) || Math.abs(currY - newY) > Math.abs(dy)) {
+    var panDirection = this._pzc.getPanDirection();
+    if ((Math.abs(currX - newX) > Math.abs(dx) && panDirection != 'y')
+        || (Math.abs(currY - newY) > Math.abs(dy) && panDirection != 'x')) {
       bStop = true;
     }
   }

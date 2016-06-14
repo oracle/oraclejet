@@ -6,8 +6,12 @@
 define(['./DvtToolkit', './DvtPanZoomCanvas'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+(function(dvt) {
 /**
- * @export
+ * Dvt Amx Thematic map
+ * @param {dvt.Context} context The rendering context.
+ * @param {string} callback The function that should be called to dispatch component events.
+ * @param {object} callbackObj The optional object instance on which the callback function is defined.
  */
 dvt.AmxThematicMap = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
@@ -33,7 +37,6 @@ dvt.AmxThematicMap.prototype.Init = function(context, callback, callbackObj) {
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.AmxThematicMap}
- * @export
  */
 dvt.AmxThematicMap.newInstance = function(context, callback, callbackObj) {
   return new dvt.AmxThematicMap(context, callback, callbackObj);
@@ -46,7 +49,6 @@ dvt.AmxThematicMap.newInstance = function(context, callback, callbackObj) {
  * @param {object} options The object containing options for this component.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
- * @export
  */
 dvt.AmxThematicMap.prototype.render = function(options, width, height) {
   this.Options = this.Defaults.calcOptions(options);
@@ -194,7 +196,6 @@ dvt.AmxThematicMap.prototype._addLegendData = function(data, legendOptions) {
  * @extends {dvt.Container}
  * @class DVT Toolkit based thematic map component
  * @constructor
- * @export
  */
 dvt.ThematicMap = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
@@ -313,7 +314,7 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
   this.setDisplayedControls(dvt.ControlPanel.CONTROLS_ALL);
 
   this.Defaults = new DvtThematicMapDefaults();
-  this._eventHandler.associate(this, this);
+  this.EventManager.associate(this, this);
   this._bRendered = false;
 };
 
@@ -324,7 +325,6 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.ThematicMap}
- * @export
  */
 dvt.ThematicMap.newInstance = function(context, callback, callbackObj) {
   return new dvt.ThematicMap(context, callback, callbackObj);
@@ -389,13 +389,6 @@ dvt.ThematicMap.prototype.isMarkerZoomBehaviorFixed = function() {
  */
 dvt.ThematicMap.prototype.setMarkerZoomBehavior = function(behavior) {
   this._isMarkerZoomBehaviorFixed = (behavior == 'fixed');
-};
-
-/**
- * @override
- */
-dvt.ThematicMap.prototype.getEventManager = function() {
-  return this._eventHandler;
 };
 
 dvt.ThematicMap.prototype.addPointLayer = function(layer) {
@@ -515,7 +508,7 @@ dvt.ThematicMap.prototype.setAnimationOnDrill = function(attr) {
 
 dvt.ThematicMap.prototype.setDrillMode = function(attr) {
   this._drillMode = attr;
-  this._eventHandler.setDrillMode(attr);
+  this.EventManager.setDrillMode(attr);
 };
 
 dvt.ThematicMap.prototype.setInitialZooming = function(attr) {
@@ -564,12 +557,12 @@ dvt.ThematicMap.prototype.PreRender = function() {
 
     this._showPopupBehaviors = null;
 
-    this._eventHandler.removeListeners(this);
+    this.EventManager.removeListeners(this);
     this._createHandlers();
     this._bListenersRemoved = false;
     // clear data tips from previous event handlers
-    this._eventHandler.hideTooltip();
-    this._eventHandler.associate(this, this);
+    this.EventManager.hideTooltip();
+    this.EventManager.associate(this, this);
   }
 };
 
@@ -581,11 +574,11 @@ dvt.ThematicMap.prototype.PreRender = function() {
 dvt.ThematicMap.prototype._createHandlers = function() {
   // Each Tmap has only one keyboard handler. Each layer has its own event manager
   // because selection modes can differ between layers.
-  this._eventHandler = new DvtThematicMapEventManager(this.getCtx(), this.dispatchEvent, this);
-  this._eventHandler.addListeners(this);
+  this.EventManager = new DvtThematicMapEventManager(this.getCtx(), this.dispatchEvent, this);
+  this.EventManager.addListeners(this);
   if (!dvt.Agent.isTouchDevice()) {
-    this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this._eventHandler);
-    this._eventHandler.setKeyboardHandler(this._keyboardHandler);
+    this._keyboardHandler = new DvtThematicMapKeyboardHandler(this, this.EventManager);
+    this.EventManager.setKeyboardHandler(this._keyboardHandler);
   } else {
     this._keyboardHandler = null;
   }
@@ -720,7 +713,7 @@ dvt.ThematicMap.prototype.Render = function() {
 
   // Animation Support
   // Stop any animation in progress
-  this._stopAnimation();
+  this.StopAnimation(true);
   var bounds = new dvt.Rectangle(0, 0, this.getWidth(), this.getHeight());
   // 3 types of animations can occur where 2 & 3 need to animate out the old data
   // 1) animation on display
@@ -729,7 +722,7 @@ dvt.ThematicMap.prototype.Render = function() {
 
   if (!this._bRendered && !this._oldPzc) { // Case 1
     if (dvt.BlackBoxAnimationHandler.isSupported(this._animationOnDisplay)) {
-      this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), this._animationOnDisplay, this._pzc, bounds, this._animationDuration);
+      this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), this._animationOnDisplay, this._pzc, bounds, this._animationDuration);
     }
   }
   else {
@@ -742,25 +735,25 @@ dvt.ThematicMap.prototype.Render = function() {
     }
 
     if (dvt.BlackBoxAnimationHandler.isSupported(anim)) {
-      this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), anim, this._oldPzc, this._pzc, bounds, this._animationDuration);
-      if (this._animation)
+      this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), anim, this._oldPzc, this._pzc, bounds, this._animationDuration);
+      if (this.Animation)
         this.addChild(this._oldPzc);
     }
   }
 
   // If an animation was created, play it
-  if (this._animation) {
+  if (this.Animation) {
     // Temporarily move control panel to top level container to prevent it from being
     // animated
     if (this._controlPanel)
       this.addChild(this._controlPanel);
-    this._eventHandler.hideTooltip();
+    this.EventManager.hideTooltip();
     // Disable event listeners temporarily
-    this._eventHandler.removeListeners(this);
+    this.EventManager.removeListeners(this);
     this._bListenersRemoved = true;
     // Start the animation
-    this._animation.setOnEnd(this.OnAnimationEnd, this);
-    this._animation.play();
+    this.Animation.setOnEnd(this.OnAnimationEnd, this);
+    this.Animation.play();
   } else {
     this.OnAnimationEnd();
   }
@@ -845,7 +838,7 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
     var navigables = this.getNavigableAreas();
     if (navigables.length == 0)
       navigables = this.getNavigableObjects();
-    this._eventHandler.setInitialFocus(navigables[0]);
+    this.EventManager.setInitialFocus(navigables[0]);
   }
 
   // Do not set min and max zoom before calling zoom to fit on map
@@ -881,12 +874,11 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
  * @param {Object} dataLayerOptions The json object containing data layer information.
  * @param {String} parentLayer The area layer name for this data layer or null
  * @param {boolean} isAreaDataLayer True if we are parsing an area data layer
- * @export
  */
 dvt.ThematicMap.prototype.updateLayer = function(dataLayerOptions, parentLayer, isAreaDataLayer) {
   // Stop any animations before starting layer animations
   this._bRendered = false;
-  this._stopAnimation();
+  this.StopAnimation(true);
 
   // Parse new data layer
   var parser = new DvtThematicMapJsonParser(this);
@@ -899,7 +891,7 @@ dvt.ThematicMap.prototype.updateLayer = function(dataLayerOptions, parentLayer, 
     var navigables = this.getNavigableAreas();
     if (navigables.length == 0)
       navigables = this.getNavigableObjects();
-    this._eventHandler.setInitialFocus(navigables[0]);
+    this.EventManager.setInitialFocus(navigables[0]);
   }
 
   // Set component keyboard listener last for mashup case
@@ -909,7 +901,18 @@ dvt.ThematicMap.prototype.updateLayer = function(dataLayerOptions, parentLayer, 
   this._updateZoomLimits();
 };
 
+/**
+ * Fires the ready event if animation has been completed
+ * @private
+ */
+dvt.ThematicMap.prototype._renderCompleted = function() {
+  if (!this.AnimationStopped)
+    this.RenderComplete();
 
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
+};
 /**
  * Determines and sets the min and max zoom for the component.
  * @private
@@ -932,6 +935,7 @@ dvt.ThematicMap.prototype.OnUpdateLayerEnd = function() {
 
   if (this._initialZooming)
     this._zoomData();
+  this._renderCompleted();
 };
 
 dvt.ThematicMap.prototype.getMapName = function() {
@@ -1208,7 +1212,7 @@ dvt.ThematicMap.prototype._processInitialDrilled = function() {
 
 dvt.ThematicMap.prototype.resetMap = function() {
   // stop previous animation
-  this._stopAnimation();
+  this.StopAnimation(true);
 
   //Clear selection and drilled starting from the lowest layer
   var removeObjs = [];
@@ -1260,7 +1264,7 @@ dvt.ThematicMap.prototype._zoomData = function() {
   }
 
   var bounds = areaBounds.getUnion(pointBounds);
-  this._stopAnimation();
+  this.StopAnimation(true);
 
   var maxZoom;
   if (!this._pzc.isZoomingEnabled()) {
@@ -1422,7 +1426,7 @@ dvt.ThematicMap.prototype._getCenteredObjsMatrix = function() {
  */
 dvt.ThematicMap.prototype.drillDown = function() {
   // stop previous animation
-  this._stopAnimation();
+  this.StopAnimation(true);
 
   var childLayer = this.getDrillChildLayer(this._clickedLayerName);
   var parentLayer = this.getLayer(this._clickedLayerName);
@@ -1476,7 +1480,7 @@ dvt.ThematicMap.prototype.drillDown = function() {
 
 dvt.ThematicMap.prototype.drillUp = function() {
   // stop previous animation
-  this._stopAnimation();
+  this.StopAnimation(true);
 
   var childLayer = this.getLayer(this._clickedLayerName);
   var parentLayer = this.getDrillParentLayer(this._clickedLayerName);
@@ -1510,15 +1514,6 @@ dvt.ThematicMap.prototype.drillUp = function() {
   this._updateDrillButton(this._clickedLayerName);
 };
 
-
-dvt.ThematicMap.prototype._stopAnimation = function() {
-  if (this._animation) {
-    this._animation.stop(true);
-    this._animation = null;
-  }
-};
-
-
 /**
  * Handles drilling animations
  * @param {Array} oldObjs The array of displayables that will be removed once drilling is complete
@@ -1542,17 +1537,17 @@ dvt.ThematicMap.prototype._handleDrillAnimations = function(oldObjs, newObjs, is
   }
 
   //Stop previous animation
-  this._stopAnimation();
+  this.StopAnimation(true);
   if (dvt.Agent.isEnvironmentBrowser() && (this._animationOnDrill == 'alphaFade' || this._animationOnDrill == 'auto'))
-    this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), 'alphaFade', oldObjs, newObjs, null, 0.5);
+    this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), 'alphaFade', oldObjs, newObjs, null, 0.5);
   // If an animation was created, play it
-  if (this._animation) {
-    this._eventHandler.hideTooltip();
+  if (this.Animation) {
+    this.EventManager.hideTooltip();
     // Disable event listeners temporarily
-    this._eventHandler.removeListeners(this);
+    this.EventManager.removeListeners(this);
     // Start the animation
-    this._animation.setOnEnd(this.OnDrillAnimationEnd, this);
-    this._animation.play();
+    this.Animation.setOnEnd(this.OnDrillAnimationEnd, this);
+    this.Animation.play();
   } else {
     this._cleanUpDrilledObjects();
   }
@@ -1601,7 +1596,7 @@ dvt.ThematicMap.prototype._handleSelectionEvent = function(event) {
     event['clientId'] = this._clickedDataLayerId;
 
     // Save fit to region object
-    if (this._clickedObject && !(this._clickedObject instanceof dvt.Marker))
+    if (this._clickedObject && !(this._clickedObject instanceof dvt.SimpleMarker || this._clickedObject instanceof dvt.ImageMarker))
       this._zoomToFitObject = this._clickedObject;
   } else {
     this._updateDrillButton(null);
@@ -1657,16 +1652,15 @@ dvt.ThematicMap.prototype._handleDrillEvent = function(event) {
 };
 
 /**
- * Releases all component resources to prevent memory leaks.
  * @override
- * @export
  */
 dvt.ThematicMap.prototype.destroy = function() {
+  var layers = this.getAllLayers();
+  for (var i = 0; i < layers.length; i++)
+    layers[i].destroy();
+
+  // Always call superclass last for destroy
   dvt.ThematicMap.superclass.destroy.call(this);
-  if (this._eventHandler) {
-    this._eventHandler.destroy();
-    this._eventHandler = null;
-  }
 };
 
 
@@ -1685,7 +1679,7 @@ dvt.ThematicMap.prototype.OnAnimationEnd = function() {
   }
 
   // Remove the animation reference
-  this._animation = null;
+  this._renderCompleted();
 
   // After the initial render animations we should perform any additional zooms
   if (this._initialZooming)
@@ -1697,7 +1691,7 @@ dvt.ThematicMap.prototype.OnAnimationEnd = function() {
 
   // Restore event listeners
   if (this._bListenersRemoved) {
-    this._eventHandler.addListeners(this);
+    this.EventManager.addListeners(this);
     this._bListenersRemoved = false;
   }
 };
@@ -1705,9 +1699,9 @@ dvt.ThematicMap.prototype.OnAnimationEnd = function() {
 dvt.ThematicMap.prototype.OnDrillAnimationEnd = function() {
   this._cleanUpDrilledObjects();
   // Remove the animation reference
-  this._animation = null;
+  this.Animation = null;
   // Restore event listeners
-  this._eventHandler.addListeners(this);
+  this.EventManager.addListeners(this);
 };
 
 
@@ -1774,7 +1768,6 @@ dvt.ThematicMap.prototype.setShowPopupBehaviors = function(spbs) {
 /**
  * Returns the automation object for this thematic map
  * @return {dvt.Automation} The automation object
- * @export
  */
 dvt.ThematicMap.prototype.getAutomation = function() {
   if (!this.Automation)
@@ -1803,7 +1796,6 @@ dvt.ThematicMap.prototype.processLegendEvent = function(event, source) {
 
 /**
  * @override
- * @export
  */
 dvt.ThematicMap.prototype.highlight = function(categories) {
   // Update the options
@@ -1817,7 +1809,6 @@ dvt.ThematicMap.prototype.highlight = function(categories) {
  * Hides or shows default hover effect on the specified data item
  * @param {string} id The data item id
  * @param {boolean} hovered True to show hover effect
- * @export
  */
 dvt.ThematicMap.prototype.processDefaultHoverEffect = function(id, hovered) {
   var dataItem = this._getDataItemById(id);
@@ -1829,7 +1820,6 @@ dvt.ThematicMap.prototype.processDefaultHoverEffect = function(id, hovered) {
  * Hides or shows default selection effect on the specified data item
  * @param {string} id The data item id
  * @param {boolean} selected True to show selection effect
- * @export
  */
 dvt.ThematicMap.prototype.processDefaultSelectionEffect = function(id, selected) {
   var dataItem = this._getDataItemById(id);
@@ -1841,7 +1831,6 @@ dvt.ThematicMap.prototype.processDefaultSelectionEffect = function(id, selected)
  * Hides or shows default keyboard focus effect on the specified data item
  * @param {string} id The data item id
  * @param {boolean} focused True to show keyboard focus effect
- * @export
  */
 dvt.ThematicMap.prototype.processDefaultFocusEffect = function(id, focused) {
   var dataItem = this._getDataItemById(id);
@@ -2306,7 +2295,6 @@ DvtThematicMapDropTarget.prototype.getDropSite = function(mouseX, mouseY) {
  * @param {dvt.ThematicMap} dvtComponent
  * @implements {dvt.Automation}
  * @constructor
- * @export
  */
 var DvtThematicMapAutomation = function(dvtComponent) {
   this._tmap = dvtComponent;
@@ -2368,7 +2356,6 @@ DvtThematicMapAutomation.prototype.GetSubIdForDomElement = function(displayable)
  * <li>controlPanel#reset</li>
  * </ul>
  * @override
- * @export
  */
 DvtThematicMapAutomation.prototype.getDomElementForSubId = function(subId) {
   if (subId == dvt.Automation.TOOLTIP_SUBID)
@@ -2409,7 +2396,6 @@ DvtThematicMapAutomation.prototype.getDomElementForSubId = function(subId) {
  * @param {String} dataObjType The object type. Valid values are area or marker
  * @param {Number} index The index of the area or marker
  * @return {Object} An object containing data for the marker or area
- * @export
  */
 DvtThematicMapAutomation.prototype.getData = function(dataLayerId, dataObjType, index) {
   var dataObj = this._getDataObject(dataLayerId, dataObjType, index);
@@ -3008,7 +2994,27 @@ DvtBaseMapManager.getAreaLabelInfo = function(baseMapName, layerName) {
     return null;
 };
 
-DvtBaseMapManager.getAreaNames = function(baseMapName, layerName) {
+/**
+ * Returns the array of area ids for the given base map and layer
+ * @param {string} baseMapName The name of the basemap
+ * @param {string} layerName The name of the layer
+ * @return {Array}
+ */
+DvtBaseMapManager.getAreaIds = function(baseMapName, layerName) {
+  var areanames = [];
+  var paths = DvtBaseMapManager.getAreaPaths(baseMapName, layerName);
+  for (var area in paths)
+    areanames.push(area);
+  return areanames;
+};
+
+/**
+ * Returns a map of area id to long and short area labels for a given base map and layer
+ * @param {string} baseMapName The name of the basemap
+ * @param {string} layerName The name of the layer
+ * @return {Object}
+ */
+DvtBaseMapManager.getAreaLabels = function(baseMapName, layerName) {
   DvtBaseMapManager._processUnprocessedMaps();
   var layer = DvtBaseMapManager._GLOBAL_MAPS[baseMapName][layerName];
   if (layer)
@@ -3137,7 +3143,6 @@ DvtBaseMapManager.getMapLayerName = function(baseMapName, index) {
 
 
 /**
- * @export
  * called at the end of the base map JS metadata files to register new base map layer metadata
  */
 DvtBaseMapManager.registerBaseMapLayer = function(baseMapName, layerName, labelMetadata, pathMetadata, parentsRegionMetadata, labelInfoMetadata, index, dim) {
@@ -3171,7 +3176,10 @@ DvtBaseMapManager.registerBaseMapLayer = function(baseMapName, layerName, labelM
 
 
 /**
- * @export
+ * Register resource bundle
+ * @param {string} baseMapName base map name
+ * @param {string} layerName layer name
+ * @param {string} labelMetadata label info
  */
 DvtBaseMapManager.registerResourceBundle = function(baseMapName, layerName, labelMetadata) {
   var basemapMetadata = DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
@@ -3195,7 +3203,10 @@ DvtBaseMapManager.registerResourceBundle = function(baseMapName, layerName, labe
 
 
 /**
- * @export
+ * Update resource bundle
+ * @param {string} baseMapName base map name
+ * @param {string} layerName layer name
+ * @param {string} labelMetadata label info
  */
 DvtBaseMapManager.updateResourceBundle = function(baseMapName, layerName, labelMetadata) {
   var basemapMetadata = DvtBaseMapManager._GLOBAL_MAPS[baseMapName];
@@ -3301,7 +3312,6 @@ DvtBaseMapManager.simplifyAreaPaths = function(paths, basemapW, basemapH, viewpo
  * @param {string} baseMapName The name of the basemap
  * @param {string} layerName The name of the layer or 'cities' for the point data layer
  * @return {object}
- * @export
  */
 DvtBaseMapManager.getLayerIds = function(baseMapName, layerName) {
   DvtBaseMapManager._processUnprocessedMaps();
@@ -3311,6 +3321,12 @@ DvtBaseMapManager.getLayerIds = function(baseMapName, layerName) {
     var ids = layer[DvtBaseMapManager.TYPE_LABELS];
     for (var id in ids)
       map[id] = ids[id][1];
+    if (layerName !== 'cities' && !ids) {
+      // Handle MapProvider case where no labels are provided, but we still want to return the layer area ids
+      var areas = DvtBaseMapManager.getAreaIds(baseMapName, layerName);
+      for (var i = 0; i < areas.length; i++)
+        map[areas[i]] = null;
+    }
   }
   return map;
 };
@@ -3366,25 +3382,24 @@ dvt.MapDrillEvent.prototype.getDrillType = function() {
 };
 /**
  * Map action event.
- * @param {string=} clientId The client id associated with this action event.
+ * @param {string=} item The client id of the item that triggered this action event.
  * @param {string=} rowKey The rowKey for the object associated with this event.
  * @param {string=} action The action name.
  * @class
  * @constructor
- * @export
  */
-dvt.MapActionEvent = function(clientId, rowKey, action) {
+dvt.MapActionEvent = function(item, rowKey, action) {
   this.Init(dvt.MapActionEvent.TYPE);
-  this._clientId = clientId;
-  this._rowKey = rowKey;
-  this._action = action;
+  this['item'] = item;
+  this['rowKey'] = rowKey;
+  this['action'] = action;
 };
 
 dvt.Obj.createSubclass(dvt.MapActionEvent, dvt.BaseComponentEvent);
 
 
 /**
- * @export
+ * @const
  */
 dvt.MapActionEvent.TYPE = 'action';
 
@@ -3392,31 +3407,29 @@ dvt.MapActionEvent.TYPE = 'action';
 /**
  * Returns the clientId associated with this event.
  * @return {string} clientId.
- * @export
  */
 dvt.MapActionEvent.prototype.getClientId = function() {
-  return this._clientId;
+  return this['item'];
 };
 
 
 /**
  * Returns the rowKey of the object associated with this event.
  * @return {string} rowKey.
- * @export
  */
 dvt.MapActionEvent.prototype.getRowKey = function() {
-  return this._rowKey;
+  return this['rowKey'];
 };
 
 
 /**
  * Returns the action name.
  * @return {string} action.
- * @export
  */
 dvt.MapActionEvent.prototype.getAction = function() {
-  return this._action;
+  return this['action'];
 };
+
 /**
  * Base map layer metadata
  * @extends {dvt.Obj}
@@ -4938,6 +4951,15 @@ DvtMapLayer.prototype.OnAnimationEnd = function(dataLayer) {
   // Restore event listeners
   this.EventHandler.addListeners(this._callbackObj);
 };
+
+/**
+ * Releases all component resources to prevent memory leaks.
+ */
+DvtMapLayer.prototype.destroy = function() {
+  var dataLayers = this.getDataLayers();
+  for (var layer in dataLayers)
+    dataLayers[layer].destroy();
+};
 /**
  * Thematic Map area layer
  * @param {dvt.ThematicMap} tmap The thematic map this map layer belongs to
@@ -4973,7 +4995,7 @@ DvtMapAreaLayer.prototype.Init = function(tmap, layerName, labelDisplay, labelTy
   this._areaLabels = new Object();
   this.Areas = new Object();
   this.AreaShapes = {};
-  this.AreaNames = null;
+  this.AreaLabels = null;
   this._labelInfo = null;
   this._disclosed = [];
   this._renderArea = {}; // keep track of whether or not to render an area
@@ -5014,22 +5036,32 @@ DvtMapAreaLayer.prototype.getLabelType = function() {
 
 DvtMapAreaLayer.prototype.setAreaShapes = function(shapes) {
   this.AreaShapes = shapes;
+  for (var area in shapes) {
+    this.setAreaRendered(area, true);
+  }
 };
 
-DvtMapAreaLayer.prototype.setAreaNames = function(values) {
-  this.AreaNames = values;
-  for (var area in this.AreaNames) {
-    this.setAreaRendered(area, true);
+/**
+ * Sets the area labels for this map layer
+ * @param {Object} labels The short and long area labels for this map layer
+ */
+DvtMapAreaLayer.prototype.setAreaLabels = function(labels) {
+  this.AreaLabels = labels;
+  for (var area in labels) {
     this.setLabelRendered(area, true);
   }
 };
 
 DvtMapAreaLayer.prototype.getShortAreaName = function(area) {
-  return this.AreaNames[area][DvtMapAreaLayer._SHORT_NAME];
+  if (this.AreaLabels && this.AreaLabels[area])
+    return this.AreaLabels[area][DvtMapAreaLayer._SHORT_NAME];
+  return null;
 };
 
 DvtMapAreaLayer.prototype.getLongAreaName = function(area) {
-  return this.AreaNames[area][DvtMapAreaLayer._LONG_NAME];
+  if (this.AreaLabels && this.AreaLabels[area])
+    return this.AreaLabels[area][DvtMapAreaLayer._LONG_NAME];
+  return null;
 };
 
 DvtMapAreaLayer.prototype.setAreaLabelInfo = function(values) {
@@ -5132,8 +5164,8 @@ DvtMapAreaLayer.prototype.getLayerDim = function() {
         this._layerDim = DvtBaseMapManager.getBaseMapDim(this._tmap.getMapName(), this.LayerName);
       if (!this._layerDim) {
         // all layers for a basemap should have the same dimensions
-        // need to combine area, data area and selected data area dimensions bc they are in separate containers
-        var dim = this.AreaContainer.getDimensions().getUnion(this._tmap.getDataAreaContainer().getDimensions());
+        // need to combine area and data layer dimensions bc they are in separate containers
+        var dim = this.AreaContainer.getDimensions().getUnion(this._tmap.getDataAreaContainer().getDimensions()).getUnion(this._tmap.getDataPointContainer().getDimensions());
         // if we don't have cached dims and no objects have been rendered yet, dim will have 0 dimensions
         if (dim.w > 0 && dim.h > 0)
           this._layerDim = dim;
@@ -5150,7 +5182,7 @@ DvtMapAreaLayer.prototype._createAreaAndLabel = function(area, bForceUpdateArea)
       this.updateAreaShape(area);
     if (!this.Areas[area]) {
       var context = this._tmap.getCtx();
-      var areaName = (this.AreaNames && this.AreaNames[area]) ? this.AreaNames[area][DvtMapAreaLayer._LONG_NAME] : null;
+      var areaName = (this.AreaLabels && this.AreaLabels[area]) ? this.AreaLabels[area][DvtMapAreaLayer._LONG_NAME] : null;
       var mapArea = new DvtMapArea(context, this._tmap, areaShape, area, areaName, this._tmap.supportsVectorEffects());
       this.Areas[area] = mapArea;
       this.EventHandler.associate(areaShape, mapArea);
@@ -5160,9 +5192,9 @@ DvtMapAreaLayer.prototype._createAreaAndLabel = function(area, bForceUpdateArea)
     if (this._renderLabel[area]) {
       var label = this._areaLabels[area];
       if (!label) {
-        if (this._labelDisplay != 'off' && this.AreaNames) {
-          var labelText = (this._labelType == 'short') ? this.AreaNames[area][DvtMapAreaLayer._SHORT_NAME] :
-                                                         this.AreaNames[area][DvtMapAreaLayer._LONG_NAME];
+        if (this._labelDisplay != 'off' && this.AreaLabels) {
+          var labelText = (this._labelType == 'short') ? this.AreaLabels[area][DvtMapAreaLayer._SHORT_NAME] :
+                                                         this.AreaLabels[area][DvtMapAreaLayer._LONG_NAME];
           if (labelText) {
             if (this._labelInfo && this._labelInfo[area])
               label = new DvtMapLabel(this._tmap.getCtx(), labelText, this._labelInfo[area], this._labelDisplay,
@@ -5247,7 +5279,7 @@ DvtMapAreaLayer.prototype.updateAreaShape = function(area) {
  */
 DvtMapAreaLayer.prototype.resetRenderedAreas = function() {
   // reset rendered areas on data layer update
-  for (var area in this.AreaNames) {
+  for (var area in this.AreaLabels) {
     this.setAreaRendered(area, true);
     this.setLabelRendered(area, true);
   }
@@ -5536,7 +5568,7 @@ DvtMapCustomAreaLayer.prototype.setAreaLayerImage = function(images) {
 
   }
   if (shape) {
-    this.setAreaNames({'image': [null, null]});
+    this.setAreaLabels({'image': [null, null]});
     this.setAreaShapes({'image': shape});
   }
 };
@@ -6163,7 +6195,7 @@ DvtMapDataLayer.prototype.__getDragFeedback = function() {
 /**
  * Given a list of area row keys, looks up and returns a list of their area ids
  * @param {Array} Row keys of areas to retrieve area ids for
- * @preturn {Array} Area ids
+ * @return {Array} Area ids
  */
 DvtMapDataLayer.prototype.getSelectedAreas = function(selectedObjs) {
   var selectedAreas = [];
@@ -6177,6 +6209,24 @@ DvtMapDataLayer.prototype.getSelectedAreas = function(selectedObjs) {
     }
   }
   return selectedAreas;
+};
+
+/**
+ * Releases all component resources to prevent memory leaks.
+ */
+DvtMapDataLayer.prototype.destroy = function() {
+  var dataObjs = this.getAllObjects();
+  for (var i = 0; i < dataObjs.length; i++) {
+    var disp = dataObjs[i].getDisplayable();
+    if (disp instanceof DvtCustomDataItem) {
+      var rootObj = disp.getRootElement();
+      if (rootObj.destroy)
+        rootObj.destroy();
+    }
+  }
+  // Null out reference to event handler which is just a reference to DvtThematicMap's which will
+  // be cleanedup in its destroy
+  this._eventHandler = null;
 };
 /**
  * @param {dvt.ThematicMap} tmap The owning component
@@ -6678,6 +6728,13 @@ DvtThematicMapJsonParser._MIN_MARKER_SIZE = 6;
 DvtThematicMapJsonParser._MAX_MARKER_SIZE_RATIO = 0.5;
 
 /**
+ * Hard coded pan zoom canvas padding snce we don't render pzc until render call, but we also don't adjust the
+ * padding for TMap so we can hard code value for marker bubble sizing algorithm.
+ * @private
+ */
+DvtThematicMapJsonParser._PZC_PADDING = 20;
+
+/**
  * Initializes this thematic map JSON parser
  * @param {dvt.ThematicMap} tmap The thematic map to update
  */
@@ -6685,9 +6742,7 @@ DvtThematicMapJsonParser.prototype.Init = function(tmap) {
   this._tmap = tmap;
   this._isCustomBasemap = false;
   this._areaLayerStyle = null;
-  this._isMobile = dvt.Agent.isTouchDevice();
   this._customAreaLayerImages = {};
-  this._customMarkerDefs = {};
 };
 
 /**
@@ -6787,9 +6842,8 @@ DvtThematicMapJsonParser.prototype._parseAreaLayers = function(areaLayers) {
       mapLayer.setAreaLayerImage(this._customAreaLayerImages[layer]);
     } else {
       mapLayer = new DvtMapAreaLayer(this._tmap, layer, areaLayer['labelDisplay'], areaLayer['labelType'], this._tmap.getEventManager());
-      var areaNames = DvtBaseMapManager.getAreaNames(basemap, layer);
-      mapLayer.setAreaShapes(this._createPathShapes(areaNames));
-      mapLayer.setAreaNames(areaNames);
+      mapLayer.setAreaShapes(this._createPathShapes(DvtBaseMapManager.getAreaIds(basemap, layer)));
+      mapLayer.setAreaLabels(DvtBaseMapManager.getAreaLabels(basemap, layer));
       mapLayer.setAreaLabelInfo(DvtBaseMapManager.getAreaLabelInfo(basemap, layer));
       mapLayer.setAreaChildren(DvtBaseMapManager.getChildrenForLayerAreas(this._tmap.getMapName(), layer));
     }
@@ -6823,17 +6877,6 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
 
   for (var i = 0; i < dataLayers.length; i++) {
     var dataLayerOptions = this._tmap.Defaults.calcDataLayerOptions(dataLayers[i]);
-    // custom markers
-    if (dataLayerOptions['markerDefs']) {
-      var markerDefs = dataLayerOptions['markerDefs'];
-      for (var markerDef in markerDefs) {
-        if (!this._customMarkerDefs[markerDef]) {
-          var xmlParser = new dvt.XmlParser(this._tmap.getCtx());
-          var xmlNode = xmlParser.parse(markerDefs[markerDef]);
-          this._customMarkerDefs[markerDef] = dvt.MarkerUtils.createMarkerDef(this._tmap.getCtx(), xmlNode);
-        }
-      }
-    }
 
     // for data layer updates we send updated legend info with data layer
     if (dataLayerOptions['legend'])
@@ -6905,7 +6948,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
     var renderer = dataLayerOptions['renderer'];
     var markers = dataLayerOptions['markers'];
     if (markers && !renderer) {
-      DvtThematicMapJsonParser.calcBubbleSizes(this._tmap, markers);
+      DvtThematicMapJsonParser._calcBubbleSizes(this._tmap, markers);
       for (var j = 0; j < markers.length; j++) {
         if (hiddenCategories && dvt.ArrayUtils.hasAnyItem(hiddenCategories, markers[j]['categories'])) {
           // placeholder null object for automation
@@ -7101,7 +7144,8 @@ DvtThematicMapJsonParser.prototype._createPathShapes = function(areaNames) {
   // create empty dvt.Path objects as placeholders
   var shapes = {};
   var context = this._tmap.getCtx();
-  for (var area in areaNames) {
+  for (var i = 0; i < areaNames.length; i++) {
+    var area = areaNames[i];
     shapes[area] = new dvt.Path(context);
 
     // Style area layer border and background colors
@@ -7172,7 +7216,17 @@ DvtThematicMapJsonParser.prototype._createArea = function(layer, dataLayer, data
  */
 DvtThematicMapJsonParser.prototype._createMarker = function(layer, dataLayer, data, isParentAreaDataLayer) {
   var size = data['_size'];
-  var center = DvtThematicMapJsonParser.getCenter(dataLayer, data);
+
+  var center;
+  // MapProvider coordinates are already projected, but need to flip the y coordinate for svg
+  // because 0,0 is top left instead of bottom left
+
+  var mapProvider = this._tmap.getOptions()['mapProvider'];
+  // Ensure mapProvider object is declared and not empty
+  if (mapProvider && mapProvider['geo'] != null)
+    center = new dvt.Point(data['x'], -data['y']);
+  else
+    center = DvtThematicMapJsonParser.getCenter(dataLayer, data);
   // Skip over data where no marker center was determined or values resulted in a calculated size of 0 pixels
   if (!center || size === 0)
     return null;
@@ -7371,7 +7425,7 @@ DvtThematicMapJsonParser.prototype._createLabel = function(layer, dataLayer, dat
 DvtThematicMapJsonParser.prototype._styleDisplayable = function(style, displayable) {
   var pattern = style['pattern'];
   var backgroundColor = style['color'];
-  var gradient = (this._isMobile || this._tmap.getSkinName() == dvt.CSSStyle.SKIN_ALTA) ? 'none' : style['visualEffects'];
+  var gradient = (dvt.Agent.isTouchDevice() || this._tmap.getSkinName() == dvt.CSSStyle.SKIN_ALTA) ? 'none' : style['visualEffects'];
 
   // handle custom svg where color is set by user
   if (displayable instanceof dvt.SimpleMarker) {
@@ -7456,8 +7510,9 @@ DvtThematicMapJsonParser.prototype._getShowPopupBehaviors = function(popups) {
  * Calculates the bubble sizes for the thematic map.
  * @param {dvt.ThematicMap} tmap The owning component
  * @param {Array} markers The array of markers to caclulate sizes for
+ * @private
  */
-DvtThematicMapJsonParser.calcBubbleSizes = function(tmap, markers) {
+DvtThematicMapJsonParser._calcBubbleSizes = function(tmap, markers) {
   // Run thru markers and calc min/max values, skipping markers that don't have value option
   var maxValue = -Infinity;
   var minValue = Infinity;
@@ -7476,13 +7531,23 @@ DvtThematicMapJsonParser.calcBubbleSizes = function(tmap, markers) {
     return;
 
   // Min/max allowed marker sizes
-  var minSize = DvtThematicMapJsonParser._MIN_MARKER_SIZE;
-  var maxSize = DvtThematicMapJsonParser._MAX_MARKER_SIZE_RATIO * Math.min(tmap.getWidth(), tmap.getHeight());
+  var zoomMargins = 2 * DvtThematicMapJsonParser._PZC_PADDING;
+  var mapWidth = tmap.getWidth() - zoomMargins;
+  var mapHeight = tmap.getHeight() - zoomMargins;
+  // Adjust maxSize by limiting basemap aspect ratio so that 1.3 < w/h < 1.7. Temporary heuristical approach
+  // to fixing map aspct ratio issue which we can't determine until render time.
+  var ratio = mapWidth / mapHeight;
+  if (ratio < 1.3)
+    mapHeight = mapWidth * 2 / 3;
+  else if (ratio > 1.7)
+    mapWidth = mapHeight * 1.5;
+  var maxSize = DvtThematicMapJsonParser._MAX_MARKER_SIZE_RATIO * Math.min(mapWidth, mapHeight);
+
   // Loop through the data and update the sizes
   for (var i = 0; i < markers.length; i++) {
     var value = markers[i][valKey];
     // Treat markers with missing values the same as we treat negative/zero valued markers and set size to 0 so we skip rendering them
-    markers[i]['_size'] = (value == null || value <= 0) ? 0 : dvt.LayoutUtils.getBubbleSize(value, minValue, maxValue, minSize, maxSize);
+    markers[i]['_size'] = (value == null || value <= 0) ? 0 : dvt.LayoutUtils.getBubbleSize(value, minValue, maxValue, DvtThematicMapJsonParser._MIN_MARKER_SIZE, maxSize);
   }
 };
 var DvtThematicMapProjections = {
@@ -8218,6 +8283,25 @@ DvtThematicMapControlPanel.prototype.getActionDisplayable = function(type, stamp
   }
   return displayable;
 };
+dvt.exportProperty(dvt, 'AmxThematicMap', dvt.AmxThematicMap);
+dvt.exportProperty(dvt.AmxThematicMap, 'newInstance', dvt.AmxThematicMap.newInstance);
+dvt.exportProperty(dvt.AmxThematicMap.prototype, 'render', dvt.AmxThematicMap.prototype.render);
+
+dvt.exportProperty(DvtBaseMapManager, 'getLayerIds', DvtBaseMapManager.getLayerIds);
+
+dvt.exportProperty(dvt, 'ThematicMap', dvt.ThematicMap);
+dvt.exportProperty(dvt.ThematicMap, 'newInstance', dvt.ThematicMap.newInstance);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'updateLayer', dvt.ThematicMap.prototype.updateLayer);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'destroy', dvt.ThematicMap.prototype.destroy);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'getAutomation', dvt.ThematicMap.prototype.getAutomation);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'highlight', dvt.ThematicMap.prototype.highlight);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultHoverEffect', dvt.ThematicMap.prototype.processDefaultHoverEffect);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultSelectionEffect', dvt.ThematicMap.prototype.processDefaultSelectionEffect);
+dvt.exportProperty(dvt.ThematicMap.prototype, 'processDefaultFocusEffect', dvt.ThematicMap.prototype.processDefaultFocusEffect);
+
+dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getDomElementForSubId', DvtThematicMapAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtThematicMapAutomation.prototype, 'getData', DvtThematicMapAutomation.prototype.getData);
+})(dvt);
 
 // To avoid changing the basemaps, which each call the basemap manager, we will
 // put the basemap manager onto the returned object. We'll only do this if it's

@@ -1422,7 +1422,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         
         if (tableBodyRow != null)
         {
-          return tableBodyRow.data('rowData');
+          var row = JSON.parse(tableBodyRow.data('rowData'));
+          return {'key': row['key'],
+                  'data': row['data'],
+                  'index': rowIndex};
         }
         
         return null;
@@ -5307,9 +5310,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
 
         this._hideNoDataMessage();
-        
-        // store the row data in row DOM
-        tableBodyRow.data('rowData', row);
+
         var rowContext = oj.TableRendererUtils.getRendererContextObject(this, row, tableBodyRow[0]);
         var context = {'rowContext': rowContext,
                        'row': $.extend({}, row[this._CONST_DATA])};
@@ -8949,6 +8950,7 @@ oj.TableDomUtils.prototype.setTableBodyCellAttributes = function(rowIdx, rowKey,
 oj.TableDomUtils.prototype.setTableBodyRowAttributes = function(row, tableBodyRow)
 {
   tableBodyRow.data('rowKey', row['key']);
+  tableBodyRow.data('rowData', JSON.stringify(row));
 };
 
 /**

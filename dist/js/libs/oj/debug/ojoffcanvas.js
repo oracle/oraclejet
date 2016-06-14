@@ -192,7 +192,7 @@ oj.OffcanvasUtils.SURROGATE_KEY = "_surrogate";
 /**
  * @private
  */
-oj.OffcanvasUtils.SURROGATE_ATTR = "data-oj-surrogate-id";
+oj.OffcanvasUtils.SURROGATE_ATTR = "data-oj-offcanvas-surrogate-id";
 
 /**
  * @private
@@ -224,6 +224,11 @@ oj.OffcanvasUtils.GLASSPANE_DIM_SELECTOR = "oj-offcanvas-glasspane-dim";
  */
 oj.OffcanvasUtils.WRAPPER_GENERATED_SELECTOR = "oj-offcanvas-generated";
 
+/**
+ * @private
+ */
+oj.OffcanvasUtils.VETO_BEFOREOPEN_MSG = "ojbeforeopen veto";
+oj.OffcanvasUtils.VETO_BEFORECLOSE_MSG = "ojbeforeclose veto";
 
 oj.OffcanvasUtils._shiftSelector =
 {
@@ -377,30 +382,48 @@ oj.OffcanvasUtils._toggleClass = function(offcanvas, wrapper, isOpen)
   //toggle offcanvas and inner wrapper classes
   if (isOpen)
   {
-    var oTabIndex = drawer.attr("tabIndex");
-    if (oTabIndex !== undefined)
-    {
-      //save the original tabIndex
-      offcanvas["tabIndex"] = oTabIndex;
-    }
-
-    // set tabIndex so the div is focusable
-    drawer.addClass(drawerClass)
-          .attr("tabIndex", "-1");
+    drawer.addClass(drawerClass);
     wrapper.addClass(wrapperClass);
   }
   else
   {
-    //restore the original tabIndex
-    var oTabIndex = offcanvas["tabIndex"];
+    //restore the original tabindex
+    var oTabIndex = offcanvas["tabindex"];
     if (oTabIndex === undefined)
-      drawer.removeAttr("tabIndex");
+      drawer.removeAttr("tabindex");
     else
-      drawer.attr("tabIndex", oTabIndex);
+      drawer.attr("tabindex", oTabIndex);
 
     drawer.removeClass(drawerClass);
     wrapper.removeClass(wrapperClass);
   }
+
+};
+
+//when an offcanvas is open, focus is automatically put on the 1st focusable node inside the offcanvas. 
+//If nothing is focusable in the offcanvas then the focus is defaulted to the offcanvas itself.
+oj.OffcanvasUtils._setFocus = function(offcanvas)
+{
+  var drawer = oj.OffcanvasUtils._getDrawer(offcanvas),
+      nodes = drawer.find(":focusable"),
+      focusNode;
+
+  if (nodes.length > 0) {
+    focusNode = nodes[0];
+  }
+  else {
+    var oTabIndex = drawer.attr("tabindex");
+    if (oTabIndex !== undefined)
+    {
+      //save the original tabindex
+      offcanvas["tabindex"] = oTabIndex;
+    }
+    // set tabIndex so the div is focusable
+    drawer.attr("tabindex", "-1");
+    focusNode = drawer;
+  }
+
+  oj.FocusUtils.focusElement(focusNode);
 
 };
 
@@ -424,6 +447,14 @@ oj.OffcanvasUtils._onTransitionEnd = function(wrapper, handler)
   //add transition end listener
   wrapper.on(endEvents, listener);
 
+};
+
+oj.OffcanvasUtils._closeWithCatch = function(offcanvas)
+{
+  // - offcanvas: error occurs when you veto the ojbeforeclose event
+  oj.OffcanvasUtils.close(offcanvas)['catch'](function(reason) {
+    oj.Logger.warn("Offcancas close failed: " + reason);
+  });
 };
 
 //check offcanvas.autoDismiss
@@ -452,15 +483,15 @@ oj.OffcanvasUtils._registerCloseHandler = function(offcanvas)
         var key = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
         if (key == null)
         {
-            // offcanvas already destroyed, unregister the handler
-            oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
-            return;
+          // offcanvas already destroyed, unregister the handler
+          oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
+          return;
         }
 
         // if event target is not the offcanvas dom subtrees, dismiss it
         if (! oj.DomUtils.isLogicalAncestorOrSelf(drawer[0], target))
         {
-          oj.OffcanvasUtils.close(offcanvas);
+          oj.OffcanvasUtils._closeWithCatch(offcanvas);
         }
       };
 
@@ -554,7 +585,7 @@ oj.OffcanvasUtils._registerSwipeHandler = function(offcanvas)
       .on(swipeEvent, function(event)
       {
         event.preventDefault();
-        oj.OffcanvasUtils.close(offcanvas);
+        oj.OffcanvasUtils._closeWithCatch(offcanvas);
       });
 
     //keep the hammer in the offcanvas jquery data
@@ -707,7 +738,7 @@ oj.OffcanvasUtils.tearDownResponsive = function(offcanvas)
 /**
  * Shows the offcanvas by sliding it into the viewport.  This method fire an ojbeforeopen event which can be vetoed by attaching a listener and returning false.  If the open is not vetoed, this method will fire an ojopen event once animation has completed.
  *
- *<p>Upon opening an offcanvas, focus is automatically moved to the offcanvas itself.
+ *<p>Upon opening an offcanvas, focus is automatically put on the 1st focusable node inside the offcanvas. If nothing is focusable in the offcanvas then the focus is defaulted to the offcanvas itself.
  *
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
@@ -746,6 +777,7 @@ oj.OffcanvasUtils.open = function(offcanvas)
       return oldOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY];
   }
 
+  var veto = false;
   var promise = new Promise(function(resolve, reject)
   {
     oj.Assert.assertPrototype(drawer, jQuery);
@@ -758,9 +790,9 @@ oj.OffcanvasUtils.open = function(offcanvas)
     drawer.trigger(event, offcanvas);
     if (event.result === false)
     {
-      //TODO: translate
-      reject("ojbeforeopen veto");
-      return;
+      reject(oj.OffcanvasUtils.VETO_BEFOREOPEN_MSG);
+      veto = true;
+      return promise;
     }
 
     var size,
@@ -844,7 +876,8 @@ oj.OffcanvasUtils.open = function(offcanvas)
         //insert a glassPane if offcanvas is modal
 //        oj.OffcanvasUtils._applyModality(myOffcanvas, drawer);
 
-        oj.FocusUtils.focusElement(drawer[0]);
+        // - opening offcanvas automatically scrolls to the top
+        oj.OffcanvasUtils._setFocus(myOffcanvas);
 
         //fire after open event
         drawer.trigger("ojopen", myOffcanvas);
@@ -860,9 +893,11 @@ oj.OffcanvasUtils.open = function(offcanvas)
 
 
   //save away the current promise
-  var nOffcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
-  if (nOffcanvas) {
-    nOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY] = promise;
+  if (! veto) {
+    var nOffcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+    if (nOffcanvas) {
+      nOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY] = promise;
+    }
   }
   return promise;
 };
@@ -904,6 +939,7 @@ oj.OffcanvasUtils._close = function(selector, animation)
     return offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY];
   }
 
+  var veto = false;
   var promise = new Promise(function(resolve, reject)
   {
     if (oj.OffcanvasUtils._isOpen(drawer))
@@ -926,8 +962,9 @@ oj.OffcanvasUtils._close = function(selector, animation)
       drawer.trigger(event, offcanvas);
       if (event.result === false)
       {
-        reject("beforeClose veto");
-        return;
+        reject(oj.OffcanvasUtils.VETO_BEFORECLOSE_MSG);
+        veto = true;
+        return promise;
       }
 
       var wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
@@ -985,9 +1022,11 @@ oj.OffcanvasUtils._close = function(selector, animation)
   });
 
   //save away the current promise
-  offcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
-  if (offcanvas) {
-    offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY] = promise;
+  if (! veto) {
+    offcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+    if (offcanvas) {
+      offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY] = promise;
+    }
   }
 
   return promise;

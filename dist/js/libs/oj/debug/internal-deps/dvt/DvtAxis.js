@@ -55,12 +55,12 @@ dvt.Axis.prototype.Init = function(context, callback, callbackObj) {
   this.Defaults = new DvtAxisDefaults();
 
   // Create the event handler and add event listeners
-  this._eventManager = new DvtAxisEventManager(this);
-  this._eventManager.addListeners(this);
+  this.EventManager = new DvtAxisEventManager(this);
+  this.EventManager.addListeners(this);
 
   // Set up keyboard handler on non-touch devices if the axis is interactive
   if (!dvt.Agent.isTouchDevice())
-    this._eventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this._eventManager, this));
+    this.EventManager.setKeyboardHandler(new DvtAxisKeyboardHandler(this.EventManager, this));
 
   this._bounds = null;
 };
@@ -110,8 +110,9 @@ dvt.Axis.prototype.getPreferredSize = function(options, maxWidth, maxHeight) {
  * @param {number=} x x position of the component.
  * @param {number=} y y position of the component.
  */
-dvt.Axis.prototype.render = function(options, width, height, x, y) 
-{
+dvt.Axis.prototype.render = function(options, width, height, x, y) {
+  this.getCache().clearCache();
+
   // Update the options object.
   this.SetOptions(options);
   this._navigablePeers = [];
@@ -168,8 +169,8 @@ dvt.Axis.prototype.isNavigable = function() {
  * @return {DvtKeyboardNavigable} The focused object.
  */
 dvt.Axis.prototype.getKeyboardFocus = function() {
-  if (this._eventManager != null)
-    return this._eventManager.getFocus();
+  if (this.EventManager != null)
+    return this.EventManager.getFocus();
   return null;
 };
 
@@ -179,7 +180,7 @@ dvt.Axis.prototype.getKeyboardFocus = function() {
  * @param {boolean} isShowingFocusEffect Whether the keyboard focus effect should be used.
  */
 dvt.Axis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) {
-  if (this._eventManager == null)
+  if (this.EventManager == null)
     return;
 
   var peers = this.__getKeyboardObjects();
@@ -188,7 +189,7 @@ dvt.Axis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) 
   for (var i = 0; i < peers.length; i++) {
     var otherId = peers[i].getId();
     if ((id instanceof Array && otherId instanceof Array && dvt.ArrayUtils.equals(id, otherId)) || id === otherId) {
-      this._eventManager.setFocusObj(peers[i]);
+      this.EventManager.setFocusObj(peers[i]);
       matchFound = true;
       if (isShowingFocusEffect)
         peers[i].showKeyboardFocusEffect();
@@ -196,7 +197,7 @@ dvt.Axis.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect) 
     }
   }
   if (!matchFound)
-    this._eventManager.setFocusObj(this._eventManager.getKeyboardHandler().getDefaultNavigable(peers));
+    this.EventManager.setFocusObj(this.EventManager.getKeyboardHandler().getDefaultNavigable(peers));
 
   // Update the accessibility attributes
   var focus = this.getKeyboardFocus();
@@ -218,14 +219,6 @@ dvt.Axis.prototype.processEvent = function(event, source) {
     this.dispatchEvent(event);
   }
 };
-
-/**
- * @override
- */
-dvt.Axis.prototype.getEventManager = function() {
-  return this._eventManager;
-};
-
 
 /**
  * Returns the axisInfo for the axis
@@ -260,21 +253,6 @@ dvt.Axis.prototype.getWidth = function() {
  */
 dvt.Axis.prototype.getHeight = function() {
   return this.Height;
-};
-
-
-/**
- * @override
- */
-dvt.Axis.prototype.destroy = function() {
-  if (this._eventManager) {
-    this._eventManager.removeListeners(this);
-    this._eventManager.destroy();
-    this._eventManager = null;
-  }
-
-  // Call super last during destroy
-  dvt.Axis.superclass.destroy.call(this);
 };
 
 /**
@@ -506,7 +484,6 @@ var DvtAxisEventManager = function(axis) {
 
 dvt.Obj.createSubclass(DvtAxisEventManager, dvt.EventManager);
 
-
 /**
  * Returns the parameters for the DvtComponentUIEvent for an object with the specified arguments.
  * @param {string} type The type of object that was the target of the event.
@@ -517,6 +494,13 @@ dvt.Obj.createSubclass(DvtAxisEventManager, dvt.EventManager);
  */
 DvtAxisEventManager.getUIParams = function(type, id, index, level) {
   return {'type': type, 'id': id, 'index': index, 'level': level};
+};
+
+/**
+ * @override
+ */
+DvtAxisEventManager.prototype.getComponent = function() {
+  return this._axis;
 };
 
 /**
@@ -570,7 +554,37 @@ DvtAxisEventManager.prototype.processActionEvent = function(obj) {
   return false;
 };
 
+/**
+ * @override
+ */
+DvtAxisEventManager.prototype.isDndSupported = function() {
+  return true;
+};
 
+/**
+ * @override
+ */
+DvtAxisEventManager.prototype.GetDragSourceType = function(event) {
+  var obj = this.DragSource.getDragObject();
+  if (obj instanceof DvtAxisObjPeer && obj.getGroup() != null)
+    return 'groups';
+  return null;
+};
+
+/**
+ * @override
+ */
+DvtAxisEventManager.prototype.GetDragDataContexts = function() {
+  var obj = this.DragSource.getDragObject();
+  if (obj instanceof DvtAxisObjPeer) {
+    return [{
+      'id': obj.getId(),
+      'group': obj.getGroup(),
+      'label': obj.getLabel().getTextString()
+    }];
+  }
+  return [];
+};
 /**
   *  @param {dvt.EventManager} manager The owning dvt.EventManager
   *  @param {dvt.Axis} axis
@@ -711,6 +725,8 @@ DvtAxisRenderer.render = function(axis, availSpace) {
 
   axis.__setBounds(availSpace.clone());
 
+  DvtAxisRenderer._renderBackground(axis, availSpace);
+
   // Render the title
   DvtAxisRenderer._renderTitle(axis, axisInfo, availSpace);
 
@@ -740,6 +756,33 @@ DvtAxisRenderer._createAxisInfo = function(axis, availSpace) {
 DvtAxisRenderer._getTitleGap = function(axis) {
   var options = axis.getOptions();
   return DvtAxisDefaults.getGapSize(axis.getCtx(), options, options['layout']['titleGap']);
+};
+
+/**
+ * Renders the axis invisble background. Needed for DnD drop effect.
+ * @param {dvt.Axis} axis The axis being rendered.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @private
+ */
+DvtAxisRenderer._renderBackground = function(axis, availSpace) {
+  var options = axis.getOptions();
+  if (!options['dnd'])
+    return;
+
+  var dropOptions = options['dnd']['drop'];
+  if (Object.keys(dropOptions['xAxis']).length > 0 || Object.keys(dropOptions['yAxis']).length > 0 ||
+      Object.keys(dropOptions['y2Axis']).length > 0) {
+    var position = options['position'];
+    var isHoriz = (position == 'top' || position == 'bottom');
+    var yGap = isHoriz ? 4 : 10;
+    var xGap = isHoriz ? 10 : 4;
+
+    var background = new dvt.Rect(axis.getCtx(), availSpace.x - xGap, availSpace.y - yGap,
+        availSpace.w + 2 * xGap, availSpace.h + 2 * yGap);
+    background.setInvisibleFill();
+    axis.addChild(background);
+    axis.getCache().putToCache('background', background);
+  }
 };
 
 /**
@@ -2876,6 +2919,13 @@ dvt.Obj.createSubclass(dvt.GroupAxisInfo, dvt.AxisInfo);
 dvt.GroupAxisInfo._MAX_LINE_WRAP = 3;
 
 /**
+ * The threshold for how small the group width can become before skipping label measurement checks
+ * and defaulting to rotation in order to improve performance.
+ * @private
+ */
+dvt.GroupAxisInfo._ROTATE_THRESHOLD = 12;
+
+/**
  * @override
  */
 dvt.GroupAxisInfo.prototype.Init = function(context, options, availSpace) {
@@ -3251,6 +3301,9 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
   var gap = isHierarchical ? DvtAxisDefaults.getGapSize(context, this.Options, this.Options['layout'][gapName]) : 0;
   var rotationEnabled = this.Options['tickLabel']['rotation'] == 'auto' && isHoriz;
 
+  // autoRotate used to enhance performance
+  var autoRotate = !isHierarchical && rotationEnabled && groupWidth < dvt.GroupAxisInfo._ROTATE_THRESHOLD;
+
   // Attempt text wrapping if:
   // 1. white-space = 'normal'
   // 2. vertical or horizontal axis
@@ -3279,7 +3332,7 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
         if (coord != null) {
           // get categorical axis label style, if it exists
           cssStyle = this.getLabelStyleAt(i, level);
-          var bMultiline = wrapping && typeof(label) != 'number' && label.indexOf(' ') >= 0;
+          var bMultiline = !autoRotate && wrapping && typeof(label) != 'number' && label.indexOf(' ') >= 0;
           text = this.CreateLabel(context, label, coord, cssStyle, bMultiline);
 
           var groupSpan = groupWidth * (this.getEndIndex(i, level) - this.getStartIndex(i, level) + 1);
@@ -3355,56 +3408,62 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
       endOverflow = isRTL ? this.EndCoord - lastLabelDim.x : lastLabelDim.w + lastLabelDim.x - this.EndCoord;
     }
 
-    if (startOverflow > this._startBuffer || endOverflow > this._endBuffer)
+    // no need to set overflow if autoRotating because overflow is recalculated
+    if (!autoRotate && (startOverflow > this._startBuffer || endOverflow > this._endBuffer))
       this._setOverflow(startOverflow, endOverflow, labels);
   }
 
   for (level = 0; level < this._numLevels; level++) {
     labels = this._labels[level];
-    var minLabelDims = this.GuessLabelDims(labels, container, 0.3, level); // minimum estimate
-    var maxLabelDims = this.GuessLabelDims(labels, container, null, level);      // maximum estimate
 
-    if (!this.IsOverlapping(maxLabelDims, 0))
-      this._labels[level] = labels; // all labels can fit
+    if (autoRotate)
+      this._labels[level] = this._rotateLabels(labels, container, firstLabelDim.h / 2, level);
+    else {
+      var minLabelDims = this.GuessLabelDims(labels, container, 0.3, level); // minimum estimate
+      var maxLabelDims = this.GuessLabelDims(labels, container, null, level);      // maximum estimate
 
-    // Rotate and skip the labels if necessary
-    if (isHoriz) { // horizontal axis
-      if (rotationEnabled) {
-        if (this.IsOverlapping(minLabelDims, 0)) {
-          this._labels[level] = this._rotateLabels(labels, container, firstLabelDim.h / 2, level);
-        } else {
-          labelDims = this.GetLabelDims(labels, container); // actual dims
-          if (this.IsOverlapping(labelDims, 0)) {
+      if (!this.IsOverlapping(maxLabelDims, 0))
+        this._labels[level] = labels; // all labels can fit
+
+      // Rotate and skip the labels if necessary
+      if (isHoriz) { // horizontal axis
+        if (rotationEnabled) {
+          if (this.IsOverlapping(minLabelDims, 0)) {
             this._labels[level] = this._rotateLabels(labels, container, firstLabelDim.h / 2, level);
-          }
-          else {
-            this._labels[level] = labels;  // all labels can fit
-            if (isHierarchical) { // Adjust maxHeight for wrapping rotated hierarchical levels
-              var totalHeight = 0;
-              for (j = 0; j < labelDims.length; j++) {
-                if (labelDims[j]) {
-                  totalHeight = Math.max(totalHeight, labelDims[j].h);
+          } else {
+            labelDims = this.GetLabelDims(labels, container); // actual dims
+            if (this.IsOverlapping(labelDims, 0)) {
+              this._labels[level] = this._rotateLabels(labels, container, firstLabelDim.h / 2, level);
+            }
+            else {
+              this._labels[level] = labels;  // all labels can fit
+              if (isHierarchical) { // Adjust maxHeight for wrapping rotated hierarchical levels
+                var totalHeight = 0;
+                for (j = 0; j < labelDims.length; j++) {
+                  if (labelDims[j]) {
+                    totalHeight = Math.max(totalHeight, labelDims[j].h);
+                  }
                 }
+                this._maxSpace -= (totalHeight + gap);
               }
-              this._maxSpace -= (totalHeight + gap);
             }
           }
+        } else { // no rotation
+          labelDims = this.GetLabelDims(labels, container); // get actual dims for skipping
+          this._labels[level] = this.SkipLabels(labels, labelDims);
         }
-      } else { // no rotation
-        labelDims = this.GetLabelDims(labels, container); // get actual dims for skipping
-        this._labels[level] = this.SkipLabels(labels, labelDims);
-      }
-    } else { // vertical axis
-      // Wrapped labels
-      if (wrapping) {
-        var updateLabelDims = this._sanitizeWrappedText(context, maxLabelDims, labels, false, isHierarchical);
+      } else { // vertical axis
+        // Wrapped labels
+        if (wrapping) {
+          var updateLabelDims = this._sanitizeWrappedText(context, maxLabelDims, labels, false, isHierarchical);
 
-        // Recalculate label dims for skipping
-        if (updateLabelDims)
-          maxLabelDims = this.GuessLabelDims(labels, container, null, level);
-      }
+          // Recalculate label dims for skipping
+          if (updateLabelDims)
+            maxLabelDims = this.GuessLabelDims(labels, container, null, level);
+        }
 
-      this._labels[level] = this.SkipLabels(labels, maxLabelDims); // maxLabelDims contain the actual heights
+        this._labels[level] = this.SkipLabels(labels, maxLabelDims); // maxLabelDims contain the actual heights
+      }
     }
   }
 };
@@ -4106,6 +4165,32 @@ DvtAxisObjPeer.prototype.getAriaLabel = function() {
     return dvt.Displayable.generateAriaLabel(this.getLabel().getTextString(), states);
   }
 
+};
+
+
+//---------------------------------------------------------------------//
+// DnD Support: DvtDraggable impl                                      //
+//---------------------------------------------------------------------//
+
+/**
+ * @override
+ */
+DvtAxisObjPeer.prototype.isDragAvailable = function(clientIds) {
+  return true;
+};
+
+/**
+ * @override
+ */
+DvtAxisObjPeer.prototype.getDragTransferable = function(mouseX, mouseY) {
+  return [this.getId()];
+};
+
+/**
+ * @override
+ */
+DvtAxisObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
+  return [this.getDisplayable()];
 };
 /**
  * Formatter for an axis with a linear scale.
@@ -5665,7 +5750,7 @@ dvt.TimeAxisInfo.prototype.getGroupWidth = function() {
  * @override
  */
 dvt.TimeAxisInfo.prototype.getMinimumExtent = function() {
-  return this._skipGaps ? 1 : this._mixedFrequency ? Math.min(this._timeRange / 8, this._averageInterval) : this._averageInterval;
+  return this._skipGaps ? 1 : this._mixedFrequency ? Math.min((this.getGlobalMax() - this.getGlobalMin()) / 8, this._averageInterval) : this._averageInterval;
 };
 
 

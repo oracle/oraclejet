@@ -11,29 +11,37 @@ unspecified.
 THIRD-PARTY COMPONENT FILE                                               LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
-js/libs/knockout/knockout-3.4.0.js										MIT
+js/libs/knockout/knockout-3.4.0.js										    MIT
 js/libs/knockout/knockout-mapping-latest.js								MIT
-js/libs/knockout/knockout-amd-helpers									MIT
-js/libs/require/require.js												MIT
-js/libs/require/text.js													MIT
-js/libs/js-signals/signals.js											MIT
+js/libs/knockout/knockout-amd-helpers									    MIT
+js/libs/require/require.js												        MIT
+js/libs/require/text.js													          MIT
+js/libs/js-signals/signals.js											        MIT
 js/libs/jquery/jquery-2.1.3.js											MIT
-js/libs/jquery/jquery-ui-1.11.4.custom.js								MIT
+js/libs/jquery/jquery-ui-1.11.4.custom.js								  MIT
 js/libs/jquery/jqueryui-amd-1.11.4/core.js								MIT
-js/libs/jquery/jqueryui-amd-1.11.4/draggable.js							MIT
+js/libs/jquery/jqueryui-amd-1.11.4/draggable.js						MIT
 js/libs/jquery/jqueryui-amd-1.11.4/mouse.js								MIT
-js/libs/jquery/jqueryui-amd-1.11.4/position.js							MIT
-js/libs/jquery/jqueryui-amd-1.11.4/sortable.js							MIT
+js/libs/jquery/jqueryui-amd-1.11.4/position.js						MIT
+js/libs/jquery/jqueryui-amd-1.11.4/sortable.js						MIT
 js/libs/jquery/jqueryui-amd-1.11.4/widget.js							MIT
-js/libs/history/history.iegte8.js										MIT
+js/libs/history/history.iegte8.js										      MIT
 js/libs/es6-promise/promise-1.0.0.js									MIT
-js/libs/crossroads/crossroads.js										MIT
-js/libs/oj/v1.1.0/min/ojselectcombobox.js (Select2.js)					Apache 2.0
+js/libs/crossroads/crossroads.js										      MIT
+js/libs/oj/v1.1.0/min/ojselectcombobox.js (Select2.js)		Apache 2.0
 js/libs/oj/v1.1.0/min/ojtree.js (jsTree.js)								MIT
 js/libs/oj/v1.1.0/ojL10n.js (requireJS i18n)							MIT
-js/libs/hammer/hammer-2.0.4.js											MIT
-js/libs/require-css/css.js (require-css)				  MIT
-scss/oj/v1.1.0/3rdparty/normalize/normalize.scss						MIT
+js/libs/hammer/hammer-2.0.4.js											      MIT
+js/libs/require-css/css.js (require-css)				          MIT
+js/libs/proj4js/dist/proj4.js                             Proj4js
+scss/oj/v1.1.0/3rdparty/normalize/normalize.scss					MIT
+
+/*
+ * proj4js - v2.3.14
+ * http://proj4js.org/
+ * Copyright (C) 2014 Mike Adair, Richard Greenwood, Didier Richard, Stephen Irons, Olivier Terral and Calvin Metcalf;
+ * Licensed under the Proj4js license
+ */
 
 /*
  * require-css - v0.1.8
@@ -423,4 +431,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+===
+======
+========================= Proj4js =========================
+Mike Adair madairATdmsolutions.ca
+Richard Greenwood richATgreenwoodmap.com
+Didier Richard didier.richardATign.fr
+Stephen Irons stephen.ironsATclear.net.nz
+Olivier Terral oterralATgmail.com
+Calvin Metcalf cmetcalfATappgeo.com
 
+Copyright (c) 2014, Mike Adair, Richard Greenwood, Didier Richard, Stephen Irons, Olivier Terral and Calvin Metcalf
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 

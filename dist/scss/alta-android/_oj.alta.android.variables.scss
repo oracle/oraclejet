@@ -16,8 +16,8 @@ $imageDir: "images/" !default;
 //----------------------------------------------------------------
 // "ABSTRACT" STYLING
 //     in general these "abstract" variables are not used directly
-//     in the widget files, rather they are referred to by
-//     other variables.
+//       in the widget files, rather they are referred to by
+//       other variables. 
 //----------------------------------------------------------------
 
 
@@ -643,6 +643,25 @@ $navigationListPageLevelItemTextColorSelected: $interaction1Color !default;
 //Active
 $navigationListPageLevelItemBgColorActive: #eef7fe !default;
 $navigationListPageLevelItemBorderColorActive: #85bbe7 !default;
+
+//sizing
+$navigationListItemStartEndPadding:         0.625rem !default; //10px when root font 16px
+
+$navigationListPageLevelItemBorderWidth:    0 0 0 2px !default;
+$navigationListPageLevelItemMinHeight: 2.9375rem !default; // 47px when root font size is 16px
+$navigationListPageLevelItemFontSize: 0.875rem !default; //14px when root font size is 16px;
+
+$navigationBarItemPadding: 2px $navigationListItemStartEndPadding 6px !default;
+$navigationBarFontSize: 0.75rem !default;// 12px when root font is 16px
+$navigationBarMinHeight: 3.5rem !default;//56 px height when root font 16px
+$navigationBarStackedIconMinHeight: 3.5rem !default; //56 px height when root font 16px
+$navigationBarItemBorderWidth: 0 !default;
+
+$navigationBarPageLevelItemBorderWidth: 0 0 2px 0 !default;
+$navigationBarPageLevelItemFontSize: 0.875rem !default; //14 px when root font is 16px
+$navigationBarPageLevelItemStackedIconMinHeight: 3rem !default;//48px when root font is 16px
+$navigationBarPageLevelItemMinHeight: 3rem !default; //48px when root font is 16px;
+
 // END of NavigationList variables
 
 // PROGRESSBAR
@@ -656,8 +675,8 @@ $progressbarIndeterminateOverlayOpacity: 1 !default;
 // LISTVIEW
 //----------------------------------------------------------------
 // the right and left margins will be flipped in rtl languanges
-$listViewCardMargin: 8px 8px 8px 0 !default;
-$listViewHeaderFontSize: $header5FontSize !default;
+$listViewCardMargin:       8px 8px 8px 0 !default;
+$listViewHeaderFontSize:   $header5FontSize !default;
 
 // DATAGRID
 //----------------------------------------------------------------
@@ -687,9 +706,7 @@ $appLayoutHybridHeaderBorderColor: $border2Color !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
 // Nav Bar
-// Used for positioning the nav bar either at the top or bottom of the page on native platforms
-$appLayoutNavBarAlignment: top !default;
-$appLayoutHybridNavBarItemBorderStyle: solid !default;
+$appLayoutHybridNavBarBoxShadow: 0 -10px 10px rgba(0,0,0,.05) !default;
 
 // OFFCANVAS
 //----------------------------------------

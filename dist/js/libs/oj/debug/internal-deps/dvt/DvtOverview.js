@@ -247,7 +247,7 @@ dvt.Overview.prototype.render = function(obj, width, height)
 
   this.updateTimeAxis(width, height);
 
-  this.parseFilledTimeRangesXML(width, height);
+  this.parseFilledTimeRanges(width, height);
 
   // update current time
   this.updateCurrentTime(width, height);
@@ -1298,14 +1298,14 @@ dvt.Overview.prototype.updateTimeAxis = function(width, height)
   {
     var child = this._ticks[i];
 
-    var time = parseInt(child.getAttr('time'), 10);
+    var time = parseInt(child['time'], 10);
     var time_pos = this.getDatePosition(time);
-    var label = child.getAttr('label');
+    var label = child['label'];
 
     var maxWidth = 0;
     if (i + 1 < this._ticks.length)
     {
-      var next_time = parseInt(this._ticks[i + 1].getAttr('time'), 10);
+      var next_time = parseInt(this._ticks[i + 1]['time'], 10);
       var next_time_pos = this.getDatePosition(next_time);
       maxWidth = next_time_pos - time_pos;
     }
@@ -1409,7 +1409,7 @@ dvt.Overview.prototype.updateCurrentTime = function(width, height)
   this.addChild(line);
 };
 
-dvt.Overview.prototype.parseFilledTimeRangesXML = function(width, height)
+dvt.Overview.prototype.parseFilledTimeRanges = function(width, height)
 {
   if (this._formattedTimeRanges == null)
     return;
@@ -1427,9 +1427,9 @@ dvt.Overview.prototype.parseFilledTimeRangesXML = function(width, height)
 
 dvt.Overview.prototype.addFilledTimeRange = function(elem, start, end, width, height)
 {
-  var rangeStart = parseInt(elem.getAttr('rs'), 10);
-  var rangeEnd = parseInt(elem.getAttr('re'), 10);
-  var color = elem.getAttr('c');
+  var rangeStart = parseInt(elem['rs'], 10);
+  var rangeEnd = parseInt(elem['re'], 10);
+  var color = elem['c'];
 
   if (rangeStart != null && rangeEnd != null)
   {

@@ -3,10 +3,11 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation', 'ojs/internal-deps/dvt/DvtToolkit', 'promise'], function(oj, $, comp, val, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation', 'ojs/internal-deps/dvt/DvtToolkit', 'ojdnd', 'promise'], function(oj, $, comp, val, dvt)
 {
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
+ * 
  * @param {Object} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
  * @export
@@ -19,22 +20,17 @@ oj.AttributeGroupHandler = function(matchRules) {
 oj.Object.createSubclass(oj.AttributeGroupHandler, oj.Object, "oj.AttributeGroupHandler");
 
 oj.AttributeGroupHandler.prototype.Init = function(matchRules) {
-  oj.AttributeGroupHandler.superclass.Init.call(this);
-  this._matchRules = matchRules ? matchRules : {};
   this._assignments = {};
   this._valueIndex = 0;
-  this.Values = this.getValueRamp();
-  for (var key in this._matchRules) {
-    // remove match rule value from attribute group values
-    var idx = this.Values.indexOf(this._matchRules[key]);
-    if (idx !== -1)
-      this.Values.splice(idx, 1);
+  this._matchRules = {};
+  for (var category in matchRules) {
+    this.addMatchRule(category, matchRules[category]);
   }
+  // Delay initializing value ramp by calling subclass getValueRamp impl until needed either for adding match rule or assigning values
 }
 
 /**
  * Returns the array of possible attribute values for this attribute group handler.
- * This array can be modified so subclasses should return a copy of its internal value ramp.
  * @returns {Array} The array of attribute values
  * @export
  */
@@ -49,22 +45,26 @@ oj.AttributeGroupHandler.prototype.getValueRamp = function() {
  * @export
  */
 oj.AttributeGroupHandler.prototype.getValue = function(category) {
-  if (this._matchRules[category])
+  // When assigning value, first check match rules, then assign to next attribute group value.
+  if (this._matchRules[category]) {
     return this._matchRules[category];
-  else if (this._assignments[category])
-    return this._assignments[category];
-  else {
-    this._assignments[category] = this.Values[this._valueIndex];
-    if (this._valueIndex == this.Values.length - 1)
+  }
+  else if (!this._assignments[category]) {
+    if (!this._values)
+      this._values = this.getValueRamp().slice();
+
+    this._assignments[category] = this._values[this._valueIndex];
+    
+    this._valueIndex++;
+    if (this._valueIndex == this._values.length)
       this._valueIndex = 0;
-    else
-      this._valueIndex++;
-    return this._assignments[category];
-  } 
+  }
+  return this._assignments[category];
 }
 
 /**
- * Returns the current map of key value pairs for categories and the assigned attribute values
+ * Returns the current map of key value pairs for categories and the assigned attribute values. Note that match rules are not
+ * reflected in category assignments.
  * @return {Array} The current list of category and value pairing
  * @export
  */
@@ -76,9 +76,10 @@ oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
 }
 
 /**
- * Reserves an attribute value for the given category
- * @param {String} category Used for checking inputs to getAttributeValue against when assigning an attribute value
- * @param {String} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
+ * Reserves an attribute value for the given category.  All match rules should be added before any category
+ * assignments are done with the <a href="#getValue">getValue</a> API.
+ * @param {string} category Used for checking inputs to getAttributeValue against when assigning an attribute value
+ * @param {string} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
  * @export
  */
 oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeValue) {
@@ -86,6 +87,7 @@ oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeVa
 }
 /**
  * Creates a shape attribute group handler that will generate shape attribute values.
+ * 
  * @param {Object} [matchRules] A map of key value pairs for categories and the matching attribute value e.g. {"soda" : "square", "water" : "circle", "iced tea" : "triangleUp"}.
  *                            Attribute values listed in the matchRules object will be reserved only for the matching categories when getAttributeValue is called.
  * @export
@@ -100,9 +102,13 @@ oj.Object.createSubclass(oj.ShapeAttributeGroupHandler, oj.AttributeGroupHandler
 
 oj.ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond', 'plus', 'triangleDown', 'triangleUp', 'human'];
 
-//** @inheritdoc */
+/**
+ * Returns the array of possible shape values for this attribute group handler.
+ * @returns {Array} The array of shape values
+ * @export
+ */
 oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
-  return oj.ShapeAttributeGroupHandler._attributeValues.slice();
+  return oj.ShapeAttributeGroupHandler._attributeValues;
 }
 /**
  * Defines whether the component will automatically render in response to
@@ -272,6 +278,80 @@ DvtJsonPath.prototype.setValue = function(value, bOverride)
     this._leaf[this._param] = value;
   }
 }
+/**
+ * Creates a color attribute group handler that will generate color attribute values.
+ * 
+ * @param {Object} [matchRules] A map of key value pairs for categories and the
+ * matching attribute value e.g. {"soda" : "#336699", "water" : "#CC3300", "iced tea" : "#F7C808"}.
+ * Attribute values listed in the matchRules object will be reserved only for the
+ * matching categories when getAttributeValue is called.  Note that not all colors
+ * in the default color ramp will meet minimum contrast requirements for text.
+ * @export
+ * @constructor
+ * @extends {oj.AttributeGroupHandler}
+ */
+oj.ColorAttributeGroupHandler = function(matchRules) {
+  // Create the array of colors for this instance.
+  this._attributeValues = [];
+
+  if ($(document.body).hasClass('oj-hicontrast'))  {
+    // High Contrast: CSS colors get overridden to all white or all black. Use the default colors instead.
+    this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
+  }
+  else {
+    // Process the colors from the skin if not done already.
+    if(!oj.ColorAttributeGroupHandler._colors) {
+      oj.ColorAttributeGroupHandler._colors = [];
+
+      // Process the colors from the CSS.
+      var attrGpsDiv = $(document.createElement("div"));
+      attrGpsDiv.attr("style", "display:none;");
+      attrGpsDiv.attr("id", "attrGps");
+      $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
+      for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
+        var childDiv = $(document.createElement("div"));
+        childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
+        attrGpsDiv.append(childDiv); // @HTMLUpdateOK
+        var color = childDiv.css('color');
+        if (color)
+          oj.ColorAttributeGroupHandler._colors.push(color);
+      }
+      attrGpsDiv.remove();
+    }
+
+    // Clone and use the processed colors.
+    if (oj.ColorAttributeGroupHandler._colors.length > 0)
+      this._attributeValues = oj.ColorAttributeGroupHandler._colors.slice();
+    else
+      this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
+  }
+
+  this.Init(matchRules);
+}
+
+oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
+
+/** @private */
+oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#267db3', '#68c182', '#fad55c', '#ed6647', 
+  '#8561c8', '#6ddbdb', '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'];
+
+/** @private */
+oj.ColorAttributeGroupHandler._STYLE_CLASSES = ['oj-dvt-category1', 'oj-dvt-category2', 'oj-dvt-category3', 
+  'oj-dvt-category4', 'oj-dvt-category5', 'oj-dvt-category6', 'oj-dvt-category7', 'oj-dvt-category8', 
+  'oj-dvt-category9', 'oj-dvt-category10', 'oj-dvt-category11', 'oj-dvt-category12'];
+
+/** @private */
+oj.ColorAttributeGroupHandler._colors = null;
+
+/**
+ * Returns the array of possible color values for this attribute group handler.
+ * @returns {Array} The array of color values
+ * @export
+ */
+oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
+  return this._attributeValues;
+}
+
 var DvtStyleProcessor = {
   'CSS_TEXT_PROPERTIES':
     function(cssDiv) {
@@ -540,6 +620,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._numDeferredObjs = 0;
     this._optionsCopy = null;
 
+    // Append the component style classes to the element
+    var componentStyles = this._GetComponentStyleClasses();
+    for(var i=0; i<componentStyles.length; i++) {
+      this.element.addClass(componentStyles[i]);
+    }
+
     // Create a reference div within the element to be used for computing relative event coords.
     this._referenceDiv = $(document.createElement("div"));
     this._referenceDiv.attr("style", "visibility:hidden;");
@@ -596,13 +682,15 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     this.element.attr("tabIndex", 0);
 
-    // Render the component
-    this._Render();
-
     // Resize Listener Support
     if(this.options['trackResize'] != 'off') {
       this._addResizeListener();
     }
+
+    this._processOptions();
+
+    // Render the component
+    this._Render();
   },
 
   //** @inheritdoc */
@@ -673,12 +761,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _ProcessStyles : function() {
-    // Append the component style classes to the element
-    var componentStyles = this._GetComponentStyleClasses();
-    for(var i=0; i<componentStyles.length; i++) {
-      this.element.addClass(componentStyles[i]);
-    }
-
   	// Process selectors for this component
     DvtStyleProcessor.processStyles(this.element, this.options,
                                     this._GetComponentStyleClasses(),
@@ -816,19 +898,25 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
   //** @inheritdoc */
   _destroy : function() {
-    // Hide all component tooltips
+    // Hide all component tooltips and remove references to the DvtContext
     this._context.hideTooltips();
+    this._context = null;
+
+    var parentElement = this.element[0].parentElement;
+    if (parentElement && parentElement._dvtcontext)
+      parentElement._dvtcontext = null;
 
     // Call destroy on the JS component
     if (this._component.destroy)
       this._component.destroy();
+    this._component = null;
 
     // Remove DOM resize listener
     this._removeResizeListener();
 
     // Remove children and clean up DOM changes
     this.element.children().remove();
-    this.element.removeAttr('role').removeAttr('tabIndex');
+    this.element.removeAttr('role').removeAttr('tabIndex').removeAttr('aria-activedescendant');
 
     // Remove style classes that were added
     var componentStyles = this._GetComponentStyleClasses();
@@ -851,6 +939,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this._removeResizeListener();
     else if(trackResize != 'off' && !this._resizeListener)
       this._addResizeListener();
+
+    this._processOptions();
 
     // Render the component with the updated options.
     if(this._bUserDrivenChange) {
@@ -995,8 +1085,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _Render : function(isResize) {
-    // Starting a new render- no longer ready
-    this._ready = false;
+    // Starting a new render - no longer ready
+    this._NotReady();
 
     // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
     // getBBox calls will not return the correct values.
@@ -1013,6 +1103,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this.options['_width'] = this._width;
       this.options['_height'] = this._height;
       this.options['_locale'] = oj.Config.getLocale();
+
+      // Add draggable attribute if DnD is supported
+      if (this.options['dnd'])
+        this.element.attr('draggable', true);
 
       // Merge css styles with with json options object
       this._ProcessStyles();
@@ -1416,7 +1510,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * Returns a promise that is resolved when the component is finished rendering.
    * This can be used to determine when it is okay to call automation and other APIs on the component.
    * @returns {Promise}
-   * @private
    * @expose
    * @instance
    * @memberof oj.dvtBaseComponent
@@ -1431,81 +1524,31 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       });
     }
     return this._promise;
+  },
+
+  /**
+   * Called by component to declare rendering is not finished
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _NotReady : function() {
+    this._ready = false;
+  },
+
+  /**
+   * Sanitize options variables
+   * @private
+   * @memberof oj.dvtBaseComponent
+   */
+  _processOptions: function() {
+    // Convert the tooltip to an object if the deprecated API structure is passed in
+    var tooltip = this.options['tooltip'];
+    if(typeof tooltip === 'function') {
+      this.options['tooltip'] = {'renderer' : tooltip};
+    }
   }
 
 }, true);
-
-/**
- * Creates a color attribute group handler that will generate color attribute values.
- * @param {Object} [matchRules] A map of key value pairs for categories and the
- * matching attribute value e.g. {"soda" : "#336699", "water" : "#CC3300", "iced tea" : "#F7C808"}.
- * Attribute values listed in the matchRules object will be reserved only for the
- * matching categories when getAttributeValue is called.  Note that not all colors
- * in the default color ramp will meet minimum contrast requirements for text.
- * @export
- * @constructor
- * @extends {oj.AttributeGroupHandler}
- */
-oj.ColorAttributeGroupHandler = function(matchRules) {
-  // Create the array of colors for this instance.
-  this._attributeValues = [];
-
-  if ($(document.body).hasClass('oj-hicontrast'))  {
-    // High Contrast: CSS colors get overridden to all white or all black. Use the default colors instead.
-    this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
-  }
-  else {
-    // Process the colors from the skin if not done already.
-    if(!oj.ColorAttributeGroupHandler._colors) {
-      oj.ColorAttributeGroupHandler._colors = [];
-
-      // Process the colors from the CSS.
-      var attrGpsDiv = $(document.createElement("div"));
-      attrGpsDiv.attr("style", "display:none;");
-      attrGpsDiv.attr("id", "attrGps");
-      $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
-      for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
-        var childDiv = $(document.createElement("div"));
-        childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
-        attrGpsDiv.append(childDiv); // @HTMLUpdateOK
-        var color = childDiv.css('color');
-        if (color)
-          oj.ColorAttributeGroupHandler._colors.push(color);
-      }
-      attrGpsDiv.remove();
-    }
-
-    // Clone and use the processed colors.
-    if (oj.ColorAttributeGroupHandler._colors.length > 0)
-      this._attributeValues = oj.ColorAttributeGroupHandler._colors.slice();
-    else
-      this._attributeValues = oj.ColorAttributeGroupHandler._DEFAULT_COLORS.slice();
-  }
-
-  this.Init(matchRules);
-}
-
-oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
-
-/** @private */
-oj.ColorAttributeGroupHandler._DEFAULT_COLORS = ['#267db3', '#68c182', '#fad55c',
-                                                '#ed6647', '#8561c8', '#6ddbdb',
-                                                '#ffb54d', '#e371b2', '#47bdef',
-                                                '#a2bf39', '#a75dba', '#f7f37b'];
-
-/** @private */
-oj.ColorAttributeGroupHandler._STYLE_CLASSES = ['oj-dvt-category1',
-  'oj-dvt-category2', 'oj-dvt-category3', 'oj-dvt-category4',
-  'oj-dvt-category5', 'oj-dvt-category6', 'oj-dvt-category7',
-  'oj-dvt-category8', 'oj-dvt-category9', 'oj-dvt-category10',
-  'oj-dvt-category11', 'oj-dvt-category12'];
-
-/** @private */
-oj.ColorAttributeGroupHandler._colors = null;
-
-//** @inheritdoc */
-oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
-  return this._attributeValues.slice();
-}
 
 });

@@ -98,7 +98,7 @@
     // page layout
     .oj-hybrid-applayout-header,
     .oj-hybrid-applayout-footer,
-    .oj-hybrid-applayout-navbar {
+    %oj-hybrid-applayout-navbar-base {
       @include oj-flex-property(0 0 auto);
     }
 
@@ -199,32 +199,35 @@
     }
 
     // NAV BAR
-    .oj-hybrid-applayout-navbar {
-      @include oj-order-property(if($appLayoutNavBarAlignment == 'top', -1, 1));
+    %oj-hybrid-applayout-navbar-base {
+      background-color: $appLayoutHybridHeaderBgColor;
+    }
+    %oj-hybrid-applayout-navbar-base .oj-navigationlist-horizontal .oj-navigationlist-element {
+      margin: 0;
+    }
+    .oj-hybrid-applayout-navbar-fixed-top {
+      @extend %oj-hybrid-applayout-navbar-base;
+      @include oj-order-property(-1);
+      @if $appLayoutHybridFooterBorderColor != null {
+        border-bottom: 1px solid $appLayoutHybridFooterBorderColor;
+      }
+    }
+    .oj-hybrid-applayout-navbar-fixed-bottom {
+      @extend %oj-hybrid-applayout-navbar-base;
+      @include oj-order-property(1);
+      @include oj-box-shadow($appLayoutHybridNavBarBoxShadow);
       @if $appLayoutHybridFooterBorderColor != null {
         border-top: 1px solid $appLayoutHybridFooterBorderColor;
       }
-      background-color: $appLayoutHybridHeaderBgColor;
     }
-    .oj-hybrid-applayout-navbar-fixed-top {
-      @extend .oj-hybrid-applayout-navbar;
-      @include oj-order-property(-1);
-      border-style: none;
-    }
-    .oj-hybrid-applayout-navbar-fixed-bottom {
-      @extend .oj-hybrid-applayout-navbar;
-      @include oj-order-property(1);
-    }
-    .oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element {
-      margin: 0;
-    }
-    .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-selected,
-    .oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-hover {
-      border-style: $appLayoutHybridNavBarItemBorderStyle;
-    }
-    /* Apply to page when a header and non fixed nav bar are present
+    /* Deprecated. Applications should use oj-hybrid-applayout-navbar-fixed-bottom or 
+      oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
+    .oj-hybrid-applayout-navbar {
+      @extend .oj-hybrid-applayout-navbar-fixed-bottom;
+    }    
+    /* Deprecated. Apply to page when a header and non fixed nav bar are present
        so we can correctly style the header and nav bar borders */
     .oj-hybrid-applayout-navbar-non-fixed {}
 
-    }
-    }
+  }
+}

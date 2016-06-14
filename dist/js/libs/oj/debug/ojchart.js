@@ -450,6 +450,55 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 
 /**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
+ *   <li>id: The id of the hovered item.</li> 
+ *   <li>series: The id of the series the hovered item belongs to.</li> 
+ *   <li>group: The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchcal groups, it will be an array of outermost to innermost group ids.</li> 
+ *   <li>value, targetValue, x, y, z, low, high, open, close, volume: The values of the hovered item.</li> 
+ *   <li>label: The data label of the hovered item.</li> 
+ *   <li>data: The data object of the hovered item</li> 
+ *   <li>seriesData: The data for the series the hovered item belongs to.</li> 
+ *   <li>groupData: An array of data for the group the hovered item belongs to. For hierarchcal groups, it will be an array of outermost to innermost group data related to the hovered item.</li> 
+ *   <li>component: The widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function. 
+ *   <li>color: The color of the hovered item.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
+ * The knockout template used to render the content of the pie center area.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the center area. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the center area. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>label: The pieCenter label.</li> 
+ *    <li>component: The widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name pieCenter.template
+ * @memberof! oj.ojChart
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+
+/**
  * An object used for automation verification of spark chart data items
  * Applications should not create this object.
  * @param {Object} data An object containing verification data
@@ -535,6 +584,25 @@ oj.SparkChartDataItem.prototype.getValue = function() {
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojSparkChart
+ */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
+ *    <li>color: The color of the chart.</li> 
+ *    <li>component: The widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function. </li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojSparkChart
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
  */
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -691,6 +759,8 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @property {number} ui.optionMetadata.xMin the minimum x value of a marquee selection
        * @property {number} ui.optionMetadata.yMax the maximum y value of a marquee selection
        * @property {number} ui.optionMetadata.yMin the minimum y value of a marquee selection
+       * @property {Object} ui.optionMetadata.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+       * @property {Array} ui.optionMetadata.selectionData an array of objects with data, seriesData and groupData corresponding to the selected items in ui.value
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
        * $(".selector").ojChart({
@@ -802,6 +872,10 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @property {string} ui.id the id of the drilled object
        * @property {string} ui.series the series id of the drilled object, if applicable
        * @property {string} ui.group the group id of the drilled object, if applicable
+       * @property {Object} ui.data  the data object of the drilled item
+       * @property {Object} ui.seriesData the data for the series of the drilled object
+       * @property {Array} ui.groupData an array of data for the group the drilled object belongs to. For hierarchcal groups, it will be an array of outermost to innermost group data related to the drilled object
+       * @property {Object} ui.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
        * $(".selector").ojChart({
@@ -948,7 +1022,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       styleClasses['oj-chart-data-label'] = {'path': 'styleDefaults/dataLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-stack-label'] = {'path': 'styleDefaults/stackLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-footnote'] = {'path': 'footnote/style', 'property': 'CSS_TEXT_PROPERTIES'};
-      styleClasses['oj-chart-pie-center-label'] = {'path': 'pieCenterLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
+      styleClasses['oj-chart-pie-center-label'] = {'path': 'pieCenter/labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-slice-label'] = {'path': 'styleDefaults/sliceLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-subtitle'] = {'path': 'subtitle/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-stock-falling'] = {'path': 'styleDefaults/stockFallingColor', 'property': 'background-color'};
@@ -1030,18 +1104,24 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
         if (selection) {
           // Convert the graph selection context into the JET context
           var selectedItems = [];
+          var selectionData = [];
           for (var i = 0; i < selection.length; i++) {
             var selectedItem = {'id': selection[i]['id'],
               'series': selection[i]['series'],
               'group': selection[i]['group']};
+            var selectedItemData = {'data': selection[i]['data'],
+              'seriesData': selection[i]['seriesData'],
+              'groupData': selection[i]['groupData']};
             selectedItems.push(selectedItem);
+            selectionData.push(selectedItemData);
           }
 
           var selectPayload = {
             'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
             'xMax': event['xMax'], 'xMin': event['xMin'],
             'yMax': event['yMax'], 'yMin': event['yMin'],
-            'y2Max': event['y2Max'], 'y2Min': event['y2Min']
+            'y2Max': event['y2Max'], 'y2Min': event['y2Min'],
+            'component': event['component'], 'selectionData': selectionData
           };
 
           // Update the options selection state if the user interaction is complete
@@ -1096,7 +1176,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
         this._trigger(event['complete'] ? 'viewportChange' : 'viewportChangeInput', null, viewportChangePayload);
       }
       else if (type === 'drill') {
-        this._trigger('drill', null, {'id': event['id'], 'series': event['series'], 'group': event['group']});
+        this._trigger('drill', null, {'id': event['id'], 'series': event['series'], 'group': event['group'], 'data': event['data'], 'seriesData': event['seriesData'],'groupData': event['groupData'],'component': event['component']});
       }
       else {
         this._super(event);
@@ -1409,18 +1489,6 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     //** @inheritdoc */
     _GetComponentDeferredDataPaths : function() {
       return {'root': ['groups', 'series']};
-    },
-
-    /**
-     * Returns a promise that is resolved when the component is finished rendering.
-     * This can be used to determine when it is okay to call automation and other APIs on the component.
-     * @returns {Promise}
-     * @expose
-     * @instance
-     * @memberof oj.ojChart
-     */
-    whenReady : function() {
-      return this._super();
     }
   });
 

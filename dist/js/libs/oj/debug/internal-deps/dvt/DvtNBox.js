@@ -6,6 +6,7 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+(function(dvt) {
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -19,7 +20,6 @@ define(['./DvtToolkit'], function(dvt) {
  * @class
  * @constructor
  * @extends {dvt.BaseComponent}
- * @export
  */
 dvt.NBox = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
@@ -34,7 +34,6 @@ dvt.Obj.createSubclass(dvt.NBox, dvt.BaseComponent);
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.NBox}
- * @export
  */
 dvt.NBox.newInstance = function(context, callback, callbackObj) {
   return new dvt.NBox(context, callback, callbackObj);
@@ -45,7 +44,6 @@ dvt.NBox.newInstance = function(context, callback, callbackObj) {
  * Returns a copy of the default options for the specified skin.
  * @param {string} skin The skin whose defaults are being returned.
  * @return {object} The object containing defaults for this component.
- * @export
  */
 dvt.NBox.getDefaults = function(skin) {
   return (new DvtNBoxDefaults()).getDefaults(skin);
@@ -76,12 +74,6 @@ dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
 
   // Make sure the object has an id for clipRect naming
   this.setId('nbox' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
-
-  /**
-   * Reference to animation in progress.
-   * @private
-   */
-  this._animation = null;
 
   /**
    * The legend of the nbox.  This will be set during render time.
@@ -143,7 +135,6 @@ dvt.NBox.prototype.SetOptions = function(options) {
 
 /**
  * @override
- * @export
  */
 dvt.NBox.prototype.render = function(options, width, height) {
   //  If datachange animation, save nbox info before rendering for later use.
@@ -208,10 +199,7 @@ dvt.NBox.prototype.render = function(options, width, height) {
 
   // Animation Support
   // Stop any animation in progress
-  if (this._animation) {
-    this._animationStopped = true;  // TODO Rename
-    this._animation.stop();
-  }
+  this.StopAnimation();
 
   // Construct the new animation playable
   var animationOnDisplay = DvtNBoxStyleUtils.getAnimationOnDisplay(this);
@@ -222,15 +210,15 @@ dvt.NBox.prototype.render = function(options, width, height) {
   if (!this._container) {
     if (animationOnDisplay !== 'none') {
       // AnimationOnDisplay
-      this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), animationOnDisplay, container,
+      this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), animationOnDisplay, container,
           bounds, animationDuration);
     }
   }
   else if (animationOnDataChange != 'none' && options) {
     // AnimationOnDataChange
-    this._animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animationOnDataChange, this._container,
+    this.Animation = dvt.BlackBoxAnimationHandler.getCombinedAnimation(this.getCtx(), animationOnDataChange, this._container,
         container, bounds, animationDuration);
-    if (this._animation) {           // Black Box Animation
+    if (this.Animation) {           // Black Box Animation
       bBlackBoxUpdate = true;
     }
     else {
@@ -239,21 +227,24 @@ dvt.NBox.prototype.render = function(options, width, height) {
       var ah = new DvtNBoxDataAnimationHandler(this.getCtx(), this._deleteContainer, oldNBox, this);
       var nodeOrderFunction = DvtNBoxRenderer.getNodeOrderFunction(this);
       ah.constructAnimation([oldNBox], [this]);
-      this._animation = ah.getAnimation();
-      dvt.Playable.appendOnEnd(this._animation, nodeOrderFunction, this);
+      this.Animation = ah.getAnimation();
+      dvt.Playable.appendOnEnd(this.Animation, nodeOrderFunction, this);
     }
   }
 
   // If an animation was created, play it
-  if (this._animation) {
+  if (this.Animation) {
     this.setMouseEnabled(false);
-    dvt.Playable.appendOnEnd(this._animation, this._onAnimationEnd, this);
+    dvt.Playable.appendOnEnd(this.Animation, this._onAnimationEnd, this);
     if (dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() >= 12) {
       // Edge can return incorrect values for getBBox on text elements after animation
       // Hacking for now by forcing a full non-animated render
-      dvt.Playable.appendOnEnd(this._animation, function() {this.setAnimationAllowed(false); this.render(options); this.setAnimationAllowed(true);}, this);
+      dvt.Playable.appendOnEnd(this.Animation, function() {this.setAnimationAllowed(false); this.render(options); this.setAnimationAllowed(true);}, this);
     }
-    this._animation.play();
+    this.Animation.play();
+  }
+  else {
+    this._onAnimationEnd();
   }
 
   // Clean up the old container.  If doing black box animation, store a pointer and clean
@@ -304,10 +295,14 @@ dvt.NBox.prototype._onAnimationEnd = function() {
   }
   this._deleteContainer = null;
 
-  // Reset the animation flag and reference
-  this._animationStopped = false;
-  this._animation = null;
   this.setMouseEnabled(true);
+  if (!this.AnimationStopped) {
+    this.RenderComplete();
+  }
+
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 
@@ -367,14 +362,6 @@ dvt.NBox.prototype._updateKeyboardFocusEffect = function() {
     this.EventManager.setFocus(newNavigable);
   }
 };
-
-/**
- * @override
- */
-dvt.NBox.prototype.getEventManager = function() {
-  return this.EventManager;
-};
-
 
 /**
  * Processes the specified event.
@@ -739,7 +726,6 @@ dvt.NBox.prototype.__showDropSiteFeedback = function(cell) {
 
 /**
  * @return {DvtNBoxAutomation} the automation object
- * @export
  */
 dvt.NBox.prototype.getAutomation = function() {
   if (!this.Automation)
@@ -756,7 +742,6 @@ dvt.NBox.prototype.GetComponentDescription = function() {
 
 /**
  * @override
- * @export
  */
 dvt.NBox.prototype.highlight = function(categories) {
   // Update the options
@@ -1041,7 +1026,6 @@ dvt.NBoxConstants.COLUMNS_TITLE_STYLE = 'columnsTitleStyle';
 dvt.NBoxConstants.COLUMN_LABEL_STYLE = 'columnLabelStyle';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.MAXIMIZED_COLUMN = 'maximizedColumn';
@@ -1072,7 +1056,6 @@ dvt.NBoxConstants.ROWS_TITLE_STYLE = 'rowsTitleStyle';
 dvt.NBoxConstants.ROW_LABEL_STYLE = 'rowLabelStyle';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.MAXIMIZED_ROW = 'maximizedRow';
@@ -1158,7 +1141,6 @@ dvt.NBoxConstants.SELECTION = 'selection';
 dvt.NBoxConstants.SELECTION_MODE = 'selectionMode';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.SELECTION_INFO = 'selectionInfo';
@@ -1179,7 +1161,6 @@ dvt.NBoxConstants.HIGHLIGHTED_CATEGORIES = 'highlightedCategories';
 dvt.NBoxConstants.HIGHLIGHT_MATCH = 'highlightMatch';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.HIDDEN_CATEGORIES = 'hiddenCategories';
@@ -1240,7 +1221,6 @@ dvt.NBoxConstants.ANIMATION_ON_DISPLAY = 'animationOnDisplay';
 dvt.NBoxConstants.ANIMATION_DURATION = 'animationDuration';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.DRAWER = '_drawer';
@@ -1251,7 +1231,6 @@ dvt.NBoxConstants.DRAWER = '_drawer';
 dvt.NBoxConstants.LEGEND = '_legend';
 
 /**
- * @export
  * @const
  */
 dvt.NBoxConstants.LEGEND_DISCLOSURE = 'legendDisclosure';
@@ -2108,7 +2087,8 @@ DvtNBoxNode.prototype.getDatatip = function(target, x, y) {
 
   // Custom Tooltip Support
   // Custom Tooltip via Function
-  var tooltipFunc = this._nbox.getOptions()['tooltip'];
+  var customTooltip = this._nbox.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc) {
     var dataContext = {
       'id': this._data['id'],
@@ -2909,7 +2889,8 @@ DvtNBoxCategoryNode.prototype.getLabel = function() {
 DvtNBoxCategoryNode.prototype.getDatatip = function(target, x, y) {
   // Custom Tooltip Support
   // Custom Tooltip via Function
-  var tooltipFunc = this._nbox.getOptions()['tooltip'];
+  var customTooltip = this._nbox.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc) {
     var dataContext = {
       'id': this._data['id'],
@@ -3995,7 +3976,6 @@ DvtNBoxKeyboardHandler.getNextNavigableCategoryNode = function(curr, event, navi
  *  @param {dvt.NBox} dvtComponent
  *  @implements {dvt.Automation}
  *  @constructor
- *  @export
  */
 var DvtNBoxAutomation = function(dvtComponent) {
   this.Init(dvtComponent);
@@ -4164,7 +4144,6 @@ DvtNBoxAutomation.prototype._createSubId = function(component, action) {
  *
  * @param {string} subId
  * @return {dvt.Displayable}
- * @export
  * @override
  */
 DvtNBoxAutomation.prototype.getDomElementForSubId = function(subId) {
@@ -4504,7 +4483,6 @@ DvtNBoxAutomation.prototype._getParentObject = function(displayable, type) {
 };
 
 /**
- * @export
  * Get NBox property for the passed key and attribute
  * @param {String} key  NBox property key
  * @param {String} attribute  NBox property attribute
@@ -4554,7 +4532,6 @@ DvtNBoxAutomation.prototype.getData = function(key, attribute) {
 };
 
 /**
- * @export
  * Get group node data from nbox for the passed group map
  * @param {Map|String} groupInfo  map or string containing the grouping info
  * @return {Object}  Group node data object
@@ -4603,7 +4580,6 @@ DvtNBoxAutomation.prototype._getGroupNodeData = function(groupData) {
 };
 
 /**
- * @export
  * Get the NBox cell for the row and column value
  * @param {String} rowValue NBox row value
  * @param {String} columnValue NBox column value
@@ -4626,7 +4602,6 @@ DvtNBoxAutomation.prototype.getCell = function(rowValue, columnValue) {
 };
 
 /**
- * @export
  * Get node from cell for the passed node index
  * @param {Object} cellData  Cell data object
  * @param {Number} nodeIndex  node index
@@ -4644,7 +4619,6 @@ DvtNBoxAutomation.prototype.getCellNode = function(cellData, nodeIndex) {
 
 
 /**
- * @export
  * Get node at given index in node collection
  * @param {Number} nodeIndex  node index
  * @return {Object} node data object
@@ -4687,7 +4661,6 @@ DvtNBoxAutomation.prototype._getNode = function(nodeData) {
 };
 
 /**
- * @export
  * Get group node data from cell for the passed group map
  * @param {Object} cellData  Cell data object
  * @param {Map|String} groupInfo  map or string containing the grouping info
@@ -4729,7 +4702,6 @@ DvtNBoxAutomation.prototype._getMarkerData = function(marker) {
 };
 
 /**
- * @export
  * Get current NBox dialog data
  * @return {object}  NBox dialog data object
  */
@@ -4757,7 +4729,6 @@ DvtNBoxAutomation.prototype.getDialog = function() {
 };
 
 /**
- * @export
  * Get node data from NBox dialog
  * @param {Number} nodeIndex  Node index
  * @return {Object} automation node data
@@ -4776,7 +4747,6 @@ DvtNBoxAutomation.prototype.getDialogNode = function(nodeIndex) {
 
 
 /**
- * @export
  * Get node id from index
  * @param {Number} index node index
  * @return {string} node id
@@ -4786,7 +4756,6 @@ DvtNBoxAutomation.prototype.getNodeIdFromIndex = function(index) {
 };
 
 /**
- * @export
  * Get node index from id
  * @param {string} id node id
  * @return {Number} node index
@@ -6112,25 +6081,29 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, availSpace)
   var keyboardFocusEffect = new dvt.KeyboardFocusEffect(nbox.getCtx(), cellContainer, new dvt.Rectangle(-1, -1, cellRect.getWidth() + 2, cellRect.getHeight() + 2));
   DvtNBoxDataUtils.setDisplayable(nbox, cellData, keyboardFocusEffect, 'focusEffect');
 
-  var addedHeader = DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
+  DvtNBoxCellRenderer.renderHeader(nbox, cellData, cellContainer, false);
 
-  var childContainer = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex) ?
-      new dvt.SimpleScrollableContainer(nbox.getCtx(), cellRect.getWidth(), cellRect.getHeight() - (addedHeader ? cellLayout['headerSize'] : 0)) :
+  var cellMaximized = DvtNBoxDataUtils.isCellMaximized(nbox, cellIndex);
+  var headerSize = cellMaximized ? cellLayout['maximizedHeaderSize'] : cellLayout['headerSize'];
+  var labelHeight = cellMaximized ? cellLayout['maximizedLabelHeight'] : cellLayout['labelHeight'];
+
+  var childContainer = cellMaximized ?
+      new dvt.SimpleScrollableContainer(nbox.getCtx(), cellRect.getWidth(), cellRect.getHeight() - headerSize) :
       new dvt.Container(nbox.getCtx());
 
   cellContainer.addChild(childContainer);
   cellContainer.setChildContainer(childContainer);
 
   var childArea = null;
-  if (addedHeader) {
+  if (labelHeight) {
     if (DvtNBoxCellRenderer._isLabelVertical(nbox, cellData)) {
-      childArea = new dvt.Rectangle(cellLayout['headerSize'], cellTopGap, cellRect.getWidth() - cellLayout['headerSize'] - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
+      childArea = new dvt.Rectangle(headerSize, cellTopGap, cellRect.getWidth() - headerSize - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
     }
     else {
-      childArea = new dvt.Rectangle(cellStartGap, cellLayout['headerSize'], cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellLayout['headerSize'] - cellBottomGap);
+      childArea = new dvt.Rectangle(cellStartGap, headerSize, cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - headerSize - cellBottomGap);
     }
     if (childContainer instanceof dvt.SimpleScrollableContainer)
-      childContainer.setTranslate(0, cellLayout['headerSize']);
+      childContainer.setTranslate(0, headerSize);
   }
   else {
     childArea = new dvt.Rectangle(cellStartGap, cellTopGap, cellRect.getWidth() - cellStartGap - cellEndGap, cellRect.getHeight() - cellTopGap - cellBottomGap);
@@ -6582,26 +6555,33 @@ DvtNBoxCellRenderer._calculateCellLayout = function(nbox) {
   var cellBottomGap = options['__layout']['cellBottomGap'];
   var cellLabelGap = options['__layout']['cellLabelGap'];
   var minimumCellSize = options['__layout']['minimumCellSize'];
+
   var labelHeight = 0;
-  var cellData = DvtNBoxDataUtils.getCell(nbox, 0);
-  if (cellData && cellData[dvt.NBoxConstants.LABEL]) {
-    var halign = cellData[dvt.NBoxConstants.LABEL_HALIGN];
-    var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, 0), halign, dvt.OutputText.V_ALIGN_MIDDLE);
-    labelHeight = dvt.TextUtils.guessTextDimensions(label).h;
-    if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
-      var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][0], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
-      var countLabelHeight = dvt.TextUtils.guessTextDimensions(count).h;
-      labelHeight = Math.max(labelHeight, countLabelHeight);
+  var maximizedLabelHeight = 0;
+  var cellCount = DvtNBoxDataUtils.getRowCount(nbox) * DvtNBoxDataUtils.getColumnCount(nbox);
+  for (var i = 0; i < cellCount; i++) {
+    var cellData = DvtNBoxDataUtils.getCell(nbox, i);
+    if (cellData && cellData[dvt.NBoxConstants.LABEL]) {
+      var halign = cellData[dvt.NBoxConstants.LABEL_HALIGN];
+      var label = DvtNBoxRenderer.createText(nbox.getCtx(), cellData[dvt.NBoxConstants.LABEL], DvtNBoxStyleUtils.getCellLabelStyle(nbox, i), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+      var cellLabelHeight = dvt.TextUtils.guessTextDimensions(label).h;
+      if (DvtNBoxStyleUtils.getCellShowCount(nbox, cellData) == 'on') {
+        var count = DvtNBoxRenderer.createText(nbox.getCtx(), cellCounts['total'][i], DvtNBoxStyleUtils.getCellCountLabelStyle(nbox), halign, dvt.OutputText.V_ALIGN_MIDDLE);
+        var countLabelHeight = dvt.TextUtils.guessTextDimensions(count).h;
+        cellLabelHeight = Math.max(cellLabelHeight, countLabelHeight);
+      }
+      labelHeight = Math.max(labelHeight, cellLabelHeight);
     }
   }
   if (DvtNBoxDataUtils.getMaximizedRow(nbox) && DvtNBoxDataUtils.getMaximizedColumn(nbox)) {
-    labelHeight = Math.max(labelHeight, options['_resources']['close_ena']['height']);
+    maximizedLabelHeight = Math.max(labelHeight, options['_resources']['close_ena']['height']);
   }
 
   var minimizedHeaderSize = labelHeight + cellTopGap + cellBottomGap;
   var headerSize = labelHeight + cellTopGap + cellLabelGap;
+  var maximizedHeaderSize = maximizedLabelHeight + cellTopGap + cellLabelGap;
   minimumCellSize = Math.max(minimizedHeaderSize, minimumCellSize);
-  var cellLayout = {'labelHeight': labelHeight, 'headerSize': headerSize, 'minimizedHeaderSize': minimizedHeaderSize, 'minimumCellSize': minimumCellSize};
+  var cellLayout = {'labelHeight': labelHeight, 'headerSize': headerSize, 'maximizedLabelHeight': maximizedLabelHeight, 'maximizedHeaderSize': maximizedHeaderSize, 'minimumCellSize': minimumCellSize};
   options['__layout']['__cellLayout'] = cellLayout;
   return cellLayout;
 };
@@ -8554,7 +8534,7 @@ DvtNBoxDrawerRenderer.getDrawerBounds = function(nbox, data, availSpace) {
       var r = DvtNBoxDataUtils.getRowIndex(nbox, cell[dvt.NBoxConstants.ROW]);
       var c = DvtNBoxDataUtils.getColumnIndex(nbox, cell[dvt.NBoxConstants.COLUMN]);
       var cellDims = DvtNBoxCellRenderer.getCellDimensions(nbox, r, c, availSpace);
-      drawerBounds = new dvt.Rectangle(cellDims.x + gridGap, cellDims.y + gridGap + cellLayout['headerSize'], Math.max(cellDims.w - 2 * gridGap, 0), Math.max(cellDims.h - cellLayout['headerSize'] - 2 * gridGap, 0));
+      drawerBounds = new dvt.Rectangle(cellDims.x + gridGap, cellDims.y + gridGap + cellLayout['maximizedHeaderSize'], Math.max(cellDims.w - 2 * gridGap, 0), Math.max(cellDims.h - cellLayout['maximizedHeaderSize'] - 2 * gridGap, 0));
     }
   }
   return drawerBounds;
@@ -10180,6 +10160,25 @@ DvtNBoxStyleUtils.getLabelHalign = function(nbox, data) {
     return rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT;
   }
 };
+dvt.exportProperty(dvt, 'NBox', dvt.NBox);
+dvt.exportProperty(dvt.NBox, 'newInstance', dvt.NBox.newInstance);
+dvt.exportProperty(dvt.NBox.prototype, 'render', dvt.NBox.prototype.render);
+dvt.exportProperty(dvt.NBox.prototype, 'getAutomation', dvt.NBox.prototype.getAutomation);
+dvt.exportProperty(dvt.NBox.prototype, 'highlight', dvt.NBox.prototype.highlight);
+
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDomElementForSubId', DvtNBoxAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getData', DvtNBoxAutomation.prototype.getData);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getGroupNode', DvtNBoxAutomation.prototype.getGroupNode);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCell', DvtNBoxAutomation.prototype.getCell);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCellNode', DvtNBoxAutomation.prototype.getCellNode);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNode', DvtNBoxAutomation.prototype.getNode);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getCellGroupNode', DvtNBoxAutomation.prototype.getCellGroupNode);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDialog', DvtNBoxAutomation.prototype.getDialog);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getDialogNode', DvtNBoxAutomation.prototype.getDialogNode);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIdFromIndex', DvtNBoxAutomation.prototype.getNodeIdFromIndex);
+dvt.exportProperty(DvtNBoxAutomation.prototype, 'getNodeIndexFromId', DvtNBoxAutomation.prototype.getNodeIndexFromId);
+
+})(dvt);
 
   return dvt;
 });

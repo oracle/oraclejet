@@ -542,11 +542,7 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
 
 /*
 ** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
 */
-
-
 
 /**
  * Composite Components' APIs
@@ -556,32 +552,23 @@ oj.Composite = {};
 
 
 /**
- * Default configuration values
+ * Default configuration values.
  * Composite component conventions may be overridden for the entire application after the ojs/ojcomposite
  * module is loaded. For example:
  * <p><code class="prettyprint">
- * oj.Composite.defaults.modelPath = 'models/';
+ * oj.Composite.defaults.bindingsAppliedMethod = 'applied';
  * </code></p>
- * @property {string} viewPath default View path. Defaults to 'text!composite/views/'
- * @property {string} viewSuffix default View suffix. Defaults to '.html'
- * @property {string} modelPath default Model suffix. Defaults to 'composite/viewModels//'
- * @property {string} initializeMethod name of the initialialization method
- * @property {string} activatedMethod name of the method invoked after the Model is instantiated
- * @property {string} attachedMethod name of the method invoked when the view is inserted into the document DOM
- * @property {string} bindingsAppliedMethod name of the method invoked after the bindings are applied on the View
- * @property {string} disposeMethod name of the dispose method
+ * @property {string} initializeMethod The name of the initialialization method. Defaults to 'initialize'.
+ * @property {string} activatedMethod The name of the method invoked after the Model is instantiated. Defaults to 'activated'.
+ * @property {string} attachedMethod The name of the method invoked when the View is inserted into the document DOM. Defaults to 'attached'.
+ * @property {string} bindingsAppliedMethod The name of the method invoked after the bindings are applied on the View. Defaults to 'bindingsApplied'.
+ * @property {string} disposeMethod The name of the dispose method. Defaults to 'dispose'.
  *
  * @export
  * @memberof oj.Composite
  */
 oj.Composite.defaults =
 {
-  'viewPath': 'text!composite/views/',
-  'viewSuffix': '.html',
-  'modelPath': 'composite/viewModels/',
-  'metadataPath': 'text!composite/metadata/',
-  'metadataSuffix': '.json',
-  'cssPath': 'css!composite/css/',
   'initializeMethod': 'initialize',
   'activatedMethod': 'activated',
   'attachedMethod': 'attached',
@@ -591,32 +578,25 @@ oj.Composite.defaults =
 
 /**
  * Registers a composite component
- * @param {string} name the component name.
- *
- * @param {Object} descriptor registration descriptor. The descriptor will contain keys for metadata, view, viewModel
- * and metadatda that are detailed below. The value for each key is a plain Javascript object that describes the loading
+ * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
+ * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
+ * and CSS that are detailed below. A View is required, but all others are optional.
+ * See the <a href="#registration">registration section</a> above for a sample usage.
+ * The value for each key is a plain Javascript object that describes the loading
  * behavior. One of the following keys must be set on the object:
  * <ul>
- * <li>require - specifies the name of the Require.js module</li>
  * <li>promise - specifies the promise instance</li>
- * <li>inline - provides the object inline which can be of the following types:
- * <ul>
- * <li>metadata - JSON object</li>
- * <li>view - string, array of DOM nodes, or document fragment</li>
- * <li>css - string</li>
- * <li>viewModel - constructor function or object instance</li>
+ * <li>inline - provides the object inline</li>
  * </ul>
- * </li>
- * </ul>
- * @param {Object} descriptor.metadata describes how component metadata is loaded. The object must contain one of the keys
- * documented above.
- * @param {Object} descriptor.view describes how component's View is loaded. The object must contain one of the keys
- * documented above.
- * @param {Object} descriptor.css describes how component's CSS is loaded. If specified, the object must contain one of the keys
- * documented above.
- * @param {Object} descriptor.viewModel describes how component's viewModel is loaded. If specified, the object must contain one of the keys
+ * @param {Object} descriptor.metadata Describes how component Metadata is loaded. The object must contain one of the keys
+ * documented above and ultimately resolve to a JSON object.
+ * @param {Object} descriptor.view Describes how component's View is loaded. The object must contain one of the keys
+ * documented above and ultimately resolve to a string, array of DOM nodes, or document fragment.
+ * @param {Object} descriptor.css Describes how component's CSS is loaded. If specified, the object must contain one of the keys
+ * documented above and ultimately resolve to a string if loaded inline or as a Promise.
+ * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
  * documented above. This option is only applicable to composites hosting a Knockout template
- * with a ViewModel
+ * with a ViewModel and ultimately resolve to a constructor function or object instance
  *
  * @export
  * @memberof oj.Composite
@@ -833,21 +813,17 @@ ko['bindingHandlers']['ojComposite'] =
                 wrapToCheckLoadId(
                   function(css)
                   {
-                    // The block below is only for the case that css is loaded inline
-                    // or via a promise.  When css is loaded via require the css obj is null.
-                    if (css) {
-                      var style = document.createElement('style');
-                      style.type = 'text/css';
-                      if (style.styleSheet) // for IE
-                      {
-                        style.styleSheet.cssText = css;
-                      }
-                      else
-                      {
-                        style.appendChild(document.createTextNode(css));
-                      }
-                      document.head.appendChild(style);
+                    var style = document.createElement('style');
+                    style.type = 'text/css';
+                    if (style.styleSheet) // for IE
+                    {
+                      style.styleSheet.cssText = css;
                     }
+                    else
+                    {
+                      style.appendChild(document.createTextNode(css));
+                    }
+                    document.head.appendChild(style);
                   }
                 )
               );
@@ -980,35 +956,6 @@ function _getResourcePromise(descriptor, resourceType)
         break;
       case 'promise':
         promise = val;
-        break;
-      case 'require':
-        var module = _getResourceModuleName(val, resourceType);
-        promise = new Promise(
-          function(resolve, reject)
-          {
-            require([module],
-              function(loaded)
-              {
-                resolve(resourceType === 'metadata' ? JSON.parse(loaded) : loaded);
-              },
-              function(reason)
-              {
-                var error = "ojComposite failed to load " + module;
-                if (reason && typeof(reason) === 'string')
-                {
-                  error = error + " due to: " + reason;
-                }
-                oj.Logger.error(error);
-                // Additionally log the stack trace for the original error
-                if (reason instanceof Error)
-                {
-                  oj.Logger.error(reason.stack);
-                }
-              }
-
-            );
-          }
-        );
         break;
       default:
         throw "Invalid descriptor key " + key + " for the resopurce type: " + resourceType;

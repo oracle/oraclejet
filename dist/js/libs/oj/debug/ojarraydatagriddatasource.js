@@ -714,6 +714,7 @@ oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, c
     if (atKey === null)
     {
         this.data.push(moveData);
+        atKeyIndex = this.data.length - 1;        
     }
     else
     {

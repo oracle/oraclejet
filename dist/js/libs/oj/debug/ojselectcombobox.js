@@ -2613,6 +2613,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
             _ComboUtils.killEvent(e);
           }
           ));
+		  
+		this.search.on("input", this._bind(function (e) 
+		  {
+		    this.ojContext._SetRawValue(this.search.val(), e);
+		  }
+		  ));
 
         this.search.on("blur keyup", this._bind(function (e)
           {
@@ -4027,6 +4033,12 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
             this.keydowns = 0;
           }
           ));
+		  
+		this.search.on("input", this._bind(function (e) 
+		  {
+		    this.ojContext._SetRawValue(this.search.val(), e);
+		  }
+		  ));
 
         this.search.on("blur keyup", this._bind(function (e)
           {
@@ -5006,7 +5018,29 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
        * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {} );
        */
-      beforeExpand : null
+      beforeExpand : null,
+	  
+	  /**
+	   * <p>The  <code class="prettyprint">rawValue</code> is the read-only option for retrieving 
+       * the currently displayed value from the input field in text form.</p>
+       * <p>
+       * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event, 
+       * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. 
+       * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2', 
+       * ..., and finally '1,200'. Then when the user blurs or presses 
+       * Enter the <code class="prettyprint">value</code> option gets updated.
+       * </p>
+       * <p>This is a read-only option so page authors cannot set or change it directly.</p>
+       * @expose 
+       * @access public
+       * @instance
+       * @default n/a
+       * @memberof! oj.ojCombobox
+       * @type {string|undefined}
+       * @since 1.2.1
+       * @readonly
+       */
+      rawValue: undefined    
 
       /**
        * The type of value is an array, and an array will always be returned from the component.
@@ -7369,6 +7403,28 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {} );
        */
       beforeExpand : null,
+      
+      /**
+	   * <p>The  <code class="prettyprint">rawValue</code> is the read-only option for retrieving 
+       * the currently displayed value from the input field in text form.</p>
+       * <p>
+       * The <code class="prettyprint">rawValue</code> updates on the 'input' javascript event, 
+       * so the <code class="prettyprint">rawValue</code> changes as the value of the input is changed. 
+       * If the user types in '1,200' into the field, the rawValue will be '1', then '1,', then '1,2', 
+       * ..., and finally '1,200'. Then when the user blurs or presses 
+       * Enter the <code class="prettyprint">value</code> option gets updated.
+       * </p>
+       * <p>This is a read-only option so page authors cannot set or change it directly.</p>
+       * @expose 
+       * @access public
+       * @instance
+       * @default n/a
+       * @memberof! oj.ojInputSearch
+       * @type {string|undefined}
+       * @since 2.0.2
+       * @readonly
+       */
+      rawValue: undefined,  
 
       /**
        * Fired whenever a supported component option changes, whether due to user interaction or programmatic

@@ -10,19 +10,7 @@
   @if map-has-key($cornerEdges, $edge) {
     $rotatePct: map-get($cornerEdges, $edge);
     @return oj-svg-url(
-      "<svg xmlns='http://www.w3.org/2000/svg' width='40px' height='40px'>" +
-        "<defs><filter id='f1' x='0' y='0'><feGaussianBlur in='SourceGraphic' stdDeviation='1'/></filter></defs>" +
-        "<g transform='rotate(#{$rotatePct}, 20, 20) translate(-8)'>" +
-          "<g style='stroke-width:1;fill-rule:evenodd;'>" +
-            "<polygon points='40,0 0,20 40,40 0,20' style='fill:#{$overlayBgColor};stroke:#{$overlayBgColor};stroke-opacity:.2' filter='url(#f1)' transform='translate(-1)'/>" +
-            "<polygon points='40,0 0,20 40,40 24,20' style='fill:#{$fillColor};stroke:#{$fillColor};'/>" +  
-          "</g>" +
-          "<g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'>" +
-            "<line x1='40' y1='0' x2='0' y2='20'/>" +
-            "<line x1='40' y1='40' x2='0' y2='20'/>" +
-          "</g>" +
-        "</g>" +
-      "</svg>");
+      "<svg xmlns='http://www.w3.org/2000/svg' width='40px' height='40px'><defs><filter id='f1' x='0' y='0'><feGaussianBlur in='SourceGraphic' stdDeviation='1'/></filter></defs><g transform='rotate(#{$rotatePct}, 20, 20) translate(-8)'><g style='stroke-width:1;fill-rule:evenodd;'><polygon points='40,0 0,20 40,40 0,20' style='fill:#{$overlayBgColor};stroke:#{$overlayBgColor};stroke-opacity:.2' filter='url(#f1)' transform='translate(-1)'/><polygon points='40,0 0,20 40,40 24,20' style='fill:#{$fillColor};stroke:#{$fillColor};'/></g><g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'><line x1='40' y1='0' x2='0' y2='20'/><line x1='40' y1='40' x2='0' y2='20'/></g></g></svg>");
   } @else {
     $sideEdges: (
       'left-middle':('width':21px, 'height':44px, 'x1':21, 'y1':44, 'x2':1, 'y2':22, 'x3':21, 'y3':0),
@@ -42,17 +30,7 @@
     $y3: map-get($edgeInfo, 'y3'); 
     
     @return oj-svg-url(
-      "<svg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}'>" +
-        "<defs><filter id='f1' x='0' y='0'><feGaussianBlur in='SourceGraphic' stdDeviation='1.25'/></filter></defs>" +
-        "<g style='stroke:#{$fillColor};stroke-width:1;fill-rule:evenodd;'>" +
-          "<polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$overlayBgColor};' filter='url(#f1)'/>" + 
-          "<polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$fillColor}'/>" +
-        "</g>" +
-        "<g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'>" +
-          "<line x1='#{$x1}' y1='#{$y1}' x2='#{$x2}' y2='#{$y2}'/>" +
-          "<line x1='#{$x3}' y1='#{$y3}' x2='#{$x2}' y2='#{$y2}'/>" +
-        "</g>" +
-      "</svg>");
+      "<svg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}'><defs><filter id='f1' x='0' y='0'><feGaussianBlur in='SourceGraphic' stdDeviation='1.25'/></filter></defs><g style='stroke:#{$fillColor};stroke-width:1;fill-rule:evenodd;'><polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$overlayBgColor};' filter='url(#f1)'/><polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$fillColor}'/></g><g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'><line x1='#{$x1}' y1='#{$y1}' x2='#{$x2}' y2='#{$y2}'/><line x1='#{$x3}' y1='#{$y3}' x2='#{$x2}' y2='#{$y2}'/></g></svg>");
   }
 }
 

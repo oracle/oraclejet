@@ -1123,6 +1123,12 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     // Fire 'destroy' event
     this._trigger('destroy');
+    
+    // Since jQuery event listeners get removed before the destroy() method whne jQuery.clean() cleans up the subtree,
+    // we need to fire a custom DOM event as well. This will allow component binding to execute destroy callbacks for
+    // custom bindings and managed attributes.
+    
+    this.element[0].dispatchEvent(new CustomEvent("_ojDestroy", {"bubbles": false}));
 
     this._super();
 
@@ -3664,45 +3670,47 @@ oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
 };
 
 /**
- * Returns <code>true</code> if the jquery element is visible within overflow
- * areas. The check only considers statically positioned elements.  The first positioned
- * ancestor is treated as the root viewport. Positioned elements would need to be
- * compared with the window viewport versus its ancestors.  Visibility of positioned
- * elements would also need to compare the stacking context of the document to determine
- * what is visible.
+ * Returns <code>true</code> if the jquery element is visible within overflow an
+ * overflow container. The check only considers statically positioned elements and
+ * stops short of the body.
  *
- * The second argument extends the check to the browser viewport.  The second argument
- * is not enabled by default as it plays havic qunit tests that position the "qunit-fixture"
- * off screen. This is also another reason for not trying to consider positioned elements.
+ * The first positioned ancestor is treated as the root viewport. Positioned elements need be
+ * compared with the window viewport versus its ancestors.  Visibility of positioned
+ * elements also need to compare stacking contexts within the document to determine
+ * what is on top "visible" - thus excluded from this check.
  *
  * @param {jQuery} element jquery element to test
- * @param {boolean=} checkBrowserViewport if <code>true</code> the check will include the
- *                   browser viewport.
  * @returns {boolean}
  */
-oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
+oj.DomUtils.isWithinViewport = function(element)
 {
 
   function isVisible(alignBox, containerBox)
   {
-    // 1px fudge factor for rounding errors
-    if ((alignBox["bottom"] - containerBox["top"]) < -1)
-      return false;
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowY"]) > -1)
+    {
+      // 1px fudge factor for rounding errors
+      if ((alignBox["bottom"] - containerBox["top"]) < -1)
+        return false;
 
-    var scrollBarWidth = (containerBox["overflowY"] === "auto" || containerBox["overflowY"] === "scroll") ?
+      var scrollBarWidth = (containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") ?
                           oj.DomUtils.getScrollBarWidth() : 0;
-    if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
-      return false;
+      if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
+        return false;
+    }
 
-    scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowX"]) > -1)
+    {
+      scrollBarWidth = ((containerBox["overflowY"] === "auto" || containerBox["overflowY"] === "scroll") &&
                        oj.DomUtils.getReadingDirection() === "rtl") ? oj.DomUtils.getScrollBarWidth() : 0;
-    if ((alignBox["right"] - (containerBox["left"] + scrollBarWidth)) < -1)
-      return false;
+      if ((alignBox["right"] - (containerBox["left"] + scrollBarWidth)) < -1)
+        return false;
 
-    scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
+      var scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
                        oj.DomUtils.getReadingDirection() === "ltr") ? oj.DomUtils.getScrollBarWidth() : 0;
-    if ((alignBox["left"] - (containerBox["right"] - scrollBarWidth)) > -1)
-      return false;
+      if ((alignBox["left"] - (containerBox["right"] - scrollBarWidth)) > -1)
+        return false;
+    }
 
     return true;
   };
@@ -3718,7 +3726,7 @@ oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
     var domElement = element[0];
     if (domElement.nodeType === 1)
     {
-      var rec = domElement.getBoundingClientRect();
+      var rec = $.extend({}, domElement.getBoundingClientRect());
       rec["overflowX"] = element.css("overflow-x");
       rec["overflowY"] = element.css("overflow-y");
       return rec;
@@ -3728,7 +3736,7 @@ oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
       var rec =
         {
           'width': domElement['innerWidth'],
-			    'height': domElement['innerHeight'],
+          'height': domElement['innerHeight'],
           'top': 0,
           'bottom': domElement['innerHeight'],
           'left': 0,
@@ -3750,17 +3758,15 @@ oj.DomUtils.isWithinViewport = function(element, checkBrowserViewport)
 
   if (!element)
     return false;
+  else if ($.isWindow(element[0]) || isPositioned(element))
+    return true;
 
   var alignBox = getRect(element);
-
-  // is the element visible in the browser viewport.
-  if (checkBrowserViewport && !isVisible(alignBox, getRect($(window))))
-    return false;
 
   // check that the element is not hidden in overflow
   var isWithinViewPort = true;
   var parent = element.parent();
-  while (isWithinViewPort && parent && parent.length > 0 && parent[0].nodeType === 1 && !isPositioned(parent))
+  while (isWithinViewPort && parent && parent.length > 0 &&  "BODY" !== parent[0].nodeName && parent[0].nodeType === 1 && !isPositioned(parent))
   {
     if (hasOverflow(parent))
     {

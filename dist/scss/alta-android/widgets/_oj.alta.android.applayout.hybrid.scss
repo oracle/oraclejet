@@ -27,16 +27,6 @@
       @extend .oj-flex-bar-middle;
     }
 
-    // Remove header border and shadow when non-fixed nav bar is present
-    .oj-hybrid-applayout-navbar-non-fixed .oj-hybrid-applayout-header {
-      @include oj-box-shadow(none);
-    }
-
-    .oj-hybrid-applayout-navbar-non-fixed .oj-hybrid-applayout-header,
-    .oj-hybrid-applayout-navbar-non-fixed .oj-hybrid-applayout-navbar {
-      border-style: none;
-    }
-
     // BACK ARROW
     .oj-hybrid-applayout-header-icon-back {
       @extend .oj-fwk-icon-arrowtail-start;

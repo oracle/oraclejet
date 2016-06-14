@@ -3277,10 +3277,6 @@ html[dir="rtl"] .oj-menu-item > a {
 .oj-navigationlist-item-dividers .oj-navigationlist-divider {
   display: list-item; }
 
-.oj-navigationlist-horizontal .oj-navigationlist-element,
-.oj-navigationlist-icon-only .oj-navigationlist-element {
-  margin: 1px; }
-
 /* Basic styling  for all ul elements in list*/
 .oj-navigationlist-element, .oj-navigationlist-group {
   list-style-type: none;
@@ -3307,6 +3303,12 @@ html[dir="rtl"] .oj-menu-item > a {
   content: "";
   display: inline-block;
   visibility: hidden; }
+
+.oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
+  min-height: 3.333rem; }
+
+.oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item-label {
+  font-size: 1.067rem; }
 
 /* Styling for expand/collapse icons holder */
 .oj-navigationlist-collapse-icon,
@@ -3624,19 +3626,13 @@ html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-vertical.o
   .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item {
     border-width: 0 0 0 3px; }
 
-.oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type,
+html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type, html[dir="rtl"]
 .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
-  border-radius: 0 0 0 0; }
-  html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type, html[dir="rtl"]
-  .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
-    border-top-width: 0; }
-  html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type, html:not([dir="rtl"])
-  .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
-    border-top-width: 0; }
+  border-top-width: 0; }
 
-.oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type,
-.oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
-  border-radius: 0 0 0 0; }
+html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type, html:not([dir="rtl"])
+.oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
+  border-top-width: 0; }
 
 .oj-navigationlist-icon-only .oj-navigationlist-item-content {
   -webkit-justify-content: center;
@@ -3750,7 +3746,10 @@ html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-vertical.o
 
 .oj-navigationlist-horizontal .oj-navigationlist-item-element {
   box-sizing: border-box;
-  min-height: 2.375rem; }
+  min-height: 3.2rem; }
+
+.oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
+  min-height: 3.2rem; }
 
 .oj-navigationlist-horizontal .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
   color: #0572ce; }
@@ -3783,13 +3782,13 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
   margin-right: 0; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
-  border-width: 0 0 3px 0;
+  border-width: 0;
   border-style: solid; }
 
 /*End of  horizontal navigationlist styles icons only*/
 /*Start of  horizontal navigationlist styles excluding icons only*/
 .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
-  border-width: 0 0 3px 0;
+  border-width: 0;
   border-style: solid; }
 
 .oj-hicontrast .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
@@ -3809,7 +3808,7 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
   -webkit-justify-content: center;
   justify-content: center;
-  padding: 4px 0.625rem 4px; }
+  padding: 4px 0.625rem 2px; }
 
 .oj-navigationlist-horizontal:not(.oj-navigationlist-stack-icon-label):not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
   -webkit-align-self: center;
@@ -3822,7 +3821,10 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 /*End of  horizontal navigationlist styles excluding icons only*/
 /*Start of  horizontal stacked icon label navigationlist styles */
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
-  min-height: 3.375rem; }
+  min-height: 4rem; }
+
+.oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
+  min-height: 4rem; }
 
 .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-divider {
   height: 2.714rem; }
@@ -3837,7 +3839,10 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 /*End of  horizontal stacked icon label navigationlist styles */
 /* Start of App Level navbar styles */
 .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
-  font-size: 0.812rem; }
+  font-size: 0.8rem; }
+
+.oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
+  font-size: 1.067rem; }
 
 .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
   color: #595959; }
@@ -3881,21 +3886,11 @@ html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-na
 
 html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html:not([dir="rtl"])
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
-  border-left-width: 0;
-  border-radius: 0 0 0 0; }
+  border-left-width: 0; }
 
 html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type, html[dir="rtl"]
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
-  border-right-width: 0;
-  border-radius: 0 0 0 0; }
-
-html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html:not([dir="rtl"])
-.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
-  border-radius: 0 0 0 0; }
-
-html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type, html[dir="rtl"]
-.oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type {
-  border-radius: 0 0 0 0; }
+  border-right-width: 0; }
 
 .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
 .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
@@ -12462,9 +12457,9 @@ html[dir="rtl"] .oj-hybrid-padding-end, html[dir="rtl"] .oj-hybrid-applayout-hea
 
 .oj-hybrid-applayout-header, .oj-hybrid-applayout-header-no-border,
 .oj-hybrid-applayout-footer,
-.oj-hybrid-applayout-navbar,
 .oj-hybrid-applayout-navbar-fixed-top,
-.oj-hybrid-applayout-navbar-fixed-bottom {
+.oj-hybrid-applayout-navbar-fixed-bottom,
+.oj-hybrid-applayout-navbar {
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto; }
 
@@ -12533,28 +12528,24 @@ html[dir="rtl"] .oj-hybrid-applayout-header .oj-flex-bar-end .oj-button:last-chi
   box-sizing: border-box;
   margin: 0; }
 
-.oj-hybrid-applayout-navbar, .oj-hybrid-applayout-navbar-fixed-top, .oj-hybrid-applayout-navbar-fixed-bottom {
-  -webkit-order: -1;
-  order: -1;
+.oj-hybrid-applayout-navbar-fixed-top, .oj-hybrid-applayout-navbar-fixed-bottom, .oj-hybrid-applayout-navbar {
   background-color: #f6f6f7; }
+
+.oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element {
+  margin: 0; }
 
 .oj-hybrid-applayout-navbar-fixed-top {
   -webkit-order: -1;
-  order: -1;
-  border-style: none; }
+  order: -1; }
 
-.oj-hybrid-applayout-navbar-fixed-bottom {
+.oj-hybrid-applayout-navbar-fixed-bottom, .oj-hybrid-applayout-navbar {
   -webkit-order: 1;
-  order: 1; }
+  order: 1;
+  box-shadow: none; }
 
-.oj-hybrid-applayout-navbar .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-horizontal .oj-navigationlist-element, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-horizontal .oj-navigationlist-element {
-  margin: 0; }
-
-.oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-selected, .oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-item.oj-selected, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-selected,
-.oj-hybrid-applayout-navbar .oj-navigationlist-item.oj-hover, .oj-hybrid-applayout-navbar-fixed-top .oj-navigationlist-item.oj-hover, .oj-hybrid-applayout-navbar-fixed-bottom .oj-navigationlist-item.oj-hover {
-  border-style: solid; }
-
-/* Apply to page when a header and non fixed nav bar are present
+/* Deprecated. Applications should use oj-hybrid-applayout-navbar-fixed-bottom or 
+      oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
+/* Deprecated. Apply to page when a header and non fixed nav bar are present
        so we can correctly style the header and nav bar borders */
 .oj-web-applayout-offcanvas {
   background-color: #313334;

@@ -6,6 +6,7 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+(function(dvt) {
 /**
  * TagCloud component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
@@ -14,7 +15,6 @@ define(['./DvtToolkit'], function(dvt) {
  * @class
  * @constructor
  * @extends {dvt.Container}
- * @export
  */
 dvt.TagCloud = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
@@ -30,7 +30,6 @@ dvt.Obj.createSubclass(dvt.TagCloud, dvt.BaseComponent);
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.TagCloud}
- * @export
  */
 dvt.TagCloud.newInstance = function(context, callback, callbackObj) {
   return new dvt.TagCloud(context, callback, callbackObj);
@@ -73,7 +72,6 @@ dvt.TagCloud.prototype.Init = function(context, callback, callbackObj) {
 
 /**
  * @override
- * @export
  */
 dvt.TagCloud.prototype.render = function(options, width, height) {
   // Update the width and height if provided
@@ -90,9 +88,7 @@ dvt.TagCloud.prototype.render = function(options, width, height) {
 
   // Animation Support
   // Stop any animation in progress
-  if (this._animation) {
-    this._animation.stop();
-  }
+  this.StopAnimation();
 
   // Update old references
   this._oldContainer = this._container;
@@ -113,7 +109,7 @@ dvt.TagCloud.prototype.render = function(options, width, height) {
   var bounds = new dvt.Rectangle(0, 0, this.Width, this.Height);
   if (!this._oldContainer) {
     if (this.Options['animationOnDisplay'] !== 'none') {
-      this._animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), dvt.BlackBoxAnimationHandler.ALPHA_FADE, this._container, bounds, animationDuration);
+      this.Animation = dvt.BlackBoxAnimationHandler.getInAnimation(this.getCtx(), dvt.BlackBoxAnimationHandler.ALPHA_FADE, this._container, bounds, animationDuration);
     }
   }
   else if (this.Options['animationOnDataChange'] !== 'none' && options) {
@@ -122,16 +118,16 @@ dvt.TagCloud.prototype.render = function(options, width, height) {
     this.addChild(this._deleteContainer);
     var ah = new dvt.DataAnimationHandler(this.getCtx(), this._deleteContainer);
     ah.constructAnimation(this._oldItems, this._items);
-    this._animation = ah.getAnimation();
+    this.Animation = ah.getAnimation();
   }
 
   // If an animation was created, play it
-  if (this._animation) {
+  if (this.Animation) {
     this.EventManager.hideTooltip();
     // Disable event listeners temporarily
     this.EventManager.removeListeners(this);
-    this._animation.setOnEnd(this.OnRenderEnd, this);
-    this._animation.play();
+    this.Animation.setOnEnd(this.OnRenderEnd, this);
+    this.Animation.play();
   } else {
     this.OnRenderEnd();
   }
@@ -150,7 +146,6 @@ dvt.TagCloud.prototype.registerItems = function(items) {
 /**
  * Returns the automation object for this thematic map
  * @return {dvt.Automation} The automation object
- * @export
  */
 dvt.TagCloud.prototype.getAutomation = function() {
   if (!this.Automation)
@@ -187,7 +182,6 @@ dvt.TagCloud.prototype.getItems = function() {
 
 /**
  * @override
- * @export
  */
 dvt.TagCloud.prototype.highlight = function(categories) {
   // Update the options
@@ -202,7 +196,6 @@ dvt.TagCloud.prototype.highlight = function(categories) {
 
 /**
  * @override
- * @export
  */
 dvt.TagCloud.prototype.select = function(selection) {
   // Update the options
@@ -269,8 +262,7 @@ dvt.TagCloud.prototype.OnRenderEnd = function() {
     this._deleteContainer = null;
   }
 
-  if (this._animation) {
-    this._animation = null;
+  if (this.Animation) {
     // Restore event listeners
     this.EventManager.addListeners(this);
   }
@@ -278,6 +270,14 @@ dvt.TagCloud.prototype.OnRenderEnd = function() {
   // Initial Highlighting
   if (this.Options['highlightedCategories'] && this.Options['highlightedCategories'].length > 0)
     this.highlight(this.Options['highlightedCategories']);
+
+  if (!this.AnimationStopped) {
+    this.RenderComplete();
+  }
+
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 /**
@@ -288,13 +288,6 @@ dvt.TagCloud.prototype.__cleanUp = function() {
   this.EventManager.hideTooltip();
   // Clear the list of registered peers
   this._peers.length = 0;
-};
-
-/**
- * @override
- */
-dvt.TagCloud.prototype.getEventManager = function() {
-  return this.EventManager;
 };
 
 /**
@@ -385,7 +378,6 @@ dvt.TagCloud.prototype.getDragFeedback = function() {
  * @param {number} mouseY the x coordinate of the mouse
  * @param {array} clientIds the array of client ids of the valid drag components
  * @return {string} return the drag source clientId if dragging is supported
- * @export
  */
 dvt.TagCloud.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
   return this._dragSource.isDragAvailable(clientIds);
@@ -396,7 +388,6 @@ dvt.TagCloud.prototype.isDragAvailable = function(mouseX, mouseY, clientIds) {
  * @param {number} mouseX the x coordinate of the mouse
  * @param {number} mouseY the x coordinate of the mouse
  * @return {array} returns array of rowKeys of the drag
- * @export
  */
 dvt.TagCloud.prototype.getDragTransferable = function(mouseX, mouseY) {
   return this._dragSource.getDragTransferable(mouseX, mouseY);
@@ -407,7 +398,6 @@ dvt.TagCloud.prototype.getDragTransferable = function(mouseX, mouseY) {
  * @param {number} mouseX the x coordinate of the mouse
  * @param {number} mouseY the x coordinate of the mouse
  * @return {array} returns array of displayables of the drag
- * @export
  */
 dvt.TagCloud.prototype.getDragOverFeedback = function(mouseX, mouseY) {
   return this._dragSource.getDragOverFeedback(mouseX, mouseY);
@@ -418,7 +408,6 @@ dvt.TagCloud.prototype.getDragOverFeedback = function(mouseX, mouseY) {
  * @param {number} mouseX the x coordinate of the mouse
  * @param {number} mouseY the x coordinate of the mouse
  * @return {object} drag context
- * @export
  */
 dvt.TagCloud.prototype.getDragContext = function(mouseX, mouseY) {
   return this._dragSource.getDragContext(mouseX, mouseY);
@@ -430,7 +419,6 @@ dvt.TagCloud.prototype.getDragContext = function(mouseX, mouseY) {
  * @param {number} mouseX the x coordinate of the mouse
  * @param {number} mouseY the x coordinate of the mouse
  * @return {object} drag offset coordinates
- * @export
  */
 dvt.TagCloud.prototype.getDragOffset = function(mouseX, mouseY) {
   return this._dragSource.getDragOffset(mouseX, mouseY);
@@ -441,7 +429,6 @@ dvt.TagCloud.prototype.getDragOffset = function(mouseX, mouseY) {
  * @param {number} xOffset the x office
  * @param {number} yOffset the x offset
  * @return {object} pointer offset coordinates
- * @export
  */
 dvt.TagCloud.prototype.getPointerOffset = function(xOffset, yOffset) {
   return this._dragSource.getPointerOffset(xOffset, yOffset);
@@ -449,7 +436,6 @@ dvt.TagCloud.prototype.getPointerOffset = function(xOffset, yOffset) {
 
 /**
  * Notifies the component that a drag started.
- * @export
  */
 dvt.TagCloud.prototype.initiateDrag = function() {
   this._dragSource.initiateDrag();
@@ -457,7 +443,6 @@ dvt.TagCloud.prototype.initiateDrag = function() {
 
 /**
  * Clean up after the drag is completed.
- * @export
  */
 dvt.TagCloud.prototype.dragDropEnd = function() {
   this._dragSource.dragDropEnd();
@@ -470,7 +455,6 @@ dvt.TagCloud.prototype.dragDropEnd = function() {
  * @param {number} mouseY the x coordinate of the mouse
  * @param {array} clientIds the array of client ids of the valid drag components
  * @return {string} return the drop target clientId
- * @export
  */
 dvt.TagCloud.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
   if (!this._dropTarget)
@@ -483,7 +467,6 @@ dvt.TagCloud.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
  * @param {dvt.TagCloud} dvtComponent
  * @implements {dvt.Automation}
  * @constructor
- * @export
  */
 var DvtTagCloudAutomation = function(dvtComponent) {
   this._tagCloud = dvtComponent;
@@ -515,7 +498,6 @@ DvtTagCloudAutomation.prototype.GetSubIdForDomElement = function(displayable) {
  * <li>tooltip</li>
  * </ul>
  * @override
- * @export
  */
 DvtTagCloudAutomation.prototype.getDomElementForSubId = function(subId) {
   if (subId == dvt.Automation.TOOLTIP_SUBID)
@@ -545,7 +527,6 @@ DvtTagCloudAutomation.prototype.getDomElementForSubId = function(subId) {
  * </ul>
  * @param {Number} index The index of the tag cloud item
  * @return {Object} An object containing data for the tag cloud item
- * @export
  */
 DvtTagCloudAutomation.prototype.getItem = function(index) {
   var peer = this._tagCloud.getItems()[index];
@@ -564,7 +545,6 @@ DvtTagCloudAutomation.prototype.getItem = function(index) {
 /**
  * Returns the number of items in the tag cloud
  * @return {Number}
- * @export
  */
 DvtTagCloudAutomation.prototype.getItemCount = function() {
   return this._tagCloud.getObjects().length;
@@ -918,7 +898,8 @@ DvtTagCloudObjPeer.prototype.getAction = function() {
  */
 DvtTagCloudObjPeer.prototype.getDatatip = function() {
   // Custom Tooltip from Function
-  var tooltipFunc = this._view.getOptions()['tooltip'];
+  var customTooltip = this._view.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
   if (tooltipFunc)
     return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
 
@@ -1780,6 +1761,17 @@ dvt.Obj.createSubclass(DvtTagCloudDropTarget, dvt.DropTarget);
 DvtTagCloudDropTarget.prototype.acceptDrag = function(mouseX, mouseY, clientIds) {
   return clientIds[0];
 };
+dvt.exportProperty(dvt, 'TagCloud', dvt.TagCloud);
+dvt.exportProperty(dvt.TagCloud, 'newInstance', dvt.TagCloud.newInstance);
+dvt.exportProperty(dvt.TagCloud.prototype, 'render', dvt.TagCloud.prototype.render);
+dvt.exportProperty(dvt.TagCloud.prototype, 'getAutomation', dvt.TagCloud.prototype.getAutomation);
+dvt.exportProperty(dvt.TagCloud.prototype, 'highlight', dvt.TagCloud.prototype.highlight);
+dvt.exportProperty(dvt.TagCloud.prototype, 'select', dvt.TagCloud.prototype.select);
+
+dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getDomElementForSubId', DvtTagCloudAutomation.prototype.getDomElementForSubId);
+dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getItem', DvtTagCloudAutomation.prototype.getItem);
+dvt.exportProperty(DvtTagCloudAutomation.prototype, 'getItemCount', DvtTagCloudAutomation.prototype.getItemCount);
+})(dvt);
 
   return dvt;
 });

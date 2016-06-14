@@ -48,11 +48,7 @@
             display: list-item;
         }
 
-        .oj-navigationlist-horizontal .oj-navigationlist-element,
-        .oj-navigationlist-icon-only .oj-navigationlist-element {
-            margin: 1px; // This is needed to show outline properly on IE 11 as outline offset is not working.
-        }
-
+        
         /* Basic styling  for all ul elements in list*/
         .oj-navigationlist-element, .oj-navigationlist-group {
             list-style-type: none;
@@ -89,6 +85,14 @@
             content:"";
             display: inline-block;
             visibility: hidden;
+        }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
+            min-height: $navigationListPageLevelItemMinHeight;
+        }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item-label {
+            font-size: $navigationListPageLevelItemFontSize;
         }
 
         /* Styling for expand/collapse icons holder */
@@ -527,12 +531,14 @@
                 @include oj-ltr() {
                     border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
                 }
-                border-radius: $navigationListPageLevelItemBorderRadius $navigationListPageLevelItemBorderRadius 0 0;
+                border-top-left-radius: $navigationListPageLevelItemBorderRadius;
+                border-top-right-radius: $navigationListPageLevelItemBorderRadius;
             }
 
             .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type,
             .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type{
-                border-radius: 0  0 $navigationListPageLevelItemBorderRadius $navigationListPageLevelItemBorderRadius;
+                border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+                border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
             }
         }
 
@@ -733,6 +739,10 @@
             box-sizing: border-box;
             min-height: $navigationBarMinHeight;
         }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
+            min-height: $navigationBarPageLevelItemMinHeight;
+        }
 
         .oj-navigationlist-horizontal  .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationListItemLabelColorSelected;
@@ -848,6 +858,10 @@
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
             min-height: $navigationBarStackedIconMinHeight;
         }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
+            min-height: $navigationBarPageLevelItemStackedIconMinHeight;
+        }
             //Horizontal divider
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-divider {
              height: 2.714rem;//38px
@@ -866,6 +880,9 @@
 
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
             font-size: $navigationBarFontSize;
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
+            font-size: $navigationBarPageLevelItemFontSize;
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationBarItemLabelColorDefault;
@@ -919,12 +936,14 @@
 
           @include oj-ltr() {
             border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
-            border-radius: $navigationListPageLevelItemBorderRadius 0 0 $navigationListPageLevelItemBorderRadius;
+            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
           }
 
           @include oj-rtl() {
             border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
-            border-radius: 0 $navigationListPageLevelItemBorderRadius $navigationListPageLevelItemBorderRadius 0;
+            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
           }
         }
 
@@ -932,11 +951,13 @@
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type{
 
           @include oj-ltr() {
-            border-radius: 0 $navigationListPageLevelItemBorderRadius $navigationListPageLevelItemBorderRadius 0;
+            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
           }
 
           @include oj-rtl() {
-            border-radius: $navigationListPageLevelItemBorderRadius 0 0 $navigationListPageLevelItemBorderRadius;
+            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
           }
         }
 

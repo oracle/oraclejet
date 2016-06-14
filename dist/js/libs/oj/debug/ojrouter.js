@@ -103,13 +103,12 @@ var _transitionQueue = [];
 var _queuePromise;
 
 /**
- * Retrieve the part of the URL up to the last '/'
+ * Retrieve current URL without the hash part
  * @private
- * @param  {!string} url
  * @return {!string}
  */
-function removeLastSegment(url) {
-   return url.substring(0, url.lastIndexOf('/'));
+function getUrl() {
+   return window.location.href.split('#')[0];
 }
 
 /**
@@ -118,18 +117,9 @@ function removeLastSegment(url) {
  * @return {!string}
  */
 function getBaseUrl() {
-   // Remove the hash for HTML4 case
-   var base = window.location.href.split('#')[0];
-   // Then extract the base URL
-   return removeLastSegment(base);
-}
-
-/**
- * @private
- * @return {!string}
- */
-function getUrl() {
-   return window.location.href;
+   var url = getUrl();
+   // Retrieve the part of the URL up to the last '/'
+   return url.substring(0, url.lastIndexOf('/'));
 }
 
 /**
@@ -139,18 +129,14 @@ function getUrl() {
  */
 function parseQueryParam(queryString) {
    var params = {},
-       keyValPairs = [],
-       pairNum,
-       parts,
-       key,
-       value;
+       keyValPairs;
 
    if (queryString) {
       keyValPairs = queryString.split('&');
-      for (pairNum in keyValPairs)
-      {
-         parts = keyValPairs[pairNum].split(/\=(.+)?/);
-         key = parts[0];
+      keyValPairs.forEach(function(pair) {
+         var parts = pair.split(/\=(.+)?/);
+         var key = parts[0];
+         var value;
 
          if (key.length) {
             if (!params[key]) {
@@ -159,7 +145,7 @@ function parseQueryParam(queryString) {
             value = parts[1] && decodeURIComponent(parts[1].replace(/\+/g, ' '));
             params[key].push(value);
          }
-      }
+      });
    }
 
    return params;
@@ -196,9 +182,9 @@ function getStateFromId(router, stateId) {
  * @return {!string} the short URL
  */
 function getShortUrl() {
-   var shortUrl = getUrl().split('#')[0];
+   var shortUrl = getUrl();
 
-   return shortUrl.replace(_ojBaseUrl + '/', '');
+   return shortUrl.replace(_ojBaseUrl, '');
 }
 
 /**
@@ -463,30 +449,72 @@ function _buildState(router, path) {
 }
 
 /**
- * Traverse the child router and build and array of promise for each canExit callback.
- * If the router doesn't have a canExit callback, make a promise resolved to true.
- * If the callback is not a promise, make a promise resolved to the value returned by the callback.
+ * Execute a callback and log if returns false.
  * @private
- * @param {oj.Router} router
- * @param {!Array} promisesArray - Array of promises.
- * @return {boolean} - false if one of the callback returned false.
+ * @param  {(function (): (?)|undefined)} callback
+ * @param  {!string}   type
+ * @param  {string}   stateId
+ * @return {boolean}
  */
-function _buildAllCanExitPromises(router, promisesArray) {
-   var canExit = true,
-       promise = Promise.resolve(true),
-       currentState = router._currentState(),
-       canExitCallback, result,
+function _executeCallback(callback, type, stateId) {
+   var result = callback();
+   if (!result) {
+      oj.Logger.info('%s is false for state: %s', type, stateId);
+   }
+
+   return result;
+}
+
+/**
+ * Chain callback into a sequence if it's a function.
+ * @private
+ * @param  {(function (): (?)|undefined)} callback
+ * @param  {IThenable.<?>|null}           sequence
+ * @param  {!string}                      type
+ * @param  {string}                       stateId
+ * @return {IThenable.<?>|null}
+ */
+function _chainCallback(callback, sequence, type, stateId) {
+   // Check if we can enter this new state by executing the callback.
+   // If the callback is a function, chain it.
+   if (typeof callback === 'function') {
+      // Check if this is the start of the chain
+      if (!sequence) {
+         sequence = new Promise(function(resolve) {
+            resolve(_executeCallback(callback, type, stateId));
+         });
+      }
+      else {
+         sequence = sequence.then(function(result) {
+            // Only test the next state if the previous promise return true
+            if (result) {
+               result = _executeCallback(callback, type, stateId);
+            }
+
+            return result;
+         });
+      }
+   }
+
+   return sequence;
+}
+
+/**
+ * Traverse the child router and build a chain of promise for each canExit callback.
+ * @private
+ * @param  {oj.Router} router
+ * @param  {IThenable.<?>|null}  sequence
+ * @return {IThenable.<?>|null}  chain of promises executing the canExit on the current states
+ */
+function _buildCanExitSequence(router, sequence) {
+   var currentState = router._currentState(),
+       canExitCallback,
        i;
 
    if (currentState) {
       // Traverse each child router and ask for canExit
       for (i = 0; i < router._childRouters.length; i++) {
-         // 
-         canExit = _buildAllCanExitPromises(router._childRouters[i], promisesArray);
-         // Quick way out
-         if (!canExit) {
-            return false;
-         }
+         sequence = _buildCanExitSequence(router._childRouters[i], sequence);
       }
 
       // A callback defined on bound viewModel has precedence.
@@ -496,134 +524,89 @@ function _buildAllCanExitPromises(router, promisesArray) {
          canExitCallback = currentState._canExit;
       }
 
-      if (typeof canExitCallback === 'function') {
-         try {
-            // 
-            result = canExitCallback();
-         }
-         catch (err) {
-            oj.Logger.error('Error when executing canExit callback: %s', err.message);
-            return false;
-         }
-
-         if (result && result.then) {
-            promise = result;
-         }
-         else {
-            if (!result) {
-               oj.Logger.info('canExit is false for state %s', currentState._id);
-            }
-            canExit = result;
-         }
-      }
+      sequence = _chainCallback(canExitCallback, sequence, 'canExit', currentState._id);
    }
 
-   promisesArray.push(promise);
-
-   return canExit;
+   return sequence;
 }
 
 /**
  * Invoke canExit callbacks in a deferred way.
- * @param {oj.Router} router
+ * @private
+ * @param  {oj.Router} router
+ * @return {IThenable.<?>|null} a promise returning true if all of the current state can exit.
  */
 function _canExit(router) {
-   var allPromises, canExit;
+   var sequence;
 
-   if (!router) {
-      return Promise.resolve(!isTransitionCancelled());
-   }
-
-   allPromises = [];
-   canExit = _buildAllCanExitPromises(router, allPromises);
-
-   if (!canExit) {
+   if (isTransitionCancelled()) {
       return Promise.resolve(false);
    }
 
-   return Promise.all(allPromises).then(function(results) {
-      var i;
+   oj.Logger.info('Start _canExit.');
 
-      for (i = 0; i < results.length; i++) {
-         if (!results[i]) {
-            oj.Logger.info('CanExit promise at position %s returned false.', String(i));
-            return false;
-         }
+   if (router) {
+      sequence = _buildCanExitSequence(router, null);
+      if (sequence === null) {
+         sequence = Promise.resolve(true);
       }
+      else {
+         sequence = sequence.then(function(result) {
+            return (result && !isTransitionCancelled());
+         });
+      }
+   }
+   else {
+      sequence = Promise.resolve(true);
+   }
 
-      return (!isTransitionCancelled());
-   });
+   return sequence;
 }
 
 /**
- * Return a promise resolving to true if can transition to new state in allChanges
+ * Return a promise returning an object with an array of all the changes and the origin if all of
+ * the new state in the allChanges array can enter.
+ * @private
  * @param {!Array.<{value:string, router:!oj.Router}>} allChanges
- * @param {string=} origin
+ * @param {string=} origin a string specifying the origin of the transition ('sync', 'popState')
+ * @return {!Promise} a promise returning an object with an array of all the changes and the origin.
  */
 function _canEnter(allChanges, origin) {
+   if (isTransitionCancelled()) {
+      return Promise.resolve();
+   }
+
    oj.Logger.info('Start _canEnter.');
 
-   var canEnter = true,
-       promise = Promise.resolve(true),
-       allPromises = [];
+   var sequence = null;
 
-   allChanges.every(function(change) {
-      var canEnterCallback,
-          newState,
-          result;
-
-      newState = change.router.stateFromIdCallback(change.value);
+   // Build a chain of canEnter promise for each state in the array of changes
+   allChanges.forEach(function(change) {
+      var newState = change.router.stateFromIdCallback(change.value);
 
       // It is allowed to transition to an undefined state, but no state
       // callback need to be executed.
       if (newState) {
-         canEnterCallback = newState._canEnter;
-
-         // Check if we can enter this new state by executing the callback.
-         // If it is a promise, add it to the array to be resolved later.
-         // If it is a boolean, break if it is false.
-         if (typeof canEnterCallback === 'function') {
-            // 
-            try {
-               result = canEnterCallback();
-            }
-            catch (err) {
-               oj.Logger.error('Error when executing canEnter callback: %s', err.message);
-               canEnter = false;
-               return false;
-            }
-            if (result && result.then) {
-               promise = result;
-            }
-            else {
-               canEnter = result;
-               if (!canEnter) {
-                  oj.Logger.info('canEnter is false for state: %s', newState._id);
-                  return false;
-               }
-            }
-         }
+         sequence = _chainCallback(newState._canEnter, sequence, 'canEnter', newState._id);
       }
-
-      allPromises.push(promise);
-      return true;
    });
 
-   if (!canEnter || isTransitionCancelled()) {
-      return Promise.resolve({ allChanges: [] });
+   if (sequence === null) {
+      sequence = Promise.resolve({ allChanges: allChanges, origin: origin });
+   }
+   else {
+      sequence = sequence.then(function(result) {
+         var returnObj;
+
+         if (result && !isTransitionCancelled()) {
+            returnObj = { allChanges: allChanges, origin: origin };
+         }
+
+         return returnObj;
+      });
    }
 
-   return Promise.all(allPromises).then(function(results) {
-      var i;
-      for (i = 0; i < results.length; i++) {
-         if (!results[i]) {
-            oj.Logger.info('CanEnter promise at position %s returned false.', String(i));
-            return { allChanges: [] };
-         }
-      }
-
-      return { allChanges: allChanges, origin: origin };
-   });
+   return sequence;
 }
 
 /**
@@ -682,9 +665,11 @@ function _update(change, origin) {
  * @param {Object} updateObj
  */
 function _updateAll(updateObj) {
-   var sequence;
+   if (!updateObj) {
+      return { 'hasChanged': false };
+   }
 
-   sequence = Promise.resolve().then(function() {
+   var sequence = Promise.resolve().then(function() {
       oj.Logger.info('Entering _updateAll.');
       oj.Router._updating = true;
    });
@@ -830,6 +815,7 @@ function _resolveTransition() {
       return params;
    }, function(error) {
       _transitionQueue = [];
+      oj.Logger.error('Error when executing transition: %s', error.message);
       dispatchTransitionedToState({ 'hasChanged': false });
       return Promise.reject(error);
    });
@@ -1121,7 +1107,7 @@ oj.Router = function(key, parentRouter, parentState) {
     * render the content of a new module based on the name specified in the
     * {@link oj.RouterState#value|value} or {@link oj.RouterState#id|id} property
     * of the current {@link oj.RouterState|RouterState}.<br>
-    * The object moduleConfig provide the following functionality to the ojModule binding:
+    * The object moduleConfig provides the following functionality to the ojModule binding:
     * <ol>
     *   <li>it defines the name of the module by setting the <code class="prettyprint">name</code>
     * option to the value of the current router state.</li>
@@ -1130,7 +1116,7 @@ oj.Router = function(key, parentRouter, parentState) {
     *   <li>it defines a direction hint that can be use for the module animation.</li>
     *   <li>it makes the callback <code class="prettyprint">canExit</code> invokable on the
     * viewModel. If <code class="prettyprint">canExit</code> is not defined on the viewModel,
-    * it will be invoked on the {@link oj.RouterState|RouterState}</li>
+    * it will be invoked on the {@link oj.RouterState|RouterState}.</li>
     * </ol>
     * The moduleConfig object has the following properties:
     * <ul>
@@ -1147,8 +1133,11 @@ oj.Router = function(key, parentRouter, parentState) {
     * any other parameters. Application built using version 1.1 of JET now need to retrieve
     * the parent router from the <code class="prettyprint">ojRouter.parentRouter</code> property of
     * <code class="prettyprint">params</code>.</li>
-    *   <li><code class="prettyprint">lifecycleListener</code>: an object implementing the attached
-    * callback to bind canExit to the router if it is defined on the viewModel.</li>
+    *   <li><code class="prettyprint">lifecycleListener</code>: an object implementing the
+    * <code class="prettyprint">attached</code> callback to bind canExit to the router if it is
+    * defined on the viewModel. If you override <code class="prettyprint">attached</code>, this
+    * functionality will be lost unless you set the viewModel to the current state of the parent
+    * router in your custom <code class="prettyprint">attached</code> implementation.</li>
     * </ul>
     *
     * The router calculate the direction of the navigation and make it available to the child module
@@ -1240,7 +1229,9 @@ oj.Router = function(key, parentRouter, parentState) {
                   if (state) {
                      state.viewModel = params['viewModel'];
                   }
-               }
+               },
+               // User can change attached
+               writable: true, enumerable: true
             }
          }),
          enumerable: true
@@ -1671,13 +1662,11 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
       oj.Logger.info('Going to URL %s on router %s', newUrl, getRouterFullName(this));
    }
 
-   var shortUrl = '/' + _urlAdapter.cleanUrl(getShortUrl()).replace(_thisPage, '');
+   var shortUrl = _urlAdapter.cleanUrl(getShortUrl());
 
    var _changeState = function(canExit) {
       if (canExit) {
-         // Remove first '/' if exist before parsing
-         // 
-         return parseAndUpdate(newUrl.replace(/^\//, '')).
+         return parseAndUpdate(newUrl).
             then(function(params) {
                if (params['hasChanged']) {
                   var fullUrl = _ojBaseUrl + newUrl;
@@ -1694,8 +1683,6 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
    // This compare URLs without the bookmarkable data.
    // When replace is true, it is possible the new URL is the same (by example when going to the
    // default state of a child router) but the transition still need to be executed.
-   // 
-   // 
    if (replace || _urlAdapter.cleanUrl(newUrl) !== shortUrl) {
       oj.Logger.info('Deferred mode or new URL is different.');
       return _canExit(this).then(_changeState);
@@ -1752,7 +1739,7 @@ oj.Router.prototype.store = function(data) {
       nextLevel = undefined;
    }
 
-   var url = _ojBaseUrl + '/' + _urlAdapter.cleanUrl(getShortUrl());
+   var url = _ojBaseUrl + _urlAdapter.cleanUrl(getShortUrl());
    url = addStateParam(url, extraState);
 
    window.history.replaceState(null, '', url);
@@ -2082,6 +2069,9 @@ oj.Router.urlPathAdapter = function () {
           changes = [],
       //    undef = [],
           value;
+
+      // Array of path segments. Variable url always starts with '/', so remove the first element.
+      segments.shift();
 
       do {
          value = segments.shift();
