@@ -108,12 +108,14 @@ oj.ModuleBinding.defaults =
 
       ko.utils.domNodeDisposal.addDisposeCallback(element, nodeDispose);
       
+      var _IGNORE_PROMISE = new Error("Promise cancelled because ojModule is fetching new View and ViewModel");
+      
       // This function is used to interrupt Promise chains when the new view/viewModel combination is being loaded
       var checkPeningId = function(id)
       {
         if (id != pendingViewId)
         {
-          throw new Error("Promise cancelled because ojModule is fetching new View and ViewModel");
+          throw _IGNORE_PROMISE;
         }
       };
       
@@ -442,14 +444,19 @@ oj.ModuleBinding.defaults =
           /* reject callback */
           function(id, reason)
           {
-            if (id != pendingViewId)
+            if (reason === _IGNORE_PROMISE)
             {
               return;
             }
-            
+           
             if (reason != null)
             {
               oj.Logger.error(reason);
+              // Additionally log the stack trace for the original error
+              /*if (reason instanceof Error)
+              {
+                oj.Logger.error(reason.stack);
+              }*/
             }
             
           }.bind(null, pendingViewId)
@@ -795,9 +802,10 @@ oj.ModuleBinding.defaults =
           {
             resolve(loaded);
           },
-          function()
+          function(reason)
           {
-            throw new Error("ojModule failed to load " + module);
+            oj.Logger.error("ojModule failed to load " + module);
+            reject(reason);
           }
         
         );
@@ -832,7 +840,8 @@ oj.ModuleBinding.defaults =
 
 /**
  * A duck-typing interface that defines optional ViewModel methods that the ojModule binding will invoke by convention
- * @interface ConventionMethods
+ * @interface
+ * @name ConventionMethods
  * @memberof oj.ModuleBinding
  */
 

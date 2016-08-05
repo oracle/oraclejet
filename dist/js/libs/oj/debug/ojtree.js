@@ -101,7 +101,7 @@ oj.TreeDndContext.prototype.handleDnDOptionChange = function(newval)
    var reorder = dnd.reorder ;
    var dragFromEnabled = dnd.dragFromEnabled;
 
-   this._dndCleanAll() ;       //  blow away all the old settings
+   this._dndCleanAll() ;       // blow away all the old settings
    this.initDnDOpts() ;        // reprocess the options into dnd
    dnd  = this._dnd ;          // _dnd is new so reget
 
@@ -437,6 +437,10 @@ oj.TreeDndContext.prototype._dragStart =  function(e)
    {
      this._setDataTypes(dt, $nodes) ;
    }
+
+   //  If only one node is selected, will use the default drag image.
+   //  If multiple nodes selected, will create a custom image.
+   this._setDragImage(dt, $nodes) ;
 
    //  Call app callback in drag options
    if (dnd.dragStartCallback)
@@ -1570,12 +1574,19 @@ oj.TreeDndContext.prototype._dndStopDrag  =  function()
      vars.o.removeClass(cons._OJ_DRAG) ;
    }
 
+   // If we created a drag image, remove it from the DOM.
+   if (this._dragImg)
+   {
+     document.body.removeChild(this._dragImg) ;
+     this._dragImg = null ;
+   }
+
    dnd.dragStarted  = false ;
 };
 
 
 /**
-  *  Set the the app defined data types to the dragged node data 
+  *  Set the app defined data types to the dragged node data 
   *  @private
   */
 oj.TreeDndContext.prototype._setDataTypes = function(dt, $nodes)
@@ -1605,6 +1616,44 @@ oj.TreeDndContext.prototype._setDataTypes = function(dt, $nodes)
    }
 };
 
+
+/**
+  *  Create the drag image and set in the data transfer object
+  *  @private
+  */
+oj.TreeDndContext.prototype._setDragImage = function(dt, $nodes)
+{
+   var $dragImg, ul, elem, el,
+       len = $nodes.length,
+       i ;
+   
+   // If only one node being dragged, use the default drag image
+   if (len === 1) 
+   {
+     this._dragImg = null ;
+     return ;
+   }
+
+   $dragImg = $("<div></div>");
+   ul = $("<ul style='padding:0px;margin:0;'></ul>");
+   $dragImg.append(ul);
+
+   for (i = 0; i < len; i++)
+   {
+     el = $nodes[i].cloneNode(true);
+     el.style.marginLeft  = 0;
+     el.style.paddingLeft = 0;
+     ul.append(el);
+   }
+
+   elem = $dragImg[0] ;
+   document.body.appendChild(elem);
+   elem.style.position = "absolute";
+   elem.style.top      = "-" + ($dragImg.height() * 2) + "px";
+   elem.style.right    = "0";
+   this._dragImg       = elem;     // note for removal in _dragend()
+   dt.setDragImage(elem, 0, 0);
+};
 
 
 /**
@@ -1982,7 +2031,8 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
         /** @const */   OJT_INACTIVE      = "oj-tree-inactive" ;
 
   // ojTree disclosure class names
-  var  /** @const */   OJ_DISC           = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon oj-default";
+//var  /** @const */   OJ_DISC           = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon oj-default";
+  var  /** @const */   OJ_DISC           = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon-nocontext oj-default";
 
   //  WAI-ARIA
   var  /** @const */   WA_ROLE              = "role",
@@ -1992,7 +2042,8 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
        /** @const */   WA_SELECTED          = "aria-selected",
        /** @const */   WA_EXPANDED          = "aria-expanded",
        /** @const */   WA_ACTIVEDESCENDANT  = "aria-activedescendant",
-       /** @const */   WA_MULTISELECTABLE   = "aria-multiselectable";
+       /** @const */   WA_MULTISELECTABLE   = "aria-multiselectable",
+       /** @const */   WA_LABELLEDBY        = "aria-labelledby";
 
   //  Data names
   var  /** @const */   OJT_CHILDREN         = "oj-tree-children";
@@ -2028,6 +2079,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
   var  /** @const */  TRANSKEY_NODATA   = "labelNoData" ;
 
   var  /** @const */  USER_UL_ID_PREFIX = "oj-tree-existing-markup-" ;
+
+  //  Attr's we ignore when creating a list of user attr's
+  var /** @const */    ATTR_IGN          = ["id", "title", "class", "role", "draggable", "style"] ;
+
 
 
   var scrollbar_width, e1, e2;
@@ -2078,7 +2133,6 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
     else if (e.shiftKey) {
       s += "shift+" ;
     }
-
     var key = e.which ;
     switch(key) {
       case 32:                      // Space
@@ -2323,7 +2377,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
   * defined for arbitrary user-defined data that is to be associated with a node. (This metadata is
   * maintained within the ojTree instance, and is not represented in the DOM.)  A node's metadata can be retrieved
   * using the jQuery .data() method.
-  * </p></br>Example: Expanded use of the <code class="prettyprint">attr</code> property
+  * </p></br>Example: Expanded use of the <code class="prettyprint">attr</code> and <code class="prettyprint">metadata</code> properties
   * <pre class="prettyprint">
   * <code>
   *[
@@ -2342,6 +2396,12 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
   *  },
   *
   *  . . .
+  *  $('#mytree').on("ojoptionchange", function (ev, ui) {
+  *                  if (ui.option && ui.option == "selection") {
+  *                    // retrieve metadata from (first) selected node
+  *                    var meta = $(ui.value[0]).data() ;
+  *                  }
+  *              }) ;
   *]
   *</code></pre>
   *
@@ -2475,16 +2535,14 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   // disabled option declared in superclass, but we still want the above API doc
 
                 /**
-                  * Identifies the JET Menu that the component should launch as a context menu on right-click or
-                  * <kbd>Shift-F10</kbd>. If specified, the browser's native context menu will be replaced by the
-                  * specified JET Menu.
-                  *
-                  * <p>To specify a JET context menu on a DOM element that is not a JET component, see the
-                  * <code class="prettyprint">ojContextMenu</code> binding.
-                  *
-                  * <p>To make the page semantically accurate from the outset, applications are encouraged to specify the
-                  * context menu via the standard HTML5 syntax shown in the below example.  When the component is
-                  * initialized, the context menu thus specified will be set on the component.
+                 * <p>The JET Menu should be initialized before the Tree using it as a 
+                 * context menu. 
+                 *
+                 * @ojfragment contextMenuInitOrderDoc - Decomped to fragment so Tabs, Tree, and MasonryLayout can convey their init order restrictions.
+                 * @memberof oj.ojTree
+                 */
+                /**
+                  * {@ojinclude "name":"contextMenuDoc"}
                   *
                   * <p>When defining a contextMenu, ojTree will provide built-in behavior for "edit" style functionality
                   *  (e.g. cut/copy/paste) if the following format for menu &lt;li&gt; item's is used (no &lt;a&gt;
@@ -2497,13 +2555,11 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * </ul>
                   * The available translated text will be applied to menu items defined this way.
                   *
-                  * <p>The JET Menu should be initialized before any component using it as a context menu.
-                  *
                   * @member
                   * @name contextMenu
                   * @memberof oj.ojTree
                   * @instance
-                  * @type {string | null}
+                  * @type {Element|Array.<Element>|string|jQuery|NodeList}
                   * @default <code class="prettyprint">null</code>
                   *
                   * @example <caption>Initialize a JET Tree with a context menu:</caption>
@@ -2595,7 +2651,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   *                             refer to the HTML5 documentation for the <code class="prettyprint">dragstart</code>,
                   *                             <code class="prettyprint">drag</code>, and <code class="prettyprint">dragend</code> events.)
                   * @property {Object} drag.node  Specify an object containing the following optional callback properties.
-                  * To permit dragging, at leat one of the properties <code class="prettyprint">dataTypes</code> or
+                  * To permit dragging, at least one of the properties <code class="prettyprint">dataTypes</code> or
                   * <code class="prettyprint">dragStart</code> is required. That is, if <code class="prettyprint">dataTypes</code>
                   * is specified, then <code class="prettyprint">dragStart</code> is not required unless additional control of
                   * the drag start is required. If <code class="prettyprint">dataTypes</code> is not defined, then
@@ -3356,7 +3412,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                 /**
                   * Triggered prior to an event.<p>
                   * The following events can be vetoed during <code class="prettyprint">before</code> event
-                  * processing by returning </code>false</code> from the <code class="prettyprint">before</code>
+                  * processing by returning <code>false</code> from the <code class="prettyprint">before</code>
                   * event handler (omitting a return value or returning <code class="prettyprint">true</code>
                   * permits the event processing to continue):
                   * <code class="prettyprint">collapse</code>, <code class="prettyprint">expand</code>,
@@ -3375,15 +3431,18 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * @example <caption>Initialize the Tree with the <code class="prettyprint">before</code> callback specified:</caption>
                   * $( ".selector" ).ojTree({
                   *     "before": function(event, ui)  {
-                  *                                       console.log("Before event " + ui.func);
+                  *                     console.log("Before event " + ui.func);
                   *               }
                   * });
                   *
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojbefore</code> event:</caption>
                   * $( ".selector" ).on( "ojbefore", function( event, ui ) {
-                  *                                       console.log("Before event " + ui.func);
-                  *                                  });
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) {
+                  *                          console.log("Before event " + ui.func);
+                  *                   } 
+                  *                 });
                   */
                 before : null,
 
@@ -3404,8 +3463,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-                  * $( ".selector" ).on( "ojcollapse", function(event, ui) {. . .}
-                  *                    );
+                  * $( ".selector" ).on( "ojcollapse", function(event, ui) {
+                  *                    // Verify that component of interest fired the event
+                  *                    if ($(event.target).is("#mytree")) { . . . }
+                  *                  });
                   */
                 collapse : null,
 
@@ -3426,8 +3487,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-                  * $( ".selector" ).on( "ojcreate", function(event, ui) {. . .}
-                  *                    );
+                  * $( ".selector" ).on( "ojcreate", function(event, ui) {
+                  *                    // Verify that component of interest fired the event
+                  *                    if ($(event.target).is("#mytree")) { . . . }
+                  *                  });
                   */
                 create : null,
 
@@ -3449,7 +3512,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapseall</code> event:</caption>
-                  * $( ".selector" ).on( "ojcollapseall", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojcollapseall", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 collapseAll : null,
 
@@ -3470,7 +3536,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojcut</code> event:</caption>
-                  * $( ".selector" ).on( "ojcut", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojcut", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 cut : null,
 
@@ -3491,7 +3560,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojdehover</code> event:</caption>
-                  * $( ".selector" ).on( "ojdehover", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojdehover", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 dehover : null,
 
@@ -3515,7 +3587,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojremove</code> event:</caption>
-                  * $( ".selector" ).on( "ojremove", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojremove", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 remove : null,
 
@@ -3535,7 +3610,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojdestroy</code> event:</caption>
-                  * $( ".selector" ).on( "ojdestroy", function( event, ui ) {} );
+                  * $( ".selector" ).on( "ojdestroy", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 destroy : null,
 
@@ -3556,7 +3634,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-                  * $( ".selector" ).on( "ojexpand", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojexpand", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 expand : null,
 
@@ -3578,7 +3659,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpandall</code> event:</caption>
-                  * $( ".selector" ).on( "ojexpandall", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojexpandall", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 expandAll : null,
 
@@ -3599,7 +3683,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojhover</code> event:</caption>
-                  * $( ".selector" ).on( "ojhover", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojhover", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 hover : null,
 
@@ -3619,7 +3706,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojloaded</code> event:</caption>
-                  * $( ".selector" ).on( "ojloaded", function( event, ui ) {} );
+                  * $( ".selector" ).on( "ojloaded", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 loaded : null,
 
@@ -3643,7 +3733,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojmove</code> event:</caption>
-                  * $( ".selector" ).on( "ojmove", function(event, ui) {. . .} );
+                  * $( ".selector" ).on( "ojmove", function(event, ui) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 move : null,
 
@@ -3689,7 +3782,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojpaste</code> event:</caption>
-                  * $( ".selector" ).on( "ojpaste", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojpaste", function( event, ui ) {
+                  *                   // Verify that the component firing the event is the component of interest
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 paste : null,
 
@@ -3710,7 +3806,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojrefresh</code> event:</caption>
-                  * $( ".selector" ).on( "ojrefresh", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojrefresh", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 refresh : null,
 
@@ -3733,7 +3832,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * });
                   *
                   * @example <caption>Bind an event listener to the <code class="prettyprint">ojrename</code> event:</caption>
-                  * $( ".selector" ).on( "ojrename", function( event, ui ) {. . .} );
+                  * $( ".selector" ).on( "ojrename", function( event, ui ) {
+                  *                   // Verify that component of interest fired the event
+                  *                   if ($(event.target).is("#mytree")) { . . .}
+                  *                 });
                   */
                 rename : null
 
@@ -4636,7 +4738,8 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       * Returns the subcomponent node element represented by the locator object subId property.</br>
+       * Returns a context object for the specified tree node. This includes the subid for the node as the subId property.
+       * Additional Tree component information is also included. </br>
        *
        * @expose
        * @public
@@ -4649,7 +4752,8 @@ $ul.css('max-height', '') ;   //JRM
        * <table class="params"<tr><th>Property</th><th>Type</th><th>Description</th></tr>
        *  <tr><td>subId</td><td>string</td><td><span class="code-caption">"oj-tree-node"</span> or
        *                                 <span class="code-caption">"oj-tree"</span>.</td></tr>
-       *  <tr><td>node</td><td>object</td><td>the jQuery wrapped node.</td></tr>
+       *  <tr><td>item</td><td>object</td><td>the tree node element.</td></tr>
+       *  <tr><td>node</td><td>object</td><td>the jQuery wrapped node.<br>DEPRECATED - please use <span class="code-caption">item</span>.</td></tr>
        *  <tr><td>leaf</td><td>boolean</td><td><span class="code-caption">true</span> if leaf node, else
        *                                 <span class="code-caption">false</span> if a parent node.</td></tr>
        * </table>
@@ -4667,6 +4771,7 @@ $ul.css('max-height', '') ;   //JRM
         if (bNode || bTree) {
           return {
                    "subId" : bNode ? OJT_NODE : OJT_TREE,
+                   "item"  : bNode? node[0] : null,               // <li>
                    "node"  : bNode? node : false,                 // jQuery wrapped <li>
                    "leaf"  : bNode? this._isLeaf(node) : false    // true/false
                  } ;
@@ -4816,7 +4921,6 @@ $ul.css('max-height', '') ;   //JRM
           this._elemId = "oj-tree-" + this._getIndex() ;
           this.element.attr("id", this._elemId) ;
         }
-        this._elemId        = "#" + this._elemId ;
         this._$container    = this.element ;                        // the containing <div>
         this._$container_ul = null ;                                // the containing <ul>
         this._data          = {} ;                                  // working data
@@ -4828,8 +4932,7 @@ $ul.css('max-height', '') ;   //JRM
         if (this._animDuration) {
           var ai = oj.AgentUtils.getAgentInfo() ;
           this._isSafari = (ai["browser"] === oj.AgentUtils.BROWSER.SAFARI) ;
-          //this._trace(ai.os + " " + ai.browser) ;
-          this._proxyTransitionEndHandler = $.proxy(this._transitionEndHandler, this);
+          this._proxyTransitionEndHandler = this._transitionEndHandler.bind(this);
         }
 
         this._start() ;                                             // build/display the tree
@@ -5129,13 +5232,13 @@ $ul.css('max-height', '') ;   //JRM
            return false;
          }
         if (strict)  {
-           return (obj.nextAll("li").size() > 0) ? obj.nextAll("li:eq(0)") : false;
+           return (obj.nextAll("li").length > 0) ? obj.nextAll("li:eq(0)") : false;
         }
 
         if (obj.hasClass(TreeUtils._OJ_EXPANDED))  {
           return obj.find("li:eq(0)");
         }
-        else if(obj.nextAll("li").size() > 0)  {
+        else if(obj.nextAll("li").length > 0)  {
           return obj.nextAll("li:eq(0)");
         }
         else  {
@@ -5706,13 +5809,15 @@ $ul.css('max-height', '') ;   //JRM
       {
          var  s   = this.options["types"],
               tattr,
+              types,
               ret = false ;
 
          node = this._getNode(node);
 
          if (s && node && (node != -1) && node.length && str) {
            tattr = s["attr"] ;
-           if (tattr && s[str]) {
+           types = s["types"] ;
+           if (tattr && types && types[str]) {
              node.attr(tattr, str);
              node.addClass(OJT_TYPE) ;
 //           this._emitEvent({ "obj" : node, "type" : str}, "settype", true);
@@ -6362,11 +6467,19 @@ $ul.css('max-height', '') ;   //JRM
         event.currentTarget.blur();
         if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
           this._setFocus();
-          if (this._select(event.currentTarget, true, event)) {
+          //  Handle case where tree does not have focus and a node has been selected.
+          //  We want lastHovered set to the same node so that focus does not move
+          //  hover to first node.
+          if (! this._data.ui.focused) {
+            var hov = this._getNode(event.currentTarget) ;
+            if ((hov.length > 0) && (hov != -1)) {
+              this._data.ui.lastHovered = hov ;
+            }
             this._$container_ul.focus() ;
           }
-        }
 
+          this._select(event.currentTarget, true, event) ;
+        }
         this._data.ui.touchEvent = false ;
      },
 
@@ -6687,7 +6800,7 @@ $ul.css('max-height', '') ;   //JRM
        obj = this._getNode(obj);
 
        return obj == -1 || !obj || (!ajax && !$.isFunction(data)) ||
-                           obj.is(".oj-expanded, .oj-tree-leaf") || obj.children("ul").children("li").size() > 0;
+                           obj.is(".oj-expanded, .oj-tree-leaf") || obj.children("ul").children("li").length > 0;
      },
 
 
@@ -6695,7 +6808,7 @@ $ul.css('max-height', '') ;   //JRM
      "reselect" : function ()
      {
         var _this = this,
-            s      = this._data.ui.to_select;
+            s     = this._data.ui.toSelect;
 
         s = $.map($.makeArray(s), function (n) {
                            return "#" + n.toString().replace(/^#/,"")
@@ -6721,14 +6834,14 @@ $ul.css('max-height', '') ;   //JRM
         var _this = this,
             ui    =  this._data.ui ;
 
-        ui.to_select = [];
+        ui.toSelect = [];
         ui.selected.each(function ()
                   {
                     if (this.id) {
-                      ui.to_select.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"));
+                      ui.toSelect.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"));
                      }
                   });
-        this._emitEvent(ui.to_select, "savedselected", true);
+        this._emitEvent(ui.toSelect, "savedselected", true);
      },
 
 
@@ -6780,8 +6893,8 @@ $ul.css('max-height', '') ;   //JRM
        var parentKey = (obj && obj != -1)? obj[0].id : (obj? obj : -1) ;
        var rslt = this._JsonDSToJson(parentKey, obj) ;
 
-       if ((! rslt.success) || (! rslt.js))  {
-         return ;       // TDO
+       if (! rslt.success) {
+         return ;
        }
 
        var  bTree = ((! obj) || (obj === -1)) ;
@@ -6811,7 +6924,7 @@ $ul.css('max-height', '') ;   //JRM
             if (bTree)  {
               var $u =  this._$container_ul;
               $u.empty().append(d.children());                     //@HTMLUpdateOK
-              $u.attr(WA_ROLE, WA_TREE).attr("tabindex", "0").css("outline", "none") ;
+              $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId).attr("tabindex", "0").css("outline", "none") ;
               if (this._data.core.selectMode === -1)  {
                 $u.attr("aria-multiselectable", true) ;
               }
@@ -6852,9 +6965,10 @@ $ul.css('max-height', '') ;   //JRM
 
 
     /**
-      * Process a JsonTreeDataSource to a Json array ready for parsing.
-      * This is temporary - it assumes that all nodes are available in the Json;
-      * that is, there is no lazy-loading.   TDO
+      * Recursively process a JsonTreeDataSource to a Json array ready for parsing.
+      * JsonTreeDataSource does not support later data addition, so all nodes
+      * must be available from the outset. This implies that there can be no 
+      * no lazy-loading.
       * @private
       * @return {Object} contains "success" (boolean) and "js" (the json nodes)
       */
@@ -6878,8 +6992,8 @@ $ul.css('max-height', '') ;   //JRM
         if (cc > 0) {
           range["count"] = cc ;
           ds.fetchChildren(parentKey, range,              // get the JsonNodeSet
-              {
-                "success" : $.proxy(function(jns) {
+              {                                           // callbacks
+                "success" : function(jns) {
                      var c = jns.getCount(),
                          attr,
                          n ;
@@ -6890,9 +7004,9 @@ $ul.css('max-height', '') ;   //JRM
                         if (attr) {
                           node["attr"] = attr ;
                         }
-                       node["title"] = jns.m_nodes[i]["title"] ;         // hack, wait for chadwick
+                       node["title"] = jns.m_nodes[i]["title"] ;         // wait for chadwick
                        if (attr.metadata) {
-                         node["metadata"] = jns.m_nodes[i]["metadata"] ; // hack, wait for chadwick
+                         node["metadata"] = jns.m_nodes[i]["metadata"] ; // wait for chadwick
                        }
 
                        var key  = node["attr"]["id"] ;
@@ -6908,12 +7022,16 @@ $ul.css('max-height', '') ;   //JRM
 
                      rslt.success = true ;
                      rslt.js      = arJson ;
-                   }, this),
+                   }.bind(this),
 
                 "error" :  function(status) {
                               rslt.success = false ;
                            }
               }) ;
+        }
+        else {
+          rslt.success = true ;   // DS was empty.  Will not treat this as an error,
+                                  // because we did not have any failures.
         }
         return rslt ;
      },
@@ -6997,7 +7115,7 @@ $ul.css('max-height', '') ;   //JRM
 
           // Data function supplied by user data definition.
           case ($.isFunction(data)):
-                       data.call(this, obj, $.proxy(function (d) { // invoke user function passing a callback
+                       data.call(this, obj, function (d) { // invoke user function passing a callback
                            d = this._parseJson(d, obj);
                            if (!d) {
                               if (obj === -1 || !obj)  {
@@ -7030,7 +7148,7 @@ $ul.css('max-height', '') ;   //JRM
                                 s_call.call(this);
                               }
                            }
-                       }, this));
+                       }.bind(this));
                        break;
 
           case (!!data && !ajax) || (!!data && !!ajax && (!obj || obj === -1)):
@@ -7088,7 +7206,7 @@ $ul.css('max-height', '') ;   //JRM
                          if (typeof d == "string") {
                            var tempd = d.replace(/^[\s\n]+$/,"") ;
                            try {
-                                 tempd = $.parseJSON(tempd) ;
+                                 tempd = JSON.parse(tempd) ;
                                } catch(err) {tempd = null;}     // have nothing useful to display
 
                            if (! tempd) {
@@ -7101,7 +7219,8 @@ $ul.css('max-height', '') ;   //JRM
                             if (obj === -1 || !obj)  {
                                var $u =  this._$container_ul;
                                $u.empty().append(d.children());                                         //@HTMLUpdateOK
-                               $u.attr(WA_ROLE, WA_TREE).attr("tabindex", "0").css("outline", "none") ;
+                               $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId)
+                                                        .attr("tabindex", "0").css("outline", "none") ;
                                if (this._data.core.selectMode === -1)  {
                                  $u.attr("aria-multiselectable", true) ;
                                }
@@ -7161,8 +7280,8 @@ $ul.css('max-height', '') ;   //JRM
 
 
      /**
-       *  Parses a JSON representation of a tree or tree node(s).  Returns a jQuery
-       *  wrapped <ul> structure, or false if parse fails.
+       *  Recursively parses a JSON representation of a tree or tree node(s).
+       *  Returns a jQuery wrapped <ul> structure, or false if parse fails.
        *  @private
        */
      _parseJson : function (js, obj, isRecurse)
@@ -7180,7 +7299,7 @@ $ul.css('max-height', '') ;   //JRM
 
         if (typeof js == "string")  {
           try {
-                js = $.parseJSON(js) ;
+                js = JSON.parse(js) ;
               } catch(err) {js = [];}     // have nothing useful to display
         }
 
@@ -7217,15 +7336,13 @@ $ul.css('max-height', '') ;   //JRM
              }
              d.attr(js["attr"]);       // apply attr's to the <li>
            }
-           if (js["metadata"])  {      // and any user defined arbitrary data for the <li>
+           if (js["metadata"])  {      // apply any user defined arbitrary data for the <li>
              d.data(js["metadata"]);
            }
 
            // js.state     // not published - per Design Review
            // Used internally only for DnD
-//         if (js["state"] || (js["children"] && js["children"].length === 0)) {    // length zero means lazy load
            if (js["children"] && js["children"].length === 0) {    // length zero means lazy load
-//           d.addClass((js["state"] === "expanded")? OJ_EXPANDED : OJ_COLLAPSED);
              d.addClass(TreeUtils._OJ_COLLAPSED);
            }
            if (js["state"] && (js["state"] === "s")) {
@@ -7241,29 +7358,10 @@ $ul.css('max-height', '') ;   //JRM
 
            tmp = $("<a tabindex='-1' />");
            $.each(js["data"], function (i, m)   {
-//              tmp = $("<a role=presentation tabindex=-1 />");
                 if ($.isFunction(m)) {
                   m = m.call(this, js);
                 }
-                if (typeof m == "string")  {
-//                tmp.attr('href','#')[ ht? "html" : "text" ](title);
-                }
-                else  {
-//                if (!m["attr"]) {
-//                  m["attr"] = {};
-//                }
-
-//                for (var x in m) {
-//                   if (x !== "attr") {
-//                     m["attr"][x] = m[x] ;
-//                   }
-//                }
-
-//                  if (!m["attr"]["href"]) {
-//                    m["attr"]["href"] = '#';
-//                  }
-
-//                 tmp.attr(m["attr"]);                // apply attr's to the <a>
+                if (typeof m === "object") {
                  if (i == "attr") {
                    tmp.attr(m) ;
                  }
@@ -7274,6 +7372,9 @@ $ul.css('max-height', '') ;   //JRM
                     tmp.addClass(m);
                   }
                 }
+//              else if (typeof m == "string")  {
+//                tmp.attr('href','#')[ ht? "html" : "text" ](title);
+//              }
 
                 if (! bIns) {
                   sp = $("<span class='" + OJT_TITLE + "'>") ;
@@ -7338,14 +7439,14 @@ $ul.css('max-height', '') ;   //JRM
        var result = [],
            s      = this.options,
            _this  = this,
-           tmp1, tmp2, val, li, a, t, sAttr, title;
+           tmp1, tmp2, val, li, a, t, sAttr, title, attr, uattr, n;
 
        obj = this._getNode(obj);
 
        if (!obj || obj === -1)  {
          obj = this._$container.find("> ul > li");
        }
-       li_attr = $.isArray(li_attr) ? li_attr : [ "id", "class" ];
+       li_attr = $.isArray(li_attr) ? li_attr : [ "id", "class"];
 
        if (!isCallback && s["types"])  {
          li_attr.push(s["types"]["attr"]);
@@ -7353,14 +7454,27 @@ $ul.css('max-height', '') ;   //JRM
        a_attr = $.isArray(a_attr) ? a_attr : [ ];
 
        obj.each(function () {
-             li   = $(this);
-             tmp1 = {};
+             li    = $(this);
+             tmp1  = {};
+             uattr = _this._noteUserAttrs(li) ;   // get list of user added attr's
 
-             if (li_attr.length)  {
+             if (li_attr.length || (uattr && uattr.length))  {
                tmp1["attr"] = {};
              }
-             $.each(li_attr, function (i, v)
+
+             // Add user added attr's back into the "attr" property
+             if (uattr) {
+               $.each(uattr, function (i, v)
                  {
+                   if (li.attr(v).length > 0) {
+                     tmp1["attr"][v] = li.attr(v) ;
+                   }
+                });
+             }
+
+             $.each(li_attr, function (i, v)
+               {
+                   //  Find/save any non oj classes
                    tmp2 = li.attr(v);
                    if (tmp2 && tmp2.length && tmp2.replace(/oj-tree[^ ]*/ig,'').length)  {
                      tmp2  = (" " + tmp2).replace(/ oj-tree[^ ]*/ig,'')
@@ -7372,7 +7486,7 @@ $ul.css('max-height', '') ;   //JRM
                        tmp1["attr"][v] = tmp2 ;
                      }
                    }
-                 });
+               });
 
              // Additional state for DnD only, not valid for user code
              if (_this._getDndContext().isDragEnabled()) {
@@ -7384,6 +7498,7 @@ $ul.css('max-height', '') ;   //JRM
                }
              }
 
+             //  Check if node json included a metadata attribute
              val = li.data() ;
              if (! isPureObjEmpty(val))  {
                tmp1["metadata"] = val;
@@ -7470,6 +7585,45 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
+       *  If LI elem contains user attr definitions other than "id", "title" or ones we
+       *  have added like "role"/"class", note them so that they can be reinstated for
+       *  parseJson().
+       *  @private
+       *  @return {Array | null} An array of user attr names, else null
+       */
+     _noteUserAttrs : function($node)
+     {
+        var attrs, attr ;
+        var ar, len ;
+        
+        attrs = $node[0].attributes ;    // get the LI's attributes
+
+        if (attrs && attrs.length)
+        {
+          ar  = [];
+          len = ATTR_IGN.length ;
+
+          for (var i = 0; i < attrs.length; i++) {
+             attr = attrs[i] ;
+             if (attr) {
+               attr = attr.name ;
+               for (var j = 0; j < len; j++) {
+                  if ((ATTR_IGN[j] == attr) || (attr.indexOf("aria-") == 0)) {  // closure compiler is not allowing startsWith!
+                    break ;                   // ignore if in our excluded list
+                  }
+               }
+               if (j >= len) {
+                 ar.push(attr) ;
+               }
+            }
+          }
+        }
+
+        return (ar && ar.length > 0)? ar : null ;
+     },
+
+
+     /**
        *  Corrects nodes by setting closed nodes to leaf nodes if no children found.
        *  @private
        */
@@ -7542,10 +7696,10 @@ $ul.css('max-height', '') ;   //JRM
                     break ;
 
           case $.isFunction(data):
-                    data.call(this, obj, $.proxy(function (d)
+                    data.call(this, obj, function (d)
                               {
                                  this._loadHtmlString(d, obj, s_call, e_call) ;
-                              }, this));
+                              }.bind(this));
                     break;
 
           case (!data && !ajax):
@@ -8461,6 +8615,7 @@ $ul.css('max-height', '') ;   //JRM
 
        this._$container.html("<ul role='tree' tabindex='0' class='oj-tree-list' style='outline:none'" +       //@HTMLUpdateOK
                     ((this._data.core.selectMode === -1)? " aria-multiselectable='true'" : "") +
+                    " " + WA_LABELLEDBY + "='" + this._elemId + "'" + 
                     "><li class='oj-tree-last oj-tree-leaf'><ins class='oj-tree-icon'>&#160;</ins><a class='oj-tree-loading' href='#'><ins class='oj-tree-icon'>&#160;</ins>" +
                      this._getString(TRANSKEY_LOADING) + "</a></li></ul>");
 
@@ -8473,39 +8628,40 @@ $ul.css('max-height', '') ;   //JRM
 
        if (this._isTouch) {             // for tap expand/collapse
          this._$container
-              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "touchend.ojtree", $.proxy(function (event)  {
-                     event.preventDefault() ;        // don't want browser click generated after 300ms
-                     var trgt = $(event.target);
-                     this["toggleExpand"](trgt);
-                }, this));
+              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "touchend.ojtree", 
+                     function (event)  {
+                        event.preventDefault() ;        // don't want browser click generated after 300ms
+                        var trgt = $(event.target);
+                        this["toggleExpand"](trgt);
+                     }.bind(this));
        }
 
        this._$container
-              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "click.ojtree", $.proxy(function (event)  {
-                     var trgt = $(event.target);
-                     // if(trgt.is("ins") && event.pageY - trgt.offset().top < this.data.core.li_height) { this.toggle_node(trgt); }
-                     this["toggleExpand"](trgt);
-                }, this))
-
-              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "mousedown", $.proxy(function (event)  {
-                     this._data.ui.disclosureClick = true ;  // if no prev hover/selection, this will
-                                                             // prevent hover going to 1st node when
-                                                             // a disclosure has been clicked as the first action
-                                                             // on the tree (see focus event below)
-                     var trgt = $(event.target);
-                     trgt.removeClass("oj-default")
-                         .removeClass(TreeUtils._OJ_HOVER)
-                         .addClass(TreeUtils._OJ_SELECTED) ;
-                }, this))
-
-              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "mouseup", $.proxy(function (event)  {
-                     var trgt = $(event.target);
-                     trgt.removeClass(TreeUtils._OJ_SELECTED).addClass("oj-default") ;
-                }, this))
-
-              .bind("mousedown.ojtree", $.proxy(function ()  {
-                     this._setFocus(); // This used to be setTimeout(set_focus,0) - why?
-                }, this))
+              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "click.ojtree",
+                     function (event)  {
+                       var trgt = $(event.target);
+                       // if(trgt.is("ins") && event.pageY - trgt.offset().top < this.data.core.li_height) { this.toggle_node(trgt); }
+                       this["toggleExpand"](trgt);
+                     }.bind(this))
+              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "mousedown",
+                    function (event)  {
+                       this._data.ui.disclosureClick = true ;  // if no prev hover/selection, this will
+                                                               // prevent hover going to 1st node when
+                                                               // a disclosure has been clicked as the first action
+                                                               // on the tree (see focus event below)
+                       var trgt = $(event.target);
+                       trgt.removeClass("oj-default")
+                           .removeClass(TreeUtils._OJ_HOVER)
+                           .addClass(TreeUtils._OJ_SELECTED) ;
+                    }.bind(this))
+              .delegate(".oj-tree-list ins.oj-tree-disclosure-icon", "mouseup",
+                    function (event)  {
+                       var trgt = $(event.target);
+                       trgt.removeClass(TreeUtils._OJ_SELECTED).addClass("oj-default") ;
+                    }.bind(this))
+              .bind("mousedown.ojtree", function ()  {
+                      this._setFocus(); // This used to be setTimeout(set_focus,0) - why?
+                    }.bind(this))
               .bind("dblclick.ojtree", function (event)  {
                      var sel;
                      if (document.selection && document.selection.empty) {
@@ -8523,10 +8679,10 @@ $ul.css('max-height', '') ;   //JRM
                 });
 
        this._$container_ul
-               .focus($.proxy(function(e) {
+               .focus(function(e) {
                         if (this._data.ui.disclosureClick) {         // if very first action is
                           this._data.ui.disclosureClick = false ;    // mousedown on a disclosure icon
-                          return ;                                   // don't set hover.
+                          return false;                              // don't set hover (and prevent jump to top of list)
                         }
 
                         this._data.ui.focused = true ;
@@ -8550,9 +8706,10 @@ $ul.css('max-height', '') ;   //JRM
                           // want color change for selected inactive to selected
                           this._$container_ul.find("a.oj-selected").removeClass(OJT_INACTIVE) ;
                         }
-                      }, this)
+                        return false ;    // prevent jump to top of list
+                      }.bind(this)
                )
-               .blur($.proxy(function(e) {
+               .blur(function(e) {
                         this._data.ui.focused     = false ;
                         this._data.ui.lastHovered = this._data.ui.hovered ;
                         if (this._data.ui.lastHovered) {
@@ -8560,7 +8717,7 @@ $ul.css('max-height', '') ;   //JRM
                         }
                         // want color change for selected active to selected inactive
                         this._$container_ul.find("a.oj-selected").addClass(OJT_INACTIVE) ;
-                     }, this)
+                     }.bind(this)
                );
 
 /*     Not used in V1
@@ -8620,7 +8777,7 @@ $ul.css('max-height', '') ;   //JRM
 
 
     /**
-      *  Initialize the UI section
+      *  Initialize the UI section handlers
       *  @private
       */
      _initUI : function()
@@ -8631,7 +8788,7 @@ $ul.css('max-height', '') ;   //JRM
          var a = this.options["selection"] ;
 
          if (a && ($.type(a) === "array") && a.length > 0) {
-           this._data.ui.to_select   = a ;
+           this._data.ui.toSelect    = a ;
            this.options["selection"] = [] ;  // will be updated when the selections are performed
          }
 
@@ -8662,51 +8819,57 @@ $ul.css('max-height', '') ;   //JRM
         //-----------------------------------------------------------------//
 
         this._$container
-             .delegate(".oj-tree-list a", "click.ojtree", $.proxy(function (event)
-                {
-                  this._data.ui.touchEvent = false ;
-                  this._handleNodeTapClick(event) ;
-                }, this))
-             .delegate(".oj-tree-list a", "mouseenter.ojtree", $.proxy(function (event)
-                {
-                  if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
-                     this["hover"](event.target);
-                  }
-                }, this))
-             .delegate(".oj-tree-list a", "mouseleave.ojtree", $.proxy(function (event)
-               {
-                  if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
-                    this["dehover"](event.target);
-                  }
-               }, this))
-             .delegate(".oj-tree-list .oj-tree-disclosure-icon", "mouseenter.ojtree", $.proxy(function (event)
-                {
-                  if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
-                     this._disclosureHover(event.target, true);
-                  }
-                }, this))
-             .delegate(".oj-tree-list .oj-tree-disclosure-icon", "mouseleave.ojtree", $.proxy(function (event)
-                {
-                  if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
-                     this._disclosureHover(event.target, false);
-                  }
-                }, this))
-             .bind("_treereopen", $.proxy(function ()
+             .delegate(".oj-tree-list a", "click.ojtree",
+                        function (event)
+                        {
+                          this._data.ui.touchEvent = false ;
+                          this._handleNodeTapClick(event) ;
+                          return false;   // prevent jump to top of list if vertical scrollbar
+                        }.bind(this))
+             .delegate(".oj-tree-list a", "mouseenter.ojtree",
+                        function (event)
+                        {
+                           if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
+                             this["hover"](event.target);
+                           }
+                        }.bind(this))
+             .delegate(".oj-tree-list a", "mouseleave.ojtree", 
+                        function (event)
+                        {
+                          if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
+                            this["dehover"](event.target);
+                          }
+                        }.bind(this))
+             .delegate(".oj-tree-list .oj-tree-disclosure-icon", "mouseenter.ojtree",
+                       function (event)
+                       {
+                         if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
+                           this._disclosureHover(event.target, true);
+                         }
+                       }.bind(this))
+             .delegate(".oj-tree-list .oj-tree-disclosure-icon", "mouseleave.ojtree",
+                        function (event)
+                        {
+                          if (! $(event.currentTarget).hasClass(OJT_LOADING))  {
+                            this._disclosureHover(event.target, false);
+                          }
+                        }.bind(this))
+             .bind("_treereopen", function ()
                 {
                   this["reselect"]();
-                }, this))
-             .bind("_treeget_rollback", $.proxy(function ()
+                }.bind(this))
+             .bind("_treeget_rollback", function ()
                 {
                   this["dehover"]();
                   this["saveSelected"]();
-                }, this))
+                }.bind(this))
 /*   Not used in V1
              .bind("_treeset_rollback", $.proxy(function ()
                {
                   this["reselect"]();
                }, this))
 */
-             .bind("ojcollapse", $.proxy(function (event, ui)
+             .bind("ojcollapse", function (event, ui)
               {
                 var obj   = this._getNode(ui["item"]),
                     clk   = (obj && obj.length) ? obj.children("ul").find("a.oj-selected") : $(),
@@ -8715,13 +8878,16 @@ $ul.css('max-height', '') ;   //JRM
                   return;
                 }
                 clk.each(function ()  {
-                               this["deselect"](this);
-                               if (this.options["selectedParentCollapse"] === "selectParent")  {
-                                  this["select"](obj);
+                               if (_this.options["selectedParentCollapse"] === "selectParent")  {
+                                  _this["deselect"](this);
+                                  _this["select"](obj);
+                               }
+                               else if (_this.options["selectedParentCollapse"] === "deselect")  {
+                                  _this["deselect"](this);
                                }
                          });
-                 }, this))
-             .bind("ojremove", $.proxy(function (event, ui)         // node delete
+                 }.bind(this))
+             .bind("ojremove", function (event, ui)         // node delete
                 {
                    var s     = this.options["selectPrevOnDelete"],
                        obj   = this._getNode(ui["item"]),
@@ -8752,8 +8918,8 @@ $ul.css('max-height', '') ;   //JRM
                           });
                      }
                    }
-                 }, this))
-             .bind("ojmove", $.proxy(function (event, ui)
+                 }.bind(this))
+             .bind("ojmove", function (event, ui)
                 {
                    var data = ui["data"],
                        copy = data.cy,
@@ -8782,7 +8948,7 @@ $ul.css('max-height', '') ;   //JRM
                        }
                      }
                    }
-                 }, this));
+                 }.bind(this));
 
      },
 
@@ -9146,18 +9312,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
        }
 
        menu =  newVal || this.options["contextMenu"] ;
-       t = $.type(menu) ;
-       if (t == "function") {
-         try {
-            menu = menu() ;             // call user's method to get the context menu
-         }
-         catch (e) {
-            menu = null;
-         }
-         t = $.type(menu) ;
-       }
-
-       if (t !== "string") {
+       if (!menu) {
          return ;      // unknown
        }
 
@@ -9193,7 +9348,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         // There may be multiple trees sharing (and thereby listening to) the same
         // context menu.  Check that this tree is the same as the tree on which the
         // menu was invoked.
-        if (this._data.menu.treeDivId != this._elemId.substr(1)) {
+        if (this._data.menu.treeDivId != this._elemId) {
           return ;
         }
 
@@ -9525,17 +9680,17 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
         // UI
         data.ui =  {
-                      selected          : $(),       // selected node jquery list
-                      lastSelected      : false,
-                      hovered           : null,      // currently hovered
-                      lastHovered       : null,      // last hovered before blur
-                      disclosureClick   : false,     // used for 1st time disclosure click
-                      to_select         : null,      // initial selection in options:selection
-                      opacity           : 1,         // used by disable/_lock()
-                      spacebar          : false,     // true if select caused by keybd (toggles)
-                      focused           : false,     // tree has focus
-                      animDurDiv        : null,      // div used to get animation duration
-                      touchEvent        : false      // true if touch event
+                      selected         : $(),        // selected node jquery list
+                      lastSelected     : false,
+                      hovered          : null,       // currently hovered
+                      lastHovered      : null,       // last hovered before blur
+                      disclosureClick  : false,      // used for 1st time disclosure click
+                      toSelect         : null,       // initial selection in options:selection
+                      opacity          : 1,          // used by disable/_lock()
+                      spacebar         : false,      // true if select caused by keybd (toggles)
+                      focused          : false,      // tree has focus
+                      animDurDiv       : null,       // div used to get animation duration
+                      touchEvent       : false       // true if touch event
                    };
 
         data.ui.defaults = {                          // default values not yet published or suppressed
@@ -10773,6 +10928,20 @@ _this._done = false ;
      *
      * @example <caption>Invoke the <code class="prettyprint">destroy</code> method:</caption>
      * $( ".selector" ).ojTree( "destroy" );
+     */
+
+
+    /**
+     * Returns a <code class="prettyprint">jQuery</code> object containing the root element of the Tree component.
+     * 
+     * @method
+     * @name oj.ojTree#widget
+     * @memberof oj.ojTree
+     * @instance
+     * @return {jQuery} the root element of the component
+     * 
+     * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
+     * var widget = $( ".selector" ).ojTree( "widget" );
      */
 
 

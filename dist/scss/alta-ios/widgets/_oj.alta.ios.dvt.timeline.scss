@@ -22,5 +22,40 @@
 
 @if $includeTimelineClasses != false {
   @include module-include-once("alta.ios.timeline") {
+    .oj-timeline-zoomin-icon {
+      background-image:oj-image-url("dvt/common/zoom_in_16_ena.svg");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-hover {
+      background-image:oj-image-url("dvt/common/zoom_in_16_hov.svg");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-active {
+      background-image:oj-image-url("dvt/common/zoom_in_16_act.svg");
+      background-color:$buttonBgColorActive;
+      border-color:$buttonBorderColorActive;
+    }
+    
+    .oj-timeline-zoomin-icon.oj-disabled {
+      background-image:oj-image-url("dvt/common/zoom_in_16_dis.svg");
+    }
+    
+    .oj-timeline-zoomout-icon {
+      background-image:oj-image-url("dvt/common/zoom_out_16_ena.svg");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-hover {
+      background-image:oj-image-url("dvt/common/zoom_out_16_hov.svg");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-active {
+      background-image:oj-image-url("dvt/common/zoom_out_16_act.svg");
+      background-color:$buttonBgColorActive;
+      border-color:$buttonBorderColorActive;
+    }
+    
+    .oj-timeline-zoomout-icon.oj-disabled {
+      background-image:oj-image-url("dvt/common/zoom_out_16_dis.svg");
+    }
   }
 }

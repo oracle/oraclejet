@@ -41,15 +41,15 @@ oj._JsonTreeNodeDataSource.prototype._ascending = function(key)
 {
     return function(a, b) 
     {
-        if (a.attr && b.attr) 
+        if (a.attr != null && b.attr != null) 
         {
-            if (a.attr[key] && b.attr[key])
+            if (a.attr[key] != null && b.attr[key] != null)
             {
                 return a.attr[key] < b.attr[key] ? -1 : a.attr[key] === b.attr[key] ? 0 : 1;
             }
         }
         return a[key] < b[key] ? -1 : a[key] === b[key] ? 0 : 1;
-    }
+    };
 };
 
 /**
@@ -60,15 +60,15 @@ oj._JsonTreeNodeDataSource.prototype._descending = function(key)
 {
     return function(a, b) 
     {
-        if (a.attr && b.attr) 
+        if (a.attr != null && b.attr != null) 
         {
-            if (a.attr[key] && b.attr[key])
+            if (a.attr[key] != null && b.attr[key] != null)
             {
                 return a.attr[key] < b.attr[key] ? 1 : a.attr[key] === b.attr[key] ? 0 : -1;
             }
         }
         return a[key] < b[key] ? 1 : a[key] === b[key] ? 0 : -1;
-    }
+    };
 };
 
 /**
@@ -86,9 +86,9 @@ oj._JsonTreeNodeDataSource.prototype._sortRecursive = function(criteria)
         this.children.sort(this._ascending(key));
     }
     else if (criteria['direction'] === 'descending')
-	{
-		this.children.sort(this._descending(key));
-	}
+    {
+        this.children.sort(this._descending(key));
+    }
     for (var i = 0, l = this.children.length; i < l; i++)
     {
         this.children[i]._sortRecursive(criteria);
@@ -111,7 +111,7 @@ oj.JsonTreeDataSource = function(data)
 
     tree = new oj._JsonTreeNodeDataSource(); // that's the root node
 
-    if (!data.id)
+    if (data.id == null)
     {
         tree.id = "root";
     }
@@ -146,7 +146,7 @@ oj.JsonTreeDataSource.prototype._createTreeDataSource = function(c, target, sour
 {
     var children, node, child, prop, propr, prp, j;
 
-    if (!depth)
+    if (depth == null)
     {
         depth = 0;
     }
@@ -169,14 +169,14 @@ oj.JsonTreeDataSource.prototype._createTreeDataSource = function(c, target, sour
             {
                 child = children[j];
                 node = new oj._JsonTreeNodeDataSource();
-                if (!child.id) 
+                if (child.id == null) 
                 {
                     c.count++;
-                    if (!child.attr) 
+                    if (child.attr == null) 
                     {
                         node.id = 'rid_' + c.count;
                     } 
-                    else if (!child.attr.id) 
+                    else if (child.attr.id == null) 
                     {
                         child.attr.id = 'rid_' + c.count;
                     }
@@ -220,7 +220,7 @@ oj.JsonTreeDataSource.prototype.getChildCount = function(parentKey)
 {
     var parent;
 
-    if (!parentKey)
+    if (parentKey == null)
     {
         parentKey = this.data.id;
     }
@@ -261,7 +261,7 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
     childEnd = 0;
     results = [];
 
-    if (!parentKey)
+    if (parentKey == null)
     {
         parentKey = this.data.id;
     }
@@ -292,23 +292,23 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
     for (i = childStart; i < childEnd; i += 1)
     {
         node = new oj._JsonTreeNodeDataSource();
-        if(parent.children[i].attr)
+        if(parent.children[i].attr != null)
         {
             node.attr = parent.children[i].attr;
         }
-        if(parent.children[i].id)
+        if(parent.children[i].id != null)
         {
             node.id = parent.children[i].id;
         }
-        if(parent.children[i].depth)
+        if(parent.children[i].depth != null)
         {
             node.depth = parent.children[i].depth;
         }
-        if(parent.children[i].title)
+        if(parent.children[i].title != null)
         {
             node.title = parent.children[i].title;
         }
-        if(parent.children[i].parent)
+        if(parent.children[i].parent != null)
         {
             node.parent = parent.children[i].parent;
         }
@@ -352,7 +352,7 @@ oj.JsonTreeDataSource.prototype.fetchDescendants = function(parentKey, callbacks
     childEnd = 0;
     results = [];
 
-    if (!parentKey)
+    if (parentKey == null)
     {
         parentKey = this.data.id;
     }
@@ -426,7 +426,7 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
     moveNodeKey = nodeToMove;
     refNodeKey = referenceNode;
 
-    if ((!refNodeKey || refNodeKey == this.data.id))
+    if ((refNodeKey == null || refNodeKey == this.data.id))
     {
         if (pos != "inside")
         {
@@ -465,7 +465,7 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
             {
                 if (index != 0)
                 {
-                    parent.children.splice(index - 1, 0, moveNode);
+                    parent.children.splice(index, 0, moveNode);
                 }
                 else
                 {
@@ -479,7 +479,7 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
             index = parent.children.indexOf(refNode);
             if (index > -1)
             {
-                parent.children.splice(index, 0, moveNode);
+                parent.children.splice(index + 1, 0, moveNode);
             }
         }
         else if (pos == "first")
@@ -519,12 +519,7 @@ oj.JsonTreeDataSource.prototype.sort = function(criteria, callbacks)
 {
     var parent, parentKey;
 
-    parentKey = null;
-
-    if (!parentKey)
-    {
-        parentKey = this.data.id;
-    }
+    parentKey = this.data.id;
 
     parent = this._searchTreeById(this.data, parentKey);
 
@@ -564,7 +559,7 @@ oj.JsonTreeDataSource.prototype._getParentById = function(refNodeKey, currNode)
         return null;
     }
 
-    if (!currNode)
+    if (currNode == null)
     {
         currNode = this.data;
     }
@@ -609,7 +604,7 @@ oj.JsonTreeDataSource.prototype._searchTreeById = function(currChild, parentKey)
 {
     var i, result = null;
 
-    if (!currChild)
+    if (currChild == null)
     {
         currChild = this.data;
     }
@@ -672,11 +667,11 @@ oj.JsonTreeDataSource.prototype._removeFromTree = function(currChild)
 {
     var parent, index, key;
 
-    if (currChild.id)
+    if (currChild.id != null)
     {
         key = currChild.id;
     }
-    else if (currChild.attr)
+    else if (currChild.attr != null)
     {
         key = currChild.attr.id;
     }

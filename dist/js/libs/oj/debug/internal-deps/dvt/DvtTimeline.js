@@ -6,6 +6,7 @@
 define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+(function(dvt) {
 /**
  * TimelineOverview component.
  * @param {dvt.Context} context The rendering context.
@@ -14,7 +15,6 @@ define(['./DvtToolkit', './DvtTimeAxis', './DvtOverview', './DvtTimeComponent'],
  * @class TimelineOverview component.
  * @constructor
  * @extends {dvt.Container}
- * @export
  */
 dvt.TimelineOverview = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
@@ -48,7 +48,6 @@ dvt.TimelineOverview.FILL_COLOR = 'fc';
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.TimelineComponent}
- * @export
  */
 dvt.TimelineOverview.newInstance = function(context, callback, callbackObj)
 {
@@ -68,7 +67,7 @@ dvt.TimelineOverview.prototype.Init = function(context, callback, callbackObj)
   dvt.TimelineOverview.superclass.Init.call(this, context, callback, callbackObj);
 
   // default fills
-  var colors = [dvt.ColorUtils.getPound(dvt.ColorUtils.getPastel('#aadd77', 0.35)), '#aadd77', dvt.ColorUtils.getPound(dvt.ColorUtils.getDarker('#aadd77', 0.5))];
+  var colors = [dvt.ColorUtils.getPound(dvt.ColorUtils.getBrighter('#aadd77', 0.35)), '#aadd77', dvt.ColorUtils.getPound(dvt.ColorUtils.getDarker('#aadd77', 0.5))];
   // get pastel doesn't work too well on ipad
   if (dvt.OverviewUtils.supportsTouch())
     colors = ['#aadd77'];
@@ -391,7 +390,8 @@ dvt.TimelineOverview.prototype.prepareDurations = function(durationMarkers)
 };
 
 /**
- * @export
+ * Gets the current color mapping of duration bars.
+ * @return {Array} the current color mapping of duration bars.
  */
 dvt.TimelineOverview.prototype.getDurationColorMap = function() {
   if (this._durationColorMap)
@@ -495,7 +495,7 @@ dvt.TimelineOverview.prototype.addMarker = function(node, sz)
         colors = [color];
       else
       {
-        var lighter = dvt.ColorUtils.getPastel(color, 0.50);
+        var lighter = dvt.ColorUtils.getBrighter(color, 0.50);
         var darker = dvt.ColorUtils.getDarker(color, 0.50);
         colors = [lighter, color, darker];
       }
@@ -625,18 +625,18 @@ dvt.TimelineOverview.prototype.calculateSize = function(node, start, end, size, 
     for (i = 0; i < overlappingMarkers.length; i++)
     {
       var obj = this.calculateY(overlappingMarkers, node.getShape(), cx, cy, hszx, hszy, maxy, hsz, maxHeight);
-      maxy = obj.maxy;
-      if (obj.cy == cy)
+      maxy = obj['maxy'];
+      if (obj['cy'] == cy)
       {
         // cy is the same, so we are done with this marker
-        cy = obj.cy;
+        cy = obj['cy'];
         break;
       }
       else
       {
         // cy changed, we have to go over the array again with the new value
         // to see if there's new collision
-        cy = obj.cy;
+        cy = obj['cy'];
       }
     }
   }
@@ -1393,7 +1393,6 @@ dvt.TimelineOverview.prototype.isMarkerSelected = function(drawable)
 /************************** automation ***********************/
 /**
  * @return {DvtTimelineOverviewAutomation} the automation object
- * @export
  */
 dvt.TimelineOverview.prototype.getAutomation = function()
 {
@@ -1870,15 +1869,10 @@ DvtTimelineOverviewEvent.prototype.isMultiSelect = function()
   */
 var DvtTimelineOverviewAutomation = function(overview)
 {
-  this._Init(overview);
+  this._overview = overview;
 };
 
 dvt.Obj.createSubclass(DvtTimelineOverviewAutomation, dvt.Automation);
-
-DvtTimelineOverviewAutomation.prototype._Init = function(overview)
-{
-  this._overview = overview;
-};
 
 DvtTimelineOverviewAutomation.NODE_ID_PREFIX = 'marker';
 
@@ -1939,7 +1933,6 @@ DvtTimelineOverviewAutomation.prototype.GetSubIdForDomElement = function(display
  * <li>marker[seriesIndex][index]</li>
  * </ul>
  * @override
- * @export
  */
 DvtTimelineOverviewAutomation.prototype.getDomElementForSubId = function(subId)
 {
@@ -2039,1034 +2032,16 @@ DvtTimelineOverviewAutomation._findMarker = function(markers, seriesId, index) {
 
   return null;
 };
-
-/**
- *
- * @param {type} context
- * @param {type} callback
- * @param {type} callbackObj
- * @class
- * @constructor
- * @extends {dvt.BaseComponent}
- * @return {undefined}
- */
-dvt.TimeAxis = function(context, callback, callbackObj)
-{
-  this.Init(context, callback, callbackObj);
-};
-
-dvt.Obj.createSubclass(dvt.TimeAxis, dvt.BaseComponent);
-
-dvt.TimeAxis.DEFAULT_INTERVAL_WIDTH = 50;
-dvt.TimeAxis.DEFAULT_INTERVAL_HEIGHT = 21;
-dvt.TimeAxis.DEFAULT_INTERVAL_PADDING = 2;
-dvt.TimeAxis.DEFAULT_BORDER_WIDTH = 1;
-dvt.TimeAxis.DEFAULT_SEPARATOR_WIDTH = 1;
-
-/**
- * Returns a new instance of dvt.TimeAxis.
- * @param {dvt.Context} context The rendering context.
- * @param {string} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The optional object instance on which the callback function is defined.
- * @return {dvt.TimeAxis}
- */
-dvt.TimeAxis.newInstance = function(context, callback, callbackObj)
-{
-  return new dvt.TimeAxis(context, callback, callbackObj);
-};
-
-/**
- * Attribute for valid scales.
- * @const
- * @private
- */
-dvt.TimeAxis._VALID_SCALES = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'quarters', 'years'];
-
-dvt.TimeAxis.prototype.Init = function(context, callback, callbackObj)
-{
-  dvt.TimeAxis.superclass.Init.call(this, context);
-
-  this._calendar = new DvtTimeAxisCalendar();
-  this._borderWidth = dvt.TimeAxis.DEFAULT_BORDER_WIDTH;
-  this._dateToIsoConverter = context.getLocaleHelpers()['dateToIsoConverter'];
-};
-
-dvt.TimeAxis.prototype.setScale = function(scale)
-{
-  this._scale = scale;
-};
-
-dvt.TimeAxis.prototype.setTimeZoneOffsets = function(timeZoneOffsets)
-{
-  this._timeZoneOffsets = timeZoneOffsets;
-};
-
-dvt.TimeAxis.prototype.increaseScale = function()
-{
-  for (var s = 0; s < this._zoomOrder.length - 1; s++)
-  {
-    if (this._zoomOrder[s] == this._scale)
-    {
-      this._scale = this._zoomOrder[s + 1];
-      return true;
-    }
-  }
-  return false;
-};
-
-dvt.TimeAxis.prototype.decreaseScale = function()
-{
-  for (var s = 1; s < this._zoomOrder.length; s++)
-  {
-    if (this._zoomOrder[s] == this._scale)
-    {
-      this._scale = this._zoomOrder[s - 1];
-      return true;
-    }
-  }
-  return false;
-};
-
-dvt.TimeAxis.prototype.setConverter = function(converter)
-{
-  this._converter = converter;
-};
-
-dvt.TimeAxis.prototype.setDefaultConverter = function(defaultConverter)
-{
-  this._defaultConverter = defaultConverter;
-};
-
-dvt.TimeAxis.prototype.getContentSize = function()
-{
-  return this._contentSize;
-};
-
-dvt.TimeAxis.prototype.setContentSize = function(contentSize)
-{
-  if (contentSize > this._contentSize)
-    this._contentSize = contentSize;
-};
-
-dvt.TimeAxis.prototype.getTimeAxisWidth = function()
-{
-  // read from skin?
-  if (this._timeAxisWidth == null)
-    this._timeAxisWidth = 30;
-
-  return this._timeAxisWidth;
-};
-
-dvt.TimeAxis.prototype.setBorderWidth = function(borderWidth)
-{
-  this._borderWidth = borderWidth;
-};
-
-dvt.TimeAxis.prototype.getBorderWidth = function()
-{
-  return this._borderWidth;
-};
-
-dvt.TimeAxis.prototype.getSize = function()
-{
-  return this._contentSize + (this._borderWidth * 2);
-};
-
-dvt.TimeAxis.prototype.setType = function(type, dateFormatStrings)
-{
-  // create a new formatter based on the new type
-  this._formatter = new DvtTimeAxisFormatter(type == 'short' ? DvtTimeAxisFormatter.SHORT : DvtTimeAxisFormatter.LONG, dateFormatStrings);
-};
-
-// utility method: find the closiest date to the time scale of the specified date
-dvt.TimeAxis.prototype.adjustDate = function(date)
-{
-  return this._calendar.adjustDate(new Date(date), this._scale);
-};
-
-dvt.TimeAxis.prototype.getNextDate = function(time)
-{
-  return this._calendar.getNextDate(time, this._scale);
-};
-
-dvt.TimeAxis.prototype.formatDate = function(date)
-{
-  if (this._converter)
-  {
-    var converter;
-    if (this._converter[this._scale])
-      converter = this._converter[this._scale];
-    else if (this._converter['default'])
-      converter = this._converter['default'];
-    else
-      converter = this._converter;
-
-    if (converter['format'])
-      return converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(date) : date);
-    else if (converter['getAsString'])
-      return converter['getAsString'](date);
-  }
-  if (this._defaultConverter)
-  {
-    if (this._defaultConverter[this._scale])
-    {
-      converter = this._defaultConverter[this._scale];
-      if (converter['format'])
-        return converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(date) : date);
-      else if (converter['getAsString'])
-        return converter['getAsString'](date);
-    }
-  }
-  return this._formatter.format(date, this._scale, this._timeZoneOffsets);
-};
-
-dvt.TimeAxis.prototype.getZoomOrder = function()
-{
-  return this._zoomOrder;
-};
-
-dvt.TimeAxis.prototype.setZoomOrder = function(zoomOrder)
-{
-  this._zoomOrder = zoomOrder;
-};
-
-dvt.TimeAxis.prototype.setIsVertical = function(isVertical)
-{
-  if (isVertical)
-    this._contentSize = dvt.TimeAxis.DEFAULT_INTERVAL_WIDTH;
-  else
-    this._contentSize = dvt.TimeAxis.DEFAULT_INTERVAL_HEIGHT;
-};
-// todo: this should be used by Timeline also
-var DvtTimeAxisCalendar = function(options) 
-{
-  this.Init(options);
-};
-
-dvt.Obj.createSubclass(DvtTimeAxisCalendar, dvt.Obj);
-
-DvtTimeAxisCalendar.prototype.Init = function() 
-{
-  this._dayInMillis = 1000 * 60 * 60 * 24;
-};
-
-DvtTimeAxisCalendar.prototype.getFirstDayOfWeek = function()
-{
-  // sunday; locale based
-  return 0;
-};
-
-DvtTimeAxisCalendar.prototype.adjustDate = function(date, scale)
-{
-  var _adjustedDate = new Date(date.getTime());
-  if (scale == 'weeks')
-  {
-    _adjustedDate.setHours(0, 0, 0);
-    var roll_amt = (date.getDay() - this.getFirstDayOfWeek() + 7) % 7;
-    if (roll_amt > 0)
-      _adjustedDate.setTime(_adjustedDate.getTime() - roll_amt * this._dayInMillis);
-  }
-  else if (scale == 'months')
-  {
-    _adjustedDate.setDate(1);
-  }
-  else if (scale == 'days')
-  {
-    _adjustedDate.setHours(0, 0, 0);
-  }
-  else if (scale == 'hours')
-  {
-    _adjustedDate.setMinutes(0, 0, 0);
-  }
-  else if (scale == 'minutes')
-  {
-    _adjustedDate.setSeconds(0, 0);
-  }
-  else if (scale == 'seconds')
-  {
-    _adjustedDate.setMilliseconds(0);
-  }
-  else if (scale == 'quarters')
-  {
-    _adjustedDate.setDate(1);
-    roll_amt = 2 - (date.getMonth() + 11) % 3;
-    if (roll_amt > 0)
-      _adjustedDate.setMonth(_adjustedDate.getMonth() + roll_amt);
-  }
-  else if (scale == 'halfyears')
-  {
-    _adjustedDate.setDate(1);
-    roll_amt = 5 - (date.getMonth() + 11) % 6;
-    if (roll_amt > 0)
-      _adjustedDate.setMonth(_adjustedDate.getMonth() + roll_amt);
-  }
-  else if (scale == 'years')
-  {
-    _adjustedDate.setMonth(0);
-    _adjustedDate.setDate(1);
-  }
-  else if (scale == 'twoyears')
-  {
-    _adjustedDate.setMonth(0);
-    _adjustedDate.setDate(1);
-  }
-
-  return _adjustedDate;
-};
-
-DvtTimeAxisCalendar.prototype.getNextDate = function(time, scale)
-{
-  if (scale == 'seconds')
-    return new Date(time + 1000);
-  else if (scale == 'minutes')
-    return new Date(time + 60000);
-  else if (scale == 'hours')
-    return new Date(time + 3600000);
-  // for larger scales, no set amount of time can be added
-  var _nextDate = new Date(time);
-  if (scale == 'days')
-    _nextDate.setDate(_nextDate.getDate() + 1);
-  else if (scale == 'weeks')
-    _nextDate.setDate(_nextDate.getDate() + 7);
-  else if (scale == 'months')
-    _nextDate.setMonth(_nextDate.getMonth() + 1);
-  else if (scale == 'quarters')
-    _nextDate.setMonth(_nextDate.getMonth() + 3);
-  else if (scale == 'halfyears')
-    _nextDate.setMonth(_nextDate.getMonth() + 6);
-  else if (scale == 'years')
-    _nextDate.setFullYear(_nextDate.getFullYear() + 1);
-  else if (scale == 'twoyears')
-    _nextDate.setFullYear(_nextDate.getFullYear() + 2);
-  else
-  {
-    // circuit breaker
-    _nextDate.setYear(_nextDate.getYear() + 1);
-  }
-  return _nextDate;
-};
-var DvtTimeAxisFormatter = function(type, locale) 
-{
-  this.Init(type, locale);
-};
-
-dvt.Obj.createSubclass(DvtTimeAxisFormatter, dvt.Obj);
-
-DvtTimeAxisFormatter.LONG = 0;
-DvtTimeAxisFormatter.SHORT = 1;
-
-DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings) 
-{
-  this._type = type;
-  this._dateFormatStrings = dateFormatStrings;
-
-  this._formats = [];
-  this._formats[0] = new Object();
-  this._formats[0]['seconds'] = 'HH:MM:ss';
-  this._formats[0]['minutes'] = 'HH:MM';
-  this._formats[0]['hours'] = 'HH:MM';
-  this._formats[0]['days'] = 'dddd';
-  this._formats[0]['weeks'] = 'm/dd';
-  this._formats[0]['months'] = 'mmmm';
-  this._formats[0]['quarters'] = 'mmmm';
-  this._formats[0]['halfyears'] = 'yyyy';
-  this._formats[0]['years'] = 'yyyy';
-  this._formats[0]['twoyears'] = 'yyyy';
-
-  this._formats[1] = new Object();
-  this._formats[1]['seconds'] = 'HH:MM:ss';
-  this._formats[1]['minutes'] = 'HH:MM';
-  this._formats[1]['hours'] = 'HH:MM';
-  this._formats[1]['days'] = 'm/dd';
-  this._formats[1]['weeks'] = 'm/dd';
-  this._formats[1]['months'] = 'mmm';
-  this._formats[1]['quarters'] = 'mmm';
-  this._formats[1]['halfyears'] = 'yy';
-  this._formats[1]['years'] = 'yy';
-  this._formats[1]['twoyears'] = 'yy';
-};
-
-/**
- * Change the format string for a particular time scale.
- *
- * @param scale
- * @param pattern - the format string
- */
-DvtTimeAxisFormatter.prototype.setPattern = function(scale, pattern)
-{
-  this._formats[this._type][scale] = pattern;
-};
-
-DvtTimeAxisFormatter.prototype.format = function(date, scale, timeZoneOffsets) 
-{
-  var mask = this._formats[this._type][scale];
-  if (mask != null)
-  {
-    var isUTC = false;
-    if (timeZoneOffsets)
-    {
-      var timeInMS = date.getTime();
-      var dates = Object.keys(timeZoneOffsets);
-      var offset = 0;
-      for (var i = 0; i < dates.length; i++)
-      {
-        if (timeInMS >= parseInt(dates[i], 10))
-          offset = timeZoneOffsets[dates[i]];
-      }
-      date = new Date(timeInMS + offset);
-      isUTC = true;
-    }
-    if (mask.indexOf(':') != -1)
-      var separator = ':';
-    else if (mask.indexOf('/') != -1)
-      separator = '/';
-    if (separator)
-    {
-      mask = mask.split(separator);
-      var newString = this.getDateFormatValue(date, mask[0], isUTC);
-      for (var i = 1; i < mask.length; i++)
-      {
-        newString += separator + this.getDateFormatValue(date, mask[i], isUTC);
-      }
-      return newString;
-    }
-    else
-      return this.getDateFormatValue(date, mask, isUTC);
-  }
-  else
-    return date.toLocaleString();
-};
-
-/**
- * Gets the formatted date value corresponding to the desired mask.
- * Valid mask values are: 'ss', 'MM', 'HH', 'dd', 'dddd', 'm',
- * 'mmm', 'mmmm', 'yy', and 'yyyy'.
- * @param {Date} date The date object to be formatted.
- * @param {string} mask The format mask to be used.
- * @param {boolean} isUTC Whether UTC values should be used.
- * @return {string} The formatted date value.
- */
-DvtTimeAxisFormatter.prototype.getDateFormatValue = function(date, mask, isUTC)
-{
-  if (isUTC)
-  {
-    switch (mask)
-    {
-      case 'ss':
-        var value = date.getUTCSeconds();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'HH':
-        value = date.getUTCHours();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'MM':
-        value = date.getUTCMinutes();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'dd':
-        value = date.getUTCDate();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'dddd':
-        return this._dateFormatStrings.dayNames[date.getUTCDay() + 7];
-        break;
-
-      case 'm':
-        return date.getUTCMonth() + 1;
-        break;
-
-      case 'mmm':
-        return this._dateFormatStrings.monthNames[date.getUTCMonth()];
-        break;
-
-      case 'mmmm':
-        return this._dateFormatStrings.monthNames[date.getUTCMonth() + 12];
-        break;
-
-      case 'yy':
-        return date.getUTCFullYear().toString().substring(2, 4);
-        break;
-
-      default:
-        // 'yyyy' case
-        return date.getUTCFullYear();
-    }
-  }
-  else
-  {
-    switch (mask)
-    {
-      case 'ss':
-        value = date.getSeconds();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'HH':
-        value = date.getHours();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'MM':
-        value = date.getMinutes();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'dd':
-        value = date.getDate();
-        if (value < 10)
-          return '0' + value;
-        else
-          return value;
-        break;
-
-      case 'dddd':
-        return this._dateFormatStrings.dayNames[date.getDay() + 7];
-        break;
-
-      case 'm':
-        return date.getMonth() + 1;
-        break;
-
-      case 'mmm':
-        return this._dateFormatStrings.monthNames[date.getMonth()];
-        break;
-
-      case 'mmmm':
-        return this._dateFormatStrings.monthNames[date.getMonth() + 12];
-        break;
-
-      case 'yy':
-        return date.getFullYear().toString().substring(2, 4);
-        break;
-
-      default:
-	// 'yyyy' case
-        return date.getFullYear();
-    }
-  }
-};
-
-/**
- * This is the base class for all time based components (Gantt, Timeline).  It handles the following:
- * - all common attributes (start time, end time etc.)
- * - association with the generic overview component
- * - scrolling, including autoscroll
- * - creation of scrollable canvas
- * - zoom
- * - time axis (multiple)
- * - current time and highlighted time period
- *
- * @param {dvt.Context} context The rendering context.
- * @param {object} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The object context for the callback function.
- * @class
- * @constructor
- * @extends {dvt.BaseComponent}
- */
-dvt.TimeComponent = function(context, callback, callbackObj)
-{
-  this.Init(context, callback, callbackObj);
-};
-
-dvt.Obj.createSubclass(dvt.TimeComponent, dvt.BaseComponent);
-
-/**
- * Initializes the view.
- * @param {dvt.Context} context The rendering context.
- * @param {object} callback The function that should be called to dispatch component events.
- * @param {object} callbackObj The object context for the callback function
- * @protected
- */
-dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj) 
-{
-  dvt.TimeComponent.superclass.Init.call(this, context, callback, callbackObj);
-  this._virtualize = false;
-};
-
-
-/**
- * Renders the component using the specified xml.  If no xml is supplied to a component
- * that has already been rendered, this function will rerender the component with the
- * specified size.
- * @param {string} xml The component xml.
- * @param {number} width The width of the component.
- * @param {number} height The height of the component.
- */
-dvt.TimeComponent.prototype.render = function(width, height, options) 
-{
-  if (options)
-    this.SetOptions(options);
-
-  // Store the size
-  this.Width = width;
-  this.Height = height;
-
-  // If new xml is provided, parse it and apply the properties
-  if (this.Options)
-  {
-    var props = this.Parse(this.Options);
-    this._applyParsedProperties(props);
-  }
-};
-
-/**
- * @override
- */
-dvt.TimeComponent.prototype.SetOptions = function(options)
-{
-  this.Options = dvt.JsonUtils.clone(options);
-};
-
-dvt.TimeComponent.prototype._applyParsedProperties = function(props)
-{
-  this._origStart = props.origStart;
-  this._origEnd = props.origEnd;
-  this._start = props.start;
-  this._end = props.end;
-  this._inlineStyle = props.inlineStyle;
-
-  this.applyStyleValues();
-};
-
-/**
- * Combines style defaults with the styles provided
- *
- */
-dvt.TimeComponent.prototype.applyStyleValues = function()
-{
-  this._style.parseInlineStyle(this._inlineStyle);
-};
-
-//////////// attribute methods ////////////////////////////
-dvt.TimeComponent.prototype.isAnimationEnabled = function()
-{
-  return false;
-};
-
-dvt.TimeComponent.prototype.getAdjustedStartTime = function() 
-{
-  return this._start;
-};
-
-dvt.TimeComponent.prototype.getAdjustedEndTime = function() 
-{
-  return this._end;
-};
-
-
-/**
- * Returns the overall (virtualized) length of the content
- */
-dvt.TimeComponent.prototype.getContentLength = function() 
-{
-  return this._contentLength;
-};
-
-dvt.TimeComponent.prototype.setContentLength = function(length)
-{
-  if (this._canvasLength < length)
-    this._contentLength = length;
-  else
-    this._contentLength = this._canvasLength;
-
-  if (!this._virtualize)
-  {
-    this._fetchStartPos = 0;
-    this._fetchEndPos = this._contentLength;
-  }
-};
-
-dvt.TimeComponent.prototype.isRTL = function()
-{
-  return dvt.Agent.isRightToLeft(this.getCtx());
-};
-
-/**
- * Returns whether the component has a vertical orientation.
- */
-dvt.TimeComponent.prototype.isVertical = function()
-{
-  return this._isVertical;
-};
-
-/**
- * Renders the time zoom canvas of a this component.
- * @param {dvt.Container} container The container to render into.
- */
-dvt.TimeComponent.prototype.renderTimeZoomCanvas = function(container)
-{
-  if (this._timeZoomCanvas)
-    this._timeZoomCanvas.setClipPath(null);
-  else
-    this._timeZoomCanvas = new dvt.Container(this.getCtx(), 'iCanvas');
-
-  var cp = new dvt.ClipPath();
-  if (this.isVertical())
-  {
-    cp.addRect(this._startX, this._startY, this._canvasSize, this._canvasLength);
-    this._timeZoomCanvas.setTranslateX(this._startX);
-    this._timeZoomCanvas.setTranslateY(this._startY + this.getAbsoluteStartPos());
-  }
-  else
-  {
-    cp.addRect(this._startX, this._startY, this._canvasLength, this._canvasSize);
-    this._timeZoomCanvas.setTranslateX(this._startX + this.getAbsoluteStartPos());
-    this._timeZoomCanvas.setTranslateY(this._startY);
-  }
-  container.setClipPath(cp);
-
-  if (this._timeZoomCanvas.getParent() != container)
-    container.addChild(this._timeZoomCanvas);
-};
-
-dvt.TimeComponent.prototype.getTimeZoomCanvas = function()
-{
-  return this._timeZoomCanvas;
-};
-
-dvt.TimeComponent.prototype.HandleMouseWheel = function(event)
-{
-  dvt.EventManager.consumeEvent(event);
-  var wheelDelta = event.wheelDelta;
-  if (this.hasValidOptions() && wheelDelta)
-  {
-    var compPagePos = this.getCtx().getStageAbsolutePosition();
-    if (this._isVertical)
-      var compLoc = event.pageY - compPagePos.y;
-    else
-      compLoc = event.pageX - compPagePos.x;
-    var widthFactor = (this._end - this._start) / this._contentLength;
-    var time = widthFactor * compLoc + this._viewStartTime;
-
-    wheelDelta = (wheelDelta * .02) + 1;
-    this.handleZoomWheel(this.getContentLength() * wheelDelta, time, compLoc, true);
-  }
-};
-
-dvt.TimeComponent.prototype.handleZoomWheel = function(newLength, time, compLoc, triggerViewportChangeEvent)
-{
-  if (newLength > this._maxContentLength)
-  {
-    newLength = this._maxContentLength;
-    this.disableZoomButton(true);
-  }
-  else
-    this.enableZoomButton(true);
-  if (this._canvasLength > newLength)
-  {
-    newLength = this._canvasLength;
-    this.disableZoomButton(false);
-  }
-  else
-    this.enableZoomButton(false);
-  var zoomIn = this._contentLength <= newLength;
-  var oldViewTime = this._viewEndTime - this._viewStartTime;
-  var viewLength = (oldViewTime / (this._end - this._start)) * this._contentLength;
-  this.setContentLength(newLength);
-  var viewTime = (viewLength / this._contentLength) * (this._end - this._start);
-  if (time)
-  {
-    var widthFactor = (this._end - this._start) / this._contentLength;
-    this._viewStartTime = time - (compLoc * widthFactor);
-    if (this._viewStartTime < this._start)
-      this._viewStartTime = this._start;
-    this._viewEndTime = this._viewStartTime + viewTime;
-    if (this._viewEndTime > this._end)
-    {
-      this._viewEndTime = this._end;
-      this._viewStartTime = this._viewEndTime - viewTime;
-      if (this._viewStartTime < this._start)
-        this._viewStartTime = this._start;
-    }
-    this.setRelativeStartPos((1 / widthFactor) * (this._start - this._viewStartTime));
-  }
-  else
-  {
-    this._viewStartTime = this._start;
-    this._viewEndTime = this._viewStartTime + viewTime;
-    if (this._viewStartTime < this._start)
-      this._viewStartTime = this._start;
-    this.setRelativeStartPos(0);
-  }
-  if (zoomIn)
-  {
-    while (this._zoomLevelOrder > 0)
-    {
-      var minLength = this._zoomLevelLengths[this._zoomLevelOrder - 1];
-      if (this._contentLength >= minLength)
-      {
-        this._zoomLevelOrder--;
-        this._timeAxis.decreaseScale();
-        this._scale = this._timeAxis._scale;
-      }
-      else
-        break;
-    }
-  }
-  else
-  {
-    while (this._zoomLevelOrder < this._zoomLevelLengths.length - 1)
-    {
-      var minLength = this._zoomLevelLengths[this._zoomLevelOrder];
-      if (this._contentLength < minLength)
-      {
-        this._zoomLevelOrder++;
-        this._timeAxis.increaseScale();
-        this._scale = this._timeAxis._scale;
-      }
-      else
-        break;
-    }
-  }
-  this.applyTimeZoomCanvasPosition();
-};
-
-/**
- * Zooms by the specified amount.
- * @param {number} dz A number specifying the zoom ratio, e.g. dz = 2 means zoom in by 200%.
- */
-dvt.TimeComponent.prototype.zoomBy = function(dz)
-{
-  var shiftRatio = (1 / dz - 1) / 2 + 1;
-  if (this._isVertical)
-    var compLoc = this.Height / 2;
-  else
-    compLoc = this.Width / 2;
-  var widthFactor = (this._end - this._start) / this._contentLength;
-  var time = widthFactor * compLoc + this._viewStartTime;
-  this.handleZoomWheel(this.getContentLength() * shiftRatio, time, compLoc, true);
-};
-
-dvt.TimeComponent.prototype.beginPinchZoom = function(x1, y1, x2, y2)
-{
-  if (this._isVertical)
-    this._initialPinchZoomLoc = Math.sqrt((y1 - y2) * (y1 - y2)) + (y1 < y2 ? y1 : y2);
-  else
-    this._initialPinchZoomLoc = Math.sqrt((x1 - x2) * (x1 - x2)) + (x1 < x2 ? x1 : x2);
-  var widthFactor = (this._end - this._start) / this._contentLength;
-  this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
-  this._initialPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-  this._initialPinchZoomLength = this._contentLength;
-};
-
-dvt.TimeComponent.prototype.contPinchZoom = function(x1, y1, x2, y2)
-{
-  var currPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-  if (currPinchZoomDist != this._initialPinchZoomDist)
-    this._triggerViewportChange = true;
-  var newLength = ((currPinchZoomDist / this._initialPinchZoomDist) * this._initialPinchZoomLength);
-  this.handleZoomWheel(newLength, this._initialPinchZoomTime, this._initialPinchZoomLoc, false);
-};
-
-dvt.TimeComponent.prototype.endPinchZoom = function()
-{
-  this._initialPinchZoomDist = null;
-  this._initialPinchZoomLoc = null;
-  this._initialPinchZoomLength = null;
-  this._initialPinchZoomTime = null;
-  if (this._triggerViewportChange)
-  {
-    this._triggerViewportChange = false;
-    this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
-  }
-};
-
-/**
- * Pans the Timeline by the specified amount.
- * @param {number} delta The number of pixels to pan the canvas.
- */
-dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
-{
-  if (this._isVertical)
-  {
-    var newTranslateY = this._timeZoomCanvas.getTranslateY() - delta;
-    var minTranslateY = -(this._contentLength - this._canvasLength - this._startY);
-    var maxTranslateY = this._startY;
-
-    if (newTranslateY < minTranslateY)
-      newTranslateY = minTranslateY;
-    else if (newTranslateY > maxTranslateY)
-      newTranslateY = maxTranslateY;
-    this._timeZoomCanvas.setTranslateY(newTranslateY);
-
-    var startPos = newTranslateY - this._startY;
-    this.setAbsoluteStartPos(startPos);
-    var widthFactor = this.getContentLength() / (this._end - this._start);
-    var viewTime = this._viewEndTime - this._viewStartTime;
-    this._viewStartTime = this._start - (startPos / widthFactor);
-    this._viewEndTime = this._viewStartTime + viewTime;
-  }
-  else
-  {
-    var newTranslateX = this._timeZoomCanvas.getTranslateX() - delta;
-    var minTranslateX = -(this._contentLength - this._canvasLength - this._startX);
-    var maxTranslateX = this._startX;
-
-    if (newTranslateX < minTranslateX)
-      newTranslateX = minTranslateX;
-    else if (newTranslateX > maxTranslateX)
-      newTranslateX = maxTranslateX;
-    this._timeZoomCanvas.setTranslateX(newTranslateX);
-
-    this.setAbsoluteStartPos(newTranslateX - this._startX);
-    startPos = this.getRelativeStartPos();
-    widthFactor = this.getContentLength() / (this._end - this._start);
-    viewTime = this._viewEndTime - this._viewStartTime;
-    this._viewStartTime = this._start - (startPos / widthFactor);
-    this._viewEndTime = this._viewStartTime + viewTime;
-  }
-};
-
-dvt.TimeComponent.prototype.handleZoom = function(zoomIn)
-{
-  if (!zoomIn)
-    this.zoomBy(dvt.Timeline.ZOOM_BY_VALUE);
-  else
-    this.zoomBy(1 / dvt.Timeline.ZOOM_BY_VALUE);
-};
-
-dvt.TimeComponent.prototype.enableZoomButton = function(isZoomIn)
-{
-  if (isZoomIn)
-  {
-    this.zoomin.setEnabled(true);
-    this.zoomin.drawUpState();
-  }
-  else
-  {
-    this.zoomout.setEnabled(true);
-    this.zoomout.drawUpState();
-  }
-};
-
-dvt.TimeComponent.prototype.disableZoomButton = function(isZoomIn)
-{
-  if (isZoomIn)
-  {
-    this.zoomin.setEnabled(false);
-    this.zoomin.drawDisabledState();
-    this.zoomin.setCursor(null);
-  }
-  else
-  {
-    this.zoomout.setEnabled(false);
-    this.zoomout.drawDisabledState();
-    this.zoomout.setCursor(null);
-  }
-};
-
-dvt.TimeComponent.prototype.applyTimeZoomCanvasPosition = function()
-{
-  if (this._isVertical)
-    this._timeZoomCanvas.setTranslateY(this._startY + this.getAbsoluteStartPos());
-  else
-    this._timeZoomCanvas.setTranslateX(this._startX + this.getAbsoluteStartPos());
-};
-
-/**
- * Returns the absolute start position of the timeline.
- * @return {number} The absolute start position of the timeline.
- */
-dvt.TimeComponent.prototype.getAbsoluteStartPos = function()
-{
-  return this._startPos;
-};
-
-/**
- * Sets the absolute start position of the timeline.
- * @param {number} startPos The absolute start position of the timeline.
- */
-dvt.TimeComponent.prototype.setAbsoluteStartPos = function(startPos)
-{
-  this._startPos = startPos;
-};
-
-/**
- * Returns the timeline's start position relative to the reading direction.
- * @return {number} The timeline's start position relative to the reading direction.
- */
-dvt.TimeComponent.prototype.getRelativeStartPos = function()
-{
-  if (this.isRTL() && !this._isVertical)
-    return this._canvasLength - this._contentLength - this._startPos;
-  else
-    return this._startPos;
-};
-
-/**
- * Sets the timeline's start position relative to the reading direction.
- * @param {number} startPos The timeline's start position relative to the reading direction.
- */
-dvt.TimeComponent.prototype.setRelativeStartPos = function(startPos)
-{
-  if (this.isRTL() && !this._isVertical)
-    this._startPos = this._canvasLength - this._contentLength - startPos;
-  else
-    this._startPos = startPos;
-};
-
-/**
- * Returns the start offset value of this component in the x direction.
- * @return {number} The start offset value of this component in the x direction.
- */
-dvt.TimeComponent.prototype.getStartXOffset = function()
-{
-  return this._startX;
-};
-
-/**
- * Sets the start offset value of this component in the x direction.
- * @param {number} startX The start offset value of this component in the x direction.
- */
-dvt.TimeComponent.prototype.setStartXOffset = function(startX)
-{
-  this._startX = startX;
-};
-
-/**
- * Returns the start offset value of this component in the y direction.
- * @return {number} The start offset value of this component in the y direction.
- */
-dvt.TimeComponent.prototype.getStartYOffset = function()
-{
-  return this._startY;
-};
-
-/**
- * Sets the start offset value of this component in the y direction.
- * @param {number} startY The start offset value of this component in the y direction.
- */
-dvt.TimeComponent.prototype.setStartYOffset = function(startY)
-{
-  this._startY = startY;
-};
-
+dvt.exportProperty(dvt, 'TimelineOverview', dvt.TimelineOverview);
+dvt.exportProperty(dvt.TimelineOverview, 'newInstance', dvt.TimelineOverview.newInstance);
+dvt.exportProperty(dvt.TimelineOverview.prototype, 'render', dvt.TimelineOverview.prototype.render);
+dvt.exportProperty(dvt.TimelineOverview.prototype, 'getAutomation', dvt.TimelineOverview.prototype.getAutomation);
+dvt.exportProperty(dvt.TimelineOverview.prototype, 'getDurationColorMap', dvt.TimelineOverview.prototype.getDurationColorMap);
+
+dvt.exportProperty(DvtTimelineOverviewAutomation.prototype, 'getDomElementForSubId', DvtTimelineOverviewAutomation.prototype.getDomElementForSubId);
+})(dvt);
+
+(function(dvt) {
 /** Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved. */
 var DvtTimeUtils = new Object();
 
@@ -3112,7 +2087,7 @@ DvtTimeUtils.getPositionDate = function(startTime, endTime, pos, width)
  * Timeline keyboard handler.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
  * @class DvtTimelineKeyboardHandler
- * @extends {dvt.KeyboardHandler}
+ * @extends {dvt.TimeComponentKeyboardHandler}
  * @constructor
  */
 var DvtTimelineKeyboardHandler = function(manager)
@@ -3120,63 +2095,7 @@ var DvtTimelineKeyboardHandler = function(manager)
   this.Init(manager);
 };
 
-dvt.Obj.createSubclass(DvtTimelineKeyboardHandler, dvt.KeyboardHandler);
-
-/**
- * @override
- */
-DvtTimelineKeyboardHandler.prototype.Init = function(manager)
-{
-  DvtTimelineKeyboardHandler.superclass.Init.call(this, manager);
-};
-
-/**
- * @override
- */
-DvtTimelineKeyboardHandler.prototype.isSelectionEvent = function(event)
-{
-  return this.isNavigationEvent(event) && !event.ctrlKey;
-};
-
-/**
- * @override
- */
-DvtTimelineKeyboardHandler.prototype.isMultiSelectEvent = function(event)
-{
-  return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
-};
-
-/**
- * @override
- */
-DvtTimelineKeyboardHandler.prototype.processKeyDown = function(event)
-{
-  var keyCode = event.keyCode;
-  if (dvt.KeyboardEvent.isEquals(event) || dvt.KeyboardEvent.isPlus(event))
-    this._eventManager.zoomBy(1 / dvt.Timeline.ZOOM_BY_VALUE);
-  else if (dvt.KeyboardEvent.isMinus(event) || dvt.KeyboardEvent.isUnderscore(event))
-    this._eventManager.zoomBy(dvt.Timeline.ZOOM_BY_VALUE);
-  else if (keyCode == dvt.KeyboardEvent.PAGE_UP)
-  {
-    if (event.shiftKey)
-      this._eventManager.panBy(-0.25, 0);
-    else
-      this._eventManager.panBy(0, -0.25);
-
-    dvt.EventManager.consumeEvent(event);
-  }
-  else if (keyCode == dvt.KeyboardEvent.PAGE_DOWN)
-  {
-    if (event.shiftKey)
-      this._eventManager.panBy(0.25, 0);
-    else
-      this._eventManager.panBy(0, 0.25);
-
-    dvt.EventManager.consumeEvent(event);
-  }
-
-  return DvtTimelineKeyboardHandler.superclass.processKeyDown.call(this, event);
-};
+dvt.Obj.createSubclass(DvtTimelineKeyboardHandler, dvt.TimeComponentKeyboardHandler);
 
 /**
  * Finds the next navigable item based on direction.
@@ -3270,20 +2189,15 @@ DvtTimelineKeyboardHandler.getClosestItem = function(item, navigableItems)
 /**
  * Timeline event manager.
  * @param {dvt.Timeline} timeline The owning dvt.Timeline.
- * @extends {dvt.EventManager}
+ * @extends {dvt.TimeComponentEventManager}
  * @constructor
  */
 var DvtTimelineEventManager = function(timeline)
 {
-  this.Init(timeline.getCtx(), timeline.processEvent, timeline);
-  this._timeline = timeline;
-  this._isDragPanning = false;
-  this._isPinchZoom = false;
+  DvtTimelineEventManager.superclass.constructor.call(this, timeline);
 };
 
-dvt.Obj.createSubclass(DvtTimelineEventManager, dvt.EventManager);
-
-DvtTimelineEventManager.GECKO_MOUSEWHEEL = 'wheel';
+dvt.Obj.createSubclass(DvtTimelineEventManager, dvt.TimeComponentEventManager);
 
 /**
  * @override
@@ -3291,13 +2205,8 @@ DvtTimelineEventManager.GECKO_MOUSEWHEEL = 'wheel';
 DvtTimelineEventManager.prototype.addListeners = function(displayable)
 {
   DvtTimelineEventManager.superclass.addListeners.call(this, displayable);
-  dvt.SvgDocumentUtils.addDragListeners(this._timeline, this._onDragStart, this._onDragMove, this._onDragEnd, this);
   if (!dvt.Agent.isTouchDevice())
   {
-    if (dvt.Agent.isPlatformGecko())
-      displayable.addEvtListener(DvtTimelineEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
-    else
-      displayable.addEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
     // IE does not always fire the appropriate mouseover and mouseout events, so use mouseenter instead
     if (dvt.Agent.isPlatformIE())
     {
@@ -3316,10 +2225,6 @@ DvtTimelineEventManager.prototype.removeListeners = function(displayable)
   DvtTimelineEventManager.superclass.removeListeners.call(this, displayable);
   if (!dvt.Agent.isTouchDevice())
   {
-    if (dvt.Agent.isPlatformGecko())
-      displayable.removeEvtListener(DvtTimelineEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
-    else
-      displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
     // IE does not always fire the appropriate mouseover and mouseout events, so use mouseenter instead
     if (dvt.Agent.isPlatformIE())
     {
@@ -3328,27 +2233,6 @@ DvtTimelineEventManager.prototype.removeListeners = function(displayable)
       stage.removeEvtListener('mouseleave', this.OnMouseLeave, false, this);
     }
   }
-};
-
-/**
- * @override
- */
-DvtTimelineEventManager.prototype.OnKeyDown = function(event)
-{
-  DvtTimelineEventManager.superclass.OnKeyDown.call(this, event);
-  this._timeline.HandleKeyDown(event);
-};
-
-/**
- * @override
- */
-DvtTimelineEventManager.prototype.OnClick = function(event)
-{
-  if (this._isDragPanning)
-    return;
-
-  DvtTimelineEventManager.superclass.OnClick.call(this, event);
-  this._timeline.HandleMouseClick(event);
 };
 
 /**
@@ -3363,8 +2247,8 @@ DvtTimelineEventManager.prototype.PreOnMouseOver = function(event)
   if (!dvt.Agent.isPlatformIE() && !this.isMouseOver)
   {
     this.isMouseOver = true;
-    if (!this._timeline.isAnimating())
-      this._timeline.showThenHideHotspots(0);
+    if (!this._comp.isAnimating())
+      this._comp.showThenHideHotspots(0);
   }
 };
 
@@ -3380,8 +2264,8 @@ DvtTimelineEventManager.prototype.OnMouseEnter = function(event)
   if (!this.isMouseOver)
   {
     this.isMouseOver = true;
-    if (!this._timeline.isAnimating())
-      this._timeline.showThenHideHotspots(0);
+    if (!this._comp.isAnimating())
+      this._comp.showThenHideHotspots(0);
   }
 };
 
@@ -3424,274 +2308,17 @@ DvtTimelineEventManager.prototype._onMouseOutTimerEnd = function()
 };
 
 /**
- * @override
- */
-DvtTimelineEventManager.prototype.PreOnMouseDown = function(event)
-{
-  this._isDragPanning = false;
-  DvtTimelineEventManager.superclass.PreOnMouseDown.call(this, event);
-  this._timeline.HandleMouseDown(event);
-};
-
-/**
- * Mouse wheel event handler.
- * @param {mousewheel} event The mousewheel event.
- * @protected
- */
-DvtTimelineEventManager.prototype.OnMouseWheel = function(event)
-{
-  this._timeline.HandleMouseWheel(event);
-};
-
-/**
- * @override
- */
-DvtTimelineEventManager.prototype.OnTouchStartBubble = function(event)
-{
-  DvtTimelineEventManager.superclass.OnTouchStartBubble.call(this, event);
-  this._timeline.HandleTouchStart(event);
-  // iOS does not set focus on touch, so need to force focus
-  var stage = this._timeline.getCtx().getStage();
-  var wrappingDiv = stage.getSVGRoot().parentNode;
-  wrappingDiv.focus();
-};
-
-/**
- * @override
- */
-DvtTimelineEventManager.prototype.OnTouchEndBubble = function(event)
-{
-  DvtTimelineEventManager.superclass.OnTouchEndBubble.call(this, event);
-  this._timeline.HandleTouchEnd(event);
-};
-
-/**
- * Drag start callback.
- * @param {dvt.BaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtTimelineEventManager.prototype._onDragStart = function(event)
-{
-  if (this._timeline.hasValidOptions())
-  {
-    if (dvt.Agent.isTouchDevice())
-      return this._onTouchDragStart(event);
-    else
-      return this._onMouseDragStart(event);
-  }
-};
-
-/**
- * Drag move callback.
- * @param {dvt.BaseEvent} event
- * @return {boolean}
- * @private
- */
-DvtTimelineEventManager.prototype._onDragMove = function(event)
-{
-  if (dvt.Agent.isTouchDevice())
-    return this._onTouchDragMove(event);
-  else
-    return this._onMouseDragMove(event);
-};
-
-/**
- * Drag end callback.
- * @param {dvt.BaseEvent} event
- * @return {boolean}
- * @private
- */
-DvtTimelineEventManager.prototype._onDragEnd = function(event)
-{
-  if (dvt.Agent.isTouchDevice())
-    return this._onTouchDragEnd(event);
-  else
-    return this._onMouseDragEnd(event);
-};
-
-/**
- * Return the relative position relative to the stage, based on the cached stage absolute position.
- * @param {number} pageX
- * @param {number} pageY
- * @return {dvt.Point} The relative position.
- * @private
- */
-DvtTimelineEventManager.prototype._getRelativePosition = function(pageX, pageY) {
-  if (!this._stageAbsolutePosition)
-    this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
-
-  return new dvt.Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
-};
-
-/**
- * Mouse drag start callback.
- * @param {dvt.BaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtTimelineEventManager.prototype._onMouseDragStart = function(event)
-{
-  if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON)
-  {
-    var relPos = this._getRelativePosition(event.pageX, event.pageY);
-    this._timeline.beginDragPan(relPos.x, relPos.y);
-    return true;
-  }
-  return false;
-};
-
-/**
- * Mouse drag move callback.
- * @param {dvt.BaseEvent} event
- * @private
- */
-DvtTimelineEventManager.prototype._onMouseDragMove = function(event)
-{
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  if (this._timeline.contDragPan(relPos.x, relPos.y))
-    this._isDragPanning = true;
-};
-
-/**
- * Mouse drag end callback.
- * @param {dvt.BaseEvent} event
- * @private
- */
-DvtTimelineEventManager.prototype._onMouseDragEnd = function(event)
-{
-  this._timeline.endDragPan();
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
-};
-
-/**
- * Touch drag start callback.
- * @param {dvt.BaseEvent} event
- * @return {boolean} Whether drag is initiated.
- * @private
- */
-DvtTimelineEventManager.prototype._onTouchDragStart = function(event)
-{
-  var touches = event.touches;
-  if (touches.length == 1)
-  {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    this._timeline.beginDragPan(relPos.x, relPos.y);
-    return true;
-  }
-  else if (touches.length == 2)
-  {
-    this._timeline.endDragPan();
-    this._isPinchZoom = true;
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
-    this._timeline.beginPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
-    dvt.EventManager.consumeEvent(event);
-    return true;
-  }
-  return false;
-};
-
-/**
- * Touch drag move callback.
- * @param {dvt.BaseEvent} event
- * @private
- */
-DvtTimelineEventManager.prototype._onTouchDragMove = function(event)
-{
-  var touches = event.touches;
-  // make sure this is a single touch and not a multi touch
-  if (touches.length == 1)
-  {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    this._timeline.contDragPan(relPos.x, relPos.y);
-    event.preventDefault();
-  }
-  else if (touches.length == 2)
-  {
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
-    this._timeline.contPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
-    event.preventDefault();
-  }
-};
-
-/**
- * Touch drag end callback.
- * @param {dvt.BaseEvent} event
- * @private
- */
-DvtTimelineEventManager.prototype._onTouchDragEnd = function(event)
-{
-  if (!this._isPinchZoom)
-  {
-    this._timeline.endDragPan();
-    event.preventDefault();
-  }
-  else
-  {
-    this._isPinchZoom = false;
-    this._timeline.endPinchZoom();
-    event.preventDefault();
-  }
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
-};
-
-/**
- * Zooms by the specified amount.
- * @param {number} dz A number specifying the zoom ratio. dz = 1 means no zoom.
- */
-DvtTimelineEventManager.prototype.zoomBy = function(dz)
-{
-  this._timeline.zoomBy(dz);
-};
-
-/**
  * Pans by the specified amount.
  * @param {number} dx A number from specifying the pan ratio in the x direction, e.g. dx = 0.5 means pan end by 50%..
  * @param {number} dy A number from specifying the pan ratio in the y direction, e.g. dy = 0.5 means pan down by 50%.
  */
 DvtTimelineEventManager.prototype.panBy = function(dx, dy)
 {
-  var deltaX = dx * this._timeline._canvasLength * (dvt.Agent.isRightToLeft(this._context) ? -1 : 1);
-  var deltaY = dy * this._timeline._seriesSize;
-  if (deltaX != 0)
-    this._timeline._triggerViewportChange = true;
-
   var focusObj = this.getFocus();
   if (focusObj)
-    this._timeline._dragPanSeries = focusObj._series;
+    this._comp._dragPanSeries = focusObj._series;
 
-  this._timeline.panBy(deltaX, deltaY);
-  this._timeline.endPan();
-};
-
-/**
- * Zoom in button click handler.
- * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
- */
-DvtTimelineEventManager.prototype.HandleZoomInClick = function(event)
-{
-  this._timeline.handleZoom(true);
-};
-
-/**
- * Zoom out button click handler.
- * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
- */
-DvtTimelineEventManager.prototype.HandleZoomOutClick = function(event)
-{
-  this._timeline.handleZoom(false);
-};
-
-/**
- * @override
- */
-DvtTimelineEventManager.prototype.GetTouchResponse = function()
-{
-  return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+  DvtTimelineEventManager.superclass.panBy.call(this, dx, dy);
 };
 /**
  * Timeline component. The component should never be instantiated directly. Use the newInstance function instead.
@@ -3701,7 +2328,6 @@ DvtTimelineEventManager.prototype.GetTouchResponse = function()
  * @class
  * @constructor
  * @extends {dvt.TimeComponent}
- * @export
  */
 dvt.Timeline = function(context, callback, callbackObj)
 {
@@ -3709,8 +2335,6 @@ dvt.Timeline = function(context, callback, callbackObj)
 };
 
 dvt.Obj.createSubclass(dvt.Timeline, dvt.TimeComponent);
-
-dvt.Timeline.ZOOM_BY_VALUE = 1.5;
 
 dvt.Timeline.ORIENTATION_VERTICAL = 'vertical';
 
@@ -3720,7 +2344,6 @@ dvt.Timeline.ORIENTATION_VERTICAL = 'vertical';
  * @param {string} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.Timeline}
- * @export
  */
 dvt.Timeline.newInstance = function(context, callback, callbackObj)
 {
@@ -3753,21 +2376,6 @@ dvt.Timeline.prototype.Init = function(context, callback, callbackObj)
     this._keyboardHandler = null;
 };
 
-/**
- * @override
- */
-dvt.Timeline.prototype.SetOptions = function(options)
-{
-  // Combine the user options with the defaults and store
-  this.Options = this.Defaults.calcOptions(options);
-
-  // Disable animation for canvas and xml
-  if (!dvt.Agent.isEnvironmentBrowser()) {
-    this.Options['animationOnDisplay'] = 'none';
-    this.Options['animationOnDataChange'] = 'none';
-  }
-};
-
 dvt.Timeline.prototype.Parse = function(options)
 {
   this._parser = new DvtTimelineParser();
@@ -3796,57 +2404,9 @@ dvt.Timeline.prototype._applyParsedProperties = function(props)
   // Pass to event handler
   this.EventManager.setSelectionHandler(this.SelectionHandler);
 
-  this._axisInlineStyle = props.axisStyle;
   this._shortDesc = props.shortDesc;
   this._referenceObjects = props.referenceObjects;
-  this._zoomOrder = props.zoomOrder;
   this._seriesScale = props.seriesScale;
-
-  // Internationalization strings
-  this._dateFormatStrings = {
-    dayNames: [
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_SUNDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_MONDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_TUESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_WEDNESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_THURSDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_FRIDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SHORT_SATURDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SUNDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_MONDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_TUESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_WEDNESDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_THURSDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_FRIDAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'DAY_SATURDAY', null)
-    ],
-    monthNames: [
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JANUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_FEBRUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MARCH', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_APRIL', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_MAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JUNE', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_JULY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_AUGUST', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_SEPTEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_OCTOBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_NOVEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SHORT_DECEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JANUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_FEBRUARY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_MARCH', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_APRIL', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_MAY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JUNE', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_JULY', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_AUGUST', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_SEPTEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_OCTOBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_NOVEMBER', null),
-      dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'MONTH_DECEMBER', null)
-    ]
-  };
 
   this._timeZoneOffsets = props.timeZoneOffsets;
   if (this._seriesScale)
@@ -3857,6 +2417,9 @@ dvt.Timeline.prototype._applyParsedProperties = function(props)
     this._seriesTimeAxis.setScale(this._seriesScale);
     this._seriesTimeAxis.setConverter(this._seriesConverter);
     this._seriesCustomFormatScales = props.seriesCustomFormatScales;
+
+    // Internationalization strings
+    this._dateFormatStrings = this._seriesTimeAxis.getDateFormatStrings();
     if (this._isVertical)
     {
       this._seriesTimeAxis.setType('short', this._dateFormatStrings);
@@ -3880,9 +2443,17 @@ dvt.Timeline.prototype._applyParsedProperties = function(props)
   this._customFormatScales = props.customFormatScales;
 
   this._scale = props.scale;
-  this._converter = props.converter;
 
   dvt.Timeline.superclass._applyParsedProperties.call(this, props);
+};
+
+/**
+ * Returns the minor time axis object.
+ * @return {dvt.TimeAxis} The time axis object
+ */
+dvt.Timeline.prototype.getTimeAxis = function()
+{
+  return this._timeAxis;
 };
 
 dvt.Timeline.prototype.getTimeAxisSize = function()
@@ -3900,7 +2471,6 @@ dvt.Timeline.prototype.getTimeAxisVisibleSize = function(seriesCount)
 
 /**
  * @override
- * @export
  */
 dvt.Timeline.prototype.select = function(selection)
 {
@@ -3914,12 +2484,58 @@ dvt.Timeline.prototype.select = function(selection)
 };
 
 /**
+ * Creates TimeAxis compatible options object from component's options object.
+ * @param {object} options The object containing specifications and data for this component.
+ * @private
+ */
+dvt.Timeline.prototype._bundleTimeAxisOptions = function(options)
+{
+  this._timeAxisOptions = {
+    'start': options['start'],
+    'end': options['end'],
+    '_resources': options['_resources'],
+    'shortDesc': options['shortDesc'],
+    '_tzo': options['_tzo'],
+    '_ip': options['_ip'],
+    '_cts': this._customTimeScales,
+    '_cfs': this._customFormatScales,
+    'orientation': options['orientation']
+  };
+
+  var _resources = this._timeAxisOptions['_resources'];
+  if (_resources)
+  {
+    _resources['borderTopVisible'] = true;
+    _resources['borderRightVisible'] = true;
+    _resources['borderBottomVisible'] = true;
+    _resources['borderLeftVisible'] = true;
+  }
+
+  if (options['styleDefaults'] && options['styleDefaults']['minorAxis'])
+  {
+    var minorAxisStyleDefaults = options['styleDefaults']['minorAxis'];
+    this._timeAxisOptions['backgroundColor'] = minorAxisStyleDefaults['backgroundColor'];
+    this._timeAxisOptions['borderColor'] = minorAxisStyleDefaults['borderColor'];
+    this._timeAxisOptions['separatorColor'] = minorAxisStyleDefaults['separatorColor'];
+    this._timeAxisOptions['labelStyle'] = minorAxisStyleDefaults['labelStyle'];
+  }
+
+  if (options['minorAxis'])
+  {
+    var minorAxisOptions = options['minorAxis'];
+    this._timeAxisOptions['scale'] = minorAxisOptions['scale'];
+    this._timeAxisOptions['converter'] = minorAxisOptions['converter'];
+    this._timeAxisOptions['zoomOrder'] = minorAxisOptions['zoomOrder'];
+    this._timeAxisOptions['style'] = minorAxisOptions['style'];
+  }
+};
+
+/**
  * Renders the component with the specified data.  If no data is supplied to a component
  * that has already been rendered, the component will be rerendered to the specified size.
  * @param {object} options The object containing specifications and data for this component.
  * @param {number} width The width of the component.
  * @param {number} height The height of the component.
- * @export
  */
 dvt.Timeline.prototype.render = function(options, width, height)
 {
@@ -3954,16 +2570,24 @@ dvt.Timeline.prototype.render = function(options, width, height)
 
   if (this.Options['styleDefaults'])
   {
-    this._axisStyleDefaults = this.Options['styleDefaults']['minorAxis'];
     this._majorAxisStyleDefaults = this.Options['styleDefaults']['majorAxis'];
     this._seriesStyleDefaults = this.Options['styleDefaults']['series'];
   }
-  this.prepareViewportLength();
 
   if (this._scale)
   {
-    this.prepareTimeAxisZoomLevelIntervals(this._start, this._end);
+    this._bundleTimeAxisOptions(this.Options);
     this.applyAxisStyleValues();
+
+    if (!this._timeAxis)
+    {
+      this._timeAxis = new dvt.TimeAxis(this.getCtx(), null, null);
+      this._timeAxis.setBorderVisibility(true, true, true, true);
+    }
+    this._timeAxis.setCanvasSize(null); // TimeComponent's TimeAxis._canvasSize should always be null on initial render
+    var preferredLength = this._timeAxis.getPreferredLength(this._timeAxisOptions, this._canvasLength);
+    this.setContentLength(preferredLength);
+    this.prepareViewportLength();
   }
   this._populateSeries();
 
@@ -4061,7 +2685,7 @@ dvt.Timeline.prototype.showThenHideHotspots = function(delay, series)
       var hotspot = this._scrollHotspots[i];
       var id = hotspot.getId();
       var show = true;
-      if (this._contentLength <= this._canvasLength && (id == 'lhs' || id == 'rhs'))
+      if (this.getContentLength() <= this._canvasLength && (id == 'lhs' || id == 'rhs'))
         show = false;
 
       var pId = hotspot.getParent().getId();
@@ -4181,31 +2805,6 @@ dvt.Timeline.prototype.applyStyleValues = function()
  */
 dvt.Timeline.prototype.applyAxisStyleValues = function()
 {
-  this._axisStyle = new dvt.CSSStyle(DvtTimelineStyleUtils.getAxisStyle());
-  if (this._axisStyleDefaults)
-  {
-    var axisStyles = '';
-    var style = this._axisStyleDefaults['backgroundColor'];
-    if (style)
-      axisStyles = axisStyles + 'background-color:' + style + ';';
-    style = this._axisStyleDefaults['borderColor'];
-    if (style)
-      axisStyles = axisStyles + 'border-color:' + style + ';';
-    style = this._axisStyleDefaults['borderWidth'];
-    if (style)
-      axisStyles = axisStyles + 'border-width:' + style + ';';
-    this._axisStyle.parseInlineStyle(axisStyles);
-  }
-  this._axisStyle.parseInlineStyle(this._axisInlineStyle);
-
-  // double border width to account for stroke width rendering
-  this._axisBorderWidth = this._axisStyle.getBorderWidth();
-  var borderStyle = 'border:' + this._axisBorderWidth * 2 + 'px;';
-  this._axisStyle.parseInlineStyle(borderStyle);
-
-  this._timeAxis.setBorderWidth(this._axisBorderWidth);
-  this._axisLength = this._contentLength + (this._axisBorderWidth * 2) - dvt.TimeAxis.DEFAULT_SEPARATOR_WIDTH;
-
   if (this._seriesStyleDefaults && this._seriesStyleDefaults['backgroundColor'])
   {
     var bgColor = this._seriesStyleDefaults['backgroundColor'];
@@ -4214,172 +2813,6 @@ dvt.Timeline.prototype.applyAxisStyleValues = function()
     var b = dvt.ColorUtils.getBlue(bgColor);
     this._seriesBackgroundOverlayStyle = 'background-color:rgba(' + r + ',' + g + ',' + b + ',0.8);';
   }
-};
-
-dvt.Timeline.prototype.prepareViewportLength = function()
-{
-  this._setLength = true;
-  this.setRelativeStartPos(0);
-  if (this._viewStartTime && this._viewEndTime)
-  {
-    var viewTime = this._viewEndTime - this._viewStartTime;
-    if (viewTime > 0)
-    {
-      this._setLength = false;
-      var widthFactor = this._canvasLength / viewTime;
-      this.setContentLength(widthFactor * (this._end - this._start));
-      this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
-    }
-  }
-};
-
-dvt.Timeline.prototype.prepareTimeAxisZoomLevelIntervals = function(startTime, endTime)
-{
-  var context = this.getCtx();
-  var axisLabelStyle = DvtTimelineStyleUtils.getAxisLabelStyle(this.Options);
-
-  this._timeAxis = new dvt.TimeAxis(context, null, null);
-  this._timeAxis.setIsVertical(this._isVertical);
-  this._timeAxis.setZoomOrder(this._zoomOrder);
-  this._timeAxis.setConverter(this._converter);
-  this._timeAxis.setType('short', this._dateFormatStrings);
-
-  this._dates = [];
-  this._labels = [];
-  this._zoomLevelLengths = [];
-
-  if (this._isVertical)
-  {
-    var defaultLength = dvt.TimeAxis.DEFAULT_INTERVAL_HEIGHT;
-    this._timeAxis.setDefaultConverter(this._resources['converterVert']);
-  }
-  else
-  {
-    defaultLength = dvt.TimeAxis.DEFAULT_INTERVAL_WIDTH;
-    this._timeAxis.setDefaultConverter(this._resources['converter']);
-  }
-  if (this._timeZoneOffsets)
-    this._timeAxis.setTimeZoneOffsets(this._timeZoneOffsets);
-
-  for (var i = 0; i < this._timeAxis._zoomOrder.length; i++)
-  {
-    var scale = this._timeAxis._zoomOrder[i];
-    this._timeAxis.setScale(scale);
-    var axis = new dvt.Rect(context, 0, 0, 0, 0, 'tempAxis');
-    var minLength = Infinity;
-    var maxSize = 0;
-
-    var dates;
-    var labelTexts;
-    if (this._customTimeScales && this._customTimeScales[scale])
-    {
-      var customScale = this._customTimeScales[scale];
-      dates = customScale['times'];
-      labelTexts = customScale['labels'];
-    }
-    else if (this._customFormatScales && this._customFormatScales[scale])
-    {
-      var customFormatScale = this._customFormatScales[scale];
-      dates = customFormatScale['times'];
-      labelTexts = customFormatScale['labels'];
-    }
-    else
-    {
-      dates = [];
-      labelTexts = [];
-      var currentTime = this._timeAxis.adjustDate(startTime).getTime();
-      dates.push(currentTime);
-      while (currentTime < endTime)
-      {
-        labelTexts.push(this._timeAxis.formatDate(new Date(currentTime)));
-        currentTime = this._timeAxis.getNextDate(currentTime).getTime();
-        // the last currentTime added in this loop is outside of the time range, but is needed
-        // for the last 'next' date when actually creating the time axis in renderTimeAxis
-        dates.push(currentTime);
-      }
-    }
-    var labels = [];
-    for (var j = 0; j < labelTexts.length; j++)
-    {
-      currentTime = dates[j];
-      var label = new dvt.OutputText(context, labelTexts[j], 0, 0, 's_label' + currentTime);
-      label.setCSSStyle(axisLabelStyle);
-      // save the time associated with the element for dynamic resize
-      label.time = currentTime;
-      labels.push(label);
-      var nextTime = dates[j + 1];
-
-      // update maximum label width and height
-      axis.addChild(label);
-      var dim = label.getDimensions();
-      axis.removeChild(label);
-      if (this._isVertical)
-      {
-        var lengthDim = dim.h;
-        var sizeDim = dim.w;
-      }
-      else
-      {
-        lengthDim = dim.w;
-        sizeDim = dim.h;
-      }
-      var labelLength = Math.max(defaultLength, lengthDim + (dvt.TimeAxis.DEFAULT_INTERVAL_PADDING * 2));
-      var lengthFactor = (nextTime - currentTime) / labelLength;
-      if (lengthFactor < minLength)
-        minLength = lengthFactor;
-      if (sizeDim > maxSize)
-        maxSize = sizeDim;
-    }
-
-    this._timeAxis.setContentSize(maxSize + dvt.TimeAxis.DEFAULT_INTERVAL_PADDING * 2);
-    this._dates.push(dates);
-    this._labels.push(labels);
-    var zoomLevelLength = ((endTime - startTime) / minLength);
-    this._zoomLevelLengths.push(zoomLevelLength);
-    if (scale == this._scale)
-    {
-      this._zoomLevelOrder = i;
-      if (this._setLength)
-      {
-        this.setContentLength(zoomLevelLength);
-        this._setLength = false;
-        if (this._viewStartTime == null)
-        {
-          if (this._viewEndTime != null)
-          {
-            this._viewStartTime = this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endTime - startTime);
-            if (this._viewStartTime < this._start)
-              this._viewStartTime = this._start;
-            var viewTime = this._viewEndTime - this._viewStartTime;
-            var widthFactor = this._canvasLength / viewTime;
-            this.setContentLength(widthFactor * (this._end - this._start));
-            this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
-          }
-          else
-          {
-            this._viewStartTime = this._start;
-            this.setRelativeStartPos(0);
-            this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
-            if (this._viewEndTime > this._end)
-              this._viewEndTime = this._end;
-          }
-        }
-        else
-        {
-          this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
-          if (this._viewEndTime > this._end)
-            this._viewEndTime = this._end;
-          viewTime = this._viewEndTime - this._viewStartTime;
-          widthFactor = this._canvasLength / viewTime;
-          this.setContentLength(widthFactor * (this._end - this._start));
-          this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
-        }
-      }
-    }
-    if (i == 0)
-      this._maxContentLength = labels.length * this._canvasLength;
-  }
-  this._timeAxis.setScale(this._scale);
 };
 
 dvt.Timeline.prototype._populateSeries = function()
@@ -4593,17 +3026,17 @@ dvt.Timeline.prototype._getOverviewAxisOptions = function()
       var start = this._start;
       var end = this._end;
       var length = this._isVertical ? this.Height : this.Width;
-      var startDate = DvtTimeUtils.getPositionDate(start, end, this._fetchStartPos, length);
+      var startDate = dvt.TimeAxis.getPositionDate(start, end, this._fetchStartPos, length);
 
       var currentDate = this._seriesTimeAxis.adjustDate(startDate);
-      var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
+      var currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, length);
       while (currentPos < this._fetchEndPos)
       {
         labels.push(this._seriesTimeAxis.formatDate(currentDate));
         dates.push(currentDate.getTime());
 
         currentDate = this._seriesTimeAxis.getNextDate(currentDate.getTime());
-        currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
+        currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, length);
       }
     }
     for (var i = 0; i < labels.length; i++)
@@ -4650,6 +3083,15 @@ dvt.Timeline.prototype._getOverviewMarkerOptions = function()
   }
 };
 
+/**
+ * Creates a viewportChange event object
+ * @return {object} the viewportChange event object
+ */
+dvt.Timeline.prototype.createViewportChangeEvent = function()
+{
+  return dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._timeAxis.getScale());
+};
+
 dvt.Timeline.prototype.HandleTouchStart = function(event)
 {
   var touches = event.touches;
@@ -4667,9 +3109,77 @@ dvt.Timeline.prototype.HandleTouchStart = function(event)
   }
 };
 
+/**
+ * Handles mouse wheel event.
+ * @param {event} event The mouse wheel event
+ * @protected
+ * @override
+ */
+dvt.Timeline.prototype.HandleMouseWheel = function(event)
+{
+  dvt.Timeline.superclass.HandleMouseWheel.call(this, event);
+  if (this.hasValidOptions())
+  {
+    if (event.zoomWheelDelta)
+    {
+      var newLength = this.getContentLength() * event.zoomWheelDelta;
+      var time = event.zoomTime;
+      var compLoc = event.zoomCompLoc;
+      this.handleZoomWheel(newLength, time, compLoc, true);
+    }
+  }
+};
+
 dvt.Timeline.prototype.handleZoomWheel = function(newLength, time, compLoc, triggerViewportChangeEvent)
 {
+  if (newLength > this._timeAxis.getMaxContentLength())
+  {
+    newLength = this._timeAxis.getMaxContentLength();
+    this.disableZoomButton(true);
+  }
+  else
+    this.enableZoomButton(true);
+  if (this._canvasLength > newLength)
+  {
+    newLength = this._canvasLength;
+    this.disableZoomButton(false);
+  }
+  else
+    this.enableZoomButton(false);
+
+  var zoomIn = this.getContentLength() <= newLength;
   dvt.Timeline.superclass.handleZoomWheel.call(this, newLength, time, compLoc, triggerViewportChangeEvent);
+
+  var zoomLevelLengths = this._timeAxis.getZoomLevelLengths();
+  if (zoomIn)
+  {
+    while (this._timeAxis.getZoomLevelOrder() > 0)
+    {
+      var minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder() - 1];
+      if (this.getContentLength() >= minLength)
+      {
+        this._timeAxis.setZoomLevelOrder(this._timeAxis.getZoomLevelOrder() - 1);
+        this._timeAxis.decreaseScale();
+      }
+      else
+        break;
+    }
+  }
+  else
+  {
+    while (this._timeAxis.getZoomLevelOrder() < zoomLevelLengths.length - 1)
+    {
+      var minLength = zoomLevelLengths[this._timeAxis.getZoomLevelOrder()];
+      if (this.getContentLength() < minLength)
+      {
+        this._timeAxis.setZoomLevelOrder(this._timeAxis.getZoomLevelOrder() + 1);
+        this._timeAxis.increaseScale();
+      }
+      else
+        break;
+    }
+  }
+
   if (this._hasOverview)
   {
     if (this._isVertical)
@@ -4684,7 +3194,7 @@ dvt.Timeline.prototype.handleZoomWheel = function(newLength, time, compLoc, trig
   this.updateSeries();
 
   if (triggerViewportChangeEvent)
-    this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(this.createViewportChangeEvent());
 };
 
 dvt.Timeline.prototype.updateSeries = function()
@@ -4709,22 +3219,22 @@ dvt.Timeline.prototype.updateSeries = function()
           key = i;
         if (this.isRTL() && this._series.length == 1)
         {
-          cp.addRect(axisSize, 0, this._seriesSize, this._contentLength);
+          cp.addRect(axisSize, 0, this._seriesSize, this.getContentLength());
           var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
         }
         else
         {
-          cp.addRect(key * (this._seriesSize + axisSize), 0, this._seriesSize, this._contentLength);
+          cp.addRect(key * (this._seriesSize + axisSize), 0, this._seriesSize, this.getContentLength());
           posMatrix = new dvt.Matrix(1, 0, 0, 1, key * (this._seriesSize + axisSize), 0);
         }
         var width = this._seriesSize;
-        var height = this._contentLength;
+        var height = this.getContentLength();
       }
       else
       {
-        cp.addRect(0, i * (this._seriesSize + axisSize), this._contentLength, this._seriesSize);
+        cp.addRect(0, i * (this._seriesSize + axisSize), this.getContentLength(), this._seriesSize);
         posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (this._seriesSize + axisSize));
-        width = this._contentLength;
+        width = this.getContentLength();
         height = this._seriesSize;
       }
       series.setClipPath(cp);
@@ -4795,23 +3305,6 @@ dvt.Timeline.prototype.HandleMouseDown = function(event)
   this._dragPanSeries = this._findSeries(event.target);
 };
 
-dvt.Timeline.prototype.beginDragPan = function(compX, compY)
-{
-  this._currentX = compX;
-  this._currentY = compY;
-};
-
-dvt.Timeline.prototype.HandleTouchEnd = function(event)
-{
-  if (this._selectionMode != 'none')
-    this.handleShapeClick(event, (this._selectionMode == 'multiple'));
-};
-
-dvt.Timeline.prototype.HandleMouseClick = function(event)
-{
-  this.handleShapeClick(event, (event.ctrlKey && this._selectionMode == 'multiple'));
-};
-
 dvt.Timeline.prototype.endDragPan = function()
 {
   this._dragPanSeries = null;
@@ -4826,26 +3319,8 @@ dvt.Timeline.prototype.endPan = function()
   if (this._triggerViewportChange)
   {
     this._triggerViewportChange = false;
-    this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(this.createViewportChangeEvent());
   }
-};
-
-dvt.Timeline.prototype.contDragPan = function(compX, compY)
-{
-  if (this._currentX && this._currentY)
-  {
-    var deltaX = this._currentX - compX;
-    var deltaY = this._currentY - compY;
-    if (deltaX == 0 && deltaY == 0)
-      return false;
-
-    this._triggerViewportChange = true;
-    this._currentX = compX;
-    this._currentY = compY;
-    this.panBy(deltaX, deltaY);
-    return true;
-  }
-  return false;
 };
 
 /**
@@ -4921,7 +3396,7 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
       this._dragPanSeries.setTranslateY(newTranslateY);
     }
   }
-  //this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+  //this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._timeAxis.getScale()));
 };
 
 // event callback method
@@ -4948,33 +3423,32 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
         var widthFactor = this._canvasLength / viewTime;
         this.setContentLength(widthFactor * (this._end - this._start));
         this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
+        var zoomLevelLengths = this._timeAxis.getZoomLevelLengths();
         if (oldViewTime > viewTime)
         {
-          var zoomLevelOrder = this._zoomLevelLengths.length;
-          var minLength = this._zoomLevelLengths[zoomLevelOrder - 1];
-          while (this._contentLength >= minLength && zoomLevelOrder > 0)
+          var zoomLevelOrder = zoomLevelLengths.length;
+          var minLength = zoomLevelLengths[zoomLevelOrder - 1];
+          while (this.getContentLength() >= minLength && zoomLevelOrder > 0)
           {
             zoomLevelOrder--;
-            minLength = this._zoomLevelLengths[zoomLevelOrder - 1];
+            minLength = zoomLevelLengths[zoomLevelOrder - 1];
           }
-          if (zoomLevelOrder == this._zoomLevelLengths.length)
+          if (zoomLevelOrder == zoomLevelLengths.length)
             zoomLevelOrder--;
-          this._zoomLevelOrder = zoomLevelOrder;
-          this._timeAxis.setScale(this._timeAxis._zoomOrder[zoomLevelOrder]);
-          this._scale = this._timeAxis._scale;
+          this._timeAxis.setZoomLevelOrder(zoomLevelOrder);
+          this._timeAxis.setScale(this._timeAxis.getZoomOrder()[zoomLevelOrder]);
         }
         else
         {
           var zoomLevelOrder = 0;
-          var minLength = this._zoomLevelLengths[zoomLevelOrder];
-          while (this._contentLength < minLength && zoomLevelOrder < this._zoomLevelLengths.length - 1)
+          var minLength = zoomLevelLengths[zoomLevelOrder];
+          while (this.getContentLength() < minLength && zoomLevelOrder < zoomLevelLengths.length - 1)
           {
             zoomLevelOrder++;
-            minLength = this._zoomLevelLengths[zoomLevelOrder];
+            minLength = zoomLevelLengths[zoomLevelOrder];
           }
-          this._zoomLevelOrder = zoomLevelOrder;
-          this._timeAxis.setScale(this._timeAxis._zoomOrder[zoomLevelOrder]);
-          this._scale = this._timeAxis._scale;
+          this._timeAxis.setZoomLevelOrder(zoomLevelOrder);
+          this._timeAxis.setScale(this._timeAxis.getZoomOrder()[zoomLevelOrder]);
         }
         this.applyAxisStyleValues();
         DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
@@ -4982,7 +3456,7 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
         this.applyTimeZoomCanvasPosition();
       }
       if (subType == 'rangeChange')
-        this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+        this.dispatchEvent(this.createViewportChangeEvent());
     }
     if (subType == 'scrollPos' || subType == 'scrollTime')
     {
@@ -4991,7 +3465,7 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
       var widthFactor = this.getContentLength() / (this._end - this._start);
       this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
       this.applyTimeZoomCanvasPosition();
-      this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+      this.dispatchEvent(this.createViewportChangeEvent());
     }
   }
   else if (type = 'timeline')
@@ -5066,7 +3540,7 @@ dvt.Timeline.prototype.updateScrollForItemSelection = function(item)
   var widthFactor = this.getContentLength() / (this._end - this._start);
   this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
   this.applyTimeZoomCanvasPosition();
-  this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+  this.dispatchEvent(this.createViewportChangeEvent());
 };
 
 dvt.Timeline.prototype.updateScrollForItemNavigation = function(item)
@@ -5113,7 +3587,7 @@ dvt.Timeline.prototype.updateScrollForItemNavigation = function(item)
       overviewLength = this._overview.Width;
     this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
   }
-  this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+  this.dispatchEvent(this.createViewportChangeEvent());
 };
 
 dvt.Timeline.prototype.handleShapeClick = function(event)
@@ -5149,12 +3623,6 @@ dvt.Timeline.prototype.applyInitialSelections = function()
     }
   }
   this.SelectionHandler.processInitialSelections(this.Options['selection'], items);
-};
-
-dvt.Timeline.prototype.processEvent = function(event)
-{
-  if (event)
-    this.dispatchEvent(event);
 };
 
 dvt.Timeline.prototype._findSeries = function(target)
@@ -5209,7 +3677,6 @@ dvt.Timeline.prototype._findDrawable = function(target)
 /**
  * Returns the automation object for this timeline
  * @return {dvt.Automation} The automation object
- * @export
  */
 dvt.Timeline.prototype.getAutomation = function()
 {
@@ -5245,7 +3712,6 @@ dvt.Timeline.prototype.clearOverview = function()
  * @class  DvtTimelineAutomation
  * @implements {dvt.Automation}
  * @constructor
- * @export
  */
 var DvtTimelineAutomation = function(timeline)
 {
@@ -5285,7 +3751,6 @@ DvtTimelineAutomation.prototype.GetSubIdForDomElement = function(displayable)
  * <li>timelineItem[seriesIndex][itemIndex]</li>
  * </ul>
  * @override
- * @export
  */
 DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
 {
@@ -5415,18 +3880,6 @@ DvtTimelineParser.prototype.parse = function(options)
   {
     var scale = minorAxis['scale'];
     ret.scale = scale;
-    var zoomOrder = minorAxis['zoomOrder'];
-    if (zoomOrder == null)
-      zoomOrder = [scale];
-    else
-    {
-      // TODO: update zoom implementation to handle longest value first
-      // for now, just reverse order to ensure no regressions
-      zoomOrder.reverse();
-    }
-    ret.zoomOrder = zoomOrder;
-    ret.converter = minorAxis['converter'];
-    ret.axisStyle = minorAxis['style'];
     ret.customFormatScales = minorAxis['_cfs'];
   }
   var majorAxis = options['majorAxis'];
@@ -5513,7 +3966,7 @@ DvtTimelineRenderer.renderTimeline = function(timeline)
     if (timeline.SelectionHandler)
       timeline.applyInitialSelections();
 
-    if (DvtTimeUtils.supportsTouch())
+    if (dvt.TimeAxis.supportsTouch())
       timeline._setAriaProperty('flowto', timeline._series[0].getId());
 
     for (var i = 0; i < timeline._series.length; i++)
@@ -5576,6 +4029,7 @@ DvtTimelineRenderer._renderScrollableCanvas = function(timeline)
  */
 DvtTimelineRenderer._renderSeries = function(timeline, container)
 {
+  var timeAxis = timeline.getTimeAxis();
   if (timeline._series)
   {
     var context = timeline.getCtx();
@@ -5587,7 +4041,7 @@ DvtTimelineRenderer._renderSeries = function(timeline, container)
     {
       if (seriesCount > 1 && (timeline._canvasSize % 2 != axisSize % 2))
       {
-        timeline._timeAxis.setContentSize(timeline._timeAxis.getContentSize() + 1);
+        timeAxis.setContentSize(timeAxis.getContentSize() + 1);
         axisSize = timeline.getTimeAxisVisibleSize(seriesCount);
       }
     }
@@ -5607,22 +4061,22 @@ DvtTimelineRenderer._renderSeries = function(timeline, container)
           key = i;
         if (isRTL && timeline._series.length == 1)
         {
-          cp.addRect(axisSize, 0, timeline._seriesSize, timeline._contentLength);
+          cp.addRect(axisSize, 0, timeline._seriesSize, timeline.getContentLength());
           var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisSize, 0);
         }
         else
         {
-          cp.addRect(key * (timeline._seriesSize + axisSize), 0, timeline._seriesSize, timeline._contentLength);
+          cp.addRect(key * (timeline._seriesSize + axisSize), 0, timeline._seriesSize, timeline.getContentLength());
           posMatrix = new dvt.Matrix(1, 0, 0, 1, key * (timeline._seriesSize + axisSize), 0);
         }
         var width = timeline._seriesSize;
-        var height = timeline._contentLength;
+        var height = timeline.getContentLength();
       }
       else
       {
-        cp.addRect(0, i * (timeline._seriesSize + axisSize), timeline._contentLength, timeline._seriesSize);
+        cp.addRect(0, i * (timeline._seriesSize + axisSize), timeline.getContentLength(), timeline._seriesSize);
         posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, i * (timeline._seriesSize + axisSize));
-        width = timeline._contentLength;
+        width = timeline.getContentLength();
         height = timeline._seriesSize;
       }
       series.setClipPath(cp);
@@ -5747,6 +4201,7 @@ DvtTimelineRenderer._renderAxis = function(timeline, container)
 {
   var context = timeline.getCtx();
   var isRTL = dvt.Agent.isRightToLeft(context);
+  var timeAxis = timeline.getTimeAxis();
 
   var seriesCount = timeline._series.length;
   var axisSize = timeline.getTimeAxisSize();
@@ -5755,130 +4210,25 @@ DvtTimelineRenderer._renderAxis = function(timeline, container)
   if (isRTL && timeline.isVertical() && timeline._series.length == 1)
     axisStart = 0;
 
-  if (timeline._axis == null)
-  {
-    var cp = new dvt.ClipPath();
-    if (timeline.isVertical())
-    {
-      timeline._axis = new dvt.Rect(context, axisStart, -timeline._axisBorderWidth, axisSize, timeline._axisLength, 'axis');
-      cp.addRect(axisStart, 0, axisSize, timeline._contentLength);
-    }
-    else
-    {
-      timeline._axis = new dvt.Rect(context, -timeline._axisBorderWidth, axisStart, timeline._axisLength, axisSize, 'axis');
-      cp.addRect(0, axisStart, timeline._contentLength, axisSize);
-    }
-    timeline._axis.setCSSStyle(timeline._axisStyle);
-    timeline._axis.setPixelHinting(true);
-    timeline._axis.setClipPath(cp);
+  // timeAxis.renderTimeAxis(container, axisStart, axisVisibleSize);
 
-    container.addChild(timeline._axis);
+  if (timeAxis.getParent() !== container)
+    container.addChild(timeAxis);
+
+  if (timeline.isVertical())
+  {
+    var posMatrix = new dvt.Matrix(1, 0, 0, 1, axisStart, 0);
+    timeAxis.render(null, axisSize, timeline.getContentLength());
   }
   else
   {
-    timeline._axis.setClipPath(null);
-    cp = new dvt.ClipPath();
-    if (timeline.isVertical())
-    {
-      timeline._axis.setX(axisStart);
-      timeline._axis.setY(-timeline._axisBorderWidth);
-      timeline._axis.setWidth(axisSize);
-      timeline._axis.setHeight(timeline._axisLength);
-      cp.addRect(axisStart, 0, axisSize, timeline._contentLength);
-    }
-    else
-    {
-      timeline._axis.setX(-timeline._axisBorderWidth);
-      timeline._axis.setY(axisStart);
-      timeline._axis.setWidth(timeline._axisLength);
-      timeline._axis.setHeight(axisSize);
-      cp.addRect(0, axisStart, timeline._contentLength, axisSize);
-    }
-    timeline._axis.setClipPath(cp);
+    posMatrix = new dvt.Matrix(1, 0, 0, 1, 0, axisStart);
+    timeAxis.render(null, timeline.getContentLength(), axisSize);
   }
 
-  DvtTimelineRenderer._renderSeriesTicks(timeline, axisStart);
-};
+  timeAxis.setMatrix(posMatrix);
 
-/**
- * Renders the major time axis labels of a timeline.
- * @param {dvt.Timeline} timeline The timeline being rendered.
- * @param {number} axisStartPos The start position of the axis.
- * @private
- */
-DvtTimelineRenderer._renderSeriesTicks = function(timeline, axisStartPos)
-{
-  // remove all existing ticks and labels
-  timeline._axis.removeChildren();
-
-  var separatorStyle = new dvt.CSSStyle(DvtTimelineStyleUtils.getAxisSeparatorStyle());
-  if (timeline._axisStyleDefaults)
-  {
-    var separatorColor = timeline._axisStyleDefaults['separatorColor'];
-    if (separatorColor)
-      separatorStyle.parseInlineStyle('color:' + separatorColor + ';');
-  }
-  timeline._separatorStroke = new dvt.SolidStroke(separatorStyle.getStyle(dvt.CSSStyle.COLOR));
-
-  var axisSize = timeline._timeAxis.getContentSize();
-  var axisStart = axisStartPos + timeline._timeAxis._borderWidth;
-  var axisEnd = (axisStart + axisSize);
-  DvtTimelineRenderer._renderTimeAxis(timeline, timeline._fetchStartPos, timeline._fetchEndPos, timeline._axis, timeline._contentLength, axisEnd, axisStart, axisStart);
-  DvtTimelineRenderer._renderSeriesTimeAxis(timeline, timeline._fetchStartPos, timeline._fetchEndPos, timeline.getTimeZoomCanvas(), timeline._contentLength);
-};
-
-/**
- * Renders the minor time axis of a timeline.
- * @param {dvt.Timeline} timeline The timeline being rendered.
- * @param {number} startPos The start position for rendering.
- * @param {number} endPos The end position for rendering.
- * @param {dvt.Container} container The container to render into.
- * @param {number} length The length of the axis.
- * @param {number} axisEnd The end position of the axis.
- * @param {number} tickStart The start position of the first interval.
- * @param {number} labelStart The start position of the first label.
- * @private
- */
-DvtTimelineRenderer._renderTimeAxis = function(timeline, startPos, endPos, container, length, axisEnd, tickStart, labelStart)
-{
-  var context = timeline.getCtx();
-  var isRTL = dvt.Agent.isRightToLeft(context);
-
-  var block = new dvt.Container(context, 'block_' + startPos + '_' + endPos);
-  block.startPos = startPos;
-  block.endPos = endPos;
-  container.addChild(block);
-
-  // the last date in dates is past the end time, and only used as the last 'next' date
-  var dates = timeline._dates[timeline._zoomLevelOrder];
-  var labels = timeline._labels[timeline._zoomLevelOrder];
-  for (var i = 0; i < dates.length - 1; i++)
-  {
-    var date = dates[i];
-    var next = dates[i + 1];
-
-    var currentPos = DvtTimeUtils.getDatePosition(timeline._start, timeline._end, date, length);
-    var nextPos = DvtTimeUtils.getDatePosition(timeline._start, timeline._end, next, length);
-    var maxLength = nextPos - currentPos;
-
-    if (currentPos != 0)
-    {
-      if (timeline.isVertical())
-        var tickElem = DvtTimelineRenderer._addTick(context, block, axisEnd, tickStart, currentPos, currentPos, timeline._separatorStroke, 's_tick' + date);
-      else if (!isRTL)
-        tickElem = DvtTimelineRenderer._addTick(context, block, currentPos, currentPos, axisEnd, tickStart, timeline._separatorStroke, 's_tick' + date);
-      else
-        tickElem = DvtTimelineRenderer._addTick(context, block, length - currentPos, length - currentPos, axisEnd, tickStart, timeline._separatorStroke, 's_tick' + date);
-      // save the time associated with the element for dynamic resize
-      tickElem.time = date;
-    }
-    if (timeline.isVertical())
-      DvtTimelineRenderer._addAxisLabel(block, labels[i], labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart);
-    else if (!isRTL)
-      DvtTimelineRenderer._addAxisLabel(block, labels[i], currentPos + ((nextPos - currentPos) / 2), labelStart + ((axisEnd - labelStart) / 2), maxLength);
-    else
-      DvtTimelineRenderer._addAxisLabel(block, labels[i], length - (currentPos + ((nextPos - currentPos) / 2)), labelStart + ((axisEnd - labelStart) / 2), maxLength);
-  }
+  DvtTimelineRenderer._renderSeriesTimeAxis(timeline, timeline._fetchStartPos, timeline._fetchEndPos, timeline.getTimeZoomCanvas(), timeline.getContentLength());
 };
 
 /**
@@ -5927,15 +4277,15 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
       dates = [];
       labels = [];
 
-      var startDate = DvtTimeUtils.getPositionDate(start, end, startPos, length);
+      var startDate = dvt.TimeAxis.getPositionDate(start, end, startPos, length);
       var currentDate = timeline._seriesTimeAxis.adjustDate(startDate);
-      var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
+      var currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, length);
       dates.push(currentDate.getTime());
       while (currentPos < endPos)
       {
         labels.push(timeline._seriesTimeAxis.formatDate(currentDate));
         currentDate = timeline._seriesTimeAxis.getNextDate(currentDate.getTime());
-        currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, length);
+        currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, length);
         // the last currentTime added in this loop is outside of the time range, but is needed
         // for the last 'next' date when actually creating the time axis in renderTimeAxis
         dates.push(currentDate.getTime());
@@ -5945,9 +4295,9 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
     {
       var label = labels[i];
       var currentTime = dates[i];
-      currentPos = DvtTimeUtils.getDatePosition(start, end, currentTime, length);
+      currentPos = dvt.TimeAxis.getDatePosition(start, end, currentTime, length);
 
-      var next_time_pos = DvtTimeUtils.getDatePosition(start, end, dates[i + 1], length);
+      var next_time_pos = dvt.TimeAxis.getDatePosition(start, end, dates[i + 1], length);
       var maxLength = next_time_pos - currentPos;
 
       if (!isRTL)
@@ -6184,102 +4534,57 @@ DvtTimelineRenderer._renderScrollHotspots = function(timeline)
 DvtTimelineRenderer._renderZoomControls = function(timeline)
 {
   var context = timeline.getCtx();
-  var isRTL = dvt.Agent.isRightToLeft(context);
-  var imageSize = 16;
-
   var resources = timeline._resources;
-  var enabledBackgroundColor = DvtTimelineStyleUtils.getZoomInButtonBackgroundColor(resources);
-  var enabledBorderColor = DvtTimelineStyleUtils.getZoomInButtonBorderColor(resources);
-  var hoverBackgroundColor = DvtTimelineStyleUtils.getZoomInButtonHoverBackgroundColor(resources);
-  var hoverBorderColor = DvtTimelineStyleUtils.getZoomInButtonHoverBorderColor(resources);
-  var activeBackgroundColor = DvtTimelineStyleUtils.getZoomInButtonActiveBackgroundColor(resources);
-  var activeBorderColor = DvtTimelineStyleUtils.getZoomInButtonActiveBorderColor(resources);
-  var disabledBackgroundColor = DvtTimelineStyleUtils.getZoomInButtonDisabledBackgroundColor(resources);
-  var disabledBorderColor = DvtTimelineStyleUtils.getZoomInButtonDisabledBorderColor(resources);
+  var isRTL = dvt.Agent.isRightToLeft(context);
 
-  var upState = dvt.TransientButton.getStateFromURL(context, resources['zoomIn'], imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
-  var overState = dvt.TransientButton.getStateFromURL(context, resources['zoomIn_h'], imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
-  var downState = dvt.TransientButton.getStateFromURL(context, resources['zoomIn_a'], imageSize, imageSize, activeBackgroundColor, activeBorderColor);
-  var disabledState = dvt.TransientButton.getStateFromURL(context, resources['zoomIn_d'], imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
+  var zoomControlProperties = {
+    'zoomInProps': {
+      'imageSize': 16,
+      'cssUrl': resources['zoomIn'],
+      'cssUrlHover': resources['zoomIn_h'],
+      'cssUrlActive': resources['zoomIn_a'],
+      'cssUrlDisabled': resources['zoomIn_d'],
+      'enabledBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonBackgroundColor(resources),
+      'enabledBorderColor': DvtTimelineStyleUtils.getZoomInButtonBorderColor(resources),
+      'hoverBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonHoverBackgroundColor(resources),
+      'hoverBorderColor': DvtTimelineStyleUtils.getZoomInButtonHoverBorderColor(resources),
+      'activeBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonActiveBackgroundColor(resources),
+      'activeBorderColor': DvtTimelineStyleUtils.getZoomInButtonActiveBorderColor(resources),
+      'disabledBackgroundColor': DvtTimelineStyleUtils.getZoomInButtonDisabledBackgroundColor(resources),
+      'disabledBorderColor': DvtTimelineStyleUtils.getZoomInButtonDisabledBorderColor(resources),
+    },
+    'zoomOutProps': {
+      'imageSize': 16,
+      'cssUrl': resources['zoomOut'],
+      'cssUrlHover': resources['zoomOut_h'],
+      'cssUrlActive': resources['zoomOut_a'],
+      'cssUrlDisabled': resources['zoomOut_d'],
+      'enabledBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonBackgroundColor(resources),
+      'enabledBorderColor': DvtTimelineStyleUtils.getZoomOutButtonBorderColor(resources),
+      'hoverBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonHoverBackgroundColor(resources),
+      'hoverBorderColor': DvtTimelineStyleUtils.getZoomOutButtonHoverBorderColor(resources),
+      'activeBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonActiveBackgroundColor(resources),
+      'activeBorderColor': DvtTimelineStyleUtils.getZoomOutButtonActiveBorderColor(resources),
+      'disabledBackgroundColor': DvtTimelineStyleUtils.getZoomOutButtonDisabledBackgroundColor(resources),
+      'disabledBorderColor': DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor(resources)
+    }
+  };
 
-  if (timeline.zoomin == null)
-  {
-    timeline.zoomin = new dvt.TransientButton(context, upState, overState, downState,
-        disabledState, timeline.EventManager, timeline.EventManager.HandleZoomInClick);
-    // In order for tooltips to show up, we need to associate the buttons through the event manager
-    timeline.EventManager.associate(timeline.zoomin, timeline.zoomin);
-  }
-  else
-  {
-    timeline.zoomin.setUpState(upState);
-    timeline.zoomin.setOverState(overState);
-    timeline.zoomin.setDownState(downState);
-    timeline.zoomin.setDisabledState(disabledState);
-  }
-
-  enabledBackgroundColor = DvtTimelineStyleUtils.getZoomOutButtonBackgroundColor(resources);
-  enabledBorderColor = DvtTimelineStyleUtils.getZoomOutButtonBorderColor(resources);
-  hoverBackgroundColor = DvtTimelineStyleUtils.getZoomOutButtonHoverBackgroundColor(resources);
-  hoverBorderColor = DvtTimelineStyleUtils.getZoomOutButtonHoverBorderColor(resources);
-  activeBackgroundColor = DvtTimelineStyleUtils.getZoomOutButtonActiveBackgroundColor(resources);
-  activeBorderColor = DvtTimelineStyleUtils.getZoomOutButtonActiveBorderColor(resources);
-  disabledBackgroundColor = DvtTimelineStyleUtils.getZoomOutButtonDisabledBackgroundColor(resources);
-  disabledBorderColor = DvtTimelineStyleUtils.getZoomOutButtonDisabledBorderColor(resources);
-
-  upState = dvt.TransientButton.getStateFromURL(context, resources['zoomOut'], imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
-  overState = dvt.TransientButton.getStateFromURL(context, resources['zoomOut_h'], imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
-  downState = dvt.TransientButton.getStateFromURL(context, resources['zoomOut_a'], imageSize, imageSize, activeBackgroundColor, activeBorderColor);
-  disabledState = dvt.TransientButton.getStateFromURL(context, resources['zoomOut_d'], imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
-
-  if (timeline.zoomout == null)
-  {
-    timeline.zoomout = new dvt.TransientButton(context, upState, overState, downState,
-        disabledState, timeline.EventManager, timeline.EventManager.HandleZoomOutClick);
-    // In order for tooltips to show up, we need to associate the buttons through the event manager
-    timeline.EventManager.associate(timeline.zoomout, timeline.zoomout);
-  }
-  else
-  {
-    timeline.zoomout.setUpState(upState);
-    timeline.zoomout.setOverState(overState);
-    timeline.zoomout.setDownState(downState);
-    timeline.zoomout.setDisabledState(disabledState);
-  }
-
-  timeline.zoomin.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
-  timeline.zoomout.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
-  timeline.zoomin.hide();
-  timeline.zoomout.hide();
-
-  if (DvtTimeUtils.supportsTouch())
-  {
-    dvt.ToolkitUtils.setAttrNullNS(timeline.zoomin.getElem(), 'role', 'button');
-    dvt.ToolkitUtils.setAttrNullNS(timeline.zoomin.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
-    dvt.ToolkitUtils.setAttrNullNS(timeline.zoomout.getElem(), 'role', 'button');
-    dvt.ToolkitUtils.setAttrNullNS(timeline.zoomout.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
-  }
   var xOffset = timeline._startX + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
   if (!isRTL)
     var transX = xOffset;
   else
     transX = timeline._backgroundWidth - xOffset - DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
-  timeline.zoomin.setTranslateX(transX);
-  timeline.zoomout.setTranslateX(transX);
+
+  zoomControlProperties['zoomInProps']['posX'] = transX;
+  zoomControlProperties['zoomOutProps']['posX'] = transX;
 
   var yOffset = timeline._startY + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
-  timeline.zoomin.setTranslateY(yOffset);
-  timeline.zoomout.setTranslateY(yOffset + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING);
 
-  if (timeline.zoomin.getParent() != timeline._canvas)
-    timeline._canvas.addChild(timeline.zoomin);
-  if (timeline.zoomout.getParent() != timeline._canvas)
-    timeline._canvas.addChild(timeline.zoomout);
+  zoomControlProperties['zoomInProps']['posY'] = yOffset;
+  zoomControlProperties['zoomOutProps']['posY'] = yOffset + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_SPACING;
 
-  var contentLength = timeline.getContentLength();
-  if (contentLength >= timeline._maxContentLength)
-    timeline.disableZoomButton(true);
-  if (timeline._canvasLength >= contentLength)
-    timeline.disableZoomButton(false);
+  timeline.renderZoomControls(zoomControlProperties);
 };
 
 /**
@@ -6351,52 +4656,6 @@ DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLengt
     labelList.push(label);
 
   return label;
-};
-
-/**
- * Adds an axis label.
- * @param {type} container
- * @param {type} label
- * @param {type} x
- * @param {type} y
- * @param {type} maxLength
- * @private
- */
-DvtTimelineRenderer._addAxisLabel = function(container, label, x, y, maxLength)
-{
-  label.setX(x);
-  label.setY(y);
-  if (label.isTruncated())
-    label.setTextString(label.getUntruncatedTextString());
-  dvt.TextUtils.fitText(label, maxLength, Infinity, container);
-
-  // align text horizontally
-  label.alignCenter();
-  // align text vertically
-  dvt.TextUtils.centerTextVertically(label, y);
-};
-
-/**
- * Adds a tick mark.
- * @param {type} context
- * @param {type} container
- * @param {type} x1
- * @param {type} x2
- * @param {type} y1
- * @param {type} y2
- * @param {type} stroke
- * @param {type} id
- * @return {dvt.Line}
- * @private
- */
-DvtTimelineRenderer._addTick = function(context, container, x1, x2, y1, y2, stroke, id)
-{
-  var line = new dvt.Line(context, x1, y1, x2, y2, id);
-  line.setStroke(stroke);
-  line.setPixelHinting(true);
-
-  container.addChild(line);
-  return line;
 };
 /**
  * Style related utility functions for dvt.Timeline.
@@ -7032,25 +5291,6 @@ DvtTimelineStyleUtils.getOverviewHeight = function()
 };
 
 /**
- * Gets the axis style.
- * @return {string} The axis style.
- */
-DvtTimelineStyleUtils.getAxisStyle = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_AXIS_STYLE;
-};
-
-/**
- * Gets the axis label style.
- * @param {object} options The object containing data and specifications for the component.
- * @return {dvt.CSSStyle} The axis label style.
- */
-DvtTimelineStyleUtils.getAxisLabelStyle = function(options)
-{
-  return options['styleDefaults']['minorAxis']['labelStyle'];
-};
-
-/**
  * Gets the overview window background color.
  * @param {object} options The object containing data and specifications for the component.
  * @return {string} The overview window background color.
@@ -7593,7 +5833,7 @@ DvtTimelineSeries.prototype.render = function(options, width, height)
 
   DvtTimelineSeriesRenderer.renderSeries(this, width, height);
 
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.TimeAxis.supportsTouch())
   {
     if (this._items.length > 0)
       this._setAriaProperty('flowto', '_bt_' + this._items[0].getId());
@@ -7922,12 +6162,12 @@ DvtTimelineSeries.prototype.prepareItems = function(items)
   for (var i = 0; i < items.length; i++)
   {
     var item = items[i];
-    var loc = DvtTimeUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
+    var loc = dvt.TimeAxis.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
     // offset position if a duration bar is rendered as well
     var endTime = item.getEndTime();
     if (endTime && endTime != item.getStartTime())
     {
-      var span = DvtTimeUtils.getDatePosition(this._start, this._end, endTime, this._length) - loc;
+      var span = dvt.TimeAxis.getDatePosition(this._start, this._end, endTime, this._length) - loc;
       loc = loc + Math.min(DvtTimelineStyleUtils.getDurationFeelerOffset(), span / 2);
     }
     item.setLoc(loc);
@@ -7936,7 +6176,7 @@ DvtTimelineSeries.prototype.prepareItems = function(items)
   for (var i = 0; i < this._items.length; i++)
   {
     var item = this._items[i];
-    var loc = DvtTimeUtils.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
+    var loc = dvt.TimeAxis.getDatePosition(this._start, this._end, item.getStartTime(), this._length);
     if (loc < this._fetchStartPos || loc > this._fetchEndPos)
       continue;
 
@@ -8313,7 +6553,7 @@ DvtTimelineSeriesItemRenderer._renderBubble = function(item, series, container, 
     animationElems.push(bubbleContainer);
   }
   bubbleContainer.addChild(bubble);
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.TimeAxis.supportsTouch())
     dvt.ToolkitUtils.setAttrNullNS(bubbleContainer._elem, 'id', bubbleContainer._id);
 
   // associate the node with the marker
@@ -8654,10 +6894,10 @@ DvtTimelineSeriesItemRenderer._renderDuration = function(item, series, container
 
   var startTime = item.getStartTime();
   var endTime = item.getEndTime();
-  var loc = DvtTimeUtils.getDatePosition(series._start, series._end, startTime, series._length);
+  var loc = dvt.TimeAxis.getDatePosition(series._start, series._end, startTime, series._length);
   var durationId = '_duration_' + item.getId();
   var durationSize = 22 + 10 * item.getDurationLevel();
-  var endLoc = DvtTimeUtils.getDatePosition(series._start, series._end, endTime, series._length);
+  var endLoc = dvt.TimeAxis.getDatePosition(series._start, series._end, endTime, series._length);
   if (series.isVertical())
   {
     if (!isRTL && !series.isInverted() || isRTL && series.isInverted())
@@ -8725,9 +6965,9 @@ DvtTimelineSeriesItemRenderer._updateDuration = function(item, series, overflowO
   var duration = item.getDurationBar();
   if (duration != null)
   {
-    var loc = DvtTimeUtils.getDatePosition(series._start, series._end, item.getStartTime(), series._length);
+    var loc = dvt.TimeAxis.getDatePosition(series._start, series._end, item.getStartTime(), series._length);
     var durationSize = 22 + 10 * item.getDurationLevel();
-    var endLoc = DvtTimeUtils.getDatePosition(series._start, series._end, item.getEndTime(), series._length);
+    var endLoc = dvt.TimeAxis.getDatePosition(series._start, series._end, item.getEndTime(), series._length);
     if (series.isVertical())
     {
       var durationTransY = 0;
@@ -9643,20 +7883,28 @@ DvtTimelineSeriesRenderer._renderItems = function(items, series, container, star
   for (var i = 0; i < items.length; i++)
   {
     var item = items[i];
-    var loc = DvtTimeUtils.getDatePosition(series._start, series._end, item.getStartTime(), series._length);
+    var loc = dvt.TimeAxis.getDatePosition(series._start, series._end, item.getStartTime(), series._length);
     if (loc < startPos || loc > endPos)
       continue;
 
     DvtTimelineSeriesItemRenderer.renderItem(item, series, container, overflowOffset, frAnimationElems, mvAnimator);
   }
 
-  if (DvtTimeUtils.supportsTouch())
+  if (dvt.TimeAxis.supportsTouch())
   {
     for (var i = 0; i < items.length - 1; i++)
     {
       var item = items[i];
-      var next = items[i + 1];
-      item.getBubble()._setAriaProperty('flowto', '_bt_' + next.getId());
+      var itemBubble = item.getBubble();
+      if (itemBubble)
+      {
+        var next = items[i + 1];
+        var nextBubble = next.getBubble();
+        if (nextBubble)
+          itemBubble._setAriaProperty('flowto', '_bt_' + next.getId());
+        else
+          break;
+      }
     }
   }
   DvtTimelineSeriesRenderer._renderDurations(items, series, container, overflowOffset, frAnimationElems, mvAnimator);
@@ -9689,12 +7937,12 @@ DvtTimelineSeriesRenderer._updateItemsForZoom = function(items, series)
   {
     var item = items[i];
     var startTime = item.getStartTime();
-    var loc = DvtTimeUtils.getDatePosition(series._start, series._end, startTime, series._length);
+    var loc = dvt.TimeAxis.getDatePosition(series._start, series._end, startTime, series._length);
     // offset position if a duration bar is rendered as well
     var endTime = item.getEndTime();
     if (endTime && endTime != startTime)
     {
-      var span = DvtTimeUtils.getDatePosition(series._start, series._end, endTime, series._length) - loc;
+      var span = dvt.TimeAxis.getDatePosition(series._start, series._end, endTime, series._length) - loc;
       loc = loc + Math.min(DvtTimelineStyleUtils.getDurationFeelerOffset(), span / 2);
     }
     item.setLoc(loc);
@@ -9795,9 +8043,9 @@ DvtTimelineSeriesRenderer._updateSeriesTicks = function(series)
   {
     var tick = series._seriesTicksArray[i];
     if (!series.isVertical() && isRTL)
-      var pos = series._length - DvtTimeUtils.getDatePosition(series._start, series._end, tick.time, series._length);
+      var pos = series._length - dvt.TimeAxis.getDatePosition(series._start, series._end, tick.time, series._length);
     else
-      pos = DvtTimeUtils.getDatePosition(series._start, series._end, tick.time, series._length);
+      pos = dvt.TimeAxis.getDatePosition(series._start, series._end, tick.time, series._length);
     if (series.isVertical())
     {
       tick.setX1(0);
@@ -9845,21 +8093,21 @@ DvtTimelineSeriesRenderer._renderSeriesTimeAxis = function(series, startPos, end
   else
   {
     dates = [];
-    var startDate = DvtTimeUtils.getPositionDate(start, end, startPos, series._length);
+    var startDate = dvt.TimeAxis.getPositionDate(start, end, startPos, series._length);
     var currentDate = series._timeAxis.adjustDate(startDate);
-    var currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, series._length);
+    var currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, series._length);
     dates.push(currentDate.getTime());
     while (currentPos < endPos)
     {
       currentDate = series._timeAxis.getNextDate(currentDate.getTime());
-      currentPos = DvtTimeUtils.getDatePosition(start, end, currentDate, series._length);
+      currentPos = dvt.TimeAxis.getDatePosition(start, end, currentDate, series._length);
       dates.push(currentDate.getTime());
     }
   }
   for (var i = 0; i < dates.length - 1; i++)
   {
     var currentTime = dates[i];
-    currentPos = DvtTimeUtils.getDatePosition(start, end, currentTime, series._length);
+    currentPos = dvt.TimeAxis.getDatePosition(start, end, currentTime, series._length);
     if (!series.isVertical() && isRTL)
       var pos = series._length - currentPos;
     else
@@ -9911,7 +8159,7 @@ DvtTimelineSeriesRenderer._renderReferenceObjects = function(series, container)
       var refObject = referenceObjects[i];
       if (refObject)
       {
-        var pos = DvtTimeUtils.getDatePosition(series._start, series._end, refObject, series._length);
+        var pos = dvt.TimeAxis.getDatePosition(series._start, series._end, refObject, series._length);
         if (series._renderedReferenceObjects.length == 0)
         {
           if (series.isVertical())
@@ -9953,7 +8201,7 @@ DvtTimelineSeriesRenderer._updateReferenceObjects = function(series)
   for (var i = 0; i < series._renderedReferenceObjects.length; i++)
   {
     var ref = series._renderedReferenceObjects[i];
-    var pos = DvtTimeUtils.getDatePosition(series._start, series._end, ref.date, series._length);
+    var pos = dvt.TimeAxis.getDatePosition(series._start, series._end, ref.date, series._length);
     if (series.isVertical())
     {
       ref.setX1(0);
@@ -10055,6 +8303,14 @@ DvtTimelineSeriesRenderer._animateItemRemoval = function(items, series, animatio
     }
   }
 };
+dvt.exportProperty(dvt, 'Timeline', dvt.Timeline);
+dvt.exportProperty(dvt.Timeline, 'newInstance', dvt.Timeline.newInstance);
+dvt.exportProperty(dvt.Timeline.prototype, 'render', dvt.Timeline.prototype.render);
+dvt.exportProperty(dvt.Timeline.prototype, 'getAutomation', dvt.Timeline.prototype.getAutomation);
+dvt.exportProperty(dvt.Timeline.prototype, 'select', dvt.Timeline.prototype.select);
+
+dvt.exportProperty(DvtTimelineAutomation.prototype, 'getDomElementForSubId', DvtTimelineAutomation.prototype.getDomElementForSubId);
+})(dvt);
 
   return dvt;
 });

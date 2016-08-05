@@ -13,6 +13,13 @@
 
     /* tree */
     /* --------------------------------------------------------------- */
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-tree:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
 
     /*  Base style for tree and nodes  */
     .oj-tree-list,
@@ -55,7 +62,7 @@
 
     /*  Node anchor */
     .oj-tree-list a {
-       @include oj-box-sizing-property(content-box);
+       box-sizing: content-box;
        display: inline-block;
        white-space: nowrap;
        text-decoration: none;

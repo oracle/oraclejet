@@ -464,4 +464,81 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @default <code class="prettyprint">null</code>
  */
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojPictoChartMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number|string"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "columnCount": {
+      "type": "number"
+    },
+    "columnWidth": {
+      "type": "number"
+    },
+    "drilling": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number|string"
+    },
+    "items": {
+      "type": "Array<object>"
+    },
+    "layout": {
+      "type": "string"
+    },
+    "layoutOrigin": {
+      "type": "string"
+    },
+    "rowCount": {
+      "type": "number"
+    },
+    "rowHeight": {
+      "type": "number"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "tooltip": {
+      "type": "object"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getItem": {},
+    "getItemCount": {}
+  },
+  "extension": {
+    "_widgetName": "ojPictoChart"
+  }
+};
+oj.Components.registerMetadata('ojPictoChart', 'dvtBaseComponent', ojPictoChartMeta);
+oj.Components.register('oj-picto-chart', oj.Components.getMetadata('ojPictoChart'));
+})();
 });

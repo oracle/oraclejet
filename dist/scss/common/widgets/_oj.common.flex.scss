@@ -121,7 +121,7 @@
 
     /* Grid HTML Classes */
     .oj-flex {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-display-flex-property();
       @include oj-flex-wrap-property(wrap);
 
@@ -129,7 +129,7 @@
 
     .oj-flex-item {
       @include oj-flex-property(auto);
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
     }
 
     // we want people to have a way to change from oj-row/oj-col
@@ -157,18 +157,21 @@
       width: 100%;
     }
 
+    %oj-flex-bar-base {
+      position: relative;
+    }
 
-    .oj-flex-bar,
+    %oj-flex-bar-base,
     .oj-flex-bar-start,
     .oj-flex-bar-middle,
     .oj-flex-bar-end,
     .oj-flex-bar-center-absolute {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-display-flex-property();
     }
 
     .oj-flex-bar {
-      position: relative;
+      @extend %oj-flex-bar-base;
     }
 
     .oj-flex-bar-middle {

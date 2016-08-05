@@ -17,7 +17,7 @@ $includePanelClasses:   $includeAllClasses !default;
       border: 1px solid $panelBorderColor;
       background-color: $panelBgColor;
       @include oj-border-radius( $panelBorderRadius );
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       overflow: hidden;
       padding: $panelPadding;
       position: relative;

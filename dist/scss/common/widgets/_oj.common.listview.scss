@@ -10,6 +10,13 @@
 @if $includeListViewClasses != false {
     @include module-include-once("common.listview") {
 
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+          oj-list-view:not(.oj-complete) {
+            visibility: hidden;
+          }      
+        }
+
         /* Styling for the listview widget container */
         .oj-listview {
             position: relative;
@@ -17,7 +24,7 @@
             border-color: $dataGridBorderColor;
             border-style: solid;
             @include oj-user-select-property (none);
-            @include oj-box-sizing-property(border-box);
+            box-sizing: border-box;
             // min-height is 1 row to leave space for the no data message.
             min-height: $dataGridRowHeight;
         }
@@ -73,13 +80,12 @@
             background-size: 100% 1px;
             background-position: 0 0;
             background-repeat: no-repeat;
-            @include oj-box-sizing-property(border-box);
+            box-sizing: border-box;
             border-top:1px solid transparent;
         }
 
         /* set on item before add or remove animation */
         .oj-listview-item-add-remove-transition {
-            transition: max-height $listViewAnimationDuration, opacity $listViewAnimationDuration;
             overflow: hidden;
         }
 
@@ -99,7 +105,7 @@
             background-color: $dataGridCellBgColorHover;
         }
 
-        .oj-listview-item.oj-hover + li.oj-listview-item {
+        ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item {
             border-top: 1px solid $dataGridCellBorderColorHover;
             background-size: 0;
         }
@@ -115,7 +121,7 @@
             background-color: $dataGridCellBgColorSelected;
         }
 
-        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected + li.oj-listview-item {
+        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item {
             border-top: 1px solid $dataGridCellBorderColorSelected;
             background-size: 0;
         }
@@ -142,11 +148,10 @@
         /* Styling on focused list item */
         .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus {
             background-color: $dataGridCellBgColorFocus;
-            border-top: 1px solid $dataGridCellBorderColorFocus;
-            background-size: 0;
         }
 
-        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus + li.oj-listview-item {
+        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
+        .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
             border-top: 1px solid $dataGridCellBorderColorFocus;
             background-size: 0;
         }
@@ -184,7 +189,7 @@
             background-color: $headerBgColor;
             opacity: $listViewHeaderOpacity;
             @include oj-background-image($headerBgImage);
-            @include oj-box-sizing-property(border-box);
+            box-sizing: border-box;
             @include oj-rtl() {
                 right: 0;
             }
@@ -209,21 +214,21 @@
 
         /* expand and collapse animation */
         .oj-listview-collapsible-transition {
-            transition: max-height $listViewAnimationDuration;
             overflow: hidden;
         }
 
         /* Styling on the status text, such as fetching data */
-        .oj-listview-status {
+        .oj-listview-status-message {
             position: absolute;
             display: none;
-            background-color: $popupBgColor;
+            background-color: $dataGridStatusBgColor;
+            border: 1px $dataGridCellBorderColor solid;
             padding: 5px;
             top: 50%;
         }
 
         /* Styling for the empty list text */
-        .oj-listview-empty-text {
+        .oj-listview-no-data-message {
             padding: $panelPadding;
             background-color: $dataGridCellBgColor;
         }
@@ -258,7 +263,7 @@
                 margin-right: oj-shorthand-property-value-right($listViewCardMargin);;
             }
             background-size: 0;
-            @include oj-box-sizing-property(border-box);
+            box-sizing: border-box;
         }
 
         /* Styling for the drill icon */
@@ -292,5 +297,94 @@
                 $icon: oj-image-url("pull_to_refresh_full.gif")
             );
         }
+
+        /* Styling for the affordance icon */
+        .oj-listview-drag-handle {
+            @extend .oj-fwk-icon;
+
+            width: 28px;
+            height: 18px;
+            @include oj-icon-content(
+                 $icon: oj-image-url("move_handle.svg")
+            ); 
+            cursor: move;
+        }
+
+        /* Styling for the affordance icon when card layout is used */
+        .oj-listview-card-layout .oj-listview-drag-handle {
+            @extend .oj-fwk-icon-drag;
+      
+            @extend .oj-fwk-icon;
+
+        }
+
+        /* Styling for the drag image */
+        .oj-listview-drag-image {
+            background-color: transparent;
+            position: fixed;
+            top: 10000px;
+            border: 1px solid transparent;
+        }
+
+        /* Styling item that is draggable (no affordance) */											 	        
+        .oj-listview-item.oj-draggable {
+            cursor: move;
+        }
+        
+        /* Styling for the item that is being moved using drag */											 	
+        .oj-listview-item.oj-drag {
+            box-shadow: $largeBoxShadow;
+            border-top: 1px solid $dataGridCellDragImageBorderColor;
+            border-bottom: 1px solid $dataGridCellDragImageBorderColor;
+        }
+        
+        /* Styling all drop targets in the datagrid when dragging rows*/											 			
+        .oj-listview-item.oj-drop {
+            box-sizing: border-box;
+            border: 1px solid $dropTarget2Color;
+            background-color: $dropTarget1Color;    
+        }            
+
+        /* Styling for an item that is cut during a context menu cut operation */
+        .oj-listview-cut {
+            opacity: 0.8;
+        }
+
+        /* note that currently animation is the only option defaults */
+        $listViewDefaultOptions: ();
+        $listViewAnimationDefaults: ();
+
+        @if ($listViewAddAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (add: $listViewAddAnimation));
+        }
+
+        @if ($listViewRemoveAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (remove: $listViewRemoveAnimation));
+        }
+
+        @if ($listViewUpdateAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (update: $listViewUpdateAnimation));
+        }
+ 
+        @if ($listViewExpandAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (expand: $listViewExpandAnimation));
+        }
+
+        @if ($listViewCollapseAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (collapse: $listViewCollapseAnimation));
+        }
+
+        @if ($listViewPointerUpAnimation) {
+            $listViewAnimationDefaults: map-merge($listViewAnimationDefaults, (pointerUp: $listViewPointerUpAnimation));
+        }
+
+        @if ($listViewAnimationDefaults) {
+            $listViewDefaultOptions: map-merge($listViewDefaultOptions, (animation: $listViewAnimationDefaults));
+        }
+
+        .oj-listview-option-defaults {
+            font-family: oj-json($listViewDefaultOptions);
+        }
+
     }
 }

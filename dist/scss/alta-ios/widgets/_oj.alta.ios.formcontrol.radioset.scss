@@ -39,15 +39,46 @@
     .oj-checkboxset .oj-choice-row {
       background-image: linear-gradient($radioCheckboxItemDividerColor, $radioCheckboxItemDividerColor);
       background-size: 100% 1px;
+      // if the image is first, then don't have the border-bottom go under the image.
+      @if ($radioCheckboxLabelPosition == "end") {
+        @include oj-ltr() {
+          background-position: 36px 0;
+        }
+        @include oj-rtl() {
+          background-position: -36px 0;
+        } 
+      } @else {
+        @include oj-ltr() {
+          background-position: 10px 0;
+        }
+        @include oj-rtl() {
+          background-position: -10px 0;
+        }
+      }
+      background-repeat: no-repeat;
+      box-sizing: border-box;
+      
+    }
+    
+    // if the image is first, then don't have the border-bottom go under the image.
+    .oj-radioset-input-start  .oj-choice-row,
+    .oj-checkboxset-input-start .oj-choice-row {
+      @include oj-ltr() {
+        background-position: 36px 0;
+      }
+      @include oj-rtl() {
+        background-position: -36px 0;
+      }
+    }
+    
+    .oj-radioset-input-end  .oj-choice-row,
+    .oj-checkboxset-input-end .oj-choice-row {
       @include oj-ltr() {
         background-position: 10px 0;
       }
       @include oj-rtl() {
         background-position: -10px 0;
       }
-      background-repeat: no-repeat;
-      @include oj-box-sizing-property(border-box);
-      
     }
     
     .oj-radioset .oj-choice-row:first-child,
@@ -79,17 +110,13 @@
       .oj-checkbox-label .oj-radiocheckbox-icon {
         width: 1rem; // 14px
         height: 1rem; // 14px
-        background-size: 100% 100%;
-        margin: 0 10px 0 10px;
       }
+        
+      @include oj-radiocheckbox-image-margin($radioCheckboxLabelToEdgePadding);
          
       // position radio/checkbox underneath the icon for voiceover to work
       // the calculation is margin from side (10px) + 1/4*width of image
-      .oj-radio,
-      .oj-checkbox,
-      .oj-choice-row .oj-checkbox-nocomp {
-        @include oj-radiocheckbox-position-horizontal(13px);
-      }
+      @include oj-radiocheckbox-position-input(13px);
       
       // ios doesn't have an icon if it isn't selected.
       .oj-radio-label .oj-radiocheckbox-icon,
@@ -101,17 +128,111 @@
       .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
         background-image: none; 
       }
-
-      .oj-radio-label:active.oj-selected:not(.oj-disabled) .oj-radiocheckbox-icon,
-      .oj-checkbox-label:active.oj-selected:not(.oj-disabled) .oj-radiocheckbox-icon {
-        background-image: oj-image-url("radio_ena_selected.svg"); 
-      }
-                 
-      .oj-radio-label:active:not(.oj-selected):not(.oj-disabled) .oj-radiocheckbox-icon,
-      .oj-checkbox-label:active:not(.oj-selected):not(.oj-disabled) .oj-radiocheckbox-icon {
+                    
+      .oj-radio-label.oj-active .oj-radiocheckbox-icon,
+      .oj-checkbox-label.oj-active .oj-radiocheckbox-icon {
         background-image: none;
       }
-    }
-    
+
+      .oj-radio-label.oj-active.oj-selected .oj-radiocheckbox-icon{
+        background-image: oj-radiocheckbox-image-url("radio_ena_selected.svg"); 
+      }
+      
+      .oj-checkbox-label.oj-active.oj-selected .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("checkbox_ena_selected.svg"); 
+      }
+
+      
+      // ** single checkbox images -- in ios theme, if the checkboxset has only one checkbox, it has
+      // a different image with different dimensions.
+      // ** inline mode -- we decided to show the single checkbox icon when the radioset or
+      // checkboxset is inline using oj-choice-row-inline.
+
+      .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
+      .oj-checkboxset-single  .oj-checkbox-label .oj-radiocheckbox-icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_ena_unselected.svg"); 
+      }
+
+      .oj-choice-row-inline  .oj-radio-label.oj-selected  .oj-radiocheckbox-icon,
+      .oj-choice-row-inline  .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_ena_selected.svg"); 
+      }  
+
+      .oj-choice-row-inline .oj-radio-label:active .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label:active .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label:active .oj-radiocheckbox-icon {
+       background-image: oj-radiocheckbox-image-url("cbsingle_pressed_unselected.svg");
+      }
+
+      .oj-choice-row-inline .oj-radio-label:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon {
+       background-image: oj-radiocheckbox-image-url("cbsingle_pressed_selected.svg");
+      }
+
+      .oj-choice-row-inline .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_dis_unselected.svg");
+      }
+
+      .oj-choice-row-inline .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
+      }
+
+      // in high contrast mode, background-images disappear, so use content to show the checked item
+      .oj-hicontrast .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+        background-image: none;
+      }
+
+      // in hicontrast mode, background-images disappear, so we use content to show the checked item.
+      .oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+        content: oj-radiocheckbox-image-url("cbsingle_ena_selected.svg");
+      }
+
+      .oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+        content: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
+      }
+
+      // in print mode, background-images disappear, so we use content to show the checked item.
+      @media print {
+
+        .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
+        .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+          background-image: none;
+        }
+
+        .oj-choice-row-inline .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-checkboxset-single .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+          content: oj-radiocheckbox-image-url("cbsingle_ena_selected.svg");
+        }
+
+        .oj-choice-row-inline .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-checkboxset-single .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+          content: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
+        } 
+      }  
+
+    }  
   }
 }

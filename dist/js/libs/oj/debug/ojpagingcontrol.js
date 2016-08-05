@@ -74,18 +74,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           data: null,
           /** 
            * Options for when the component width is too narrow to accommodate the controls in the paging control
-           * <p>
-           * Valid values are:
-           * <ul>
-           *   <li>fit: Display as many controls as can fit in the component width</li>
-           *   <li>none: Display all controls. Controls which cannot fit will be truncated.</li>
-           * </ul>
-           * <p>
            * @expose 
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {string}
+           * @ojvalue {string} "fit" Display as many controls as can fit in the component width.
+           * @ojvalue {string} "none" Display all controls. Controls which cannot fit will be truncated.
            * @default <code class="prettyprint">fit</code>
            */
           overflow: 'fit',
@@ -154,18 +149,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            */
           loadMoreOptions: {'maxCount': 500},
           /** 
-           * Paging mode. 
-           * <p>
-           * Valid values are:
-           * <ul>
-           *   <li>page: Display paging control in pagination mode</li>
-           *   <li>loadMore: Display paging control in high watermark mode</li>
-           * </ul>
+           * Paging mode.
            * @expose 
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {string}
+           * @ojvalue {string} "page" Display paging control in pagination mod.
+           * @ojvalue {string} "loadMore" Display paging control in high watermark mode.
            * @default <code class="prettyprint">page</code>
            */
           mode: 'page',
@@ -413,7 +404,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         if (data != null)
         {
           var page = this._getCurrentPage();
-          if (page + 1 <= this._getTotalPages() - 1|| this._getTotalPages() < 0) 
+          if (this._isTotalSizeConfidenceActual() && page + 1 <= this._getTotalPages() - 1 || 
+              this._getTotalPages() < 0 ||
+              !this._isTotalSizeConfidenceActual()) 
           {
             return this._invokeDataPage(page + 1, false);
           }
@@ -794,12 +787,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['page'](pageNum).then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
+                  self = null;
                 });  
             }
             event.preventDefault();
@@ -816,13 +811,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['page'](pageNum).then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
-                });
+                  self = null;
+                });  
             }
             event.preventDefault();
           },
@@ -837,12 +834,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['firstPage']().then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
+                  self = null;
                 });  
             }
             event.preventDefault();
@@ -858,12 +857,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['previousPage']().then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
+                  self = null;
                 });  
             }
             event.preventDefault();
@@ -879,12 +880,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['nextPage']().then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
+                  self = null;
                 });  
             }
             event.preventDefault();
@@ -900,12 +903,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               this['lastPage']().then(
                 function(result)
                 {
+                  self = null;
                   return;
                 },
                 function(err)
                 {
                   var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                   oj.Logger.error(errSummary + '\n' + err);
+                  self = null;
                 });  
             }
             event.preventDefault();
@@ -1222,6 +1227,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             {
               itemRangeCurrentText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT_SINGLE, {'pageFrom': pageFrom});
             }
+            else if (pageFrom > pageTo)
+            {
+              // this can happen if we go from unknown to known row count and the last page has no rows. In that case don't return anything
+              return itemRangeSpan;
+            }
             else
             {
               itemRangeCurrentText = this.getTranslatedString(this._BUNDLE_KEY._MSG_ITEM_RANGE_CURRENT, {'pageFrom': pageFrom, 'pageTo': pageTo});
@@ -1388,6 +1398,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               var navPage = self._getPagingControlContent().find('div[data-oj-pagenum=' + pageNum + ']');
               navPage.focus();
             }
+            pageNum = null;
+            self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS))
@@ -1397,6 +1409,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             var firstArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_FIRST_CLASS);
             firstArrow.focus();
+            self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS))
@@ -1406,6 +1419,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             var previousArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_PREVIOUS_CLASS);
             previousArrow.focus();
+            self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS))
@@ -1415,6 +1429,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             var nextArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_NEXT_CLASS);
             nextArrow.focus();
+            self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_LAST_CLASS))
@@ -1424,6 +1439,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             var lastArrow = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_LAST_CLASS);
             lastArrow.focus();
+            self = null;
           }, 100);
         }
         else if (activeElement.hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS))
@@ -1433,6 +1449,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             var navInput = self._getPagingControlContent().find('.' + self._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS);
             navInput.focus();
+            self = null;
           }, 100);
         }
         this._queueRefresh();
@@ -1496,14 +1513,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _handleDataRowAdd: function(event)
       {
-        if (this.options['mode'] == this._MODE._PAGE)
+        if (this._isOperationOnCurrentPage(event))
         {
-          if (this._isOperationOnCurrentPage(event))
+          if (this.options['mode'] == this._MODE._PAGE)
           {
-            // this means that the add caused the pages to shift or
-            // the row was added to the current page and the first page is full already
-            // so we need to re-fetch the current page
-            this._invokeDataPage(this._getCurrentPage(), true);
+
+              // this means that the add caused the pages to shift or
+              // the row was added to the current page and the first page is full already
+              // so we need to re-fetch the current page
+              this._invokeDataPage(this._getCurrentPage(), true);
+              return;
+          }
+          else
+          {
+            this._invokeDataFetchCurrent();
             return;
           }
         }
@@ -1517,24 +1540,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _handleDataRowRemove: function(event)
       {
-        if (this._getTotalPages() > 0 && this._getCurrentPage() > this._getTotalPages() - 1)
+        if (this.options['mode'] == this._MODE._PAGE)
         {
-          // if the number of pages decreased due to the removal, then
-          // reset the page
-          this._invokeDataPage(this._getTotalPages() - 1, true);
+          if (this._getTotalPages() > 0 && this._getCurrentPage() > this._getTotalPages() - 1)
+          {
+            // if the number of pages decreased due to the removal, then
+            // reset the page
+            this._invokeDataPage(this._getTotalPages() - 1, true);
+            return;
+          }
+          else if (this._isOperationOnCurrentPage(event))
+          {
+            // this means that the remove caused the pages to shift or
+            // the row was deleted from the current page
+            // so we need to re-fetch the current page
+            this._invokeDataPage(this._getCurrentPage(), true);
+            return;
+          }
         }
         else if (this._isOperationOnCurrentPage(event))
         {
-          // this means that the remove caused the pages to shift or
-          // the row was deleted from the current page
-          // so we need to re-fetch the current page
-          this._invokeDataPage(this._getCurrentPage(), true);
+          this._invokeDataFetchCurrent();
           return;
         }
-        else
-        {
-          this._queueRefresh();
-        }
+        this._queueRefresh();
       },
       /**
        * Callback handler for page change.
@@ -1543,6 +1572,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        */
       _handlePageChange: function(event, data)
       {
+        var option = data.option;
+        
+        if (option != 'value')
+        {
+          return;
+        }
+        
         var page = data.value;
         if (page != this._getCurrentPage() + 1 && !isNaN(page) && page > 0)
         {
@@ -1551,12 +1587,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           this['page'](page - 1).then(
               function(result)
               {
+                self = null;
                 return;
               },
               function(err)
               {
                 var errSummary = self.getTranslatedString(self._BUNDLE_KEY._ERR_PAGE_INVALID_SUMMARY);
                 oj.Logger.error(errSummary + '\n' + err);
+                self = null;
               });  
         }
       },
@@ -1600,9 +1638,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
               {
                 reject(error);
               });
+              data = null;
+              self = null;
             }
             else
             {
+              self = null;
               resolve(null);
             }
           });
@@ -1640,6 +1681,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             {
               reject(null);  
             });
+            data = null;
+            self = null;
+          });
+        }
+        return Promise.resolve();
+      },
+      /**
+       * Fetch the current set of rows in loadMore
+       * @return (Promise} Promise 
+       * @private
+       */
+      _invokeDataFetchCurrent: function()
+      {
+        var data = this._getData();
+        var pageSize = this.options['pageSize'];
+
+        if (!this._isTotalSizeConfidenceActual() || 
+            (data.totalSize() > this._currentStartIndex && this._isTotalSizeConfidenceActual()))
+        {
+          var self = this;
+          return new Promise(function(resolve, reject)
+          {
+            data.fetch({'startIndex': 0, 'pageSize': self._currentStartIndex + pageSize}).then(function(result)
+            {
+              resolve(result);
+            }, function (error)
+            {
+              reject(null);  
+            });
+            data = null;
+            self = null;
           });
         }
         return Promise.resolve();
@@ -1657,9 +1729,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         }
         
         var data = this._getData();
-        var pageSize = this.options['pageSize'];
         var startIndex = data.getStartItemIndex();
-        var endIndex = startIndex + pageSize;
+        if (this.options['mode'] == this._MODE._LOAD_MORE)
+        {
+          startIndex = 0;
+        }
+          
+        var endIndex = data.getEndItemIndex();
         var rowIdx;
         
         // check if one or more
@@ -1667,11 +1743,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         {
           rowIdx = event['index'];
           
-          if (this.options['mode'] == this._MODE._LOAD_MORE)
-          {
-            startIndex = 0;
-          }
-
           if (rowIdx >= startIndex && rowIdx < endIndex)
           {
             return true;
@@ -1683,11 +1754,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           for (i = 0; i < event['indexes'].length; i++)
           {
             rowIdx = event['indexes'][i];
-
-            if (this.options['mode'] == this._MODE._LOAD_MORE)
-            {
-              startIndex = 0;
-            }
 
             if (rowIdx >= startIndex && rowIdx < endIndex)
             {
@@ -1736,6 +1802,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             {
               data.setPage(self._pageFetchLatestPage, {'pageSize' : self.options['pageSize']}).then(function()
               {
+                data = null;
+                self = null;
               },
               function(error)
               {
@@ -1744,6 +1812,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
                 {
                   self._pendingPageFetch = undefined;
                   oj.Logger.error(error);
+                  self = null;
                 }
               });
             }
@@ -1756,6 +1825,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             self._pendingPageFetch = undefined;
             oj.Logger.error(error);
+            self = null;
           }
         });
       },
@@ -1777,6 +1847,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             self._pendingRefreshes = undefined;
             self._refresh();
             self._trigger('ready');
+            self = null;
           }
         },
         function(error)
@@ -1786,6 +1857,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             self._pendingRefreshes = undefined;
             oj.Logger.error(error);
+            self = null;
           }
         });
       },
@@ -2061,10 +2133,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         if (pagingControlNavSummaryLabel != null && pagingControlNavSummaryLabel.length > 0)
         {
           var itemRange = this._getItemRange(size, startIndex);
+          pagingControlNavSummaryLabel = $(pagingControlNavSummaryLabel.get(0));
+          pagingControlNavSummaryLabel.empty();
+          
           if (itemRange.text().length > 0)
           {
-            pagingControlNavSummaryLabel = $(pagingControlNavSummaryLabel.get(0));
-            pagingControlNavSummaryLabel.empty();
             pagingControlNavSummaryLabel.append("("); //@HTMLUpdateOK
             pagingControlNavSummaryLabel.append(itemRange); //@HTMLUpdateOK
             pagingControlNavSummaryLabel.append(")"); //@HTMLUpdateOK
@@ -2103,7 +2176,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           
           if (pagingControlNavInputSection != null && 
             this._getTotalPages() > 0 &&
-            this._isTotalSizeConfidenceActual())
+            this._isTotalSizeConfidenceActual() &&
+            maxPageVal >= this._getCurrentPage() + 1)
           {
             pagingControlNavMaxLabel = $(document.createElement('span'));
             pagingControlNavMaxLabel.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_MAX_CLASS);
@@ -2117,8 +2191,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         if (pagingControlNavInput != null && pagingControlNavInput.length > 0)
         {
           pagingControlNavInput = $(pagingControlNavInput.get(0));
-          pagingControlNavInput.val(this._getCurrentPage() + 1);
           pagingControlNavInput.ojInputText('option', 'validators', [{'type': 'numberRange', 'options': {'min': 1, max: maxPageVal}}]);
+          pagingControlNavInput.ojInputText('option', 'value', this._getCurrentPage() + 1);
         }
       },
       /**
@@ -2180,9 +2254,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         {
           if (this.options['mode'] == this._MODE._PAGE)
           {
-            var pagingControlNavArrowSection = this._getPagingControlNavArrowSection();
+            var pagingControlNav = this._getPagingControlNav();
 
-            if (pagingControlNavArrowSection != null)
+            if (pagingControlNav != null)
             {
               var isVertical = this.options['pageOptions']['orientation'] == 'vertical' ? true : false;
               var self = this;
@@ -2194,13 +2268,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
                     [Hammer.Swipe, {'direction': Hammer['DIRECTION_VERTICAL']}]
                 ]};
 
-                this._hammerSwipeUp = pagingControlNavArrowSection.ojHammer(options).on('swipeup', function(event)
+                this._hammerSwipeUp = pagingControlNav.ojHammer(options).on('swipeup', function(event)
                 {
                   event.preventDefault();
                   self['nextPage']();
                 });
 
-                this._hammerSwipeDown = pagingControlNavArrowSection.ojHammer(options).on('swipedown', function(event)
+                this._hammerSwipeDown = pagingControlNav.ojHammer(options).on('swipedown', function(event)
                 {
                   event.preventDefault();
                   self['previousPage']();
@@ -2213,13 +2287,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
                     [Hammer.Swipe, {'direction': Hammer['DIRECTION_HORIZONTAL']}]
                 ]};
 
-                this._hammerSwipeLeft = pagingControlNavArrowSection.ojHammer(options).on('swipeleft', function(event)
+                this._hammerSwipeLeft = pagingControlNav.ojHammer(options).on('swipeleft', function(event)
                 {
                   event.preventDefault();
                   self['nextPage']();
                 });
 
-                this._hammerSwipeRight = pagingControlNavArrowSection.ojHammer(options).on('swiperight', function(event)
+                this._hammerSwipeRight = pagingControlNav.ojHammer(options).on('swiperight', function(event)
                 {
                   event.preventDefault();
                   self['previousPage']();
@@ -2273,6 +2347,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         {
           self._UnregisterChildNode(this);
         });
+        self = null;
       },
       /**
        * Unregister swipe handler for DOM element.
@@ -2590,7 +2665,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           pagingControlNavFirst.addClass(this._MARKER_STYLE_CLASSES._CLICKABLE_ICON);
           pagingControlNavFirst.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
           var navFirstPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_FIRST_PAGE);
-          this._hoverable(pagingControlNavFirst);
+          this._AddHoverable(pagingControlNavFirst);
           this._focusable(pagingControlNavFirst);
           pagingControlNavFirst.attr('title', navFirstPageTip);
           pagingControlNavFirst.attr(this._TAB_INDEX, '0');
@@ -2619,7 +2694,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           pagingControlNavPrevious.addClass(this._MARKER_STYLE_CLASSES._CLICKABLE_ICON);
           pagingControlNavPrevious.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
           var navPreviousPageTip= this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_PREVIOUS_PAGE);
-          this._hoverable(pagingControlNavPrevious);
+          this._AddHoverable(pagingControlNavPrevious);
           this._focusable(pagingControlNavPrevious);
           pagingControlNavPrevious.attr('title', navPreviousPageTip);
           pagingControlNavPrevious.attr(this._TAB_INDEX, '0');
@@ -2664,7 +2739,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           pagingControlNavNext.addClass(this._MARKER_STYLE_CLASSES._CLICKABLE_ICON);
           pagingControlNavNext.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
           var navNextPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_NEXT_PAGE);
-          this._hoverable(pagingControlNavNext);
+          this._AddHoverable(pagingControlNavNext);
           this._focusable(pagingControlNavNext);
           pagingControlNavNext.attr('title', navNextPageTip);
           pagingControlNavNext.attr(this._TAB_INDEX, '0');
@@ -2693,7 +2768,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           pagingControlNavLast.addClass(this._MARKER_STYLE_CLASSES._CLICKABLE_ICON);
           pagingControlNavLast.addClass(this._MARKER_STYLE_CLASSES._DISABLED);
           var navLastPageTip = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_LAST_PAGE);
-          this._hoverable(pagingControlNavLast);
+          this._AddHoverable(pagingControlNavLast);
           this._focusable(pagingControlNavLast);
           pagingControlNavLast.attr('title', navLastPageTip);
           pagingControlNavLast.attr(this._TAB_INDEX, '0');
@@ -2886,7 +2961,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             pagingControlNavPage.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOT_CLASS);
           }
           var pageTitle = this.getTranslatedString(this._BUNDLE_KEY._TIP_NAV_PAGE_LINK, {'pageNum': (pageNum + 1).toString()});
-          this._hoverable(pagingControlNavPage);
+          this._AddHoverable(pagingControlNavPage);
           this._focusable(pagingControlNavPage);
           pagingControlNavPage.attr('title', pageTitle);
           pagingControlNavPage.attr(this._TAB_INDEX, '0');
@@ -2900,7 +2975,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           if (isDot)
           {
             pagingControlNavPageSpan.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOT_BULLET_CLASS);
-            this._hoverable(pagingControlNavPageSpan);
+            this._AddHoverable(pagingControlNavPageSpan);
             
             if (currentPage == pageNum)
             {
@@ -2911,7 +2986,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           var dirAttrVal = isRTL ? 'rtl' : 'ltr';
           pagingControlNavPageSpan.attr('dir', dirAttrVal);
           pagingControlNavPage.append(pagingControlNavPageSpan); //@HTMLUpdateOK
-          this._hoverable(pagingControlNavPage);
+          this._AddHoverable(pagingControlNavPage);
           if (isVertical)
           {
             pagingControlNavPage.css('display', 'block');
@@ -3373,4 +3448,42 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
 
 }());
 
+(function() {
+var ojPagingControlMeta = {
+  "properties": {
+    "data": {},
+    "loadMoreOptions": {
+      "type": "Object<string, number>"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "overflow": {
+      "type": "string"
+    },
+    "pageOptions": {
+      "type": "Object<string, Array|number>"
+    },
+    "pageSize": {
+      "type": "number"
+    }
+  },
+  "methods": {
+    "firstPage": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {},
+    "lastPage": {},
+    "loadNext": {},
+    "nextPage": {},
+    "page": {},
+    "previousPage": {},
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "ojPagingControl"
+  }
+};
+oj.Components.registerMetadata('ojPagingControl', 'baseComponent', ojPagingControlMeta);
+oj.Components.register('oj-paging-control', oj.Components.getMetadata('ojPagingControl'));
+})();
 });

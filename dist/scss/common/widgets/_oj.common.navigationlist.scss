@@ -10,6 +10,13 @@
 
 @if $includeNavigationListClasses != false {
     @include module-include-once("common.navigationlist") {
+    
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+            oj-navigation-list:not(.oj-complete) {
+                visibility: hidden;
+            }      
+        }
 
         /*Navlist root node*/
         .oj-navigationlist,
@@ -48,7 +55,6 @@
             display: list-item;
         }
 
-        
         /* Basic styling  for all ul elements in list*/
         .oj-navigationlist-element, .oj-navigationlist-group {
             list-style-type: none;
@@ -100,7 +106,13 @@
         .oj-navigationlist-expand-icon {
             @include oj-order-property(1);
             @include oj-align-self-property(center);
-            text-decoration: none;
+        }
+        
+        a.oj-navigationlist-collapse-icon,
+        a.oj-navigationlist-expand-icon,
+        a.oj-navigationlist-collapse-icon:hover,
+        a.oj-navigationlist-expand-icon:hover{
+            text-decoration: none;  //workaround for IE11 where underline appears on icon hover
         }
 
         /* Style content of each list item */
@@ -167,7 +179,7 @@
         /* List item's Icon */
         .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorDefault;
+            color: $navigationListItemIconColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
             }
@@ -209,18 +221,18 @@
         }
 
         /* Selected node */
-        .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon,
-        .oj-navigationlist.oj-navigationlist-touch .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon { // on mobile selected gets priority
-            color: $navigationListIconColorSelected;
+        .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+            color: $navigationListItemIconColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
             }
         }
 
         /* hover icon */
-        .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon,
+        .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
             }
@@ -241,10 +253,9 @@
         }
 
         /*Focus ring around  focused list item*/
-        .oj-navigationlist:not(.oj-navigationlist-touch) .oj-navigationlist-item.oj-focus {
+        .oj-navigationlist .oj-navigationlist-item.oj-focus-highlight {
             outline: dotted 1px $navigationListItemOutlineColorFocus; // Using dotted line for all browsers
             outline-offset: -1px;
-
         }
 
         .oj-hicontrast .oj-navigationlist-item.oj-focus {
@@ -306,14 +317,22 @@
 
         .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item
         {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  $navigationListItemStartEndPadding; 
+            }@else {
+                $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth})
+            }
+            
             //Padding at start of item
             @include oj-rtl() {
-                padding-right: calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
-                border-width: 0 $navigationListItemAccentBorderWidth 0 0;
+                padding-right: $tmpPadding;
+                border-width: oj-shorthand-property-value-top($navigationListItemBorderWidth) oj-shorthand-property-value-left($navigationListItemBorderWidth) oj-shorthand-property-value-bottom($navigationListItemBorderWidth) oj-shorthand-property-value-right($navigationListItemBorderWidth);
             }
             @include oj-ltr() {
-                padding-left:  calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
-                border-width: 0 0 0 $navigationListItemAccentBorderWidth;
+                padding-left:  $tmpPadding;
+                border-width: $navigationListItemBorderWidth;
             }
             border-style: solid;
 
@@ -419,10 +438,10 @@
         }
 
         /* Collapse or expand icon color should not change on hover*/
-        a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon:hover ,
-        a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-collapse-icon,
-        a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon:hover ,
-        a.oj-component-icon.oj-clickable-icon-nocontext.oj-navigationlist-expand-icon {
+        .oj-navigationlist-item.oj-hover a.oj-navigationlist-collapse-icon ,
+        .oj-navigationlist-item a.oj-navigationlist-collapse-icon,
+        .oj-navigationlist-item.oj-hover a.oj-navigationlist-expand-icon,
+        .oj-navigationlist-item a.oj-navigationlist-expand-icon {
             color: $navigationListCollapsibleIconColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
@@ -434,9 +453,54 @@
         .oj-navigationlist-expand-icon:focus {
             outline: none;
         }
+        
+        .oj-navigationlist-focused-element:not(.oj-focus-highlight) {
+          outline: none;// avoid native browser ring on focus
+        }
 
         /* End of Collapsible Navigation list*/
 
+        //Add border with radius for page level items
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
+        {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  $navigationListItemStartEndPadding; 
+            }@else {
+                $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth})
+            }
+            // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
+            @include oj-rtl() {
+                padding-right: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth);
+            }
+            @include oj-ltr() {
+                padding-left: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth);
+            }
+            border-style: solid;
+            border-radius: 0;
+            border-color: $navigationListPageLevelItemBorderColor;
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
+
+            // need to override both ltr and rtl as it was overriden above for border-width.
+            @include oj-rtl() {
+                border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+            }
+            @include oj-ltr() {
+                border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+            }
+            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+        }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
+            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+        }
 
         /*Start of icons only navlist*/
 
@@ -473,74 +537,88 @@
             .oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item
             {
                 @include oj-rtl() {
-                    border-width: 0 $navigationListItemAccentBorderWidth 0 0;
+                    border-width: oj-shorthand-property-value-top($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-left($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-right($navigationListIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-width: 0 0 0 $navigationListItemAccentBorderWidth;
+                    border-width: $navigationListIconOnlyItemBorderWidth;
                 }
                 border-style: solid;
             }
 
             .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
             {
+                $tmpPadding: 0; //Need to define out side if to pass ruby sass build
+                $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListIconOnlyItemBorderWidth);
+                @if $tmpItemBorderWidth == 0 {
+                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding; 
+                }@else {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpItemBorderWidth})
+                }
+              
                 @include oj-rtl() {
-                    padding: 0 calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$navigationListItemAccentBorderWidth}) 0 $navigationListIconOnlyIconStartEndPadding;
+                    padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
                 }
 
                 @include oj-ltr() {
-                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$navigationListItemAccentBorderWidth});
+                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 $tmpPadding;
                 }
             }
             .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
             {
-                $tmpSelectionBorder: oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth);
-                @if $tmpSelectionBorder == 0 {
-                    $tmpSelectionBorder: 0px; // Need to append px otherwise calc function is not working on chrome.
+                $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth);
+                @if $tmpSelectionBorderWidth == 0 {
+                    $tmpPadding:  $navigationListIconOnlyIconStartEndPadding; 
+                }@else {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpSelectionBorderWidth})
                 }
-
+                
                 @include oj-rtl() {
-                    padding: 0 calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpSelectionBorder}) 0 $navigationListIconOnlyIconStartEndPadding;
+                    padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
                 }
 
                 @include oj-ltr() {
-                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpSelectionBorder});
+                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 $tmpPadding;
                 }
             }
-            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item,
-            .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
+            
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item
             {
                 // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
                 @include oj-rtl() {
-                    border-width: 0 oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-right($navigationListPageLevelIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-width: 0 oj-shorthand-property-value-right($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelItemBorderWidth) oj-shorthand-property-value-left($navigationListPageLevelItemBorderWidth);
+                    border-width: 0 oj-shorthand-property-value-right($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListPageLevelIconOnlyItemBorderWidth) oj-shorthand-property-value-left($navigationListPageLevelIconOnlyItemBorderWidth);
                 }
                 border-style: solid;
                 border-radius: 0;
                 border-color: $navigationListPageLevelItemBorderColor;
             }
 
-            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type,
-            .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
 
                 // need to override both ltr and rtl as it was overriden above for border-width.
                 @include oj-rtl() {
-                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelIconOnlyItemBorderWidth);
                 }
                 @include oj-ltr() {
-                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelItemBorderWidth);
+                    border-top-width: oj-shorthand-property-value-top($navigationListPageLevelIconOnlyItemBorderWidth);
                 }
                 border-top-left-radius: $navigationListPageLevelItemBorderRadius;
                 border-top-right-radius: $navigationListPageLevelItemBorderRadius;
             }
 
-            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type,
-            .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type{
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
                 border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
                 border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
             }
+            
+            .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
+                background-color: $navigationListPageLevelItemBgColorSelected;
+            }
         }
+        
 
         .oj-navigationlist-icon-only .oj-navigationlist-item-content {
             @include oj-justify-content-property(center);
@@ -563,12 +641,15 @@
         /* Start of Page Level navlist styles*/
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
-            background-color: $navigationListPageLevelItemBgColorSelected;
             border-color: $navigationListPageLevelItemBorderColorSelected;
+        }
+        
+         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
+            background-color: $navigationListPageLevelItemBgColorSelected;
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemTextColorDefault;
+            color: $navigationListPageLevelItemLabelColorDefault;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorDefault;
             }
@@ -581,34 +662,36 @@
             }
         }
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemTextColorSelected;
+            color: $navigationListPageLevelItemLabelColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
             }
             font-weight: $navigationListPageLevelItemFontWeightSelected;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
             }
         }
+        
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
             }
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
+          color: $navigationListItemIconColorHover;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
             }
         }
         // bg and border colors for hover or active  are same.
-        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active:not(.oj-selected){
             background-color: $navigationListPageLevelItemBgColorActive;
             @if $navigationListPageLevelItemBgColorActive != null {
@@ -809,6 +892,9 @@
                 border-width: $navigationBarItemBorderWidth;
                 border-style: solid;
             }
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
+                background-color: $navigationBarPageLevelItemBgColorSelected;
+            }
         }
         /*End of  horizontal navigationlist styles icons only*/
 
@@ -887,35 +973,32 @@
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationBarItemLabelColorDefault;
         }
-        .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-disabled) .oj-navigationlist-item-icon
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
             color: $navigationBarItemIconColorDefault;
         }
-        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
-            color: $navigationListItemLabelColorSelected;
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
+            color: $navigationBarItemLabelColorSelected;
         }
-        .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorSelected;
+            color: $navigationBarItemIconColorSelected;
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected){
             background-color: transparent;
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
-        .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
 
         /* End of App Level navbar styles */
 
         /* Start of Page Level navbar styles*/
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
-            border-width: $navigationBarPageLevelIconOnlyItemBorderWidth;
-        }
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item,
+        //Add border to horizontal list item
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
           border-radius: 0;
           border-width: $navigationBarPageLevelItemBorderWidth;
@@ -930,9 +1013,8 @@
           }
           border-color: $navigationListPageLevelItemBorderColor;
         }
-
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type,
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type{
+        
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
 
           @include oj-ltr() {
             border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
@@ -942,6 +1024,36 @@
 
           @include oj-rtl() {
             border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelItemBorderWidth);
+            border-top-right-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
+          }
+        }
+        //Add border to icon only horizontal list item
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+          border-radius: 0;
+          border-width: $navigationBarPageLevelIconOnlyItemBorderWidth;
+          @include oj-ltr() {
+            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
+            border-left-width: 0;
+          }
+
+          @include oj-rtl() {
+            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
+            border-right-width:0;
+          }
+          border-color: $navigationListPageLevelItemBorderColor;
+        }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
+
+          @include oj-ltr() {
+            border-left-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
+            border-top-left-radius: $navigationListPageLevelItemBorderRadius;
+            border-bottom-left-radius: $navigationListPageLevelItemBorderRadius;
+          }
+
+          @include oj-rtl() {
+            border-right-width: oj-shorthand-property-value-left($navigationBarPageLevelIconOnlyItemBorderWidth);
             border-top-right-radius: $navigationListPageLevelItemBorderRadius;
             border-bottom-right-radius: $navigationListPageLevelItemBorderRadius;
           }
@@ -966,40 +1078,40 @@
             border-color:  $navigationListPageLevelItemBorderColorSelected;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
-            background-color: $navigationListPageLevelItemBgColorSelected;
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
+            background-color: $navigationBarPageLevelItemBgColorSelected;
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
-            color: $navigationListPageLevelItemTextColorDefault;
+            color: $navigationListPageLevelItemLabelColorDefault;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-disabled) .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorDefault;
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label{
-            color: $navigationListPageLevelItemTextColorSelected;
+            color: $navigationBarPageLevelItemLabelColorSelected;
             font-weight: $navigationListPageLevelItemFontWeightSelected;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
-            color: $navigationListPageLevelItemIconColorSelected;
+            color: $navigationBarPageLevelItemIconColorSelected;
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active:not(.oj-selected){
             background-color: $navigationListPageLevelItemBgColorActive;
         }
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active:not(.oj-selected) {
             border-color: $navigationListPageLevelItemBorderColorActive;
         }
@@ -1084,7 +1196,6 @@
         .oj-navigationlist-current-header {
             @include oj-flex-property(1 1 auto);
             @include oj-order-property(1);
-            font-weight: bold;
             text-align: center;
             text-overflow: ellipsis;
             overflow:hidden;
@@ -1208,19 +1319,14 @@
             margin-left: 4px;
             margin-right: 2px;
         }
+        
         .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
-            position: initial;
-            @include oj-transform-property (initial);
-        }
-        //Flip the image for rtl mode
-        html:not([dir="ltr"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
-            @include oj-transform-property (rotate(270deg));
+            position: static;
+            @include oj-transform-property (none);
         }
         /* end - override menu css*/
 
-        // on touch screen, selecetd will get higher preference
-        .oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon,
-        .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+        .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             color: $navigationListIconOnlyIconColorSelected;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorSelected;
@@ -1233,7 +1339,13 @@
 
         .oj-menu-item-icon.oj-navigationlist-level-indicator {
             border-bottom: 1px solid $menuBorderColor;
-            border-left: 1px solid $menuBorderColor;
+            @include oj-ltr() {
+              border-left: 1px solid $menuBorderColor;
+            }
+            //Flip the border for rtl mode
+            @include oj-rtl() {
+              border-right: 1px solid $menuBorderColor;
+            }
         }
         /* Override  default options*/
         $navigationListDefaultOptions: ();

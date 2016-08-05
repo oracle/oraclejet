@@ -630,6 +630,10 @@ dvt.Context = function(container, id, referenceDiv) {
 
   this._dndEventManagers = [];
 
+  this._defaultFontFamily = dvt.Context._DEFAULT_FONT_FAMILY;
+  this._defaultFontSize = dvt.Context._DEFAULT_FONT_SIZE;
+  this._normalizedFontFamilyCache = {};
+
   this.Init(this._implFactory, this._root, id);
 
   // Add the stage element
@@ -651,12 +655,7 @@ dvt.Context._DATATIP_POPUP_STYLE_CLASS = 'OraDVTDatatipPopup';
 dvt.Context._TOOLTIP_POPUP_STYLE_CLASS = 'OraDVTTooltipPopup';
 
 /** @private @const */
-dvt.Context._DEFAULT_FONT_FAMILY = '\'Helvetica Neue\', Helvetica, Arial, sans-serif';
-
-/** @private */
-dvt.Context._DEFAULT_FONT_FAMILIES = {'\'Helvetica Neue\', Helvetica, Arial, sans-serif': true,
-  '"Helvetica Neue", Helvetica, Arial, sans-serif': true,
-  '"Helvetica Neue",Helvetica,Arial,sans-serif': true};
+dvt.Context._DEFAULT_FONT_FAMILY = "'Helvetica Neue',Helvetica,Arial,sans-serif";
 
 /** @private @const */
 dvt.Context._DEFAULT_FONT_SIZE = '12px';
@@ -696,16 +695,30 @@ dvt.Context.prototype.Init = function(implFactory, root, id) {
  * @return {string}
  */
 dvt.Context.prototype.getDefaultFontFamily = function() {
-  return dvt.Context._DEFAULT_FONT_FAMILY;
+  return this._defaultFontFamily;
+};
+
+/**
+ * Sets the default CSS font family that is applied to the stage. This method should be called before
+ * the component is rendered to ensure the component checks its font family against the correct default font family.
+ * @param {string} fontFamily The default font family
+ */
+dvt.Context.prototype.setDefaultFontFamily = function(fontFamily) {
+  if (fontFamily) {
+    this._defaultFontFamily = this._normalizeFontFamily(fontFamily);
+    dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-family', this.getDefaultFontFamily());
+  }
 };
 
 /**
  * Returns true if the specified fontFamily is equal to the default (or one of its syntactic equivalents)
- * @param {string} fontFamily
+ * @param {string} fontFamily The font family to compare
  * @return {boolean} true if the fontFamily is the default, false otherwise
  */
 dvt.Context.prototype.isDefaultFontFamily = function(fontFamily) {
-  return dvt.Context._DEFAULT_FONT_FAMILIES[fontFamily] == true;
+  if (fontFamily)
+    return this._defaultFontFamily === this._normalizeFontFamily(fontFamily);
+  return false;
 };
 
 /**
@@ -713,7 +726,38 @@ dvt.Context.prototype.isDefaultFontFamily = function(fontFamily) {
  * @return {string}
  */
 dvt.Context.prototype.getDefaultFontSize = function() {
-  return dvt.Context._DEFAULT_FONT_SIZE;
+  return this._defaultFontSize;
+};
+
+/**
+ * Sets the default CSS font size that is applied to the stage. This method should be called before
+ * the component is rendered to ensure the component checks its font size against the correct default font size.
+ * @param {string} fontSize The default font size
+ */
+dvt.Context.prototype.setDefaultFontSize = function(fontSize) {
+  if (fontSize) {
+    this._defaultFontSize = fontSize;
+    dvt.ToolkitUtils.setAttrNullNS(this._stage.getElem(), 'font-size', this.getDefaultFontSize());
+  }
+};
+
+/**
+ * Normalizes a font family string against all possible variations.
+ * @param {string} fontFamily The font family string to normalize
+ * @return {string} The normalized font family string
+ * @private
+ */
+dvt.Context.prototype._normalizeFontFamily = function(fontFamily) {
+  // For example, the following are all equivalent:
+  // 1) 'Helvetica Neue', Helvetica, Arial, sans-serif'
+  // 2) "Helvetica Neue", Helvetica, Arial, sans-serif'
+  // 3) "Helvetica Neue",Helvetica,Arial,sans-serif
+  var normalized = this._normalizedFontFamilyCache[fontFamily];
+  if (!normalized) {
+    normalized = fontFamily.replace(/, /g, ',').replace(/"/g, "'");
+    this._normalizedFontFamilyCache[fontFamily] = normalized;
+  }
+  return normalized;
 };
 
 /**
@@ -1196,6 +1240,21 @@ dvt.Context.prototype.getDatatipStyleClass = function() {
   return this._datatipStyleClass ? this._datatipStyleClass : dvt.Context._DATATIP_POPUP_STYLE_CLASS;
 };
 
+/**
+ * Reset current keyboard focus after focus event
+ * Move to the first component on plain TAB or last component on SHIFT+TAB
+ * @param {object} event the DOM event object
+ */
+dvt.Context.prototype.resetCurrentKeyboardFocus = function(event) {
+  if (!this._keyboardFocusArray || this._keyboardFocusArray.length === 0)
+    return;
+  if (event.keyCode == dvt.KeyboardEvent.TAB && event.shiftKey) {
+    this.setCurrentKeyboardFocus(this._keyboardFocusArray[this._keyboardFocusArray.length - 1]);
+  }
+  else if (event.keyCode == dvt.KeyboardEvent.TAB) {
+    this.setCurrentKeyboardFocus(this._keyboardFocusArray[0]);
+  }
+};
 
 /**
  * Sets an array of keyboard listeners that are connected through tabbing. The context will initially focus on
@@ -1256,8 +1315,9 @@ dvt.Context.prototype.nextKeyboardFocus = function() {
     wrappingDiv._currentObj = currentObj;
     return currentObj;
   }
-  else
+  else {
     return null;
+  }
 };
 
 /**
@@ -1272,8 +1332,9 @@ dvt.Context.prototype.previousKeyboardFocus = function() {
     wrappingDiv._currentObj = currentObj;
     return currentObj;
   }
-  else
+  else {
     return null;
+  }
 };
 
 /**
@@ -1485,7 +1546,7 @@ DvtScheduled._STATE_RUN = 2;
   * @param {number}  val  current value
   * @param {number}  min  minimum value
   * @param {number}  max  maximum value
-  * @type {number}
+  * @return {number}
   */
 DvtScheduled.CalcProgress = function(val, min, max)
 {
@@ -1507,6 +1568,11 @@ DvtScheduled.CalcProgress = function(val, min, max)
 
 
 /**
+  * @param {dvt.Context}  context  platform specific context object
+  * @param {DvtScheduler}  scheduler  scheduler used to run this item
+  * @param {number}  duration  length of time to run item, in seconds
+  * @param {number}  delay  time to delay start of item, in seconds
+  * @param {function}  easing  easing function to use with this item
   * @protected
   */
 DvtScheduled.prototype.Init = function(context, scheduler, duration, delay, easing)
@@ -1529,15 +1595,13 @@ DvtScheduled.prototype.Init = function(context, scheduler, duration, delay, easi
   this._onStartObj = null;
   this._onEnd = null;
   this._onEndObj = null;
-  this._onStep = null;
-  this._onStepObj = null;
 };
 
 
 /**
   * Get the duration of this item, in seconds.
   *
-  * @type {number}
+  * @return {number}
   */
 DvtScheduled.prototype.getDuration = function()
 {
@@ -1559,7 +1623,7 @@ DvtScheduled.prototype.setDuration = function(duration)
 /**
   * Get the delay for the start of this item, in seconds.
   *
-  * @type {number}
+  * @return {number}
   */
 DvtScheduled.prototype.getDelay = function()
 {
@@ -1581,7 +1645,7 @@ DvtScheduled.prototype.setDelay = function(delay)
 /**
   * Get the easing function for this animation.
   *
-  * @type {function}
+  * @return {function}
   */
 DvtScheduled.prototype.getEasing = function()
 {
@@ -1627,7 +1691,7 @@ DvtScheduled.prototype.setOnInit = function(onInit, onInitObj)
   * [0] the function
   * [1] optional reference to object instance on which the function is defined
   *
-  * @type {array}
+  * @return {array}
   */
 DvtScheduled.prototype.getOnInit = function()
 {
@@ -1662,7 +1726,7 @@ DvtScheduled.prototype.setOnStart = function(onStart, onStartObj)
   * [0] the function
   * [1] optional reference to object instance on which the function is defined
   *
-  * @type {array}
+  * @return {array}
   */
 DvtScheduled.prototype.getOnStart = function()
 {
@@ -1697,53 +1761,17 @@ DvtScheduled.prototype.setOnEnd = function(onEnd, onEndObj)
   * [0] the function
   * [1] optional reference to object instance on which the function is defined
   *
-  * @type {array}
+  * @return {array}
   */
 DvtScheduled.prototype.getOnEnd = function()
 {
   return [this._onEnd, this._onEndObj];
 };
 
-
-/**
-  * Set the function to call at each step of this item.
-  *
-  * @param {function}  onStep  function to call at each step of this item
-  * @param {object}  onStepObj  optional reference to object instance on which the
-  *        function is defined
-  */
-DvtScheduled.prototype.setOnStep = function(onStep, onStepObj)
-{
-  this._onStep = onStep;
-  if (onStepObj)
-  {
-    this._onSepObj = onStepObj;
-  }
-  else
-  {
-    this._onStepObj = null;
-  }
-};
-
-
-/**
-  * Get the function to call at each step of this item.
-  * Returns an array of two elements:
-  * [0] the function
-  * [1] optional reference to object instance on which the function is defined
-  *
-  * @type {array}
-  */
-DvtScheduled.prototype.getOnStep = function()
-{
-  return [this._onStep, this._onStepObj];
-};
-
-
 /**
   * Determine if this item is running.
   *
-  * @type {boolean}
+  * @return {boolean}
   */
 DvtScheduled.prototype.isRunning = function()
 {
@@ -1761,7 +1789,7 @@ DvtScheduled.prototype.play = function(bImmediate)
   if (bImmediate)
     this._play();
   else // Play after a quick timeout allowing the browser to render the bulk of the DOM and any subsequent components.
-    dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
+    this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
 };
 
 /**
@@ -1779,6 +1807,8 @@ DvtScheduled.prototype._play = function() {
   // If offscreen, stop the animation immediately and jump to end
   if (this._context.isOffscreen())
     this.stop(true);
+
+  this._animationRequestId = null;
 };
 
 /**
@@ -1789,6 +1819,15 @@ DvtScheduled.prototype._play = function() {
   */
 DvtScheduled.prototype.stop = function(bJumpToEnd)
 {
+  if (this._animationRequestId)
+  {
+    // If animation has been queued, but not started, remove the animation from the queue.
+    // Animation request id will be null after animations have been started.
+    dvt.Context.cancelAnimationFrame(this._animationRequestId);
+    this._animationRequestId = null;
+    return;
+  }
+
   this._scheduler.removeScheduled(this);
   if (bJumpToEnd)
   {
@@ -1797,30 +1836,11 @@ DvtScheduled.prototype.stop = function(bJumpToEnd)
   this.ProcessEnd();
 };
 
-
-/**
-  * Pause this item.
-  */
-DvtScheduled.prototype.pause = function()
-{
-  this._bRunning = false;
-  //this._scheduler.removeScheduled(this);
-};
-
-
-/**
-  * Reset this item.
-  */
-DvtScheduled.prototype.reset = function()
-{
-  this._state = DvtScheduled._STATE_INITIALIZE;
-};
-
-
 /**
   * Process this item for the given timestamp.
   *
   * @param {number}  time  current timestamp, in milliseconds
+  * @return {boolean}
   */
 DvtScheduled.prototype.processTime = function(time)
 {
@@ -1860,7 +1880,7 @@ DvtScheduled.prototype.processTime = function(time)
   * @protected
   * Get the total duration of this item, in seconds.
   *
-  * @type {number}
+  * @return {number}
   */
 DvtScheduled.prototype.GetTotalDuration = function()
 {
@@ -1917,7 +1937,6 @@ DvtScheduled.prototype.ProcessStart = function()
 {
   this._bRunning = true;
   this._progress = 0;
-  this.Start();
   if (this._onStart)
   {
     this._onStart.call(this._onStartObj);
@@ -1946,11 +1965,6 @@ DvtScheduled.prototype.ProcessStep = function(progress)
       prog = this._easing(prog);
     }
     this.Step(prog);
-
-    if (this._onStep)
-    {
-      this._onStep.call(this._onStepObj, prog);
-    }
   }
 };
 
@@ -1966,7 +1980,6 @@ DvtScheduled.prototype.ProcessEnd = function()
   {
     this._bRunning = false;
     this._progress = 1;
-    this.End();
     this._state = DvtScheduled._STATE_BEGIN;
     if (this._onEnd)
     {
@@ -1985,17 +1998,6 @@ DvtScheduled.prototype.Initialize = function()
   //do nothing; subclasses should implement
 };
 
-
-/**
-  * @protected
-  * Start playing this item.
-  */
-DvtScheduled.prototype.Start = function()
-{
-  //do nothing; subclasses should implement
-};
-
-
 /**
   * @protected
   * Step this item.
@@ -2003,16 +2005,6 @@ DvtScheduled.prototype.Start = function()
   * @param {number}  progress  percent progress of this item
   */
 DvtScheduled.prototype.Step = function(progress)
-{
-  //do nothing; subclasses should implement
-};
-
-
-/**
-  * @protected
-  * End this item.
-  */
-DvtScheduled.prototype.End = function()
 {
   //do nothing; subclasses should implement
 };
@@ -2034,6 +2026,7 @@ dvt.Obj.createSubclass(DvtScheduler, dvt.Obj);
 
 
 /**
+  * @param {dvt.Context}  context  platform specific context object
   * @protected
   */
 DvtScheduler.prototype.Init = function(context)
@@ -2057,7 +2050,17 @@ DvtScheduler.prototype.HandleTimer = function()
   }
 
   if (this._scheduledItems.length < 1)
-    this.pause();
+  {
+    if (this._bRunning)
+    {
+      this._bRunning = false;
+      if (this._animationRequestId)
+      {
+        dvt.Context.cancelAnimationFrame(this._animationRequestId);
+      }
+    }
+    this._animationRequestId = null;
+  }
   else
     this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.HandleTimer));
 
@@ -2116,30 +2119,6 @@ DvtScheduler.prototype.play = function()
     this._bRunning = true;
 
     this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.HandleTimer));
-  }
-};
-
-
-/**
-  * Pause the scheduler.
-  */
-DvtScheduler.prototype.pause = function()
-{
-  if (this._bRunning)
-  {
-    this._bRunning = false;
-
-    if (this._animationRequestId)
-      dvt.Context.cancelAnimationFrame(this._animationRequestId);
-
-    for (var i = 0; i < this._scheduledItems.length; i++)
-    {
-      var scheduled = this._scheduledItems[i];
-      if (scheduled.isRunning())
-      {
-        scheduled.pause();
-      }
-    }
   }
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -2689,15 +2668,6 @@ dvt.Playable.prototype.stop = function(bJumpToEnd)
 {
   //subclasses must override
 };
-
-
-/**
-  * Pause this playable.
-  */
-dvt.Playable.prototype.pause = function()
-{
-  //subclasses must override
-};
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing a set of DvtPlayables that are played at the same time.
@@ -2792,12 +2762,12 @@ dvt.ParallelPlayable.prototype.play = function(bImmediate)
     else {
       // Play after a quick timeout allowing the browser to render the bulk of the DOM and any subsequent components.
       this.initialize();
-      dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
+      this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
     }
   }
   else {
     // The onEnd listener should still be called.
-    dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.DoEnd));
+    this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.DoEnd));
   }
 };
 
@@ -2831,6 +2801,7 @@ dvt.ParallelPlayable.prototype._play = function() {
   }
 
   this._bStarted = true;
+  this._animationRequestId = null;
 };
 
 /**
@@ -2838,6 +2809,15 @@ dvt.ParallelPlayable.prototype._play = function() {
   */
 dvt.ParallelPlayable.prototype.stop = function(bJumpToEnd)
 {
+  if (this._animationRequestId)
+  {
+    // If animation has been queued, but not started, remove the animation from the queue.
+    // Animation request id will be null after animations have been started.
+    dvt.Context.cancelAnimationFrame(this._animationRequestId);
+    this.DoEnd();
+    return;
+  }
+
   var playable;
   for (var i = 0; i < this._arPlayables.length; i++)
   {
@@ -2848,23 +2828,6 @@ dvt.ParallelPlayable.prototype.stop = function(bJumpToEnd)
     }
   }
 };
-
-
-/**
-  * @override
-  */
-dvt.ParallelPlayable.prototype.pause = function()
-{
-  for (var i = 0; i < this._arPlayables.length; i++)
-  {
-    var playable = this._arPlayables[i];
-    if (playable instanceof dvt.Playable)
-    {
-      playable.pause();
-    }
-  }
-};
-
 
 /**
   * @protected
@@ -2893,6 +2856,7 @@ dvt.ParallelPlayable.prototype.DoEnd = function()
   {
     this._onEnd.call(this._onEndObj);
   }
+  this._animationRequestId = null;
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -2943,7 +2907,7 @@ dvt.SequentialPlayable.prototype.Init = function(context, arPlayables)
 
 /**
   * Get the list of playables.
-  * @type {Array}
+  * @return {Array}
   */
 dvt.SequentialPlayable.prototype.getPlayables = function()
 {
@@ -2984,12 +2948,12 @@ dvt.SequentialPlayable.prototype.play = function(bImmediate)
     else {
       // Play after a quick timeout allowing the browser to render the bulk of the DOM and any subsequent components.
       this.initialize();
-      dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
+      this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._play));
     }
   }
   else {
     // The onEnd listener should still be called.
-    dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.DoEnd));
+    this._animationRequestId = dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this.DoEnd));
   }
 };
 
@@ -3041,6 +3005,8 @@ dvt.SequentialPlayable.prototype._play = function() {
   // Perform the animation immediately since this is not part of a slow component render operation.
   if (firstPlayable)
     firstPlayable.play(true);
+
+  this._animationRequestId = null;
 };
 
 /**
@@ -3067,6 +3033,15 @@ dvt.SequentialPlayable.prototype.DoSequenceStep = function()
   */
 dvt.SequentialPlayable.prototype.stop = function(bJumpToEnd)
 {
+  if (this._animationRequestId)
+  {
+    // If animation has been queued, but not started, remove the animation from the queue.
+    // Animation request id will be null after animations have been started.
+    dvt.Context.cancelAnimationFrame(this._animationRequestId);
+    this.DoEnd();
+    return;
+  }
+
   if (this._arPlayables)
   {
     var playable;
@@ -3081,23 +3056,6 @@ dvt.SequentialPlayable.prototype.stop = function(bJumpToEnd)
   }
 };
 
-
-/**
-  * @override
-  */
-dvt.SequentialPlayable.prototype.pause = function()
-{
-  if (this._arPlayables)
-  {
-    var playable = this._arPlayables[this._currIndex];
-    if (playable instanceof dvt.Playable)
-    {
-      playable.pause();
-    }
-  }
-};
-
-
 /**
   * @protected
   * Called after the last playable has finished.
@@ -3108,6 +3066,7 @@ dvt.SequentialPlayable.prototype.DoEnd = function()
   {
     this._onEnd.call(this._onEndObj);
   }
+  this._animationRequestId = null;
 };
 /**
  * Animation handler for black box animations.
@@ -4971,16 +4930,6 @@ dvt.BaseAnimation.prototype.stop = function(bJumpToEnd)
 {
   if (this._animator)
     this._animator.stop(bJumpToEnd);
-};
-
-
-/**
-  * @override
-  */
-dvt.BaseAnimation.prototype.pause = function()
-{
-  if (this._animator)
-    this._animator.pause();
 };
 
 /**
@@ -7674,28 +7623,17 @@ dvt.ColorUtils._getChannel = function(c, chan)
 };
 
 
-/*-------------------------------------------------------------------------*/
-/*   getDarker()                                                           */
-/*-------------------------------------------------------------------------*/
 /**
   * Returns the specified color made darker by the specified percentage.
-  * <p>
-  * Example:<br><br><code>
-  * // create a color darkened by 25%).
-  *  var darker = dvt.ColorUtils.getDarker("rgba(220,128,49)", 0.25) ;<br>
-  *  </code>
-  * @param {String} color   A color specification.
+  * @param {string} color   A color specification.
   * @param {number} factor  An optional percentage by which each color component is to be
-  *                         darkened (1 returns unchanged) specified as a decimal
+  *                         darkened (0 returns unchanged) specified as a decimal
   *                         (e.g. 25% = 0.25).  If omitted, a default percentage of
   *                         15% (i.e 0.15) is applied.
-  * @type {String}
-  * @return A darkened color specification in RGBA format.
+  * @return {string} A darkened color specification in RGBA format.
   */
 dvt.ColorUtils.getDarker = function(color, factor)
 {
-  //TDO
-
   var r = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._RED);
   var g = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._GREEN);
   var b = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._BLUE);
@@ -7705,11 +7643,37 @@ dvt.ColorUtils.getDarker = function(color, factor)
     factor = dvt.ColorUtils._FACTOR;    // use default factor
   }
 
-  r = Math.max(parseInt(r * factor), 0);
-  g = Math.max(parseInt(g * factor), 0);
-  b = Math.max(parseInt(b * factor), 0);
+  r = Math.max(parseInt(r * (1 - factor)), 0);
+  g = Math.max(parseInt(g * (1 - factor)), 0);
+  b = Math.max(parseInt(b * (1 - factor)), 0);
 
   return dvt.ColorUtils.makeRGBA(r, g, b, a);
+};
+
+/**
+  * Returns a brighter color using the supplied color based on a percentage factor.
+  * @param {string} color  A color specification.
+  * @param {number} factor An optional percentage by which the color is to be brightened (0 returns unchanged)
+  *                        specified as a decimal (e.g., 25% = 0.25).  If omitted, the default percentage of
+  *                        15% (i.e., 0.15) is applied.
+  * @return {string} A brightened color specification in RGBA format.
+  */
+dvt.ColorUtils.getBrighter = function(color, factor)
+{
+  var a = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._ALPHA);
+  var r = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._RED);
+  var g = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._GREEN);
+  var b = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._BLUE);
+
+  if (! factor) {
+    factor = dvt.ColorUtils._FACTOR;    // use default factor
+  }
+
+  var gR = Math.min(r + parseInt((255 - r) * factor), 255);
+  var gG = Math.min(g + parseInt((255 - g) * factor), 255);
+  var gB = Math.min(b + parseInt((255 - b) * factor), 255);
+
+  return dvt.ColorUtils.makeRGBA(gR, gG, gB, a);
 };
 
 
@@ -8134,59 +8098,6 @@ dvt.ColorUtils.setRGB = function(s, r, g, b)
 
 
 /**
-  * Returns a brighter color of the supplied color based on a percentage factor.
-  * @param {String} color   A color specification.
-  * @param {number} factor  An optional percentage by which the color is to be brightened
-  *                         lightened (1 returns unchanged) specified as a decimal
-  *                         (e.g. 25% = 0.25).  If omitted, a default percentage of
-  *                         15% (i.e 0.15) is applied.
-  * @type {String}
-  * @return  A new color string brightened by the factor <code>uint</code> containing the new color value.
-  */
-dvt.ColorUtils.getBrighter = function(color, factor)
-{
-  var r = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._RED);
-  var g = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._GREEN);
-  var b = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._BLUE);
-  var a = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._ALPHA);
-
-  if (! factor) {
-    factor = dvt.ColorUtils._FACTOR;    // use default factor
-  }
-
-  // From 2D group:
-  // 1. black.brighter() should return grey
-  // 2. applying brighter to blue will always return blue, brighter
-  // 3. non pure color (non zero rgb) will eventually return white
-
-  var i = parseInt(1.0 / (1.0 - factor));
-  if (r === 0 && g === 0 && b === 0) {
-    //if factor=.5, then this only creates a color of rgb(2,2,2),
-    //which is still black, so instead, just use the factor times white
-    //return dvt.ColorUtils.makeRGBA(i, i, i, a);
-    var newI = parseInt(255 * factor);
-    return dvt.ColorUtils.makeRGBA(newI, newI, newI, a);
-  }
-
-  if (r > 0 && r < i) {
-    r = i;
-  }
-  if (g > 0 && g < i) {
-    g = i;
-  }
-  if (b > 0 && b < i) {
-    b = i;
-  }
-
-  r = Math.min(parseInt(r / factor), 255);
-  g = Math.min(parseInt(g / factor), 255);
-  b = Math.min(parseInt(b / factor), 255);
-
-  return dvt.ColorUtils.makeRGBA(r, g, b, a);
-};
-
-
-/**
  * Returns the hsl values for a color with the given rgb.
  * @param {number} r The r value, on a scale from 0 to 255
  * @param {number} g The g value, on a scale from 0 to 255
@@ -8393,34 +8304,6 @@ dvt.ColorUtils.rgb2hsv = function(red, grn, blu)
 
 
 /**
-  * Returns a pastel color using the supplied color based on a ratio.
-  *
-  *
-  * @param (String) color  A color specification.
-  * @param (number) factor An optional percentage by which to apply the pastel effect (0 returns unchanged)
-  *                        specified as a decimal (e.g., 25% = 0.25).  If omitted, the default percentage of
-  *                        15% (i.e., 0.15) is applied.
-  *
-  * @return A <code>uint</code> containing the new color value.
-  */
-dvt.ColorUtils.getPastel = function(color, factor)
-{
-  // TDO
-  var a = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._ALPHA);
-  var r = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._RED);
-  var g = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._GREEN);
-  var b = dvt.ColorUtils._getChannel(color, dvt.ColorUtils._BLUE);
-
-  var gR = Math.min(r + parseInt((255 - r) * factor), 255);
-  var gG = Math.min(g + parseInt((255 - g) * factor), 255);
-  var gB = Math.min(b + parseInt((255 - b) * factor), 255);
-
-  return dvt.ColorUtils.makeRGBA(gR, gG, gB, a);
-
-};
-
-
-/**
  * Returns a color whose lightness has been adjusted by the specified amount.
  * @param {string} color The original color.
  * @param {number} dh The change in hue.
@@ -8465,7 +8348,6 @@ dvt.ColorUtils.adjustHSL = function(color, dh, ds, dl)
   dvt.ColorUtils._hslCache.put(key, ret);
   return ret;
 };
-
 
 /**
   * Interpolate a color between the original and destination values for the
@@ -12510,7 +12392,7 @@ dvt.JsonUtils.clone = function(obj, keyFunc, noClone) {
     // Loop through and copy the Array
     for (var i = 0; i < obj.length; i++) {
       if (dvt.JsonUtils._isDeepClonable(obj[i])) // deep clone objects
-        ret[i] = dvt.JsonUtils.clone(obj[i], keyFunc);
+        ret[i] = dvt.JsonUtils.clone(obj[i], keyFunc, noClone);
       else // copy values
         ret[i] = obj[i];
     }
@@ -16370,9 +16252,9 @@ dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
   if (shapeType != dvt.SimpleMarker.HUMAN)
   {
     arRatios = [0.0, 0.5, 0.75, 1];
-    var c0 = dvt.ColorUtils.getPastel(color, 0.20);
-    var c1 = dvt.ColorUtils.getPastel(color, 0.10);
-    var c2 = dvt.ColorUtils.getDarker(color, 0.8);
+    var c0 = dvt.ColorUtils.getBrighter(color, 0.20);
+    var c1 = dvt.ColorUtils.getBrighter(color, 0.10);
+    var c2 = dvt.ColorUtils.getDarker(color, 0.2);
 
     var radius = size / 2.0;
     var cx = center.x;
@@ -16384,9 +16266,9 @@ dvt.MarkerGradient.createMarkerGradient = function(color, marker, opacity)
   } else
   {
     arRatios = [0.0, 0.3, 0.7, 1];
-    var c0 = dvt.ColorUtils.getPastel(color, 0.20);
-    var c1 = dvt.ColorUtils.getDarker(color, 0.9);
-    var c2 = dvt.ColorUtils.getDarker(color, 0.8);
+    var c0 = dvt.ColorUtils.getBrighter(color, 0.20);
+    var c1 = dvt.ColorUtils.getDarker(color, 0.1);
+    var c2 = dvt.ColorUtils.getDarker(color, 0.2);
     var arColors = [dvt.ColorUtils.getPound(c0), dvt.ColorUtils.getPound(c1), color, dvt.ColorUtils.getPound(c2)];
     var bound = new dvt.Rectangle(-size / 2.0, -size / 2.0, size, size);
     var arBound = [bound.x, bound.y, bound.w, bound.h];
@@ -16661,6 +16543,8 @@ dvt.TextUtils.fitText = function(text, maxWidth, maxHeight, container, minChars)
   // Check if the truncated text can fit
   if (text.getTextString() == '') {
     container.removeChild(text);
+    // If removing text from DOM bc it doesn't fit, reset the original text
+    text.setTextString(untruncatedTextString);
     return false;
   }
   else {
@@ -17469,7 +17353,12 @@ dvt.Displayable.prototype.ConvertCoordSpaceRect = function(rect, targetCoordinat
   var targetP1 = targetCoordinateSpace.stageToLocal(stageP1);
   var targetP2 = targetCoordinateSpace.stageToLocal(stageP2);
 
-  return new dvt.Rectangle(targetP1.x, targetP1.y, targetP2.x - targetP1.x, targetP2.y - targetP1.y);
+  return new dvt.Rectangle(
+      Math.min(targetP1.x, targetP2.x),
+      Math.min(targetP1.y, targetP2.y),
+      Math.abs(targetP2.x - targetP1.x),
+      Math.abs(targetP2.y - targetP1.y)
+  );
 };
 
 
@@ -18585,7 +18474,7 @@ dvt.Displayable.prototype.setClassName = function(className) {
   if (this._className && !className)
     dvt.ToolkitUtils.removeAttrNullNS(this._elem, 'class');
   else if (className)
-    this.SetSvgProperty('class', className);
+    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'class', className);
   this._className = className;
   return this;
 };
@@ -18607,7 +18496,7 @@ dvt.Displayable.prototype.setStyle = function(style) {
   if (this._style && !style)
     dvt.ToolkitUtils.removeAttrNullNS(this._elem, 'style');
   else if (style)
-    this.SetSvgProperty('style', dvt.CSSStyle.cssObjectToString(style));
+    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'style', dvt.CSSStyle.cssObjectToString(style), '');
   this._style = style;
   return this;
 };
@@ -18693,7 +18582,9 @@ dvt.Displayable.prototype.setStroke = function(stroke) {
   //  Stroke type/style
   var st = stroke.getType();
   if (st !== dvt.Stroke.SOLID) {
-    dvt.ToolkitUtils.setAttrNullNS(this._elem, 'stroke-dasharray', stroke.getDash());
+    if (stroke.getDash()) {
+      dvt.ToolkitUtils.setAttrNullNS(this._elem, 'stroke-dasharray', stroke.getDash());
+    }
     if (stroke.getDashOffset()) {
       dvt.ToolkitUtils.setAttrNullNS(this._elem, 'stroke-dashoffset', stroke.getDashOffset());
     }
@@ -19569,6 +19460,21 @@ dvt.Container.prototype.dispatchNativeEvent = function(event) {
 dvt.Container.prototype.UpdateSelectionEffect = function() {
   // Needed for setFill function
 };
+
+/**
+ * Changes the shape to an outline shape format.  Used for legends
+ * markers that represent a hidden state for the associated series risers.
+ * @param {String} fc Border color for hollow shape in format of #aarrggbb
+ * @param {number} strokeWidth Stroke width used for shapes that were transofrmed (optional)
+ */
+dvt.Container.prototype.setHollow = function(fc, strokeWidth) {
+  // Delegate to children
+  for (var i = 0; i < this.getNumChildren(); i++) {
+    var child = this.getChildAt(i);
+    var childColor = child.getFill() ? child.getFill().getColor() : fc;
+    child.setHollow(childColor, strokeWidth);
+  }
+};
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
  * Top level container for all displayables contained within the SVG document.  This class should not be extended.
@@ -19759,7 +19665,9 @@ dvt.Shape.prototype.GetDimensionsWithStroke = function(targetCoordinateSpace) {
 //:
 dvt.Shape.prototype.GetElemDimensionsWithStroke = function() {
   //get the dims for this shape by itself
-  var dims = dvt.Shape.superclass.GetElemDimensionsWithStroke.call(this);
+  var dims = this.getDimensionsSelf && (this.getNumChildren() - this._getInnerShapeCount() == 0) ?
+      this.getDimensionsSelf() : dvt.Shape.superclass.getDimensions.call(this);
+
   //assume that stroke touches every edge of bounding box, so push out
   //every edge by half the stroke width
   var stroke = this.getStroke();
@@ -20004,8 +19912,7 @@ dvt.Shape.prototype.getChildAt = function(obj, idx) {
  * @override
  */
 dvt.Shape.prototype.getChildIndex = function(obj) {
-  var idx = dvt.Shape.superclass.getChildIndex.call(this, obj);
-  return (this.isSelected() || this.isHoverEffectShown()) ? idx + 1 : idx;
+  return dvt.Shape.superclass.getChildIndex.call(this, obj) - this._getInnerShapeCount();
 };
 
 
@@ -21093,18 +21000,22 @@ dvt.Line.prototype._adjustDimensionsForStyle = function() {
 
 /**
  * @override
+ * @param {boolean=} bSkipAdjustDimensions Whether coord adjustment should be skipped as it may cause bad rendering
+ *                                         when pixel hinting is used.
  */
-dvt.Line.prototype.setStyle = function(style) {
-  if (style)
+dvt.Line.prototype.setStyle = function(style, bSkipAdjustDimensions) {
+  if (style && !bSkipAdjustDimensions)
     this._adjustDimensionsForStyle();
   return dvt.Line.superclass.setStyle.call(this, style);
 };
 
 /**
  * @override
+ * @param {boolean=} bSkipAdjustDimensions Whether coord adjustment should be skipped as it may cause bad rendering
+ *                                         when pixel hinting is used.
  */
-dvt.Line.prototype.setClassName = function(className) {
-  if (className)
+dvt.Line.prototype.setClassName = function(className, bSkipAdjustDimensions) {
+  if (className && !bSkipAdjustDimensions)
     this._adjustDimensionsForStyle();
   return dvt.Line.superclass.setClassName.call(this, className);
 };
@@ -21821,6 +21732,17 @@ dvt.SimpleMarker.prototype.copyShape = function() {
  * @override
  */
 dvt.SimpleMarker.prototype.getDimensions = function(targetCoordinateSpace) {
+  return this.getDimensionsSelf(targetCoordinateSpace);
+};
+
+/**
+ * Returns the bounds of the displayable relative to the target coordinate space.  If the target
+ * coordinate space is not specified, returns the bounds relative to this displayable.  This function does not take
+ * into account any child displayables.
+ * @param {dvt.Displayable} targetCoordinateSpace The displayable defining the target coordinate space.
+ * @return {dvt.Rectangle} The bounds of the displayable relative to the target coordinate space.
+ */
+dvt.SimpleMarker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var x = this.getCx() - this.getWidth() / 2;
   var y = this.getCy() - this.getHeight() / 2;
   var bounds = new dvt.Rectangle(x, y, this.getWidth(), this.getHeight());
@@ -22262,6 +22184,20 @@ dvt.ImageMarker.prototype.setStroke = function(stroke) {
   }
   this._borderWidth = width;
   this._borderPath.setStroke(stroke);
+};
+
+/**
+ * @override
+ */
+dvt.ImageMarker.prototype.setHollow = function(fc, strokeWidth) {
+  dvt.ImageMarker.superclass.setHollow.call(this, fc, strokeWidth);
+  var hollow = this.isHollow();
+  if (hollow) {
+    this._imageContainer = this._elem.parentElement;
+    this._imageContainer.removeChild(this._elem);
+  }
+  else if (!hollow && this._imageContainer)
+    this._imageContainer.appendChild(this._elem);
 };
 
 /**
@@ -22783,14 +22719,14 @@ dvt.Rect.prototype.setCornerRadius = function(rx, ry)
   *  <br>
   *  rect.setRect(myRect) ; &nbsp; &nbsp;  where myRect = new dvt.Rectangle(10, 10, 50, 100);<br>
   *
-  *  @param {number} x  The x position of the top left corner of the rectangle.
+  *  @param {number|dvt.Rectangle} x  The x position of the top left corner of the rectangle or an
+  *                                   instance of dvt.Rectangle.
   *  @param {number} y  The y position of the top left corner of the rectangle.
   *  @param {number} w  The width of the rectangle.
   *  @param {number} h  The height of the rectangle.
   */
 dvt.Rect.prototype.setRect = function(x,y,w,h)
 {
-  // TODO  CLEANUP/NECESSARY?
   if (x instanceof dvt.Rectangle) {
     this.setX(x.x).setY(x.y).setWidth(x.w).setHeight(x.h);
   }
@@ -23447,12 +23383,13 @@ dvt.OutputText.prototype.GetSvgDimensions = function() { // TODO  target coord s
   var bbox = dvt.OutputText.superclass.GetSvgDimensions.call(this);
 
   //  - NODE RENDERED INCORRECTLY IN IE9+
-  if (bbox)
+  if (bbox) {
     bbox.y += this._getBaselineTranslation();
 
-  //  - Japanese group label doesn't display in IE11
-  if (!this._isRepresentativeText())
-    bbox.h = dvt.TextUtils.getTextStringHeight(this.getCtx(), this.getCSSStyle());
+    //  - Japanese group label doesn't display in IE11
+    if (!this._isRepresentativeText())
+      bbox.h = dvt.TextUtils.getTextStringHeight(this.getCtx(), this.getCSSStyle());
+  }
 
   return bbox;
 };
@@ -24646,6 +24583,7 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
   // Loop and add each part into the current line.  Create a new line once the current is full.
   var currentLine = this._textInstance;
   var currentString = null;
+  var isInitialSplit = true;
   while (splits.length > 0) {
     // Try adding the next split into the current line.
     var split = splits.pop();
@@ -24654,8 +24592,10 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
     currentLine.setUntruncatedTextString(null);
 
     if (!dvt.TextUtils.fitText(currentLine, maxWidth, Infinity, this, minChars)) {
-      // Text doesn't fit at all, and there's no more space.  Returns true because previous lines had fit.
-      return true;
+      if (isInitialSplit) // First piece of text does not fit at all. Returns false because no part of the text object will fit.
+        return false;
+      else // Subsequent piece of text doesn't fit at all.  Returns true because previous pieces of text had fit.
+        return true;
     }
     else if (currentLine.isTruncated()) {
       // If there's no more space to add lines, we're done
@@ -24696,6 +24636,8 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
     }
     else // Text completely fit, continue using this line
       currentString = newString;
+
+    isInitialSplit = false;
   }
 
   return true;
@@ -25020,7 +24962,7 @@ dvt.Use.prototype.Init = function(context, x, y, target, id) {
   }
 
   this._targetId = targetId;
-  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', '#' + targetId);
+  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', dvt.ToolkitUtils.getUrlPathById(targetId));
   this.setX(x).setY(y);
 };
 
@@ -25853,35 +25795,11 @@ dvt.CSSStyle.prototype.Init = function(style) {
  * @param {String} style inlineStyle
  */
 dvt.CSSStyle.prototype.parseInlineStyle = function(style) {
-  if (style && style.length > 0) {
-    var splits = style.split(';');
-    for (var i = 0; i < splits.length; i++) {
-      var s = splits[i];
-      if (s && s.length > 0) {
-        //find the first colon instead of using String.split because
-        //there may be other colons in the string, for instance in
-        //a fully qualified background-image url (http://some.server.com/...)
-        var colonIndex = s.indexOf(':');
-        if (colonIndex > - 1) {
-          var attrName = dvt.StringUtils.trim(s.substring(0, colonIndex));
-          var attrVal = dvt.StringUtils.trim(s.substring(colonIndex + 1));
-
-          if (attrName && attrName.length > 0 && attrVal && attrVal.length > 0) {
-
-            //inline images with data url
-            if (attrName == dvt.CSSStyle.BACKGROUND_IMAGE && attrVal.indexOf('data:image/') >= 0) {
-              attrVal = attrVal + ';' + splits[i + 1];
-              i++;
-            }
-
-            this.setStyle(attrName, attrVal);
-          }
-        }
-      }
-    }
-  }
+  var cssStyle = this;
+  dvt.CSSStyle._parseStyleString(style, function(attrName, attrVal) {
+    cssStyle.setStyle(attrName, attrVal);
+  });
 };
-
 
 /**
  * Sets the value for a CSS attribute. This function will do all necessary conversion for the value.
@@ -26993,16 +26911,24 @@ dvt.CSSStyle.prototype.setIconUrl = function(url) {
 dvt.CSSStyle.prototype.hashCodeForTextMeasurement = function() {
   // Use a combination of all attrs that affect dimensions calculations.
   var ret = '';
-  if (this.getStyle(dvt.CSSStyle.FONT_FAMILY))
-    ret += this.getStyle(dvt.CSSStyle.FONT_FAMILY);
-  if (this.getStyle(dvt.CSSStyle.FONT_SIZE))
-    ret += this.getStyle(dvt.CSSStyle.FONT_SIZE);
-  if (this.getStyle(dvt.CSSStyle.FONT_STYLE))
-    ret += this.getStyle(dvt.CSSStyle.FONT_STYLE);
-  if (this.getStyle(dvt.CSSStyle.FONT_WEIGHT))
-    ret += this.getStyle(dvt.CSSStyle.FONT_WEIGHT);
-
+  var textProperties = dvt.CSSStyle.getTextMeasurementProperties();
+  for (var index = 0; index < textProperties.length; index++) {
+    if (this.getStyle(textProperties[index])) {
+      ret += this.getStyle(textProperties[index]);
+    }
+  }
   return ret;
+};
+
+/**
+ * Returns array of Text Measurement properties
+ * @return {array} Array of Text Measurement properties
+ */
+dvt.CSSStyle.getTextMeasurementProperties = function() {
+  return [dvt.CSSStyle.FONT_FAMILY,
+          dvt.CSSStyle.FONT_SIZE,
+          dvt.CSSStyle.FONT_STYLE,
+          dvt.CSSStyle.FONT_WEIGHT];
 };
 
 /**
@@ -27030,6 +26956,69 @@ dvt.CSSStyle.cssObjectToString = function(style) {
     });
   }
   return styleString;
+};
+
+/**
+ * Converts a string of CSS properties to style object.
+ * @param {String} style  The style string of CSS properties
+ * @return {object} style object
+ */
+dvt.CSSStyle.cssStringToObject = function(style) {
+  var styleObj = {};
+  dvt.CSSStyle._parseStyleString(style, function(attrName, attrVal) {
+    attrName = dvt.CSSStyle.cssStringToObjectProperty(attrName);
+    styleObj[attrName] = attrVal;
+  });
+  return styleObj;
+};
+
+/**
+ * Translates string representation of style property to object property.
+ * If the style property has hyphen(-), it will be replaced with camel case version of the property
+ * @param {string} property  style property
+ * @return {string} object property
+ */
+dvt.CSSStyle.cssStringToObjectProperty = function(property) {
+  if (property)
+    property = property.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+  return property;
+};
+
+/**
+ * @private
+ * Parses the style string and passes the style attribute name/value to the setter function
+ * @param {String} style The style string to parse
+ * @param {function} func The setter function to set the parsed style attribute name and value.
+ *                        setter function syntax is: func(attrName, attrValue)
+ */
+dvt.CSSStyle._parseStyleString = function(style, func) {
+  if (style && style.length > 0) {
+    var splits = style.split(';');
+    for (var i = 0; i < splits.length; i++) {
+      var s = splits[i];
+      if (s && s.length > 0) {
+        //find the first colon instead of using String.split because
+        //there may be other colons in the string, for instance in
+        //a fully qualified background-image url (http://some.server.com/...)
+        var colonIndex = s.indexOf(':');
+        if (colonIndex > - 1) {
+          var attrName = dvt.StringUtils.trim(s.substring(0, colonIndex));
+          var attrVal = dvt.StringUtils.trim(s.substring(colonIndex + 1));
+
+          if (attrName && attrName.length > 0 && attrVal && attrVal.length > 0) {
+
+            //inline images with data url
+            if (attrName == dvt.CSSStyle.BACKGROUND_IMAGE && attrVal.indexOf('data:image/') >= 0) {
+              attrVal = attrVal + ';' + splits[i + 1];
+              i++;
+            }
+            //pass the attribute name and value to the setter function
+            func(attrName, attrVal);
+          }
+        }
+      }
+    }
+  }
 };
 /**
  * Base class for JSON components.
@@ -30411,6 +30400,11 @@ dvt.Bundle.HIERARCHYVIEWER_PREFIX = 'DvtHierarchyViewerBundle';
  * Prefix
  * @type {string}
 */
+dvt.Bundle.ADF_DIAGRAM_PREFIX = 'DvtAdfDiagramBundle';
+/**
+ * Prefix
+ * @type {string}
+*/
 dvt.Bundle.DIAGRAM_PREFIX = 'DvtDiagramBundle';
 /**
  * Prefix
@@ -33638,6 +33632,7 @@ dvt.EventManager.prototype.ProcessKeyboardEvent = function(event)
   if (event.keyCode == dvt.KeyboardEvent.TAB && currentNavigable) {
     if (currentNavigable.isShowingKeyboardFocusEffect()) {
       // Tabbing out of a component
+      this._bKeyDown = false;
       currentNavigable.hideKeyboardFocusEffect();
       this.ProcessRolloverEvent(event, currentNavigable, false);
 
@@ -37230,13 +37225,16 @@ dvt.HtmlTooltipManager.prototype.positionTip = function(x, y)
       window.innerWidth - 2 * dvt.HtmlTooltipManager._VIEWPORT_BUFFER,
       window.innerHeight - 2 * dvt.HtmlTooltipManager._VIEWPORT_BUFFER);
 
+  if (tooltipWidth > viewportBounds.w - 2 * dvt.HtmlTooltipManager._VIEWPORT_BUFFER) {
+    // Reset width
+    tooltipWidth = viewportBounds.w - 2 * dvt.HtmlTooltipManager._VIEWPORT_BUFFER;
+    tooltip.style.width = tooltipWidth + 'px';
+  }
+
   // X Position
   var tooltipX = x;
-  if (x + tooltipWidth > viewportBounds.x + viewportBounds.w)
-    tooltipX = viewportBounds.x + viewportBounds.w - tooltipWidth;
-  if (tooltipX < viewportBounds.x)
-    tooltipX = viewportBounds.x;
-
+  tooltipX = Math.max(tooltipX, viewportBounds.x + dvt.HtmlTooltipManager._VIEWPORT_BUFFER); // Prevent left overflow
+  tooltipX = Math.min(tooltipX, viewportBounds.x + viewportBounds.w - tooltipWidth - dvt.HtmlTooltipManager._VIEWPORT_BUFFER); // Prevent right overflow
 
   // If page is scrolled, force a width on the tooltip so that it doesn't crunch at the edges. Workaround for browser issue.
   if (Math.abs(viewportBounds.x) > dvt.HtmlTooltipManager._VIEWPORT_BUFFER) {
@@ -37248,10 +37246,8 @@ dvt.HtmlTooltipManager.prototype.positionTip = function(x, y)
 
   // Y Position
   var tooltipY = y;
-  if (y + tooltipHeight > viewportBounds.y + viewportBounds.h)
-    tooltipY = viewportBounds.y + viewportBounds.h - tooltipHeight;
-  if (tooltipY < viewportBounds.y)
-    tooltipY = viewportBounds.y;
+  tooltipY = Math.min(tooltipY, viewportBounds.y + viewportBounds.h - tooltipHeight);// Prevent bottom overflow
+  tooltipY = Math.max(tooltipY, viewportBounds.y);// Prevent top overflow
 
   // Apply the calculated positions
   tooltip.style.left = tooltipX + 'px';
@@ -37359,26 +37355,7 @@ dvt.HtmlKeyboardListenerUtils.getListener = function(useCapture)
  */
 dvt.HtmlKeyboardListenerUtils._bubbleListener = function(event)
 {
-  //: for editable DvtText, ignore events from the HTML textArea
-  if (dvt.HtmlKeyboardListenerUtils._checkIgnoreTarget(event)) {
-    return;
-  }
-
-  var dvtEvent;
-  if (this._currentObj) { // fire to the current listener only
-    dvtEvent = dvt.DomEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
-    this._currentObj.getObj().FireListener(dvtEvent, false);
-  }
-  else if (this._obj && this._obj instanceof Array) { // fire to all listeners
-    var i;
-    var svgObj;
-    var length = this._obj.length;
-    for (i = 0; i < length; i++) {
-      svgObj = this._obj[i];
-      dvtEvent = dvt.DomEventFactory.newEvent(event, svgObj.getObj().getCtx());
-      svgObj.getObj().FireListener(dvtEvent, false);
-    }
-  }
+  dvt.HtmlKeyboardListenerUtils._commonListener.call(this, event, false);
 };
 
 
@@ -37391,6 +37368,20 @@ dvt.HtmlKeyboardListenerUtils._bubbleListener = function(event)
  */
 dvt.HtmlKeyboardListenerUtils._captureListener = function(event)
 {
+  dvt.HtmlKeyboardListenerUtils._commonListener.call(this, event, true);
+};
+
+
+/**
+ * The event listener that is called by the implementation object's bubble and capture phase listeners.
+ * This function will wrap the event and delegate to the real event listeners.
+ * @param {object} event the DOM event object
+ * @param {boolean} useCapture True if the listener is to be used in the event capture phase,
+ *                             false if the listener is to be used in the event bubble phase
+ * @this {object} the platform object actively processing the event object with an event listener
+ * @private
+ */
+dvt.HtmlKeyboardListenerUtils._commonListener = function(event, useCapture) {
   //: for editable DvtText, ignore events from the HTML textArea
   if (dvt.HtmlKeyboardListenerUtils._checkIgnoreTarget(event)) {
     return;
@@ -37398,17 +37389,31 @@ dvt.HtmlKeyboardListenerUtils._captureListener = function(event)
 
   var dvtEvent;
   if (this._currentObj) { // fire to the current listener only
-    dvtEvent = dvt.DomEventFactory.newEvent(event, this._currentObj.getObj().getCtx());
-    this._currentObj.getObj().FireListener(dvtEvent, true);
+    if (event.type == 'focus') {
+      //  - store the focus event until next keyboard event.
+      // On the next keyboard event we can make a decision, if the focus should be reset to the first subcomponent or the last one.
+      // There is no harm in storing the event, if the event was caused by a mouse click.
+      this._focusEvent = event;
+      return;
+    }
+    var ctx = this._currentObj.getCtx();
+    if (this._focusEvent) {
+      ctx.resetCurrentKeyboardFocus(event);
+      dvtEvent = dvt.DomEventFactory.newEvent(this._focusEvent, ctx);
+      this._currentObj.FireListener(dvtEvent, useCapture);
+      this._focusEvent = null;
+    }
+    dvtEvent = dvt.DomEventFactory.newEvent(event, ctx);
+    this._currentObj.FireListener(dvtEvent, useCapture);
   }
-  if (this._obj && this._obj instanceof Array) { // fire to all listeners
+  else if (this._obj && this._obj instanceof Array) { // fire to all listeners
     var i;
     var svgObj;
     var length = this._obj.length;
     for (i = 0; i < length; i++) {
       svgObj = this._obj[i];
-      dvtEvent = dvt.DomEventFactory.newEvent(event, svgObj.getObj().getCtx());
-      svgObj.getObj().FireListener(dvtEvent, true);
+      dvtEvent = dvt.DomEventFactory.newEvent(event, svgObj.getCtx());
+      svgObj.FireListener(dvtEvent, useCapture);
     }
   }
 };
@@ -37918,6 +37923,19 @@ dvt.EventFactory.newTimelineViewportChangeEvent = function(viewportStart, viewpo
 };
 
 /**
+ * @param {number} viewportStart The start value of the viewport.
+ * @param {number} viewportEnd The end value of the viewport.
+ * @param {string} majorAxisScale The scale value of the major axis.
+ * @param {string} minorAxisScale The scale value of the minor axis.
+ * @return {object}
+ **/
+dvt.EventFactory.newGanttViewportChangeEvent = function(viewportStart, viewportEnd, majorAxisScale, minorAxisScale) {
+  var ret = dvt.EventFactory.newTimelineViewportChangeEvent(viewportStart, viewportEnd, minorAxisScale);
+  ret['majorAxisScale'] = majorAxisScale;
+  return ret;
+};
+
+/**
  * @param {string} id The id of the currently isolated node.
  * @return {object}
  */
@@ -38276,16 +38294,25 @@ dvt.ToolkitUtils.roundDecimal = function(value) {
 };
 
 /**
+ * Constructs a URL path based on the ID in the SVG definition.
+ * @param {string} id The ID in the SVG definition.
+ * @return {string} URL path.
+ */
+dvt.ToolkitUtils.getUrlPathById = function(id) {
+  // If <base> is defined on the document, we have to use the full URL.
+  // document.baseURI is not supported in IE, so we have to check if the <base> tag exists in the document.
+  var hasBase = dvt.Agent.isPlatformIE() ? document.querySelector('base') != null : document.URL != document.baseURI;
+  var root = hasBase ? document.URL + '#' : '#';
+  return root + id;
+};
+
+/**
  * Constructs a URL attribute value based on the ID in the SVG definition.
  * @param {string} id The ID in the SVG definition.
  * @return {string} URL attribute value.
  */
 dvt.ToolkitUtils.getUrlById = function(id) {
-  // If <base> is defined on the document, we have to use the full URL.
-  // document.baseURI is not supported in IE, so we have to check if the <base> tag exists in the document.
-  var hasBase = dvt.Agent.isPlatformIE() ? document.querySelector('base') != null : document.URL != document.baseURI;
-  var root = hasBase ? document.URL + '#' : '#';
-  return 'url(' + root + id + ')';
+  return 'url(' + dvt.ToolkitUtils.getUrlPathById(id) + ')';
 };
 
 /**
@@ -38381,6 +38408,12 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'TIME_AM': 'AM',
   'TIME_PM': 'PM',
 
+  'DURATION_DAYS': '{0} days',
+  'DURATION_HOURS': '{0} hours',
+  'ROW_INFO': 'Row {0}',
+  'TASK_INFO': 'Start time is {0}, end time is {1}, duration is {2}',
+  'MILESTONE_INFO': 'Time is {0}',
+
   'INVALID_DATA': 'Invalid data',
   'NO_DATA': 'No data to display',
 
@@ -38410,6 +38443,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
 
   'CHART': 'Chart',
   'DIAGRAM': 'Diagram',
+  'GANTT': 'Gantt',
   'GAUGE': 'Gauge',
   'HIERARCHY_VIEWER': 'Hierarchy Viewer',
   'LEGEND': 'Legend',
@@ -38418,6 +38452,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'SUNBURST': 'Sunburst',
   'TAG_CLOUD': 'Tag Cloud',
   'THEMATIC_MAP': 'Thematic Map',
+  'TIME_AXIS': 'Time Axis',
   'TIMELINE': 'Timeline',
   'TIMELINE_SERIES': 'Series',
   'TREEMAP': 'Treemap'
@@ -39996,6 +40031,8 @@ dvt.exportProperty(dvt.Context.prototype, 'setReadingDirection', dvt.Context.pro
 dvt.exportProperty(dvt.Context.prototype, 'setOverlayAttachedCallback', dvt.Context.prototype.setOverlayAttachedCallback);
 dvt.exportProperty(dvt.Context.prototype, 'setTooltipAttachedCallback', dvt.Context.prototype.setTooltipAttachedCallback);
 dvt.exportProperty(dvt.Context.prototype, 'setTooltipStyleClass', dvt.Context.prototype.setTooltipStyleClass);
+dvt.exportProperty(dvt.Context.prototype, 'setDefaultFontFamily', dvt.Context.prototype.setDefaultFontFamily);
+dvt.exportProperty(dvt.Context.prototype, 'setDefaultFontSize', dvt.Context.prototype.setDefaultFontSize);
 
 dvt.exportProperty(dvt.Dimension.prototype, 'getWidth', dvt.Dimension.prototype.getWidth);
 dvt.exportProperty(dvt.Dimension.prototype, 'getHeight', dvt.Dimension.prototype.getHeight);

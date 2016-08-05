@@ -15,6 +15,7 @@
         font-size: 0.1px; 
         display: block; 
         z-index: $resizableZindex;
+        @include oj-user-select-property(none);
     }
     .oj-resizable-disabled .oj-resizable-handle, 
     .oj-resizable-autohide .oj-resizable-handle { 

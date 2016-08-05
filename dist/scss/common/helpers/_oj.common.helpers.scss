@@ -18,6 +18,21 @@
     }      
   }
 
+  // write out the theme map
+  $themeRootMap: ();
+
+  @if ($themeName != null) {
+      $themeRootMap: map-merge($themeRootMap, (name: $themeName));
+  }
+  @if ($themeTargetPlatform != null) {
+      $themeRootMap: map-merge($themeRootMap, (targetPlatform: $themeTargetPlatform));
+  }
+
+
+  .oj-theme-json {
+      font-family: oj-json-from-map($themeRootMap);
+  }
+
   .oj-helper-hidden-accessible {
     border: 0;
     clip: rect(0 0 0 0);
@@ -127,8 +142,17 @@
   .oj-helper-module-cache {
       position: absolute;
       display: none;
-      width: 0;
-      heiht: 0;
   }
 
+  // focus
+
+  $focusConfig: ();
+
+  @if ($focusHighlightPolicy) {
+      $focusConfig: map-merge($focusConfig, (focusHighlightPolicy: $focusHighlightPolicy));
+  }
+
+  .oj-focus-config {
+    font-family: oj-json-from-map($focusConfig);
+  }
 }

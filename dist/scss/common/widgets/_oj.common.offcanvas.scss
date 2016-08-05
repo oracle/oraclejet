@@ -14,10 +14,11 @@
      * applied to the outer most element of the offcanvas
      */
     .oj-offcanvas-outer-wrapper {
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: hidden;
       position: relative;
       width: 100%;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
     }
 
     /*
@@ -27,6 +28,20 @@
     .oj-offcanvas-inner-push-wrapper {
       position: relative;
       height: 100%;
+    }
+
+    /*
+     * only applied to the page level offcanvas
+     */
+    .oj-offcanvas-page > .oj-offcanvas-open {
+      position: fixed;
+    }
+
+    /*
+     * only applied to the outer wrapper of page level offcanvas
+     */
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-page {
+      overflow-y: visible;
     }
 
     /*
@@ -43,17 +58,37 @@
       @include oj-backface-visibility-property (hidden);
     }
 
+    /*
+     * applied to the outer wrapper when displayMode = pin
+     */
+    .oj-offcanvas-outer-wrapper.oj-offcanvas-pin {
+      @include oj-display-flex-property();
+      @include oj-flex-wrap-property(nowrap);
+    }
+
+    .oj-offcanvas-pin .oj-offcanvas-start {
+      position: relative;
+    }
+
+    /*
+     * Pin transition selector is only applied to the offcanvas in the pin mode.
+     */
+    .oj-offcanvas-pin-transition {
+       min-width: 0;
+       @include oj-transition-property (min-width $animationDurationMedium);
+       @include oj-transition-timing-function-property (ease-in-out);
+       @include oj-backface-visibility-property (hidden);
+    }
 
     // common to all edges
     %oj-offcanvas-edge {
       position: absolute;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       border-radius: 0;
 
       //don't allow user tab into the offcanvas when it's closed.
       display: none;
     }
-
 
     // common to start/end
     %oj-offcanvas-start-end {
@@ -145,12 +180,30 @@
       display: block;
     }
 
+    /* 
+     * Suppress focus ring
+     */
+    .oj-offcanvas-start:focus,
+    .oj-offcanvas-end:focus,
+    .oj-offcanvas-top:focus,
+    .oj-offcanvas-bottom:focus {
+      outline: none;
+    }
+
+    .oj-offcanvas-start.oj-focus-highlight,
+    .oj-offcanvas-end.oj-focus-highlight,
+    .oj-offcanvas-top.oj-focus-highlight,
+    .oj-offcanvas-bottom.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+
+
     /*
      * applied to the offcanvas on the start edge when displayMode is overlay
      */
     .oj-offcanvas-overlay.oj-offcanvas-start {
       //need to set z-index otherwise the start area is covered by the main content
-      z-index: 1;
+      z-index: $offcanvasZindex;
     }
 
     /*

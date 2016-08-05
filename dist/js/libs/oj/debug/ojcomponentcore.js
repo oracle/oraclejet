@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'jqueryui-amd/core', 'jqueryui-amd/widget', 'ojs/ojmessaging'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojmessaging'], function(oj, $)
 {
 /*
 ** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
@@ -21,7 +21,7 @@ oj.Components = {};
 
 /**
  * Sets default options values for JET components.
- * @param {Object} options - property values that will be merged into the values
+ * @param {!Object} options - property values that will be merged into the values
  * that were previously set using this method. The options object is expected to have the format demonstrated
  * by the following example:
  * <pre>
@@ -49,11 +49,27 @@ oj.Components = {};
  */
 oj.Components.setDefaultOptions = function(options)
 {
-  oj.Components._defaultProperties = $.widget.extend(oj.Components._defaultProperties || {}, options);
+  var props = oj.Components._defaultProperties || {};
+  
+  var keys = Object.keys(options);
+  
+  keys.forEach(function(key)
+    {
+      var value = options[key];
+      if (!oj.CollectionUtils.isPlainObject(value))
+      {
+        throw ("Invalid default options");
+      }
+      props[key] = _accumulateValues(props[key]||{}, value, false);
+    }
+  );
+  
+  oj.Components._defaultProperties = props;
 };
 
 /**
- * Retrieves default option values for JET components.
+ * Retrieves default option values for JET components. This method should only be used internally by JET.
+ * @deprecated since version 2.2
  * @return {Object} default option values
  * @see oj.Components.setDefaultOptions
  * @export
@@ -231,6 +247,27 @@ oj.Components.isComponentInitialized = function(jelement, widgetName)
 }
 
 /**
+ * @ignore
+ */
+oj.Components.__getDefaultOptions = function(hierarchyNames)
+{
+  var defaults = {};
+  var allProperties =  oj.Components.getDefaultOptions();
+  
+  for (var i=hierarchyNames.length-1; i>=0; i--)
+  {
+    var name = hierarchyNames[i];
+    var props = allProperties[name];
+    if (props !== undefined)
+    {
+      defaults = _accumulateValues(defaults, props, true);
+    }
+  }
+
+  return defaults;
+}
+
+/**
  * @private
  */
 function _applyToComponents(subtreeRoot, callback)
@@ -277,7 +314,30 @@ function __ojDynamicGetter(callback)
   }
 };
 
-
+/**
+ * @ignore 
+ */
+function _accumulateValues(target, source, valueInArray)
+{ 
+  var keys = Object.keys(source);
+  
+  keys.forEach(function(key)
+    {
+      var holder = target[key] || [];
+      var sourceVal = source[key];
+      if (valueInArray)
+      {
+        holder = holder.concat(sourceVal);
+      }
+      else
+      {
+        holder.push(sourceVal);
+      }
+      target[key] = holder;
+    }
+  );
+  return target;
+}
 
 /**
  * @private
@@ -293,12 +353,388 @@ var _OJ_WIDGET_NAMES_DATA = "oj-component-names";
  * @private
  */
 var _OJ_COMPONENT_NODE_CLASS = "oj-component-initnode";
+
+/**
+ * Key used for storing a reference to the JQuery widget constructor.
+ * @private
+ */
+oj.Components._WIDGET_KEY = "_ojwidget";
+
+/**
+ * Key used for storing a create object containing a Promise that is resolved when the element is upgraded.
+ * @private
+ */
+oj.Components._CREATE_KEY = "_createPromise";
+
+/**
+ * Key used for storing a Promise resolve function within an element's _createPromise object.
+ * @private
+ */
+oj.Components._CREATE_RESOLVE_KEY = "_resolve";
+
+/**
+ * Key used for storing a Promise resolve function within an element's _createPromise object.
+ * @private
+ */
+oj.Components._CREATE_PROMISE_KEY = "_promise";
+
+/**
+ * Map of registered custom element names
+ * @private
+ */
+oj.Components._CUSTOM_ELEMENT_MAP = {};
+
+/**
+ * Map of registered custom element names
+ * @private
+ */
+oj.Components._METADATA_MAP = {};
+
+/**
+ * Registers component metadata merging it with the metadata from its superclass hierarchy as needed.
+ * @param  {string} className       The component classname
+ * @param  {string?} superclassName The component's superclass name
+ * @param  {Object} metadata        The component metadata object
+ * @ignore
+ */
+oj.Components.registerMetadata = function(className, superclassName, metadata) 
+{
+  // Store metadata under element tag name for easy looking up binding
+  var elementName = oj.__AttributeUtils.propertyNameToAttribute(className.toLowerCase());
+  if (superclassName) 
+  {
+    var superName = oj.__AttributeUtils.propertyNameToAttribute(superclassName.toLowerCase());
+    var superMeta = oj.CollectionUtils.copyInto({}, oj.Components.getMetadata(superName), undefined, true);
+    oj.Components._METADATA_MAP[elementName] = oj.CollectionUtils.copyInto(superMeta, metadata, undefined, true);
+  } 
+  else 
+  {
+    oj.Components._METADATA_MAP[elementName] = metadata;
+  }
+};
+
+/**
+ * Returns the metadata object for the given component.
+ * @param  {string} tagName        The component tag name
+ * @return {Object}                The component metadata object
+ * @ignore
+ */
+oj.Components.getMetadata = function(tagName) 
+{
+  return oj.Components._METADATA_MAP[tagName.toLowerCase()];
+};
+
+/**
+ * Registers a component as a custom element.
+ * @param {string} tagName The component tag name
+ * @param {Object} metadata Object containing info like the widget name, whether component has an inner element, 
+ *                             an outer wrapper, or default attributes, and the component metadata.
+ * @ignore
+ */
+oj.Components.register = function(tagName, metadata) 
+{
+  if (tagName && document.registerElement) 
+  {
+    var lowerTagName = tagName.toLowerCase();
+    if (!oj.Components._CUSTOM_ELEMENT_MAP[lowerTagName]) {
+      oj.Components._CUSTOM_ELEMENT_MAP[lowerTagName] = true;
+      var proto = oj.Components._getPrototype(metadata);
+      document.registerElement(lowerTagName, {'prototype': proto});
+    }
+  }
+};
+
+/**
+ * Returns whether a JET component tag has been registered.
+ * @param  {string}  tagName The tag name to look up
+ * @return {boolean} True if the component module has been loaded and registered
+ * @ignore
+ */
+oj.Components.isRegistered = function(tagName) 
+{
+  if (tagName)
+    return oj.Components._CUSTOM_ELEMENT_MAP[tagName.toLowerCase()];
+  return false;
+};
+
+/**
+ * Returns a Promise that is resolved when the custom element's prototype has been upgraded.
+ * @param  {Element}  element The element to check
+ * @return {Promise} The Promise that will be resolved when upgrade is complete
+ * @ignore
+ */
+oj.Components.getCreatePromise = function(element) 
+{
+  var createPromise = element[oj.Components._CREATE_KEY];
+  if (!createPromise) 
+  {
+    createPromise = {};
+    createPromise[oj.Components._CREATE_PROMISE_KEY] = new Promise(function (resolve, reject) {
+      createPromise[oj.Components._CREATE_RESOLVE_KEY] = resolve;
+    });
+    element[oj.Components._CREATE_KEY] = createPromise;
+  }
+  return createPromise[oj.Components._CREATE_PROMISE_KEY];
+};
+
+/**
+ * Returns the prototype for the element.
+ * @private
+ */
+oj.Components._getPrototype = function(metadata) 
+{
+  var proto = Object.create(HTMLElement.prototype);
+
+  // Add properties and methods from metadata
+  var props = metadata['properties'];
+  var methods = metadata['methods'];
+
+  var widgetInfo = metadata['extension'];
+  var widgetName = widgetInfo['_widgetName'];
+
+  oj.Components._addComponentProperties(props, proto);
+  oj.Components._addComponentMethods(methods, proto);
+  oj.Components._addElementMethods(widgetName, props, widgetInfo, proto);
+
+  return proto;
+};
+
+/**
+ * Add component metadata properties to the prototype.
+ * @private
+ */
+oj.Components._addComponentProperties = function(props, proto) 
+{
+  Object.keys(props).forEach(function(prop) {
+    oj.Components._addComponentProperty(prop, props[prop], proto);
+  });
+};
+
+/**
+ * Add a component property to the prototype.
+ * @private
+ */
+oj.Components._addComponentProperty = function(prop, type, proto) 
+{
+  Object.defineProperty(proto, prop, 
+  {
+    'configurable': true,
+    'enumerable': true,
+    'get': function() 
+    {
+      return this[oj.Components._WIDGET_KEY]('option', prop);
+    },
+    'set': function(value) 
+    {
+      // Ignore sets where widget hasn't yet been instantiated, e.g. when
+      // the JET component sets properties during the widget creation
+      if (this[oj.Components._WIDGET_KEY])
+        this[oj.Components._WIDGET_KEY]('option', prop, value);
+    }
+  });
+};
+
+/**
+ * Add component metadata methods to the prototype.
+ * @private
+ */
+oj.Components._addComponentMethods = function(methods, proto) 
+{
+  Object.keys(methods).forEach(function(method) 
+  {
+    var params = methods[method]['params'];
+    // Create argument list for method
+    var args = [];
+    if (params)
+    {
+      params.forEach(function(param) 
+      {
+        var arg = param['name'];
+        if (arg.indexOf('.') === -1)
+          args.push(arg); 
+      });
+    }
+
+    // ok to always return the result of calling the method? can do if check and branch if not
+    var main = "return this._ojwidget('" + method + (args.length > 0 ? ("', " + args.join()) : "'" ) + ");";
+    proto[method] = new Function(args, main);
+  });
+};
+
+/**
+ * Add element methods for custom element lifecycle callbacks and private methods needed for binding.
+ * This method will handle initializing the jQuery constructor with the component options.
+ * @private
+ */
+oj.Components._addElementMethods = function(widgetName, props, widgetInfo, proto) 
+{
+  // Add createdCallback lifecycle listener so bindings can track
+  proto['createdCallback'] = function() 
+  {
+    var createPromise = this[oj.Components._CREATE_KEY];
+    if (createPromise) 
+    {
+      // If the create promise object exists, check to see if it needs to be resolved
+      var resolveFunc = createPromise[oj.Components._CREATE_RESOLVE_KEY];
+      if (resolveFunc) 
+      {
+        resolveFunc();
+        delete this[oj.Components._CREATE_KEY][oj.Components._CREATE_RESOLVE_KEY];
+      }
+    } 
+    else 
+    {
+      // If a create promise has not been created, create it with a resolved promise
+      this[oj.Components._CREATE_KEY] = {};
+      this[oj.Components._CREATE_KEY][oj.Components._CREATE_PROMISE_KEY] = Promise.resolve();
+    }
+  };
+
+  // Add attachedCallback lifecycle listener to initialize jQuery widget with initial options when attached to DOM
+  proto['attachedCallback'] = function() 
+  {
+    // Check to see if the widget has been initialized
+    if (!this[oj.Components._WIDGET_KEY]) 
+    {  
+      var innerTagName = widgetInfo['_innerElement'];
+      var widgetElem = this;
+      // If component widget is bound to an inner child element like <ul> for <oj-list-view>, 
+      // create one only if the application does not provide it.
+      if (innerTagName)
+      {
+        var firstChild = this.firstElementChild;
+        if (firstChild && firstChild.tagName.toLowerCase() === innerTagName)
+        {
+          widgetElem = firstChild;
+        }
+        else
+        {
+          widgetElem = oj.Components._createInnerElem(innerTagName, this, widgetInfo['_defaultAttrs'], widgetInfo['_transferAttrs']);
+        }
+      }
+       
+      // Create initial options object
+      var widgetOptions = widgetInfo['_hasWrapper'] ? {'_wrapper': this} : {};
+      var self = this;
+      var hasExpressions = false;
+      Object.keys(props).forEach(function(prop) 
+      {
+        var attr = oj.__AttributeUtils.propertyNameToAttribute(prop);
+        if (self.hasAttribute(attr)) 
+        {
+          var val = self.getAttribute(attr);
+          var info = oj.__AttributeUtils.getExpressionInfo(val);
+          if (!info.expr) 
+          {
+            widgetOptions[prop] = oj.__AttributeUtils.coerceValue(prop, val, props[prop]['type']);
+          }
+          else 
+          {
+            hasExpressions = true;
+          }
+        }
+      });
+
+      // Set oj-complete style class if no expressions are found to make component visible
+      if (!hasExpressions)
+      {
+        this.classList.add('oj-complete');
+      }
+
+      widgetOptions['optionChange'] = function (event, data)
+      {
+        var params = {
+          'detail': {'value': data['value'], 'previousValue': data['previousValue']}
+        };
+        this.dispatchEvent(new CustomEvent(data['option'] + '-changed', params));
+      }
+
+      // Initialize jQuery object with options and pass element as wrapper if needed
+      $(widgetElem)[widgetName](widgetOptions);
+      this[oj.Components._WIDGET_KEY] = oj.Components.getWidgetConstructor(widgetElem, widgetName);
+    } 
+    else 
+    {
+      oj.Components.subtreeAttached(this);
+    }
+  };
+
+  // Add detatchedCallback lifecycle listener for cleanup
+  proto['detachedCallback'] = function() 
+  {
+    oj.Components.subtreeDetached(this);
+  };
+
+  // Add attributeChangedCallback lifecycle listener so we can fire events to binding
+  proto['attributeChangedCallback'] = function(attr, oldValue, newValue) 
+  {
+    var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
+    var meta = props[prop];
+    // Only deal with element defined attribute changes
+    if (meta) {
+      var params = {
+        'detail': {'attribute': attr, 'value': newValue, 'previousValue': oldValue}
+      };
+      this.dispatchEvent(new CustomEvent('attribute-changed', params));
+
+      var info = oj.__AttributeUtils.getExpressionInfo(newValue);
+      if (!info.expr) 
+      {
+        this[prop] = oj.__AttributeUtils.coerceValue(prop, newValue, meta['type']);
+      }
+    }
+  };
+
+};
+
+/**
+ * Processes additional metadata info like whether the component needs an outer wrapper
+ * @private
+ */
+oj.Components._createInnerElem = function(innerTag, element, defaultAttrs, transferAttrs) 
+{
+  var innerElem = document.createElement(innerTag);
+  element.appendChild(innerElem);
+
+  // Transfer any children
+  var children = [];
+  for (var i = 0; i < element.childNodes.length; i++)
+    children.push(element.childNodes[i]);
+  for (var i = 0; i < children.length; i++)
+    element.appendChild(children[i]);
+
+  // Add default attributes
+  if (defaultAttrs) 
+  {
+    for (var attr in defaultAttrs)
+      innerElem.setAttribute(attr, defaultAttrs[attr]);
+  }
+
+  // Transfer attributes
+  if (transferAttrs) 
+  {
+    transferAttrs.forEach(function(attr) 
+    {
+      if (element.hasAttribute(attr))
+        innerElem.setAttribute(attr, element.getAttribute(attr));
+    });
+  }
+
+  // Transfer any child elements from the custom element to the inner element
+  $(innerElem).append($(element).children());
+
+  return innerElem;
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
 /*jslint browser: true*/
+
+(function() // BaseComponent wrapper function, to keep "private static members" private
+{
 
 /**
  * @private
@@ -315,20 +751,53 @@ $.widget('oj.' + _BASE_COMPONENT,
   options:
   {
     /**
-     * <p>JQ selector identifying the JET Menu that the component should launch as a context menu on right-click, <kbd>Shift-F10</kbd>, <kbd>Press & Hold</kbd>,
+     * <p>There is no restriction on the order in which the JET Menu and the referencing component are initialized.  However, when specifying 
+     * the Menu via the HTML attribute, the referenced DOM element must be in the document at the time that the referencing component is 
+     * initialized.
+     *
+     * @ojfragment contextMenuInitOrderDoc - Decomped to fragment so Tabs, Tree, and MasonryLayout can override the fragment to convey their init order restrictions.
+     * @memberof oj.baseComponent
+     */
+    /**
+     * <p>To help determine whether it's appropriate to cancel the launch or customize the menu, the <code class="prettyprint">beforeOpen</code> 
+     * listener can use component API's to determine which table cell, chart item, etc., is the target of the context menu. See the JSDoc and 
+     * demos of the individual components for details.  Keep in mind that any such logic must work whether the context menu was launched via right-click, 
+     * <kbd>Shift-F10</kbd>, <kbd>Press & Hold</kbd>, or component-specific touch gesture.
+     *
+     * @ojfragment contextMenuTargetDoc - Decomped to fragment so components can override the fragment to convey their specific API's for this.
+     * @memberof oj.baseComponent
+     */
+    /**
+     * <p>Identifies the [JET Menu]{@link oj.ojMenu} that the component should launch as a context menu on right-click, <kbd>Shift-F10</kbd>, <kbd>Press & Hold</kbd>,
      * or component-specific gesture. If specified, the browser's native context menu will be replaced by the specified JET Menu.
+     *
+     * <p>The value can be an HTML element, JQ selector, JQ object, NodeList, or array of elements.  In all cases, the first indicated element is used.
      *
      * <p>To specify a JET context menu on a DOM element that is not a JET component, see the <code class="prettyprint">ojContextMenu</code> binding.
      *
      * <p>To make the page semantically accurate from the outset, applications are encouraged to specify the context menu via the standard
      * HTML5 syntax shown in the below example.  When the component is initialized, the context menu thus specified will be set on the component.
      *
+     * {@ojinclude "name":"contextMenuInitOrderDoc"}
+     *
      * <p>After create time, the <code class="prettyprint">contextMenu</code> option should be set via this API, not by setting the DOM attribute.
+     *
+     * <p>The application can register a listener for the Menu's [beforeOpen]{@link oj.ojMenu#event:beforeOpen} event.  The listener can cancel the 
+     * launch via <code class="prettyprint">event.preventDefault()</code>, or it can customize the menu contents by editing the menu DOM directly, 
+     * and then calling [refresh()]{@link oj.ojMenu#refresh} on the Menu.  
+     *
+     * {@ojinclude "name":"contextMenuTargetDoc"}
+     * 
+     * @ojfragment contextMenuDoc - Decomped to fragment so subclasses can extend the verbiage as needed, by ojinclude'ing this fragment and then adding their own verbiage.
+     * @memberof oj.baseComponent
+     */
+    /**
+     * {@ojinclude "name":"contextMenuDoc"}
      *
      * @expose
      * @memberof oj.baseComponent
      * @instance
-     * @type {Object}
+     * @type {Element|Array.<Element>|string|jQuery|NodeList}
      * @default <code class="prettyprint">null</code>
      *
      * @example <caption>Initialize a JET component with a context menu:</caption>
@@ -452,7 +921,10 @@ $.widget('oj.' + _BASE_COMPONENT,
      * @example <caption>Bind an event listener to the ojoptionchange event</caption>
      * $(".selector").on({
      *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option that changed is: " + data['option']);
+     *       // verify that the component firing the event is a component of interest
+     *       if ($(event.target).is(".mySelector")) {
+     *           window.console.log("option that changed is: " + data['option']);
+     *       }
      *   };
      * });
      *
@@ -475,7 +947,10 @@ $.widget('oj.' + _BASE_COMPONENT,
      * @example <caption>Bind an event listener to the destroy event</caption>
      * $(".selector").on({
      *   'ojdestroy': function (event, data) {
-     *       window.console.log("The DOM node id for the destroyed component is : %s", event.target.id);
+     *       // verify that the component firing the event is a component of interest
+     *       if ($(event.target).is(".mySelector")) {
+     *           window.console.log("The DOM node id for the destroyed component is : %s", event.target.id);
+     *       }
      *   };
      * });
      *
@@ -514,6 +989,10 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _createWidget: function(options, element)
   {
+    // Save wrapper element
+    if (options)
+      this.OuterWrapper = options['_wrapper'];
+
     // There is no need to clone these objects since they are not modified by the _createWidget() in the base class
     this._originalDefaults = this.options || {};
     this._constructorOptions = options || {};
@@ -804,7 +1283,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    *   "element" : element[i],
    *   "attributes" :
    *     {
-   *       attributes[m]["name"] : {"attr": attributes[m]["value"], "prop": $(element[i]).prop(attributes[m]["name"])
+   *       attributes[m]["name"] : {"attr": attributes[m]["value"]
    *     }
    *   }
    * ]
@@ -836,7 +1315,7 @@ $.widget('oj.' + _BASE_COMPONENT,
         // [i.e. required, disabled] so fetch them initially
         var attrName = attr["name"];
 
-        saveAttributes[attrName] = { "attr" : attr["value"], "prop" : $(ele).prop(attrName) };
+        saveAttributes[attrName] = { "attr" : attr["value"] };
       });
 
     });
@@ -1052,16 +1531,18 @@ $.widget('oj.' + _BASE_COMPONENT,
     return (pattern == null) ? key : oj.Translations.applyParameters(pattern.toString(), params);
   },
 
+  // Subclasses should doc their sub-id's in the Sub-ID's section, via the ojsubid tag, not by overriding
+  // and extending this method doc, which should remain general purpose.
   /**
    * <p>Returns the component DOM node indicated by the <code class="prettyprint">locator</code> parameter.
    *
    * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
    * <code class="prettyprint">null</code>, then this method returns the element on which this component was initialized.
    *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
+   * <p>If a non-null <code class="prettyprint">subId</code> is provided but no corresponding node
    * can be located, then this method returns <code class="prettyprint">null</code>.
    *
-   * For more details on subIds, see the <a href="#subids-section">subIds section</a>.
+   * <p>This method is intended for use in test automation only, and should not be used in a production environment.
    *
    * @expose
    * @memberof oj.baseComponent
@@ -1071,12 +1552,12 @@ $.widget('oj.' + _BASE_COMPONENT,
    * property, whose value is a string that identifies a particular DOM node in this component.
    *
    * <p>If this component has (or inherits) any subIds, then they are documented in the
-   * "Sub-ID's" section of this document.
+   * <a href="#subids-section">Sub-ID's</a> section of this document.
    *
-   * <p>Subclasses of this component may support additional fields of the
+   * <p>Some components may support additional fields of the
    * <code class="prettyprint">locator</code> Object, to further specify the desired node.
    *
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
+   * @returns {Element|null} The DOM node located by the 
    * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
    *
    * @example <caption>Get the node for a certain subId:</caption>
@@ -1095,20 +1576,58 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * <p>Returns the subId string for the given child DOM node.  For more details, see
-   * <a href="#getNodeBySubId">getNodeBySubId</a>.
+   * <p>Returns the subId string for the given DOM node in this component.  For details, see
+   * <a href="#getNodeBySubId">getNodeBySubId</a> and the <a href="#subids-section">Sub-ID's</a>
+   * section of this document.
+   * 
+   * <p>This method is intended for use in test automation only, and should not be used in a production environment.
    *
-   * For more details on subIds, see the <a href="#subids-section">subIds section</a>.
+   * @ojfragment getSubIdByNodeDesc
+   * @memberof oj.baseComponent
+   */
+  /**
+   * DOM node in this component
+   * 
+   * @ojfragment getSubIdByNodeNodeParam
+   * @memberof oj.baseComponent
+   */
+  /**
+   * The subId for the DOM node, or <code class="prettyprint">null</code> if none is found.
+   * 
+   * @ojfragment getSubIdByNodeReturn
+   * @memberof oj.baseComponent
+   */
+  /**
+   * Get the subId for a certain DOM node:
+   * 
+   * @ojfragment getSubIdByNodeCaption
+   * @memberof oj.baseComponent
+   */
+  /**
+   * // Foo is ojInputNumber, ojInputDate, etc.
+   * var locator = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
+   * 
+   * @ojfragment getSubIdByNodeExample
+   * @memberof oj.baseComponent
+   */
+
+  // Subclasses that override this method and make it public can ojinclude these fragments as shown, rather 
+  // than copy/paste.  In your copy, remove the at-private, update the memberof, and add at-since.  (The method's doc 
+  // doesn't inherit, since it's marked private, so the fragments are needed.)  While a subclass could technically 
+  // extend the verbiage by adding its own verbiage after the ojinclude, please doc sub-id's in the subid's 
+  // section, not by extending this method doc.
+  /**
+   * {@ojinclude "name":"getSubIdByNodeDesc"}
+   *
    * @expose
    * @memberof oj.baseComponent
    * @instance
    *
-   * @param {!Element} node - child DOM node
-   * @return {Object|null} The locator for the DOM node, or <code class="prettyprint">null</code> when none is found.
-   *
-   * @example <caption>Get the subId for a certain DOM node:</caption>
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var locator = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
+   * @param {!Element} node {@ojinclude "name":"getSubIdByNodeNodeParam"}
+   * @returns {Object|null} {@ojinclude "name":"getSubIdByNodeReturn"}
+   * 
+   * @example <caption>{@ojinclude "name":"getSubIdByNodeCaption"}</caption>
+   * {@ojinclude "name":"getSubIdByNodeExample"}
    *
    * @private
    */
@@ -1128,11 +1647,14 @@ $.widget('oj.' + _BASE_COMPONENT,
     // we need to fire a custom DOM event as well. This will allow component binding to execute destroy callbacks for
     // custom bindings and managed attributes.
     
-    this.element[0].dispatchEvent(new CustomEvent("_ojDestroy", {"bubbles": false}));
+    oj.DomUtils.dispatchEvent(this.element[0], new CustomEvent("_ojDestroy"));
 
     this._super();
 
     this._removeContextMenuBehavior();
+
+    //remove hover and active listeners
+//    this.widget().off(this.eventNamespace);
 
     // clean up states
     this.element.removeClass(_OJ_COMPONENT_NODE_CLASS);
@@ -1406,6 +1928,7 @@ $.widget('oj.' + _BASE_COMPONENT,
     var context = null;
 
     var writeback = false;
+    var readOnly = false;
     var originalEvent = null;
 
     var optionMetadata = null;
@@ -1421,6 +1944,7 @@ $.widget('oj.' + _BASE_COMPONENT,
       {
         originalEvent = context.originalEvent;
         writeback = (context.writeback === undefined) ? originalEvent != null : context.writeback;
+        readOnly = context.readOnly;
         optionMetadata = context.optionMetadata;
         extraData = context.extraData;
       }
@@ -1432,6 +1956,11 @@ $.widget('oj.' + _BASE_COMPONENT,
 
       optionMetadata = optionMetadata || {};
       optionMetadata['writeback'] =  writeback ? "shouldWrite" : "shouldNotWrite";
+      
+      if (readOnly)
+      {
+        optionMetadata['readOnly'] = true;
+      }
 
       var optionChangeData =
       {
@@ -1524,7 +2053,7 @@ $.widget('oj.' + _BASE_COMPONENT,
     if (contextMenu && !('contextMenu' in constructorOptions)) // if app set DOM attr but not option, then set the option from the DOM
     {
       this.option("contextMenu",
-                  "#" + contextMenu,
+                  document.getElementById(contextMenu),
                   {'_context': {internalSet: true}}); // writeback not needed since "not in constructorOptions" means "not bound"
     }
   },
@@ -1596,7 +2125,7 @@ $.widget('oj.' + _BASE_COMPONENT,
         //   classes to share the same instance and not step on each other.  Not insurmountable; just need to have the conversation.
         //   Tracked by ER 21357133, which links to detailed wiki.
 
-        var pressHoldThreshold = 750; // per UX spec.  Point of reference: JQ Mobile uses 750ms by default.
+        var pressHoldThreshold = oj.DomUtils.PRESS_HOLD_THRESHOLD; // launch CM at 750ms per UX spec
         var isPressHold = false; // to prevent pressHold from generating a click
 
         var touchInProgress = false;
@@ -2057,7 +2586,8 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
-   * <p>Removes the <code class="prettyprint">oj-hover</code>, <code class="prettyprint">oj-focus</code>, and 
+   * <p>Removes the <code class="prettyprint">oj-hover</code>, <code class="prettyprint">oj-focus</code>, 
+   * <code class="prettyprint">oj-focus-highlight</code>, and 
    * <code class="prettyprint">oj-active</code> classes from the specified element and its subtree.
    *
    * @memberof oj.baseComponent
@@ -2068,127 +2598,366 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _removeStateClasses: function( element )
   {
-    element.removeClass("oj-hover oj-focus oj-active");
+    element.removeClass("oj-hover oj-focus oj-focus-highlight oj-active");
     element.find( ".oj-hover" ).removeClass( "oj-hover" );
     element.find( ".oj-focus" ).removeClass( "oj-focus" );
+    element.find( ".oj-focus-highlight" ).removeClass( "oj-focus-highlight" );
     element.find( ".oj-active").removeClass( "oj-active" );
   },
 
 
   /**
-   * <p>Sets the <code class="prettyprint">oj-hover</code> class when the element is hovered and removes it when the hover ends.
-   *
-   * <p>Overridden to set the <code class="prettyprint">oj-hover</code> class instead of JQUI's hard-coded 
-   * <code class="prettyprint">ui-</code> class, and eliminate JQUI's caching.
-   * 
-   * <p>Typically the specified element should be within the component subtree, in which case the class will 
-   * automatically be removed from the element when the component is destroyed, when its <code class="prettyprint">disabled</code>
-   * option is set to true, and when <code class="prettyprint">_NotifyDetached()</code> is called.
-   * 
-   * <p>As a minor exception, for components that wrap themselves in a new root node at create time, if the specified 
-   * element is within the root node's subtree but not within the init node's subtree, then at destroy time only, the 
-   * class will not be removed, since <code class="prettyprint">destroy()</code> is expected to remove such nodes.
-   * 
-   * <p>If the element is NOT in the component subtree, then the caller is responsible for removing the class at the 
-   * times listed above.
-   * 
-   * @memberof oj.baseComponent
-   * @instance
-   * @protected
-   *
-   * @param {!jQuery} element The element to receive the <code class="prettyprint">oj-hover</code> class on hover
+   * @private
+   * @return {boolean} true if there is no touch detected within the last 500 ms
    */
-  _hoverable: function( element )
+  _isRealMouseEvent: function(event)
   {
-    // Do NOT call _super(). See JSDoc above.
-    // TBD: if superclass method changes, evaluate whether to uptake their changes.
-    this._on( element, {
-      mouseenter: function( event ) {
-        if (!$( event.currentTarget ).hasClass( "oj-disabled" ))
-        {
-          $( event.currentTarget ).addClass( "oj-hover" );
-        }
-      },
-      mouseleave: function( event ) {
-        $( event.currentTarget ).removeClass( "oj-hover" );
-      }
-    });
+    return ! oj.DomUtils.recentTouchEnd();
   },
 
   /**
-   * <p>Sets the <code class="prettyprint">oj-focus</code> class when the element is focused and removes it when focus is lost.
+   * Add mouse listners to toggle oj-hover class
    *
-   * <p>Overridden to set the <code class="prettyprint">oj-focus</code> class instead of JQUI's hard-coded 
-   * <code class="prettyprint">ui-</code> class, and eliminate JQUI's caching.
-   * 
-   * <p>Typically the specified element should be within the component subtree, in which case the class will 
-   * automatically be removed from the element when the component is destroyed, when its <code class="prettyprint">disabled</code>
-   * option is set to true, and when <code class="prettyprint">_NotifyDetached()</code> is called.
-   * 
-   * <p>As a minor exception, for components that wrap themselves in a new root node at create time, if the specified 
-   * element is within the root node's subtree but not within the init node's subtree, then at destroy time only, the 
-   * class will not be removed, since <code class="prettyprint">destroy()</code> is expected to remove such nodes.
-   * 
-   * <p>If the element is NOT in the component subtree, then the caller is responsible for removing the class at the 
-   * times listed above.
-   * 
    * @memberof oj.baseComponent
    * @instance
    * @protected
-   *
-   * @param {!jQuery} element The element to receive the <code class="prettyprint">oj-focus</code> class on focus
+
+   * @param {(!Object|!jQuery)} options This param can either be the element 
+   * (convenience syntax for callers needing to 
+   *   specify only the element(s) that would 
+   *   otherwise have been passed as <code class="prettyprint">options.element</code>) 
+   *   or an object supporting the following fields:
+   * @param {jQuery} options.element The element(s) to receive the <code class="prettyprint">oj-hover</code> class on hover
+   *   Required if <code class="prettyprint">afterToggle</code> is specified.
+   * @param {?function(string)} options.afterToggle Optional callback function called each time the hover classes have been toggled, 
+   *   after the toggle.  The string "mouseenter" or "mouseleave" is passed, indicating whether the classes were added or removed. 
+   *   Components with consistency requirements, such as "<code class="prettyprint">oj-default</code> must be applied iff no state classes
+   *   such as <code class="prettyprint">oj-hover</code> are applied," can enforce those rules in this callback.
+   * @see #_RemoveHoverable
    */
-  _focusable: function( element )
+  _AddHoverable: function(options)
   {
-    // Do NOT call _super().
-    // TBD: if superclass method changes, evaluate whether to uptake their changes.
-    this._on( element, {
-      focusin: function( event ) {
-	    $( event.currentTarget ).addClass( "oj-focus" );
-	  },
-	  focusout: function( event ) {
-	    $( event.currentTarget ).removeClass( "oj-focus" );
-	  }
-    });
+    var element;
+
+    if ($.isPlainObject(options)) {
+      element = options['element'];
+    }
+    else {
+      element = options;
+      options = {};
+    }
+
+    var afterToggle = options['afterToggle'] || $.noop;
+    var markerClass = "oj-hover";
+
+    element.on("mouseenter" + this.eventNamespace, 
+               this._hoverStartHandler.bind(this, afterToggle))
+           .on("mouseleave" + this.eventNamespace, 
+               this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
   },
 
   /**
-   * <p>Sets the <code class="prettyprint">oj-active</code> class on mousedown and removes it on mouseup.
-   * <code class="prettyprint">oj-active</code> is one of JET's 'marker' style classes. It emulates
-   * the css <code class="prettyprint">:active</code> pseudo-class.
+   * Remove mouse listners that were registered in _AddHoverable
    *
-   * <p>Unlike _hoverable() and _focusable(), this is an original JET method not inherited from JQUI.
-   * (Obviously inspired by those methods.)
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   * @param {!jQuery} element The same element passed to _AddHoverable
+   * @see #_AddHoverable
+   */
+  _RemoveHoverable: function(element)
+  {
+    if (element)
+    {
+      $(element).off("mouseenter" + this.eventNamespace + " " + 
+                     "mouseleave" + this.eventNamespace);
+    }
+  },
+
+  /**
+   * Add touch and mouse listners to toggle oj-active class
    *
-   * <p>Typically the specified element should be within the component subtree, in which case the class will 
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+
+   * @param {(!Object|!jQuery)} options This param can either be the element 
+   * (convenience syntax for callers needing to 
+   *   specify only the element(s) that would 
+   *   otherwise have been passed as <code class="prettyprint">options.element</code>) 
+   *   or an object supporting the following fields:
+   * @param {jQuery} options.element The element(s) to receive the <code class="prettyprint">oj-active</code> class on active
+   *   Required if <code class="prettyprint">afterToggle</code> is specified.
+   * @param {?function(string)} options.afterToggle Optional callback function called each time the active classes have been toggled, 
+   *   after the toggle.  The string "mouseenter" or "mouseleave" is passed, indicating whether the classes were added or removed. 
+   *   Components with consistency requirements, such as "<code class="prettyprint">oj-default</code> must be applied iff no state classes
+   *   such as <code class="prettyprint">oj-active</code> are applied," can enforce those rules in this callback.
+   * @see #_RemoveActiveable
+   */
+  _AddActiveable: function(options)
+  {
+    var element;
+
+    if ($.isPlainObject(options)) {
+      element = options['element'];
+    }
+    else {
+      element = options;
+      options = {};
+    }
+
+    var afterToggle = options['afterToggle'] || $.noop;
+    var markerClass = "oj-active";
+
+    if (oj.DomUtils.isTouchSupported())
+    {
+      element.on("touchstart" + this.eventNamespace,
+                 this._activeStartHandler.bind(this, afterToggle))
+             .on("touchend" + this.eventNamespace + " " + 
+                 "touchcancel" + this.eventNamespace, 
+                 this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+    }
+
+    element.on("mousedown" + this.eventNamespace, 
+                 this._activeStartHandler.bind(this, afterToggle))
+           .on("mouseup" + this.eventNamespace, 
+               this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+  },
+
+  /**
+   * Remove touch and mouse listners that were registered in _AddActiveable
+   *
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   * @param {!jQuery} element The same element passed to _AddActiveable
+   * @see #_AddActiveable
+   */
+  _RemoveActiveable: function(element)
+  {
+    if (element)
+    {
+      $(element).off("touchstart" + this.eventNamespace + " " + 
+                     "touchend" + this.eventNamespace + " " + 
+                     "touchcancel" + this.eventNamespace + " " + 
+                     "mousedown" + this.eventNamespace + " " + 
+                     "mouseup" + this.eventNamespace);
+    }
+  },
+
+  /**
+   * @private
+   */
+  _activeStartHandler: function (afterToggleFunction, event)
+  {
+    // do this for either touchstart or real mouseenter, but not mouse compatibility event
+    var elem = $(event.currentTarget);
+    if (! elem.hasClass("oj-disabled") && (event.type === "touchstart" || this._isRealMouseEvent(event)))
+    {     
+      elem.addClass("oj-active");
+      afterToggleFunction(event.type); 
+    }
+  },
+
+  /**
+   * @private
+   */
+  _hoverStartHandler: function (afterToggleFunction, event)
+  {
+    // do this for real mouseenter, but not mouse compatibility event
+    var elem = $(event.currentTarget);
+    if (! elem.hasClass("oj-disabled") && this._isRealMouseEvent(event))
+    {     
+      elem.addClass("oj-hover");
+      afterToggleFunction(event.type); 
+    }
+  },
+
+  /**
+   * @private
+   */
+  _hoverAndActiveEndHandler: function (markerClass, afterToggleFunction, event)
+  {
+    $(event.currentTarget).removeClass(markerClass);
+    afterToggleFunction(event.type);
+  },
+
+  // The internal JSDoc of the DomUtils version of this API refers to this doc, so if changes are made here, that doc 
+  // must be updated as needed.
+  /**
+   * <p>Sets JET's "focus" CSS classes when the element is focused and removes them when focus is lost.
+   *
+   * <p>The <code class="prettyprint">oj-focus</code> class is set on all focuses.
+   * 
+   * <p>Some components additionally have an <code class="prettyprint">oj-focus-highlight</code> class, which applies a focus 
+   * indicator that is appropriate on a subset of the occasions that <code class="prettyprint">oj-focus</code> is appropriate.  
+   * Those components should pass <code class="prettyprint">true</code> for the <code class="prettyprint">applyHighlight</code> 
+   * param, in which case the <code class="prettyprint">oj-focus-highlight</code> class is set if appropriate given the 
+   * current focus highlight policy. 
+   * 
+   * <h5>Focus highlight policy</h5>
+   * 
+   * <p>The focus highlight policy supports the 3 values listed below.  By default, it is retrieved from the 
+   * <code class="prettyprint">$focusHighlightPolicy</code> SASS variable, shared by many components and patterns.  Components 
+   * with different needs, including those exposing a component-specific SASS variable or other API for this, should see the 
+   * <code class="prettyprint">getFocusHighlightPolicy</code> parameter below.
+   * 
+   * Valid focus highlight policies:
+   * 
+   * <table class="generic-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Policy</th>
+   *       <th>Description</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>"nonPointer"</td>
+   *       <td>Indicates that the component should apply the <code class="prettyprint">oj-focus-highlight</code> 
+   *           class only for focuses not resulting from pointer (touch or mouse) interaction.  (In the built-in themes, the 
+   *           SASS variable defaults to this value.)</td>
+   *     </tr>
+   *     <tr>
+   *       <td>"all"</td>
+   *       <td>Indicates that the component should apply the class for all focuses.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>"none"</td>
+   *       <td>Indicates that the component should never apply the class, because the application has taken responsibility
+   *           for applying the class when needed for accessibility.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   * 
+   * <h5>Toggling the classes</h5>
+   * 
+   * <p>Components that toggle these focus classes outside of this API must maintain the invariant that 
+   * <code class="prettyprint">oj-focus-highlight</code> is applied to a given element in a (not necessarily strict) subset 
+   * of cases that <code class="prettyprint">oj-focus</code> is applied to that element.
+   * 
+   * <p>Typically the specified element should be within the component subtree, in which case the classes will 
    * automatically be removed from the element when the component is destroyed, when its <code class="prettyprint">disabled</code>
    * option is set to true, and when <code class="prettyprint">_NotifyDetached()</code> is called.
    * 
    * <p>As a minor exception, for components that wrap themselves in a new root node at create time, if the specified 
    * element is within the root node's subtree but not within the init node's subtree, then at destroy time only, the 
-   * class will not be removed, since <code class="prettyprint">destroy()</code> is expected to remove such nodes.
+   * classes will not be removed, since <code class="prettyprint">destroy()</code> is expected to remove such nodes.
    * 
-   * <p>If the element is NOT in the component subtree, then the caller is responsible for removing the class at the 
+   * <p>If the element is NOT in the component subtree, then the caller is responsible for removing the classes at the 
    * times listed above.
+   * 
+   * <h5>Listeners</h5>
+   * 
+   * <p>If <code class="prettyprint">setupHandlers</code> is not passed, or if <code class="prettyprint">setupHandlers</code> 
+   * is passed and uses <code class="prettyprint">_on</code> to register its listeners as seen in the example, then 
+   * the listeners are not invoked when the component is disabled, and the listeners are automatically cleaned up when the 
+   * component is destroyed.  Otherwise, the caller is responsible for ensuring that the disabled state is handled correctly, 
+   * and removing the listeners at destroy time.
+   * 
+   * <h5>Related API's</h5>
+   * 
+   * <p>Non-component internal callers should see oj.DomUtils.makeFocusable().  Per its JSDoc (unpublished; see the source), it 
+   * has a couple of additional usage considerations.
    * 
    * @memberof oj.baseComponent
    * @instance
    * @protected
    *
-   * @param {!jQuery} element The element to receive the <code class="prettyprint">oj-active</code> class when pressed
+   * @param {(!Object|!jQuery)} options This param can either be the element (convenience syntax for callers needing to 
+   *   specify only the element(s) that would otherwise have been passed as <code class="prettyprint">options.element</code>) 
+   *   or an object supporting the following fields:
+   * @param {jQuery} options.element The element(s) to receive the <code class="prettyprint">oj-focus</code> classes on focus.
+   *   Required if <code class="prettyprint">setupHandlers</code> not passed; ignored otherwise.
+   * @param {boolean} options.applyHighlight <code class="prettyprint">true</code> if the <code class="prettyprint">oj-focus-highlight</code> 
+   *   class should be applied when appropriate.  <code class="prettyprint">false</code> or omitted if that class should never be applied.
+   * @param {?function(string)} options.afterToggle Optional callback function called each time the focus classes have been toggled, 
+   *   after the toggle.  The 
+   *   string "focusin" or "focusout" is passed, indicating whether the classes were added or removed.  Components 
+   *   with consistency requirements, such as "<code class="prettyprint">oj-default</code> must be applied iff no state classes such 
+   *   as <code class="prettyprint">oj-focus</code> are applied," can enforce those rules in this callback.
+   * @param {?function()} options.getFocusHighlightPolicy Optional if <code class="prettyprint">applyHighlight</code> is 
+   *   <code class="prettyprint">true</code>; ignored otherwise.  Components with a component-specific focus policy 
+   *   mechanism should pass a function that always returns one of the three valid values listed above, keeping in mind 
+   *   that this method can be called on every focus.  See the example.
+   * @param {?function()} options.recentPointer Relevant iff <code class="prettyprint">applyHighlight</code> is 
+   *   <code class="prettyprint">true</code> and the focus highlight policy is <code class="prettyprint">"nonPointer"</code>;
+   *   ignored otherwise.  Recent pointer activity is considered to have occurred if (a) a mouse button or finger has
+   *   recently been down or up, or (b) this optional callback function returns true.  Components wishing to additionally take into 
+   *   account (say) recent pointer <i>movements</i> can supply a function returning true if those movements have been detected, 
+   *   keeping in mind that this method can be called on every focus.  See the example.
+   * @param {?function(function(!jQuery),function(!jQuery))} options.setupHandlers Can be omitted by components whose focus 
+   *   classes need to be added and removed on focusin and focusout, respectively.  Components needing to add/remove those
+   *   classes in response to other events should specify this parameter, which is called once, immediately.  See the examples.
+   * 
+   * @example <caption>Opt into the highlight behavior, and specify a function to be called every time the classes are toggled:</caption>
+   * var self = this;
+   * this._focusable({
+   *     'element': this.element, 
+   *     'applyHighlight': true, 
+   *     'afterToggle' : function() {
+   *         self._toggleDefaultClasses();
+   *     }
+   * });
+   * 
+   * @example <caption>Arrange for mouse movement to be considered <u>in addition to</u> mouse/finger up/down.
+   *   Also supply a component-specific focusHighlightPolicy:</caption>
+   * var self = this;
+   * this._focusable({
+   *     'element': someElement, 
+   *     'applyHighlight': true, 
+   *     'recentPointer' : function() {
+   *         // A timestamp-based approach avoids the risk of getting stuck in an inaccessible 
+   *         // state if (say) mouseenter is not followed by mouseleave for some reason.
+   *         var millisSincePointerMove = Date.now() - _myPointerMoveTimestamp;
+   *         var isRecent = millisSincePointerMove < myThreshold;
+   *         return isRecent;
+   *     },
+   *     'getFocusHighlightPolicy' : function() {
+   *         // Return the value of a component-specific SASS $variable, component option, or other 
+   *         // component-specific mechanism, either "all", "none", or "nonPointer".  SASS variables
+   *         // should be pulled into JS once statically on load, not per-instance or per-focus.
+   *     }
+   * });
+   * 
+   * @example <caption>Add/remove the focus classes in response to events other than focusin/focusout:</caption>
+   * var self = this;
+   * this._focusable({
+   *     'applyHighlight': myBooleanValue, 
+   *     'setupHandlers': function( focusInHandler, focusOutHandler) {
+   *         self._on( self.element, {
+   *             // This example uses focus/blur listeners, which don't bubble, rather than the 
+   *             // default focusin/focusout (which bubble).  This is useful when one focusable  
+   *             // element is a descendant of another.
+   *             focus: function( event ) {
+   *                 focusInHandler($( event.currentTarget ));
+   *             },
+   *             blur: function( event ) {
+   *                 focusOutHandler($( event.currentTarget ));
+   *             }
+   *         });
+   *     }
+   * });
+   * 
+   * @example <caption>Alternate usage of <code class="prettyprint">setupHandlers</code>, which simply stashes the 
+   *   handlers so they can be called from the component's existing handlers:</caption>
+   * var self = this;
+   * this._focusable({
+   *     'applyHighlight': myBooleanValue, 
+   *     'setupHandlers': function( focusInHandler, focusOutHandler) {
+   *         self._focusInHandler = focusInHandler;
+   *         self._focusOutHandler = focusOutHandler;
+   *     }
+   * });
    */
-  _activeable: function( element )
+  _focusable: function( options )
   {
-    this._on( element, {
-      mousedown: function( event )
-      {
-        $( event.currentTarget ).addClass( "oj-active" );
-      },
-      mouseup: function( event )
-      {
-        $( event.currentTarget ).removeClass( "oj-active" );
-      }
-    });
+    if (!$.isPlainObject(options)) {
+        options = {'element': options};
+    }
+    
+    options['component'] = this;
+    oj.DomUtils.makeFocusable(options);
   },
 
   /**
@@ -2202,7 +2971,6 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     if (element) {
       $(element).off(this.eventNamespace);
-
       var bindings = this['bindings'];
       if (bindings) {
         this['bindings'] = $(bindings.not(element));
@@ -2456,8 +3224,6 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     var options = this.options;
 
-    var defaults = {};
-
     var widgetHierNames = [];
 
     // walk up the widget hierarchy
@@ -2472,16 +3238,8 @@ $.widget('oj.' + _BASE_COMPONENT,
     widgetHierNames.push('default');
 
 
-    // merge properties applicable to this component
-    for (var i = widgetHierNames.length-1; i>=0; i--)
-    {
-      var name = widgetHierNames[i];
-      var props = allProperties[name];
-      if (props !== undefined)
-      {
-        defaults = $.widget.extend(defaults, props);
-      }
-    }
+    // get properties applicable to this component
+    var defaults = oj.Components.__getDefaultOptions(widgetHierNames);
 
     if ($.isEmptyObject(defaults))
     {
@@ -2502,23 +3260,20 @@ $.widget('oj.' + _BASE_COMPONENT,
 
       if (val === undefined || $.isPlainObject(val))
       {
-        var defaultVal = defaults[prop];
-
-        if (defaultVal != null && defaultVal instanceof __ojDynamicGetter)
+        var defaultValueList = defaults[prop];
+        if (defaultValueList)
         {
-          var callback = defaultVal.getCallback();
-          if ($.isFunction(callback))
+          var callback = _getCompoundDynamicGetter(defaultValueList);
+          if(callback)
           {
             _defineDynamicProperty(this, originalDefaults[prop], val, options, prop, callback, contextCallback);
           }
           else
           {
-            oj.Logger.error("Dynamic getter for property %s is not a function", prop);
+            var list = [originalDefaults[prop]].concat(defaultValueList);
+            list.push(val);
+            options[prop] = _mergeOptionLayers(list);
           }
-        }
-        else
-        {
-          options[prop] = _mergeOptionLayers([originalDefaults[prop], defaultVal, val]);
         }
       }
     }
@@ -2538,6 +3293,37 @@ $.widget('oj.' + _BASE_COMPONENT,
       proto = Object.getPrototypeOf(proto);
     }
   }
+
+  /**
+   * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app 
+   * developer needs per-instance control.
+   * 
+   * <p>The <code class="prettyprint">oj-focus-highlight</code> class applies focus styling that may not be desirable when 
+   * the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus 
+   * occurs by a non-pointer mechanism, for example keyboard or initial page load.
+   * 
+   * <p>The application-level behavior for this component is controlled in the theme by the 
+   * <code class="prettyprint">$focusHighlightPolicy</code> SASS variable; however, note that this same variable controls 
+   * the focus highlight policy of many components and patterns. The values for the variable are:
+   * 
+   * <ul>
+   *   <li><code class="prettyprint">nonPointer</code>: <code class="prettyprint">oj-focus-highlight</code> is applied only 
+   *       when focus is not the result of pointer interaction. Most themes default to this value.</li>
+   *   <li><code class="prettyprint">all</code>: <code class="prettyprint">oj-focus-highlight</code> is applied regardless 
+   *       of the focus mechanism.</li>
+   *   <li><code class="prettyprint">none</code>: <code class="prettyprint">oj-focus-highlight</code> is never applied. This
+   *       behavior is not accessible, and is intended for use when the application wishes to use its own event listener to 
+   *       precisely control when the class is applied (see below). The application must ensure the accessibility of the result.</li>
+   * </ul>
+   * 
+   * <p>To change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use 
+   * event listeners to toggle this class as needed.
+   * 
+   * @ojfragment ojFocusHighlightDoc - For use in the Styling table of components using the oj-focus-highlight class with the 
+   *    $focusHighlightPolicy var.  Components using that class with a component-specific mechanism instead of that $var will need 
+   *    different verbiage, which could be decomped to another baseComponent fragment if shareable by multiple components.
+   * @memberof oj.baseComponent
+   */
 });
 
 // Remove base component from the jQuery prototype, so it could not be created
@@ -2545,6 +3331,18 @@ $.widget('oj.' + _BASE_COMPONENT,
 
 delete $['fn'][_BASE_COMPONENT];
 
+// -----------------------------------------------------------------------------
+// "private static members" shared by all components
+// -----------------------------------------------------------------------------
+
+// (no private statics currently)
+
+}() ); // end of BaseComponent wrapper function
+
+
+// -----------------------------------------------------------------------------
+// End of baseComponent, start of other content
+// -----------------------------------------------------------------------------
 
 /**
  * <p>This method is our version of $.widget, i.e. the static initializer of a component such as ojButton.
@@ -2659,7 +3457,56 @@ oj.__registerWidget = function(name, base, prototype, isHidden)
        'enumerable' : true
      }
    );
- };
+ }
+ 
+ /**
+  * @ignore
+  */
+ function _getCompoundDynamicGetter(values)
+ {
+    if (values.length === 1)
+    {
+      var val = values[0];
+      return (val instanceof __ojDynamicGetter) ? val.getCallback(): null;
+    }
+    
+    var hasGetters = false;
+    for (var i=0; i<values.length && !hasGetters; i++)
+    {
+      var value = values[i]
+      if (value != null && value instanceof __ojDynamicGetter)
+      {
+        hasGetters = true;
+      }
+    }
+    
+    if (hasGetters)
+    {
+      var getter = function(context)
+      {
+        var resolvedVals = [];
+        values.forEach(
+          function(value)
+          {
+            if (value != null && value instanceof __ojDynamicGetter)
+            {
+              resolvedVals.push(value.getCallback()(context));
+            }
+            else
+            {
+              resolvedVals.push(value);
+            }
+          }
+        );
+        
+        return _mergeOptionLayers(resolvedVals);
+      };
+      return getter;
+    }
+    
+    return null;
+    
+ }
 
  /**
   * @private
@@ -2810,6 +3657,9 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
    */
   var _OJ_COMPONENT_EVENT_OVERRIDES =
   {
+    isDefaultPrevented : function(){
+        return false;
+    },
     preventDefault : function ()
     {
       this.isDefaultPrevented = _returnTrue;
@@ -2898,23 +3748,6 @@ function _ojHighContrast()
 
 $(document).ready(function() {
   _ojHighContrast();
-});
-/*jslint browser: true*/
-/**
- * @private
- */
-function _ojSlowCSS()
-{
-  if (navigator.appName == 'Microsoft Internet Explorer')
-  {
-    $('html').addClass("oj-slow-borderradius oj-slow-cssgradients oj-slow-boxshadow");
-
-  }
-
-}
-
-$(document).ready(function() {
-  _ojSlowCSS();
 });
 /*jslint browser: true*/
 /*
@@ -3117,6 +3950,29 @@ oj.DomUtils.isMetaKeyPressed = function(evt)
 {
   var agentInfo = oj.AgentUtils.getAgentInfo();
   return (oj.AgentUtils.OS.MAC === agentInfo["os"] ? evt.metaKey : evt.ctrlKey);
+};
+
+/**
+ * Dispatches an event on the element
+ * @param {!Element} element
+ * @param {!Event} evt event object
+ */
+oj.DomUtils.dispatchEvent = function(element, evt)
+{
+  // Workaround for Mozilla issue #329509 - dispatchEvent() throws an error if
+  // the element is disabled and disconnected
+  // Also, IE simply ignores the .dispatchEvent() call for disabled elements
+  var dis = 'disabled';
+  var oldDisabled = element[dis];
+  try
+  {
+    element[dis] = false;
+    element.dispatchEvent(evt);
+  }
+  finally
+  {
+    element[dis] = oldDisabled;
+  }
 };
 
 /**
@@ -3670,120 +4526,6 @@ oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
 };
 
 /**
- * Returns <code>true</code> if the jquery element is visible within overflow an
- * overflow container. The check only considers statically positioned elements and
- * stops short of the body.
- *
- * The first positioned ancestor is treated as the root viewport. Positioned elements need be
- * compared with the window viewport versus its ancestors.  Visibility of positioned
- * elements also need to compare stacking contexts within the document to determine
- * what is on top "visible" - thus excluded from this check.
- *
- * @param {jQuery} element jquery element to test
- * @returns {boolean}
- */
-oj.DomUtils.isWithinViewport = function(element)
-{
-
-  function isVisible(alignBox, containerBox)
-  {
-    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowY"]) > -1)
-    {
-      // 1px fudge factor for rounding errors
-      if ((alignBox["bottom"] - containerBox["top"]) < -1)
-        return false;
-
-      var scrollBarWidth = (containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") ?
-                          oj.DomUtils.getScrollBarWidth() : 0;
-      if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
-        return false;
-    }
-
-    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowX"]) > -1)
-    {
-      scrollBarWidth = ((containerBox["overflowY"] === "auto" || containerBox["overflowY"] === "scroll") &&
-                       oj.DomUtils.getReadingDirection() === "rtl") ? oj.DomUtils.getScrollBarWidth() : 0;
-      if ((alignBox["right"] - (containerBox["left"] + scrollBarWidth)) < -1)
-        return false;
-
-      var scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
-                       oj.DomUtils.getReadingDirection() === "ltr") ? oj.DomUtils.getScrollBarWidth() : 0;
-      if ((alignBox["left"] - (containerBox["right"] - scrollBarWidth)) > -1)
-        return false;
-    }
-
-    return true;
-  };
-
-  function hasOverflow(element)
-  {
-    return "visible" !== element.css("overflow-x") ||
-           "visible" !== element.css("overflow-y");
-  };
-
-  function getRect(element)
-  {
-    var domElement = element[0];
-    if (domElement.nodeType === 1)
-    {
-      var rec = $.extend({}, domElement.getBoundingClientRect());
-      rec["overflowX"] = element.css("overflow-x");
-      rec["overflowY"] = element.css("overflow-y");
-      return rec;
-    }
-    else if ($.isWindow(domElement))
-    {
-      var rec =
-        {
-          'width': domElement['innerWidth'],
-          'height': domElement['innerHeight'],
-          'top': 0,
-          'bottom': domElement['innerHeight'],
-          'left': 0,
-          'right': domElement['innerWidth']
-        };
-      return rec;
-    }
-    return {'height': 0, 'width': 0};
-  };
-
-  function isPositioned(element)
-  {
-    return ["fixed", "absolute", "relative"].indexOf(element.css("position")) > -1 &&
-           (Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("top"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("bottom"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("left"))) > 0 ||
-            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("right"))) > 0);
-  };
-
-  if (!element)
-    return false;
-  else if ($.isWindow(element[0]) || isPositioned(element))
-    return true;
-
-  var alignBox = getRect(element);
-
-  // check that the element is not hidden in overflow
-  var isWithinViewPort = true;
-  var parent = element.parent();
-  while (isWithinViewPort && parent && parent.length > 0 &&  "BODY" !== parent[0].nodeName && parent[0].nodeType === 1 && !isPositioned(parent))
-  {
-    if (hasOverflow(parent))
-    {
-      var parentBox = getRect(parent);
-      // ignore elements with empty border-boxes
-      if (parentBox['height'] > 0 && parentBox['width'] > 0)
-      {
-        isWithinViewPort = isVisible(alignBox, parentBox);
-      }
-    }
-    parent = parent.parent();
-  }
-
-  return isWithinViewPort;
-};
-
-/**
  * Key used to store the logical parent of the popup element
  * as a jQuery data property. The logical parent refers the launcher of a popup.
  * @const
@@ -3898,6 +4640,315 @@ oj.DomUtils._supressNativeContextMenu = function()
 }
 oj.DomUtils._supressNativeContextMenu();
 
+// standard duration of a pressHold gesture.  Point of reference: default 
+// JQ Mobile threshold to be a press-and-hold is 750ms.
+oj.DomUtils.PRESS_HOLD_THRESHOLD = 750;
+
+
+// ------------------------------------------------------------------------------------------------
+// Recent touch end
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * Returns true if a touchend or touchcancel has been detected anywhere in the document in the last 500 ms.
+ * Note: This function adds event listeners only once per document load.
+ * 
+ * @return {boolean} boolean indicating whether a touch has recently been detected
+ */
+oj.DomUtils.recentTouchEnd = (function()
+{
+  // This function is immediately executed and returns the recentTouchEnd function
+  // and therefore only execute once per document load.
+
+  var touchTimestamp = 0;
+  var TOUCH_THRESHOLD = 500;
+
+  function _touchEndHandler() {
+    touchTimestamp = Date.now();
+  };
+
+  // --- Document listeners ---
+  document.addEventListener("touchend", _touchEndHandler, true);
+  document.addEventListener("touchcancel", _touchEndHandler, true);
+
+  // --- The function assigned to oj.DomUtils.recentTouchEnd ---
+
+  return function()
+  {
+    // must be at least 300 for the "300ms" delay
+    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+  };
+})();
+
+
+// ------------------------------------------------------------------------------------------------
+// Recent pointer
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the 
+ * document in the last n ms, where n is calibrated across a variety of platforms to make this API
+ * a maximally reliable indicator of whether the code now running was likely "caused by" the 
+ * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page 
+ * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming 
+ * depending on whether the element was focused via keyboard or pointer.
+ * 
+ * @return {boolean} boolean indicating whether a mouse button or finger has recently been down or up
+ */
+oj.DomUtils.recentPointer = (function()
+{
+  // The comments in this function are tailored to the makeFocusable() usage.
+
+  // - Let "pointer down" mean mousedown or touchstart, and "pointer up" likewise.  (Not MS pointer events.)
+  // - Event order can be 1) mousedown>focus>mouseup (like push buttons) or 2) mousedown>mouseup>focus (like toggle buttons).
+  // - For 2, semantics for "focus caused by pointer" must be "if pointer interaction in last n ms," rather than "if pointer is currently down".
+  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down, 
+  //   since if the pointer up is never received, we'd get stuck in an inaccessible state.
+  // - So both pointer down and pointer up set a timestamp, and recentPointer() returns true if Date.now() is within n ms of that timestamp,
+  //   where n is higher for touchstart per below.
+
+  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any 
+  // mouse/touch interaction, then recentPointer() is false, so focus ring appears as desired.
+  var pointerTimestamp = 0;
+
+  var pointerTimestampIsTouchStart; // whether the latest timestamp is for touchstart vs. touchend/mouse
+
+  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has 
+  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome, 
+  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no 
+  // need for a tight bound; if there was pointer interaction in the last second or so, it's perfectly reasonable to suppress the focus ring.
+  var POINTER_THRESHOLD_CUSHION = 600;
+
+  // If the number of millis since the last pointer down or up is < this threshold, then recentPointer() considers it recent and returns true.
+  // See also TOUCHSTART_THRESHOLD.
+  var POINTER_THRESHOLD = POINTER_THRESHOLD_CUSHION;
+
+  // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same 
+  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the 
+  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms 
+  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus 
+  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher 
+  // threshold only for touchstart should not be a problem there.
+  var TOUCHSTART_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION;
+
+
+  // --- Document listeners ---
+
+  // Use capture phase to make sure we hear the events before someone cancels them
+  document.addEventListener("mousedown", function() {
+    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown 
+    // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
+    // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
+    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with 
+    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold 
+    // is over, in which case the following analysis applies:  
+    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms, 
+    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold 
+    //   (like a context menu) never happened, 
+    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above, 
+    //   the 2nd quantity is always bigger (later).
+    var now = Date.now();
+    if ((!pointerTimestampIsTouchStart) || (now > pointerTimestamp + oj.DomUtils.PRESS_HOLD_THRESHOLD)) {
+      pointerTimestamp = now;
+      pointerTimestampIsTouchStart = false;
+    }
+  }, true);
+
+  document.addEventListener("touchstart", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = true;
+  }, true);
+
+  document.addEventListener("mouseup", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = false;
+  }, true);
+
+  document.addEventListener("touchend", function() {
+    pointerTimestamp = Date.now();
+    pointerTimestampIsTouchStart = false;
+  }, true);
+
+
+  // --- The function assigned to oj.DomUtils.recentPointer ---
+
+  return function()
+  {
+    var millisSincePointer = Date.now() - pointerTimestamp;
+    var threshold = pointerTimestampIsTouchStart ? TOUCHSTART_THRESHOLD : POINTER_THRESHOLD;
+    var isRecent = millisSincePointer < threshold;
+    return isRecent;
+  };
+})();
+
+
+// ------------------------------------------------------------------------------------------------
+// Utility for suppressing focus ring for mouse/touch interaction, but not KB or other interaction:
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the 
+ * similarities and differences listed below.  This API is intended for non-component callers; 
+ * components should typically call the baseComponent API via this._focusable().
+ * 
+ * Comparison to baseComponent._focusable() :
+ * 
+ * - This function's "options" param must be an object.  Only baseComponent._focusable() 
+ *   supports the backward-compatibility syntax where the options param can be the element.
+ * - Same usage of oj-focus, oj-focus-highlight, and $focusHighlightPolicy.
+ * - Same required invariant that oj-focus-highlight must not be set if oj-focus is not set.
+ * - Same parameters with same semantics, plus the additional "component" and "remove" params 
+ *   discussed below.
+ * - New options.component param, which takes a JET component instance.  (When a component is 
+ *   involved, typically that component should call this._focusable() rather than calling this 
+ *   version of the method directly.)
+ * 
+ * If options.component is specified, then the following things work like the baseComponent 
+ * version of this API:
+ * 
+ * - If the specified element is in the component subtree, 
+ *   then the classes will automatically be removed when the component is 
+ *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc, 
+ *   else the caller has the same responsibility to remove the classes at those times.
+ * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the 
+ *   component is disabled, vs. being the caller's responsibility to handle those things.
+ * 
+ * If options.component is NOT specified (for non-component callers), then those things are 
+ * the caller's responsibility.  Specifically:
+ * 
+ * - Class removal can be done directly, as needed.
+ * - To remove the listeners, see the following.
+ * 
+ * Listener removal:
+ * 
+ * - If options.component was specified, see above.  
+ * - Else if options.setupHandlers was specified, then only the caller knows what listeners were 
+ *   registered and how, so it is the caller's responsibility to remove them directly when needed.
+ * - The remaining case is that options.component and options.setupHandlers were not specified.  
+ *   To remove from element e both the 2 classes and all listeners applied to e by all previous 
+ *   invocations of makeFocusable() where these options were not specified, 
+ *   call makeFocusable( {'element': e, 'remove': true} ).
+ */
+// If this is named focusable(), Closure Compiler generates a warning, and fails to rename the function in minified code,
+// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in 
+// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\), 
+// perhaps for JQUI's :focusable selector.  So name it makeFocusable().
+oj.DomUtils.makeFocusable = (function()
+{
+  var nextId = 0; // used for unique namespace, for "remove" functionality
+  
+  // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
+  // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
+  var FOCUS_HIGHLIGHT_POLICY = (oj.ThemeUtils.parseJSONFromFontFamily('oj-focus-config') || {})['focusHighlightPolicy'];
+
+  /**
+   * @param {function()} focusPolicyCallback Optional getter passed to makeFocusable() by callers wishing to get use a caller-
+   *   specific focus policy mechanism instead of the built-in mechanism.
+   * @param {function()} recentPointerCallback Optional function passed to makeFocusable() by callers wishing to use a caller-
+   *   specific mechanism in addition to the built-in mechanism.
+   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code> 
+   *   CSS class for a focus happening at the time of this method call.
+   */
+  var shouldApplyFocusHighlight = function(focusPolicyCallback, recentPointerCallback)
+  {
+    var focusHighlightPolicy = focusPolicyCallback ? focusPolicyCallback() : FOCUS_HIGHLIGHT_POLICY;
+    switch (focusHighlightPolicy)
+    {
+      case "all":
+        return true;
+      case "none":
+        return false;
+      default: // "nonPointer" or no value provided (e.g. SASS var missing)
+        return !( oj.DomUtils.recentPointer() || (recentPointerCallback && recentPointerCallback()) );
+    }
+  };
+
+  // the function assigned to oj.DomUtils.makeFocusable
+  var makeFocusable = function( options )
+  {
+    var element = options['element'];
+
+    var dataKey = "ojFocusable";
+    var namespacePrefix = "." + dataKey;
+    var namespaceSeparator = " " + namespacePrefix;
+
+    if (options['remove']) {
+      element.removeClass("oj-focus oj-focus-highlight");
+
+      // id's of listeners needing removal
+      var ids = element.data(dataKey);
+      if (ids == undefined) 
+          return;
+
+      // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
+      var namespaces = namespacePrefix + (""+ids).split(",").join(namespaceSeparator);
+      element.off(namespaces) // remove the listeners
+             .removeData(dataKey); // clear list of listener id's needing removal
+      return;
+    }
+
+    var afterToggle = options['afterToggle'] || $.noop;
+    
+    var applyOnlyFocus = function( element ) {
+      element.addClass( "oj-focus" );
+      afterToggle("focusin");
+    };
+
+    var applyBothClasses = function( element ) {
+      element.addClass( "oj-focus" );
+      if (shouldApplyFocusHighlight(options['getFocusHighlightPolicy'], options['recentPointer'])) {
+        element.addClass( "oj-focus-highlight" );
+      }
+      afterToggle("focusin");
+    };
+
+    var addClasses = options['applyHighlight'] ? applyBothClasses : applyOnlyFocus;
+    
+    var removeClasses = function( element ) {
+      element.removeClass( "oj-focus oj-focus-highlight" );
+      afterToggle("focusout");
+    };
+
+    var setupHandlers = options['setupHandlers'] || function( focusInHandler, focusOutHandler) {
+      var component = options['component'];
+      var focusInListener = function( event ) {
+        focusInHandler($( event.currentTarget ));
+      };
+      var focusOutListener = function( event ) {
+        focusOutHandler($( event.currentTarget ));
+      }
+
+      if (component) {
+        component._on( element, {
+          focusin: focusInListener,
+          focusout: focusOutListener
+        });
+      } else {
+        // neither options.component nor options.setupHandlers were passed, so we must provide a 
+        // way for the caller to remove the listeners.  That's done via the "remove" param, which
+        // uses the namespaces that we stash via data().
+        var id = nextId++;
+
+        // list of id's of existing listeners needing removal
+        var ids = element.data(dataKey);
+
+        // append id to that list, or start new list if first one
+        element.data(dataKey, ids == undefined ? id : ids + "," + id);
+
+        // add listeners namespaced by that id
+        var handlers = {};
+        var namespace = namespacePrefix + id;
+        handlers["focusin" + namespace] = focusInListener;
+        handlers["focusout" + namespace] = focusOutListener;
+        element.on(handlers);
+      }
+    };
+    
+    setupHandlers(addClasses, removeClasses);
+  };
+
+  return makeFocusable;
+})();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3988,11 +5039,12 @@ oj.ComponentMessaging.prototype.Init = function (component)
  * @param {Object} content 
  * @private
  */
-oj.ComponentMessaging.prototype.activate = function (launcher, content)
+oj.ComponentMessaging.prototype.activate = function (launcher, contentElement, content)
 {
   var that = this;
   oj.Assert.assertObject(content);
   this._launcher = launcher;
+  this._contentElement = contentElement;
   
   this._messagingContent = oj.CollectionUtils.copyInto(this._messagingContent || {}, content);
   
@@ -4053,8 +5105,22 @@ oj.ComponentMessaging.prototype.deactivate = function ()
   this._activated = false;
   this._component = null;
   this._launcher = null;
+  this._contentElement = null;
   this._strategies = {};
 };
+
+/**
+ * Utility function that closes anything that needs to be closed when oj.Components.subtreeHidden
+ * is called. e.g, popup.
+ * @private
+ */
+oj.ComponentMessaging.prototype.close =  function ()
+{
+  $.each(this._strategies, function(i, strategy) 
+  {
+    strategy.close();
+  }); 
+}
 
 /**
  * Creates a messaging strategy for the specified type, initializing it with the options provided.
@@ -4106,6 +5172,27 @@ oj.ComponentMessaging.prototype._getComponent = function ()
 oj.ComponentMessaging.prototype._getLauncher = function ()     
 {
   return this._launcher || null;
+};
+
+
+/**
+ * Returns the jquery element on the component to which aria-invalid
+ * applies. This is either the launcher itself or the inputs
+ * within the launcher dom.  JAWS only reads aria-invalid when it is on the input/textara/select.
+ * <p>
+ * In the case of radioset/checkboxset, for example, where the launcher
+ * is the root dom element and the inputs are with it, we return the inputs.
+ * 
+ * </p>
+ * 
+ * @return {Object|null} null if launcher is null
+ * @private
+ * @instance
+ * @memberOf !oj.ComponentMessaging
+ */
+oj.ComponentMessaging.prototype._getContentElement = function ()
+{
+  return this._contentElement || null;
 };
 
 /**
@@ -4419,6 +5506,16 @@ oj.MessagingStrategy.prototype.deactivate = function ()
 };
 
 /**
+ * Utility function that closes anything that needs to be closed when oj.Components.subtreeHidden
+ * is called. e.g, popup.
+ * 
+ * @private
+ */
+oj.MessagingStrategy.prototype.close = function ()
+{
+};
+
+/**
  * Reinitializes with the new display options and updates component messaging using the new content. 
  * 
  * @param {Array} newDisplayOptions
@@ -4461,6 +5558,15 @@ oj.MessagingStrategy.prototype.update = function ()
 oj.MessagingStrategy.prototype.GetLauncher = function ()
 {
   return this._componentMessaging._getLauncher();
+};
+
+/**
+ * @return {Object} the jquery element of the form element.
+ * @private
+ */
+oj.MessagingStrategy.prototype.GetContentElement = function ()
+{
+  return this._componentMessaging._getContentElement();
 };
 
 /**
@@ -4667,7 +5773,8 @@ oj.DefaultMessagingStrategy.prototype.update = function ()
   
   jqRoot.removeClass(removeClasses.join(" "))
           .addClass(addClasses.join(" ")); // classes added to root
-  launcher.attr({"aria-invalid": invalid}); // aria attrs added to the launcher element
+  // aria-invalid needs to be on an input/textarea
+  this.GetContentElement().attr({"aria-invalid": invalid});  
   
 };
 
@@ -4683,7 +5790,7 @@ oj.DefaultMessagingStrategy.prototype.deactivate = function ()
   
   jqRoot.removeClass(oj.DefaultMessagingStrategy._SELECTOR_STATE_INVALID)
                   .removeClass(oj.DefaultMessagingStrategy._SELECTOR_STATE_WARNING);
-  this.GetLauncher().removeAttr("aria-invalid");
+  this.GetContentElement().removeAttr("aria-invalid");
   oj.DefaultMessagingStrategy.superclass.deactivate.call(this);
 };
 
@@ -4990,6 +6097,29 @@ oj.FocusUtils.getFirstTabStop = function(element)
 
   return null;
 };
+
+/**
+ * Extends the jquery ":focusable" pseudo selector check for a Safari browser specific
+ * exception - an anchor element not having a tabindex attribute.
+ *
+ * @param {Element} element target dom element to test if it will take focus
+ * @returns {boolean} <code>true</code> if the target element is focusable
+ */
+oj.FocusUtils.isFocusable = function (element)
+{
+  if ($(element).is(":focusable"))
+  {
+    // An anchor element in safari will not take focus unless it has a tabindex.
+    // http://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#Clicking_and_focus
+    if (element.nodeName === "A" && !element.hasAttribute("tabindex") &&
+      oj.AgentUtils.getAgentInfo()["browser"] === oj.AgentUtils.BROWSER.SAFARI)
+      return false;
+    else
+      return true;
+  }
+
+  return false;
+};
 // Copyright (c) 2013, Oracle and/or its affiliates.
 // All rights reserved.
 
@@ -5025,7 +6155,7 @@ oj.Test.domNodeForLocator = function (locator) {
   if (oj.StringUtils.isString(locator)) {
     var locStr = /** @type {string} */ (locator);
     try {
-      locObj = $.parseJSON(locStr);
+      locObj = JSON.parse(locStr);
     }
     catch (e) {
       return null;
@@ -5082,4 +6212,28 @@ oj.Test.compareStackingContexts = function (el1, el2)
 {
   return oj.ZOrderUtils.compareStackingContexts(el1, el2);
 };
+(function() {
+var baseComponentMeta = {
+  "properties": {
+    "contextMenu": {
+      "type": "string"
+    },
+    "rootAttributes": {
+      "type": "Object"
+    },
+    "translations": {
+      "type": "Object"
+    }
+  },
+  "methods": {
+    "getNodeBySubId": {},
+    "option": {},
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "baseComponent"
+  }
+};
+oj.Components.registerMetadata('baseComponent', null, baseComponentMeta);
+})();
 });

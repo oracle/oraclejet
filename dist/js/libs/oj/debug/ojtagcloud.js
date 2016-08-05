@@ -420,4 +420,63 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
   }
 });
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojTagCloudMeta = {
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "items": {
+      "type": "Array<object>"
+    },
+    "layout": {
+      "type": "string"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "styleDefaults": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getItem": {},
+    "getItemCount": {}
+  },
+  "extension": {
+    "_widgetName": "ojTagCloud"
+  }
+};
+oj.Components.registerMetadata('ojTagCloud', 'dvtBaseComponent', ojTagCloudMeta);
+oj.Components.register('oj-tag-cloud', oj.Components.getMetadata('ojTagCloud'));
+})();
 });

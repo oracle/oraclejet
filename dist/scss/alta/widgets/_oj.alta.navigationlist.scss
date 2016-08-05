@@ -21,11 +21,6 @@
 @if $includeNavigationListClasses != false {
     @include module-include-once("alta.navigationlist") {
         
-        .oj-navigationlist-horizontal .oj-navigationlist-element,
-        .oj-navigationlist-icon-only .oj-navigationlist-element {
-            margin: 1px; // This is needed to show outline properly on IE 11 as outline offset is not working.
-        }
-        
         .oj-navigationlist-previous-icon {
             @extend .oj-fwk-icon-caret-start; //Previous icon used in sliding navlist to move up one level
         }

@@ -3,12 +3,9 @@
 
 // ----- start dependencies ---------
 // set up include variables before importing dependencies
-@if $includeAppLayoutWebClasses != false {
-  $includeAppLayoutClasses: true !global;
-}
+
 // import dependencies
 @import "../../common/helpers/oj.common.helpers";
-@import "oj.alta.applayout"; 
 // ----- end dependencies ---------
 
 // import classes defined in the common directory

@@ -207,7 +207,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeExpand : null,
 
@@ -231,7 +234,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojexpand", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojexpand", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       expand : null, 
 
@@ -255,7 +261,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeCollapse : null,
 
@@ -279,7 +288,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       collapse : null
 
@@ -988,4 +1000,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
   });
 }
 ());
+(function() {
+var ojAccordionMeta = {
+  "properties": {
+    "expanded": {
+      "type": "Array"
+    },
+    "multiple": {
+      "type": "boolean"
+    }
+  },
+  "methods": {
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "ojAccordion"
+  }
+};
+oj.Components.registerMetadata('ojAccordion', 'baseComponent', ojAccordionMeta);
+oj.Components.register('oj-accordion', oj.Components.getMetadata('ojAccordion'));
+})();
 });

@@ -38,9 +38,56 @@
       .oj-checkbox-label .oj-radiocheckbox-icon {
         width: $radioCheckboxRowHeight;
         height: $radioCheckboxRowHeight;
-        background-size: 100% 100%;
-        margin: 0 0 0 0;
-      }   
+      }  
+      
+      // this renders selectors to position using margins the oj-radiocheckbox-icon. 
+      // It depends on $radioCheckboxLabelPosition, and image-first selectors
+      @include oj-radiocheckbox-image-margin(0);
+      
+      // if label is first, give some padding to the start
+      // this overrides what we have in common that is used for ios and windows. for ios
+      // and windows the padding is symmetrical on right and left. Not for Android since
+      // Android has an icon with a 'glow' around it when active, so you don't want 'outer' padding
+      // on the icon side of the label.
+      .oj-radio-label,
+      .oj-checkbox-label,
+      .oj-checkbox-label-nocomp {
+        @if($radioCheckboxLabelPosition == "start") {
+          @include oj-ltr() {
+            padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+          }
+          @include oj-rtl() {
+            padding: 0 $radioCheckboxLabelToEdgePadding 0 0 ;
+          }
+        } @else {
+          @include oj-ltr() {
+            padding: 0 $radioCheckboxLabelToEdgePadding 0 0 ;
+          }
+          @include oj-rtl() {
+            padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+          }     
+        }
+      }
+      
+      .oj-checkboxset-input-end .oj-checkbox-label,
+      .oj-radioset-input-end .oj-radio-label {
+        @include oj-ltr() {
+          padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+        }
+        @include oj-rtl() {
+          padding: 0 $radioCheckboxLabelToEdgePadding 0 0 ;
+        }
+      }
+      // need the @ltr only so it overrides the padding selectors above
+      .oj-checkboxset-input-start .oj-checkbox-label,
+      .oj-radioset-input-start .oj-radio-label {
+        @include oj-ltr() {
+          padding: 0 $radioCheckboxLabelToEdgePadding 0 0 ;
+        }
+        @include oj-rtl() {
+          padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+        }
+      }
     }
     
     .oj-radioset .oj-choice-row:not(:first-child),
@@ -49,11 +96,7 @@
     }
     
     // position radio/checkbox underneath the icon for voiceover to work
-    .oj-radio,
-    .oj-checkbox,
-    .oj-choice-row .oj-checkbox-nocomp {
-      @include oj-radiocheckbox-position-horizontal(16px);
-    }
+    @include oj-radiocheckbox-position-input(16px);
 
   }
 }

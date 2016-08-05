@@ -31,7 +31,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojbutton'],
  * Depends:
  *  jquery.ui.widget.js
  */
-
+(function() // inputNumber wrapper function, to keep "private static members" private
+{
 /**
  * @ojcomponent oj.ojInputNumber
  * @augments oj.editableValue
@@ -682,15 +683,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _ComponentCreate: function()
   {
-    var node = this.element;
     this._super();
 
     this._draw();
-
-    // input type=number does not support the 'pattern' attribute, so
-    // neither should ojInputNumber.
-    // remove this before EditableValue grabs it and uses it.
-    node.removeAttr("pattern");
 
     this._inputNumberDefaultValidators = {};
     this._setup();
@@ -699,7 +694,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._on(this._events);
     
     this._focusable( this.uiInputNumber );
-    this._activeable( this.uiInputNumber );
   },
     /**
    * Performs post processing after _SetOption() is called. Different options when changed perform
@@ -794,13 +788,12 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   {
     var ret = this._super();
 
-    // destroy the buttons
-    this.upButton.ojButton("destroy");
-    this.downButton.ojButton("destroy");
-    this.upButton.remove();
-    this.downButton.remove();
+    // destroy the buttonset
+    this.buttonSet.ojButtonset("destroy");
+    this.buttonSet.remove();
     this.upButton = null;
     this.downButton = null;
+    this.buttonSet = null;
 
     //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
     oj.DomUtils.unwrap(this.element, this.uiInputNumber);
@@ -908,70 +901,41 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       this._stop(event);
     },
-    'focus': function()
-    {
-      this.previous = this.element.val();
-    },
     'blur': function(event)
     {
-      if (this.cancelBlur)
-      {
-        delete this.cancelBlur;
-        return;
-      }
       this._blurEnterSetValue(event);
+    },
+    "touchstart .oj-inputnumber-button": function(event)
+    {
+      this._start();
+      
+      this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+    },
+    "touchend .oj-inputnumber-button": function(event)
+    {
+      _ojInputNumberLastTouch = Date.now();
+      this._stop(event);
+    },
+    "touchcancel .oj-inputnumber-button": function(event)
+    {
+      _ojInputNumberLastTouch = Date.now();
+      this._stop(event);
     },
     "mousedown .oj-inputnumber-button": function(event)
     {
-      var previous;
-
-      // We never want the buttons to have focus; whenever the user is
-      // interacting with the inputnumber, the focus should be on the input.
-      // If the input is focused then this.previous is properly set from
-      // when the input first received focus. If the input is not focused
-      // then we need to set this.previous based on the value before spinning.
-      previous = this.element[0] === this.document[0].activeElement ?
-              this.previous : this.element.val();
-
-      function checkFocus()
+      if (this._isRealMouseEvent(event))
       {
-        var isActive = this.element[0] === this.document[0].activeElement;
-        if (!isActive)
-        {
-          this.element.focus();
-          this.previous = previous;
-          // support: IE
-          // IE sets focus asynchronously, so we need to check if focus
-          // moved off of the input because the user clicked on the button.
-          this._delay(function()
-          {
-            this.previous = previous;
-          });
-        }
+        this._start();
+
+        this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
       }
-
-      // ensure focus is on (or stays on) the text field
-      event.preventDefault();
-      checkFocus.call(this);
-
-      // support: IE
-      // IE doesn't prevent moving focus even with event.preventDefault()
-      // so we set a flag to know when we should ignore the blur event
-      // and check (again) if focus moved off of the input.
-      this.cancelBlur = true;
-      this._delay(function()
-      {
-        delete this.cancelBlur;
-        checkFocus.call(this);
-      });
-
-      this._start();
-
-      this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
     },
     "mouseup .oj-inputnumber-button": function(event)
     {
-      this._stop(event);
+      if (this._isRealMouseEvent(event))
+      {
+        this._stop(event);
+      }
     },
     "mouseenter .oj-inputnumber-button": function(event)
     {
@@ -980,20 +944,26 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       {
         return;
       }
+      if (this._isRealMouseEvent(event))
+      {
+        this._start();
 
-      this._start();
-
-      this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+        this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+      }
     },
     // TODO: do we really want to consider this a stop?
     // shouldn't we just stop the repeater and wait until mouseup before
     // we trigger the stop event?
     "mouseleave .oj-inputnumber-button": function(event)
     {
-      this._stop(event);
+      if (this._isRealMouseEvent(event))
+      {
+        this._stop(event);
+      }
     }
   },
   // I N T E R N A L   P R I V A T E   C O N S T A N T S    A N D   M E T H O D S
+  // 
   // Subclasses should not override or call these methods
   /**
    * @private
@@ -1014,6 +984,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   {
     "readOnly": "oj-read-only"
   },
+
     /**
    * _setup is called on create and refresh.
    * @private
@@ -1039,12 +1010,16 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._refreshStateTheming("readOnly", this.options.readOnly);
     this._refreshRoleSpinbutton("readOnly", this.options.readOnly);
   },
-  _createOjButton: function()
+  _createOjButtonset: function()
   {
-    this.upButton = this.uiInputNumber.find(".oj-inputnumber-up").ojButton({display: 'icons',
+    var $upButton = this.uiInputNumber.find(".oj-inputnumber-up");
+    var $downButton = this.uiInputNumber.find(".oj-inputnumber-down");
+    var buttonsetDiv = $upButton[0].parentNode;
+    this.upButton = $upButton.ojButton({display: 'icons',
       icons: {start: 'oj-component-icon oj-inputnumber-up-icon'}});
-    this.downButton = this.uiInputNumber.find(".oj-inputnumber-down").ojButton({display: 'icons',
+    this.downButton = $downButton.ojButton({display: 'icons',
       icons: {start: 'oj-component-icon oj-inputnumber-down-icon'}});
+    this.buttonSet = $(buttonsetDiv).ojButtonset({focusManagement: 'none'}); 
   },
   /**
    * @private
@@ -1052,11 +1027,19 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   _draw: function()
   {
     var element = this.element;
-    var uiInputNumber = this.uiInputNumber = element.addClass("oj-inputnumber-input")         
+    this.uiInputNumber = element.addClass("oj-inputnumber-input")         
             .wrap(this._uiInputNumberHtml()).parent() // @HTMLUpdateOK
             // add buttons          
-            .append(this._buttonHtml()) // @HTMLUpdateOK     
-            .wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
+            .append(this._buttonHtml()); // @HTMLUpdateOK
+     if (this.OuterWrapper) 
+     {
+          this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber);
+          this.uiInputNumber.addClass("oj-inputnumber oj-component");
+     }
+     else 
+     {
+          this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
+     }
 
     //
     // TODO: need to save off attributes and reset on destroy generically.
@@ -1064,12 +1047,16 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     element.attr("type", "text");
 
 
-    // add aria-hidden=true to buttons. As they are not in the keyboard sequence
-    // we decided it makes more sense to just add aria-hidden="true" to them
-    // and rely on the up/down arrow keys
-    uiInputNumber.find(".oj-inputnumber-button")
-            .attr("tabIndex", "-1").attr("aria-hidden", true);
-    this._createOjButton();
+    // As the buttons are not in the keyboard sequence at first
+    // we decided it makes sense to add aria-hidden="true" to them
+    // and rely on the up/down arrow keys. However, now we decided to remove aria-hidden because
+    // in voiceover there is no way to access the up/down buttons otherwise.
+    // Still, voiceover is broken due to this webkit bug
+    //  - ios: input number doesn't support vo because of webkit bug 
+    this.uiInputNumber.find(".oj-inputnumber-button")
+        .attr("tabIndex", "-1");
+    this._createOjButtonset();
+
   },
   /**
    * @private
@@ -1108,8 +1095,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _buttonHtml: function()
   {
-    return "" + "<button type='button' class='oj-inputnumber-button oj-inputnumber-down'></button>" +
-            "<button type='button' class='oj-inputnumber-button oj-inputnumber-up'></button>";
+    return "" + "<div class='oj-buttonset-width-auto'>" +
+      "<button type='button' class='oj-inputnumber-button oj-inputnumber-down'></button>" +
+      "<button type='button' class='oj-inputnumber-button oj-inputnumber-up'></button></div>";
   },
   /**
    * @private
@@ -1146,18 +1134,37 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // When the component's 'value' changes, the displayValue is automatically updated.
     // So reading the component's display value should always give you the element's value
     var value = this._getConvertedDisplayValue();
-    value = this._adjustValue(value, step);
+    var options = this.options;
+    var minOpt = options.min;
+    var maxOpt = options.max;
+    var stepOpt = options.step;
+    var precision = this._precision(minOpt, stepOpt);
+    value = this._adjustValue(value, step, minOpt, maxOpt, stepOpt, precision);
+    
+    // Show the user what is going to be validated. We are making it so that clicking on the
+    // up/down button is the same as if the user typed in a number and blurred.
+    if (this._CanSetValue())
+    {
+      // update the input's val which is what the user sees.
+      this.element.val(value);
+      // keep aria-valuenow in sync with the input's val
+      this._refreshAriaMinMaxValue(value);
+      // keep up/down buttons disabled state in sync with the input's val
+      this._updateButtons(value);
+      // keep rawValue in sync with the input's val
+      this._SetRawValue(value, event);
+    }
 
+    // now validate and set value and all of that.
     this._SetValue(value, event, this._VALIDATION_MODE.VALIDATORS_ONLY);
   },
   /**
    * called from _adjustValue
    * @private
    */
-  _precision: function()
+  _precision: function(minOpt, stepOpt)
   {
-    var opts = this.options, minOpt = opts.min;
-    var precision = this._precisionOf(opts.step);
+    var precision = this._precisionOf(stepOpt);
     if (minOpt != null)
     {
       precision = Math.max(precision, this._precisionOf(minOpt));
@@ -1188,17 +1195,30 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * that is an integral multiple of the step, and that is less than or equal
    * to the maximum.
    * @private
+   * @param {number} value - the current value
+   * @param {number} step - the step you want to adjust the value by
+   * @param {number} minOpt - the min option
+   * @param {number} maxOpt - the max option
+   * @param {number} stepOpt - the step option
+   * @param {number} precision - the precision @see _precision
+   * @returns {number} - the new value after it has been adjusted
    */
-  _adjustValue: function(value, step)
+  _adjustValue: function(value, step, minOpt, maxOpt, stepOpt, precision)
   {
     var newValue;
-    var stepBase, aboveMin, options = this.options,
-            minOpt = options.min, stepOpt = options.step, maxOpt = options.max;
-    var precision = this._precision();
+    var stepBase; 
+    var aboveMin;
+     
+    if (precision > 0)
+    {
+      return this._adjustValueForFractions(value, step, minOpt, maxOpt, stepOpt, precision);
+    }
 
     // make sure we're at a valid step when we step up or down.
     // - find out where we are relative to the base (min or 0)
     stepBase = minOpt != null ? minOpt : 0;
+    
+    // what if I multiply everything by 10*precision, then divide by that
 
     // From http://www.w3.org/TR/html5/forms.html#dom-input-stepup:
     // If value subtracted from the step base is not an integral multiple
@@ -1208,7 +1228,22 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // more than value if the method invoked was stepUp().
 
     // is value-stepBase an integral multiple of step?
+    try 
+    {
+      value = parseFloat(value.toFixed(precision)); 
+    }
+    catch (e)
+    {
+      if (e instanceof TypeError)
+      {
+        // I've only seen this fail if they set a null converter.
+        oj.Logger.warn("inputNumber's value after conversion is not a number. \n\
+                      The converter must convert the value to a Number. coercing using +");
+        value = +value; // coerce
+      }
+    }
     aboveMin = value - stepBase;
+    
     var rounded = Math.round(aboveMin / stepOpt) * stepOpt;
     rounded = parseFloat(rounded.toFixed(precision));
     var multiple = (rounded === aboveMin);
@@ -1235,9 +1270,11 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // decimal point (this_precision() looks at max of step/min's # of
     // digits.
     newValue = parseFloat(newValue.toFixed(precision));
-
-    if (minOpt != null && newValue < minOpt)
+    
+    if (minOpt != null && newValue < minOpt) 
+    {
       return minOpt;
+    }
 
     if (maxOpt!= null && newValue > maxOpt)
     {
@@ -1249,6 +1286,36 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     }
 
     return newValue;
+  },
+  /**
+   * Call this from _adjustValue when you have numbers with precision > 0. This method
+   * multiples everything by Math.pow(10,precision), calls _adjustValue with these numbers so that
+   * the math works, then divides the result by Math.pow(10,precision) to get it back to fractions.
+   * This is to work around the issue with Javascript's binary floating-point numbers not being 
+   * great about adding decimal fractions. e.g., 0.1 + 0.2 is not equal to 0.3. It is 
+   * an intentional consequence of the IEEE Standard for Binary Floating-Point Arithmetic (IEEE 754)
+   * @private
+   * @param {number} value - the current value
+   * @param {number} step - the step you want to adjust the value by
+   * @param {number} minOpt - the min option
+   * @param {number} maxOpt - the max option
+   * @param {number} stepOpt - the step option
+   * @param {number} precision - the precision @see _precision
+   * @returns {number}
+   */
+  _adjustValueForFractions: function(value, step, minOpt, maxOpt, stepOpt, precision)
+  {
+    // don't call this function if precision is 0
+    oj.Assert.assert(precision > 0);
+    var power = Math.pow(10,precision);
+    // if minOpt, maxOpt, stepOpt are undefined, keep them that way
+    var minOptPower = minOpt != null ? minOpt*power : minOpt;
+    var maxOptPower = maxOpt != null ? maxOpt*power : maxOpt;
+    var stepOptPower = stepOpt != null ? stepOpt*power : stepOpt;
+    var adjustValuePower =   
+      this._adjustValue(value*power, step*power, minOptPower, maxOptPower, stepOptPower, 0);
+    return adjustValuePower/power;
+    
   },
   /**
    * @private
@@ -1263,40 +1330,73 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this.spinning = false;
   },
   /**
+   * @private
+   * @return {boolean} true if there is no touch detected within the last 500 ms
+   */
+  _isRealMouseEvent: function(event)
+  {
+    // must be at least 300 for the "300ms" delay
+    if (oj.DomUtils.isTouchSupported())
+      return (Date.now() - _ojInputNumberLastTouch) > 500;
+
+    return true;
+  },
+  /**
    * disables or enables both the up and down buttons depending upon what the value
    * is on the screen after conversion plus what min/max are set to.
    * e.g., $10.00 is on the screen, valuenow is 10
-   * TODO: double check if I can use the value option instead of doing it this way.
    * @private
    */
   _updateButtons: function(valuenow)
   {
-    var options = this.options, minOpt = options.min, maxOpt = options.max;
-    if (!this.uiInputNumber)
-      return;
+    var options = this.options;
+    var maxOpt = options.max;
+    var minOpt = options.min;
     var downButton = this.downButton;
     var upButton = this.upButton;
+    var downButtonDisabledAlready;
+    var upButtonDisabledAlready;
 
+    if (!this.uiInputNumber)
+      return;
+    
+    if (!downButton && !upButton)
+      return;
+
+    // to prevent the overhead of disabling a button that is already disabled, check to see
+    // if it is already disabled already.
+    downButtonDisabledAlready = downButton.ojButton("option", "disabled");
+    upButtonDisabledAlready = upButton.ojButton("option", "disabled");
+    
     if (options.disabled || valuenow === undefined)
     {
-      downButton.ojButton("disable");
-      upButton.ojButton("disable");
+      if (!downButtonDisabledAlready)
+        downButton.ojButton("disable");
+      if (!upButtonDisabledAlready)
+        upButton.ojButton("disable");
     }
     else if (maxOpt != null && valuenow >= maxOpt)
     {
-      downButton.ojButton("enable");
-      upButton.ojButton("disable");
+      if (downButtonDisabledAlready)
+        downButton.ojButton("enable");
+      if (!upButtonDisabledAlready)
+        upButton.ojButton("disable");
     }
     else if (minOpt != null && valuenow <= minOpt)
     {
-      downButton.ojButton("disable");
-      upButton.ojButton("enable");
+      if (!downButtonDisabledAlready)
+        downButton.ojButton("disable");
+      if (upButtonDisabledAlready)
+        upButton.ojButton("enable");
     }
     else
     {
-      downButton.ojButton("enable");
-      upButton.ojButton("enable");
+      if (downButtonDisabledAlready)
+        downButton.ojButton("enable");
+      if (upButtonDisabledAlready)
+        upButton.ojButton("enable");
     }
+    
 
   },
   /**
@@ -1309,7 +1409,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _getConvertedDisplayValue: function()
   {
-    var value, displayValue;
+    var value;
+    var displayValue;
     try
     {
       displayValue = this._GetDisplayValue() || 0;
@@ -1332,8 +1433,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   _blurEnterSetValue: function(event)
   {
     var val = this.element.val();
+    var valuenow;
+    
     this._stop();
-    var valuenow = this._getConvertedDisplayValue();
+    valuenow = this._getConvertedDisplayValue();
     this._refreshAriaMinMaxValue(valuenow);
     this._updateButtons(valuenow);
     // _SetValue triggers valuechange event
@@ -1429,7 +1532,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _parseStep: function(val)
   {
-    var defaultStep = 1, parsedStep;
+    var defaultStep = 1;
+    var parsedStep;
     if (val === null)
       return defaultStep;
     parsedStep = this._parse("step", val);
@@ -1484,8 +1588,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     element.attr(
             {
               "aria-valuemin": this.options.min, "aria-valuemax": this.options.max,
-              // TODO: what should we do with values that can't be parsed?
-              // TODO: Ask Pavitra, do we need to parse the value?
               "aria-valuenow": valuenow
             });
     this._refreshAriaText(valuenow);
@@ -1585,9 +1687,14 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td rowspan="3">Input</td>
+     *       <td rowspan="4">Input</td>
      *       <td><kbd>Enter</kbd> or <kbd>Tab</kbd></td>
      *       <td>Submit the value you typed in the input field.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>Tab In</kbd></td>
+     *       <td>Set focus to input. If hints, title or messages exist in a notewindow,
+     *       pop up the notewindow.</td>
      *     </tr>
      *     <tr>
      *       <td><kbd>UpArrow</kbd></td>
@@ -1596,12 +1703,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *     <tr>
      *       <td><kbd>DownArrow</kbd></td>
      *       <td>Decrement the number.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>Tabbable element immediately before inputNumber</td>
-     *       <td><kbd>Tab</kbd></td>
-     *       <td>Set focus to input. If hints, title or messages exist in a notewindow,
-     *       pop up the notewindow.</td>
      *     </tr>
      *     {@ojinclude "name":"labelKeyboardDoc"}
      *   </tbody>
@@ -1613,6 +1714,12 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      */
 
 });
+
+// -----------------------------------------------------------------------------
+// "private static members" shared by all inputNumbers
+// -----------------------------------------------------------------------------
+
+var _ojInputNumberLastTouch;
 
 //////////////////     SUB-IDS     //////////////////
 
@@ -1645,5 +1752,53 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
  * @example <caption>Get the node for the input element:</caption>
  * var node = $( ".selector" ).ojInputNumber( "getNodeBySubId", {'subId': 'oj-inputnumber-input'} );
  */
+}() ); // end of inputNumber wrapper function
 
+(function() {
+var ojInputNumberMeta = {
+  "properties": {
+    "converter": {
+      "type": "Object"
+    },
+    "max": {
+      "type": "number"
+    },
+    "min": {
+      "type": "number"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "step": {
+      "type": "number"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "stepDown": {},
+    "stepUp": {},
+    "widget": {}
+  },
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'input',
+    "_widgetName": "ojInputNumber"
+  }
+};
+oj.Components.registerMetadata('ojInputNumber', 'editableValue', ojInputNumberMeta);
+oj.Components.register('oj-input-number', oj.Components.getMetadata('ojInputNumber'));
+})();
 });

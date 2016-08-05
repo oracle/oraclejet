@@ -528,4 +528,77 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   }
 });
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojLegendMeta = {
+  "properties": {
+    "drilling": {
+      "type": "string"
+    },
+    "halign": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "hideAndShowBehavior": {
+      "type": "string"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number|string"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "scrolling": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "Array<object>"
+    },
+    "symbolHeight": {
+      "type": "number"
+    },
+    "symbolWidth": {
+      "type": "number"
+    },
+    "textStyle": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "titleHalign": {
+      "type": "string"
+    },
+    "titleStyle": {
+      "type": "string"
+    },
+    "valign": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getItem": {},
+    "getPreferredSize": {},
+    "getSection": {},
+    "getTitle": {}
+  },
+  "extension": {
+    "_widgetName": "ojLegend"
+  }
+};
+oj.Components.registerMetadata('ojLegend', 'dvtBaseComponent', ojLegendMeta);
+oj.Components.register('oj-legend', oj.Components.getMetadata('ojLegend'));
+})();
 });

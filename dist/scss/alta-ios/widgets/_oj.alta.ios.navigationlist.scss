@@ -35,8 +35,7 @@
             @include oj-flex-property(0 0 auto);
         }
          // This is needed in ios, as icon only list does't have dark color bg circle.
-        .oj-navigationlist-page-level.oj-navigationlist.oj-navigationlist-touch.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected.oj-hover .oj-navigationlist-item-icon,
-        .oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+        .oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
             color: $navigationListPageLevelItemIconColorSelected;
         }
 

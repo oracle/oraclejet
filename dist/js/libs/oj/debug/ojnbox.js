@@ -221,10 +221,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
         locator['subId'] = 'oj-nbox-group-node';
         locator['groupCategory'] = this._GetFirstBracketedString(subId.substring(poundIndex));
       }
-      else if(subId.indexOf('#node') > 0) {
-        locator['subId'] = 'oj-nbox-node';
-        locator['index'] = this._GetFirstIndex(subId.substring(poundIndex));
-      }
       else if(subId.indexOf('#overflow') > 0) {
         locator['subId'] = 'oj-nbox-overflow';
       }
@@ -235,11 +231,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
       if(subId.indexOf('#closeButton') > 0) {
         // dialog#closeButton
         locator['subId'] = 'oj-nbox-dialog-close-button';
-      }
-      else if(subId.indexOf('#node') > 0) {
-        // dialog#node[index]
-        locator['subId'] = 'oj-nbox-dialog-node';
-        locator['index'] = this._GetFirstIndex(subId);
       }
       else
         locator['subId'] = 'oj-nbox-dialog';
@@ -925,4 +916,111 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @default <code class="prettyprint">null</code>
  */
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojNBoxMeta = {
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "cellContent": {
+      "type": "string"
+    },
+    "cellMaximize": {
+      "type": "string"
+    },
+    "cells": {
+      "type": "Array<object>"
+    },
+    "columns": {
+      "type": "Array<object>"
+    },
+    "columnsTitle": {
+      "type": "string"
+    },
+    "countLabel": {},
+    "groupAttributes": {
+      "type": "Array<string>"
+    },
+    "groupBehavior": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "labelTruncation": {
+      "type": "string"
+    },
+    "maximizedColumn": {
+      "type": "string"
+    },
+    "maximizedRow": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "Array<object>"
+    },
+    "otherColor": {
+      "type": "string"
+    },
+    "otherThreshold": {
+      "type": "number"
+    },
+    "rows": {
+      "type": "Array<object>"
+    },
+    "rowsTitle": {
+      "type": "object"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "styleDefaults": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getCell": {},
+    "getColumn": {},
+    "getColumnCount": {},
+    "getColumnsTitle": {},
+    "getContextByNode": {},
+    "getDialog": {},
+    "getGroupBehavior": {},
+    "getGroupNode": {},
+    "getRow": {},
+    "getRowCount": {},
+    "getRowsTitle": {}
+  },
+  "extension": {
+    "_widgetName": "ojNBox"
+  }
+};
+oj.Components.registerMetadata('ojNBox', 'dvtBaseComponent', ojNBoxMeta);
+oj.Components.register('oj-n-box', oj.Components.getMetadata('ojNBox'));
+})();
 });

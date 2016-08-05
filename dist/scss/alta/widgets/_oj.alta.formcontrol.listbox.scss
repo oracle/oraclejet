@@ -31,6 +31,13 @@ $includeListboxClasses:   $includeFormControlClasses !default;
 @if $includeListboxClasses != false {
   @include module-include-once("alta.listbox") {
 
-    
+    /* 
+     * applied to the nested option group labels, 
+     * they are direct children of li.oj-listbox-result-with-children
+     */
+    .oj-listbox-result-with-children > .oj-listbox-result-label {
+      font-weight: 500; 
+      color: $headerTextColor;
+    }  
   }
 }

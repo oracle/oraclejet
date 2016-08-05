@@ -31,40 +31,27 @@
 @if $includeRadiosetClasses != false {
   @include module-include-once("alta.windows.radioset") {
 
-    // we need spacing for nocomp label to fit the positioned input that comes before the label
-    .oj-checkbox-label-nocomp {
-      @include oj-ltr() {
-        padding: 0 0 0 59px;
-      }
-      @include oj-rtl() {
-        padding: 0 59px 0 0;
-      }
-     }
-    
     @if($radioCheckboxRenderInputAs == 'backgroundImage') {
 
-      .oj-radio-label .oj-radiocheckbox-icon {
-        width: 1.55rem;
-        height: 1.55rem;
-        background-size: 100% 100%;
-        margin: 0 20px 0 20px;
-      }
-       
-      .oj-checkbox-label .oj-radiocheckbox-icon {
-        width: 1.45rem;
-        height: 1.45rem;
-        background-size: 100% 100%;
-        margin: 0 20px 0 20px;
+      @include oj-radiocheckbox-image-margin($radioCheckboxLabelToEdgePadding);
+      
+      // single checkbox disabled selected icon is different on Windows theme for single checkbox.
+      // it's gray both unselected/selected for single checkbox, 
+      // and gray/blueish for unselected/selected for multiple checkboxes.
+      .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+       background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
       }
       
+      .oj-radiocheckbox-icon {
+        width: 20px;
+        height: 20px;
+      }
+   
       // position radio/checkbox underneath the icon for voiceover to work
       // the calculation is margin from side (20px) + 1/4*width of image
-      .oj-radio,
-      .oj-checkbox,
-      .oj-choice-row .oj-checkbox-nocomp {
-        @include oj-radiocheckbox-position-horizontal(25px);
-      }
+      @include oj-radiocheckbox-position-input(25px);
       
+
     }
   }
 }

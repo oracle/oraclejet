@@ -9,9 +9,15 @@
 @if $includeTreemapClasses != false {
   @include module-include-once("common.treemap") {
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-treemap:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-treemap {
       @include oj-user-select-property(none);
-      outline:none;
       width:650px;
       height:400px;
       font-size: $smallFontSize;
@@ -73,7 +79,6 @@
     }
 
     .oj-treemap-attribute-type-text {
-      font-weight: bold;
       color: $formControlLabelColor;
       font-size: $fontSize;
     }

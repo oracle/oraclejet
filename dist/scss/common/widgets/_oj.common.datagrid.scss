@@ -1,183 +1,331 @@
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
 
 @if $includeDataGridClasses != false {
     @include module-include-once("common.datagrid") {
-        
+    
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+            oj-data-grid:not(.oj-complete) {
+                visibility: hidden;
+            }      
+        }
+    
         /* Styling for the datagrid widget container */
         .oj-datagrid {
             // position relative is required
             position: relative;
             border: 1px solid $dataGridBorderColor;
-            @include oj-box-sizing-property (border-box);
+            box-sizing: border-box;
             @include oj-user-select-property (none);
             // color to fill the empty area around cells if the databody is not filled
             background-color: $dataGridBgColor;
             // prevent graying on iOS safari
-            -webkit-tap-highlight-color: rgba(0,0,0,0);            
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            overflow: hidden;
         }
-        
+
         /* Styling to remove focus ring border on focusable elements */
-        .oj-datagrid:focus, 
-        .oj-datagrid-cell:focus, 
-        .oj-datagrid-header-cell:focus, 
+        .oj-datagrid:focus,
+        .oj-datagrid-cell:focus,
+        .oj-datagrid-header-cell:focus,
+        .oj-datagrid-end-header-cell:focus,
         .oj-datagrid-row:focus,
-        .oj-datagrid-scrollers:focus {
-            outline: none; 
+        .oj-datagrid-scrollers:focus,
+        .oj-datagrid-databody:focus,{
+            outline: none;
         }
-        
+
         /* The default column width should be set here*/
-        .oj-datagrid-cell, 
-        .oj-datagrid-column-header-cell {
+        .oj-datagrid-cell,
+        .oj-datagrid-column-header-cell,
+        .oj-datagrid-column-end-header-cell {
             width: 4.166em;
         }
-        
-        /* Styling on rows, the default row height should be set here*/	
+
+        /* Styling on rows, the default row height should be set here*/
         .oj-datagrid-row {
             position:absolute;
-            @include oj-box-sizing-property (border-box);
-            height: $dataGridRowHeight;
-            width: 100%;
+            box-sizing: border-box;
+            // +4 for border width
+            height: calc(#{$dataGridRowHeight} + 4px);
         }
-        
-        /* Styling on the row header containere*/			
-        .oj-datagrid-row-header {
-            @include oj-box-sizing-property (border-box);
-        }
-        
-        /* Styling on the column header container*/			
-        .oj-datagrid-column-header {
-            @include oj-box-sizing-property (border-box);
-        }    
 
-        /* Styling on header cells both for rows and columns */		
-        .oj-datagrid-header-cell {
-            //sizing and position
-            position: absolute;
-            @include oj-box-sizing-property (border-box);
-            //content of the header cells
-            font-size: $dataGridHeaderFontSize;
-            font-weight: $dataGridHeaderFontWeight;		
-            color: $dataGridHeaderTextColor;		
-            background-color: $dataGridHeaderBgColor;      
-            padding: $dataGridHeaderPadding;       
-            border-style: solid;
-            border-color: $dataGridHeaderBorderColor;
+        /* Styling on the row header and row end header containere*/
+        .oj-datagrid-row-header,
+        .oj-datagrid-row-end-header {
+            box-sizing: border-box;
+        }
+
+        /* Styling on the column header and column end header container*/
+        .oj-datagrid-column-header,
+        .oj-datagrid-column-end-header{
+            box-sizing: border-box;
+        }
+        
+        /* Style for disabling horizontal gridlines */
+        .oj-datagrid-cell.oj-datagrid-border-bottom-none,     
+        .oj-datagrid-header-cell.oj-datagrid-border-bottom-none, 
+        .oj-datagrid-end-header-cell.oj-datagrid-border-bottom-none {  
+            border-bottom-style: none;
+        }
+        
+        /* Style for disabling vertical gridlines */
+        .oj-datagrid-cell.oj-datagrid-border-vertical-none,     
+        .oj-datagrid-header-cell.oj-datagrid-border-vertical-none, 
+        .oj-datagrid-end-header-cell.oj-datagrid-border-vertical-none {  
+            @include oj-ltr() {
+                border-right-style: none;
+            }
+
+            @include oj-rtl() {
+                border-left-style: none;        
+            }          
+        }
+        
+        /* Style for grid border if the grid doesn't fill the container the end headers need a border-bottom */
+        .oj-datagrid .oj-datagrid-row-header-spacer.oj-datagrid-small-content-border-bottom,
+        .oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-bottom,
+        .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-bottom {  
+            border-bottom-width: 1px;
+        }
+        
+        /* Style for disabling vertical gridlines */
+        .oj-datagrid-column-header-spacer.oj-datagrid-small-content-border-vertical,
+        .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-vertical,
+        .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-vertical {  
+            @include oj-ltr() {
+                border-right-width: 1px;
+            }
+
+            @include oj-rtl() {
+                border-left-width: 1px;        
+            }          
         }        
 
-        /* Styling on the cells in the column header, the default column header height should be set here*/			        
+        /* Styling on header cells both for rows and columns, start and end */
+        .oj-datagrid-header-cell,
+        .oj-datagrid-end-header-cell {
+            //sizing and position
+            position: absolute;
+            //content of the header cells
+            font-size: $dataGridHeaderFontSize;
+            font-weight: $dataGridHeaderFontWeight;
+            color: $dataGridHeaderTextColor;
+            background-color: $dataGridHeaderBgColor;
+            border-style: solid;
+            border-color: $dataGridHeaderBorderColor;
+        }
+
+        /* Styling on the cells in the column and column end header, the default column header height should be set here*/
+        .oj-datagrid-column-header-cell,
+        .oj-datagrid-column-end-header-cell {
+            //match the row height
+            height: calc(#{$dataGridRowHeight} + 4px);
+            box-sizing: border-box;            
+            text-align: center;
+            padding: $dataGridCellPadding calc(#{$dataGridCellPadding} + 1px) $dataGridCellPadding calc(#{$dataGridCellPadding} + 2px);            
+        }
+
+        /* Styling on the cells in the column header */
         .oj-datagrid-column-header-cell {
-            height: $dataGridRowHeight;
-            text-align: center;	            
             @include oj-ltr() {
                 border-width: 0 1px 1px 0;
             }
-            
+
             @include oj-rtl() {
                 border-width: 0 0 1px 1px;
             }
         }
         
-        /* Styling on row header cells, the default row header width should be set her */		
-        .oj-datagrid-row-header-cell {
-            width: 4.166em;
-            border-color: $dataGridHeaderBorderColor;
-            border-style: solid;            
+        /* Styling on the cells in the column end header */
+        .oj-datagrid-column-end-header-cell {
             @include oj-ltr() {
-                border-width: 0 1px 1px 0;    
+                border-width: 1px 1px 0 0;
             }
-            
+
             @include oj-rtl() {
-                border-width: 0 0 1px 1px;    
-            }            
+                border-width: 1px 0 0 1px;
+            }
+        }        
+        
+        /* Styling on row and row end header cells, the default row header width should be set here */
+        .oj-datagrid-row-header-cell,
+        .oj-datagrid-row-end-header-cell {
+            width: 4.166em;
+            box-sizing: border-box;            
+            border-color: $dataGridHeaderBorderColor;
+            border-style: solid;
+            // the vertical padding needs to mimic the cells for alignment      
+            padding: calc(#{$dataGridCellPadding} + 2px) $dataGridCellPadding calc(#{$dataGridCellPadding} + 1px) $dataGridCellPadding;
+        }
+               
+        /* Styling on row header cells */        
+        .oj-datagrid-row-header-cell {      
+            @include oj-ltr() {
+                border-width: 0 1px 1px 0;
+            }
+
+            @include oj-rtl() {
+                border-width: 0 0 1px 1px;
+            }
+        }
+
+        /* Styling on row end header cells */        
+        .oj-datagrid-row-end-header-cell {      
+            @include oj-ltr() {
+                border-width: 0 0 1px 1px;
+            }
+
+            @include oj-rtl() {
+                border-width: 0 1px 1px 0;
+            }
         }
         
-        /* Styling on databody cells */	
+        /* Styling on databody cells */
         .oj-datagrid-cell {
             // cells are positioned absolute, and use border-box sizing
             position: absolute;
-            @include oj-box-sizing-property (border-box);
+            box-sizing: border-box;
             height: 100%;
-            // override the text and color properties in the cells	
+            // override the text and color properties in the cells
             font-size: $fontSize;
-            color: $dataGridCellTextColor; 
+            color: $dataGridCellTextColor;
             background-color: $dataGridCellBgColor;
-            padding: $dataGridCellPadding;    
             border-style: solid;
             border-color: $dataGridCellBorderColor;
-            text-overflow: ellipsis;                              
+            text-overflow: ellipsis;
             @include oj-ltr() {
-                border-width: 0 1px 1px 0; 
+                // the padding needs to include the potential editable border to prevent text from moving later, cannot use border because the coreners will not look accurate
+                padding: calc(#{$dataGridCellPadding} + 2px) calc(#{$dataGridCellPadding} + 1px) calc(#{$dataGridCellPadding} + 1px) calc(#{$dataGridCellPadding} + 2px);
+                border-width: 0 1px 1px 0;
                 text-align: right;
             }
-            
-            @include oj-rtl() {    
-                border-width: 0 0 1px 1px;  
-                text-align: left;                
+
+            @include oj-rtl() {
+                padding: calc(#{$dataGridCellPadding} + 2px) calc(#{$dataGridCellPadding} + 2px) calc(#{$dataGridCellPadding} + 1px) calc(#{$dataGridCellPadding} + 1px);
+                border-width: 0 0 1px 1px;
+                text-align: left;
             }
         }
+
+        /* Styling on databody cells when they can be overwritten */
+        .oj-datagrid-editable .oj-datagrid-cell.oj-focus,
+        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-focus{
+            // editable cells can have normal padding, since the border will be 2px thick all the time
+            padding: $dataGridCellPadding;
+            border: 2px solid $dataGridEditableCellBorderColorFocus;
+        }
+
+        /* Styling on databody cells when they are being edited */
+        .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit,
+        .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-datagrid-cell-edit {            
+            // actively editable cells have no padding so input controls consume the whole cell
+            padding: 0;
+            border: 1px dotted $dataGridEditableCellBorderColorFocus;            
+        }
+
+        /* A helper class oj-datagrid-editable-no-padding is a helper to provide the appearance of no padding, it has padding to give the border space when in cellNavigation mode*/
+        .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
+            @include oj-ltr() {
+                padding: 2px 1px 1px 2px;
+            }
+
+            @include oj-rtl() {
+                padding: 2px 2px 1px 1px;
+            }
+        }  
+        
+        /* A helper class oj-datagrid-cell-no-padding should have padding 0 otherwise*/
+        .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-no-padding {
+            padding: 0;
+        }
        
-        /* Styling on header cell content both for rows and columns, used to properly align content */		        
+        /* A helper class oj-datagrid-cell-no-padding should have padding 1px to accoun for extra border width*/
+        .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit.oj-datagrid-cell-no-padding {
+            padding:1px;
+        }      
+        
+        /* A helper class oj-datagrid-editable-padding should be appleid to editable components that should maintain padding in edit mode*/
+        .oj-datagrid-editable .oj-datagrid-cell.oj-datagrid-cell-edit.oj-datagrid-cell-padding {
+             padding: $dataGridCellPadding;
+        }
+
+        /* Styling on form controls stamped inside a datagrid */
+        .oj-datagrid-cell.oj-form-control-inherit {
+          @include oj-form-control-padding-override(
+              $padding: "0 calc(#{$dataGridCellPadding} + 1px)");
+        }
+        .oj-datagrid-cell .oj-checkboxset .oj-checkbox-label {      
+          justify-content: flex-end;
+        }
+        
+        /* Styling on header cell content both for rows and columns, used to properly align content */
         .oj-datagrid-header-cell-content {
             position: relative;
             height: 100%;
             width: 100%;
-            overflow: hidden;    
-            white-space: nowrap;                 
+            overflow: hidden;
+            white-space: nowrap;
         }
-        
-        /* Styling on header and cell default text for vertical alignment, add this class name to headers when using a 
-            knockout template or custom renderer to bottom align text*/		                
+
+        /* Styling on header and cell default text for vertical alignment, add this class name to headers when using a
+            knockout template or custom renderer to bottom align text*/
         .oj-datagrid-cell-text,
         .oj-datagrid-header-cell-text {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            line-height:1;                
         }
-        
+
         /* styling to top align outside grouped headers */
         .oj-datagrid-header-grouping > :first-child .oj-datagrid-header-cell-text {
           top: 0;
-          bottom: auto;}        
-        
-        /* Styling on databody cell content */	        
+          bottom: auto;}
+
+        /* Styling on databody cell content */
         .oj-datagrid-cell-content {
             position: relative;
             height: 100%;
             width: 100%;
             //No overflow
             overflow: hidden;
-            white-space: nowrap;            
+            white-space: nowrap;
         }
-        
-        // styling is set on row or cell level for the cell and row selection case optimizations        
-        /* Styling on row and column banding */	
-        .oj-datagrid-row.oj-datagrid-banded .oj-datagrid-cell, 
+
+        // styling is set on row or cell level for the cell and row selection case optimizations
+        /* Styling on row and column banding */
+        .oj-datagrid-row.oj-datagrid-banded .oj-datagrid-cell,
         .oj-datagrid-cell.oj-datagrid-banded {
             background-color: $dataGridCellBandedBgColor;
         }
 
-        /* Styling on row and cell hover */	
-        .oj-datagrid-row.oj-hover .oj-datagrid-cell,  
-        //specificity required to overwrite row banding with cell selection
-        .oj-datagrid-row .oj-datagrid-cell.oj-hover {
-            background-color: $dataGridCellBgColorHover; 
+        /* Styling on read only datagrid cells, oj-readOnly must be applied by the application */
+        .oj-datagrid-row .oj-datagrid-cell.oj-read-only {
+            background-color: $dataGridEditableCellBgColorReadOnly;
         }
 
-        /* Styling on row and cell selection */	
+        /* Styling on row and cell hover */
+        .oj-datagrid-row.oj-hover .oj-datagrid-cell,
+        //specificity required to overwrite row banding with cell selection
+        .oj-datagrid-row .oj-datagrid-cell.oj-hover {
+            background-color: $dataGridCellBgColorHover;
+        }
+
+        /* Styling on row and cell selection */
         .oj-datagrid.oj-focus .oj-datagrid-row.oj-selected .oj-datagrid-cell,
         .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
             background-color: $dataGridCellBgColorSelected;
         }
-        
+
         /* Styling on row and cell inactive selection (when the grid root is not the focus) */
         .oj-datagrid-row.oj-selected .oj-datagrid-cell,
-        .oj-datagrid-row .oj-datagrid-cell.oj-selected {  
-            background-color: $dataGridCellBgColorSelectedInactive; 
+        .oj-datagrid-row .oj-datagrid-cell.oj-selected {
+            background-color: $dataGridCellBgColorSelectedInactive;
         }
-        
+
         /* Styling on focused row and cell */
         // need the specificity of .oj-datagrid-row to overwrite the selected value on the row
         .oj-datagrid.oj-focus .oj-datagrid-row.oj-focus .oj-datagrid-cell,
@@ -185,7 +333,7 @@
             background-color: $dataGridCellBgColorFocus;
         }
 
-        /* Styling for the data cell elements in selected state when data grid in high contrast mode. */        
+        /* Styling for the data cell elements in selected state when data grid in high contrast mode. */
         .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-row.oj-selected .oj-datagrid-cell,
         .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-cell.oj-selected {
             border-width: 1px 2px 2px 1px;
@@ -199,262 +347,267 @@
             outline-style: dotted;
             border-width: 0 1px 1px 0;
             border-style: dotted;
-        }  
+        }
 
-        /* Styling on header containers and databody, used for positioning*/	
+        /* Styling on header containers, used for positioning*/
         .oj-datagrid-header,
-        .oj-datagrid-databody {
+        .oj-datagrid-end-header {
             position: absolute;
             overflow: hidden;
         }
-        
-        /* Styling on scrollers regions, used for positioning*/		
-        .oj-datagrid-scrollers {
+
+        /* Styling on scrollers and databody regions, used for positioning*/
+        .oj-datagrid-scrollers,
+        .oj-datagrid-databody {
             position: absolute;
             overflow: auto;
         }
-        
-        /* Styling on scroller region, used for positioning*/			
+
+        /* Styling on scroller region, used for positioning*/
         .oj-datagrid-scroller {
             position:absolute;
             width: 100%;
             height: 100%;
         }
-        
-        /* Styles used to optimize scolling on touch devices used to optimize translate 
+
+        /* Styles used to optimize scolling on touch devices used to optimize translate
            3d swiping on touch and engage hardware acceleration, they are not for animation changes*/
         .oj-datagrid-scroller-touch {
-            transition: 0.5s;	
-            @include oj-transition-timing-function-property (ease-out);	
-            @include oj-backface-visibility-property (hidden);	
+            transition: 0.5s;
+            @include oj-transition-timing-function-property (ease-out);
+            @include oj-backface-visibility-property (hidden);
             @include oj-perspective-property (1000);
         }
-        
+
         /* Styling on header cells when hovered both for rows and columns */
-        .oj-datagrid-header-cell.oj-hover {
+        .oj-datagrid-header-cell.oj-hover,
+        .oj-datagrid-end-header-cell.oj-hover{
             background-color: $dataGridHeaderBgColorHover;
         }
-        
+
         /* Styling on header cells when focus both for rows and columns */
-        .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus {
+        .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus,
+        .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus {
             background-color: $dataGridHeaderBgColorFocus;
         }
-        
+
         /* Styling on header cells when focus both for rows and columns */
-        .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus {
+        .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus,
+        .oj-hicontrast .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus {
             outline-width: 1px;
             outline-style: dotted;
             border-width: 0 1px 1px 0;
             border-style: dotted;
-        }          
-                                       
-        /* Styling on the status text, such as fetching data */					
+        }
+
+        /* Styling on the status text, such as fetching data */
         .oj-datagrid-status {
             position: absolute;
             display: none;
             background-color: $dataGridStatusBgColor;
             border: 1px $dataGridCellBorderColor solid;
-            padding: $dataGridHeaderPadding;
+            padding: $dataGridCellPadding;
             top: 50%;
         }
-        
-        /* Styling for the empty data grid text, default only used for positioning */						
+
+        /* Styling for the empty data grid text, default only used for positioning */
         .oj-datagrid-empty-text {
             position: absolute;
             padding: $dataGridCellPadding;
         }
-        
-        /* Styling for the corner between row and column headers and scrollbars */                               
+
+        /* Styling for the corner between row and column headers and scrollbars */
         .oj-datagrid-row-header-spacer,
         .oj-datagrid-column-header-spacer,
         .oj-datagrid-bottom-corner,
         .oj-datagrid-top-corner {
             position: absolute;
-            @include oj-box-sizing-property (border-box);       
+            box-sizing: border-box;
             border-color: $dataGridHeaderBorderColor;
-            border-style: solid;  
+            border-style: solid;
         }
-        
-        /* Styling for the top corner between headers */                            
+
+        /* Styling for the top corner between headers */
         .oj-datagrid-top-corner {
             @include oj-ltr() {
                 border-width: 0 1px 1px 0;
             }
-            
+
             @include oj-rtl() {
                 border-width: 0 0 1px 1px;
             }
         }
-        
+
         /* Styling for the corner between scrollbars if present */
         .oj-datagrid-bottom-corner {
-            background-color: $dataGridBgColor;      
+            background-color: $dataGridBgColor;
             @include oj-ltr() {
                 border-width: 1px 0 0 1px;
             }
-            
+
             @include oj-rtl() {
                 border-width: 1px 1px 0 0;
-            }                 
+            }
         }
 
-        /* Styling for the corner between row headers and horizontal scrollbar */								
+        /* Styling for the corner between row headers and horizontal scrollbar */
         .oj-datagrid-row-header-spacer {
             //sets the axis border
             @include oj-ltr() {
                 border-width: 1px 1px 0 0;
             }
-            
+
             @include oj-rtl() {
                 border-width: 1px 0 0 1px;
             }
         }
-        
-        /* Styling for the corner between column headers and vertical scrollbar */								
+
+        /* Styling for the corner between column headers and vertical scrollbar */
         .oj-datagrid-column-header-spacer {
-            //sets the axis border		
+            //sets the axis border
             @include oj-ltr() {
                 border-width: 0 0 1px 1px;
             }
-            
+
             @include oj-rtl() {
                 border-width: 0 1px 1px 0;
             }
         }
-        
-        /* Styling for the sort area around the icon */  
+
+        /* Styling for the sort area around the icon */
         .oj-datagrid-sort-icon-container {
             position: absolute;
-            @include oj-box-sizing-property (border-box);
+            box-sizing: border-box;
             display: inline-block;
             width: 25px;
             bottom: 0;
-            padding: 0 $dataGridHeaderPadding $dataGridHeaderPadding $dataGridHeaderPadding;       
+            padding: 0 $dataGridCellPadding $dataGridCellPadding $dataGridCellPadding;
             @include oj-ltr() {
-                right: 0;    
+                right: 0;
             }
-            
+
             @include oj-rtl() {
-                left: 0;    
-            }			
-        }  
-        
-        /* Styling for the gradient for sort icons in the header */  	
+                left: 0;
+            }
+        }
+
+        /* Styling for the gradient for sort icons in the header */
         .oj-datagrid-sort-icon-container.oj-enabled {
             @include oj-ltr() {
-                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColor,0), rgba($dataGridHeaderBgColor,1) 40%), 
+                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColor,0), rgba($dataGridHeaderBgColor,1) 40%),
                 $slowOverride: false);
             }
-            
+
             @include oj-rtl() {
-                @include oj-background-image(linear-gradient(to left, rgba($dataGridHeaderBgColor,0), rgba($dataGridHeaderBgColor,1) 40%), 
+                @include oj-background-image(linear-gradient(to left, rgba($dataGridHeaderBgColor,0), rgba($dataGridHeaderBgColor,1) 40%),
                 $slowOverride: false);
-            }	          
+            }
 
             @include oj-gradients-slowoverride() {
               background-color: $dataGridHeaderBgColor;
-            }          
+            }
         }
-        
-        
-        /* Styling for the gradient for sort icons on hover in the header */  			
-        .oj-hover .oj-datagrid-sort-icon-container {            
+
+
+        /* Styling for the gradient for sort icons on hover in the header */
+        .oj-hover .oj-datagrid-sort-icon-container {
             @include oj-ltr() {
-                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColorHover,0), rgba($dataGridHeaderBgColorHover,1) 40%), 
+                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColorHover,0), rgba($dataGridHeaderBgColorHover,1) 40%),
                 $slowOverride: false);
             }
-            
+
             @include oj-rtl() {
                 @include oj-background-image(linear-gradient(to left, rgba($dataGridHeaderBgColorHover,0), rgba($dataGridHeaderBgColorHover,1) 40%),
                 $slowOverride: false);
-            }	     
+            }
 
             @include oj-gradients-slowoverride() {
               background-color: $dataGridHeaderBgColorHover;
-            }                 
+            }
         }
-        
-        /* Styling for the gradient for sort icons on hover in an focused header */  					
-        .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container, 
+
+        /* Styling for the gradient for sort icons on hover in an focused header */
+        .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-hover.oj-focus .oj-datagrid-sort-icon-container,
         .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus .oj-datagrid-sort-icon-container.oj-enabled {
             @include oj-ltr() {
-                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColorFocus,0), rgba($dataGridHeaderBgColorFocus,1) 40%), 
+                @include oj-background-image(linear-gradient(to right, rgba($dataGridHeaderBgColorFocus,0), rgba($dataGridHeaderBgColorFocus,1) 40%),
                 $slowOverride: false);
             }
-            
+
             @include oj-rtl() {
-                @include oj-background-image(linear-gradient(to left, rgba($dataGridHeaderBgColorFocus,0), rgba($dataGridHeaderBgColorFocus,1) 40%), 
+                @include oj-background-image(linear-gradient(to left, rgba($dataGridHeaderBgColorFocus,0), rgba($dataGridHeaderBgColorFocus,1) 40%),
                 $slowOverride: false);
-            }	            
+            }
 
             @include oj-gradients-slowoverride() {
               background-color: $dataGridHeaderBgColorFocus;
-            }                       
+            }
         }
 
-        /* Styling for both the sort icons and click area */									
-        .oj-datagrid-sort-ascending-icon, 
+        /* Styling for both the sort icons and click area */
+        .oj-datagrid-sort-ascending-icon,
         .oj-datagrid-sort-descending-icon {
             @include oj-ltr() {
-                float: right;    
+                float: right;
             }
-            
+
             @include oj-rtl() {
-                float: left;    
-            }		
+                float: left;
+            }
         }
-        
-        /* Styling for disabled sort icons */										
-        .oj-datagrid-sort-ascending-icon.oj-disabled, 
+
+        /* Styling for disabled sort icons */
+        .oj-datagrid-sort-ascending-icon.oj-disabled,
         .oj-datagrid-sort-descending-icon.oj-disabled {
             display: none;
-        } 
-        
-        /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */											 
-        .oj-datagrid-row.oj-datagrid-cut .oj-datagrid-cell, 
+        }
+
+        /* Styling for the row that is cut during a context menu or CTRL-X cut and paste operation */
+        .oj-datagrid-row.oj-datagrid-cut .oj-datagrid-cell,
         .oj-datagrid-row.oj-datagrid-cut {
             opacity: 0.8;
         }
-        
-        /* Styling row and row headers that are draggable */											 	        
+
+        /* Styling row and row headers that are draggable */
         .oj-datagrid .oj-draggable {
             cursor: move;
         }
-        
-        /* Styling for the row that is being moved using drag */											 	
+
+        /* Styling for the row that is being moved using drag */
         .oj-datagrid-row.oj-drag {
-            opacity: 0.8; 
+            opacity: 0.8;
             //bring in front of other rows
             z-index: 1;
         }
-        
-        /* Styling all drop targets in the datagrid when dragging rows*/											 			
+
+        /* Styling all drop targets in the datagrid when dragging rows*/
         .oj-datagrid .oj-drop {
-            @include oj-box-sizing-property (border-box);
+            box-sizing: border-box;
             width: 100%;
             position: absolute;
-            opacity: .8;            
-        }    
-        
-        /* Styling for databody drop targets when dragging rows*/											 			
+            opacity: .8;
+        }
+
+        /* Styling for databody drop targets when dragging rows*/
         .oj-datagrid-databody .oj-drop {
             border: 1px solid $dropTarget2Color;
-            background-color: $dropTarget1Color;    
+            background-color: $dropTarget1Color;
         }
-        
-        /* Styling for header drop targets when dragging rows*/											 			
-        .oj-datagrid-header .oj-drop {
-            border: 1px solid $dropTarget1Color;            
+
+        /* Styling for header drop targets when dragging rows*/
+        .oj-datagrid-header .oj-drop,
+        .oj-datagrid-end-header .oj-drop {
+            border: 1px solid $dropTarget1Color;
             background-color:  $dropTarget2Color;
-        }    
-        
-        /* Styling for the selection affordance icon on touch devices*/											 				
-        .oj-datagrid-touch-selection-affordance-top, 
+        }
+
+        /* Styling for the selection affordance icon on touch devices*/
+        .oj-datagrid-touch-selection-affordance-top,
         .oj-datagrid-touch-selection-affordance-bottom {
             @include oj-border-radius(50%);
             border: 2px solid $dataGridSelectionAffordanceBorder;
             border: 2px solid rgba($dataGridSelectionAffordanceBorder, 0.8);
-            @include oj-box-sizing-property (border-box);		
+            box-sizing: border-box;
             background-color: $iconColorHover;
             width: 11px;
             height: 11px;
@@ -465,27 +618,24 @@
             left: 0;
             right: 0;
             top: 0;
-            bottom: 0;            
+            bottom: 0;
         }
-        
-        /* Styling for the selection affordance touchable area on touch devices*/											 				
+
+        /* Styling for the selection affordance touchable area on touch devices*/
         .oj-datagrid-touch-area {
             width: 24px;
             height: 24px;
             position: absolute;
-        }    
+        }
 
-             
-      
-        /* Styling for the sort ascending icon */                                    
+        /* Styling for the sort ascending icon */
         .oj-datagrid-sort-ascending-icon {
-            @extend .oj-fwk-icon-arrow03-n;   
+            @extend .oj-fwk-icon-arrow03-n;
         }
-        
-        /* Styling for the sort descending icon */                                    
+
+        /* Styling for the sort descending icon */
         .oj-datagrid-sort-descending-icon {
-            @extend .oj-fwk-icon-arrow03-s;        
+            @extend .oj-fwk-icon-arrow03-s;
         }
-    
     }
 }

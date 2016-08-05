@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Disabled_Unhecked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="22px" height="22px" viewBox="0 2 22 22" enable-background="new 0 2 22 22" xml:space="preserve">
+<g id="Disabled_Checkbox_Background">
+	<circle opacity="0.5" fill="#FFFFFF" enable-background="new    " cx="11" cy="13" r="11"/>
+</g>
+<g id="Disabled_Checkbox_Border_1_">
+	<path id="Disabled_Checkbox_Border" opacity="0.5" fill="#5A5A5A" d="M22,13c0,6.08-4.92,11-11,11S0,19.08,0,13S4.92,2,11,2
+		S22,6.92,22,13z M10.96,3c-5.52,0-10,4.48-10,10s4.48,10,10,10s10-4.48,10-10S16.48,3,10.96,3z"/>
+</g>
+</svg>

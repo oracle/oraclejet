@@ -9,6 +9,14 @@
 
 @if $includeTimelineClasses != false {
   @include module-include-once("common.timeline") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-timeline:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-timeline {
       @include oj-user-select-property(none);
       outline:none;
@@ -137,6 +145,8 @@
     
     .oj-timeline-zoomin-icon {
       background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
+      background-color:$background1Color;
+      border-color:#d6d7d8;
     }
     
     .oj-timeline-zoomin-icon.oj-hover {
@@ -153,6 +163,8 @@
     
     .oj-timeline-zoomout-icon {
       background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
+      background-color:$background1Color;
+      border-color:#d6d7d8;
     }
     
     .oj-timeline-zoomout-icon.oj-hover {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Enabled_Unchecked_Checkbox_1_"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="22px" height="22px"
+	 viewBox="1 1 22 22" enable-background="new 1 1 22 22" xml:space="preserve">
+<g id="Background">
+	<circle opacity="0.9" fill="#FFFFFF" cx="12" cy="12" r="11"/>
+</g>
+<g id="Enabled_Unchecked_Checkbox">
+	<path fill="#2D72B9" d="M23,12c0,6.08-4.92,11-11,11S1,18.08,1,12S5.92,1,12,1S23,5.92,23,12z M11.96,2c-5.52,0-10,4.48-10,10
+		s4.48,10,10,10s10-4.48,10-10S17.48,2,11.96,2z"/>
+</g>
+</svg>

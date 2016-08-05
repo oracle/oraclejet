@@ -56,6 +56,7 @@
 @import "widgets/oj.alta.android.dvt.base";
 @import "widgets/oj.alta.android.dvt.chart";
 @import "widgets/oj.alta.android.dvt.diagram";
+@import "widgets/oj.alta.android.dvt.gantt";
 @import "widgets/oj.alta.android.dvt.gauge";
 @import "widgets/oj.alta.android.dvt.nbox";
 @import "widgets/oj.alta.android.dvt.pictochart";
@@ -63,6 +64,7 @@
 @import "widgets/oj.alta.android.dvt.thematicmap";
 @import "widgets/oj.alta.android.dvt.treemap";
 @import "widgets/oj.alta.android.dvt.sunburst";
+@import "widgets/oj.alta.android.dvt.timeaxis";
 @import "widgets/oj.alta.android.dvt.timeline";
 
 // form controls and messaging
@@ -91,5 +93,6 @@
 @import "widgets/oj.alta.android.formlayout";
 
 // appplication layout
+@import "widgets/oj.alta.android.applayout";
 @import "widgets/oj.alta.android.applayout.hybrid";
 @import "widgets/oj.alta.android.applayout.web";

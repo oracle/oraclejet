@@ -3,8 +3,29 @@
 @import "oj.utilities.bidi";
 
 
+
 //*****************************************************************************
-//
+// flips the right and left properties if needed.
+//*****************************************************************************
+
+@function oj-shorthand-property-rtl-flip ($propertyValue)
+{ 
+
+  // when the property value length is less than 3 it means the right 
+  // and left are the same, so we only need to flip anything if all 4 
+  // sides are specified
+  @if (length($propertyValue) == 4)
+  { 
+    @return nth($propertyValue, 1) nth($propertyValue, 4) nth($propertyValue, 3) nth($propertyValue, 2);
+  }
+
+  @return $propertyValue;
+}
+
+//*****************************************************************************
+// sometimes "shorthand" properties are used, as in 
+//   border-width: 1px 2px 0 3px.
+// this function lets you ask for the value of a particular side
 //*****************************************************************************
 
 @function oj-shorthand-property-value-side ($propertyValue, $side)

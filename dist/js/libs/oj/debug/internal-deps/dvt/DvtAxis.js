@@ -429,7 +429,7 @@ DvtAxisDefaults.SKIN_ALTA = {
   'axisLine': {'lineColor': '#9E9E9E'},
   'majorTick': {'lineColor': 'rgba(196,206,215,0.4)', 'baselineColor': 'auto'},
   'minorTick': {'lineColor': 'rgba(196,206,215,0.2)'},
-  'tickLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'white-space:normal;')},
+  'tickLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   'titleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12)
 };
 
@@ -650,6 +650,12 @@ var DvtAxisRenderer = new Object();
 dvt.Obj.createSubclass(DvtAxisRenderer, dvt.Obj);
 
 /**
+ * The max amount of lines we allow in title wrapping.
+ * @private
+ */
+DvtAxisRenderer._MAX_TITLE_LINE_WRAP = 3;
+
+/**
  * Returns the preferred dimensions for this component given the maximum available space. This will never be called for
  * radial axis.
  * @param {dvt.Axis} axis
@@ -665,7 +671,6 @@ DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
 
   // The axis will always return the full length of the dimension along which values are placed, so there's only one
   // size that we need to keep track of.  For example, this is the height on horizontal axes.
-  var size = 0;
   var bHoriz = (options['position'] == 'top' || options['position'] == 'bottom');
 
   // No size if not rendered or either dimension is 0
@@ -673,8 +678,8 @@ DvtAxisRenderer.getPreferredSize = function(axis, availWidth, availHeight) {
     return bHoriz ? new dvt.Dimension(availWidth, 0) : new dvt.Dimension(0, availHeight);
 
   // Allocate space for the title
-  if (options['title'])
-    size = dvt.TextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisRenderer._getTitleGap(axis);
+  var titleHeight = DvtAxisRenderer.getTitleHeight(context, options, (bHoriz ? availWidth : availHeight) * 0.8, (bHoriz ? availHeight : availWidth) * 0.8);
+  var size = titleHeight != 0 ? titleHeight + DvtAxisRenderer._getTitleGap(axis) : 0;
 
   // Allocate space for the tick labels
   if (options['tickLabel']['rendered'] == 'on' && options['tickLabel']['position'] != 'inside') {
@@ -807,9 +812,11 @@ DvtAxisRenderer._renderTitle = function(axis, axisInfo, availSpace) {
   var bHoriz = (options['position'] == 'top' || options['position'] == 'bottom');
   var maxLabelWidth = bHoriz ? availSpace.w : availSpace.h;
   var maxLabelHeight = bHoriz ? availSpace.h : availSpace.w;
-  var title = DvtAxisRenderer._createText(axis.getEventManager(), axis, options['title'], options['titleStyle'],
+  var titleStyle = options['titleStyle'];
+  var isMultiLine = DvtAxisRenderer.isWrapEnabled(titleStyle);
+  var title = DvtAxisRenderer._createText(axis.getEventManager(), axis, options['title'], titleStyle,
                                           0, 0, maxLabelWidth, maxLabelHeight,
-                                          DvtAxisEventManager.getUIParams(DvtAxisConstants.TITLE));
+                                          DvtAxisEventManager.getUIParams(DvtAxisConstants.TITLE), isMultiLine);
 
   if (title) {
     // Position the title based on text size and axis position
@@ -1276,11 +1283,20 @@ DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
  * @param {number} width The width of available text space.
  * @param {number} height The height of the available text space.
  * @param {object} params Additional parameters that will be passed to the logical object.
- * @return {dvt.OutputText} The created text object. Can be null if no text object could be created in the given space.
+ * @param {boolean=} bMultiLine True if text can use multiple lines
+ * @return {dvt.OutputText|dvt.MultilineText} The created text object. Can be null if no text object could be created in the given space.
  * @private
  */
-DvtAxisRenderer._createText = function(eventManager, container, textString, cssStyle, x, y, width, height, params) {
-  var text = new dvt.OutputText(container.getCtx(), textString, x, y);
+DvtAxisRenderer._createText = function(eventManager, container, textString, cssStyle, x, y, width, height, params, bMultiLine) {
+  var text;
+  if (bMultiLine) {
+    text = new dvt.MultilineText(container.getCtx(), textString, x, y);
+    text.setMaxLines(DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
+    text.wrapText(width, height, 1);
+  }
+  else
+    text = new dvt.OutputText(container.getCtx(), textString, x, y);
+
   text.setCSSStyle(cssStyle);
   if (dvt.TextUtils.fitText(text, width, height, container)) {
     // Associate with logical object to support automation and truncation
@@ -1528,6 +1544,45 @@ DvtAxisRenderer._getGroupAxisPreferredSize = function(axis, axisInfo, size, avai
 
   return size;
 };
+
+/**
+ * Get the height of the axis title
+ * @param {dvt.Context} context The axis context
+ * @param {Object} options The options for the axis
+ * @param {Number} availWidth The maximum available width for the title
+ * @param {Number} availHeight The maximum available height for the title
+ * @return {Number}
+ */
+DvtAxisRenderer.getTitleHeight = function(context, options, availWidth, availHeight) {
+  var titleHeight = 0;
+
+  if (options['title']) {
+    if (DvtAxisRenderer.isWrapEnabled(options['titleStyle'])) {
+      var text = new dvt.MultilineText(context, options['title'], 0, 0);
+      text.setMaxLines(DvtAxisRenderer._MAX_TITLE_LINE_WRAP);
+      text.setCSSStyle(options['titleStyle']);
+      text.wrapText(availWidth, availHeight, 1);
+      titleHeight = text.getDimensions().h;
+    }
+    else
+      titleHeight = dvt.TextUtils.getTextStringHeight(context, options['titleStyle']);
+  }
+
+  return titleHeight;
+};
+
+/**
+ * Returns true if the white space property is not nowrap.
+ * @param {dvt.CSSStyle} cssStyle The css style to be evaluated
+ * @return {boolean}
+ */
+DvtAxisRenderer.isWrapEnabled = function(cssStyle) {
+  var whiteSpaceValue = cssStyle.getStyle(dvt.CSSStyle.WHITE_SPACE);
+  // checking noWrap for backwards compatibility
+  if (whiteSpaceValue == 'nowrap' || whiteSpaceValue == 'noWrap')
+    return false;
+  return true;
+};
 /**
  * Calculated axis information and drawable creation.  This class should
  * not be instantiated directly.
@@ -1550,7 +1605,7 @@ dvt.Obj.createSubclass(dvt.AxisInfo, dvt.Obj);
 dvt.AxisInfo.newInstance = function(context, options, availSpace) {
   if (options['timeAxisType'] && options['timeAxisType'] != 'disabled')
     return new dvt.TimeAxisInfo(context, options, availSpace);
-  else if (isNaN(options['dataMin']) && isNaN(options['dataMax']))
+  else if (options['_isGroupAxis'])
     return new dvt.GroupAxisInfo(context, options, availSpace);
   else
     return new dvt.DataAxisInfo(context, options, availSpace);
@@ -3000,8 +3055,10 @@ dvt.GroupAxisInfo.prototype.Init = function(context, options, availSpace) {
 
   // Initial height/width that will be available for the labels. Used for text wrapping.
   this._maxSpace = isHoriz ? availSpace.h : availSpace.w;
-  if (options['title'])
-    this._maxSpace -= dvt.TextUtils.getTextStringHeight(context, options['titleStyle']) + DvtAxisDefaults.getGapSize(context, options, options['layout']['titleGap']);
+  if (options['rendered'] != 'off') {
+    var titleHeight = DvtAxisRenderer.getTitleHeight(context, options, isHoriz ? availSpace.w : availSpace.h, isHoriz ? availSpace.h : availSpace.w);
+    this._maxSpace -= titleHeight != 0 ? titleHeight + DvtAxisDefaults.getGapSize(context, options, options['layout']['titleGap']) : 0;
+  }
 
   this._maxLineWrap = dvt.GroupAxisInfo._MAX_LINE_WRAP;
 };
@@ -3088,7 +3145,7 @@ dvt.GroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow
       // Estimate if there is room for at least one wrap, and either attempt to wrap or disable wrap on the text
       // Note: This estimate may end up disabling wrap for text that may have just fit, but sufficiently excludes text that
       // will have definitely not fit.
-      if (text.getLineHeight() * 2 < groupSpan)
+      if (text.getLineHeight() * 2 < groupSpan && this._maxSpace > 0)
         text.wrapText(this._maxSpace, text.getLineHeight() * dvt.GroupAxisInfo._MAX_LINE_WRAP, 1);
       else
         text.setWrapEnabled(false);
@@ -3106,7 +3163,7 @@ dvt.GroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow
   var labelDims = this.GuessLabelDims(labels, container, null, level); // the guess returns the exact heights
 
   // Wrapped labels
-  if (this.Options['tickLabel']['style'].getStyle(dvt.CSSStyle.WHITE_SPACE) == 'normal') {
+  if (DvtAxisRenderer.isWrapEnabled(this.Options['tickLabel']['style']) && this._maxSpace > 0) {
     var updateLabelDims = this._sanitizeWrappedText(context, labelDims, labels, true, isHierarchical);
     // Recalculate label dims for skipping
     if (updateLabelDims)
@@ -3305,11 +3362,11 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
   var autoRotate = !isHierarchical && rotationEnabled && groupWidth < dvt.GroupAxisInfo._ROTATE_THRESHOLD;
 
   // Attempt text wrapping if:
-  // 1. white-space = 'normal'
+  // 1. white-space != 'nowrap'
   // 2. vertical or horizontal axis
   // 3. groupWidth > textHeight -> wrapping is only necessary when more than one text line can tentatively fit in the groupWidth
   var tickLabelStyle = this.Options['tickLabel']['style'];
-  var wrapping = tickLabelStyle.getStyle(dvt.CSSStyle.WHITE_SPACE) == 'normal' && this.Position != 'tangential' && groupWidth > dvt.TextUtils.getTextStringHeight(context, tickLabelStyle);
+  var wrapping = DvtAxisRenderer.isWrapEnabled(this.Options['tickLabel']['style']) && this.Position != 'tangential' && groupWidth > dvt.TextUtils.getTextStringHeight(context, tickLabelStyle);
 
   // Iterate and create the labels
   var label, firstLabel, lastLabel;
@@ -3319,7 +3376,10 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
   for (var level = 0; level < this._numLevels; level++) {
     var levels = this._levelsArray[level];
 
-    for (var i = 0; i < levels.length; i++) {
+    // if autoRotate, increase performance by only generating a subset of labels to begin with, as majority will be skipped.
+    var increment = autoRotate ? Math.max(1, Math.floor(dvt.GroupAxisInfo._ROTATE_THRESHOLD / (2 * Math.max(1, groupWidth)))) : 1;
+
+    for (var i = 0; i < levels.length; i += increment) {
       if (levels[i]) {
         label = this.getLabelAt(i, level);
         // No text object created when group name is null or ''
@@ -3338,13 +3398,13 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
           var groupSpan = groupWidth * (this.getEndIndex(i, level) - this.getStartIndex(i, level) + 1);
           var bWrappedLabel = bMultiline && this._isTextWrapNeeded(context, label, cssStyle, rotationEnabled, isHoriz ? groupSpan : availSize);
           // wrap text in the width available for each group
-          if (bWrappedLabel) {
+          if (bWrappedLabel && availSize > 0) {
             if (isHoriz)
               text.wrapText(groupSpan, availSize, 1, true);
             else
               text.wrapText(availSize, text.getLineHeight() * this._maxLineWrap, 1, false);
           }
-          else if (bMultiline && !isHoriz) // Multiline texts on vertical axis will not attempt further wrapping
+          else if (bMultiline && (!isHoriz || availSize < 0)) // Multiline texts on vertical axis will not attempt further wrapping
             text.setWrapEnabled(false);
 
           text._index = i; // group axis labels should reference label._index for its index

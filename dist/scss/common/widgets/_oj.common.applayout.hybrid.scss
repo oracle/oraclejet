@@ -10,6 +10,7 @@
 @if $includeAppLayoutHybridClasses != false {
   @include module-include-once("common.applayout.hybrid") {
 
+    // BODY CLASSES
     /* Class used to suppress copy/paste and context menus for hybrid mobile apps */
     .oj-hybrid {
       // suppress copy/paste and iOS mag lens
@@ -22,16 +23,6 @@
     .oj-hybrid textarea {
       // allow text selection on input and text areas
       @include oj-user-select-property(text);
-    }
-
-    /* Class used to position the application header and title for iOS hybrid
-       applications where the status bar is overlaid in the WebView.
-       This class has no effect on other platforms. */
-    .oj-hybrid.oj-platform-ios.oj-platform-cordova .oj-hybrid-statusbar-spacer.oj-hybrid-applayout-header {
-      padding-top: 20px;
-    }
-    .oj-hybrid.oj-platform-ios.oj-platform-cordova .oj-hybrid-statusbar-spacer.oj-hybrid-applayout-header .oj-hybrid-applayout-header-title {
-      margin-top: 20px;
     }
 
     // PADDING
@@ -70,57 +61,41 @@
     }
 
     // OFFCANVAS
-    .oj-hybrid-applayout-offcanvas-wrapper {
-      @extend %oj-applayout-offcanvas-wrapper;
-    }
     .oj-hybrid-applayout-offcanvas {
-      @extend %oj-applayout-offcanvas;
-      min-width: $appLayoutHybridOffcanvasWidth;
-      @include oj-box-sizing-property(border-box);
+      width: $appLayoutOffcanvasWidth;
+      max-width: $appLayoutOffcanvasMaxWidth;
+      box-sizing: border-box;
       background-color: $appLayoutHybridOffcanvasBgColor;
       color: $contrastTextColor;
-    }
-    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
-    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
-      background-color: $appLayoutHybridOffcanvasBgColor;
-    }
-    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-header,
-    .oj-hybrid-applayout-offcanvas .oj-hybrid-applayout-footer {
-      border-style: none;
+      @include oj-box-shadow(3px 2px 7px rgba(0,0,0,.5));
     }
 
-    // PAGE LAYOUT
+    //PAGE
     .oj-hybrid-applayout-page {
-      @extend %oj-applayout-page;
-      position: fixed;
-    }
-    // The following classes have flex none so they are sized correctly in the
-    // page layout
-    .oj-hybrid-applayout-header,
-    .oj-hybrid-applayout-footer,
-    %oj-hybrid-applayout-navbar-base {
-      @include oj-flex-property(0 0 auto);
-    }
-
-    .oj-hybrid-applayout-header > .oj-flex-bar-start {
-      // add padding to the end side of the start box
-      @extend .oj-hybrid-padding-end;
+      min-height: 100vh;
     }
 
     // HEADER
     .oj-hybrid-applayout-header {
+      @extend %oj-flex-bar-base;
+      @extend .oj-sm-align-items-center;
       @include oj-box-shadow($appLayoutHybridHeaderBoxShadow);
-      // ensure the header is first item
-      @include oj-order-property(-2);
-      min-height: $appLayoutHybridHeaderMinHeight;
-      width: 100%;
-      @include oj-box-sizing-property(border-box);
       @if $appLayoutHybridHeaderBorderColor != null {
         border-bottom: 1px solid $appLayoutHybridHeaderBorderColor;
       }
       background-color: $appLayoutHybridHeaderBgColor;
-      opacity: $appLayoutHybridHeaderOpacity;
       padding: 0 $appLayoutHybridPadding 0 $appLayoutHybridPadding;
+    }
+    .oj-hybrid-applayout-header::before {
+      // To workaround IE11 min-height and flex bug
+      content: "";
+      display: inline-block;
+      min-height: $appLayoutHybridHeaderMinHeight;
+      visibility: hidden;
+    }
+    .oj-hybrid-applayout-header > .oj-flex-bar-start {
+      // add padding to the end side of the start box
+      @extend .oj-hybrid-padding-end;
     }
     .oj-hybrid-applayout-header-title {
       font-weight: $appLayoutHybridHeaderTitleFontWeight;
@@ -129,7 +104,7 @@
       padding: 0;
       margin: 0;
     }
-    /* Use instead of oj-hybrid-applayout-header when a top fixed nav bar is present
+    /* Use instead of oj-hybrid-applayout-header when a top fixed bar is present
        so we can correctly style the header border */
     .oj-hybrid-applayout-header-no-border {
       @extend .oj-hybrid-applayout-header;
@@ -158,75 +133,77 @@
         margin-left: -$buttonIconOnlyPadding;
       }
     }
-
-    // SCROLLABLE CONTAINERS
-    .oj-hybrid-applayout-scrollable-wrapper {
-      @extend %oj-applayout-scrollable-wrapper;
+    /* Class used to position the application header and title for iOS hybrid
+       applications where the status bar is overlaid in the WebView.
+       This class has no effect on other platforms. */
+    .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-header {
+      padding-top: 20px;
+      min-height: $appLayoutHybridHeaderMinHeight + 20px;
     }
-    .oj-hybrid-applayout-scrollable {
-      @extend %oj-applayout-scrollable;
+    .oj-hybrid.oj-platform-ios.oj-platform-cordova.oj-hybrid-statusbar-spacer .oj-hybrid-applayout-header .oj-hybrid-applayout-header-title {
+      margin-top: 20px;
     }
 
     // CONTENT
     .oj-hybrid-applayout-content {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      // marker class used for adding top and bottom margins
     }
 
     // FOOTER
     .oj-hybrid-applayout-footer {
-      // ensure the footer is last item
-      @include oj-order-property(2);
       min-height: $appLayoutHybridFooterMinHeight;
-      width: 100%;
-      @include oj-box-sizing-property(border-box);
       @if $appLayoutHybridFooterBorderColor != null {
         border-top: 1px solid $appLayoutHybridFooterBorderColor;
       }
       background-color: $appLayoutHybridHeaderBgColor;
-      opacity: $appLayoutHybridFooterOpacity;
     }
     // FOOTER TOOLBAR
+    .oj-hybrid-applayout-toolbar-stretch {
+      @extend %oj-flex-bar-base;
+    }
     .oj-hybrid-applayout-toolbar-stretch .oj-button {
       @include oj-flex-property(1 1 auto);
       // height: 100% isn't working, but explicitly setting to a px value works
       min-height: $appLayoutHybridFooterMinHeight;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       margin: 0;
     }
 
     // NAV BAR
-    %oj-hybrid-applayout-navbar-base {
+    .oj-hybrid-applayout-navbar-page,
+    .oj-hybrid-applayout-navbar-app {
       background-color: $appLayoutHybridHeaderBgColor;
     }
-    %oj-hybrid-applayout-navbar-base .oj-navigationlist-horizontal .oj-navigationlist-element {
-      margin: 0;
-    }
-    .oj-hybrid-applayout-navbar-fixed-top {
-      @extend %oj-hybrid-applayout-navbar-base;
-      @include oj-order-property(-1);
-      @if $appLayoutHybridFooterBorderColor != null {
-        border-bottom: 1px solid $appLayoutHybridFooterBorderColor;
+    .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-page,
+    .oj-applayout-fixed-top .oj-hybrid-applayout-navbar-app {
+      @include oj-box-shadow($appLayoutHybridHeaderBoxShadow);
+      @if $appLayoutHybridHeaderBorderColor != null {
+        border-bottom: 1px solid $appLayoutHybridHeaderBorderColor;
       }
     }
-    .oj-hybrid-applayout-navbar-fixed-bottom {
-      @extend %oj-hybrid-applayout-navbar-base;
-      @include oj-order-property(1);
+    .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-page,
+    .oj-applayout-fixed-bottom .oj-hybrid-applayout-navbar-app {
       @include oj-box-shadow($appLayoutHybridNavBarBoxShadow);
       @if $appLayoutHybridFooterBorderColor != null {
         border-top: 1px solid $appLayoutHybridFooterBorderColor;
       }
     }
-    /* Deprecated. Applications should use oj-hybrid-applayout-navbar-fixed-bottom or 
-      oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
+
+
+    // DEPRECATED
+    /* Deprecated. Use oj-hybrid-applayout-navbar-fixed-bottom or oj-hybrid-applayout-navbar-fixed-top nav bar instead. */
     .oj-hybrid-applayout-navbar {
       @extend .oj-hybrid-applayout-navbar-fixed-bottom;
-    }    
-    /* Deprecated. Apply to page when a header and non fixed nav bar are present
-       so we can correctly style the header and nav bar borders */
+    }
+    .oj-hybrid-applayout-navbar-fixed-top {
+      @extend .oj-applayout-fixed-top;
+      @extend .oj-hybrid-applayout-navbar-page;
+    }
+    .oj-hybrid-applayout-navbar-fixed-bottom {
+      @extend .oj-applayout-fixed-bottom;
+      @extend .oj-hybrid-applayout-navbar-app;
+    }
+    /* Deprecated. Use oj-hybrid-applayout-header or oj-hybrid-applayout-header-no-border to style the header instead. */
     .oj-hybrid-applayout-navbar-non-fixed {}
 
   }

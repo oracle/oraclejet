@@ -337,4 +337,19 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
 });
 
 }( ));
+(function() {
+var ojProgressbarMeta = {
+  "properties": {
+    "disabled": {},
+    "max": {},
+    "value": {}
+  },
+  "methods": {},
+  "extension": {
+    "_widgetName": "ojProgressbar"
+  }
+};
+oj.Components.registerMetadata('ojProgressbar', 'baseComponent', ojProgressbarMeta);
+oj.Components.register('oj-progressbar', oj.Components.getMetadata('ojProgressbar'));
+})();
 });

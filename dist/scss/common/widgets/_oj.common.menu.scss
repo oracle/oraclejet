@@ -12,20 +12,24 @@
 
     /* menu */
     /* --------------------------------------------------------------- */
-    
-    /* defines the stacking context for the menu */
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-menu:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    // defines the stacking context for the menu
     .oj-menu-layer {
       @extend .oj-component-layer;
       z-index: $popupZindex;
     }
     
-    /* top-level menu (component root node) and all submenus */
+    // top-level menu (component root node) and all submenus
     .oj-menu {
         @extend .oj-component-popup;
         color: $textColor;
-        border: 1px solid $menuBorderColor;
-        border-radius: $menuBorderRadius;
-        background: $menuBgColor;
         list-style: none;
         padding-left: 0;
         padding-right: 0;
@@ -33,23 +37,39 @@
         padding-bottom: $menuPadding;
         margin: 0;
         display: inline-block; 
-        font-size: $fontSize;
         white-space: nowrap;
         
         // prevent iOS from applying tap-highlight-color that's darker than the "pressed" color in the spec
         -webkit-tap-highlight-color: transparent;
     }
     
+    // top-level menu (component root node) when displayed as a dropdown
+    .oj-menu-dropdown {
+        border: 1px solid $menuBorderColor;
+        border-radius: $menuBorderRadius;
+        background: $menuBgColor;
+        font-size: $fontSize;
+    }
+    
+    // top-level menu (component root node) when displayed as a sheet
+    .oj-menu-sheet {
+        border: 0;
+        border-radius: $menuSheetBorderRadius;
+        background: $menuSheetBgColor;
+        font-size: $menuSheetFontSize;
+        width: calc(100% - #{oj-add-unit-to-zero(2*$menuSheetMarginHorizontal)});
+    }
+    
     .oj-menu:focus {
         outline:none; // suppress native focus ring, e.g. desktop Chrome's blue outline
     }
 
-    /* top-level menu (component root node) but not submenus */
-    .oj-menu.oj-component {
+    // top-level menu (component root node) but not submenus
+    .oj-menu-dropdown.oj-component {
         @include oj-box-shadow($menuBoxShadow);
     }
     
-    /* submenus but not top-level menu */
+    // submenus but not top-level menu
     .oj-menu.oj-menu-submenu { 
         position: absolute; 
         @include oj-box-shadow($menuSubmenuBoxShadow);
@@ -61,15 +81,67 @@
         width: 100%; 
     }
     
-    /* Horizontal divider between groups of menu items */
+    // first item in a dropdown menu
+    .oj-menu-dropdown .oj-menu-item:first-child,
+    .oj-menu-dropdown .oj-menu-item:first-child > a {
+        border-top-left-radius: $menuBorderRadius;
+        border-top-right-radius: $menuBorderRadius;
+    }
+
+    // last item in a dropdown menu
+    .oj-menu-dropdown .oj-menu-item:last-child,
+    .oj-menu-dropdown .oj-menu-item:last-child > a {
+        border-bottom-left-radius: $menuBorderRadius;
+        border-bottom-right-radius: $menuBorderRadius;
+    }
+
+    // first item in a sheet menu
+    .oj-menu-sheet .oj-menu-item:first-child,
+    .oj-menu-sheet .oj-menu-item:first-child > a {
+        border-top-left-radius: $menuSheetBorderRadius;
+        border-top-right-radius: $menuSheetBorderRadius;
+    }
+
+    // last item in a sheet menu
+    .oj-menu-sheet .oj-menu-item:last-child,
+    .oj-menu-sheet .oj-menu-item:last-child > a {
+        border-bottom-left-radius: $menuSheetBorderRadius;
+        border-bottom-right-radius: $menuSheetBorderRadius;
+    }
+
+    // first item after a group divider in a sheet menu
+    .oj-menu-sheet .oj-menu-item-after-divider,
+    .oj-menu-sheet .oj-menu-item-after-divider > a {
+        border-top-left-radius: $menuSheetItemGroupBorderRadius;
+        border-top-right-radius: $menuSheetItemGroupBorderRadius;
+    }
+
+    // last item before a group divider in a sheet menu
+    .oj-menu-sheet .oj-menu-item-before-divider,
+    .oj-menu-sheet .oj-menu-item-before-divider > a {
+        border-bottom-left-radius: $menuSheetItemGroupBorderRadius;
+        border-bottom-right-radius: $menuSheetItemGroupBorderRadius;
+    }
+
+    // Horizontal divider between groups of menu items
     .oj-menu-divider {
         margin: $menuDividerMargin;
         height: 0;
         font-size: 0;
         line-height: 0;
+        border-style: solid;
+    }
+
+    // Group divider in a dropdown menu
+    .oj-menu-dropdown .oj-menu-divider {
         border-width: $menuDividerBorderWidth 0 0 0; 
         border-color: $menuDividerBorderColor;
-        border-style: solid;
+    }
+
+    // Group divider in a sheet menu
+    .oj-menu-sheet .oj-menu-divider {
+        border-width: $menuSheetDividerBorderWidth 0 0 0;
+        border-color: $menuSheetDividerBorderColor;
     }
 
     // > and (space) select the same anchors
@@ -77,19 +149,35 @@
         // relative positioning so that the absolutely positioned submenu icons are 
         // positioned relative to the <a>
         position: relative;
-        text-decoration: none; 
-        // Due to Bug 21164454, i.e. an a11y platform bug with Apple's VoiceOver in iOS 8 and iOS 9 at the time of writing, we can't use
-        // flex display in conjuction with menu parent container being absolutely positioned. Use display block instead until Apple
-        // fixes this bug:
+        text-decoration: none;
+
+        // WebKit bug 151657, an a11y platform bug with Apple's VoiceOver in iOS 8 and iOS 9, affects 
+        // JET Menu, as noted in JET Bug 21164454.  To workaround the Apple platform bug, we can't use
+        // flex display for menu items when the menu parent container is absolutely positioned. 
+        // Use display block instead until Apple fixes this bug:
         // @include oj-display-flex-property();
         display: block;
-        line-height: $menuItemLineHeight;
+
         font-weight: normal; 
+    }
+
+    .oj-menu-dropdown .oj-menu-item > a {
+        line-height: $menuItemLineHeight;
         color: $menuItemTextColor;
-        
         @if $menuItemBorderColor != null  {
             border-top-width: 1px;
             border-top-color: $menuItemBorderColor;
+            border-top-style: solid;
+        }
+    }
+    
+    .oj-menu-sheet .oj-menu-item > a {
+        line-height: $menuSheetItemLineHeight;
+        background: $menuSheetItemBgColor;
+        color: $menuSheetItemTextColor;
+        @if $menuSheetItemBorderColor != null  {
+            border-top-width: 1px;
+            border-top-color: $menuSheetItemBorderColor;
             border-top-style: solid;
         }
     }
@@ -104,9 +192,15 @@
         }
     }
 
+    // "Cancel" menu item
+    .oj-menu-item-cancel > a {
+        font-weight: $menuSheetItemCancelFontWeight;
+    }
+    
     /* For each menu and submenu, either oj-menu-icons or oj-menu-text-only is applied to the menu, depending on whether at 
-       least one menu item in the menu (excluding its submenus) has an icon (not submenu icon).  These classes facilitate (say)
-       leaving space for a column of icons iff at least one item has an icon, and doing so for each menu/submenu independently. */
+       least one menu item in the menu (excluding its "Cancel" menu item and submenus) has an icon (not submenu icon).  
+       These classes facilitate (say) leaving space for a column of icons iff at least one item has an icon, and doing so 
+       for each menu/submenu independently. */
 
     // need > rather than (space) to avoid matching the items of a submenu without icons whose ancestor menu has icons
     .oj-menu-icons > .oj-menu-item > a { 
@@ -120,25 +214,44 @@
     }
 
     // need > rather than (space) to avoid matching the items of a submenu with icons whose ancestor menu lacks icons
-    .oj-menu-text-only > .oj-menu-item > a { 
-        justify-content: $menuTextOnlyJustifyContent;
+    .oj-menu-text-only > .oj-menu-item > a {
+        // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector 
+        // .oj-menu-item > a (see above), so we also can't use justify-content.
+        // Use text-align instead to horizontally align text until Apple fixes their VoiceOver bug.
+        // While this workaround remains necessary, the only non-null values supported for this variable are 
+        // "flex-start" and "center", which we map to their text-align equivalents null and "center" below.
+        // justify-content: $menuTextOnlyJustifyContent;
 
-        @include oj-ltr() {
-            @if $menuTextOnlyJustifyContent == center {
-                // set menu item start padding same as end padding, so that centered text is really centered.
+        @if $menuTextOnlyJustifyContent == center {
+            text-align: center; // see above comment
+
+            // set menu item start padding same as end padding, so that centered text is really centered.
+            @include oj-ltr() {
                 padding-left: calc(16px + #{2*$menuSubmenuIconPadding});
-            } @else {
+            }
+            @include oj-rtl() {
+                padding-right: calc(16px + #{2*$menuSubmenuIconPadding});
+            }
+        } @else {
+            @include oj-ltr() {
                 padding-left: $menuTextToEdgePadding;
             }
-        }
-        @include oj-rtl() {
-            @if $menuTextOnlyJustifyContent == center {
-                // set menu item start padding same as end padding, so that centered text is really centered.
-                padding-right: calc(16px + #{2*$menuSubmenuIconPadding});
-            } @else {
+            @include oj-rtl() {
                 padding-right: $menuTextToEdgePadding;
             }
         }
+    }
+
+    // If the Cancel menu item is present, then either show an icon in its icon span, or hide 
+    // its icon span, depending on whether at least one other item in the menu has an icon.
+    // Cancel items and their icons only appear in sheet menus, which never have submenus, 
+    // so can use space operator rather than a long chain of > operators.
+    .oj-menu-icons .oj-menu-cancel-icon {
+        @extend .oj-fwk-icon-cross02;
+    }
+
+    .oj-menu-text-only .oj-menu-cancel-icon {
+        display:none;
     }
 
     // need > rather than (space) to avoid selecting (suppressing the border of) menu items having
@@ -148,28 +261,56 @@
         border-top-width: 0;
     }
     
+    // The oj-focus-highlight class applies focus styling that may not be desirable
+    // when the focus results from pointer interaction (touch or mouse), but which is
+    // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+    // example keyboard or initial page load.
+    // See also the $focusHighlightPolicy variable, which controls when this 
+    // class is set.  That variable affects multiple components, not just Menu.
+    .oj-menu-item.oj-focus-highlight > a {
+        @include oj-browser-focus-outline-approximation($textColor);
+    }
+
     // use > rather than (space) so that themers wanting to theme focus and focus-ancestor separately 
     // don't have to contend with the fact that, whenever a submenu item is focused, our 
     // "oj-focus-ancestor a" selector unintentionally selects the ".oj-focus > a" element too.
-    .oj-menu-item.oj-focus          > a,
-    .oj-menu-item.oj-focus-ancestor > a {
+    .oj-menu-dropdown .oj-menu-item.oj-focus          > a,
+    .oj-menu-dropdown .oj-menu-item.oj-focus-ancestor > a {
         background: $menuItemBgColorFocus;
     }
 
-    // border before and after a focused (or focus-ancestor) item
-    .oj-menu-item.oj-focus                          > a,
-    .oj-menu-item.oj-focus-ancestor                 > a,
-    .oj-menu-item.oj-focus          + .oj-menu-item > a,
-    .oj-menu-item.oj-focus-ancestor + .oj-menu-item > a {
+    // border before and after a focused (or focus-ancestor) item in a dropdown menu
+    .oj-menu-dropdown .oj-menu-item.oj-focus                          > a,
+    .oj-menu-dropdown .oj-menu-item.oj-focus-ancestor                 > a,
+    .oj-menu-dropdown .oj-menu-item.oj-focus          + .oj-menu-item > a,
+    .oj-menu-dropdown .oj-menu-item.oj-focus-ancestor + .oj-menu-item > a {
         border-top-color: $menuItemBorderColorFocus;
     }
 
     // when the last menu item is focused, it needs a bottom border in themes that put borders on menu items, 
     // and that have a space between that menu item and the bottom of the menu 
-    .oj-menu-item:last-child.oj-focus          > a,
-    .oj-menu-item:last-child.oj-focus-ancestor > a {
+    .oj-menu-dropdown .oj-menu-item:last-child.oj-focus          > a,
+    .oj-menu-dropdown .oj-menu-item:last-child.oj-focus-ancestor > a {
         @if $menuItemBorderColor != null and $menuPadding {
             border-bottom-color: $menuItemBorderColorFocus;
+        }
+    }
+
+    .oj-menu-sheet .oj-menu-item.oj-focus > a {
+        background: $menuSheetItemBgColorFocus;
+    }
+
+    // border before and after a focused (or focus-ancestor) item in a sheet menu
+    .oj-menu-sheet .oj-menu-item.oj-focus                          > a,
+    .oj-menu-sheet .oj-menu-item.oj-focus          + .oj-menu-item > a {
+        border-top-color: $menuSheetItemBorderColorFocus;
+    }
+
+    // when the last menu item is focused, it needs a bottom border in themes that put borders on menu items, 
+    // and that have a space between that menu item and the bottom of the menu 
+    .oj-menu-sheet .oj-menu-item:last-child.oj-focus          > a {
+        @if $menuItemBorderColor != null and $menuPadding {
+            border-bottom-color: $menuSheetItemBorderColorFocus;
         }
     }
 
@@ -177,20 +318,34 @@
     .oj-menu.oj-disabled .oj-menu-item > a,
     .oj-menu-item.oj-disabled > a {  
         cursor: default; 
+    }
+
+    // disabled menu items can't have open submenus, so > and (space) are equivalent
+    .oj-menu-dropdown.oj-disabled .oj-menu-item > a,
+    .oj-menu-dropdown .oj-menu-item.oj-disabled > a {  
         color: $menuItemTextColorDisabled; 
+    }
+
+    // disabled menu items can't have open submenus, so > and (space) are equivalent
+    .oj-menu-sheet.oj-disabled .oj-menu-item > a,
+    .oj-menu-sheet .oj-menu-item.oj-disabled > a {  
+        color: $menuSheetItemTextColorDisabled; 
     }
 
     /* menu item icons (not submenu icons) */
 
     .oj-menu-item-icon {
         color: $menuIconColor;
-        // Due to Bug 21164454, we can't use display flex for elements with selector .oj-menu-item > a (see above) so we also can't use align-self. 
-        // Use transform instead to vertically center icon until Apply fixes their VO bug.
+
+        // To work around WebKit/Apple platform bug 151657, we can't use display:flex for elements with selector 
+        // .oj-menu-item > a (see above), so we also can't use align-self.  
+        // Use transform instead to vertically center icon until Apple fixes their VoiceOver bug.
         // @include oj-align-self-property(center);
         position: absolute;
         top: 50%;
         -webkit-transform: translateY(-50%);
         transform: translateY(-50%);
+        // END of replacement for align-self
         
         // negative start margin so that (a) icon is shifted startward into the space left for it by the menu item's 
         // start padding, and (b) total of icon's size, start margin, and end margin is 0, so that start edge of text 
@@ -208,7 +363,7 @@
     
     }
     
-    /* menu item icons (not submenu icons) */
+    // menu item icons (not submenu icons)
     // Need extra specificity to overcome sizes in the icons themselves, e.g. iOS/Android want to 
     // show 16px icons at 24px.
     .oj-menu-item .oj-menu-item-icon {
@@ -259,6 +414,42 @@
 
     .oj-hicontrast .oj-menu-item.oj-focus.oj-disabled > a {
         outline: dotted 1px #000;
+    }
+
+
+    // Menu configuration
+    //----------------------------------
+
+
+    $menuConfig: ();
+  
+    @if ($menuDropDownThresholdWidth != null) {
+        $menuConfig: map-merge($menuConfig, (dropDownThresholdWidth: $menuDropDownThresholdWidth));
+    }
+
+    @if ($menuSheetCancelAffordance != null) {
+        $menuConfig: map-merge($menuConfig, (sheetCancelAffordance: $menuSheetCancelAffordance));
+    }
+
+    @if ($menuDropDownModality != null) {
+        $menuConfig: map-merge($menuConfig, (dropDownModality: $menuDropDownModality));
+    }
+
+    @if ($menuSheetModality != null) {
+        $menuConfig: map-merge($menuConfig, (sheetModality: $menuSheetModality));
+    }
+
+    @if ($menuSheetSwipeDownBehavior != null) {
+        $menuConfig: map-merge($menuConfig, (sheetSwipeDownBehavior: $menuSheetSwipeDownBehavior));
+    }
+
+    @if ($menuSheetMarginBottom != null) {
+        $menuSheetMarginBottomConverted: oj-convert-to-jqui-position-syntax($menuSheetMarginBottom);
+        $menuConfig: map-merge($menuConfig, (sheetMarginBottom: $menuSheetMarginBottomConverted));
+    }
+
+    .oj-menu-config {
+        font-family: oj-json-from-map($menuConfig);
     }
 
   }

@@ -9,9 +9,16 @@
 
 @if $includeChartClasses != false {
   @include module-include-once("common.chart") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-chart:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-chart {
       @include oj-user-select-property(none);
-      outline:none;
       width:400px;
       height:300px;
     }
@@ -52,7 +59,9 @@
     .oj-chart-subtitle {
       font-size: $header3FontSize;
       color: $dvtChartSubtitleTextColor;
+      font-weight: $header3FontWeight;
     }
+    
     .oj-chart-stock-falling {
       background-color: $dvtChartStockFallingBgColor;
     }
@@ -83,6 +92,11 @@
       font-size: $fontSize;
       color: $dvtAxisTitleTextColor;
     }
+    
+    .oj-chart-tooltip-label {
+      font-size: $smallFontSize;
+      color: $formControlLabelColor;
+    }
 
     .oj-chart-xaxis-tick-label,
     .oj-chart-yaxis-tick-label,
@@ -91,9 +105,20 @@
       color: $textColor;
     }
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-spark-chart:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-sparkchart {
       width:100px;
       height:18px;
+    }
+
+    .oj-sparkchart.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
   }
 }

@@ -33,13 +33,38 @@
   @include module-include-once("alta.inputnumber") {
     // icons
     //------------------------------------------
-
+    // The up button looks like it is 1px lower than the down button when
+    // they are perfectly aligned, so UX team wants the up button 1px higher,
+    // so the visual perception is that they are aligned.
     .oj-inputnumber-up-icon {
       @extend .oj-fwk-icon-caret-n;
+      margin-bottom: 1px;
     }
 
     .oj-inputnumber-down-icon {
       @extend .oj-fwk-icon-caret-s;
     } 
+
+    // change the font-size to change the icon font size. If you want the caret bigger, make the
+    // font-size bigger, since we use icon fonts.
+    .oj-inputnumber .oj-inputnumber-down-icon,
+    .oj-inputnumber .oj-inputnumber-up-icon {
+      font-size: 12px;
+    }
+    
+     @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+       // use the buttonset borders, not the input borders for the border between the input
+       // and the buttonset, but only for alta web theme.
+      .oj-inputnumber-input {
+           @include oj-ltr() {
+            border-right-width: 0;
+          }
+          @include oj-rtl() {
+            border-left-width: 0;
+          }       
+        }
+     }
+      
+    
   }
 }

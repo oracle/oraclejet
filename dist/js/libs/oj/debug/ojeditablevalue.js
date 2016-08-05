@@ -121,10 +121,19 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
 };
 
 /**
- * Called from component._InitOptions(), when a component might need to initialize its options from 
- * DOM. This usually is done when the constructor option is undefined, even in the case where 
- * this.options.option has a value that comes from app defaults or component (original) default. 
- * See below for details.
+ * Called from component._InitOptions() with an array of options
+ * that the component might need to initialize from DOM (e.g.,
+ * disabled, required, title, etc). This function loops through each of these and if the 
+ * constructorOptions[option] is undefined, it tries to get the option from DOM.
+ * The constructorOptions hold the options that the page author sets on the component, usually via
+ * knockout bindings, and that takes precedence over DOM.
+ * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText', 
+                                  value: value}"/>
+ * value is a constructorOption and required is a DOM option in this example. If you have:
+ * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText', 
+                                  value: value, required: false}"/>
+ * required is both a constructorOption of false and a DOM of true. The constructorOption takes
+ * precedence.
  * <p>
  * IMPORTANT: Do not call this method after component has been created, since option values are 
  * mutated directly after that point.</p>
@@ -147,24 +156,19 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
  * (3) - 'lucy'<br/>
  * (4) - undefined<br/>
  * <p>
- * at the time _InitOptions is called, this.options.option is set to 'bar', but because DOM value 
- * wins over app default or component default, component needs to check if the constructor value was 
- * undefined and if so, set option to 'lucy'. <br/>
- * If the dom value is not set, then the component provided default value - defaultOptionValue gets 
- * used. This method always defaults the value to be - this.options.option || defaultOptionValue -  
- * because we think if neither (3) nor (4) is set, then the value from (2) should win over the 
- * defaultOptionValue. <br/>
+ * at the time _InitOptions is called, this.options.option is set to 'bar'. But because DOM value 
+ * wins over app default or component default, the component needs to check if the constructor value was 
+ * undefined and if so, set option to the dom value which is 'lucy' in this example. This is what
+ * this function does.<br/>
+ * This method always defaults the value to be - this.options.option -  
+ * because we think if neither (3) nor (4) is set, then the value from (2) should win. <br/>
  * </p>
  * 
- * @param {Object} props an Object literal that a component provides with the following properties 
- * that helps determine the final value for one or more options.
+ * @param {Object} props Array holding Object-literal that a component provides 
+ * with the following properties that helps determine the final value for one or more options.
  * 
  * @property {string} props.attribute - name of DOM attribute
  * @property {string|undefined} props.option - name of the option if different from attribute name.
- * @property {Object|null|string|number|boolean} props.defaultOptionValue - the default value to use
- * for the option when the DOM value is not set. For example, editable components bound to inputs, 
- * would pass false as the default for disabled option, while components like the *set components 
- * would pass null, because they support a tri-state.
  * 
  * @property {Function|boolean|undefined} props.coerceDomValue - if the DOM value is set and 
  * coercing the dom value is needed, then either set to boolean true, which uses the default 
@@ -177,7 +181,7 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
  * oj.EditableValueUtils.validateValueForOption method to validate the option.
  * 
  * @param {Object} constructorOptions the options set on the component instance, often using 
- * component binding.
+ * component binding. (this is the value page author sets on the component binding)
  * @param {Object} comp component instance.
  * @param {Function=} postprocessCallback - optional callback that will receive a map of initialized
  * options for post-processing
@@ -201,15 +205,14 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
 
     /* The precedence for the value that an option uses is as follows from lowest to highest -
      *
-     * (1) component default - this is the widget default
-     * (2) app default - this is what a page author defines for the value in the page / app
+     * (1) component default - this is the widget default, already merged in to comp.options
+     * (2) app default - this is what a page author defines for the value in the page / app,
+     * already merged in to comp.options
      * (3) dom value - if your option also has a dom attribute, this is the value set on element. 
-     * (4) constructor value - this is the value page author sets on the component binding
+     * (4) constructor value - this is the value page author sets on the component binding, already
+     * merged in to comp.options.
      *      
-     * When (4) is undefined then attempt to default from (3). But if (3) is undefined use a 
-     * defaultValue that component determines. If constructor option was not set then default 
-     * value is the merged option value (i.e., this.options) || a hard-coded default determined 
-     * by component.
+     * When (4) is undefined then attempt to default from (3). 
      */
 
     // Step 1: use DOM value
@@ -237,17 +240,6 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
           }
         }
         initializedOptions[option] = finalValue;
-      }
-      else
-      {
-        // hmm, no dom value found; if comp.options also happens to be undefined then simply use 
-        // the default option value. 
-        if (previousValue === undefined)
-        {
-          // we no longer do this. The component needs to set the correct defaults.
-          // TODO: Should I just ignore this for now?
-          initializedOptions[option] = prop.defaultOptionValue;
-        }
       }
     }
     
@@ -333,6 +325,42 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
     return coerced;
   };
 
+
+/**
+ * set pickerAttributes on a popup picker
+ *
+ * @param {jQuery} picker popup picker
+ * @param {Object} pickerAttributes supported attributes are class and style, which are appended to the picker class and style, if any.
+ *
+ * @ignore
+ */
+oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
+{
+  // - let the popup picker accept the custom css class name from the component
+  if (picker && pickerAttributes)
+  {
+    var classValue = pickerAttributes["class"];
+    if (classValue)
+      picker.addClass(classValue);
+
+    var styleValue = pickerAttributes["style"];
+    if (styleValue)
+    {
+      var currStyle = picker.attr("style");
+      if (currStyle)
+      {
+        picker.attr("style", currStyle + ';' + styleValue);
+      }
+      else
+      {
+        picker.attr("style", styleValue);
+      }
+    }
+  }
+};
+
+
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -360,7 +388,7 @@ oj.PopupMessagingStrategy = function (displayOptions)
  * @private
  */
 oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW,
-                               oj.PopupMessagingStrategy);
+oj.PopupMessagingStrategy);
 
 // Subclass from oj.MessagingStrategy
 oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, "oj.PopupMessagingStrategy");
@@ -375,15 +403,26 @@ oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, "oj.Po
  */
 oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
 {
+  // mouseenter and mouseleave is what you want instead of mouseover/mouseout when the launcher
+  // isn't a simple input. In the case of radioset and checkboxset, the launcher is the widget
+  // which is the div that contains all the rows, inputs and labels. If we use mouseover/mouseout
+  // in this case we are constantly opening and closing the popup (not really visible to the user,
+  // but still not good for performance I'm sure) if the user moves the mouse around the different
+  // dom elements within the widget.
+  //
+  // on touch devices: the "press" event name maps to Hammer's press event, so a touch and hold
+  // will open the popup.
   "ojRadioset":
   {
     position: 'launcher',
-    events: {open: "focus focusin mouseover", close: "mouseout"}
+    // when press opens popup, the user taps elsewhere to dismiss popup
+    events: {open: "focusin mouseenter press", close: "mouseleave"}
   },
   "ojCheckboxset":
   {
     position: 'launcher',
-    events: {open: "focusin mouseover", close: "mouseout"}
+    // when press opens popup, the user taps elsewhere to dismiss popup
+    events: {open: "focusin mouseenter press", close: "mouseleave"}
   },
   // Since we now add extra dom on the input components for inline messages, we don't want to
   // position on the tip of the component root. Instead we want to position on the main part of the
@@ -500,7 +539,18 @@ oj.PopupMessagingStrategy.prototype.deactivate = function ()
   this._destroyTooltip();
   oj.PopupMessagingStrategy.superclass.deactivate.call(this);
 };
-
+/**
+ * Close the popup if it is open. EditableValue calls this from _NotifyHidden and _NotifyDetached
+ * so that we don't have an open popup if the app dev hides a subtree the component is within.
+ * @return {void}
+ * @private
+ * @memberof oj.PopupMessagingStrategy
+ * @instance
+ */
+oj.PopupMessagingStrategy.prototype.close = function ()
+{
+  this._closePopup();
+};
 /**
  * Closes the associated notewindow popup
  * @return {void}
@@ -511,7 +561,9 @@ oj.PopupMessagingStrategy.prototype.deactivate = function ()
 oj.PopupMessagingStrategy.prototype._closePopup = function ()
 {
   if (this._isPopupInitialized())
+  {
     this.$messagingContentRoot.ojPopup("close");
+  }
 };
 
 /**
@@ -535,31 +587,40 @@ oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._openPopup = function ()
+oj.PopupMessagingStrategy.prototype._openPopup = function (event)
 {
-  var domNode, latestContent;
+  var domNode;
+  var latestContent;
+  var $launcher;
 
+  $launcher = this.GetLauncher();
   if (this._canOpenPopup())
   {
+
     latestContent = this._buildPopupHtml();
-    if ( oj.StringUtils.isEmptyOrUndefined(latestContent))
-       return;
+    if (oj.StringUtils.isEmptyOrUndefined(latestContent))
+      return;
 
     var messagingContentRoot = this._getPopupElement();
     var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
+
     if (!isPopupOpen)
     {
+      if (event.type === "press")
+      {
+        this._openPopupOnPressEvent($launcher);
+      }
       // replace popup messaging content with new content
       domNode = messagingContentRoot[0];
 
-      
+
       // latestContent is includes content that may come from app. It is scrubbed for illegal tags
       // before setting to innerHTML
       domNode.innerHTML = ""; // @HTMLUpdateOK
       domNode.innerHTML = latestContent; // @HTMLUpdateOK
 
-      var launcher = this.GetLauncher();
-      messagingContentRoot.ojPopup("open", launcher);
+      messagingContentRoot.ojPopup("open", $launcher);
+      
     }
     else if (isPopupOpen)
     {
@@ -576,6 +637,65 @@ oj.PopupMessagingStrategy.prototype._openPopup = function ()
 };
 
 /**
+ * This is called to open the popup on the 'press' event. E.g., ojCheckboxset and ojRadioset
+ * use press to open the popup.
+ * @param {Object|null} jqLauncher
+ * @returns {undefined}
+ */
+oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLauncher)
+{
+  var inPressEvent = true;
+
+  // The pressHold gesture fires a click and change event on ios after touchend.  Prevent that here.
+  this._eatChangeAndClickOnPress = function (event)
+  {
+    // on ios:
+    // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
+    // if I tap and hold on an input, I get: touchstart
+    // when I let up, I get: touchend/mousedown/change/click
+    // on android:
+    // if I tap quickly on an input, I get touchstart touchend mousedown click change
+    // if I tap and hold on an input, I get touchstart/mousedown
+    // when I let up, I get touchend. (no change or click like I do for ios)
+
+    // After 'press' release of a radio or checkbox if we do not eat the the click and change events, 
+    // the dialog closes.
+    if (inPressEvent)
+    {
+      // For Mobile Safari capture phase at least, 
+      // returning false doesn't work; must use pD() and sP() explicitly.
+      event.preventDefault();
+      event.stopPropagation();
+      // the event order is first change, then click. 
+      // so when we get the click, clear the inPressEvent flag.
+      if (event.type === "click")
+        inPressEvent = false;
+    }
+  } // end this._eatChangeAndClickOnPress
+
+  /// Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
+  jqLauncher[0].addEventListener("click", this._eatChangeAndClickOnPress, true);
+  // need to eat 'change' as well. Otherwise the dialog will close on press up, and the input
+  // stays unchecked.     
+  // This is because when the input  gets the 'change' event, it calls validate, 
+  // which then updates messages, and if there is no message, 
+  // then calls _updatePopupIfOpen, contentToShow = "", then it closes the popup.
+  jqLauncher[0].addEventListener("change", this._eatChangeAndClickOnPress, true);
+
+  // touchend/mousedown/change/click happen in fast succession on tap or press.
+  // Android never fires a click event on press up, so after 50ms we clear the inPressEvent flag
+  // since the _eatChangeAndClickOnPress callback never gets called for Android.
+  jqLauncher.one("touchend", function (event)
+  {
+    // 50ms.  Make as small as possible to prevent unwanted side effects.
+    setTimeout(function ()
+    {
+      inPressEvent = false;
+    }, 50);
+  });
+};
+
+/**
  * Determines whether the messaging popup can be opened.
  * @return {boolean}
  * @private
@@ -584,8 +704,9 @@ oj.PopupMessagingStrategy.prototype._openPopup = function ()
  */
 oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
 {
-  var options = this.GetComponent().options, isDisabled = options['disabled'] || false,
-          isReadOnly = options['readOnly'] || false;
+  var options = this.GetComponent().options;
+  var isDisabled = options['disabled'] || false;
+  var isReadOnly = options['readOnly'] || false;
 
   return !(isDisabled || isReadOnly);
 };
@@ -597,13 +718,17 @@ oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function()
+oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
 {
-  var domNode, isPopupOpen = false, contentToShow, isLauncherActiveElement;
+  var contentToShow;
+  var domNode;
+  var isLauncherActiveElement;
+  var isPopupOpen = false;
+  var messagingContentRoot;
 
   if (this._isPopupInitialized())
   {
-    var messagingContentRoot = this._getPopupElement();
+    messagingContentRoot = this._getPopupElement();
     isPopupOpen = messagingContentRoot.ojPopup("isOpen");
     contentToShow = this._buildPopupHtml();
     isLauncherActiveElement = document.activeElement === this.GetLauncher()[0] ? true : false;
@@ -614,8 +739,8 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function()
         // push new content into popup
         domNode = messagingContentRoot[0];
 
-      // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
-      // before setting to innerHTML
+        // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
+        // before setting to innerHTML
         domNode.innerHTML = ""; // @HTMLUpdateOK
         domNode.innerHTML = contentToShow; // @HTMLUpdateOK
         messagingContentRoot.ojPopup("refresh");
@@ -629,7 +754,7 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function()
     else if (isLauncherActiveElement && contentToShow)
     {
       // if popup is closed but focus is on activeElement re-open it
-      this._openPopup();
+      this._openPopup(undefined);
     }
   }
 };
@@ -642,23 +767,52 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function()
  */
 oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
 {
-  var compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  var events = compDefaults ? compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
+  var closePopupCallback;
+  var compDefaults;
+  var events;
+  var eventsClose;
+  var eventsOpen;
+  var jqLauncher;
+  var nonPressOpenEvents;
+  var openPopupCallback;
+  var pressEventIndex;
+
+  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  events = compDefaults ?
+  compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
 
   // Remove event handlers setup on launcher
-  if (events['open'])
+  eventsOpen = events['open'];
+  if (eventsOpen)
   {
-    var openPopupCallback = this._openPopupCallback;
+    openPopupCallback = this._openPopupCallback;
     delete this._openPopupCallback;
     if (openPopupCallback)
-      this.GetLauncher().off(events['open'], openPopupCallback);
+    {
+      pressEventIndex = eventsOpen.indexOf("press");
+      nonPressOpenEvents = eventsOpen.replace("press", ' ');
+      jqLauncher = this.GetLauncher();
+      jqLauncher.off(nonPressOpenEvents, openPopupCallback);
+      if (this._eatChangeAndClickOnPress)
+      {
+        jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
+        jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+        delete this._eatChangeAndClickOnPress;
+      }
+      if (pressEventIndex !== -1)
+      {
+        jqLauncher.ojHammer().off("press");
+        jqLauncher.removeData("ojHammer");
+      }
+    }
   }
 
-  if (events['close'])
+  eventsClose = events['close'];
+  if (eventsClose)
   {
-    var  closePopupCallback = this._closePopupCallback;
+    closePopupCallback = this._closePopupCallback;
     if (closePopupCallback)
-      this.GetLauncher().off(events['close'], closePopupCallback);
+      this.GetLauncher().off(eventsClose, closePopupCallback);
   }
 };
 
@@ -670,9 +824,17 @@ oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
  */
 oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
 {
+  var closePopupCallback;
+  var compDefaults;
+  var events;
+  var hammerOptions;
   var jqLauncher = this.GetLauncher();
-  var compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  var events = compDefaults ? compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
+  var nonPressOpenEvents;
+  var openPopupCallback;
+  var pressEventIndex;
+
+  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  events = compDefaults ? compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
 
   // 1. associate the ojPopup component to wrapper <div> for popup content
   // 2. wire up on() event handlers for registered events that open and close popup. E.g., focusin.
@@ -681,15 +843,29 @@ oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
 
   if (events['open'])
   {
-    var openPopupCallback = this._openPopupCallback;
+    openPopupCallback = this._openPopupCallback;
     if (!openPopupCallback)
       openPopupCallback = this._openPopupCallback = $.proxy(this._openPopup, this);
-    jqLauncher.on(events['open'], openPopupCallback);
+    pressEventIndex = events['open'].indexOf("press");
+    nonPressOpenEvents = events['open'].replace("press", ' ');
+
+    jqLauncher.on(nonPressOpenEvents, openPopupCallback);
+    // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
+    // and checks it, so in this case we have to eat the click/change events. this happens
+    // in the openPopupCallback
+    if (pressEventIndex !== -1)
+    {
+      hammerOptions = {
+        "recognizers": [
+          [Hammer.Press, {time: 750}]
+        ]};
+      jqLauncher.ojHammer(hammerOptions).on("press", openPopupCallback);
+    }
   }
 
   if (events['close'])
   {
-    var  closePopupCallback = this._closePopupCallback;
+    closePopupCallback = this._closePopupCallback;
     if (!closePopupCallback)
       closePopupCallback = this._closePopupCallback = $.proxy(this._closePopup, this);
 
@@ -708,14 +884,17 @@ oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._getPopupPosition = function()
+oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
 {
+  var compDefaultPosition;
+  var compDefaults;
+  var launcher;
+  var popupPositionOptions;
 
-  var launcher, popupPositionOptions;
-  var compDefaults =
-    oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName],
-    compDefaultPosition = compDefaults ? compDefaults.position :
-               oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].position;
+  compDefaults =
+  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
+  compDefaultPosition = compDefaults ? compDefaults.position :
+  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].position;
 
   if (compDefaultPosition)
   {
@@ -733,11 +912,11 @@ oj.PopupMessagingStrategy.prototype._getPopupPosition = function()
     launcher = this.GetComponent().widget();
 
   popupPositionOptions = {
-           'my': 'start bottom',
-           'at': 'end top',
-           'collision': 'flipcenter',
-           'of': launcher
-         };
+    'my': 'start bottom',
+    'at': 'end top',
+    'collision': 'flipcenter',
+    'of': launcher
+  };
   return popupPositionOptions;
 
 };
@@ -750,13 +929,16 @@ oj.PopupMessagingStrategy.prototype._getPopupPosition = function()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._getPopupElement = function()
+oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
 {
+  var popup;
+  var position;
+
   if (this.$messagingContentRoot)
     return this.$messagingContentRoot;
 
-  var popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
-  var position = this._getPopupPosition();
+  popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
+  position = this._getPopupPosition();
   popup.ojPopup("option", "position", position);
   popup.ojPopup("option", "close", $.proxy(this._popupCloseCallback, this));
   popup.ojPopup("option", "open", $.proxy(this._popupOpenCallback, this));
@@ -776,11 +958,11 @@ oj.PopupMessagingStrategy.prototype._getPopupElement = function()
  * @memberof! oj.PopupMessagingStrategy
  * @private
  */
-oj.PopupMessagingStrategy.prototype._popupOpenCallback = function(event)
+oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
 {
   var target = $(event.target);
   var self = this;
-  window.setTimeout(function()
+  window.setTimeout(function ()
   {
     if (oj.Components.isComponentInitialized(target, "ojPopup"))
       target.ojPopup("option", "autoDismiss", "focusLoss");
@@ -797,14 +979,22 @@ oj.PopupMessagingStrategy.prototype._popupOpenCallback = function(event)
  * @memberof! oj.PopupMessagingStrategy
  * @private
  */
-oj.PopupMessagingStrategy.prototype._popupCloseCallback = function(event)
+oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
 {
+  var jqLauncher = this.GetLauncher();
+
   var target = $(event.target);
   if (oj.Components.isComponentInitialized(target, "ojPopup"))
   {
     target.ojPopup("option", "autoDismiss", "none");
     target.ojPopup("option", "open", null);
     target.ojPopup("option", "close", null);
+  }
+  if (this._eatChangeAndClickOnPress)
+  {
+    jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
+    jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+    delete this._eatChangeAndClickOnPress;
   }
   delete this.$messagingContentRoot;
   target.children().remove();
@@ -831,9 +1021,10 @@ oj.PopupMessagingStrategy.prototype._destroyTooltip = function ()
  */
 oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
 {
-  var nwHtml = "", component = this.GetComponent(),
-      jDocument = component.document, document = jDocument[0],
-      nwContent = [], addSeparator = false;
+  var addSeparator = false;
+  var document = this.GetComponent().document[0];
+  var nwContent = [];
+  var nwHtml = "";
 
   if (this.ShowMessages())
   {
@@ -845,23 +1036,22 @@ oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
     nwContent.push(this._buildHintsHtml(document));
   }
 
-  // TODO: Add support for shortDesc, instrcution text etc.
-  $.each(nwContent, function(i, content)
+  $.each(nwContent, function (i, content)
+  {
+    if (content)
     {
-      if (content)
+      if (addSeparator)
       {
-        if (addSeparator)
-        {
-          nwHtml = nwHtml.concat(oj.PopupMessagingStrategyUtils.getSeparatorHtml(document));
-        }
-        else
-        {
-          addSeparator = true;
-        }
-
-        nwHtml = nwHtml.concat(content);
+        nwHtml = nwHtml.concat(oj.PopupMessagingStrategyUtils.getSeparatorHtml(document));
       }
-    });
+      else
+      {
+        addSeparator = true;
+      }
+
+      nwHtml = nwHtml.concat(content);
+    }
+  });
 
   return nwHtml;
 };
@@ -876,15 +1066,17 @@ oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
  */
 oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
 {
-  var messages, content = "", maxSeverity = this.GetMaxSeverity(),
-      renderSeveritySelectors = false;
+  var content = "";
+  var maxSeverity = this.GetMaxSeverity();
+  var messages;
+  var renderSeveritySelectors = false;
 
   if (this.HasMessages())
   {
     messages = this.GetMessages();
     content =
-      oj.PopupMessagingStrategyUtils.buildMessagesHtml(
-        document, messages, maxSeverity, renderSeveritySelectors);
+    oj.PopupMessagingStrategyUtils.buildMessagesHtml(
+    document, messages, maxSeverity, renderSeveritySelectors);
   }
   return content;
 };
@@ -899,16 +1091,19 @@ oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
  */
 oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
 {
-  var hints = [], i, hintsHtml = "", hint;
+  var hint;
+  var hints = [];
+  var hintsHtml = "";
+  var i;
 
   if (this.ShowConverterHint())
   {
     hints = this.GetConverterHint();
     hint = hints.length ? hints[0] : "";
     hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-                                     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
-                                     hint, false,
-                                     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
+    hint, false,
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
   }
 
   if (this.ShowValidatorHint())
@@ -917,19 +1112,19 @@ oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
     for (i = 0; i < hints.length; i++)
     {
       hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-                                       oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
-                                       hints[i], false, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+      oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
+      hints[i], false, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
     }
   }
 
   if (this.ShowTitle())
   {
     hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
-                                     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
-                                     this.GetTitle(), true, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
+    oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
+    this.GetTitle(), true, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
   }
 
-  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + "</div>": "";
+  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + "</div>" : "";
 };
 
 /**
@@ -944,7 +1139,7 @@ oj.PopupMessagingStrategy.prototype._isPopupInitialized = function ()
 {
   // is(":oj-popup") finds the popup component if it exists
   return (this.$messagingContentRoot) ?
-    oj.Components.isComponentInitialized(this.$messagingContentRoot, "ojPopup") : false;
+  oj.Components.isComponentInitialized(this.$messagingContentRoot, "ojPopup") : false;
 };
 
 /**
@@ -971,7 +1166,7 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
     jTitleDom = $(document.createElement("div"));
     formControlSelectors += " " + selector;
     jTitleDom.addClass(formControlSelectors);
-    
+
     jTitleDom.append(oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
   }
 
@@ -1034,59 +1229,67 @@ oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
  * @instance
  */
 oj.PopupMessagingStrategyUtils.buildMessagesHtml =
-  function (document, messages, maxSeverity, renderSeveritySelectors)
+function (document, messages, maxSeverity, renderSeveritySelectors)
 {
-  var content = "", i, j, severityStr,severityLevel,
-          message, summary, detail, messageObj,
-          messagesByTypes={}, messagesByType = [];
+  var content = "";
+  var detail;
+  var i;
+  var j;
+  var message;
+  var messagesByType = [];
+  var messagesByTypes = {};
+  var messageObj;
+  var severityLevel;
+  var severityStr;
+  var summary;
 
 
-    // Step1: build an indexed array of messages by severity level.
-    for (i = 0; i < messages.length; i++)
+  // Step1: build an indexed array of messages by severity level.
+  for (i = 0; i < messages.length; i++)
+  {
+    message = messages[i];
+
+    if (!(message instanceof oj.Message))
     {
-      message = messages[i];
-
-      if (!(message instanceof oj.Message))
-      {
-        messageObj = new oj.Message(message['summary'], message['detail'], message['severity']);
-      }
-      else
-      {
-        messageObj = message;
-      }
-
-      severityLevel = oj.Message.getSeverityLevel(messageObj['severity']);
-      if (!messagesByTypes[severityLevel])
-      {
-        messagesByTypes[severityLevel] = [];
-      }
-
-      messagesByTypes[severityLevel].push(messageObj);
+      messageObj = new oj.Message(message['summary'], message['detail'], message['severity']);
+    }
+    else
+    {
+      messageObj = message;
     }
 
-    // Step 2: starting with maxSeverity level build messages with decreasing severity
-    for (i = maxSeverity; i >= oj.Message.SEVERITY_LEVEL['CONFIRMATION']; i--)
+    severityLevel = oj.Message.getSeverityLevel(messageObj['severity']);
+    if (!messagesByTypes[severityLevel])
     {
-      messagesByType = messagesByTypes[i] || [];
-
-      for (j = 0; j < messagesByType.length; j++)
-      {
-        message = messagesByType[j];
-        oj.Assert.assertPrototype(message, oj.Message);
-
-        severityLevel = oj.Message.getSeverityLevel(message['severity']);
-        severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
-        summary = message['summary'] || severityStr;
-
-        // if detail is empty we don't care to duplicate summary. also detail if present can be
-        // formatted html content (ADF feature)
-        detail = message['detail'] || "";
-        content = content.concat(
-          oj.PopupMessagingStrategyUtils.buildMessageHtml(
-            document, summary, detail, severityLevel, renderSeveritySelectors));
-      }
+      messagesByTypes[severityLevel] = [];
     }
-    return content;
+
+    messagesByTypes[severityLevel].push(messageObj);
+  }
+
+  // Step 2: starting with maxSeverity level build messages with decreasing severity
+  for (i = maxSeverity; i >= oj.Message.SEVERITY_LEVEL['CONFIRMATION']; i--)
+  {
+    messagesByType = messagesByTypes[i] || [];
+
+    for (j = 0; j < messagesByType.length; j++)
+    {
+      message = messagesByType[j];
+      oj.Assert.assertPrototype(message, oj.Message);
+
+      severityLevel = oj.Message.getSeverityLevel(message['severity']);
+      severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
+      summary = message['summary'] || severityStr;
+
+      // if detail is empty we don't care to duplicate summary. also detail if present can be
+      // formatted html content (ADF feature)
+      detail = message['detail'] || "";
+      content = content.concat(
+      oj.PopupMessagingStrategyUtils.buildMessageHtml(
+      document, summary, detail, severityLevel, renderSeveritySelectors));
+    }
+  }
+  return content;
 
 };
 
@@ -1100,10 +1303,14 @@ oj.PopupMessagingStrategyUtils.buildMessagesHtml =
  * @public
  */
 oj.PopupMessagingStrategyUtils.buildMessageHtml =
-  function (document, summary, detail, severityLevel, addSeverityClass)
+function (document, summary, detail, severityLevel, addSeverityClass)
 {
-  var $msgDom, $msgIcon, $msgContent, $msgSummary, $msgDetail,
-          severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
+  var $msgContent;
+  var $msgDetail;
+  var $msgDom;
+  var $msgIcon;
+  var $msgSummary;
+  var severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
 
   // build message
   // (x) <Summary Text>
@@ -1117,9 +1324,9 @@ oj.PopupMessagingStrategyUtils.buildMessageHtml =
   // build msg icon
   $msgIcon = $(document.createElement("span"));
   $msgIcon.addClass(oj.PopupMessagingStrategyUtils._getSeverityIconSelector(severityLevel))
-          .attr("title", severityStr)
-          .attr("role", 'img');
-  
+  .attr("title", severityStr)
+  .attr("role", 'img');
+
   $msgDom.append($msgIcon); // @HTMLUpdateOK
 
   // build msg content which includes summary and detail
@@ -1128,7 +1335,7 @@ oj.PopupMessagingStrategyUtils.buildMessageHtml =
 
   $msgSummary = $(document.createElement("div"));
   $msgSummary.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY).text(summary);
-  
+
   $msgContent.append($msgSummary); // @HTMLUpdateOK
 
   if (detail)
@@ -1136,11 +1343,11 @@ oj.PopupMessagingStrategyUtils.buildMessageHtml =
     // detail text allows html content. So scrub it before setting it.
     var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
     $msgDetail = $(document.createElement("div"));
-    
+
     $msgDetail.addClass(oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL).append(detailDom); // @HTMLUpdateOK
     $msgContent.append($msgDetail);
   }
-  
+
   $msgDom.append($msgContent); // @HTMLUpdateOK
 
   return $msgDom ? $msgDom.get(0).outerHTML : "";
@@ -1221,7 +1428,7 @@ oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity)
  * @return {Element} dom node containing the scrubbed hint
  * @private
  */
-oj.PopupMessagingStrategyUtils._getTextDom = function(document, value, htmlAllowed)
+oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed)
 {
   var textDom = null;
 
@@ -1320,21 +1527,21 @@ oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR = "oj-message-error";
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING  = "oj-message-warning";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING = "oj-message-warning";
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO  = "oj-message-info";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO = "oj-message-info";
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION  = "oj-message-confirmation";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION = "oj-message-confirmation";
 
 /**
  * @ignore
@@ -1345,7 +1552,7 @@ oj.PopupMessagingStrategyPoolUtils = {};
  * @public
  * @returns {jQuery} popup taken or created from the free pool
  */
-oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function()
+oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
 {
   var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
   var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER);
@@ -1357,13 +1564,13 @@ oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function()
     // popup is an empty div
     popup.appendTo(pool); // @HTMLUpdateOk
     var popupOptions =
-                {
-                    'rootAttributes' : {'class' : oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING},
-                    'initialFocus': 'none',
-                    'tail': 'simple',
-                    'autoDismiss': 'none',
-                    'modality': 'modeless'
-                };
+    {
+      'rootAttributes': {'class': oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING},
+      'initialFocus': 'none',
+      'tail': 'simple',
+      'autoDismiss': 'none',
+      'modality': 'modeless'
+    };
     popup.ojPopup(popupOptions);
   }
   else
@@ -1376,13 +1583,14 @@ oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function()
  * @public
  * @returns {void}
  */
-oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function()
+oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function ()
 {
+  var popup;
   if (oj.PopupMessagingStrategyPoolUtils._getFreePoolCount() > 0)
   {
     // if the message popup is open, remove it.
     // if there is at least one popup in the pool, remove it.
-    var popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
+    popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
     popup.ojPopup("destroy");
     popup.remove();
   }
@@ -1395,7 +1603,7 @@ oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function()
  * @return {jQuery!} messaging popup pool container
  * @private
  */
-oj.PopupMessagingStrategyPoolUtils._getPool = function()
+oj.PopupMessagingStrategyPoolUtils._getPool = function ()
 {
   /** @type {jQuery!} */
   var pool = $("#" + oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
@@ -1414,7 +1622,7 @@ oj.PopupMessagingStrategyPoolUtils._getPool = function()
  * @return {number} number of unused popup in the pool
  * @private
  */
-oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function()
+oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function ()
 {
   var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
   var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER);
@@ -1492,8 +1700,9 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
  *   Keyboard End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
  * </h3>
- * <p>You can hover over the help and the required icons for additional information.
- * You can also hover over the label to see the help definition text if there is some.
+ * <p>You can hover over the help and the required icons for additional information. You can
+ * set focus with the keyboard on the help icon for additional information. You can click on
+ * the help icon and if there is an url associated with it, it will navigate to the url.
  * </p>
  * @ojcomponent oj._ojLabel
  * @private
@@ -1751,6 +1960,32 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     else
       this.element.removeAttr("class");
   },
+  
+  /**
+   * Notifies the component that its subtree has been removed from the document programmatically
+   * after the component has been created
+   * @memberof! oj._ojLabel
+   * @instance
+   * @protected
+   */
+  _NotifyDetached: function()
+  {
+    this._superApply(arguments);
+    this._closeHelpDefPopup();
+  },
+
+  /**
+   * Notifies the component that its subtree has been made hidden programmatically
+   * after the component has been created
+   * @memberof! oj._ojLabel
+   * @instance
+   * @protected
+   */
+  _NotifyHidden: function()
+  {
+    this._superApply(arguments);
+    this._closeHelpDefPopup();
+  },
   /**
    * set up styles on create
    * @private
@@ -1758,16 +1993,18 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
   _drawOnCreate : function ()
   {
     var options = this.options;
-    var requiredOpt = options.required;
     var ariaRequiredUnsupported = options.ariaRequiredUnsupported;
+    var describedByDom = null;
+    var needsDescribedBySpan;
+    var requiredDom;
+    var requiredOpt = options.required;
 
     // we put a span with an id on it around the help and required icons so that
     // the input's aria-describedby can point to it. Then the screen reader will
-    // read the title on the images when focus is on the input, so the user knows
+    // read the aria-label on the images when focus is on the input, so the user knows
     // that there is help and required icons.
-    // we render the help icon if helpSource or helpDef
-    var needsDescribedBySpan = this._needsDescribedBySpan();
-    var describedByDom = null;
+    needsDescribedBySpan = this._needsDescribedBySpan();
+    
 
     // wrap the label with a root dom element (oj-label) and its child
     // (oj-label-group). Then point this.uiLabel to the root dom element.
@@ -1776,7 +2013,7 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
 
     // move an oj-label styles off of this.element, and put on the
     // root dom element. They are restored in _destroy
-    this._moveClassesToRoot();
+    this._moveLabelStyleClassesToRootDom();
 
     if (needsDescribedBySpan)
     {
@@ -1784,19 +2021,22 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     }
 
     // now add help and required inside of this dom if needed
+
     this._createHelpIfNeeded(describedByDom);
+
 
     if (requiredOpt)
     {
       // Add or remove 'required' dom.
-      // required. should go right before the label.
-      //this.element.before(this._requiredHtml());
-
+      // required should go right before the label.
+      requiredDom = this._createRequiredIconDomElement();
+      
       if (ariaRequiredUnsupported)
-        describedByDom.appendChild(this._createRequiredIconDomElement());  // @HTMLUpdateOK
+        describedByDom.appendChild(requiredDom);  // @HTMLUpdateOK
       else
-        this.element.before(this._createRequiredIconDomElement()); // @HTMLUpdateOK
+        this.element.before(requiredDom); // @HTMLUpdateOK
     }
+    
 
    },
    /**
@@ -1805,12 +2045,9 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     */
    _createHelpIfNeeded : function (describedByDom)
    {
-      var options = this.options;
-      var helpSource = options.help['source'], helpDef = options.help['definition'];
-      if (helpSource || helpDef)
+      if (this._needsHelpIcon())
       {
         this._insertHelpHtml(describedByDom);
-        this._addHelpDefToLabel();
         this._attachHelpDefToIconAnchor();
       }
    },
@@ -1820,8 +2057,8 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    */
   _checkRequiredOption : function ()
   {
-
     var required = this.options.required;
+    
     if (required !== null &&  typeof required !== "boolean")
       throw new Error("Option 'required' has invalid value set: " + required);
   },
@@ -1832,8 +2069,9 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    */
   _checkDescribedByIdOption : function ()
   {
-    var options = this.options;
     var needsDescribedBySpan = this._needsDescribedBySpan();
+    var options = this.options;
+    
     if (needsDescribedBySpan && options['describedById'] == null)
     {
       throw new Error("ojLabel's describedById option must be set if help source is set\n\
@@ -1844,10 +2082,12 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    * move oj-label* classes from label element onto the root dom element
    * @private
    */
-  _moveClassesToRoot : function ()
+  _moveLabelStyleClassesToRootDom : function ()
   {
-
-    var classes = this.element.attr("class"), arrayOfClasses, numClasses;
+    var arrayOfClasses;
+    var classes = this.element.attr("class");
+    var className;
+    var numClasses;
 
     if (classes)
     {
@@ -1859,7 +2099,7 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
 
       for (var i=0; i < numClasses; i++)
       {
-        var className = arrayOfClasses[i];
+        className = arrayOfClasses[i];
         // if class name has -label- in it, then move it
         // (e.g., oj-label, oj-label-inline, oj-md-label-nowrap,
         // oj-md-labels-inline)
@@ -1873,13 +2113,14 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
   },
   /**
    * create and return the span with an id that we'll use to put around the help and/or required
-   * icons.
+   * icons. The created span is prepended to the oj-label-group dom.
    * @private
    */
   _createDescribedBySpan : function ()
   {
     var ojLabelGroupDom = this.uiLabel.find(".oj-label-group");
     var describedBySpan = document.createElement("span");
+    
     describedBySpan.setAttribute("id", this.options.describedById);
     
     ojLabelGroupDom.prepend(describedBySpan); // @HTMLUpdateOK
@@ -1891,7 +2132,10 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    */
   _createRootDomElement : function ()
   {
-    var rootAttributes = this.options.rootAttributes, inputLabelClass, rootDomNode, labelGroupNode;
+    var inputLabelClass;
+    var labelGroupNode;
+    var rootAttributes = this.options.rootAttributes;
+    var rootDomNode;
     var rootDomNodeClasses = "oj-label oj-component";
 
     if (rootAttributes)
@@ -1922,20 +2166,20 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
   _createRequiredIconDomElement : function ()
   {
     var requiredTooltip = this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_REQUIRED);
-   // var requiredDom =
-   //     $( "<span class='oj-label-required-icon oj-component-icon' role='img'></span>",
-   //       this.document[0] );
     var requiredDom = document.createElement("span");
+    
     requiredDom.className = "oj-label-required-icon oj-component-icon";
     requiredDom.setAttribute("role", "img");
     requiredDom.setAttribute("title", requiredTooltip);
+    // title isn't being read by the screen reader. this is only needed for radioset/checkboxset.
+    requiredDom.setAttribute("aria-label", requiredTooltip); 
     return requiredDom;
   },
   /**
    * return the dom node for the help icon anchor.
    * if (_needsHelpIcon) , show help icon
    * if (helpSource), add href
-   * if (helpDef), add 'title'=helpDef on help icon.
+   * if (helpDef), add 'aria-label'=helpDef on help icon.
    * @private
    */
   _createHelpIconAnchorDomElement : function (helpDef, source)
@@ -1943,7 +2187,6 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     var helpIconAnchor;
     // construct the help html
     // if source (external url) or helpDef, then render a clickable help icon
-    // if helpDef, then render title
     if (this._needsHelpIcon())
     {
       // From our Accessibility expert - You must not put role of img on a link.
@@ -1952,11 +2195,15 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
       //helpIconAnchor =
       //  $( "<a tabindex='0' target='_blank' class='oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext'></a>",
       //  this.document[0] );
+      
+      // The above is not reading anything when it has focus if it doesn't have an href. So if 
+      // it doesn't have an href, it needs some kind of role on it.
 
       helpIconAnchor = document.createElement("a");
       helpIconAnchor.setAttribute("tabindex", "0");
       helpIconAnchor.setAttribute("target", "_blank");
-      helpIconAnchor.className = "oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext";
+      helpIconAnchor.className = 
+        "oj-label-help-icon-anchor oj-label-help-icon oj-component-icon oj-clickable-icon-nocontext";
       if (source)
       {
         try
@@ -1970,31 +2217,48 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
         }
 
       }
+      else
+      {
+        // if there is no href, then we need a role that the screen reader/voiceover will read.
+        helpIconAnchor.setAttribute("role", "img");
+      }
 
       if (helpDef)
-       helpIconAnchor.setAttribute("title", helpDef);
+       helpIconAnchor.setAttribute("aria-label", helpDef);
       else
-       helpIconAnchor.setAttribute("title", this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_HELP));
+       helpIconAnchor.setAttribute("aria-label", this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_HELP));
 
 
     }
     return helpIconAnchor;
   },
     /**
-   * Keyboard and touch users can't display the help icon's title attribute since that displays only
-   * on hover. So, for keyboard and touch users,
-   * show a popup on tabbing in or touch press that shows the
-   * help definition text on the help icon.
+   * To accomodate keyboard and touch users,
+   * show a popup on hover, on tabbing in or touch press that shows the
+   * help definition text on the help icon. 
+   * 
+   * press is recognized when the 
+   * pointer is down for x ms without any movement. In other words, you press with your finger and
+   * don't let up and then after x ms the Help Def window shows up. You can then let go of your finger
+   * the help def window stays up.
+   * On Android, when you press and hold you see touchstart. When you finally let up, you see touchend
+   * On ios, when you press and hold you see touchstart. When you finally let up, sometimes you
+   * see touchend only. Other times, you see touchend mousedown mouseup click all 
+   * consecutively.
+   * On ios, a quick tap shows touchstart touchend mousedown mouseup click (I only register those events)
+   * all right after another.
    * @private
    */
    _attachHelpDefToIconAnchor : function ()
   {
-    var element = this.element;
-    var position;
-    var helpDef = this.options.help['definition'], helpDefText;
-    var inMouseDown = false;
-    var helpIcon, helpDefPopupDiv, $helpDefPopupDiv;
     var bodyDom;
+    var element = this.element;
+    var helpDef = this.options.help['definition'];
+    var helpDefText;
+    var helpDefPopupDiv; 
+    var $helpDefPopupDiv;
+    var helpIcon; 
+    var position;
 
     helpIcon = this.widget().find(".oj-label-help-icon-anchor");
 
@@ -2018,9 +2282,9 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     // create popup's div
     if (!this._helpDefPopupDivId)
     {
-      //helpDefPopupDiv = $("<div style='display:none'></div>");
       helpDefPopupDiv = document.createElement("div");
       helpDefPopupDiv.style.display = "none";
+      helpDefPopupDiv.className = "oj-help-popup-container";
       $helpDefPopupDiv = $(helpDefPopupDiv);
       $helpDefPopupDiv.uniqueId();
       this._helpDefPopupDivId = $helpDefPopupDiv.prop("id");
@@ -2051,14 +2315,18 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
       // The pressHold gesture also fires a click event on iphone on touchend.  Prevent that here.
       this._eatClickOnHelpIconListener = function( event )
       {
+          // changing colors is a good way to debug if the handler is being called.
+//        if (this.style.color === "red")
+//          this.style.color = "pink";
+//        else 
+//          this.style.color = "red";
         return false;
       };
     }
 
     // For touch device, press with finger on helpIcon to show the help def in a popup.
     // For keyboard users, tab in to helpIcon to show the help def in a popup.
-    // For mouse users, hovering on helpIcon shows the 'title' attribute on the dom
-    // (browser does this)
+    // For mouse users, hovering on helpIcon shows the help def in a popup.
     // ------------------------------------------------------------------------------------
 
 
@@ -2070,20 +2338,33 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     {
       this._openPopupForHelpDefCallbackListener = function (event)
       {
-        self._handleOpenPopupForHelpDef(event, $helpDefPopupDiv, helpIcon, inMouseDown);
+        self._handleOpenPopupForHelpDef(event, $helpDefPopupDiv, helpIcon);
       };
     }
     // END CALLBACK TO OPEN POPUP
     //
 
+    
+    // CALLBACK TO CLOSE POPUP
+    if (!this._closePopupForHelpDefCallbackListener)
+    {
+      this._closePopupForHelpDefCallbackListener = function (event)
+      {
+        self._closeHelpDefPopup();
+      };
+    }
+    // END CALLBACK TO CLOSE POPUP
+
+     
     // Open the popup on focus in - tabbing in.
-    // On click, I also get a focusin. So clicking I get the popup flash.
-    // To fix this, I use mousedown flag so I can know if I'm in a mousedown,
-    // and if so, ignore focusin.
     if (!this._bTouchSupported)
     {
       helpIcon.on("focusin" + this._helpDefPopupNamespace +
-                  " mousedown" + this._helpDefPopupNamespace, this._openPopupForHelpDefCallbackListener);
+                  " mousedown" + this._helpDefPopupNamespace
+                   + " mouseover" + this._helpDefPopupNamespace, 
+                   this._openPopupForHelpDefCallbackListener);
+      helpIcon.on("mouseout" + this._helpDefPopupNamespace, 
+                   this._closePopupForHelpDefCallbackListener);
     }
     else
     {
@@ -2095,35 +2376,25 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
       helpIcon.ojHammer(hammerOptions).on("press", this._openPopupForHelpDefCallbackListener);
 
     }
-      position =
-      {
-        'my': 'start bottom',
-        'at': 'end top',
-        'collision': 'flipcenter',
-        'of': helpIcon
-      };
-
-      $helpDefPopupDiv.ojPopup({"position": position, "modality": "modeless"});
+    position =
+    {
+      'my': 'start bottom',
+      'at': 'end top',
+      'collision': 'flipcenter',
+      'of': helpIcon
+    };
+    $helpDefPopupDiv.ojPopup(
+      {"position": position, 
+       "modality": "modeless",
+       "rootAttributes": {"class":"oj-help-popup"}});
   },
     /**
    * Handle open popup for help definition.
    * @instance
    * @private
    */
-  _handleOpenPopupForHelpDef: function(event, helpDefPopupDiv, helpIcon, inMouseDown)
+  _handleOpenPopupForHelpDef: function(event, helpDefPopupDiv, helpIcon)
   {
-    if (event.type === "mousedown")
-    {
-      inMouseDown = true;
-      return;
-    }
-
-    if (event.type === "focusin" && inMouseDown)
-    {
-      inMouseDown = false;
-      return;
-    }
-
     // mobile only code here - handle on press and eat clicks to prevent navigation if icon has an href.
     if (this._bTouchSupported)
     {
@@ -2139,7 +2410,6 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
             function( event, ui )
             {
               widget.off(self._touchEatClickNamespace);
-              self._eatClickOnHelpIconListener = null;
             });
       }
       else
@@ -2149,35 +2419,24 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
 
     } // end touch only code
 
-    // opens the help def in a notewindow on focus in desktop or on press on mobile
+    // opens the help def in a notewindow on focus or hover in desktop or on press on mobile
     var isOpen = helpDefPopupDiv.ojPopup("isOpen");
     if (!isOpen)
     {
       helpDefPopupDiv.ojPopup("open", helpIcon);
     }
   },
-   /**
-   * Add help definition information to the label element.
+  /**
+   * Close helpDef popup. This is called from _NotifyDetached and _NotifyHidden.
    * @private
    */
-  _addHelpDefToLabel : function ()
+  _closeHelpDefPopup : function ()
   {
-    var element = this.element;
-
-    var helpDef = this.options.help['definition'], title;
-    if (helpDef)
+    var $helpDefPopupDiv;
+    if (this._helpDefPopupDivId != null)
     {
-      // add oj-label-help-def styleclass to the label.
-      // add title to the label.
-      element.addClass("oj-label-help-def");
-      // append helpDef to title. We concatenate in case label already has
-      // title set. Usually the app dev will use title OR helpDef, not both.
-      title = element.attr("title");
-      if (title)
-        element.attr("title", title + ' ' + helpDef);
-      else
-        element.attr("title", helpDef);
-
+      $helpDefPopupDiv = $(document.getElementById(this._helpDefPopupDivId));
+      $helpDefPopupDiv.ojPopup("close");
     }
   },
   /**
@@ -2195,6 +2454,7 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     }
     helpIcon.off(this._helpDefPopupNamespace);
     this._openPopupForHelpDefCallbackListener = null;
+    this._closePopupForHelpDefCallbackListener = null;
   },
   /**
    * removes the help def popup dom and variables
@@ -2214,28 +2474,23 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
         $helpDefPopupDiv.remove();
       }
       this._helpDefPopupDivId = null;
-  }
-  },
-  /**
-   * Remove help definition information from the label element.
-   * @private
-   */
-  _removeHelpDefFromLabel : function ()
-  {
-      this.element.removeClass("oj-label-help-def");
-      this.element.attr("title", "");
+    }
   },
   /**
    * prepends the describedByDom dom node and prepends the help icon anchor html to it.
- * @param {Element} describedByDom - HTML element
+   * @param {Element} describedByDom - HTML element
    * @private
    */
   _insertHelpHtml : function (describedByDom)
   {
-    var helpSource = this.options.help['source'],
-      helpDef = this.options.help['definition'];
+    var helpDef;
+    var helpSource;
+    
     if (this._needsHelpIcon())
     {
+      helpDef = this.options.help['definition'];
+      helpSource = this.options.help['source'];
+    
       // .prepend: Insert content, specified by the parameter, to the beginning of each element     
       $(describedByDom).prepend( // @HTMLUpdateOK
         this._createHelpIconAnchorDomElement(helpDef, helpSource));
@@ -2268,27 +2523,24 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    */
   _refreshHelp : function ()
   {
-    var describedById,
-      helpIcon,
-      needsHelpIcon,
-      describedBySpan;
+    var describedById;
+    var describedBySpan;
+    var $helpIcon;
+    var needsHelpIcon;
 
     // first make sure the describedById option is there, otherwise throws an error
     this._checkDescribedByIdOption();
 
-    // remove the style and title off of <label> element.
-    this._removeHelpDefFromLabel();
-
     // now remove the help info if it is there.
     // we combined the help icon so it's just an <a>.
-    helpIcon = this.uiLabel.find(".oj-label-help-icon");
-    if(helpIcon.length === 1)
+    $helpIcon = this.uiLabel.find(".oj-label-help-icon");
+    if($helpIcon.length === 1)
     {
       // remove things we added in _attachHelpDefToIconAnchor
-      this._removeHelpDefIconEventListeners(helpIcon);
+      this._removeHelpDefIconEventListeners($helpIcon);
       this._removeHelpDefPopup();
       // remove the <a>.
-      helpIcon.remove();
+      $helpIcon.remove();
     }
 
     // insert describedBySpan if it isn't there AND it is needed
@@ -2297,19 +2549,17 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
     needsHelpIcon = this._needsHelpIcon();
     describedById = this.options.describedById;
     describedBySpan = document.getElementById(describedById);
-    if (needsHelpIcon != null && describedBySpan == null)
+    if (needsHelpIcon && describedBySpan == null)
     {
       // no describedBySpan, so we need to create one
       describedBySpan = this._createDescribedBySpan();
-
     }
-    else if (needsHelpIcon == null && describedBySpan !== null)
+    else if (!needsHelpIcon && describedBySpan !== null)
     {
       // remove the span  IF it doesn't have any children.
       if (describedBySpan.children.length === 0)
       {
-        describedBySpan.remove();
-
+        describedBySpan.parentNode.removeChild(describedBySpan);
       }
     }
 
@@ -2325,19 +2575,20 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
    */
   _refreshRequired : function ()
   {
-    var describedById, describedBySpan, requiredTooltip, requiredDom;
+    var describedById;
+    var describedBySpan;
+    var $requiredDom;
+    var requiredTooltip;
 
-    requiredDom = this.uiLabel.find(".oj-label-required-icon");
+    $requiredDom = this.uiLabel.find(".oj-label-required-icon");
 
     describedById = this.options.describedById;
     if (this.options.required)
     {
       this._checkDescribedByIdOption();
-      // TODO: Do I need this? inputNumber (-> editableValue) only
-      // checks on create. this._checkRequiredOption();
 
       // add required if it wasn't already there
-      if (requiredDom.length === 0)
+      if ($requiredDom.length === 0)
       {
         // figure out if we need to put it in a describedBySPan
         if (this.options.ariaRequiredUnsupported)
@@ -2363,20 +2614,22 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
       {
         // required is there, so we need to refresh the translated value in case it changed.
         requiredTooltip = this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_REQUIRED);
-        requiredDom.attr("title", requiredTooltip);
+        $requiredDom.attr("title", requiredTooltip);
       }
     }
     else
     {
       // not required, so find dom node with oj-label-required-icon on it.
       // Remove it. If it is the only child of the describedBySpan, remove that as well.
-      requiredDom.remove();
+      $requiredDom.remove();
       // if describedBySpan exists, and it has no children anymore, remove it.
       describedBySpan = document.getElementById(describedById);
       if (describedBySpan !== null)
       {
         if (describedBySpan.children.length === 0)
-          describedBySpan.remove();
+        {
+          describedBySpan.parentNode.removeChild(describedBySpan);
+        }
       }
     }
   },
@@ -2407,7 +2660,8 @@ oj.__registerWidget("oj._ojLabel", $['oj']['baseComponent'],
   },
   getNodeBySubId: function(locator)
   {
-    var node, subId;
+    var node;
+    var subId;
 
     node = this._super(locator);
     if (!node)
@@ -2844,15 +3098,22 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * display to reflect the updated choices. For example, if 'title' property goes from 
      * 'notewindow' to 'none' then it no longer shows in the notewindow.
      * </p>
-     * 
+     * <p>
+     * A side note: title and message detail text can include formatted HTML text, whereas hints and 
+     * message summary text cannot. For example, to format the title, you could do this:
+     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+     * </p>
+     *  
      * @property {Array|string=} converterHint - supported values are <code class="prettyprint">'placeholder'</code>, 
      * <code class="prettyprint">'notewindow'</code>, <code class="prettyprint">'none'</code>. The 
      * default value is <code class="prettyprint">['placeholder', 'notewindow']</code>. When there 
      * is already a placeholder set on the component, the converter hint falls back to display 
-     * type of 'notewindow'. To change the default value you can do this - <br/> 
+     * type of 'notewindow'.
+     * To change the default value you can do this - <br/> 
      * E.g. <code class="prettyprint">{'displayOptions: {'converterHint': ['none']}}</code>
      * @property {Array|string=} validatorHint - supported values are <code class="prettyprint">'notewindow'</code>, 
-     * <code class="prettyprint">'none'</code>. To change the default value you can do this - <br/>
+     * <code class="prettyprint">'none'</code>.
+     * To change the default value you can do this - <br/>
      * <code class="prettyprint">{'displayOptions: {'validatorHint': ['none']}}</code>
      * @property {Array|string=} messages - supported values are <code class="prettyprint">'notewindow'</code>, 
      * <code class="prettyprint">'inline'</code>,
@@ -2860,7 +3121,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * To change the default value you can do this - <br/>
      * E.g. <code class="prettyprint">{'displayOptions: {'messages': 'none'}}</code>
      * @property {Array|string=} title - supported values are <code class="prettyprint">'notewindow'</code>, 
-     * <code class="prettyprint">'none'</code>. To change the default value you can do this - <br/>
+     * <code class="prettyprint">'none'</code>.
+     * To change the default value you can do this - <br/>
      * E.g. <code class="prettyprint">{'displayOptions: {'title': 'none'}}</code>
      * 
      * @example <caption>Override default values for <code class="prettyprint">displayOptions</code> 
@@ -3529,7 +3791,11 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   showMessages : function ()
   {
-    var msgs = this.options['messagesHidden'], msg, mutated = false, i, clonedMsgs = [];
+    var clonedMsgs = [];
+    var i;
+    var msg;
+    var msgs = this.options['messagesHidden'];
+    var mutated = false;
     
     for (i = 0; i < msgs.length; i++)
     {
@@ -3665,7 +3931,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _InitOptions : function(originalDefaults, constructorOptions)
   {
-    this._super(originalDefaults, constructorOptions);
+    this._super(originalDefaults, constructorOptions); 
   },
 
   /**
@@ -3677,10 +3943,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _ComponentCreate : function ()
   {
-    var node = this.element,
-        attrsToRemove = ["required", "title"], //remove attributes that trigger html5 validation + 
-                                               // inline bubble
-        savedAttributes = this._GetSavedAttributes(node); 
+    //remove attributes that trigger html5 validation + inline bubble
+    var attrsToRemove = ["required", "title", "pattern"]; 
+    var node = this.element;
+    var savedAttributes = this._GetSavedAttributes(node); 
     
     this._super();
     
@@ -3703,13 +3969,17 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     // remove html5 validation attributes; it's safe to remove these here because components should 
     // have already initialized options based on DOM in _InitOptions().
-    $.each(attrsToRemove, function (index, value)
+    // Only need to do for <input> elements
+    if (node[0].tagName.toLowerCase() === 'input')
     {
-      if (value in savedAttributes)
+      $.each(attrsToRemove, function (index, value)
       {
-        node.removeAttr(value);
-      }
-    });
+        if (value in savedAttributes)
+        {
+          node.removeAttr(value);
+        }
+      });
+    }
   },
   
   /**
@@ -3970,7 +4240,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _AfterSetOptionValue : function(option, flags)
   {
-    var isUIValueChange = false, doNotClearMessages, context = flags ? flags['_context'] : null;
+    var context = flags ? flags['_context'] : null;
+    var doNotClearMessages;
+    var isUIValueChange = false;
 
     if (context)
     {
@@ -4049,7 +4321,9 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _CanSetValue: function ()
   {
-    var disabled = this.options['disabled'] || false, readOnly = this.options['readOnly'] || false;
+    var disabled = this.options['disabled'] || false;
+    var readOnly = this.options['readOnly'] || false;
+    
     return (disabled || readOnly) ? false : true;
   },
   
@@ -4064,18 +4338,30 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _destroy : function ()
   {
-    var widget = this.widget();
+    var labelIndex;
+    var labelLength;
     var ret = this._super();
+    var widget = this.widget();
     
     this._clearAllMessages(null, true);
     this._getComponentMessaging().deactivate();
 
     // make sure the label is still "alive". Otherwise we could get error when we try to 
-    // destroy it if the dom was removed or something.
-    if (this.$label && oj.Components.getWidgetConstructor(this.$label[0]) != null)
+    // destroy it if the dom was removed first and ojLabel was destroyed directly.
+    // also make sure to check if there is more than one label and destroy them individually.
+    if (this.$label)
     {
-      this.$label._ojLabel( "destroy" );
-    } 
+      labelLength = this.$label.length;
+      for (labelIndex = 0; labelIndex < labelLength; labelIndex++) 
+     {
+       if (this.$label[labelIndex] && 
+           oj.Components.getWidgetConstructor(this.$label[labelIndex]) != null)
+       {
+         $(this.$label[labelIndex])._ojLabel( "destroy" );
+       } 
+     }     
+    }
+
 
     return ret;
   },
@@ -4117,7 +4403,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _setOption : function (name, value, flags) 
   {
-    var retVal, previous, skipSetOption = false;
+    var retVal;
+    var skipSetOption = false;
     
     // Step 1: Remember previous values
     if (typeof name === "string" && value !== undefined)
@@ -4175,13 +4462,13 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   },
 
   /**
-   * Returns a jquery object of the element representing the primary label node for the input 
+   * Returns a jquery object of the element(s) representing the label node(s) for the input 
    * component. 
    * First we look for the aria-labelledby attribute on the input.
    * If that's not found, we look for the label with 'for' attribute 
    * pointing to input.
    * If that's not found, we walk up the dom looking for aria-labelledby.
-   * 
+   * Note: multiple labels for one input is legal in html-5.
    * @memberof oj.editableValue
    * @instance
    * @protected
@@ -4190,6 +4477,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _GetLabelElement : function ()
   {
+    var ariaElement;
+    var labelQuery;
     // If input has aria-labelledby set, then look for label it is referring to.
     var queryResult = this._getAriaLabelledByElement(this.element);
     if (queryResult !== null && queryResult.length !== 0)
@@ -4202,7 +4491,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     var id = this.element.prop("id");
     if (id !== undefined)
     {
-      var labelQuery = "label[for='" + id + "']";
+      labelQuery = "label[for='" + id + "']";
       queryResult = $(labelQuery);
       if (queryResult.length !== 0)
       {
@@ -4216,7 +4505,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     // This would be the case when you have multiple inputs grouped in a div 
     // <label id="grouplabel">Address</label>
     // <div aria-labelledby="grouplabel"><input/><input/><input/></div>
-    var ariaElement = this.element.closest("[aria-labelledby]");
+    ariaElement = this.element.closest("[aria-labelledby]");
     if (ariaElement.length !== 0)
     {
       // Element has aria-labelledby set, so look for label it is referring to.
@@ -4274,10 +4563,12 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _GetConverter : function () 
   {
+    var converterOption;
+    
     // this._converter holds the instance
     if (!this._converter)
     {
-      var converterOption = this.options['converter'];
+      converterOption = this.options['converter'];
       this._converter = oj.IntlConverterUtils.getConverterInstance(converterOption);
     }
     
@@ -4336,18 +4627,32 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _GetAllValidators : function ()
   {
+    var allValidators;
+    var i;
+    var idx;
+    var implicitValidatorMap;
+    var implicitValidators;
+    var isValidatorInstance = true;
+    var normalizedValidators;
+    var validator;
+    var validatorsOption;
+    var vOptions;
+    var vType;
+    var vTypeStr;
+          
     if (!this._allValidators)
     {
-      var allValidators = [], validatorsOption = this.options['validators'], validator, 
-          isValidatorInstance = true, implicitValidatorMap = this._GetImplicitValidators(), 
-          implicitValidators = [], vType, vOptions, vTypeStr, normalizedValidators, i;
+      allValidators = [];
+      validatorsOption = this.options['validators']; 
+      implicitValidatorMap = this._GetImplicitValidators(), 
+      implicitValidators = [];
 
       // combine public and implicit validators to get the combined list
       var keys = Object.keys(implicitValidatorMap), valType;
       var len  = keys.length;
       if (len > 0)
       {
-        for (var idx = 0; idx < len; idx++) 
+        for (idx = 0; idx < len; idx++) 
         {
           valType = keys[idx];
           implicitValidators.push(implicitValidatorMap[valType]);
@@ -4499,7 +4804,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   _SetRawValue : function (val, event)
   {
     var flags = {};
-    flags['_context'] = {originalEvent: event, writeback: true, internalSet: true};
+    flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
 
     if (this.options['rawValue'] !== val)
       this.option("rawValue", val, flags);
@@ -4519,6 +4824,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _Refresh : function (name, value, forceDisplayValueRefresh)
   {
+    var helpDef = this.options.help["definition"];
+    var helpSource = this.options.help["source"];
+    var describedById;
+    
     switch (name)
     {
       case "converter":
@@ -4532,21 +4841,20 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         
       case "help":
         // refresh the help - need to keep the label in sync with the input.
-        var helpDef = this.options.help["definition"];
-        var helpSource = this.options.help["source"];
-        var labelHelpIconWrapper = this._getAriaDescribedByIconWrapperId();
-
         if (this.$label)
         {
+          describedById = this._getAriaDescribedByIdForLabel();
           // Calling option this way calls _setOption in _ojLabel.
           // order matters here. When _ojLabel's help is changed, it removes
           // the help dom, then re-adds it. We need to make sure _ojLabel's  
           // describedById option is there so we can find the dom to remove
           // and recreate if needed.
-          this.$label._ojLabel("option", "describedById", labelHelpIconWrapper);
+          this.$label._ojLabel("option", "describedById", describedById);
           this.$label._ojLabel("option", "help", 
-                          {"definition":helpDef, 
-                          "source":helpSource});
+                          {"definition" : helpDef, 
+                          "source" : helpSource});
+          // this will add or remove the aria-describedby as needed
+          this._refreshAriaDescribedByForLabel(describedById);
         }
         break;
         
@@ -4557,10 +4865,12 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         // need to keep the label in sync with the input
         if (this.$label)
         { 
-          var labelHelpIconWrapper = this._getAriaDescribedByIconWrapperId();
-          this.$label._ojLabel("option", {"describedById": labelHelpIconWrapper,
+          describedById = this._getAriaDescribedByIdForLabel();
+          this.$label._ojLabel("option", {"describedById": describedById,
             "ariaRequiredUnsupported": this._AriaRequiredUnsupported()});
           this.$label._ojLabel("option", "required", value);
+          // this will add or remove the aria-describedby as needed
+          this._refreshAriaDescribedByForLabel(describedById);
         }
         break;
         
@@ -4584,7 +4894,8 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _RefreshAriaRequired : function (value)
   {
-    var ariaValue, contentNode = this._GetContentElement();
+    var ariaValue;
+    var contentNode = this._GetContentElement();
 
     ariaValue = value; //(value == "required") ? true : false;
     if (ariaValue && contentNode) 
@@ -4608,6 +4919,33 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   _AriaRequiredUnsupported : function()
   {
     return false;
+  },
+  /**
+   * <p>Notifies the component that its subtree has been made hidden programmatically 
+   * after the component has been created.
+   *
+   * @memberof oj.editableValue
+   * @instance
+   * @protected
+   */
+  _NotifyHidden: function()
+  {
+    this._superApply(arguments);
+    this._getComponentMessaging().close();
+  },
+  /**
+   * <p>Notifies the component that its subtree has been removed from the 
+   * document programmatically after the component has
+   * been created.
+   *
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _NotifyDetached: function()
+  {
+    this._superApply(arguments);
+    this._getComponentMessaging().close();
   },
   /**
    * Called anytime the label DOM changes requiring a reset of any dependent feature that caches the 
@@ -5008,7 +5346,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * setting the following property in flags parameter of the option() method - 
    * <code class="prettyprint">{'_context': {internalSet: true}}</code>
    * 
-   * @param {String} key
+   * @param {string} key
    * @param {Array} value
    * @param {Event=} event
    * @param {Boolean=} changed
@@ -5024,7 +5362,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     if (changed || !bothEmpty)
     {
+      // 'messagesCustom' is not read-only, but 'messagesShown' and 'messagesHidden' are
       flags['_context'] = {originalEvent: event, writeback: true, internalSet: true};
+      if (key !== "messagesCustom")
+        flags['_context']['readOnly'] = true;
       flags['changed'] = changed || !bothEmpty;
       
       this._resetValid();
@@ -5103,17 +5444,17 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       var helpSource = this.options['help']['source'];
       var required = this.options['required'];
       var ariaRequiredUnsupported = this._AriaRequiredUnsupported();
-
-      var labelHelpIconWrapper = 
-        this._addAriaDescribedByAndReturnId(helpSource, helpDef, required, ariaRequiredUnsupported);
+      var id = this._getAriaDescribedByIdForLabel();
+      if (this._needsDescribedByForLabel(helpSource, helpDef, required, ariaRequiredUnsupported))
+        this._addAriaDescribedBy(id);
       // create the ojLabel component 
       this.$label._ojLabel(
-    //   {inputLabelStyleClass: this._GetDefaultStyleClass()+"-label",
         {rootAttributes:{'class': this._GetDefaultStyleClass()+"-label"},
-        describedById: labelHelpIconWrapper, 
-        required:this.options['required'], 
+        describedById: id, 
+        required: required, 
         ariaRequiredUnsupported: ariaRequiredUnsupported,
-        help:{'definition': helpDef, 'source': helpSource}});
+        help:{'definition': helpDef, 
+              'source': helpSource}});
 
     }    
   },
@@ -5222,8 +5563,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       return null;
   },
   /**  
-   * Cconstruct an id from the element's id, render aria-describedby with this id,
-   * and then return the id to be used by the ojLabel.
+   * Construct an id from the element's id and then return the id to be used by the ojLabel.
    * 
    * @return {string} an id we constructed
    * @private
@@ -5231,82 +5571,141 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    * @instance
    * 
    */
-  _getAriaDescribedByIconWrapperId : function ()
+  _getAriaDescribedByIdForLabel : function ()
   {
     // generate a unique id if one does not exist, then get the id and use it to 
-    // create an id that will be set on the label help icon wrapper
+    // create an id that will be set on the label icon wrapper
     this.element.uniqueId();
     var id = this.element.prop("id");
-    var labelHelpIconWrapperId = id + "Icons";
-    return labelHelpIconWrapperId;  
+    return id + "Icons";
   },
-  /**  
-   * If there is help source (an external URL), then construct an
-   * id from the element's id, render aria-describedby with this id, and then
-   * return the id to be used by the ojLabel.
+  /**
+   * This function returns true if we need an aria-describedby on the EditableValue's 
+   * content element(s) for the ojLabel.
    * 
-   * For accessibility, we need to wrap help icons with a div. 
-   * Then, on the input component we use aria-describedby to point to this div.
+   * For accessibility, we need to wrap the help icons (and in some cases* the required icon) 
+   * with a div. Then, on the EditableValue component we use aria-describedby to point to this div.
    * &lt;div id="fooIcons"&gt;
    *   &lt;span class="oj-label-help-icon oj-component-icon oj-clickable-icon"&gt;
    *   /&lt;span/&gt;
    * /&lt;div/&gt;
    * &lt;input aria-describedby="fooIcons" id="foo" type="text"/&gt;
    *    
-   * This function constructs an id to put on the help icon div and returns it.
-   * It also adds the aria-describedby on the input.
+   * *Note: If ariaRequiredUnsupported is true, then we wrap the required icon as well as the
+   * help icons so that JAWS can read required. We don't do this for form controls that use
+   * aria-required because if we did JAWS would read required twice.
    * 
-   * We render the help icon only if there is help source.
-   * 
-   * @return {string} an id we constructed
-   * @param {string} helpSource helpSource or helpDef must be present
-   * for the aria-describedby to be rendered.
-   * @param {string} helpDef or helpSource must be present
-   * for the aria-describedby to be rendered.
+   * @returns {boolean} true if the aria-describedby is needed
+   * @param {string} helpSource 
+   * @param {string} helpDef
    * @param {boolean} required
-   * @param {boolean} ariaRequiredUnsupported  
+   * @param {boolean} ariaRequiredUnsupported  true if aria-required is unsupported. This is the 
+   * case for radioset and checkboxset where it isn't supported on the input nor on the group div.
    * @private
    * @memberof oj.editableValue
    * @instance
    * 
    */
-  _addAriaDescribedByAndReturnId : function (helpSource, helpDef, required, ariaRequiredUnsupported)
+  _needsDescribedByForLabel : function(helpSource, helpDef, required, ariaRequiredUnsupported)
   {
-    // generate a unique id if one does not exist, then get the id and use it to 
-    // create an id that will be set on the label help icon wrapper
-    var labelHelpIconWrapperId = this._getAriaDescribedByIconWrapperId();
-    if (helpSource || helpDef || (required && ariaRequiredUnsupported))
-    {  
-      this._addAriaDescribedBy(labelHelpIconWrapperId);
-    }
-    return labelHelpIconWrapperId;  
+    return ((helpSource != null) || (helpDef != null) || (required && ariaRequiredUnsupported));
   },
-  
   /**  
-   * Add the aria-describedby on the input.
+   * Add the aria-describedby on the content element(s) if it isn't already there.
    * 
-   * @param {string} ariaDescribedById the id for aria-describedby
+   * @param {string} id the id for aria-describedby
    * @private
    * @memberof oj.editableValue
    * @instance
    * 
    */
-  _addAriaDescribedBy : function (ariaDescribedById)
+  _addAriaDescribedBy : function (id)
   {
-     var contentElements = this._GetContentElement();        
+    var contentElements = this._GetContentElement();
+    var index;
+    
+    contentElements.each(function() {
+      var describedby = $(this).attr("aria-describedby");
+      var tokens;
 
-      // aria-describedby can be a list of ids, so make sure to append
-      //contentElements.attr("aria-describedby", labelHelpIconWrapperId);
-      contentElements.each(function() {
-        var ariaDescBy = $(this).attr("aria-describedby");
-        if (ariaDescBy)
-          $(this).attr("aria-describedby", ariaDescBy + ' ' + ariaDescribedById);
-        else
-          $(this).attr("aria-describedby", ariaDescribedById);
-     });
-  
+      tokens = describedby ? describedby.split(/\s+/) : [];
+      // Get index that id is in the tokens, if at all.
+      index = $.inArray(id, tokens);
+      // add id if it isn't already there
+      if (index === -1)
+        tokens.push(id);
+      describedby = $.trim(tokens.join(" "));
+      $(this).attr("aria-describedby", describedby);
+    });
+      
   },
-  
+  /**  
+   * Remove the aria-describedby from the content element(s).
+   * 
+   * @param {string} id the id for aria-describedby
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   * 
+   */
+  _removeAriaDescribedBy : function (id)
+  {
+
+    var contentElements = this._GetContentElement();        
+
+    contentElements.each(function() {
+
+      var describedby;
+      var index;
+      var tokens;
+      
+      // get aria-describedby that is on the content element(s)
+      describedby = $(this).attr("aria-describedby");
+      // split into tokens
+      tokens = describedby ? describedby.split(/\s+/) : [];
+      // Get index that id is in the tokens, if at all.
+      index = $.inArray(id, tokens);
+      // remove that from the tokens array
+      if (index !== -1)
+        tokens.splice(index, 1);
+      // join the tokens back together and trim whitespace
+      describedby = $.trim(tokens.join(" "));
+      if (describedby)
+        $(this).attr("aria-describedby", describedby);
+      else
+        $(this).removeAttr("aria-describedby");
+     });
+
+  },
+  /**  
+   * Refreshes the aria-describedby on the content element(s). It figures out if it needs to
+   * add or remove the id.
+   * 
+   * @param {string} id the id for aria-describedby
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   * 
+   */
+  _refreshAriaDescribedByForLabel : function (id)
+  {
+    //TODO: oj.Assert(id != null);
+    var ariaRequiredUnsupported = this._AriaRequiredUnsupported();
+    var helpDef = this.options['help']['definition'];
+    var helpSource = this.options['help']['source'];
+    var required = this.options['required'];
+
+    if (!this._needsDescribedByForLabel(helpSource, helpDef, required, ariaRequiredUnsupported))
+    {
+      this._removeAriaDescribedBy(id);
+    }
+    else
+    {
+      this._addAriaDescribedBy(id);    
+    }
+
+  },  
+ 
   /**
    * Returns a concat of messagesShown and messagesHidden.
    * 
@@ -5404,9 +5803,10 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
    */
   _initComponentMessaging : function()
   {
-    var compMessaging = this._getComponentMessaging(), 
-            messagingLauncher = this._GetMessagingLauncherElement(), 
-            messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
+    var compMessaging = this._getComponentMessaging();
+    var messagingLauncher = this._GetMessagingLauncherElement();
+    var compContentElement = this._GetContentElement();
+    var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
     
     // if default placeholder is currently set then it needs to be cleared here. This is needed for 
     // the following reasons
@@ -5420,7 +5820,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
       this._ClearPlaceholder();
     }
     
-    compMessaging.activate(messagingLauncher, messagingContent);
+    compMessaging.activate(messagingLauncher, compContentElement, messagingContent);
   },
   
   
@@ -6355,22 +6755,20 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
 
 oj.Components.setDefaultOptions(
   {
-    // We used to use oj.Components.createDynamicPropertyGetter, but we don't need the 'context' yet,
-    // so we switched it to this simplest code so that overriding displayOptions 
-    // for defaultOptions is easier. We only need to define what we want to override, not
-    // re-define all the sub-options of displayOptions.
-    // See  - allow multiple setdefaultoptions calls on properties with dynamic getter.
+
     'editableValue': // properties for all editableValue components 
     {
-      'displayOptions': {
-                    'messages': ['inline'], 
-                    'converterHint': ['placeholder', 'notewindow'], 
-                    'validatorHint': ['notewindow'], 
-                    'title': ['notewindow'] }
+      'displayOptions': oj.Components.createDynamicPropertyGetter(function(context){
+        return {
+          'messages': context['containers'].indexOf('ojDataGrid') >= 0 || context['containers'].indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
+          'converterHint': ['placeholder', 'notewindow'], 
+          'validatorHint': ['notewindow'], 
+          'title': ['notewindow']
+        };
+      })
     }
   }
-  
-
+ 
 
 );
 
@@ -6484,36 +6882,48 @@ oj.InlineMessagingStrategy.prototype.deactivate = function ()
  */
 oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
 {
-  var domNode, contentToShow, component = this.GetComponent(), widget = component.widget();
+  var contentToShow;
+  var domNode;
+  var widget = this.GetComponent().widget();
   
-  if (!this._doesMessageContentRootDomExist())
+  contentToShow = this._buildInlineHtml();
+  
+  // create the inline messaging dom if there is content to show and the dom hasn't been created.
+  if (contentToShow && this.$messagingContentRoot == null)
   {
     this.$messagingContentRoot = $(this._getInlineContentHtml());
     this._addAriaDescribedBy(this.$messagingContentRoot);
     this._addAriaLive(this.$messagingContentRoot);
-
     // append content that goes in inline messaging div
     // make it the very LAST child of the widget.
     widget.append(this.$messagingContentRoot); // @HTMLUpdateOK
   }
-  contentToShow = this._buildInlineHtml();
 
-  if (contentToShow)
+  // if the inline messaging dom is created
+  if (this.$messagingContentRoot != null)
   {
-    // push new content into inline message dom 
-    domNode = this.$messagingContentRoot[0];
+    if (contentToShow)
+    {
+      // push new content into inline message dom 
+      domNode = this.$messagingContentRoot[0];
 
+      // contentToShow includes content that may come from app. It is scrubbed for illegal tags 
+      // before setting to innerHTML
+      domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
 
-  // contentToShow is includes content that may come from app. It is scrubbed for illegal tags 
-  // before setting to innerHTML
-    domNode.innerHTML = "";  // @HTMLUpdateOK
-    domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
-  }
-  else
-  {
-    // if there is no content to show and inline message dom is currently open, remove the dom.
-    //this.$messagingContentRoot.attr("style", "display:none");
-    this._removeMessagingContentRootDom();
+    }
+    else
+    {
+      // if there is no content to show and inline message dom is currently there, remove the dom.
+        // NOTE: If you see that a button seems to be losing its click event 
+        // after inline messaging validation or after a reset
+        // it may be because the button is moving as a result of the inline messaging appearing
+        // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
+        // of the 'click' event.
+        // See  - reset form on first click when deferred messages are still pending
+        // and  - button clicked event is not triggered when validation pass
+      this._removeMessagingContentRootDom();
+    }
   }
 };
 
@@ -6541,22 +6951,19 @@ oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function ()
  */
 oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function ()
 {
-  if (this._doesMessageContentRootDomExist())
+  if (this.$messagingContentRoot != null)
   {
-    if (this.$messagingContentRoot)
-    {
     this._removeAriaDescribedBy(this.$messagingContentRoot);
     this._removeAriaLive(this.$messagingContentRoot);
     this.$messagingContentRoot.remove();
-      this.$messagingContentRoot = null;
-    }
+    delete this.$messagingContentRoot;
   }
 };
 
 /**
  * create an id to put on the root dom element that holds the inline messaging content,
- * then add aria-describedby on the launcher (this is usually the input). This makes it
- * so the screen reader user knows the messaging content is connected to the launcher.
+ * then add aria-describedby on the launcher (this is what PopupMessaging does as well). 
+ * This makes it so the screen reader user knows the messaging content is connected to the launcher.
  * @return {void}
  * @memberof oj.InlineMessagingStrategy
  * @instance
@@ -6564,16 +6971,21 @@ oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function (
  */
 oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRoot)
 {
+  var describedby;
+  var launcher;
+  var messagingRootId;
+  var tokens;
+  
   // create an id on the div holding the inline messaging.
-  // add aria-describedby to the launcher
-  var launcher = this.GetLauncher();
+  // add aria-describedby to the div, just like it is if the message is a popup note window.
+  launcher = this.GetLauncher();
 
   oj.Assert.assertPrototype(launcher, jQuery);
   oj.Assert.assertPrototype(messagingRoot, jQuery);
 
-  var messagingRootId = messagingRoot.uniqueId().attr("id");
-  var describedby = launcher.attr("aria-describedby");
-  var tokens = describedby ? describedby.split(/\s+/) : [];
+  messagingRootId = messagingRoot.uniqueId().attr("id");
+  describedby = launcher.attr("aria-describedby");
+  tokens = describedby ? describedby.split(/\s+/) : [];
   tokens.push(messagingRootId);
   describedby = $.trim(tokens.join(" "));
   launcher.attr("aria-describedby", describedby);
@@ -6601,38 +7013,44 @@ oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
  * @instance
  * @private
  */
- oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messagingRoot) 
- {
-   var launcher = this.GetLauncher();
-   oj.Assert.assertPrototype(launcher, jQuery);
-   oj.Assert.assertPrototype(messagingRoot, jQuery);
+oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messagingRoot) 
+{
+  var describedby;
+  var index;
+  var launcher;
+  var messagingRootId;
+  var tokens;
+  
+  launcher = this.GetLauncher();  
+  oj.Assert.assertPrototype(launcher, jQuery);
+  oj.Assert.assertPrototype(messagingRoot, jQuery);
 
-   var messagingRootId = messagingRoot.attr("id");
-   var describedby = launcher.attr("aria-describedby");
-   var tokens = describedby ? describedby.split(/\s+/) : [];
-   var index = $.inArray(messagingRootId, tokens);
-   if (index !== -1)
-     tokens.splice(index, 1);
+  messagingRootId = messagingRoot.attr("id");
+  describedby = launcher.attr("aria-describedby");
+  tokens = describedby ? describedby.split(/\s+/) : [];
+  index = $.inArray(messagingRootId, tokens);
+  if (index !== -1)
+    tokens.splice(index, 1);
+  describedby = $.trim(tokens.join(" "));
+  
+  if (describedby)
+    launcher.attr("aria-describedby", describedby);
+  else
+    launcher.removeAttr("aria-describedby");
+};
 
-   describedby = $.trim(tokens.join(" "));
-   if (describedby)
-     launcher.attr("aria-describedby", describedby);
-   else
-     launcher.removeAttr("aria-describedby");
- };
-
- /**
- * Removes the aria-live that was added by _addAriaLive
- * return {void}
- * @memberof oj.InlineMessagingStrategy
- * @instance
- * @private
- */
- oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot) 
- {
-   oj.Assert.assertPrototype(messagingRoot, jQuery);
-   messagingRoot.removeAttr("aria-live");
- };
+/**
+* Removes the aria-live that was added by _addAriaLive
+* return {void}
+* @memberof oj.InlineMessagingStrategy
+* @instance
+* @private
+*/
+oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot) 
+{
+  oj.Assert.assertPrototype(messagingRoot, jQuery);
+  messagingRoot.removeAttr("aria-live");
+};
 
 /**
  * Returns the content to show inside the inline message html.
@@ -6643,11 +7061,11 @@ oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
  */
 oj.InlineMessagingStrategy.prototype._buildInlineHtml = function ()
 {
-  var component = this.GetComponent(), jDocument = component.document, 
-          document = jDocument[0]; 
+  var document; 
   
   if (this.ShowMessages()) 
   {
+    document = this.GetComponent().document[0]; 
     return this._buildMessagesHtml(document);
   }
   else
@@ -6664,8 +7082,10 @@ oj.InlineMessagingStrategy.prototype._buildInlineHtml = function ()
  */
 oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
 {
-  var messages, content = "", maxSeverity = this.GetMaxSeverity(),
-      renderSeveritySelectors = true;
+  var content = "";
+  var maxSeverity = this.GetMaxSeverity();
+  var messages;
+  var renderSeveritySelectors = true;
 
   if (this.HasMessages())
   {
@@ -6677,17 +7097,54 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
   return content;
 };
 
-/**
- * 
- * @return {boolean}
- * @private
- * @memberof oj.InlineMessagingStrategy
- * @instance
- */
-oj.InlineMessagingStrategy.prototype._doesMessageContentRootDomExist = function ()
-{
-  return (this.$messagingContentRoot != null);
+
+(function() {
+var editableValueMeta = {
+  "properties": {
+    "disabled": {
+      "type": "boolean"
+    },
+    "displayOptions": {
+      "type": "Object"
+    },
+    "help": {
+      "type": "Object<string, string>"
+    },
+    "messagesCustom": {
+      "type": "Array"
+    },
+    "messagesHidden": {
+      "type": "Array"
+    },
+    "messagesShown": {
+      "type": "Array"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": "string"
+    },
+    "validators": {
+      "type": "Array"
+    },
+    "value": {
+      "type": "Object",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "getNodeBySubId": {},
+    "isValid": {},
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "validate": {}
+  },
+  "extension": {
+    "_widgetName": "editableValue"
+  }
 };
-
-
+oj.Components.registerMetadata('editableValue', 'baseComponent', editableValueMeta);
+})();
 });

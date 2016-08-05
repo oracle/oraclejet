@@ -44,6 +44,18 @@
       }    
     }
 
+    .oj-select .oj-select-multiple-open-icon {
+      display:none;
+    }
+
+    .oj-select .oj-select-select::-ms-expand {
+      display:none;
+    }
+
+    .oj-select-select {
+      -moz-appearance:none;
+    }
+
     // We want the placeholder style on the select for themes where we render
     // triggers + dropdowns (iOS and Android), but not for themes where we
     // render a menulist (Alta and Windows).  (In the latter case, only the

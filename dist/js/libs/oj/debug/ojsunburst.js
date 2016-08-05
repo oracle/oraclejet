@@ -521,4 +521,83 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @default <code class="prettyprint">null</code>
  */
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojSunburstMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "animationUpdateColor": {
+      "type": "string"
+    },
+    "colorLabel": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number|string"
+    },
+    "nodeDefaults": {
+      "type": "object"
+    },
+    "nodes": {
+      "type": "Array<object>"
+    },
+    "rotation": {
+      "type": "string"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "sizeLabel": {
+      "type": "string"
+    },
+    "sorting": {
+      "type": "string"
+    },
+    "startAngle": {
+      "type": "number"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getNode": {}
+  },
+  "extension": {
+    "_widgetName": "ojSunburst"
+  }
+};
+oj.Components.registerMetadata('ojSunburst', 'dvtBaseComponent', ojSunburstMeta);
+oj.Components.register('oj-sunburst', oj.Components.getMetadata('ojSunburst'));
+})();
 });

@@ -44,6 +44,9 @@ oj.FlattenedTreeHeaderSet = function(start, end, headers, nodeSet, rowHeader)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the data object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getData = function(index, level)
 {
@@ -89,6 +92,9 @@ oj.FlattenedTreeHeaderSet.prototype.getData = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the metadata object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -111,6 +117,9 @@ oj.FlattenedTreeHeaderSet.prototype.getMetadata = function(index, level)
  * Gets the actual count of the result set. The total indexes spanned along the innermost header.
  * @return {number} the actual count of the result set.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getCount = function()
 {
@@ -130,6 +139,9 @@ oj.FlattenedTreeHeaderSet.prototype.getCount = function()
  * databody would increment the level by 1.
  * @return {number} the number of levels of the result set
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getLevelCount = function()
 {
@@ -156,6 +168,9 @@ oj.FlattenedTreeHeaderSet.prototype.getLevelCount = function()
  *              aren't included in this headerSet:</caption>                     
  * {'extent':5, 'more': {'before':false, 'after':true}}
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getExtent = function(index, level)
 {
@@ -172,6 +187,9 @@ oj.FlattenedTreeHeaderSet.prototype.getExtent = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header
  * @return {number} the number of levels spanned by the header at the specified position
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeHeaderSet 
  */
 oj.FlattenedTreeHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -218,10 +236,13 @@ oj.FlattenedTreeCellSet = function(startRow, endRow, startColumn, endColumn, nod
  * @param {number} indexes.column the index of the column axis.
  * @return {Object} the data object for the specified index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeCellSet 
  */
 oj.FlattenedTreeCellSet.prototype.getData = function(indexes)
 {
-    var relIndex, row, column, columnKey, rowData;
+    var relIndex, row, column, columnKey, rowData, returnObj, getter, setter;
 
     // convert to relative index
     relIndex = this._getRelIndexes(indexes);
@@ -238,17 +259,37 @@ oj.FlattenedTreeCellSet.prototype.getData = function(indexes)
 
     columnKey = this.m_columns[column];
     rowData = this.m_nodeSet.getData(row);
+    
     if (rowData != null)
     {
+        returnObj = {};
         if (rowData.get)
         {
-            return rowData.get(columnKey);
+            getter = function(){ return rowData.get(columnKey);};
         }
         else
         {
-            return rowData[columnKey];
+            getter = function(){ return rowData[columnKey]; };
         }
+        
+        if (rowData.set)
+        {
+            setter = function(newValue){ return rowData.set(columnKey, newValue);};
+        }
+        else
+        {
+            setter = function(newValue){ rowData[columnKey] = newValue; };
+        }
+
+        Object.defineProperty(returnObj, 'data', {
+            get: getter,
+            set: setter
+        });
+        
+        return returnObj;
     }
+
+    
     return null;
 };
 
@@ -261,6 +302,9 @@ oj.FlattenedTreeCellSet.prototype.getData = function(indexes)
  * @return the metadata object for the specific index.  The metadata that the DataGrid supports are: 
  *         1) keys - the key (of each axis) of the cell.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeCellSet 
  */
 oj.FlattenedTreeCellSet.prototype.getMetadata = function(indexes)
 {
@@ -326,6 +370,9 @@ oj.FlattenedTreeCellSet.prototype._getRelIndexes = function(indexes)
  *        Valid values are "row" and "column".
  * @return {number} the start of the index of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeCellSet 
  */
 oj.FlattenedTreeCellSet.prototype.getStart = function(axis)
 {
@@ -348,6 +395,9 @@ oj.FlattenedTreeCellSet.prototype.getStart = function(axis)
  *        Valid values are "row" and "column".
  * @return {number} the actual count of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeCellSet 
  */
 oj.FlattenedTreeCellSet.prototype.getCount = function(axis)
 {
@@ -371,8 +421,11 @@ oj.FlattenedTreeCellSet.prototype.getCount = function(axis)
 /**
  * The DataGrid specific implementation of the FlattenedTreeDataSource class.
  * @param {Object} treeDataSource the instance of TreeDataSource to flattened
- * @param {Object=} options the options set on this data source.  See documentation for a list
- *        of supported options.
+ * @param {Object=} options the options set on this data source
+ * @param {Array|string=} options.expanded an array of the initial row keys that should be expanded, if all rows are expanded to start, specify the string 'all'
+ * @param {Array=} options.columns an array of columns to return as column headers
+ * @param {string} options.rowHeader the key of the attribute designated as the row header
+ *        
  * @constructor
  * @export
  * @extends oj.FlattenedTreeDataSource
@@ -422,6 +475,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
  * @return {number} the total number of rows/columns.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -448,11 +504,16 @@ oj.FlattenedTreeDataGridDataSource.prototype.getCount = function(axis)
  * @param {number} headerRange.count the size of the range in which the header data are fetched.  
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(oj.HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -479,24 +540,16 @@ oj.FlattenedTreeDataGridDataSource.prototype.fetchHeaders = function(headerRange
             this.m_fetchHeaderRequest = {'range': headerRange, 'callbacks': callbacks, 'callbackObjects': callbackObjects};
             return;
         }
-        else
-        {
-            // no row header, return empty result set
-            headerSet = new oj.ArrayHeaderSet(headerRange['start'], headerRange['start'], axis, null);
-        }
     }
 
-    if (headerSet != null)
+    if (callbacks != null && callbacks['success'] != null)
     {
-        if (callbacks != null && callbacks['success'] != null)
+        // todo: get rid of callbackObjects
+        if (callbackObjects == null)
         {
-            // todo: get rid of callbackObjects
-            if (callbackObjects == null)
-            {
-                callbackObjects = {};
-            }	            
-            callbacks['success'].call(callbackObjects['success'], headerSet, headerRange);
-        }
+            callbackObjects = {};
+        }	            
+        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange, null);
     }
 };
 
@@ -515,6 +568,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.fetchHeaders = function(headerRange
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -543,6 +599,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.fetchCells = function(cellRanges, c
  * @return {Promise} a Promise object which upon resolution will pass in an object containing the keys for each axis,
  *                   or null if not found
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -571,6 +630,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.keys = function(indexes)
  * @param {Object} keys.column the key for the column axis
  * @return {Promise} a promise object containing the index for each axis, or null if not found
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -619,6 +681,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.indexes = function(keys)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -660,7 +725,10 @@ oj.FlattenedTreeDataGridDataSource.prototype._handleSortSuccess = function(callb
  * @param {function()} callbacks.success the callback to invoke when the move completed successfully.  
  * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
  * @export
- */ 
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
+ */
 oj.FlattenedTreeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks)
 {
     var dataSource = oj.FlattenedTreeDataGridDataSource.superclass.getWrappedDataSource.call(this);
@@ -676,6 +744,9 @@ oj.FlattenedTreeDataGridDataSource.prototype.move = function(rowToMove, referenc
  * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none", "row", "column".  
  *         Returns null if the feature is not recognized.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.FlattenedTreeDataGridDataSource 
  */
 oj.FlattenedTreeDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -754,8 +825,9 @@ oj.FlattenedTreeDataGridDataSource.prototype._handleFetchRowsSuccess = function(
         {
             // handle row header request
             this._handleRowHeaderFetchSuccess(nodeSet, headerRange, this.m_fetchHeaderRequest['callbacks'], this.m_fetchHeaderRequest['callbackObjects']);
+			// do not clear unless it is the correct range
+            this.m_fetchHeaderRequest = null;
         }
-        this.m_fetchHeaderRequest = null;
     }
 
     // create wrapper
@@ -851,7 +923,7 @@ oj.FlattenedTreeDataGridDataSource.prototype._handleRowHeaderFetchSuccess = func
         {
             callbackObjects = {};
         }            
-        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange);
+        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange, null);
     }
 };
 

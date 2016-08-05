@@ -28,6 +28,14 @@
     // oj-label style)
     // If oj-label-inline is set on the label element in the page, 
     // the input component moves it to the label's wrapper dom element.
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-label:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-label,
     .oj-label-nocomp {
         display: block;
@@ -108,13 +116,14 @@
     // or when we set overflow:hidden on oj-label-group during nowrap, the icon gets slightly
     // cut off.
     .oj-label-help-icon-anchor {
-        @include oj-bidi-property($property: 'float', $startOrEnd: end);
-          @include oj-ltr {
-            padding-right: 2px;
-         }
-         @include oj-rtl(){
-           padding-left: 2px;
-         }       
+      text-decoration: none;
+      @include oj-bidi-property($property: 'float', $startOrEnd: end);
+        @include oj-ltr {
+          padding-right: 2px;
+       }
+       @include oj-rtl(){
+         padding-left: 2px;
+       }       
     }
     // This is for when you don't want your labels to wrap, whether the label is inline or
     // on top.
@@ -149,7 +158,7 @@
         vertical-align: top;
         margin-top: $formControlLabelInlineMarginTop;
         // box sizing required for firefox
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
 
         @include oj-ltr()
         {
@@ -168,7 +177,7 @@
         vertical-align: top;
         margin-top: $formControlLabelInlineMarginTop;
         // box sizing required for firefox
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
     }
     // When labels are inline with the field, the alta spec says the
     // icons (required, help) come before the label. 
@@ -202,16 +211,16 @@
     .oj-label-inline.oj-label-inline-top {
       margin-top: 0;
     }
+    
+    .oj-flex-bar > .oj-flex-bar-middle > .oj-form-control,
+    .oj-flex-bar > .oj-flex-bar-middle > .oj-form-non-control {
+      margin-bottom: $formLayoutMarginBottom;
+    }
 
     .oj-label-accesskey {
       text-decoration: underline;
     }
     
-    // the alta spec says to underline the label when there is help definition
-    .oj-label-help-def {
-      border-bottom: 2px dotted $helpBorderColor;
-    }
-
     .oj-label-help-icon {
       @extend .oj-fwk-icon-help;
     }
@@ -241,7 +250,7 @@
         height: 4px;
         width: 4px; // px is ok since it is so small it won't make a difference if font size changes
       }
-    }
+    } 
 
   }
 }

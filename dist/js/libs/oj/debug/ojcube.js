@@ -1206,10 +1206,12 @@ oj.CubeCellSet = function(cube, cellRange)
     
     // Get the data
     this._values = this._cube.getValues([{start:startColumn, count:colCount},{start:startRow,count:rowCount}]);
+
+    var valArray = Array.isArray(this._values);
     
-    colCount = this._values.length;
+    colCount = valArray ? this._values.length : 1;
     if (colCount > 0) {
-        rowCount = this._values[0].length;
+        rowCount = valArray ? this._values[0].length : 1;
     }
     this._counts = {'row':rowCount, 'column':colCount};
 };
@@ -1227,7 +1229,7 @@ oj.CubeCellSet.prototype.getData = function(indexes)
 {   
     var row = indexes['row'];
     var col = indexes['column'];
-    var cell = this._values[col-this._starts['column']][row-this._starts['row']];
+    var cell = Array.isArray(this._values) ? this._values[col-this._starts['column']][row-this._starts['row']] : this._values;
     if (cell) {
         return cell.getValue();
     }

@@ -559,10 +559,12 @@ DvtTagCloudAutomation.prototype.getItemCount = function() {
  * @param {number} x The x coordinate position
  * @param {number} y The y coordinate position
  * @param {dvt.CSSStyle} style The CSS style to be applied to the text and background
+ * @param {object=} itemStyle The optional style to be applied directly to the item text
+ * @param {string=} styleClass The optional class to be applied directly to the item text
  * @param {string=} id The optional id for the corresponding DOM element
  */
-var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, id) {
-  this.Init(tagCloud, context, textStr, x, y, style, id);
+var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
+  this.Init(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id);
 };
 
 dvt.Obj.createSubclass(DvtTagCloudItem, dvt.BackgroundOutputText);
@@ -600,13 +602,20 @@ DvtTagCloudItem.ANIMATION_INSERT_PRIORITY = 2;
  * @param {number} x The x coordinate position
  * @param {number} y The y coordinate position
  * @param {dvt.CSSStyle} style The CSS style to be applied to the text and background
+ * @param {object=} itemStyle The optional style to be applied directly to the item text
+ * @param {string=} styleClass The optional class to be applied directly to the item text
  * @param {string=} id The optional id for the corresponding DOM element
  * @protected
  */
-DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, id) {
+DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
   DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style, id);
   this._tagCloud = tagCloud;
   this.alignAuto();
+
+  // If itemStyle or styleClass is specified, it will be directly applied to the tag cloud item SVG text
+  // The itemStyle/styleClass will override any other styling specified through the options.
+  this.TextInstance.setStyle(itemStyle);
+  this.TextInstance.setClassName(styleClass);
   if (style)
     this._createFeedbackStyles(style);
 };
@@ -774,6 +783,14 @@ DvtTagCloudItem.prototype._createFeedbackStyles = function(style) {
 };
 
 /**
+ * Returns the normal CSSStyle of this item.
+ * @return {dvt.CSSStyle} the normal CSSStyle of this item.
+ */
+DvtTagCloudItem.prototype.getItemStyle = function() {
+  return this._normalStyle;
+};
+
+/**
  * Adjusts the x coordinate of a DvtTagCloudItem for animating tags that have moved from one edge to another in the
  * rectangular layout.
  * @param {DvtTagCloudItem} tag The tag to adjust
@@ -933,10 +950,7 @@ DvtTagCloudObjPeer.prototype.getLinkCallback = function() {
  * @override
  */
 DvtTagCloudObjPeer.prototype.getDatatipColor = function() {
-  if (!this._dataColor) {
-    this._dataColor = new dvt.CSSStyle(this._data['style']).getStyle(dvt.CSSStyle.COLOR);
-  }
-  return this._dataColor;
+  return this._displayable.getItemStyle().getStyle(dvt.CSSStyle.COLOR);
 };
 
 /**
@@ -1164,7 +1178,7 @@ DvtTagCloudDefaults.VERSION_1 = {
   'styleDefaults': {
     'animationDuration' : 500,
     'hoverBehaviorDelay' : 200,
-    'style' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #333333;')
+    '_style' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #333333;')
   },
   'touchResponse' : 'auto'
 };
@@ -1256,6 +1270,13 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
   var fontSizeFunction = DvtTagCloudLayoutUtils.getFontSizeFunction(minValue, maxValue, 3);
   // create a boolean map of hidden categories for better performance
   var categoryMap = dvt.ArrayUtils.createBooleanMap(options['hiddenCategories']);
+  //Text measurement properties
+  var textProperties = dvt.CSSStyle.getTextMeasurementProperties();
+  //Public default style
+  var defaultStyle = options['styleDefaults']['style'];
+  if (defaultStyle && !(defaultStyle instanceof Object))
+    defaultStyle = dvt.CSSStyle.cssStringToObject(defaultStyle);
+  //Process tag cloud items
   for (var i = 0; i < dataItems.length; i++) {
     var data = dataItems[i];
     // Default categories array to array of tag label if none provided
@@ -1265,15 +1286,36 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
     if (categoryMap && dvt.ArrayUtils.hasAnyMapItem(categoryMap, data['categories']))
       continue;
 
-    var style = options['styleDefaults']['style'].clone();
-    var color = data['color'];
-    if (color) {
-      style.setStyle(dvt.CSSStyle.COLOR, color);
+    var style = options['styleDefaults']['_style'].clone();
+    var itemStyle = data['style'];
+    if (itemStyle && !(itemStyle instanceof Object))
+      itemStyle = dvt.CSSStyle.cssStringToObject(itemStyle);
+    //Order of precedence of processing item color is,
+    //Item style color > Data item color > Public default style color.
+    var color = (itemStyle && itemStyle['color']) ? itemStyle['color'] :
+        (data['color'] ? data['color'] : ((defaultStyle && defaultStyle['color']) ? defaultStyle['color'] : null));
+
+    //Merge the item style and public default style
+    itemStyle = dvt.JsonUtils.merge(itemStyle, defaultStyle);
+    if (itemStyle) {
+      //Pull the text measurement properties from item style object to CSSStyle
+      for (var index = 0; index < textProperties.length; index++) {
+        //translate css string property to object attribute
+        var attribute = dvt.CSSStyle.cssStringToObjectProperty(textProperties[index]);
+        if (itemStyle[attribute]) {
+          style.setStyle(textProperties[index], itemStyle[attribute]);
+          delete itemStyle[attribute]; //Text property will be applied from CSSStyle
+        }
+      }
+      delete itemStyle['color']; //Item color will be applied from CSSStyle
     }
-    // if there is a color in the 'style' attribute, it will overwrite the 'color' attribute
-    style.parseInlineStyle(data['style']);
+
+    //if there is a color in the data item / item style, it will overwrite the 'color' attribute in style
+    if (color)
+      style.setStyle(dvt.CSSStyle.COLOR, color);
     style.setStyle(dvt.CSSStyle.FONT_SIZE, fontSizeFunction.call(null, data['value']).toString());
-    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, data['id']);
+
+    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, data['className'], data['id']);
     var peer = new DvtTagCloudObjPeer(tagCloud, item, data);
     tagCloud.EventManager.associate(item, peer);
     tagCloud.registerObject(peer, i);

@@ -11,12 +11,15 @@
 $imageDir: "images/" !default;
 
 
+$themeName:           alta !default;
+$themeTargetPlatform: ios !default; // targets the ios 9 look and feel
 
 //----------------------------------------------------------------
-// "ABSTRACT" STYLING
-//     in general these "abstract" variables are not used directly
-//     in the widget files, rather they are referred to by
-//     other variables.
+// PALETTE VARIABLES: 
+//       these can be thought of as the color palette for the
+//       application. Thes variables are not used directly
+//       in the widget files, rather they are referred to by
+//       other variables. 
 //----------------------------------------------------------------
 
 
@@ -59,9 +62,6 @@ $interaction6Color: #dae9f5 !default;
 //       these variables are used broadly in the widget files
 //----------------------------------------------------------------
 
-// http://furbo.org/2015/07/09/i-left-my-system-fonts-in-san-francisco/
-$fontFamily: -apple-system, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif !default;
-
 // font
 //----------------------------------
 $rootFontSize:    1em !default;  // 16px
@@ -85,6 +85,9 @@ $headerTextColor:       #3a3a3a !default;
 $formControlLabelColor: #3a3a3a !default;
 $linkTextColor:         $interaction1Color !default;
 
+//icon colors
+//------------------------------------
+$iconColorHover:    #85bbe7 !default;
 
 // border radius
 //----------------------------------
@@ -117,7 +120,6 @@ $opacityDisabled: .5 !default;
 // link text color defined in "text colors" section, look for "$linkTextColor"
 $linkTextDecoration:      none !default;
 $linkTextDecorationHover: none !default;
-$linkFontWeightActive:    normal !default;
 $linkBgColorActive:       $interaction5Color !default;
 
 // PANEL
@@ -132,6 +134,7 @@ $panelBorderRadius: 0 !default;
 
 // POPUP
 //----------------------------------------------------------------
+$popupBgColor:      $background1Color !default;
 $popupBoxShadow:      $smallBoxShadow !default;
 $popupBorderRadius:   12px !default;
 
@@ -150,12 +153,19 @@ $noteWindowBoxShadow: $smallBoxShadow !default;
 // MENU
 //----------------------------------------------------------------
 
+// Controls whether sheet menus have a "Cancel" menu item automatically added.
+// Valid values are "none" and "menuItem".
+$menuSheetCancelAffordance: "menuItem" !default;
+
 // horizontal spacing
 //----------------------------------
 
 // Need rems, not ems, since we set icon font size (and if we didn't, app often would).
 
 // applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
+// As discussed in _oj.common.menu.scss, while the workaround to WebKit/Apple platform bug 151657
+// remains necessary, the only non-null values supported for $menuTextOnlyJustifyContent are 
+// "flex-start" and "center".
 $menuTextOnlyJustifyContent:         center !default;
 
 // these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
@@ -176,11 +186,12 @@ $menuSubmenuIconPadding:             0.375rem !default; // 6px @16px font.
 
 // menus (.oj-menu), whether top-level or submenu
 $menuBorderRadius:                   5px !default;
+$menuBgColor:                        $popupBgColor !default;
 
 // menu items (.oj-menu-item) and their anchors
-$menuItemBorderColor:                #d5dfe5 !default;
+$menuItemBorderColor:                $border2Color !default;
 $menuItemTextColor:                  $interaction1Color !default; 
-$menuItemLineHeight:                 43/16 !default;
+$menuItemLineHeight:                 43/16 !default; // 43px @16px font
 
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:          transparentize($menuItemTextColor, $opacityDisabled) !default; 
@@ -198,6 +209,35 @@ $menuSubmenuIconColor:               #bababc !default; // TODO: this color appea
 // menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
 $menuDividerBorderWidth:             2px !default;
 $menuDividerBorderColor:             $menuItemBorderColor !default;
+
+
+// sheet menus
+//----------------------------------
+
+// sheet menus (.oj-menu-sheet)
+$menuSheetFontSize:                  1.5rem !default; // 24px @16px font
+$menuSheetBorderRadius:              12px !default;
+$menuSheetBgColor:                   transparent !default;
+$menuSheetMarginHorizontal:          0.75rem !default; // 12px @16px font
+$menuSheetMarginBottom:              12px; // value must be 0, px, or %, e.g. 0, 10px, 5%
+
+// sheet menu items (.oj-menu-item) and their anchors
+$menuSheetItemBorderColor:           transparentize($menuItemBorderColor, .5) !default;
+$menuSheetItemBgColor:               $menuBgColor !default;
+$menuSheetItemLineHeight:            56/24 !default; // 56px @24px font, where 24 is 1.5rem @16px font
+
+// focused sheet menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
+$menuSheetItemBorderColorFocus:      $menuSheetItemBorderColor !default;
+
+// cancel menu item (.oj-menu-item-cancel) and its anchor
+$menuSheetItemCancelFontWeight:      bold !default;
+
+// groups of sheet menu items separated by group dividers
+$menuSheetItemGroupBorderRadius:     $menuSheetBorderRadius !default;
+
+// sheet menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuSheetDividerBorderWidth:        8px !default;
+$menuSheetDividerBorderColor:        transparent !default;
 
 
 // BUTTONS
@@ -272,7 +312,6 @@ $buttonIconColorHover:            $buttonTextColorHover !default;
 $buttonBorderColorHover:          $buttonBgColorHover !default;
 
 // active
-$buttonBgColorActive:             #044f91 !default;
 $buttonTextColorActive:           $buttonTextColor !default; // #ffffff
 
 // selected
@@ -311,7 +350,7 @@ $buttonHalfChromeIconColor:               $buttonHalfChromeTextColor !default;
 // half chrome hover
 // Unlike full chrome, there is a spec for half-chrome hover, per email: from filmstrip/conveyor
 // fwd/back button specs, use SVG fill colors for text/icon color, and use background colors from spec wiki
-$buttonHalfChromeTextColorHover:          #85BBE7 !default;
+$buttonHalfChromeTextColorHover:          adjust-color($interaction1Color, $lightness: 30%, $saturation: -28%) !default;
 $buttonHalfChromeBgColorHover:            transparent !default;
 
 // half chrome active
@@ -371,17 +410,19 @@ $buttonConfirmColor:  #168100 !default;
 
 $buttonsetBorderRadius: 5px !default;
 
-// same as $fontFamily, but with -apple-system removed from the front of the list since it doesn't 
-// seem to support font-size 0 in iOS9, resulting in unwanted space between buttonset buttons
-$buttonsetFontFamily: "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif !default; 
-$buttonsetButtonFontFamily: $fontFamily !default; // restore usual font family on individual buttons
-
 
 // chroming
 //----------------------------------
 
 $buttonsetChromingOptionDefault: outlined !default;
 
+// width
+//----------------------------------
+// default: equal width only for full- and outline-chrome buttons, not half chrome
+$buttonsetEqualWidthChromingList: full outlined !default; // default should be equal width buttonsets for these chroming values (auto width for all others)
+
+// DIALOG
+//----------------------------------------------------------------
 
 // TOOLBAR
 //----------------------------------------------------------------
@@ -426,7 +467,6 @@ $formControlPlaceholderColor: #646464 !default;
 // form labels
 //----------------------------------
 // label text color defined above, look for "text colors"
-$formControlLabelFontWeight: normal !default;
 $formControlLabelFontSize: $smallFontSize !default;
 $formControlLabelRequiredChar: '' !default;
 
@@ -467,6 +507,10 @@ $inputSearchBgColorDisabled: $inputSearchBgColor !default;
 $inputSearchIconPosition: start !default; // Possible values are 'start' and 'end'
 $inputSearchIconPadding: 0 6px 0 9px !default;
 
+// INPUT NUMBER
+// the spacing between the input and the buttonset
+$inputNumberInputToButtonMargin: 10px !default;
+
 // RADIOSET AND CHECKBOXSET
 // ios has input rendered as a background image and label comes before image
 $radioCheckboxRenderInputAs: backgroundImage !default;
@@ -488,6 +532,9 @@ $radioCheckboxItemDividerColorActive: #bababc !default;
 
 //options
 $selectRenderModeOptionDefault: native !default;
+
+// picker
+$selectPickerBgColor: $background1Color !default;
 
 // SLIDER
 //----------------------------------------------------------------
@@ -574,7 +621,7 @@ $switchThumbBorderWidthHover: $switchThumbBorderWidth !default;
 // ----- COLORS -----
 $switchTrackBgColorHover:                $switchTrackBgColor !default; // #fdfdfd
 $switchTrackBorderColorHover:            $switchTrackBorderColor !default; // #e5e5e5
-$switchThumbBgColorHover:                #daeaf8 !default;
+$switchThumbBgColorHover:                $background6Color !default;
 $switchThumbBorderColorHover:            #c1d0df !default;
 
 // HOVER ON
@@ -644,12 +691,8 @@ $switchThumbBgColorSelectedDisabled:     $background1Color !default; // #ffffff
 $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !default;
 
 
-
-
-
 // TRAIN
-//----------------------------------------------------------------
-$trainStepWidth: 7rem !default;
+//-----------------------------------------------------------------------------
 
 
 // CONVEYOR BELT
@@ -663,14 +706,14 @@ $conveyorBeltOverflowIndicatorHeight: 1.8125rem !default; // 29px when root is 1
 //----------------------------------------
 
 //Default
-$navigationListPageLevelItemTextColorDefault: $linkTextColor !default;
+$navigationListPageLevelItemLabelColorDefault: $linkTextColor !default;
 $navigationListPageLevelItemIconColorDefault: $interaction1Color !default;
 $navigationListPageLevelItemBorderColor: $interaction1Color !default;
 
 //Selected
 $navigationListPageLevelItemBorderColorSelected: $interaction1Color !default;
 $navigationListPageLevelItemBgColorSelected: $interaction1Color !default;
-$navigationListPageLevelItemTextColorSelected: $contrastTextColor !default;
+$navigationListPageLevelItemLabelColorSelected: $contrastTextColor !default;
 $navigationListPageLevelItemIconColorSelected: $contrastTextColor !default;
 
 //Active
@@ -681,7 +724,7 @@ $navigationListItemStartEndPadding:         0.625rem !default; //10px when root 
 $navigationListIconOnlyIconStartEndPadding: 10px !default;
 $navigationListPageLevelItemBorderRadius: 4px !default;
 $navigationListPageLevelItemBorderWidth: 1px !default;
-$navigationListPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationListPageLevelIconOnlyItemBorderWidth: 1px !default;
 $navigationListPageLevelItemMinHeight: 1.75rem !default; // 28px when root font size is 16px
 $navigationListPageLevelItemFontSize: 0.8125rem !default;//13px when root font size is 16px
 
@@ -694,10 +737,11 @@ $navigationBarItemPadding: 0 $navigationListItemStartEndPadding 0 !default;
 $navigationBarIconMargin: 5px 4px 4px;
 
 $navigationBarPageLevelItemBorderWidth: 1px !default;
-$navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
+$navigationBarPageLevelIconOnlyItemBorderWidth: 1px !default;
 $navigationBarPageLevelItemFontSize: 0.8125rem !default; //13 px when root font is 16px
 $navigationBarPageLevelItemStackedIconMinHeight: 3.9375rem !default;//63px when root font is 16px
 $navigationBarPageLevelItemMinHeight: 1.8125rem !default; //29px when root font is 16px;
+
 // END of NavigationList variables
 
 

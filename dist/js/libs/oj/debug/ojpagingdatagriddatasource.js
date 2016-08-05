@@ -36,6 +36,9 @@ oj.PagingHeaderSet = function(headerSet, startIndex)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the data object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getData = function(index, level)
 {
@@ -52,6 +55,9 @@ oj.PagingHeaderSet.prototype.getData = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the metadata object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -63,6 +69,9 @@ oj.PagingHeaderSet.prototype.getMetadata = function(index, level)
  * along the innermost header.
  * @return {number} the actual count of the result set.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getCount = function()
 {
@@ -75,6 +84,9 @@ oj.PagingHeaderSet.prototype.getCount = function()
  * databody would increment the level by 1.
  * @return {number} the number of levels of the result set
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getLevelCount = function()
 {
@@ -97,6 +109,9 @@ oj.PagingHeaderSet.prototype.getLevelCount = function()
  *              aren't included in this headerSet:</caption>                     
  * {'extent':5, 'more': {'before':false, 'after':true}}
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getExtent = function(index, level)
 {
@@ -110,6 +125,9 @@ oj.PagingHeaderSet.prototype.getExtent = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header
  * @return {number} the number of levels spanned by the header at the specified position
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingHeaderSet 
  */
 oj.PagingHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -192,6 +210,9 @@ oj.PagingDataGridDataSource.prototype._registerEventListeners = function()
  * Get the current page
  * @return {number} The current page
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getPage = function()
 {
@@ -204,6 +225,9 @@ oj.PagingDataGridDataSource.prototype.getPage = function()
  * @param {Object=} options Options<p>
  *                  pageSize: The page size.<p>
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.setPage = function(value, options)
 {
@@ -279,6 +303,9 @@ oj.PagingDataGridDataSource.prototype.fetch = function(options)
  * Get the current page start index
  * @return {number} The current page start index
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getStartItemIndex = function()
 {
@@ -289,6 +316,9 @@ oj.PagingDataGridDataSource.prototype.getStartItemIndex = function()
  * Get the current page end index
  * @return {number} The current page end index
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getEndItemIndex = function()
 {
@@ -299,6 +329,9 @@ oj.PagingDataGridDataSource.prototype.getEndItemIndex = function()
  * Get the page count
  * @return {number} The total number of pages
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getPageCount = function()
 {
@@ -349,6 +382,9 @@ oj.PagingDataGridDataSource.prototype._handleChange = function(options) {
  * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
  * @return {number} the total number of rows/columns.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -371,6 +407,9 @@ oj.PagingDataGridDataSource.prototype.getCount = function(axis)
  * @return {string} "actual" if the count returned in getCount function is the actual count, "estimate" if the 
  *         count returned in getCount function is an estimate.  The default value is "actual".
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -386,21 +425,25 @@ oj.PagingDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @param {number} headerRange.count the size of the range in which the header data are fetched.  
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
     var headerSet;
     if (this._initialized == null)
     {
-        headerSet = new oj.ArrayHeaderSet(0, 0, headerRange.axis, null);
         if (callbacks != null && callbacks['success'])
         {
-            callbacks['success'].call(callbackObjects['success'], headerSet, headerRange);
+            callbacks['success'].call(callbackObjects['success'], null, headerRange, null);
         }
     }
     else
@@ -412,7 +455,7 @@ oj.PagingDataGridDataSource.prototype.fetchHeaders = function(headerRange, callb
             {
                 headerRange['count'] = this._pageSize - headerRange['start'];
             }
-            this._pendingRowHeaderCallback = {'callbacks': callbacks, 'callbackObjects': callbackObjects};
+            this._pendingRowHeaderCallback = {'headerRange': headerRange, 'callbacks': callbacks, 'callbackObjects': callbackObjects};
             this.dataSource.fetchHeaders(headerRange, {success: this._handleRowHeaderFetchSuccess.bind(this), error: this._handleRowHeaderFetchError.bind(this)}, callbackObjects);
         }
         else
@@ -426,21 +469,36 @@ oj.PagingDataGridDataSource.prototype.fetchHeaders = function(headerRange, callb
  * Handle row headers fetch success by adjusting startIndex back to 0 and passing a PagingHeaderSet
  * @param {Object} headerSet a cellSet object
  * @param {Object} headerRange
+ * @param {Object} endHeaderSet a headerSet object
  * @private
  */
-oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function(headerSet, headerRange)
+oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchSuccess = function(headerSet, headerRange, endHeaderSet)
 {
-    var pagingHeaderSet, callback, callbackObject;
+    var pagingHeaderSet, pagingEndHeaderSet, callback, callbackObject;
+    
+    // make sure we only callback when we have the most recent request
+    if (this._pendingRowHeaderCallback['headerRange'] != headerRange)
+    {
+        return;
+    }
+    
     headerRange['start'] -= this._startIndex;
     // make the datagrid not issue any extra fetches
     headerRange['count'] += 1;
-    pagingHeaderSet = new oj.PagingHeaderSet(headerSet, this._startIndex);
+    if (headerSet != null)
+    {
+        pagingHeaderSet = new oj.PagingHeaderSet(headerSet, this._startIndex);
+    }    
+    if (endHeaderSet != null)
+    {
+        pagingEndHeaderSet = new oj.PagingHeaderSet(endHeaderSet, this._startIndex);
+    }
     
     // clear callback before calling it because it may issue a refetch
     callback = this._pendingRowHeaderCallback['callbacks']['success'];
     callbackObject = this._pendingRowHeaderCallback['callbackObjects']['success'];
     this._pendingRowHeaderCallback = null;
-    callback.call(callbackObject, pagingHeaderSet, headerRange);
+    callback.call(callbackObject, pagingHeaderSet, headerRange, pagingEndHeaderSet);
 };
 
 /**
@@ -473,16 +531,27 @@ oj.PagingDataGridDataSource.prototype._handleRowHeaderFetchError = function(erro
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
-    var cellSet, i; 
+    var i; 
     if (this._initialized == null)
     {
-        cellSet = new oj.ArrayCellSet(0, 0, 0, 0, null);
+        var emptyCellSet = {};
+        emptyCellSet['getData'] = function() { return null; };
+        emptyCellSet['getMetaData'] = function() { return null; };
+        emptyCellSet['getStart'] = function() { return 0; };
+        emptyCellSet['getCount'] = function() { return 0; };
+        emptyCellSet['getLevelCount'] = function() { return 0; };
+        emptyCellSet['getExtent'] = function() { return 0; };
+        emptyCellSet['getDepth'] = function() { return 1; };       
+        
         if (callbacks != null && callbacks['success'])
         {
-            callbacks['success'].call(callbackObjects['success'], cellSet, cellRanges);
+            callbacks['success'].call(callbackObjects['success'], emptyCellSet, cellRanges);
         }
     }
     else
@@ -498,7 +567,7 @@ oj.PagingDataGridDataSource.prototype.fetchCells = function(cellRanges, callback
                 }
             }        
         }
-        this._pendingCellCallback = {'callbacks': callbacks, 'callbackObjects': callbackObjects}
+        this._pendingCellCallback = {'cellRanges': cellRanges, 'callbacks': callbacks, 'callbackObjects': callbackObjects};
         this.dataSource.fetchCells(cellRanges, {success: this._handleCellsFetchSuccess.bind(this), error: this._handleCellsFetchError.bind(this)}, callbackObjects);
     }
 };
@@ -516,6 +585,13 @@ oj.PagingDataGridDataSource.prototype.fetchCells = function(cellRanges, callback
 oj.PagingDataGridDataSource.prototype._handleCellsFetchSuccess = function(cellSet, cellRanges)
 {
     var i, pagedCellSet, callback, callbackObject;
+    
+    // make sure we only callback when we have the most recent request    
+    if (!this._pendingCellCallback['cellRanges'] == cellRanges)
+    {
+        return;
+    }
+    
     for (i=0; i<cellRanges.length; i+=1)
     {
         if (cellRanges[i]['axis'] === 'row')
@@ -561,6 +637,9 @@ oj.PagingDataGridDataSource.prototype._handleCellsFetchError = function(error)
  * @param {Object} indexes.column the index for the column axis
  * @return {Object.<Object, Object>} an object containing the keys for each axis
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -575,6 +654,9 @@ oj.PagingDataGridDataSource.prototype.keys = function(indexes)
  * @param {Object} keys.column the key for the column axis
  * @return {Object.<number, number>} indexes an object containing the index for each axis
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -592,6 +674,9 @@ oj.PagingDataGridDataSource.prototype.indexes = function(keys)
  * @return {string|null} the name of the feature.  For sort, the valid return values are: "full", "none".  Returns null if the
  *         feature is not recognized.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -635,6 +720,9 @@ oj.PagingDataGridDataSource.prototype.size = function()
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -683,7 +771,10 @@ oj.PagingDataGridDataSource.prototype.totalSizeConfidence = function()
  *        Valid values are: "before", "after".
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
- */ 
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
+ */
 oj.PagingDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
     return this.dataSource.moveOK(rowToMove, referenceRow, position);
@@ -700,6 +791,9 @@ oj.PagingDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow,
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingDataGridDataSource 
  */
 oj.PagingDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {
@@ -735,6 +829,9 @@ oj.PagingCellSet = function(cellSet, startIndex)
  * @param {number} indexes.column the index of the column axis.
  * @return {Object} the data object for the specified index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingCellSet 
  */
 oj.PagingCellSet.prototype.getData = function(indexes)
 {
@@ -751,6 +848,9 @@ oj.PagingCellSet.prototype.getData = function(indexes)
  * @return the metadata object for the specific index.  The metadata that the DataGrid supports are: 
  *         1) keys - the key (of each axis) of the cell.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingCellSet 
  */
 oj.PagingCellSet.prototype.getMetadata = function(indexes)
 {
@@ -763,6 +863,9 @@ oj.PagingCellSet.prototype.getMetadata = function(indexes)
  * @param {string} axis the axis in which to inquire the actual count of the result set.
  * @return {number} the actual count of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.PagingCellSet 
  */
 oj.PagingCellSet.prototype.getCount = function(axis)
 {

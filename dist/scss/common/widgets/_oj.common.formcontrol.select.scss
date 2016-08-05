@@ -14,7 +14,14 @@
 
     /* select */
     /* --------------------------------------------------------------- */
-    
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-select:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-select {
       position: relative;
       display: inline-block;
@@ -24,7 +31,18 @@
       // font size needs to be on the root, because max/min width is in em.
       font-size: $formControlTriggerFontSize;
 
-      @include oj-box-sizing-property(border-box); 
+      box-sizing: border-box; 
+    }
+
+    /* 
+     * Suppress focus ring around the select box 
+     */
+    .oj-select .oj-select-choice:focus {
+      outline: none;
+    }
+
+    .oj-select .oj-select-choice.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
 
     /* 
@@ -32,15 +50,15 @@
      */
     .oj-select-choice {
       @include oj-form-control-content($formControlTriggerValueColor);
-      @include oj-box-sizing-property(border-box);
-      display: block;
+      box-sizing: border-box;
+      @include oj-display-inline-flex-property();
+      @include oj-align-items-property(center);
+      width: 100%;
       overflow: hidden;
-      position: relative;
       white-space: nowrap;
       background-clip: padding-box;
       text-overflow: ellipsis;
       height: $formControlTriggerHeight;
-      line-height: $formControlTriggerHeight;
       @include oj-ltr() {
         padding-left: $formControlPaddingHorizontal;
         padding-right: 0;
@@ -50,14 +68,14 @@
         padding-right: $formControlPaddingHorizontal;
       }
     }
-    
+
     /* multi-select */
-    
+
     /* 
      * Applied to the multi-select box which includes the input field and the selected choices
      */
     .oj-select-choices {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-form-control-content;
       height: auto;
       min-height: $formControlTriggerHeight;
@@ -67,7 +85,7 @@
       overflow: hidden;
       padding: 0 $formControlPaddingHorizontal 5px;      
     }
-    
+
     /* 
      * Applied to the multi-select box list items which include the search field and the selected choices
      */
@@ -80,7 +98,7 @@
         float: right;
       }   
     }
-    
+
     /* 
      * Applied to the multi-select search field which is an li to wrap the input
      */
@@ -90,7 +108,7 @@
       white-space: nowrap; 
       line-height: $formControlTriggerHeight * 0.9;
     }
-    
+
     /* 
      * Applied to the input field. Override default .oj-listbox-input
      */
@@ -120,7 +138,7 @@
       }
 
     }
-    
+
     /* 
      * Applied to the multi-select selected choice
      */
@@ -148,7 +166,7 @@
     .oj-select-selected-choice.oj-focus {
       @include oj-browser-focus-outline-approximation($buttonTextColor);
     }
-    
+
     /* 
      * Applied to the label of the selected choice
      */
@@ -178,7 +196,8 @@
 
     /* Invalid styling for the widget */
     .oj-select.oj-invalid .oj-select-choice,
-    .oj-select-native.oj-invalid .oj-select-select {
+    .oj-select-native.oj-invalid .oj-select-select,
+    .oj-select-multi.oj-invalid .oj-select-choices {
       @include oj-form-control-border-message-width;
       border-style: solid;
       border-color: $borderColorError;
@@ -186,7 +205,8 @@
 
     /* Warning styling for the widget */
     .oj-select.oj-warning .oj-select-choice,
-    .oj-select-native.oj-warning .oj-select-select {
+    .oj-select-native.oj-warning .oj-select-select,
+    .oj-select-multi.oj-warning .oj-select-choices {
       @include oj-form-control-border-message-width;
       border-style: solid;
       border-color: $borderColorWarning;
@@ -196,7 +216,7 @@
     .oj-select.oj-disabled .oj-select-choice {
       @include oj-form-control-content-disabled;
     }
-    
+
     /* 
      * Disabled styles for multi-select 
      */
@@ -228,12 +248,11 @@
       border: 0;
       outline: 0;
       white-space: nowrap;
-      display: inline-block;
+      @include oj-flex-property(1 1 auto); 
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 100%;
       @include oj-box-shadow(none);
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
 
       @include oj-ltr() {
         padding-right: $formControlPaddingHorizontal;
@@ -243,24 +262,16 @@
       }
     }
 
-
     /* 
-     * Applied to the dropdown open icon
+     * Applied to the dropdown open icon in jet theme
      */
-    .oj-select-arrow {
-      display: inline-block;
+    .oj-select-jet .oj-select-arrow {
+      @include oj-flex-property(0 0 auto); 
+      cursor: pointer;
+      box-sizing: border-box;
       text-align: center;
-      position: absolute;
-      top: 0;
-      line-height: inherit;
-      @include oj-ltr() {
-        right: 0;
-      }
-      @include oj-rtl() {
-        left: 0;
-      }
+      vertical-align: middle;
     }
-
 
     // High Contrast
     //--------------------------------------------
@@ -285,12 +296,19 @@
         padding-right: oj-shorthand-property-value-right($selectArrowPadding);
       }
     }
+
+    .oj-select-open-icon,
+    .oj-select-open-icon:hover,
+    .oj-select-open-icon:focus  {
+      text-decoration: none;
+    }
     
+
     .oj-select-multiple-open-icon {
       @extend .oj-fwk-icon-dots-vertical !optional;
 
       font-size: 24px;
-      
+
       @include oj-rtl() {
         padding-right: oj-shorthand-property-value-left($selectMultipleArrowPadding);
         padding-left: oj-shorthand-property-value-right($selectMultipleArrowPadding);
@@ -300,7 +318,7 @@
         padding-right: oj-shorthand-property-value-right($selectMultipleArrowPadding);
       }
     }
-    
+
     /* clear entry icon */
     .oj-select-clear-entry-icon {
       @extend .oj-fwk-icon-cross;
@@ -321,21 +339,37 @@
       font-family: oj-json-from-map($selectDefaultOptions);
     }
 
-    //native theme
+    //Bug 23299519 - single select doesn't center align in inherit styles demo
     .oj-select-native .oj-select-arrow {
+      display: inline-block;
+      text-align: center;
+      position: absolute;
+      top: calc(50% - 1rem);
+      @include oj-ltr() {
+        right: 0;
+      }
+      @include oj-rtl() {
+        left: 0;
+      }
       line-height: $formControlTriggerHeight;
       color: $selectArrowColor;
       pointer-events: none;
     }
-    
+
     .oj-select-native.oj-disabled .oj-select-arrow {
       opacity: $formControlOpacityDisabled;
     }
-    
+
+    //Bug 23755887 - select messaging issues
+    .oj-select-native.oj-invalid .oj-select-arrow,
+    .oj-select-native.oj-warning .oj-select-arrow {
+      top: 0;
+    }
+
     //select tag
     .oj-select-select {
       @include oj-form-control-content($formControlTriggerValueColor);
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       height: $formControlTriggerHeight;
       width: 100%;
       white-space: nowrap;
@@ -348,20 +382,61 @@
       font-style: $formControlPlaceholderFontStyle;
     }
 
-
     .oj-select-select[disabled] {
       @include oj-form-control-content-disabled;
     }
 
+    .oj-select-select option {
+      background-color: $selectPickerBgColor;
+    }
+
+    /* 
+     * Applied to focus ring around the select box 
+     */
+    .oj-select-select:focus {
+      outline: none;
+    }
+
+    .oj-select-select.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+
+
     //jet theme
     // trigger
     .oj-select-jet.oj-enabled .oj-select-choice:active,
-    .oj-select-native.oj-enabled .oj-select-select:active {      
+      .oj-select-native.oj-enabled .oj-select-select:active {
       background-color: $formControlTriggerBgColorActive;
     }
 
     .oj-select-jet .oj-select-arrow.oj-select-open-icon {
       color: $selectArrowColor;
     }
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    // need extra specificity since base selector has direction selectors
+    .oj-form-control-inherit .oj-select .oj-select-choice,
+    .oj-form-control-inherit .oj-select .oj-select-choices {    
+      @include oj-form-control-inherit();
+    }
+
+    // Styling on form control dom which doesn't require text-align, padding, or color
+    .oj-form-control-inherit .oj-select-select,
+    .oj-form-control-inherit .oj-select-chosen {
+      background-color:inherit;
+      border-width: 0;
+    }
+    
+    .oj-form-control-inherit .oj-select-select {
+      height:100%;
+    }
+    
+    // TODO: single select when height is large, it doesn't vertically center align
+    // TODO: multi select's color inherit does not work. the color does not get inherited. (same with combobox)
   }
 }

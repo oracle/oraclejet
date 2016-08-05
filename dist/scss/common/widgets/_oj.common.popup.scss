@@ -30,7 +30,14 @@
   @include module-include-once("common.popup") {
     /* popup */
     /* --------------------------------------------------------------- */
-    
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-popup:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /* defines the stacking context for the popup and its children */
     .oj-popup-layer {
       @extend .oj-component-layer;

@@ -3345,8 +3345,8 @@ dvt.PanZoomComponent.prototype.Init = function(context, callback, callbackObj) {
   dvt.PanZoomComponent.superclass.Init.call(this, context, callback, callbackObj);
   this._controlPanelBehavior = dvt.PanZoomComponent.CONTROL_PANEL_BEHAVIOR_INIT_COLLAPSED;
   this._displayedControls = dvt.PanZoomCanvas.DEFAULT_DISPLAYED_CONTROLS;
-  //IE10, Flash toolkit and FF version 17 do not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
-  this._bSupportsVectorEffects = (!dvt.Agent.isEnvironmentBatik() && !dvt.Agent.isPlatformIE() && !(dvt.Agent.isPlatformGecko() && dvt.Agent.getVersion() <= 17));
+  // Batik which is used for ADF PNG rendering and IE11 do not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
+  this._bSupportsVectorEffects = !dvt.Agent.isEnvironmentBatik() && !(dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() <= 11);
   this._resourcesMap = null;
   this._subcomponentStyles = null;
   this._skinName = '';
@@ -5144,6 +5144,14 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseDown = function(event) {
  * @override
  */
 dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
+  //Fix for  - chrome: single selection doesn't work.
+  //Intermittent bug - chrome sends mousemove event on click, that we treat as an attempt to pan,
+  //consume the event and prevent the selection.
+  //Check for position to verify if this is a legitimate mousemove
+  var pos = this._callbackObj.GetRelativeMousePosition(event);
+  if (pos.x === this._px && pos.y === this._py)
+    return;
+
   if (this._bDown) {
     this._bDragging = true;
     var pos = this._callbackObj.GetRelativeMousePosition(event);

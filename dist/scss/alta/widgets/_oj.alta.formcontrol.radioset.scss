@@ -30,6 +30,40 @@
 
 @if $includeRadiosetClasses != false {
   @include module-include-once("alta.radioset") {
-
+    // These are the styleclasses rendered on the input type=radio|checkbox
+    .oj-radio,
+    .oj-checkbox,
+    .oj-checkbox-nocomp {
+      @include oj-ltr() {
+        // I'm not using $formControlLabelInlineGutter since this variable
+        // is for the main label gutter, and if this is changed to something
+        // big, let's say, we probably don't want the radio label gutter to
+        // be affected. 
+        margin-left: 2px;
+        margin-right: .74rem; 
+      }
+      @include oj-rtl() {
+        margin-right: 2px;
+        margin-left: .74rem;
+      }
+    }
+    
+    .oj-label-inline.oj-radioset-label,
+    .oj-label-inline.oj-checkboxset-label {
+      margin-top: 5px;
+    }
+    
+    // ui spec calls for about 8 pixels after label before next input if horizontal - one px
+    // more than before the label
+    .oj-choice-row-inline > .oj-radio-label,
+    .oj-choice-row-inline > .oj-checkbox-label,
+    .oj-choice-row-inline > .oj-checkbox-label-nocomp {
+      @include oj-ltr() {
+        margin-right: 1.5em;
+      }
+      @include oj-rtl() {
+        margin-left: 1.5em;
+      }   
+    }
   }
 }

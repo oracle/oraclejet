@@ -8,20 +8,48 @@
 
 @if $includeGaugeClasses != false {
   @include module-include-once("common.gauge") {
-    
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-dial-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-dialgauge {
       width:200px;
       height:200px;
+    }
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-led-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }      
     }
 
     .oj-ledgauge {
       width:40px;
       height:40px;
     }
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-status-meter-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
 
     .oj-statusmetergauge {
       width:220px;
       height:25px;
+    }
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-rating-gauge:not(.oj-complete) {
+        visibility: hidden;
+      }      
     }
 
     .oj-ratinggauge {
@@ -49,6 +77,13 @@
     // color for the third threshold on a gauge, typically represents a high value
     .oj-gauge-threshold3 {
       color: $dvtThreshold3Color;
+    }
+
+    .oj-dialgauge.oj-focus-highlight,
+    .oj-ledgauge.oj-focus-highlight,
+    .oj-statusmetergauge.oj-focus-highlight,
+    .oj-ratinggauge.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
   }
 }

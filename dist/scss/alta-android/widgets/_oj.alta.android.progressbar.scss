@@ -8,6 +8,7 @@
 @if $includeProgressbarClasses != false  {
   @include module-include-once("alta.android.progressbar") {
     .oj-progressbar-overlay {
+      height: 100%;
       opacity: $progressbarIndeterminateOverlayOpacity;
       @include oj-ltr() {
         background: oj-image-url("animated-overlay.gif");

@@ -122,6 +122,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *
  * <p>For accessibility, a JET Button must always have a <a href="#label">label</a>, even if it is <a href="#display">icon-only</a>.
  *
+ * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
+ *
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
  * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
  * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
@@ -157,6 +159,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *     <tr>
  *       <td>oj-button-confirm</td>
  *       <td>Identifies an action to confirm. Designed for use with a push button.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-focus-highlight</td>
+ *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -304,6 +310,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @expose
          * @memberof oj.ojButton
          * @instance
+         * @since 1.2.0
+         * 
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
@@ -500,7 +508,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         },
 
         /**
-         * <p>JQ selector identifying the JET Menu that the button should launch. If specified, the button is a menu button.
+         * <p>Identifies the [JET Menu]{@link oj.ojMenu} that the button should launch. If specified, the button is a menu button.
+         *
+         * <p>The value can be an HTML element, JQ selector, JQ object, NodeList, or array of elements. In all cases, the first indicated element is used.
          *
          * <p>By default, menu buttons have a downward pointing "dropdown" arrow for their end icon.  See the <code class="prettyprint">icons</code> option for details.
          *
@@ -514,7 +524,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
          * @expose
          * @memberof oj.ojButton
          * @instance
-         * @type {Object}
+         * @type {Element|Array.<Element>|string|jQuery|NodeList}
          * @default <code class="prettyprint">null</code>
          *
          * @example <caption>Initialize a menu button:</caption>
@@ -617,8 +627,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         var self = this,
             options = this.options,
             toggleButton = this._isToggle,
-            activeClass = !toggleButton ? "oj-active" : "",
-            focusClass = "oj-focus";
+            activeClass = !toggleButton ? "oj-active" : "";
 
         this.rootElement.addClass( BASE_CLASSES );
         _setChromingClass(this.rootElement, this.options.chroming);
@@ -683,16 +692,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 }
             });
 
-        this.element
-            .bind( "focus" + this.eventNamespace, function() {
-                // no need to check disabled, focus won't be triggered anyway
-                self.rootElement.addClass( focusClass );
+        this._focusable({
+            'element': this.rootElement, 
+            'applyHighlight': true, 
+            'afterToggle' : function() {
                 self._toggleDefaultClasses();
-            })
-            .bind( "blur" + this.eventNamespace, function() {
-                self.rootElement.removeClass( focusClass );
-                self._toggleDefaultClasses();
-            });
+            }
+        });
 
         if ( toggleButton )
         {
@@ -963,6 +969,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // TBD: won't need this after the restore-attrs feature is in place.
         this.element
             .removeClass( "oj-helper-hidden-accessible" )
+            .removeAttr("aria-labelledby")
             .removeUniqueId();
 
         var isToggle = this._isToggle;
@@ -1000,7 +1007,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _NotifyDetached: function() {
         // In browsers [Chrome v35, Firefox v24.5, IE9, Safari v6.1.4], blur and mouseleave events are generated for hidden content but not detached content,
-        // so when the component is detached from the document, we must use this hook to remove the oj-focus, oj-hover, and oj-active classes, to 
+        // so when the component is detached from the document, we must use this hook to remove the oj-focus, oj-focus-highlight, oj-hover, and oj-active classes, to 
         // ensure that button is displayed without those classes when it is re-attached to the DOM. Refer .
         // _super() now removes those 3 classes, so just need to call _tDC() afterwards.
         this._super();
@@ -1020,7 +1027,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // When called by _setOption("disabled"), its _super() has already done the following things:
     // - Set this.options.disabled.
     // - Applied .oj-disabled and aria-disabled to rootElement, often incorrectly per comments below.  The below code fixes it up.  The _super() code has tbd to fix this.
-    // - If option is being set to true, it's removed .oj-hover/focus/active.  (See comment below.)
+    // - If option is being set to true, it's removed .oj-hover/focus/focus-highlight/active.  (See comment below.)
     _updateEffectivelyDisabled: function()
     {
         var effectivelyDisabled = this._IsEffectivelyDisabled();
@@ -1049,9 +1056,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if (effectivelyDisabled)
         {
             // TBD: when the handling of oj-active in baseComponent._setOption("disabled") is finalized, review whether this should be handled there instead.
-            // baseComponent._setOption("disabled") removes oj-active, oj-hover, and oj-focus, but _updateEffectivelyDisabled is called in a number of other 
+            // baseComponent._setOption("disabled") removes oj-active, oj-hover, oj-focus, and oj-focus-highlight, but _updateEffectivelyDisabled is called in a number of other 
             // cases too, so do it here too to be safe.
-            this.widget().removeClass("oj-active oj-default oj-focus-only oj-hover oj-focus");
+            this.widget().removeClass("oj-active oj-default oj-focus-only oj-hover oj-focus oj-focus-highlight");
             _lastActive = null; // avoid (very slight) possibility that first mouseIn after button is subsequently re-enabled will set oj-active
 
             // when disabling a menu button, dismiss the menu if open
@@ -1210,7 +1217,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             textSpan.text(this.options.label); // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml).
         }
 
-        buttonElement.append(textSpan); // @HTMLUpdateOK attach detached DOM created from trusted string and existing DOM
+        // Due to FF bug (see Bugzilla's Bug 984869), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
+        if (this.type === "button") {
+            var contentContainer = $("<div></div>").addClass("oj-button-label");
+            contentContainer.append(textSpan);
+            this.element.append(contentContainer); // @HTMLUpdateOK attach detached wrapped DOM created from trusted string and existing DOM
+        } else {
+            buttonElement.append(textSpan); // @HTMLUpdateOK attach detached DOM created from trusted string and existing DOM
+        }
+
+        // Need to set "aria-labelledby" attribute of (button/anchor) element to point to label span as fix for  (accessibility: icon-only button label is read twice by screen reader)
+        // This is only a problem for <button> and <a> at the time of writing, so the fix is only applied to these two button types.
+        if (this.type === "button" || this.type === "anchor") {
+            textSpan.uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
+            this.element.attr("aria-labelledby", textSpan.attr("id"));
+        }
         return textSpan;
     },
 
@@ -1269,6 +1290,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setIconOnDom: function(isStart) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
+        var contentContainer = this.buttonElement;
+        if (this.type === "button")
+            contentContainer = this.element.children("div.oj-button-label");
+
         if (isStart) {
             var iconSpanSelector = '.oj-button-icon.oj-start';
             var standardIconClasses = 'oj-button-icon oj-start';
@@ -1283,7 +1308,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             pendTo = "appendTo";
         }
 
-        var iconSpan = this.buttonElement.find( iconSpanSelector );
+        var iconSpan = contentContainer.find( iconSpanSelector );
 
         if ( appIconClass ) {
             if ( iconSpan.length ) {
@@ -1293,9 +1318,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             } else {
                 iconSpan = $( "<span></span>" )
                     .addClass( standardIconClasses )
-
-                    // @HTMLUpdateOK append or prepend trusted new DOM to button elem
-                    [pendTo]( this.buttonElement );
+                    [pendTo]( contentContainer ); // @HTMLUpdateOK append or prepend trusted new DOM to button elem
             }
             iconSpan.addClass( appIconClass );
         } else {
@@ -1600,6 +1623,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * This method ensures that the root element has:
      *   - the oj-default class iff it has none of the state classes, and
      *   - the oj-focus-only class iff it has oj-focus but no other state classes.
+     * Note that oj-focus-highlight should never be present without oj-focus, so there's no need to check for that separately.
      */
     _toggleDefaultClasses: function()
     {
@@ -1788,6 +1812,32 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
  * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
  * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
  * required of enabled content, it cannot be used to convey meaningful information.<p>
+ *
+ *
+  * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ * 
+ * 
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Class(es)</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-buttonset-width-auto</td>
+ *       <td>Forces Buttonset Buttons' widths to be determined by the total width of their icons and label contents, overriding any theming defaults. Can be applied on Buttonset, or on an ancestor such as Toolbar or document. Optionally, specify the overall width of the Buttonset for further width control.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-buttonset-width-equal</td>
+ *       <td>Forces Buttonset Buttons' widths to be equal, overriding any theming defaults. Can be applied on Buttonset, or on an ancestor such as Toolbar or document. Note that the overall width of the Buttonset defaults to 100%; set the max-width (recommended) or width of the Buttonset for further width control.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
  *
  *
  * <h3 id="rtl-section">
@@ -1980,6 +2030,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @expose
          * @memberof oj.ojButtonset
          * @instance
+         * @since 1.2.0
+         * 
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
@@ -2073,7 +2125,10 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * });
          *
          * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-         * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+         * $( ".selector" ).on( "ojcreate", function( event, ui ) {
+         *     // verify that the component firing the event is a component of interest
+         *     if ($(event.target).is(".mySelector")) {}
+         * });
          */
         // create event declared in superclass, but we still want the above API doc
     },
@@ -2245,10 +2300,19 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             return true;
         else // handle arrays.  order needn't be same
             return $.type(value1) === "array" && $.type(value2) === "array"
-                   && !$(value1).not(value2).length && !$(value2).not(value1).length;
+                   && this._compareArraysAsSets(value1, value2);
       }
 
       return this._superApply(arguments);
+    },
+
+    // Params must be arrays.  Returns true iff the arrays have the same set of elements regardless of order.
+    _compareArraysAsSets: function(first, second) {
+        return !first.some(function (elem) {
+            return second.indexOf(elem)<0;
+        }) && !second.some(function (elem) {
+            return first.indexOf(elem)<0;
+        });
     },
 
     _InitOptions: function(originalDefaults, constructorOptions) {
@@ -2735,11 +2799,11 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
      *   <tbody>
      *     <tr>
      *       <td><kbd>LeftArrow</kbd></td>
-     *       <td>Navigates to the previous enabled button on the left, wrapping around at the end.</td>
+     *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
      *     </tr>
      *     <tr>
      *       <td><kbd>RightArrow</kbd></td>
-     *       <td>Navigates to the next enabled button on the right, wrapping around at the end.</td>
+     *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
      *     </tr>
      *   </tbody>
      * </table>
@@ -2774,6 +2838,7 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
         "outlined": "oj-button-outlined-chrome"
     },
 
+    // SECURITY NOTE: To avoid injection attacks, do NOT compute the class via string concatenation, i.e. don't do "oj-button-" + chroming + "-chrome"
     _setChromingClass = function( $elem, chroming )
     {
         $elem.removeClass(CHROMING_CLASSES)
@@ -2869,24 +2934,127 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
         } else {
             // Else, if $___ChromingOptionDefault is set in the current theme, then this expr returns that value for use as the chroming default.
             // Else, returns undefined, so that the prototype default is used.
-            return oj.ThemeUtils.getOptionDefaultMap(componentName)["chroming"];
+            return (oj.ThemeUtils.parseJSONFromFontFamily('oj-' + componentName + '-option-defaults') || {})["chroming"];
         }
     };
 
-    // Set theme-based defaults
-    oj.Components.setDefaultOptions({
-        'ojButton': {
-            'chroming': oj.Components.createDynamicPropertyGetter( function(context) {
-                return _getChromingDefault("button", context["element"], context["containers"]);
-             })
-        },
-        'ojButtonset': {
-            'chroming': oj.Components.createDynamicPropertyGetter( function(context) {
-                return _getChromingDefault("buttonset", context["element"], context["containers"]);
-            })
-        }
-    });
+// Set theme-based defaults
+oj.Components.setDefaultOptions({
+    'ojButton': {
+        'chroming': oj.Components.createDynamicPropertyGetter( function(context) {
+            return _getChromingDefault("button", context["element"], context["containers"]);
+         })
+    },
+    'ojButtonset': {
+        'chroming': oj.Components.createDynamicPropertyGetter( function(context) {
+            return _getChromingDefault("buttonset", context["element"], context["containers"]);
+        })
+    }
+});
 
 }() ); // end of Button / Buttonset wrapper function
 
+(function() {
+var ojButtonMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "display": {
+      "type": "string"
+    },
+    "icons": {
+      "type": "Object"
+    },
+    "label": {
+      "type": "string"
+    },
+    "menu": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'button',
+    "_widgetName": "ojButton"
+  }
+};
+oj.Components.registerMetadata('ojButton', 'baseComponent', ojButtonMeta);
+oj.Components.register('oj-button', oj.Components.getMetadata('ojButton'));
+})();
+
+(function() {
+var ojToggleButtonMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "display": {
+      "type": "string"
+    },
+    "icons": {
+      "type": "Object"
+    },
+    "label": {
+      "type": "string"
+    },
+    "menu": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_hasWrapper": true,
+    "_defaultAttrs": {'type': 'checkbox'},
+    "_innerElement": 'input',
+    "_widgetName": "ojButton"
+  }
+};
+oj.Components.registerMetadata('ojToggleButton', 'baseComponent', ojToggleButtonMeta);
+oj.Components.register('oj-toggle-button', oj.Components.getMetadata('ojToggleButton'));
+})();
+
+(function() {
+var ojButtonsetMeta = {
+  "properties": {
+    "checked": {
+      "type": "string|Array<string>"
+    },
+    "chroming": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "focusManagement": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_widgetName": "ojButtonset"
+  }
+};
+oj.Components.registerMetadata('ojButtonset', 'baseComponent', ojButtonsetMeta);
+oj.Components.register('oj-buttonset', oj.Components.getMetadata('ojButtonset'));
+})();
 });

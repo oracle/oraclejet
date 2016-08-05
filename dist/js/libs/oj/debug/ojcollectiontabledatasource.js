@@ -61,6 +61,13 @@ oj.CollectionTableDataSource = function(data, options)
 oj.Object.createSubclass(oj.CollectionTableDataSource, oj.TableDataSource, "oj.CollectionTableDataSource");
 
 /**
+ * @export
+ * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
+ * JavaScript array.sort() for details)
+ */
+oj.CollectionTableDataSource.prototype.comparator = null;
+
+/**
  * Initializes the instance.
  * @export
  * @expose
@@ -218,12 +225,35 @@ oj.CollectionTableDataSource.prototype.sort = function(criteria)
 {   
   if (criteria == null)
   {
-    return Promise.resolve();
+    criteria = this['sortCriteria'];
   }
+  else
+  {
+    this['sortCriteria'] = criteria;
+  }
+  
+  var comparator = this['comparator'];
   
   var self = this;
   return new Promise(function(resolve, reject) {
-    self._setComparator(criteria);
+    
+    if (comparator == null)
+    {
+      self._collection['comparator'] = criteria['key'];
+
+      if (criteria['direction'] == 'ascending')
+      {
+        self._collection['sortDirection'] = 1;
+      }
+      else
+      {
+        self._collection['sortDirection'] = -1;
+      }
+    }
+    else
+    {
+      self._collection['comparator'] = comparator;
+    }
     self._collection.sort(null);
     var result = {'header': criteria['key'], 'direction': criteria['direction']};
     resolve(result);
@@ -304,7 +334,7 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     if (!self._isFetchingForAt && !self._isFetching)
     {
       var startIndex = event['offset'];
-      var pageSize = event['lastFetchCount'];
+      var pageSize = event['lastFetchCount'] || event['lastFetchSize'];
 
       if (pageSize > 0)
       {
@@ -318,13 +348,14 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
           self._isFetchingForAt = false;
           var rowArray = [];
           var keyArray = [];
-          var i;
+          var i, modelClone;
           for (i = 0; i < modelArray.length; i++)
           {
             if (modelArray[i] != null)
             {
-              rowArray.push(modelArray[i]['attributes']);
-              keyArray.push(modelArray[i]['id']);
+              modelClone = modelArray[i].clone();
+              rowArray.push(modelClone['attributes']);
+              keyArray.push(modelClone['id']);
             }
           }
           var result = {'data': rowArray, 'keys': keyArray, 'startIndex': startIndex};
@@ -342,12 +373,13 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i;
+    var i, modelClone;
     for (i = 0; i < modelArray.length; i++)
     {
-      rowArray.push(modelArray[i]['attributes']);
-      keyArray.push(modelArray[i]['id']);
-      indexArray.push(modelArray[i]['index']);
+      modelClone = modelArray[i].clone();
+      rowArray.push(modelClone['attributes']);
+      keyArray.push(modelClone['id']);
+      indexArray.push(modelClone['index']);
     }
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   });
@@ -355,12 +387,13 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i;
+    var i, modelClone;
     for (i = 0; i < modelArray.length; i++)
     {
-      rowArray.push(modelArray[i]['attributes']);
-      keyArray.push(modelArray[i]['id']);
-      indexArray.push(modelArray[i]['index']);
+      modelClone = modelArray[i].clone();
+      rowArray.push(modelClone['attributes']);
+      keyArray.push(modelClone['id']);
+      indexArray.push(modelClone['index']);
     }
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   });
@@ -370,7 +403,14 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
   this._collection.on(oj.Events.EventType['SORT'], function(event, eventOpts) {
     if (eventOpts == null || !eventOpts['add'])
     {
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['SORT'], event);
+      var sortCriteria = {};
+      
+      if (event != null && !event['comparator'] != null && !$.isFunction(event['comparator']))
+      {
+        sortCriteria['header'] = event['comparator'];
+        sortCriteria['direction'] = event['sortDirection'] === 1 ? 'ascending' : 'descending';
+      }
+      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['SORT'], sortCriteria);
     }
   });
   this._collection.on(oj.Events.EventType['CHANGE'], function(event) {
@@ -417,11 +457,12 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
         {
           var rowArray = [];
           var keyArray = [];
-          var i;
+          var i,  modelClone;
           for (i = 0; i < actual['models'].length; i++)
           {
-            rowArray[i] = actual['models'][i]['attributes'];
-            keyArray[i] = actual['models'][i]['id'];
+            modelClone = actual['models'][i].clone();
+            rowArray[i] = modelClone['attributes'];
+            keyArray[i] = modelClone['id'];
           }
           result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
           
@@ -492,72 +533,19 @@ oj.CollectionTableDataSource.prototype._endFetch = function(options, result, err
   }
 };
 
-oj.CollectionTableDataSource.prototype._setComparator = function(criteria) {
-  
-  if (criteria == null)
-  {
-    this._collection['comparator'] = null;
-    return;
-  }
-  
-  var key = criteria['key']; 
-  var direction = criteria['direction'];
-  var comparator = null;
-  
-  if (this._collection.IsVirtual()) {
-      // Only strings are supported for virtual sorts
-      this._collection['comparator'] = key;
-      this._collection['sortDirection'] = direction === 'ascending' ? 1 : -1;
-      return;
-  }
-  
-  if (direction == 'ascending')
-  {
-    comparator = function(row) {
-      if ($.isFunction(row.get))
-      {
-        return row.get(key);
-      }
-      else
-      {
-        return row[key]();
-      }
-    };
-  }
-  else if (direction == 'descending')
-  {
-    comparator = function(rowA, rowB) {
-      var a, b;
-      if ($.isFunction(rowA.get))
-      {
-        a = rowA.get(key);
-        b = rowB.get(key);
-      }
-      else
-      {
-        a = rowA[key]();
-        b = rowB[key]();
-      }
-      if (a === b)
-      {
-        return 0;
-      }
-      return a > b ? -1 : 1;
-    };
-  }
-  this._collection['comparator'] = comparator;
-};
-
 oj.CollectionTableDataSource.prototype._getRowArray = function()
 {
   var endIndex = this._collection.size() - 1;
   var rowArray = [];
   var keyArray = [];
-  var i;
+  var i, wrappedRow, model, modelClone;
   for (i = 0; i <= endIndex; i++)
   {
-    rowArray[i] = this._collection.at(i)['attributes'];
-    keyArray[i] = this._collection.at(i)['id'];
+    model = this._collection.at(i);
+    modelClone = model.clone();
+    wrappedRow = this._wrapWritableValue(modelClone, modelClone['attributes']);
+    rowArray[i] = wrappedRow;
+    keyArray[i] = modelClone['id'];
   }
   return {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
 };
@@ -577,4 +565,35 @@ oj.CollectionTableDataSource.prototype.getCapability = function(feature)
     return null;
 };
 
+oj.CollectionTableDataSource.prototype._wrapWritableValue = function(model, m)
+{
+  var returnObj = {};
+  var prop;
+  
+  for (prop in m)
+  {
+    if (m.hasOwnProperty(prop))
+    {
+      (function()
+      {
+        var localProp = prop;
+        var localModel = model;
+        Object.defineProperty(returnObj, prop,
+          {
+            get: function()
+            {
+              return localModel.get(localProp);
+            },
+            set: function(newValue)
+            {
+              localModel.set(localProp, newValue, {'silent':true});
+            },
+            enumerable: true
+          });
+      })();
+    }
+  }
+  
+  return returnObj;
+};
 });

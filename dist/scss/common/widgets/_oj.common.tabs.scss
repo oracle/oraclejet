@@ -15,6 +15,13 @@
 
     /* tabs */
     /* --------------------------------------------------------------- */
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-tabs:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
 
     /*
      * applied to the tabs
@@ -43,18 +50,30 @@
       @include oj-user-select-property (none);
     }
 
+    .oj-tabs-tab:focus {
+      outline: none;
+    }
+
+    .oj-tabs-tab.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+
     /*
      * applied to a tab when it's selected
      */
-    .oj-tabs-tab.oj-selected,
-    //Bug 22140420 - override background color set in a:active
-    .oj-tabs-tab.oj-active .oj-tabs-close-icon,
-    .oj-tabs-tab.oj-active .oj-tabs-anchor {
+    .oj-tabs-tab.oj-selected {
       background-color: $tabsPanelBgColor;
     }
 
-    .oj-tabs-tab {
+    .oj-tabs,
+    .oj-tabs-tab .oj-tabs-close-icon,
+    .oj-tabs-tab .oj-tabs-anchor  {
       -webkit-tap-highlight-color: transparent;
+    }
+
+    //Bug 22140420 - override background color set in a:active (mobile)
+    .oj-tabs-tab a:active {
+      background-color: transparent;
     }
 
     /*
@@ -113,9 +132,53 @@
 
     /*
      * applied to the icon font in the tab title
-     */
+
     .oj-tabs-tab-icon {
       @extend .oj-clickable-icon;
+    }
+     */
+
+
+    /*
+     * applied to the icon font in the tab title and close icon
+     * add .oj-tabs-tab .oj-tabs-close-icon:hover to 
+     * override color set in a:hover.oj-clickable-icon-nocontext
+     */
+    .oj-tabs-tab .oj-tabs-tab-icon,
+    .oj-tabs-tab .oj-tabs-close-icon,
+    .oj-tabs-tab .oj-tabs-close-icon:hover {
+      color: $iconColorDefault;
+    }
+
+    /*
+     * applied to the icon font in the tab title and close icon when hovered
+     */
+    .oj-tabs-tab.oj-hover .oj-tabs-tab-icon,
+    .oj-tabs-tab .oj-tabs-close-icon.oj-hover {
+      color: $iconColorHover;
+    }
+
+    /*
+     * applied to the icon font in the tab title and close icon when active
+     */
+    .oj-tabs-tab.oj-active .oj-tabs-tab-icon,
+    .oj-tabs-tab .oj-tabs-close-icon.oj-active {
+      color: $iconColorActive;
+    }
+
+    /*
+     * applied to the icon font in the tab title and close icon when selected
+     */
+    .oj-tabs-tab.oj-selected .oj-tabs-tab-icon {
+      color: $iconColorSelected;
+    }
+
+    /*
+     * applied to the icon font in the tab title and close icon when disabled
+     */
+    .oj-tabs-tab.oj-disabled .oj-tabs-tab-icon {
+      color: $iconColorDisabled;
+      opacity: $opacityDisabled;
     }
 
     /*
@@ -350,13 +413,6 @@
     }
 
     /*
-     * applied to the selected tab title text
-     */
-    .oj-tabs-tab.oj-selected .oj-tabs-title {
-      font-weight: bold;
-    }
-
-    /*
      * applied to the selected tab icon, needed for icon font icons
      */
     .oj-tabs-tab.oj-selected .oj-tabs-tab-icon {
@@ -378,8 +434,7 @@
      * applied to the tab title text when it's disabled
      */
     .oj-tabs-tab.oj-disabled .oj-tabs-title {
-      color: $linkTextColorDisabled;
-      opacity: $opacityDisabled;
+      color: $textColorDisabled;
     }
 
 

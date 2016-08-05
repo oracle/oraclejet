@@ -32,6 +32,20 @@
     .oj-form-control-title {
       color: $textColor;
     }
+    
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment
+    // -----------------------------------------------------------------------------------------
+    // inherit the height of the container and remove margin-bottom
+    // form controls have min-width/max-width set on their root dom element. 
+    // Allow that to be inherited as well.
+    .oj-form-control-inherit .oj-form-control {
+      height:100%;
+      min-height:100%;
+      margin-bottom: 0;
+      max-width: 100%;
+      min-width: 100%;
+    }
   }
 }
 

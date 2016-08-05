@@ -23,6 +23,11 @@
 @if $includeListViewClasses != false {
   @include module-include-once("alta.windows.listview") {
 
+        /* Styling for the listview widget container */
+        .oj-listview {
+            border-width: 0;
+        }
+
         /* Styling for the expand icon */
         .oj-listview-expand-icon{
           @extend .oj-fwk-icon-caret03-n;
@@ -61,6 +66,18 @@
         /* Styling for the drill icon */
         .oj-listview-drill-icon {
             display: none;
+        }
+
+        /* styling for the item that is being moved using drag */
+        ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-drag {
+            border-top: 1px solid $dataGridCellDragImageBorderColor;
+            border-bottom: 1px solid $dataGridCellDragImageBorderColor;
+        }
+
+        /* Styling for the affordance icon */
+        .oj-listview-drag-handle {
+            width: 40px;
+            height: 23px;
         }
   }
 }

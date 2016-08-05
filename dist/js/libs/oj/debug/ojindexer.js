@@ -161,7 +161,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         model = this._getIndexerModel();
         if (model != null && this.m_indexerModelListener)
         {
-            model.off(oj.IndexerModel.EventType.CHANGE, this.m_indexerModelListener);
+            model.off(oj.IndexerModel.EventType['CHANGE'], this.m_indexerModelListener);
         }
 
         oj.DomUtils.unwrap(this.element, $(container));
@@ -384,9 +384,17 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */    
     _createIndexerContainer: function()
     {
-        var container = $(document.createElement('div'));
+        var container;
+        if (this.OuterWrapper) 
+        {
+            container = $(this.OuterWrapper);
+        } 
+        else 
+        {
+            container = $(document.createElement('div'));
+            this.element.parent()[0].replaceChild(container[0], this.element[0]); //@HTMLUpdateOK
+        }
         container.addClass("oj-indexer oj-component");
-        this.element.parent()[0].replaceChild(container[0], this.element[0]); //@HTMLUpdateOK
         container.prepend(this.element); //@HTMLUpdateOK
 
         return container;
@@ -531,8 +539,16 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
             {
                 self.refresh();
             };
-            model.on(oj.IndexerModel.EventType.CHANGE, this.m_indexerModelListener);
+            model.on(oj.IndexerModel.EventType['CHANGE'], this.m_indexerModelListener);
         }
+
+        this._focusable({
+            'applyHighlight': true,
+            'setupHandlers': function( focusInHandler, focusOutHandler) {
+                self._focusInHandler = focusInHandler;
+                self._focusOutHandler = focusOutHandler;
+            }
+        });
     },
 
     /**
@@ -563,6 +579,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         if (this.m_current == null)
         {
             this._setFocus(this.element.children("li").first());
+        }
+        else
+        {
+            this._setFocus(this.m_current);
         }
     },
 
@@ -618,9 +638,9 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     {
         if (this.m_current != null)
         {
-            this.m_current.removeClass("oj-focus");
+            this._focusOutHandler(this.m_current);
         }
-        item.addClass("oj-focus");
+        this._focusInHandler(item);
 
         this._updateAriaProperties(item);        
         this.m_current = item;
@@ -1287,4 +1307,24 @@ oj.IndexerModel.prototype.getIndexablePrefixes = function()
 oj.IndexerModel.prototype.getPrefixes = function()
 {
 };
+(function() {
+var ojIndexerMeta = {
+  "properties": {
+    "data": {}
+  },
+  "methods": {
+    "getNodeBySubId": {},
+    "getSubIdByNode": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'ul',
+    "_widgetName": "ojIndexer"
+  }
+};
+oj.Components.registerMetadata('ojIndexer', 'baseComponent', ojIndexerMeta);
+oj.Components.register('oj-indexer', oj.Components.getMetadata('ojIndexer'));
+})();
 });

@@ -33,7 +33,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
   _AfterCreate: function() {
     this._super();
     var flags = {};
-    flags['_context'] = {writeback: true, internalSet: true};
+    flags['_context'] = {writeback: true, internalSet: true, readOnly: true};
     this.option("rawValue",this.options['value'], flags);
   },
 
@@ -97,7 +97,7 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
 
     if(key === "value") {
       var rawValueFlags = {};
-      rawValueFlags['_context'] = {writeback: true, internalSet: true};
+      rawValueFlags['_context'] = {writeback: true, internalSet: true, readOnly: true};
       this.option("rawValue", value, rawValueFlags);
     }
 
@@ -189,6 +189,7 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
     return dvt.LedGauge.newInstance(context, callback, callbackObj);
   },
 
@@ -368,6 +369,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
     return dvt.RatingGauge.newInstance(context, callback, callbackObj);
   },
 
@@ -735,6 +737,7 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
     return dvt.DialGauge.newInstance(context, callback, callbackObj);
   },
 
@@ -1065,6 +1068,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
     return dvt.StatusMeterGauge.newInstance(context, callback, callbackObj);
   },
 
@@ -1323,4 +1327,302 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * @type {string|null}
  * @default <code class="prettyprint">null</code>
  */
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var dvtBaseGaugeMeta = {
+  "properties": {},
+  "methods": {},
+  "extension": {
+    "_widgetName": "dvtBaseGauge"
+  }
+};
+oj.Components.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
+})();
+
+(function() {
+var ojDialGaugeMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "background": {
+      "type": "object|string"
+    },
+    "indicator": {
+      "type": "object|string"
+    },
+    "max": {
+      "type": "number"
+    },
+    "metricLabel": {
+      "type": "object"
+    },
+    "min": {
+      "type": "number"
+    },
+    "rawValue": {
+      "type": "number",
+      "readOnly": true,
+      "writeback": true
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "tickLabel": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "getMetricLabel": {}
+  },
+  "extension": {
+    "_widgetName": "ojDialGauge"
+  }
+};
+oj.Components.registerMetadata('ojDialGauge', 'dvtBaseGauge', ojDialGaugeMeta);
+oj.Components.register('oj-dial-gauge', oj.Components.getMetadata('ojDialGauge'));
+})();
+
+(function() {
+var ojLedGaugeMeta = {
+  "properties": {
+    "borderColor": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "max": {
+      "type": "number"
+    },
+    "metricLabel": {
+      "type": "object"
+    },
+    "min": {
+      "type": "number"
+    },
+    "rotation": {
+      "type": "number"
+    },
+    "size": {
+      "type": "number"
+    },
+    "style": {
+      "type": "object"
+    },
+    "thresholds": {
+      "type": "Array<object>"
+    },
+    "title": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getMetricLabel": {}
+  },
+  "extension": {
+    "_widgetName": "ojLedGauge"
+  }
+};
+oj.Components.registerMetadata('ojLedGauge', 'dvtBaseGauge', ojLedGaugeMeta);
+oj.Components.register('oj-led-gauge', oj.Components.getMetadata('ojLedGauge'));
+})();
+
+(function() {
+var ojRatingGaugeMeta = {
+  "properties": {
+    "changed": {
+      "type": "boolean"
+    },
+    "changedState": {
+      "type": "object"
+    },
+    "hoverState": {
+      "type": "object"
+    },
+    "max": {
+      "type": "number"
+    },
+    "min": {
+      "type": "number"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "preserveAspectRatio": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "number",
+      "readOnly": true,
+      "writeback": true
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "selectedState": {
+      "type": "object"
+    },
+    "step": {
+      "type": "number"
+    },
+    "thresholds": {
+      "type": "Array<object>"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "unselectedState": {
+      "type": "object"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string"
+    }
+  },
+  "methods": {},
+  "extension": {
+    "_widgetName": "ojRatingGauge"
+  }
+};
+oj.Components.registerMetadata('ojRatingGauge', 'dvtBaseGauge', ojRatingGaugeMeta);
+oj.Components.register('oj-rating-gauge', oj.Components.getMetadata('ojRatingGauge'));
+})();
+
+(function() {
+var ojStatusMeterGaugeMeta = {
+  "properties": {
+    "angleExtent": {
+      "type": "number"
+    },
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "string"
+    },
+    "center": {
+      "type": "object"
+    },
+    "className": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "indicatorSize": {
+      "type": "number"
+    },
+    "innerRadius": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "metricLabel": {
+      "type": "object"
+    },
+    "min": {
+      "type": "number"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "plotArea": {
+      "type": "object"
+    },
+    "rawValue": {
+      "type": "number",
+      "readOnly": true,
+      "writeback": true
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "referenceLines": {
+      "type": "Array<object>"
+    },
+    "startAngle": {
+      "type": "number"
+    },
+    "step": {
+      "type": "number"
+    },
+    "style": {
+      "type": "object"
+    },
+    "thresholdDisplay": {
+      "type": "string"
+    },
+    "thresholds": {
+      "type": "Array<object>"
+    },
+    "title": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getMetricLabel": {}
+  },
+  "extension": {
+    "_widgetName": "ojStatusMeterGauge"
+  }
+};
+oj.Components.registerMetadata('ojStatusMeterGauge', 'dvtBaseGauge', ojStatusMeterGaugeMeta);
+oj.Components.register('oj-status-meter-gauge', oj.Components.getMetadata('ojStatusMeterGauge'));
+})();
 });

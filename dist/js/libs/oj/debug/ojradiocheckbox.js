@@ -117,6 +117,27 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     this._renderDisabled();
   },  
   /**
+   * Set the oj-selected class to the element's checked property.
+   * We keep the oj-selected class in sync with the input's checked attribute, not necessarily the 
+   * component's checked property. The component's checked property is set after it is validated.
+   * if validation doesn't pass, the input may still be checked, but the this.options.checked isn't. 
+   * Think of it like an inputText. You can clear it out when it is required, blur,
+   * and the display value is an empty field, but the value is the value that was there before.
+   * @expose 
+   * @memberof oj._ojRadioCheckbox
+   * @instance
+   * @override
+   * @example <caption>Invoke the <code class="prettyprint">setSelectedClass</code> method:</caption>
+   * $( ".selector" )._ojRadioCheckbox( "setSelectedClass", true );
+   */
+  setSelectedClass: function(checked) 
+  {
+    this.element.toggleClass("oj-selected", checked);
+    this.$label.toggleClass("oj-selected", checked);
+    if (this.$choiceRow)
+      this.$choiceRow.toggleClass("oj-selected", checked);
+  },
+  /**
    * Returns a jQuery object containing the element visually representing the checkbox. 
    * 
    * <p>This method does not accept any arguments.
@@ -128,7 +149,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   */
   widget : function ()
   {
-      return this.uiRadioCheckbox;
+    return this.uiRadioCheckbox;
   },
           
    /**** end Public APIs ****/         
@@ -148,7 +169,9 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   */
   _InitOptions: function(originalDefaults, constructorOptions)
   {
-    var checkedFromDom, disabledFromDom;
+    var checkedFromDom;
+    var disabledFromDom;
+    
     this._super(originalDefaults, constructorOptions);
     
     // CHECKED:
@@ -220,12 +243,36 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     
     var self = this;
     this._focusable( this.element );
-    // loop through each label
+    if (this.$choiceRow) {
+      this._AddHoverable({
+        'element': this.$choiceRow
+      });
+      this._AddActiveable({
+        'element': this.$choiceRow
+      });
+
+      // the input gets focus on keyboard tabbing. It bubbles up, so in case the 
+      // input element is hidden (e.g., in the native themes the input is hidden and an image is 
+      // shown instead), we need to set the focus selectors on the oj-choice-row so
+      // we can style the checked image.
+      this._focusable({
+        'element': this.$choiceRow,
+        'applyHighlight': true
+      });
+    }
+
+    this._AddHoverable({
+      'element': this.$label
+      });
+    this._AddActiveable({
+      'element': this.$label
+      });
+    
+    // loop through each label to add dom and styles
     $.each(self.$label, function ()
     {   
-      // wrap child in span
-      $(this.childNodes[0]).wrap("<span class='oj-radiocheckbox-label-text'></span>"); //@HTMLUpdateOK
-
+      // wrap children in span
+      $(this.childNodes).wrapAll("<span class='oj-radiocheckbox-label-text'></span>"); //@HTMLUpdateOK
       var iElem = document.createElement("span"); 
       iElem.setAttribute("class", "oj-radiocheckbox-icon");
       this.appendChild(iElem); //@HTMLUpdateOK
@@ -276,9 +323,8 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       // if we got it from the dom in _InitOptions, there is no need to reset it on the dom in _setup
       this._setCheckedOnDom(this.options.checked);     
     }
-    this.element.toggleClass("oj-selected", this.options.checked);
-    // set selected on corresponding label.
-    this.$label.toggleClass("oj-selected", this.options.checked);
+    if (this.options.checked)
+      this.setSelectedClass(this.options.checked);
   },
   _setCheckedOnDom : function(checked)
   {
@@ -342,10 +388,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     if (key === "checked")
     {
       this._setCheckedOnDom(value);
-      this.element.toggleClass("oj-selected", value);
-      this.$label.toggleClass("oj-selected", value);
-      if (this.$choiceRow)
-        this.$choiceRow.toggleClass("oj-selected", value);
+      this.setSelectedClass(value);
 
     }
   }, 
@@ -354,8 +397,10 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
    * one label, not multiple labels.
    * We do not guarantee that the returned list is live
    * We do not guarantee that the returned list is in document order
-   * We first check if we are nested in a label, and then we check a jquery 
-   * selector query on <label>s with a 'for' id equal to our id.
+   * We check if we are nested in a label, and we check a jquery 
+   * selector query on <label>s with a 'for' id equal to our id starting at the document level
+   * and also as a sibling of the input (needed if documentFragment instead of document as the
+   * table/datagrid use).
    * NOTE: The .labels DOM property does not work on most browsers, so we don't use it.
    * e.g,
    * <pre>
@@ -369,12 +414,31 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     // .closest("label") - For each element in the set, get the first element   
     // that matches the selector by testing the element itself and traversing up 
     // through its ancestors in the DOM tree.   
-    var labelClosestParent = this.element.closest("label");
+    var $labelClosestParent = this.element.closest("label");
     var id = this.element.prop("id");
     var labelForQuery = "label[for='" + id + "']";
-    // combine these two query results to return the label we are nested in
-    //  and/or the label with the for attribute pointing to the checkbox's id.
-    return labelClosestParent.add($(labelForQuery)); 
+    var $labelForElems = $(labelForQuery);
+    var $labelSibling;
+    var $allLabels = $labelClosestParent.add($labelForElems);
+    
+    if ($labelForElems.length === 0)
+    {
+      // table and datagrid create their rows using documentFragment. With documentFragment
+      // the labelFor query will return []. In that case, look for the label as a sibling of 
+      // the element
+      $labelSibling = this.element.siblings(labelForQuery);
+      $allLabels.add($labelSibling);
+    } 
+
+    if ($allLabels.length === 0)
+    {
+      // In native themes the label element is used to append the checkmark icon to, so if it is
+      // not found, no checkmark will be rendered. log a warning.
+      oj.Logger.warn("Could not find a label associated to the input element.");
+    }
+    // combine these query results to return the label we are nested in
+    // and/or the label with the for attribute pointing to the checkbox's id.
+    return $allLabels;
   },
   /**
    * @private
@@ -450,6 +514,14 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   _destroy : function ()
   {  
     var ret = this._super();
+    if (this.$choiceRow)
+    {
+      this._RemoveHoverable(this.$choiceRow);
+      this._RemoveActiveable(this.$choiceRow);
+    }
+    this._RemoveHoverable(this.$label);
+    this._RemoveActiveable(this.$label);
+          
     var type = this.options.type;
     
     // this.$label is the label for the checkbox/radio, NOT the label for the radioset/checkboxset.

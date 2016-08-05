@@ -5,19 +5,27 @@
 //          for example alta/widgets/_oj.alta.table.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
 
 @if $includeTableClasses != false  {
   @include module-include-once("common.table") {
 
     /* table */
     /* --------------------------------------------------------------- */
-    
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-table:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /* Component option defaults. */
     $tableDefaultOptions: ();
  
     @if ($tableDisplayOptionDefault != null)
     {
-       $tableDefaultOptions: map-merge($tableDefaultOptions, (displayStyle: $tableDisplayOptionDefault));
+       $tableDefaultOptions: map-merge($tableDefaultOptions, (display: $tableDisplayOptionDefault));
     }
     .oj-table-option-defaults {
        font-family: oj-json-from-map($tableDefaultOptions);
@@ -48,23 +56,18 @@
     .oj-table.oj-warning {
        border: 1px solid $borderColorWarning; 
     }
-    
-    /* Styling for the root component element when focused. */
-    .oj-table.oj-focus {
-       outline: $formControlLabelColor dotted thin;
-    }
-
+ 
     /* Styling for the component div container element. */
     .oj-table-container {
        display: inline-block;
        vertical-align:top;
        clear: both;
-       @include oj-box-sizing-property(border-box);
+       box-sizing: border-box;
     }
     
     /* Styling for HTML table element. */
     table.oj-table-element {
-       @include oj-box-sizing-property(border-box);
+       box-sizing: border-box;
        width: calc(100% - 1px);
        outline: none;
        border-collapse: collapse;  
@@ -93,9 +96,10 @@
       vertical-align: middle;
     }
     
-    /* Grid display styling for the header row element. */
-    .oj-table-grid-display .oj-table-header-row {
-      height: $dataGridRowHeight;
+    /* Grid display or editable table styling for the header row element. */
+    .oj-table-grid-display .oj-table-header-row,
+    .oj-table-editable .oj-table-header-row {
+      height: calc(#{$dataGridRowHeight} + 4px);
     }
 
     /* Styling for the column header elements. */
@@ -108,12 +112,12 @@
        @include oj-rtl() {
          padding-right: $tableHeaderPadding;
        }
-       padding-top: $dataGridHeaderPadding;
-       padding-bottom: $dataGridHeaderPadding;
+       padding-top: $dataGridCellPadding;
+       padding-bottom: $dataGridCellPadding;
        float: none;
        white-space: nowrap;
-       height: $tableRowHeight - 2 * $dataGridHeaderPadding;
-       line-height: $tableRowHeight - 2 * $dataGridHeaderPadding;
+       height: calc(#{$tableRowHeight} - 2 * #{$dataGridCellPadding});
+       line-height: calc(#{$tableRowHeight} - 2 * #{$dataGridCellPadding});
        text-overflow: ellipsis;
        overflow: hidden;
        @include oj-ltr() {
@@ -122,20 +126,21 @@
        @include oj-rtl() {    
          text-align: right; 
        }
-       @include oj-box-sizing-property(content-box);
+       box-sizing: content-box;
     }
     
-    /* Grid display styling for the column header elements. */
-    .oj-table-grid-display .oj-table-column-header-cell {
-       height: $dataGridRowHeight - 2 * $dataGridHeaderPadding;
-       line-height: $dataGridRowHeight - 2 * $dataGridHeaderPadding;
+    /* Grid display or editable table styling for the column header elements. */
+    .oj-table-grid-display .oj-table-column-header-cell,
+    .oj-table-editable .oj-table-column-header-cell {
+       height: calc(#{$dataGridRowHeight} - 2 * #{$dataGridCellPadding});
+       line-height: calc(#{$dataGridRowHeight} - 2 * #{$dataGridCellPadding});
        @include oj-ltr() {
-         padding-left: $dataGridHeaderPadding;
-         padding-right: $dataGridHeaderPadding;
+         padding-left: $dataGridCellPadding;
+         padding-right: $dataGridCellPadding;
        }
        @include oj-rtl() {
-         padding-left: $dataGridHeaderPadding;
-         padding-right: $dataGridHeaderPadding;
+         padding-left: $dataGridCellPadding;
+         padding-right: $dataGridCellPadding;
        }
     }
     
@@ -146,6 +151,16 @@
        }
        @include oj-rtl() {    
          border-left: 0;
+       }
+    }
+    
+    /* Styling for the vertical grid lines for header cells. */
+    .oj-table-column-header-cell.oj-table-vgrid-lines {
+       @include oj-ltr() {
+         border-right: 1px solid transparent;
+       }
+       @include oj-rtl() {    
+         border-left: 1px solid transparent;
        }
     }
 
@@ -217,8 +232,9 @@
       }
     }
     
-    /* Grid display styling for the column header element. */
-    .oj-table-grid-display .oj-table-column-header {
+    /* Grid display or editable table styling for the column header element. */
+    .oj-table-grid-display .oj-table-column-header,
+    .oj-table-editable .oj-table-column-header {
       @include oj-ltr() {
         padding-right: 0;
       }
@@ -242,8 +258,9 @@
       }
     }
     
-    /* Grid display styling for the column header text. */
-    .oj-table-grid-display .oj-table-column-header-text {
+    /* Grid display or editable table styling for the column header text. */
+    .oj-table-grid-display .oj-table-column-header-text,
+    .oj-table-editable .oj-table-column-header-text {
       padding-right: 0;
     }
 
@@ -263,8 +280,9 @@
       top: 0;
     }
     
-    /* Grid display styling for the column header sort ascending element. */
-    .oj-table-grid-display .oj-table-column-header-asc {
+    /* Grid display or editable table styling for the column header sort ascending element. */
+    .oj-table-grid-display .oj-table-column-header-asc,
+    .oj-table-editable .oj-table-column-header-asc {
       @include oj-ltr() {
        right: -5px;
       }
@@ -291,8 +309,9 @@
       top: 0;
     }
     
-    /* Grid display styling for the column header sort descending element. */
-    .oj-table-grid-display .oj-table-column-header-dsc {
+    /* Grid display or editable table styling for the column header sort descending element. */
+    .oj-table-grid-display .oj-table-column-header-dsc,
+    .oj-table-editable .oj-table-column-header-dsc{
       @include oj-ltr() {
        right: -5px;
       }
@@ -381,9 +400,10 @@
       font-size: inherit;
     }
     
-    /* Grid display styling for the data row elements. */
-    .oj-table-grid-display .oj-table-body-row {
-      height: $dataGridRowHeight;
+    /* Grid display or editable table styling for the data row elements. */
+    .oj-table-grid-display .oj-table-body-row,
+    .oj-table-editable .oj-table-body-row {
+      height: calc(#{$dataGridRowHeight} + 4px);
     }
     
     /* Styling for the data row elements in hover state. */
@@ -409,7 +429,7 @@
       @include oj-border-radius(50%);
       border: 2px solid $dataGridSelectionAffordanceBorder;
       border: 2px solid rgba($dataGridSelectionAffordanceBorder, 0.8);
-      @include oj-box-sizing-property (border-box);		
+      box-sizing: border-box;		
       background-color: $iconColorHover;
       position: absolute;
       width: 11px;
@@ -449,13 +469,40 @@
        overflow: hidden;
        text-overflow: ellipsis;
        white-space: nowrap;
-       @include oj-box-sizing-property(content-box);
+       box-sizing: content-box;
     }
     
-    /* Grid display styling for the data cell elements. */
-    .oj-table-grid-display .oj-table-data-cell {
+    /* Grid display or editable table styling for the data cell elements. */
+    .oj-table-grid-display .oj-table-data-cell,
+    .oj-table-editable .oj-table-data-cell {
        padding-left: $dataGridCellPadding;
        padding-right: $dataGridCellPadding;
+       height: calc(#{$dataGridRowHeight} - 11px);
+    }
+    
+    /* Edit row styling for data cell elements. */
+    .oj-table-body-row-edit .oj-table-data-cell:not(.oj-read-only) {
+       padding: 0;
+    }
+    
+    /* Edit row styling for data cell elements. */
+    .oj-table-data-cell.oj-table-data-cell-edit {
+       outline: 1px dotted $dataGridEditableCellBorderColorFocus;
+    }
+    
+    /* Styling on read only table cells, oj-readOnly must be applied by the application */
+    .oj-table-data-cell.oj-read-only {
+       background-color: $dataGridEditableCellBgColorReadOnly;
+    }
+    
+    /* A helper class oj-table-data-cell-no-padding should have padding 0*/
+    .oj-table-data-cell.oj-table-data-cell-no-padding {
+       padding: 0;
+    }
+    
+    /* A helper class oj-table-data-cell-padding should be applied to editable components that should maintain padding in edit mode*/
+    .oj-table-body-row-edit .oj-table-data-cell.oj-table-data-cell-padding {
+       padding: $dataGridCellPadding;
     }
         
     /* Styling for the dragged data cell elements. */
@@ -489,6 +536,17 @@
        outline-width: 2px;
        outline-style: dotted;
     }
+
+    /* Styling on form controls stamped inside a table */
+    .oj-table-data-cell.oj-form-control-inherit .oj-form-control {
+       height: calc(#{$dataGridRowHeight} + 4px);
+       @include oj-form-control-padding-override(
+         $padding: "0 calc(#{$dataGridCellPadding} + 1px)");
+    }
+
+    .oj-table-data-cell .oj-checkboxset .oj-checkbox-label {      
+      justify-content: flex-end;
+    }
     
     /* Styling for the footer. */
     .oj-table-footer {
@@ -509,26 +567,28 @@
        font-size: inherit;
     }
     
-    /* Grid display styling for the footer row. */
-    .oj-table-grid-display .oj-table-footer-row {
-       height: $dataGridRowHeight;
+    /* Grid display or editable table styling for the footer row. */
+    .oj-table-grid-display .oj-table-footer-row,
+    .oj-table-editable .oj-table-footer-row {
+       height: calc(#{$dataGridRowHeight} + 4px);
     }
     
     /* Styling for the footer cells. */
     .oj-table-footer-cell {
        float: none;
-       padding-top: $dataGridHeaderPadding;
-       padding-bottom: $dataGridHeaderPadding;
+       padding-top: $dataGridCellPadding;
+       padding-bottom: $dataGridCellPadding;
        padding-left: $tableHeaderPadding;
        padding-right: $tableHeaderPadding;
        font-size: inherit;
-       @include oj-box-sizing-property(content-box);
+       box-sizing: content-box;
     }
     
-    /* Grid display styling for the footer cells. */
-    .oj-table-grid-display .oj-table-footer-cell {
-       padding-left: $dataGridHeaderPadding;
-       padding-right: $dataGridHeaderPadding;
+    /* Grid display or editable table styling for the footer cells. */
+    .oj-table-grid-display .oj-table-footer-cell,
+    .oj-table-editable .oj-table-footer-cell {
+       padding-left: $dataGridCellPadding;
+       padding-right: $dataGridCellPadding;
     }
         
     /* Styling for the vertical grid lines for data cells. */
@@ -553,7 +613,8 @@
     
    
     /* Grid display styling for the vertical grid lines. */
-    .oj-table-grid-display .oj-table-vgrid-lines {
+    .oj-table-grid-display .oj-table-vgrid-lines,
+    .oj-table-grid-display .oj-table-column-header-cell.oj-table-vgrid-lines {
        @include oj-ltr() {
          border-right: 1px solid $dataGridCellBorderColor;
        }
@@ -593,14 +654,14 @@
       background-color: InfoBackground;
       color: InfoText;
       border: 1px $dataGridCellBorderColor solid;
-      padding: $dataGridHeaderPadding;
+      padding: $dataGridCellPadding;
       display: inline-block;
     }
 
     /* Styling for the No Data message. */
     .oj-table-no-data-message {
       color: $textColor;
-      padding: $dataGridHeaderPadding;
+      padding: $dataGridCellPadding;
     } 
     
     /* Styling for a panel that can attach to the bottom of the table 

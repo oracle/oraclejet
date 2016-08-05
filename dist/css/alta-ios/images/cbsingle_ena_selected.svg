@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Enabled_Checked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="22px" height="22px" viewBox="0 0 22 22" enable-background="new 0 0 22 22" xml:space="preserve">
+<g id="Unchecked_x5F_Enabled_x5F_Checkbox">
+	<path fill-rule="evenodd" clip-rule="evenodd" fill="#2B71B9" d="M11,0c6.08,0,11,4.92,11,11c0,6.07-4.92,11-11,11S0,17.08,0,11
+		C0,4.92,4.92,0,11,0z"/>
+</g>
+<g id="Checkmark">
+	<path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M15.97,6L17,7.05L8.7,16L5,11.7l0.91-0.96l2.66,3.26L15.97,6z"/>
+</g>
+</svg>

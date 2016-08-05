@@ -47,6 +47,26 @@
       }
     }
 
+
+
+    @if $responsiveQueryMediumDown and $responsiveQueryMediumDown != none {
+      @media #{$responsiveQueryMediumDown} {
+        @include oj-layout-helpers-responsive("oj-md-down");
+      }
+    }
+    
+    @if $responsiveQueryLargeDown and $responsiveQueryLargeDown != none {
+      @media #{$responsiveQueryLargeDown} {
+        @include oj-layout-helpers-responsive("oj-lg-down");
+      }
+    }
+
+    @if $responsiveQueryXlargeDown and $responsiveQueryXlargeDown != none {
+      @media #{$responsiveQueryXlargeDown} {
+        @include oj-layout-helpers-responsive("oj-xl-down");
+      }
+    }
+
     //ONLY
 
     @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {

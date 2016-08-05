@@ -32,7 +32,7 @@
 
 @if $includeSelectClasses != false {
   @include module-include-once("alta.ios.select") {
-    .oj-select-arrow {
+    .oj-select .oj-select-arrow {
       display: none;
     }
 
@@ -52,6 +52,18 @@
           direction: ltr;
         }
       }    
+    }
+
+    .oj-select-multiple-open-icon {
+      display:none;
+    }
+
+    .oj-select-select::-ms-expand {
+      display:none;
+    }
+
+    .oj-select-select {
+      -moz-appearance:none;
     }
 
     // We want the placeholder style on the select for themes where we render

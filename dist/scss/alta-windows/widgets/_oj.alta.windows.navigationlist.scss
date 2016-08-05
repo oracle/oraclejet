@@ -21,19 +21,6 @@
 @if $includeNavigationListClasses != false {
     @include module-include-once("alta.windows.navigationlist") {
 
-        // Remove left side selection bar
-        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
-        {
-            //Padding at start of item
-            @include oj-rtl() {
-                padding-right: #{$navigationListItemStartEndPadding};
-                border-width: 0;
-            }
-            @include oj-ltr() {
-                padding-left:  #{$navigationListItemStartEndPadding};
-                border-width: 0;
-            }
-        }
         // Center align item content
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
             @include oj-justify-content-property(center);
@@ -49,13 +36,13 @@
             color: $navigationListPageLevelItemIconColorDefault;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorSelected;
         }
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
         
         .oj-navigationlist-previous-icon {

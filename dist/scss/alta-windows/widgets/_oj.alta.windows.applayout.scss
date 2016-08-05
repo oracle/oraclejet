@@ -6,10 +6,11 @@
 @import "../../common/helpers/oj.common.helpers";
 // ----- end dependencies ---------
 
-// import classes defined in the common directory
-@import "../../common/widgets/oj.common.applayout"; 
+@import "../../common/widgets/oj.common.applayout";
+
 
 @if $includeAppLayoutClasses != false {
   @include module-include-once("alta.windows.applayout") {
+
   }
 }

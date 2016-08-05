@@ -26,13 +26,14 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called with the failed fetch content.<br>
  *                  <b>fetchSize</b>: the fetch size. Default is 25.<br>
  *                  <b>maxCount</b>: max row count. DomScroller will not exceed this max count. Default is 500.<br>
+ *                  <b>fetchTrigger</b>: how close should the scroll position be relative to the maximum scroll position before a fetch is triggered. Default is 1 pixel.<br>
  * @constructor
  */
 oj.DomScroller = function(element, datasource, options)
 {
   options = options || {};
   this._data = datasource;
-  this._element = element;
+  this._element = $(element)[0];
   this._fetchSize = options['fetchSize'];
   this._fetchSize = this._fetchSize > 0 ? this._fetchSize : 25;
   this._maxCount = options['maxCount'];
@@ -41,16 +42,81 @@ oj.DomScroller = function(element, datasource, options)
   this._successCallback = options['success'];
   this._errorCallback = options['error'];
   this._registerDataSourceEventListeners();
+  this._fetchTrigger = options['fetchTrigger'];
+  if (this._fetchTrigger == null || isNaN(this._fetchTrigger))
+    this._fetchTrigger = 0;
+  this._initialScrollTop = this._element.scrollTop;
   
-  $(this._element).on('scroll.domscroller', function(event) {
-    var scrollTop = $(event.target).scrollTop();
-    var maxScrollTop = $(event.target)[0].scrollHeight - $(event.target)[0].clientHeight;
-
+  $(this._getScrollEventElement()).on('scroll.domscroller', function(event) {
+    var target = this._element;
+    var scrollTop = this._getScrollTop(target);
+    var maxScrollTop = target.scrollHeight - target.clientHeight;
     if (maxScrollTop > 0)
     {
       this._handleScrollerScrollTop(scrollTop, maxScrollTop);
     }
   }.bind(this));
+};
+
+/**
+ * Retrieve the element where the scroll listener is registered on.
+ * @private
+ */
+oj.DomScroller.prototype._getScrollEventElement = function()
+{
+  // if scroller is the body, listen for window scroll event.  This is the only way that works consistently across all browsers.
+  if (this._element == document.body || this._element == document.documentElement)
+  {
+    return window;
+  }
+  else
+  {
+    return this._element;
+  }
+};
+
+/**
+ * Helper method to calculate the offsetTop from element to ancestor
+ * @param {Element} ancestor the ancestor element
+ * @param {Element} element the element 
+ * @return {number} the distance between the specified element and ancestor
+ */
+oj.DomScroller.calculateOffsetTop = function(ancestor, element)
+{
+  var offset = 0, current = element;
+  while (current && current != ancestor && $.contains(ancestor, current))
+  {
+    offset = offset + current.offsetTop;
+    current = current.offsetParent;
+  }
+
+  return offset;
+};
+
+/**
+ * Gets the scroll top of the element
+ * @param {Element} element the element
+ * @return {number} scroll top
+ * @private
+ */
+oj.DomScroller.prototype._getScrollTop = function(element)
+{
+  var scrollTop = this._fetchTrigger;
+
+  if (element == document.documentElement)
+  {
+    // to ensure it works across all browsers.  See https://bugs.webkit.org/show_bug.cgi?id=106133
+    // for firefox we should use documentElement.scrollTop, for Chrome and IE use body.scrollTop
+    // detect this by checking initial scrollTop is the same as current scrolltop, if it's the same then the scrollTop is not
+    // returning the correct value and we should use body.scrollTop
+    if (this._useBodyScrollTop === undefined)
+      this._useBodyScrollTop = (this._initialScrollTop == element.scrollTop) ? true : false;
+
+    if (this._useBodyScrollTop)
+      return scrollTop + document.body.scrollTop;
+  }
+
+  return scrollTop + element.scrollTop;
 };
 
 /**
@@ -63,7 +129,7 @@ oj.DomScroller = function(element, datasource, options)
 oj.DomScroller.prototype.destroy = function()
 {
   this._unregisterDataSourceEventListeners();
-  $(this._element).off('scroll.domscroller');
+  $(this._getScrollEventElement()).off('scroll.domscroller');
 };
 
 /**
@@ -78,7 +144,7 @@ oj.DomScroller.prototype.destroy = function()
  */
 oj.DomScroller.prototype.checkViewport = function()
 {
-  if (this._element[0].clientHeight > 0 && 
+  if (this._element.clientHeight > 0 && 
       !this._checkOverflow())
   {
     return this._fetchMoreRows();
@@ -92,7 +158,7 @@ oj.DomScroller.prototype.checkViewport = function()
  */
 oj.DomScroller.prototype._handleScrollerScrollTop = function(scrollTop, maxScrollTop)
 {
-  if (maxScrollTop - scrollTop <= 1)
+  if (maxScrollTop - scrollTop <= 1 && !this._fetchPromise)
   {
     var self = this;
     this._fetchMoreRows().then(function(result) 
@@ -113,7 +179,7 @@ oj.DomScroller.prototype._checkOverflow = function()
 {
   var element = this._element;
   
-  if (element[0].scrollHeight > element[0].clientHeight + 1)
+  if (element.scrollHeight > element.clientHeight + this._fetchTrigger)
   {
     return true;
   }
@@ -148,12 +214,15 @@ oj.DomScroller.prototype._fetchMoreRows = function()
           
           if (result != null)
           {
-            self._rowCount = result['data'].length + result['startIndex'];
-            
-            if (remainingCount < self._fetchSize)
+            if (result['data'].length > 0)
             {
-              result['maxCount'] = self._maxCount;
-              result['maxCountLimit'] = true;
+              self._rowCount = result['data'].length + result['startIndex'];
+
+              if (remainingCount < self._fetchSize)
+              {
+                result['maxCount'] = self._maxCount;
+                result['maxCountLimit'] = true;
+              }
             }
           }
           resolve(result);
@@ -211,7 +280,10 @@ oj.DomScroller.prototype._handleDataReset = function()
 oj.DomScroller.prototype._handleDataSync = function(event)
 {
   this._currentStartIndex = event['startIndex'];
-  this._rowCount = event['data'].length + this._currentStartIndex;
+  if (event['data'].length > 0)
+  {
+    this._rowCount = event['data'].length + this._currentStartIndex;
+  }
 }
 
 /**

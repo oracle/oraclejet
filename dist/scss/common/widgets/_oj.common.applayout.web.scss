@@ -10,14 +10,16 @@
 @if $includeAppLayoutWebClasses != false {
   @include module-include-once("common.applayout.web") {
 
+    // BODY CLASSES
+    .oj-web-applayout-body {
+      // We want scrollbars to always be present on the page so header doesn't jump for desktop so always set overflow-y: scroll.
+      overflow-y: scroll;
+    }
+
     // OFFCANVAS
-    .oj-web-applayout-offcanvas-wrapper {
-      @extend %oj-applayout-offcanvas-wrapper;
-    }
     .oj-web-applayout-offcanvas {
-      @extend %oj-applayout-offcanvas;
-    }
-    .oj-web-applayout-offcanvas {
+      width: $appLayoutOffcanvasWidth;
+      max-width: $appLayoutOffcanvasMaxWidth;
       background-color: $appLayoutWebOffcanvasBgColor;
       color: $contrastTextColor;
     }
@@ -27,31 +29,34 @@
       font-size: 24px;
     }
 
-    // NAV BAR
-    .oj-web-applayout-navbar.oj-navigationlist-horizontal .oj-navigationlist-element {
-      margin: 0;
+    // PAGE LAYOUT
+    .oj-web-applayout-page {
+      @include oj-display-flex-property();
+      @include oj-flex-direction-property(column);
+      box-sizing: border-box;
+      min-height: 100vh;
+    }
+    // Match IE11+
+    @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+       .oj-web-applayout-page {
+        // IE11 doesn't support min-height: 100vh with flex column layout, but Edge does.
+        height: 100vh;
+        min-height: 0;
+      }
+    }
+    // Special case Edge
+    _:-ms-lang(x), _:-webkit-full-screen .oj-web-applayout-page {
+      height: auto;
+      min-height: 100vh;
     }
 
-    // PAGE LAYOUT
-    /* Can also be used within oj-web-applayout-offcanvas element if header
-      and footer are needed */
-    .oj-web-applayout-page {
-      @extend %oj-applayout-page;
-      position: absolute;
-      @include oj-box-sizing-property(border-box);
-      min-height: 100vh;
-      // always set vertical scrolling on so that end elements in header won't
-      // jump around when switching modules with scrolling to non scrolling content
-      // for a single page application
-      overflow-y: scroll;
-    }
     // The following classes adhere to the max app content width
     .oj-web-applayout-max-width {
       margin-left: auto;
       margin-right: auto;
       width: 100%;
       max-width: $appLayoutMaxWidth;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
     }
     // The following classes have flex none so they are sized correctly in the
     // page layout
@@ -60,6 +65,12 @@
     .oj-web-applayout-navbar,
     .oj-web-applayout-header + .oj-progressbar-embedded {
       @include oj-flex-property(0 0 auto);
+    }
+
+    // HEADER
+    .oj-web-applayout-header {
+      background-color: $appLayoutWebHeaderBgColor;
+      @include oj-box-shadow($appLayoutWebHeaderBoxShadow);
     }
     // Add padding between the start and title containers
     // Add padding to bar-start instead of title because the web pattern sometimes hides bar-start
@@ -71,22 +82,6 @@
         padding-left: -10px;
       }
     }
-
-    // The following classes participate in max width
-
-    // SCROLLABLE CONTAINERS
-    .oj-web-applayout-scrollable-wrapper {
-      @extend %oj-applayout-scrollable-wrapper;
-    }
-    .oj-web-applayout-scrollable {
-      @extend %oj-applayout-scrollable;
-    }
-
-    // HEADER
-    .oj-web-applayout-header {
-      background-color: $appLayoutWebHeaderBgColor;
-      @include oj-box-shadow($appLayoutWebHeaderBoxShadow);
-    }
     .oj-slow-boxshadow .oj-web-applayout-header {
       // Use a border color if not using a shadow
       border-bottom: 1px solid $appLayoutWebHeaderBorderColor;
@@ -96,8 +91,14 @@
       margin-bottom: 0;
     }
     .oj-web-applayout-header > div:first-child {
+      box-sizing: border-box;
+    }
+    .oj-web-applayout-header > div:first-child::before {
+      // To workaround IE11 min-height and flex bug
+      content: "";
+      display: inline-block;
       min-height: $appLayoutWebHeaderMinHeight;
-      @include oj-box-sizing-property(border-box);
+      visibility: hidden;
     }
     .oj-web-applayout-header > div,
     .oj-web-applayout-footer > div {
@@ -140,6 +141,13 @@
       // vertically center aligned them to other elements like an offcanvas toggle
       // button so we discount the height of the text by setting line-height to 0
       line-height: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    // NAV BAR
+    .oj-web-applayout-navbar .oj-navigationlist-icon-only {
+      padding-bottom: 3px;
     }
 
     // CONTENT
@@ -154,11 +162,27 @@
     // FOOTER
     .oj-web-applayout-footer {
       min-height: $appLayoutWebFooterMinHeight;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       border-top: 1px solid $appLayoutWebFooterBorderColor;
       background-color: $appLayoutWebFooterBgColor;
       padding-top: 10px;
       padding-bottom: 10px;
+    }
+
+    .oj-web-applayout-footer-item {
+      box-sizing: border-box;
+      @include oj-display-flex-property();
+      @include oj-flex-wrap-property(wrap);
+      @include oj-flex-property(initial);
+    }
+    // For phone
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+        .oj-web-applayout-footer-item {
+          @include oj-justify-content-property(center);
+          text-align: center;
+        }
+      }
     }
     .oj-web-applayout-footer ul {
       margin: 0;
@@ -173,9 +197,9 @@
       list-style: none;
       display: inline-block;
       @include oj-ltr() {
-        margin-right: 5px;
+        margin-right: 10px;
         margin-left: 0;
-        padding-right: 5px;
+        padding-right: 10px;
         border-right: 1px solid $appLayoutWebFooterBorderColor;
       }
       @include oj-rtl() {
@@ -197,6 +221,5 @@
         border-left: none;
       }
     }
-
   }
 }

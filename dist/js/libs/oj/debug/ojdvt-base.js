@@ -27,7 +27,7 @@ oj.AttributeGroupHandler.prototype.Init = function(matchRules) {
     this.addMatchRule(category, matchRules[category]);
   }
   // Delay initializing value ramp by calling subclass getValueRamp impl until needed either for adding match rule or assigning values
-}
+};
 
 /**
  * Returns the array of possible attribute values for this attribute group handler.
@@ -36,7 +36,7 @@ oj.AttributeGroupHandler.prototype.Init = function(matchRules) {
  */
 oj.AttributeGroupHandler.prototype.getValueRamp = function() {
   return [];
-}
+};
 
 /**
  * Assigns the given category an attribute value.  Will consistently return the same attribute value for equal categories.
@@ -60,7 +60,7 @@ oj.AttributeGroupHandler.prototype.getValue = function(category) {
       this._valueIndex = 0;
   }
   return this._assignments[category];
-}
+};
 
 /**
  * Returns the current map of key value pairs for categories and the assigned attribute values. Note that match rules are not
@@ -73,7 +73,7 @@ oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
   for (var i in this._assignments)
     assignments.push({"category": i, "value": this._assignments[i]});
   return assignments;
-}
+};
 
 /**
  * Reserves an attribute value for the given category.  All match rules should be added before any category
@@ -84,7 +84,8 @@ oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
  */
 oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeValue) {
   this._matchRules[category] = attributeValue;
-}
+};
+
 /**
  * Creates a shape attribute group handler that will generate shape attribute values.
  * 
@@ -96,7 +97,7 @@ oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeVa
  */
 oj.ShapeAttributeGroupHandler = function(matchRules) {
   this.Init(matchRules);
-}
+};
 
 oj.Object.createSubclass(oj.ShapeAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ShapeAttributeGroupHandler");
 
@@ -109,7 +110,7 @@ oj.ShapeAttributeGroupHandler._attributeValues = ['square', 'circle', 'diamond',
  */
 oj.ShapeAttributeGroupHandler.prototype.getValueRamp = function() {
   return oj.ShapeAttributeGroupHandler._attributeValues;
-}
+};
 /**
  * Defines whether the component will automatically render in response to
  * changes in size. If set to <code class="prettyprint">off</code>, then the
@@ -204,7 +205,7 @@ var DvtJsonPath = function(object, path)
   this._path = path;
   this._root = object;
   this._delimiter = '/';
-}
+};
 
 /**
  * Resolves the parameter of the leaf object and the leaf object itself
@@ -236,7 +237,7 @@ DvtJsonPath.prototype._resolveLeafObjectAndProperty = function(root, path, delim
   }
 
   return result;
-}
+};
 
 /**
  * Resolves path to the leaf object and parameter of this object
@@ -252,7 +253,7 @@ DvtJsonPath.prototype._resolvePath = function(createIfMissing)
     this._leaf = result['object'];
     this._param = result['parameter'];
   }
-}
+};
 
 /**
  * Returns value of the leaf element of the path.
@@ -262,7 +263,7 @@ DvtJsonPath.prototype.getValue = function()
 {
   this._resolvePath(false);
   return this._leaf === undefined ? undefined : this._leaf[this._param];
-}
+};
 
 /**
  * Sets value of the leaf element of the path.
@@ -277,7 +278,8 @@ DvtJsonPath.prototype.setValue = function(value, bOverride)
   {
     this._leaf[this._param] = value;
   }
-}
+};
+
 /**
  * Creates a color attribute group handler that will generate color attribute values.
  * 
@@ -327,7 +329,7 @@ oj.ColorAttributeGroupHandler = function(matchRules) {
   }
 
   this.Init(matchRules);
-}
+};
 
 oj.Object.createSubclass(oj.ColorAttributeGroupHandler, oj.AttributeGroupHandler, "oj.ColorAttributeGroupHandler");
 
@@ -350,19 +352,19 @@ oj.ColorAttributeGroupHandler._colors = null;
  */
 oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
   return this._attributeValues;
-}
+};
 
 var DvtStyleProcessor = {
   'CSS_TEXT_PROPERTIES':
     function(cssDiv) {
       var ignoreProperties = {};
       if (cssDiv) {
-        if (cssDiv.hasClass("oj-gaugeMetricLabel") && cssDiv.hasClass(cssDiv.parentNode, "oj-ledGauge")) {
+        if (cssDiv.hasClass("oj-gauge-metric-label") && cssDiv.hasClass(cssDiv.parentNode, "oj-ledgauge")) {
           // Ignored because the size and color are fit to shape and based on background color.
           ignoreProperties['font-size'] = true;
           ignoreProperties['color'] = true;
         }
-        else if (cssDiv.hasClass(cssDiv, "oj-chartSliceLabel")) {
+        else if (cssDiv.hasClass(cssDiv, "oj-chart-slice-label")) {
           // Ignored because the color is automatically determined based on slice color.
           ignoreProperties['color'] = true;
         }
@@ -401,7 +403,7 @@ DvtStyleProcessor._styleCache = {};
 
 DvtStyleProcessor.defaultStyleProcessor = function(cssDiv, property) {
   return cssDiv.css(property);
-}
+};
 
 /**
  * @param {Object} cssDiv The element with style class or with some default style
@@ -563,12 +565,13 @@ DvtStyleProcessor._processStyle = function(element, options, styleClass, definit
           // to worry about merging.
           if (property !== 'CSS_URL') {
             var strValue = '';
-            if(optionsValue != null) {
+            if (optionsValue != null) {
+              var strOptionsValue = DvtStyleProcessor._getStyleString(optionsValue);
               for (var attr in value) {
-                if (optionsValue.indexOf(attr) === -1)
+                if (strOptionsValue.indexOf(attr) === -1)
                   strValue += attr + ':' + value[attr] + ';';
               }
-              strValue += optionsValue;
+              strValue += strOptionsValue;
             } else { // still need to convert cached value which is an object to a string
               for (var attr in value)
                 strValue += attr + ':' + value[attr] + ';';
@@ -586,6 +589,26 @@ DvtStyleProcessor._processStyle = function(element, options, styleClass, definit
 };
 
 /**
+ * Helper function to get the style string for the given style options
+ * @param {Object | string} styleOptions The style options value
+ * @return {string} The style string
+ * @private
+ */
+DvtStyleProcessor._getStyleString = function(styleOptions) {
+  if (styleOptions instanceof Object) {
+    var styleString = '';
+    //The camel case version of object attributes will be converted to hyphenated(-) string attributes
+    for (var attr in styleOptions) {
+      var stringAttr = attr.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      styleString += stringAttr + ':' + styleOptions[attr] + ';';
+    }
+    return styleString;
+  } 
+  //Ensure the returned style is a string and not null
+  return (styleOptions != null && typeof styleOptions == 'string') ? styleOptions : '';
+};
+
+/**
  * Helper function to resolve the css properties within a dummy div and handle caching.
  * @param {Object} cssDiv The div to use for processing CSS style.
  * @param {string} property The css property to be resolved.
@@ -599,7 +622,7 @@ DvtStyleProcessor._resolveStyle = function(cssDiv, property)
 
   // Ensure the returned value is not null or empty string.
   return (value != null && !(typeof value == 'string' && value.replace(/^\s+/g, '') == '')) ? value : null;
-}
+};
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -646,6 +669,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._context.setOverlayAttachedCallback(oj.Components.subtreeAttached);
     this._context.setTooltipStyleClass('oj-dvt-tooltip');
     this._context.setDatatipStyleClass('oj-dvt-datatip');
+
+    // Set the root font-family
+    this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
 
     // Set high contrast mode if needed
     if ($(document.body).hasClass('oj-hicontrast'))
@@ -1085,6 +1111,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _Render : function(isResize) {
+    // Hide all component tooltips on rerender cases to avoid abandoned tooltips
+    this._context.hideTooltips();
+
     // Starting a new render - no longer ready
     this._NotReady();
 
@@ -1551,4 +1580,20 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
 }, true);
 
+(function() {
+var dvtBaseComponentMeta = {
+  "properties": {
+    "trackResize": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "whenReady": {}
+  },
+  "extension": {
+    "_widgetName": "dvtBaseComponent"
+  }
+};
+oj.Components.registerMetadata('dvtBaseComponent', 'baseComponent', dvtBaseComponentMeta);
+})();
 });

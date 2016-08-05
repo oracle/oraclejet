@@ -103,28 +103,28 @@ oj.PositionUtils.normalizePositionOf = function(of, launcher, event)
 // TODO: file a JQ bug and link to it here.
 /**
  * On iOS and Android, the JQ Event object wrapping touch* events lacks pageX and pageY properties, which is contrary to the
- * contract [1].  This breaks JQ's position() API [2], which assumes that the contract is obeyed.  Specifically, it 
+ * contract [1].  This breaks JQ's position() API [2], which assumes that the contract is obeyed.  Specifically, it
  * relies on the pageX/Y fields of the Event object passed as the "of" field (and publicly docs that it does so).
- * 
- * Per W3C [3], pageX/Y are found in originalEvent.touches[i] or originalEvent.changedTouches[i], where originalEvent is 
- * the native (not JQ) event, and i is 0 for us.  In practice, for touchstart at least, iOS7 and 8 Mobile Safari, but 
- * apparently not Android Chrome, also put pageX and pageY on the top-level native event, and the values seem to be the 
+ *
+ * Per W3C [3], pageX/Y are found in originalEvent.touches[i] or originalEvent.changedTouches[i], where originalEvent is
+ * the native (not JQ) event, and i is 0 for us.  In practice, for touchstart at least, iOS7 and 8 Mobile Safari, but
+ * apparently not Android Chrome, also put pageX and pageY on the top-level native event, and the values seem to be the
  * same as those in the touches array.  We'll use the cross-platform W3C location.
  *
- * To workaround the JQ bug, popup components like Menu can call this method at open() time.  This method copies the properties 
+ * To workaround the JQ bug, popup components like Menu can call this method at open() time.  This method copies the properties
  * to the wrapper JQ event.
- * 
+ *
  * [1] http://api.jquery.com/category/events/event-object/
  * [2] http://api.jqueryui.com/position/
  * [3] http://www.w3.org/TR/touch-events/#touch-interface et. seq.
- * 
+ *
  * @param event
  */
 oj.PositionUtils._normalizeEventForPosition = function(event)
 {
-  $.each(["pageX", "pageY"], function (index, pagePos) 
+  $.each(["pageX", "pageY"], function (index, pagePos)
   {
-    if (event && event[pagePos] === undefined && event.originalEvent) 
+    if (event && event[pagePos] === undefined && event.originalEvent)
     {
       var originalEvent = event.originalEvent;
       var type = originalEvent.type;
@@ -132,7 +132,7 @@ oj.PositionUtils._normalizeEventForPosition = function(event)
           ? "touches"
           : (type === "touchend") ? "changedTouches" : null;
 
-      if (touchList) 
+      if (touchList)
       {
         var firstTouch = originalEvent[touchList][0];
         if (firstTouch)
@@ -162,11 +162,114 @@ oj.PositionUtils.isAligningPositionClipped = function(props)
     // if the target has a width and height greater than zero then it's an element
     /** @type {jQuery} */
     var positionOf = props["target"]["element"];
-    return !oj.DomUtils.isWithinViewport(positionOf);
+    return !oj.PositionUtils.isWithinViewport(positionOf);
   }
   else
     return false;
 };
+
+
+/**
+ * Returns <code>true</code> if the jquery element is visible within overflow an
+ * overflow container. The check only considers statically positioned elements and
+ * stops short of the body.
+ *
+ * The first positioned ancestor is treated as the root viewport. Positioned elements need be
+ * compared with the window viewport versus its ancestors.  Visibility of positioned
+ * elements also need to compare stacking contexts within the document to determine
+ * what is on top "visible" - thus excluded from this check.
+ *
+ * @param {jQuery} element jquery element to test
+ * @returns {boolean}
+ */
+oj.PositionUtils.isWithinViewport = function(element)
+{
+
+  function isVisible(alignBox, containerBox)
+  {
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowY"]) > -1)
+    {
+      // 1px fudge factor for rounding errors
+      if ((alignBox["bottom"] - containerBox["top"]) < -1)
+        return false;
+
+      var scrollBarWidth = (containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") ?
+                          oj.DomUtils.getScrollBarWidth() : 0;
+      if ((containerBox["bottom"] - scrollBarWidth) - alignBox["top"] < 1)
+        return false;
+    }
+
+    if (["hidden", "scroll", "auto"].indexOf(containerBox["overflowX"]) > -1)
+    {
+      scrollBarWidth = ((containerBox["overflowY"] === "auto" || containerBox["overflowY"] === "scroll") &&
+                       oj.DomUtils.getReadingDirection() === "rtl") ? oj.DomUtils.getScrollBarWidth() : 0;
+      if ((alignBox["right"] - (containerBox["left"] + scrollBarWidth)) < -1)
+        return false;
+
+      var scrollBarWidth = ((containerBox["overflowX"] === "auto" || containerBox["overflowX"] === "scroll") &&
+                       oj.DomUtils.getReadingDirection() === "ltr") ? oj.DomUtils.getScrollBarWidth() : 0;
+      if ((alignBox["left"] - (containerBox["right"] - scrollBarWidth)) > -1)
+        return false;
+    }
+
+    return true;
+  };
+
+  function hasOverflow(element)
+  {
+    return "visible" !== element.css("overflow-x") ||
+           "visible" !== element.css("overflow-y");
+  };
+
+  function getRect(element)
+  {
+    var domElement = element[0];
+    if (domElement.nodeType === 1)
+    {
+      var rec = $.extend({}, domElement.getBoundingClientRect());
+      rec["overflowX"] = element.css("overflow-x");
+      rec["overflowY"] = element.css("overflow-y");
+      return rec;
+    }
+    return {'height': 0, 'width': 0};
+  };
+
+  function isPositioned(element)
+  {
+    return ["fixed", "absolute", "relative"].indexOf(element.css("position")) > -1 &&
+           (Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("top"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("bottom"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("left"))) > 0 ||
+            Math.abs(oj.DomUtils.getCSSLengthAsInt(element.css("right"))) > 0);
+  };
+
+  if (!element)
+    return false;
+  else if ($.isWindow(element[0]) || isPositioned(element))
+    return true;
+
+  var alignBox = getRect(element);
+
+  // check that the element is not hidden in overflow
+  var isWithinViewPort = true;
+  var parent = element.parent();
+  while (isWithinViewPort && parent && parent.length > 0 &&  "BODY" !== parent[0].nodeName && parent[0].nodeType === 1 && !isPositioned(parent))
+  {
+    if (hasOverflow(parent))
+    {
+      var parentBox = getRect(parent);
+      // ignore elements with empty border-boxes
+      if (parentBox['height'] > 0 && parentBox['width'] > 0)
+      {
+        isWithinViewPort = isVisible(alignBox, parentBox);
+      }
+    }
+    parent = parent.parent();
+  }
+
+  return isWithinViewPort;
+};
+
 
 /**
  *
@@ -222,7 +325,10 @@ $.ui.position["flipcenter"] =
       // factor in half the width of the popup
       posLeft -= dirFactor * (data["elemWidth"] / 2);
 
-      position["left"] = posLeft;
+      // Force the popup start to be within the viewport.
+      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+      // what it is aligned to is hidden in a scroll container.
+      position["left"] = Math.max(0, posLeft);
     }
   },
   /**
@@ -268,7 +374,10 @@ $.ui.position["flipcenter"] =
       // factor in half the height of the popup
       posTop += data["elemHeight"] / 2;
 
-      position["top"] = posTop;
+      // Force the popup top to be within the viewport.
+      // This collision rule is only used by input components internally. The notewindow will auto dismiss when
+      // what it is aligned to is hidden in a scroll container.
+      position["top"] = Math.max(0, posTop);
     }
   }
 };
@@ -283,57 +392,9 @@ $.ui.position["flipcenter"] =
  * Outside of making the code closure compiler friendly, there is only
  * a single line difference.  It's noted with a bug number.
  */
+var origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
 $.ui.position["flip"] = {
-  /**
-   * @param {{top: number, left: number}} position
-   * @param {{targetWidth: number,
-   *         targetHeight: number,
-   *         elemWidth: number,
-   *         elemHeight: number,
-   *         collisionPosition: {marginLeft: number, marginTop: number},
-   *         collisionWidth: number,
-   *         collisionHeight: number,
-   *         offset: Array.<number>,
-   *         my: Array.<string>,
-   *         at: Array.<string>,
-   *         within: {element: jQuery, isWindow: boolean, isDocument: boolean, offset: {left: number, top: number}, scrollLeft: number, scrollTop: number, width: number, height: number},
-   *         elem: jQuery
-   *        }} data
-   * @returns {undefined}
-   */
-  "left": function(position, data)
-  {
-    var within = data["within"],
-    withinOffset = within["offset"]["left"] + within["scrollLeft"],
-    outerWidth = within["width"],
-    offsetLeft = within["isWindow"] ? within["scrollLeft"] : within["offset"]["left"],
-    collisionPosLeft = position["left"] - data["collisionPosition"]["marginLeft"],
-    overLeft = collisionPosLeft - offsetLeft,
-    overRight = collisionPosLeft + data["collisionWidth"] - outerWidth - offsetLeft,
-    myOffset = data["my"][ 0 ] === "left" ? -data["elemWidth"] :
-                data["my"][ 0 ] === "right" ? data["elemWidth"] : 0,
-    atOffset = data["at"][ 0 ] === "left" ? data["targetWidth"] :
-                data["at"][ 0 ] === "right" ? -data["targetWidth"] : 0,
-    offset = -2 * data["offset"][ 0 ],
-    newOverRight,
-    newOverLeft;
-
-    if (overLeft < 0 && Math.abs(newOverRight) < Math.abs(newOverLeft))
-    {
-      newOverRight = position["left"] + myOffset + atOffset + offset + data["collisionWidth"] - outerWidth - withinOffset;
-      if (newOverRight < 0 || newOverRight < Math.abs(overLeft))
-      {
-        position["left"] += myOffset + atOffset + offset;
-      }
-    } else if (overRight > 0)
-    {
-      newOverLeft = position["left"] - data["collisionPosition"]["marginLeft"] + myOffset + atOffset + offset - offsetLeft;
-      if (newOverLeft > 0 || Math.abs(newOverLeft) < overRight)
-      {
-        position["left"] += myOffset + atOffset + offset;
-      }
-    }
-  },
+  "left": origLeftFlipCollisionRule.bind(this),
   /**
    * @param {{top: number, left: number}} position
    * @param {{targetWidth: number,
@@ -373,8 +434,8 @@ $.ui.position["flip"] = {
       newOverBottom = position["top"] + myOffset + atOffset + offset + data["collisionHeight"] - outerHeight - withinOffset;
       if (newOverBottom < 0 || newOverBottom < Math.abs(overTop))
       {
-        //  - only flip up if there is more "over" on bottom than top
-        if (overBottom < 0 && overTop < overBottom)
+        //  - only flip up if there is more "over" on top than bottom
+        if (overBottom < 0 && overTop > overBottom)
           position["top"] += myOffset + atOffset + offset;
       }
     } else if (overBottom > 0)
@@ -701,6 +762,7 @@ oj.PopupServiceImpl.prototype.close = function (options)
   oj.ZOrderUtils.removeFromAncestorLayer(popup);
   popup.hide();
   popup.attr("aria-hidden", "true");
+  popup.css({"top": "auto", "bottom": "auto", "left": "auto", "right": "auto"});  //reset position units
 
   //remove the logical parent
   oj.DomUtils.setLogicalParent(popup, null);
@@ -971,18 +1033,31 @@ oj.PopupServiceImpl._redistributeVisitCallback = function (layer, context)
  */
 oj.PopupServiceImpl._refreshCallback = function (event)
 {
+
+  var refreshTimerId = oj.PopupServiceImpl._refreshTimerId;
+  if (!isNaN(refreshTimerId))
+    return;
+
   // Throttle redistributing the refresh listener to intervals of ? ms.
   // This will help performance for chatty events such as scroll.
 
-  var refreshTimmer = oj.PopupServiceImpl._refreshTimmer;
-  if (!isNaN(refreshTimmer))
-    return;
-
-  oj.PopupServiceImpl._refreshTimmer = window.setTimeout(function()
+  oj.PopupServiceImpl._refreshTimerId = window.setTimeout(function ()
   {
-    delete oj.PopupServiceImpl._refreshTimmer;
+    delete oj.PopupServiceImpl._refreshTimerId;
     var defaultLayer = oj.ZOrderUtils.getDefaultLayer();
-    oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._refreshVisitCallback);
+
+    if ($.isFunction(window.requestAnimationFrame))
+    {
+      oj.PopupServiceImpl._afRequestId = window.requestAnimationFrame(function ()
+      {
+        delete oj.PopupServiceImpl._afRequestId;
+        oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._refreshVisitCallback);
+      });
+    }
+    else
+    {
+      oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._refreshVisitCallback);
+    }
   }, oj.PopupServiceImpl._REFRESH_DELAY);
 };
 
@@ -1066,7 +1141,7 @@ oj.PopupServiceImpl._COPY_SAFE_EVENT_PROPERTIES = {'altKey':true, 'bubbles': tru
  * @private
  * @type {number}
  */
-oj.PopupServiceImpl._REFRESH_DELAY = 100;
+oj.PopupServiceImpl._REFRESH_DELAY = 10;
 
 // -----------------------------------------------------------------------------
 
@@ -1182,7 +1257,7 @@ oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, events, modality,
  *
  * @param {!jQuery} layer of the target popup
  * @param {!Object.<oj.PopupService.EVENT, function(...)>} events map of event name to callback
- * @param {?=} surrogate saves position within the document where popup is
+ * @param {?Object=} surrogate saves position within the document where popup is
  *             defined
  * @return {void}
  * @public

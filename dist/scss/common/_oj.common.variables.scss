@@ -3,22 +3,100 @@
 @import "../utilities/oj.utilities.math";
 
 
-// The variables in the file are (imperfectly) organized in some general categories
-// - LOGISTICAL: these variables are more logistical, for example
-//       you can set the path to your image directory
-// - ABSTRACT: in general these "abstract" variables are not used directly
+
+//-----------------------------------------------------------------------------
+// Variable Naming Conventions
+// 
+// JET variable names are camel cased and use the structure 
+// <widget><Element><Property><State>. 
+//
+//   - widget: 
+//        usually this is the component or pattern name, 
+//        for example 'dataGrid'.
+//   - element (optional): 
+//        usually this is a subsection of the component, 
+//        for example 'Cell' or 'Header'.
+//   - property: 
+//        for example 'BgColor', 'BorderColor', 'TextColor', etc.
+//   - state (optional): 
+//        for example 'Hover', 'Active', 'Selected', 'Disabled', etc.
+//
+//
+// This gives you variable names like $buttonHeight, $sliderThumbWidth, 
+// $dataGridCellBgColorHover, $treeNodeBorderColorSelected, etc.
+//-----------------------------------------------------------------------------
+
+
+
+//-----------------------------------------------------------------------------
+// The variables in the file are (imperfectly) organized in some categories
+// - LOGISTICAL: 
+//       these variables are about logistical things like 
+//       the path to your image directory or the text direction.
+// - PERFORMANCE: 
+//       these variables let you include only the css 
+//       for things you are using.
+// - PALETTE: 
+//       these can be thought of as the color palette for the
+//       application. These variables are not used directly
 //       in the widget files, rather they are referred to by
 //       other variables. 
-// - GENERAL: these variables are used broadly in the widget files.
-//       Examples are text, link and icon colors.
-// - CATEGORY AND WIDGET: these variables are widget
-//        or category specific, for example button or form control variables.
-// - OPTIMIZATIONS: these variables are for optimizations.
+// - TEXT: 
+//       these variables control text appearance and are 
+//       broadly used in the widget specific files. There 
+//       may be widget specific text variables that override 
+//       or refer to these variables.
+// - GENERAL: 
+//       these variables are used to set general theme properties 
+//       like drag and drop colors, border radius defaults, 
+//       animation duration defaults, etc. These variables 
+//       are broadly used in the widget specific files.
+// - WIDGET: 
+//       these variables are widget (or widget group)
+//       specific, for example button or form control variables.
+//-----------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
 //  LOGISTICAL VARIABLES
-//----------------------------------------------------------------
+//       these variables are about logistical things like 
+//       the path to your image directory or the text direction.
+//-----------------------------------------------------------------------------
+
+$themeName:           null !default;
+$themeTargetPlatform: null !default;
+
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+
+// path to images
+$imageDir: "images/" !default;
+
+// path to (icon) fonts
+$fontDir: "fonts/" !default;
+
+// path to common images (images shared across themes)
+$commonImageDir: "../common/images/" !default;
+
+
+// DIRECTION
+//----------------------------------
+
+// Accepted values of $textDirection are null, ltr, rtl
+//    - null means ouput for both directions (default)
+//    - ltr means output left to right only
+//    - rtl means output right to left only
+//
+// By default we support right to left without
+// switching out the css file as long as dir="rtl"
+// is set on the html tag. However if you'd prefer
+// to generate one css file per direction you can
+// also set "$textDirection" to either "rtl" or "ltr".
+$textDirection: null !default;
 
 
 // COMPATIBILITY
@@ -32,11 +110,34 @@
 $allowTagSelectors: true !default;
 
 
-// INCLUDES
-//----------------------------------------------------------------
+// INITIAL VISIBILITY
+//----------------------------------
 
-// by default everything is included, but you can also start by setting
-// $includeAllClasses to false and then just add in what you want.
+// when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
+// component is initialized. This reduces the unstyled dom seen by the user during page load.
+$initialVisibility: hidden !default;
+
+
+
+
+//-----------------------------------------------------------------------------
+//  PERFORMANCE VARIABLES
+//       these variables let you include only the css 
+//       for things you are using.
+//-----------------------------------------------------------------------------
+
+// INCLUDES
+//-----------------------------------------------------------------------------
+
+// Optimize performance by only including the css
+// for what you're using. It's recommended to 
+// set $includeAllClasses to false and then set 
+// $include[XYZ]Classes to true for each thing you're using.
+// for example:
+//    $includeAllClasses: false;
+//    $includeButtonClasses: true;
+//    $includePanelClasses: true;
+//    etc
 
 $includeAllClasses: true !default;
 $includeNormalize:  ($includeAllClasses and $allowTagSelectors) !default;
@@ -79,12 +180,14 @@ $includeTextAreaClasses:         $includeFormControlClasses !default;
 // dvt
 $includeChartClasses:            $includeDvtClasses !default;
 $includeDiagramClasses:          $includeDvtClasses !default;
+$includeGanttClasses:            $includeDvtClasses !default;
 $includeGaugeClasses:            $includeDvtClasses !default;
 $includeNBoxClasses:             $includeDvtClasses !default;
 $includePictoChartClasses:       $includeDvtClasses !default;
 $includeSunburstClasses:         $includeDvtClasses !default;
 $includeTagCloudClasses:         $includeDvtClasses !default;
 $includeThematicMapClasses:      $includeDvtClasses !default;
+$includeTimeAxisClasses:         $includeDvtClasses !default;
 $includeTimelineClasses:         $includeDvtClasses !default;
 $includeTreemapClasses:          $includeDvtClasses !default;
 
@@ -125,51 +228,19 @@ $includeUtilitiesClasses:        $includeAllClasses !default; // for generic spa
 $includeToolbarClasses:          $includeAllClasses !default;
 $includeTrainClasses:            $includeAllClasses !default;
 $includeTreeClasses:             $includeAllClasses !default;
+$includeHelpClasses:             $includeAllClasses !default;
 
 
-// PATHS
-//----------------------------------
-// these paths should be relative to the generated css file
-
-// path to images
-$imageDir: "images/" !default;
-
-// path to (icon) fonts
-$fontDir: "fonts/" !default;
-
-// path to common images (images shared across themes)
-$commonImageDir: "../common/images/" !default;
 
 
-// DIRECTION
-//----------------------------------
 
-// Accepted values of $textDirection are null, ltr, rtl
-//    - null means ouput for both directions (default)
-//    - ltr means output left to right only
-//    - rtl means output right to left only
-//
-// By default we support right to left without
-// switching out the css file as long as dir="rtl"
-// is set on the html tag. However if you'd prefer
-// to generate one css file per direction you can
-// also set "$textDirection" to either "rtl" or "ltr".
-$textDirection: null !default;
-
-
-// INITIAL VISIBILITY
-//----------------------------------
-
-// when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
-// component is initialized. This reduces the unstyled dom seen by the user during page load.
-$initialVisibility: hidden !default;
-
-//----------------------------------------------------------------
-// "ABSTRACT" STYLING
-//     in general these "abstract" variables are not used directly
+//-----------------------------------------------------------------------------
+// PALETTE VARIABLES: 
+//       these can be thought of as the color palette for the
+//       application. These variables are not used directly
 //       in the widget files, rather they are referred to by
 //       other variables. 
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 
 // interaction state colors
@@ -217,16 +288,62 @@ $border6Color:     null !default;
 $border7Color:     null !default;
 $border8Color:     null !default;
 
-//----------------------------------------------------------------
-// GENERAL STYLING
-//       these variables are used broadly in the widget files
-//----------------------------------------------------------------
 
-// font
-//----------------------------------
+//-----------------------------------------------------------------------------
+// TEXT VARIABLES
+//       these variables control text appearance and are 
+//       broadly used in the widget specific files. There 
+//       may be widget specific text variables that override 
+//       or refer to these variables.
+//-----------------------------------------------------------------------------
 
-// font family
-$fontFamily: null !default;
+// To target popular system fonts consider using the following for $fontFamily
+//    system, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif
+//
+// An informative article (with even more system fonts)
+//       https://www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/
+// Discussion of more abstract way of declaring the system font
+//       https://lists.w3.org/Archives/Public/www-style/2015Jul/0169.html
+//
+// Details:
+//   * -apple-system  
+//       targets San Francisco on Mac and ios systems that support it.
+//       https://webkit.org/blog/3709/using-the-system-font-in-web-content/
+//       http://furbo.org/2015/07/09/i-left-my-system-fonts-in-san-francisco/
+//   * BlinkMacSystemFont 
+//       targets San Francisco for Chrome on Mac OS X. 
+//   * Segoe UI 
+//       targets Windows and Windows Phone.
+//   * Helvetica Neue 
+//       targets iOS pre-iOS9 and Mac OS X pre-El Capitan. 
+//   * Arial 
+//       targets Roboto on Android
+//       https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/fonts.xml
+//       https://developer.android.com/about/versions/android-4.1.html   (look for 'font')
+//   * sans-serif 
+//       is the default sans-serif fallback font.
+//
+$fontFamily: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !default;
+
+
+// currently browsers may or may not load font 
+// weights other than bold and normal and even when 
+// they do font weight can be inconsistent across 
+// browsers on the same platform. For example 
+// using Segoe UI on windows a particular font weight can 
+// look different on Chrome, IE, and FF. 
+//
+// some known local system fonts like Segoe UI (windows), 
+// Helvetica Neue (iOS/mac), and Roboto (Arial on Android)
+// can be normalized using @font-face
+// so that the weights are consistent across 
+// browsers running on the same platform. 
+//
+// When $fontWeightNormalization is set to true we look at 
+// the $fontFamily var to see if one of the known local system 
+// fonts might be used and if so attempt to normalize the font weights
+$fontWeightNormalization: false !default;
+
 
 // font size
 
@@ -250,7 +367,12 @@ $largeFontSize:    null !default;
 $largestFontSize:  null !default;
 
 
-// text colors
+
+
+
+// text colors - 
+//    these variables are used broadly 
+//    in the widget files
 //----------------------------------
 $textColor:             null !default;
 $primaryTextColor:      null !default;
@@ -264,15 +386,25 @@ $formControlLabelColor: null !default;
 $headerTextColor:       null !default;
 
 $linkTextColor:         null !default;
+$linkTextColorActive:   null !default;
 $linkTextColorVisited:  $linkTextColor !default;
 // note that $opacityDisabled is
 // used for a disabled link in addition to color
 $linkTextColorDisabled: $linkTextColor !default;
 
 
+//-----------------------------------------------------------------------------
+// GENERAL VARIABLES
+//       these variables are used to set general theme properties 
+//       like icon and drag and drop colors, border radius defaults, 
+//       animation duration defaults, etc. These variables 
+//       are broadly in the widget specific files.
+//-----------------------------------------------------------------------------
+
 // interaction cue colors
 //----------------------------------
 $colorRequired: #ff0000 !default;
+
 
 // icon colors
 //----------------------------------
@@ -292,8 +424,6 @@ $iconColorDisabled: $iconColorDefault !default;
 //----------------------------------
 $borderColorError:   #dd6666 !default;
 $borderColorWarning: #ffd699 !default;
-$helpBorderColor: lighten($formControlLabelColor, 1%) !default;
-
 
 // messaging
 //----------------------------------
@@ -305,25 +435,22 @@ $helpBorderColor: lighten($formControlLabelColor, 1%) !default;
 $messageInlineBorderColorLightnessAdjustment: 4% !default;
 
 $messageInlineBgColorError: #FFF3F3 !default;
-$messageInlineBorderColorError:
-  darken($messageInlineBgColorError, $messageInlineBorderColorLightnessAdjustment) !default;
+$messageInlineBorderColorError: darken($messageInlineBgColorError, $messageInlineBorderColorLightnessAdjustment) !default;
 
-$messageInlineBgColorWarning: #fff2de;
-$messageInlineBorderColorWarning:
-  darken($messageInlineBgColorWarning, $messageInlineBorderColorLightnessAdjustment) !default;
+$messageInlineBgColorWarning: #fff2de !default;
+$messageInlineBorderColorWarning: darken($messageInlineBgColorWarning, $messageInlineBorderColorLightnessAdjustment) !default;
 
 $messageInlineBgColorConfirmation: #E5F6EA !default;
-$messageInlineBorderColorConfirmation:
-  darken($messageInlineBgColorConfirmation, $messageInlineBorderColorLightnessAdjustment) !default;
+$messageInlineBorderColorConfirmation: darken($messageInlineBgColorConfirmation, $messageInlineBorderColorLightnessAdjustment) !default;
 
 $messageInlineBgColorInfo: #EAF5FB !default;
-$messageInlineBorderColorInfo:
-  darken($messageInlineBgColorInfo, $messageInlineBorderColorLightnessAdjustment) !default;
+$messageInlineBorderColorInfo: darken($messageInlineBgColorInfo, $messageInlineBorderColorLightnessAdjustment) !default;
+
 
 // drag and drop
 //----------------------------------
 $dropTarget1Color:  #D9F4FA !default;
-$dropTarget2Color:  #C3EAF3 !default;
+$dropTarget2Color:  adjust-color($dropTarget1Color, $lightness: -6%, $saturation: -10%) !default;
 
 
 // border radius
@@ -347,20 +474,27 @@ $largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
 // rest of the screen, indicating it's not reachable
 $overlayBgColor:     #000000 !default;
 
+
 // z-index hierarchy
 //----------------------------------
-$defaultZindex:     1 !default;
+$defaultZindex:         1 !default;
 
-$dialogZindex:     1050 !default;
+// Used for fixed application shell elements like headers or nav bars
+$appLayoutFixedZindex:  100  !default;
 
-// ojPopup option tail=simple
-$noteWindowZindex: 1030 !default;
-
-// ojPopup option tail=none and popups used to collect immediate feedback: inputdatatime, menu, listbox (ojSelect, ojCombobox)
-$popupZindex:      1000 !default;
+// Used for offcanvas overlay mode
+$offcanvasZindex:       200  !default;
 
 // ojDialog port from jquery resizable.  Assigned to resize grippers on the dialogs corners and edges.
-$resizableZindex:  900  !default;
+$resizableZindex:       900  !default;
+
+// ojPopup option tail=none and popups used to collect immediate feedback: inputdatatime, menu, listbox (ojSelect, ojCombobox)
+$popupZindex:           1000 !default;
+
+$dialogZindex:          1050 !default;
+
+// ojPopup option tail=simple
+$noteWindowZindex:      1030 !default;
 
 // wrappable
 //----------------------------------
@@ -373,7 +507,6 @@ $resizableZindex:  900  !default;
 $wrappableMarginBottom:  4px !default;
 
 
-
 // general padding and margin
 //----------------------------------
 // these are general variables to separate
@@ -383,10 +516,12 @@ $spacingSmall:   5px !default;
 $spacingMedium:  10px !default;
 $spacingLarge:   20px !default;
 
+
 // disabled
 //----------------------------------
 // opacity is often used to indicate something is disabled
 $opacityDisabled: null !default;
+
 
 // animation
 //----------------------------------
@@ -394,40 +529,193 @@ $animationDurationShort: .25s !default;
 $animationDurationMedium: .4s !default;
 $animationDurationLong: .5s !default;
 
-// Default animation types for the oj.ModuleAnimations.drillIn and drillOut implementations,
+// Default animation types for the oj.ModuleAnimations.navChild, navParent,
+// navSiblingEarlier, and navSiblingLater implementations,
 // which can be specified on the "animation" option of ojModule binding.
 // These variables can be overriden in theme files to provide different
 // animation types.  Valid values are the names of specific animation
 // implementations in oj.ModuleAnimations such as coverStart, coverUp,
 // revealEnd, revealDown, zoomIn, zoomOut.
-$animationDrillInDefault:   coverStart  !default;
-$animationDrillOutDefault:  revealEnd   !default;
+$animationNavChildDefault:           coverStart  !default;
+$animationNavParentDefault:          revealEnd   !default;
+$animationNavSiblingEarlierDefault:  null        !default;
+$animationNavSiblingLaterDefault:    null        !default;
 
-//----------------------------------------------------------------
-// CATEGORY AND WIDGET VARIABLES
-//----------------------------------------------------------------
+
+// focus
+//----------------------------------
+// This variable is applicable to components and patterns that use the oj-focus-highlight class
+// and do not have a component- or pattern-specific mechanism for controlling when it is applied.  
+// 
+// The oj-focus-highlight class applies focus styling that may not be desirable
+// when the focus results from pointer interaction (touch or mouse), but which is
+// needed for accessibility when the focus occurs by a non-pointer mechanism, for
+// example keyboard or initial page load.
+// 
+// The 3 valid values of this variable indicate for which focuses the class should be applied:
+// 
+// - "nonPointer": the class is applied only for focuses not resulting from pointer 
+//   (mouse or touch) interaction.
+// - "all": the class is applied for all focuses.
+// - "none": the class is never applied. This value is not accessible by itself, and is 
+//   intended for use when the application wishes to use its own event listener to precisely 
+//   control when the class is applied.  The application must ensure the accessibility of the result.
+$focusHighlightPolicy: nonPointer !default;
+
+
+
+
+//-----------------------------------------------------------------------------
+// GRID LAYOUT and RESPONSIVE
+//       these variables are for responsive layouts.
+//-----------------------------------------------------------------------------
+
+
+// grid layout
+//-----------------------------------------------------------------------------
+
+// the number of columns in the grid system, a number divisible by 2, 3, and 4 is preferred
+// in order to easily get columns that take up 50%, 33.3%, or 25% of the screen.
+$gridTotalColumns: 12 !default;
+
+// responsive screen sizes
+//----------------------------------
+// In some apps it may be preferable to change
+// these values to rems instead of pixels.
+//
+// For pixel values here is some helpful info on device sizes:
+// http://www.mydevice.io/devices/
+$screenSmallRange:  0, 767px !default;
+$screenMediumRange: 768px, 1023px !default;
+$screenLargeRange:  1024px, 1280px !default;
+$screenXlargeRange: 1281px, null !default;
+
+
+// responsive media queries
+//----------------------------------
+
+// You will see "print" on some media queries below.
+// By default printing portrait is treated as a medium screen and
+// printing landscape is treated as a large screen.
+
+// the $responsiveQueryXYZ variables can be set to 'none' if
+// you don't want to render a particular set of classes,
+// for example if you don't want xlarge classes you could set:
+//    $screenLargeRange:          1024px, null !default;
+//    $screenXlargeRange:         none;
+//    $responsiveQueryLargeOnly:  none;
+//    $responsiveQueryXlargeUp:   none;
+
+
+
+$responsiveQuerySmallUp:    "print, screen" !default;
+$responsiveQuerySmallOnly:  "screen and (max-width: #{upper-bound($screenSmallRange)})" !default;
+
+$responsiveQueryMediumUp:   "print, screen and (min-width: #{lower-bound($screenMediumRange)})" !default;
+$responsiveQueryMediumOnly: "print and (orientation: portrait), screen and (min-width: #{lower-bound($screenMediumRange)}) and (max-width: #{upper-bound($screenMediumRange)})" !default;
+$responsiveQueryMediumDown: "print and (orientation: portrait), screen and (max-width: #{upper-bound($screenMediumRange)})" !default;
+
+$responsiveQueryLargeUp:    "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)})" !default;
+$responsiveQueryLargeOnly:  "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)}) and (max-width: #{upper-bound($screenLargeRange)})" !default;
+$responsiveQueryLargeDown:  "print and (orientation: landscape), screen and (max-width: #{upper-bound($screenLargeRange)})" !default;
+
+$responsiveQueryXlargeUp:   "screen and (min-width: #{lower-bound($screenXlargeRange)})" !default;
+
+// by default there is no xxl screen range variable.
+// to add support for an xxl range you can do something like
+// the following in your settings file :
+//
+//     @import "../utilities/oj.utilities.math"; // change the path to where the utilities directory is
+//     $screenXlargeRange:          1281px, 1440px;
+//     $screenXXlargeRange:         1441px, null;
+//     $responsiveQueryXlargeOnly:  "screen and (min-width: #{lower-bound($screenXlargeRange)}) and (max-width: #{upper-bound($screenXlargeRange)})";
+//     $responsiveQueryXlargeDown:  "screen and (max-width: #{upper-bound($screenXlargeRange)})";
+//     $responsiveQueryXXlargeUp:   "screen and (min-width: #{lower-bound($screenXXlargeRange)})";
+$responsiveQueryXlargeOnly: null !default;
+$responsiveQueryXlargeDown: null !default;
+$responsiveQueryXXlargeUp:  null !default;
+
+
+// by default the print query is set to null,
+// to generate print classes change the value to "print"
+$responsiveQueryPrint:      null !default;
+
+
+// the default point at which we consider a screen a high resolution
+// (or retina) display.
+//
+// The value is set to 1.5 because as of 2014 there's a lot
+// of Android devices out there that are half-way between the
+// legacy screen resolutions and retina (aka "xhdpi" in Google's terminology)
+// they use a 1.5 factor so the default device pixel ratio is 1.5
+//
+// NOTE: in order to allow stand alone use of these utility mixins
+// this variable is also defined in _oj.utilities.icons.scss.
+// Because of the !default, the actual value will be the value
+// in the file loaded first.
+$highResolutionDevicePixelRatio: 1.5 !default;
+
+
+// Note: you'll see "screen and .." in the media queries above.
+// we wanted to do something like
+//     "(not print) and (min-width: #{$screen-xlarge})",
+// However that doesn't seem to be supported, the "not" negates the entire query.
+// So we're forced to enumerate the media types we do want to
+// support instead of exclude the ones we don't. Hence the use of
+// "screen and ..."
+
+
+// optimizations: variables for defaulting whether certain types of
+// responsive helper classes are generated
+//
+// $responsiveGenerateHide:                  generate classes like .oj-md-hide
+// $responsiveGenerateTextAlignEnd:          generate classes like .oj-md-text-align-end
+// $responsiveGenerateFloatStart:            generate classes like .oj-md-float-start
+// $responsiveGenerateFloatEnd:              generate classes like .oj-md-float-end
+$responsiveGenerateHide:                  true !default;
+$responsiveGenerateTextAlignEnd:          true !default;
+$responsiveGenerateFloatStart:            true !default;
+$responsiveGenerateFloatEnd:              true !default;
+
+
+
+//-----------------------------------------------------------------------------
+// WIDGET VARIABLES
+//       these variables are widget (or widget group)
+//       specific, for example button or form control variables.
+//-----------------------------------------------------------------------------
 
 
 // BODY
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // to override an existing background image use $bodyBgImage: none;
 $bodyBgImage:   null !default;
 $bodyBgColor:   $background1Color !default;
 $bodyTextColor: $textColor !default;
 
+// Platforms that support double-tap-to-zoom typically impose a ~300ms 
+// delay between a user tap and the resulting click event, to avoid firing 
+// a click for taps that turn into double-taps.  This makes apps feel 
+// sluggish.  The solution is to eliminate double-tap-to-zoom.  Two commonly 
+// recommended ways to do this are to place this tag on the page:
+// <meta name="viewport" content="width=device-width"> 
+// and to use "touch-action: manipulation", which JET places on the body 
+// via this variable.  JET recommends doing both, since not all platforms 
+// (fully) support the tag.
+$bodyTouchAction: manipulation !default;
 
 
 // LINK
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // link text color defined in "text colors" section, look for "$linkTextColor"
 $linkTextDecoration:      none !default;
 $linkTextDecorationHover: underline !default;
-$linkFontWeightActive:    bold !default;
+$linkFontWeightActive:    normal !default;
 $linkBgColorActive:        null !default;
 
 
 // PANEL
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // panel defaults:
 $panelPadding:             .5rem !default;
@@ -471,16 +759,32 @@ $panel5BorderColor: $border3Color     !default;
 
 
 // HEADERS
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // header text color defined in "text colors" section, look for "$headerTextColor"
-$headerFontWeight:      normal !default;
 $headerBorderColor:     $border2Color !default;
 
-$header1FontSize:       $largestFontSize !default;
-$header2FontSize:       $largeFontSize   !default;
-$header3FontSize:       $mediumFontSize  !default;
-$header4FontSize:       $fontSize        !default;
-$header5FontSize:       $smallFontSize   !default;
+
+// $headerFontWeight is applied to all headers and 
+// is also used by components like dialog, chart etc.
+$headerFontWeight:      normal !default;
+
+// $header[1|2|3|4|5]FontWeight vars can be used 
+// to override the default font weight, they are  
+// applied to h[1|2|3|4|5] tags
+$header1FontWeight:     null   !default;
+$header2FontWeight:     null   !default;
+$header3FontWeight:     null   !default;
+$header4FontWeight:     null   !default;
+$header5FontWeight:     null   !default;
+
+
+// $header[1|2|3|4|5]FontSize vars are 
+// applied to h[1|2|3|4|5] tags
+$header1FontSize:       $largestFontSize   !default;
+$header2FontSize:       $largeFontSize     !default;
+$header3FontSize:       $mediumFontSize    !default;
+$header4FontSize:       $fontSize          !default;
+$header5FontSize:       $smallFontSize     !default;
 
 // the background variables below are for a header "container",
 // like the title bar of a dialog or an accordion header
@@ -491,20 +795,13 @@ $headerBgImage:         null;
 
 
 // WINDOW
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $windowBorderColor: $border1Color !default;
 $windowBorderWidth: 1px !default;
 $windowBgColor:     $background1Color !default;
 
-// DIALOG
-//----------------------------------------------------------------
-$dialogBorderColor:         $windowBorderColor !default;
-$dialogBorderWidth:         $windowBorderWidth !default;
-$dialogBgColor:             $windowBgColor !default;
-
-
 // NOTE WINDOW
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $noteWindowBorderColor:      $windowBorderColor !default;
 $noteWindowBorderWidth:      $windowBorderWidth !default;
 $noteWindowBgColor:          $windowBgColor !default;
@@ -515,7 +812,7 @@ $noteWindowTailSimpleWidth:  14px !default;
 $noteWindowTailSimpleHeight: 14px !default;
 
 // POPUP
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // popups are sometimes called a "dropdown" or "inline selector"
 $popupBorderColor:  $windowBorderColor !default;
 $popupBorderWidth:  $windowBorderWidth !default;
@@ -529,8 +826,14 @@ $popupModalityOptionDefault: null !default;
 
 
 
+// APPLICATION LAYOUT - SHARED
+//-------------------------------------------------------------
+// Offcanvas
+$appLayoutOffcanvasWidth: 90% !default;
+$appLayoutOffcanvasMaxWidth: 320px !default;
+
 // APPLICATION LAYOUT - WEB
-//----------------------------------------
+//-------------------------------------------------------------
 // $appLayoutMaxWidth is the maximum width an application is designed for.
 // While monitors can be very large, many applications are not designed
 // to be infinitely wide. This variable is used to set the max-width property on
@@ -567,7 +870,6 @@ $appLayoutHybridPadding: null !default;
 // Header
 $appLayoutHybridHeaderTextColor: $textColor !default;
 $appLayoutHybridHeaderBorderColor: null !default;
-$appLayoutHybridHeaderOpacity: 0.95 !default;
 $appLayoutHybridHeaderBgColor: $background2Color !default;
 // We don't want header height to be relative to root font size so using a fixed px
 $appLayoutHybridHeaderMinHeight: 44px !default;
@@ -577,7 +879,6 @@ $appLayoutHybridHeaderTitleFontWeight: $headerFontWeight !default;
 
 // Footer
 $appLayoutHybridFooterBorderColor: null !default;
-$appLayoutHybridFooterOpacity: $appLayoutHybridHeaderOpacity !default;
 $appLayoutHybridFooterBgColor: $appLayoutHybridHeaderBgColor !default;
 // We don't want footer height to be relative to root font size so using a fixed px
 $appLayoutHybridFooterMinHeight: 48px !default;
@@ -586,9 +887,8 @@ $appLayoutHybridFooterMinHeight: 48px !default;
 $appLayoutHybridNavBarBoxShadow: none !default;
 
 // Nav Drawer
-// We don't want nav drawer width to be relative to root font size so using a fixed px
-$appLayoutHybridOffcanvasWidth: 320px !default;
 $appLayoutHybridOffcanvasBgColor: $appLayoutWebOffcanvasBgColor !default;
+
 
 // OFFCANVAS
 //----------------------------------------
@@ -597,7 +897,30 @@ $offcanvasDisplayModeOptionDefault: push !default;
 
 
 // MENU
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+// If Menu's "display" option is "auto" (the default), then at or above this screen width 
+// the menu displays as a dropDown, and below this screen width the menu displays as a sheet.
+// Accepts px values like 768px or 0
+$menuDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
+
+// Controls whether sheet menus have a "Cancel" menu item automatically added.
+// Valid values are "none" and "menuItem".
+$menuSheetCancelAffordance: "none" !default;
+
+// Controls whether "swipe down to dismiss" is supported for sheet menus.
+// Note that this only applies to swipes starting on the menu, since any touch 
+// outside the menu will dismiss, regardless of whether it turns into a swipe.
+// Valid values are "dismiss" and "none".
+$menuSheetSwipeDownBehavior: "none" !default;
+
+// Controls whether a "glass pane" is displayed behind dropDown menus.
+// Valid values are "modal" and "modeless".
+$menuDropDownModality: "modal" !default;
+
+// Controls whether a "glass pane" is displayed behind sheet menus.
+// Valid values are "modal" and "modeless".
+$menuSheetModality: "modal" !default;
 
 // horizontal spacing
 //----------------------------------
@@ -606,6 +929,7 @@ $offcanvasDisplayModeOptionDefault: push !default;
 
 // applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
 $menuTextToEdgePadding:                null !default; // ignored when $menuTextOnlyJustifyContent is center
+// non-null supported values for $menuTextOnlyJustifyContent are "flex-start" and "center".
 $menuTextOnlyJustifyContent:           null !default;
 
 // these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
@@ -660,10 +984,45 @@ $menuDividerBorderWidth:               1px !default;
 $menuDividerBorderColor:               $menuBorderColor !default;
 
 
-// BUTTONS
-//----------------------------------------------------------------
+// sheet menus
+//----------------------------------
 
-$buttonFontWeight:   bold !default;
+// sheet menus (.oj-menu-sheet)
+$menuSheetFontSize:                    $fontSize !default;
+$menuSheetBorderRadius:                $menuBorderRadius !default;
+$menuSheetBgColor:                     $menuBgColor !default;
+$menuSheetMarginHorizontal:            0 !default;
+// $menuSheetMarginBottom value must be 0, px, or %, e.g. 0, 10px, 5%
+$menuSheetMarginBottom:                0 !default;
+
+// sheet menu items (.oj-menu-item) and their anchors
+$menuSheetItemBorderColor:             $menuItemBorderColor !default;
+$menuSheetItemBgColor:                 null !default;
+$menuSheetItemTextColor:               $menuItemTextColor !default;
+$menuSheetItemLineHeight:              $menuItemLineHeight !default;
+
+// disabled sheet menu items and their anchors
+$menuSheetItemTextColorDisabled:       $menuItemTextColorDisabled !default;
+
+// focused sheet menu items (.oj-focus)
+$menuSheetItemBgColorFocus:            $menuItemBgColorFocus !default;
+$menuSheetItemBorderColorFocus:        $menuItemBorderColorFocus !default;
+
+// cancel menu item (.oj-menu-item-cancel) and its anchor
+$menuSheetItemCancelFontWeight:        null !default;
+
+// groups of sheet menu items separated by group dividers
+$menuSheetItemGroupBorderRadius:       null !default;
+
+// sheet menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
+$menuSheetDividerBorderWidth:          $menuDividerBorderWidth !default;
+$menuSheetDividerBorderColor:          $menuDividerBorderColor !default;
+
+
+// BUTTONS
+//-----------------------------------------------------------------------------
+
+$buttonFontWeight:   normal !default;
 $buttonBorderRadius: $mediumBorderRadius !default;
 $buttonCursor:       default !default;
 
@@ -709,7 +1068,7 @@ $buttonXlargeIconOnlyPadding: 1rem !default; // 14px when root 14px
 // button states
 //----------------------------------
 // default
-$buttonBgColor:                   $background6Color !default;
+$buttonBgColor:                   $interaction1Color !default;
 $buttonTextColor:                 $primaryTextColor !default;
 $buttonIconColor:                 $iconColorDefault !default;
 $buttonBorderColor:               $border3Color !default;
@@ -728,7 +1087,7 @@ $buttonTextShadowHover:           null !default;
 $buttonBoxShadowHover:            $buttonBoxShadow !default;
 
 // active
-$buttonBgColorActive:             $interaction1Color !default;
+$buttonBgColorActive:             darken($interaction1Color, 12%) !default;
 $buttonTextColorActive:           $contrastTextColor !default;
 $buttonIconColorActive:           $buttonTextColorActive !default;
 $buttonBorderColorActive:         $buttonBgColorActive !default;
@@ -877,22 +1236,29 @@ $buttonConfirmColor:      #008230 !default;
 
 
 // BUTTONSET
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 $buttonsetBorderRadius: $buttonBorderRadius !default;
-
-// see discussion in _oj.common.buttonset.scss where these vars are used
-$buttonsetFontFamily: null !default;
-$buttonsetButtonFontFamily: null !default;
 
 // chroming
 //----------------------------------
 
 $buttonsetChromingOptionDefault: full !default;
 
+// width
+//----------------------------------
+// auto width for all buttonset chroming
+$buttonsetEqualWidthChromingList: null !default; // default should be equal width buttonsets for these chroming values (auto width for all others)
+$buttonsetEqualWidthOverallWidth: 100% !default; // default width of equal width buttonsets when app doesn't supply a width
+
+// DIALOG
+//-----------------------------------------------------------------------------
+$dialogBorderColor:         $windowBorderColor !default;
+$dialogBorderWidth:         $windowBorderWidth !default;
+$dialogBgColor:             $windowBgColor !default;
 
 // TOOLBAR
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 $toolbarBorderColor:  $panelBorderColor !default;
 $toolbarBgColor:      null !default;
@@ -905,7 +1271,7 @@ $toolbarChromingOptionDefault: half !default;
 
 
 // FORM LAYOUT
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // outer border
 $formLayoutBorderColor:  null !default;
@@ -938,15 +1304,16 @@ $formLayoutFieldInlineAlign: null !default;
 
 
 // FORM CONTROLS
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // form labels
 //----------------------------------
+// label text color defined in another section, look for $formControlLabelColor
+
 // label required content character.
 // If it is not needed (like you want to use pure css instead), set to ''.
 $formControlLabelRequiredChar: '*' !default;
-// label text color defined in another section, look for $formControlLabelColor
-$formControlLabelFontWeight: bold !default;
+$formControlLabelFontWeight: normal !default;
 $formControlLabelFontSize:   null !default;
 
 // top aligned labels
@@ -1025,6 +1392,7 @@ $formControlTriggerFontSize:  $fontSize !default;
 // *****active*****
 $formControlTriggerBgColorActive: null !default;
 
+
 // *****focus*****
 $formControlInputBorderColorFocus:               null !default;
 $formControlInputBorderWidthFocus:               null !default;
@@ -1044,6 +1412,9 @@ $formControlOpacityDisabled:     $opacityDisabled   !default;
 $formControlPlaceholderColor: $tertiaryTextColor !default;
 $formControlPlaceholderFontStyle: null !default;
 
+// INPUT NUMBER
+// the spacing between the input and the buttonset
+$inputNumberInputToButtonMargin: 0 !default;
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
@@ -1056,6 +1427,9 @@ $radioCheckboxRowHeight: 2.6rem !default;
 
 // padding between edge and the label text
 $radioCheckboxLabelToEdgePadding: 10px !default;
+
+// radioset and checkboxset image directory
+$radioCheckboxImageDir: $imageDir !default;
 
 // radioset and checkboxset states
 //----------------------------------
@@ -1084,8 +1458,12 @@ $selectArrowPadding: 0 5px !default;
 $selectMultipleArrowPadding: 0 1px !default;
 $selectArrowColor: null !default;
 
+// picker
+$selectPickerBgColor: null !default;
+
+
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $inputTextBorderStyleDisabled:   null !default;
 $inputTextTextAlign: null !default;
 $textAreaLineHeight:                      null !default;
@@ -1099,7 +1477,7 @@ $inputSearchIconPadding: 0 $formControlPaddingHorizontal 0 0 !default;
 
 
 // SLIDER
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 //
 // Default Slider:
@@ -1148,7 +1526,7 @@ $sliderBarValueBgColorDisabled:  $textColorDisabled !default;
 
 
 //SWITCH
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // CONTAINER HEIGHT/WIDTH
 $switchContainerHeight: $formControlTriggerHeight !default;  // 2.286rem = 32px when base font 14px
@@ -1264,7 +1642,7 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 
 
 // LISTBOX
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // listbox values used in drop down for
 // inputTime, select, combobox
 $listboxBgColorFocus: $interaction2Color !default;
@@ -1276,27 +1654,42 @@ $listboxItemPadding: 5px  !default;
 // this is the additional padding per nesting level
 $listboxIndentWidth: 15px !default;
 
-
-// INPUTDATE / INPUTDATETIME
-//----------------------------------------------------------------
-
-//options
-// For option 'datePicker:showOn' in ojInputDate
-$inputDateShowOnOptionDefault: focus !default;
-
 // DATEPICKER
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-$datepickerBgColorSelected:  $interaction1Color !default;
-$datepickerBorderColorToday: $interaction1Color !default;
+$datepickerWidth:            300px                      !default;
+$datepickerPadding:          10px                       !default;
+
+$datepickerBgColorSelected:   $buttonHalfChromeBgColorSelected   !default;
+$datepickerTextColorSelected: $buttonHalfChromeTextColorSelected !default;
+$datepickerBorderColorToday:  $border3Color                      !default;
+$datepickerBgColorToday:      $background2Color                  !default;
+$datepickerBgColorHover:      adjust-color($datepickerBgColorSelected, $saturation: -28%, $lightness: 30%)  !default;
+$datepickerTextColorHover:    $datepickerTextColorSelected       !default;
+$datepickerBorderColorFocus:  $datepickerBgColorHover            !default;
+
+$datepickerHeaderTextColor:   $buttonHalfChromeIconColor         !default;
+
+$datepickerButtonTextColor:       $datepickerBgColorSelected     !default;
+$datepickerButtonTextColorHover:  $datepickerBgColorHover        !default;
+$datepickerButtonTextColorActive: $datepickerButtonTextColor     !default;
+
+// INPUT DATE/TIME
+//-----------------------------------------------------------------------------
+//options
+// For option 'renderMode' in ojInputDate / ojInputDateTime / ojInputDate
+$inputDateTimeRenderModeOptionDefault: native !default;
+$inputDateTimeDatePickerOptionDefault: (footerLayout: 'today') !default;
+
+$inputDateTimeKeyboardEditOptionDefault: disabled !default;
 
 // COLLAPSIBLE
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 $collapsibleAnimationDuration: $animationDurationMedium !default;
 
 // TABS
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // tabs content area
 //----------------------------------
@@ -1319,7 +1712,7 @@ $tabsNavAccentBorderWidthSelected: 3px !default;
 
 
 // PROGRESSBAR
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $progressbarBgColor:                     $background3Color !default;
 $progressbarValueBgColor:                $interaction1Color !default;
 $progressbarBorderColor:                 $border4Color !default;
@@ -1328,48 +1721,80 @@ $progressbarBorderStyle:                 solid !default;
 $progressbarIndeterminateOverlayOpacity: .2 !default;
 
 // TRAIN
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-// unvisited
-$trainBgColor:              $buttonBgColor !default;
-$trainBorderColor:          $buttonBorderColor !default;
+// unvisited state 
+$trainBgColor:                            $iconColorDefault !default;
+$trainBorderColor:                        $trainBgColor !default;
+$trainLabelColor:                         $secondaryTextColor !default;
+$trainButtonTextColor:                    $contrastTextColor !default;
 
-// disabled
-$trainBgColorDisabled:      $buttonBgColorDisabled !default;
-$trainBorderColorDisabled:  $buttonBorderColorDisabled !default;
+// visited state
+$trainBgColorVisited:                     $interaction1Color !default;
+$trainBorderColorVisited:                 $trainBgColorVisited !default;
+$trainLabelColorVisited:                  $secondaryTextColor !default;
+$trainButtonTextColorVisited:             $contrastTextColor !default;
 
-// hover
+// selected state
+$trainBgColorSelected:                    $interaction1Color !default;
+$trainBorderColorSelected:                $trainBgColorSelected !default;
+$trainButtonTextColorSelected:            $contrastTextColor !default;
+$trainLabelFontWeightSelected:            bold !default;
+
+// disabled state 
+$trainBgColorDisabled:                    $border3Color !default;
+$trainBorderColorDisabled:                $trainBgColorDisabled !default;
+$trainLabelColorDisabled:                 $textColor !default;
+$trainOpacityDisabled:                    $opacityDisabled !default;
+$trainButtonTextColorDisabled:            $contrastTextColor !default;
+
+// hover state 
 $trainBgColorHover:                       $iconColorHover !default;
 $trainBorderColorHover:                   $trainBgColorHover !default;
+$trainButtonTextColorHover:               $contrastTextColor !default;
 
-// selected
-$trainBgColorSelected:      $iconColorSelected !default;
-$trainBorderColorSelected:  $trainBgColorSelected !default;
+// active state 
+$trainBgColorActive :                     $background6Color !default;
+$trainBorderColorActive:                  $interaction1Color !default;
+$trainLabelTextDecorationActive:          none !default;
+$trainLabelFontWeightActive:              bold !default;
+$trainButtonTextColorActive:              $trainBgColorVisited !default;
 
-// visited
-$trainBgColorVisited:       $background1Color !default;
-$trainBorderColorVisited:   $trainBorderColorSelected !default;
-$trainLabelColorVisited:    #72007C !default;
+// button label
+$trainButtonFontSize:                     12px !default;
+// valid values are 'none' and 'numeric'
+$trainButtonStyleType:                    numeric !default;
 
-// Connector
-$trainConnectorBgColor:    $background4Color !default;
-$trainConnectorBgColorSelected: $interaction5Color !default;
+// the default width of a stepr
+$trainStepWidth:                          7rem !default;
 
-// the height of the line connector between buttons
-$trainConnectorHeight: 8px !default;
+$trainLabelPaddingTop:                    14px !default;
 
-// the default width of a step
-$trainStepWidth: 100px !default;
+// $trainLabelTextWrap accepts css white-space 
+// values such as normal or nowrap
+$trainLabelTextWrap:                      nowrap !default;
 
 // the diameter of the "button" representing a stop
-$trainButtonDiameter: 14px !default;
+$trainButtonDiameter:                     24px !default;
 
-// the diameter of the connector circle around the button
-$trainButtonConnectorDiameter: $trainButtonDiameter + 8px !default;
+// message icon diameter
+$trainIconDiameter:                       $trainButtonDiameter !default;
 
+// connector variables
+// step connector type. Valid values are 'individual' or 'continuous. A 'continuous'
+// connector is a single shape behind all of the step buttons while the 'individual'
+// connector renders seperate shapes between each step.
+$trainConnectorType:                      individual !default;
+$trainConnectorBgColor:                   $border3Color !default;
+$trainConnectorHeight:                    1px !default;
+$trainContinuousConnectorBgColorSelected: transparent !default;
+
+// the diameter of the connector circle around the button in the continuous 
+// connector design
+$trainButtonContinuousConnectorDiameter:  $trainButtonDiameter !default;
 
 //TREE
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 $treeAnimationDuration: $collapsibleAnimationDuration !default;
 
@@ -1393,13 +1818,13 @@ $treeDndMarkerLineColor:      $interaction1Color !default;
 
 
 // DATA GRID (ALSO USED BY TABLE AND LIST VIEW)
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Default
 $dataGridBorderColor:                       $border1Color !default;
 $dataGridBgColor:                           #f7f9fc !default;
 
 // Headers
-$dataGridHeaderPadding:                     0.5em !default;
+$dataGridCellPadding:                     0.375em !default;
 $dataGridHeaderFontWeight:                  $headerFontWeight !default;
 $dataGridHeaderTextColor:                   $primaryTextColor !default;
 $dataGridHeaderFontSize:                    $fontSize !default;
@@ -1409,17 +1834,16 @@ $dataGridHeaderBorderColor:                 $dataGridBorderColor !default;
 // Headers - Hover
 $dataGridHeaderBgColorHover:                $interaction5Color !default;
 // Headers - Focus
-$dataGridHeaderBgColorFocus:                $interaction6Color !default;
+$dataGridHeaderBgColorFocus:                adjust-color($interaction4Color, $lightness: -4%, $saturation: 12%) !default;
 // Headers - Selected
-$dataGridHeaderBgColorSelected:             #b9dfff !default;
+$dataGridHeaderBgColorSelected:             $interaction6Color !default;
 // Headers - Selected Inactive (selected but focus outside the component)
-$dataGridHeaderBgColorSelectedInactive:     $interaction6Color !default;
+$dataGridHeaderBgColorSelectedInactive:     #f6f6e0 !default;
 // Headers - Dragged
 $dataGridHeaderBgColorDrag:                 #d3e0ea !default;
 $dataGridHeaderDragImageBorderColor:        #bcc7d2 !default;
 
 // Cells
-$dataGridCellPadding:                       $dataGridHeaderPadding;
 $dataGridCellTextColor:                     $textColor !default;
 // Cells - Default
 $dataGridCellBorderColor:                   $border5Color !default;
@@ -1429,19 +1853,24 @@ $dataGridCellBandedBgColor:                 $background2Color !default;
 $dataGridCellBgColorHover:                  $interaction2Color !default;
 $dataGridCellBorderColorHover:              $dataGridCellBorderColor !default;
 // Cells - Focus
-$dataGridCellBgColorFocus:                  $interaction3Color !default;
+$dataGridCellBgColorFocus:                  $interaction4Color !default;
 $dataGridCellBorderColorFocus:              $dataGridCellBorderColor !default;
 // Cells - Selected
-$dataGridCellBgColorSelected:               $interaction4Color !default;
+$dataGridCellBgColorSelected:               $interaction3Color !default;
 $dataGridCellBorderColorSelected:           $dataGridCellBorderColor !default;
 // Cells - Selected Inactive (selected but focus outside the component)
-$dataGridCellBgColorSelectedInactive:       $interaction3Color !default;
+$dataGridCellBgColorSelectedInactive:       #fafaeb !default;
 $dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColor !default;
 // Cells - Dragged
 $dataGridCellBgColorDrag:                   $dataGridHeaderBgColor;
+$dataGridCellDragImageBorderColor:          transparent !default;
+// Cells - Editable, will be added when editing is enabled on the datagrid
+$dataGridEditableCellBorderColorFocus:      $border6Color !default;
+// Color applied to cells that are read only when editing is enabled on the datagrid
+$dataGridEditableCellBgColorReadOnly:       $background2Color !default;
 
-// Rows - Height
-$dataGridRowHeight:                         2.25em !default;
+// Rows - Height is now dependent on the default form control height
+$dataGridRowHeight:                         max($formControlInputHeight, $formControlTriggerHeight) !default;
 
 // Status Text
 $dataGridStatusBgColor:                     #fbfcc5 !default;
@@ -1449,28 +1878,36 @@ $dataGridStatusBgColor:                     #fbfcc5 !default;
 // Touch Selection Affordances
 $dataGridSelectionAffordanceBorder:         $interaction1Color !default;
 
+// TABLE
+//-----------------------------------------------------------------------------
 // Table Rows - Height
 $tableRowHeight:                            2.75em !default;
+
 // Table Headers
 $tableHeaderPadding:                        1em !default;
+
+//  $tableHeaderBorderColor is used when display=list, 
+//  when display=grid $dataGridHeaderBorderColor is used instead
 $tableHeaderBorderColor:                    $border4Color !default; 
+
 // Table Cells
 $tableCellPadding:                          $tableHeaderPadding;
+
 // Table Display Option Default
 $tableDisplayOptionDefault:            "list" !default;
 
 // ROWEXPANDER
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $rowExpanderIndentWidth:  16px;
 
 
 // PAGING CONTROL
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // padding between various elements of the paging control
 $pagingControlPadding: 5px !default;
 
 // LISTVIEW
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 $listViewAnimationDuration:    $animationDurationMedium !default;
 $listViewHeaderBorderWidth:    0 0 1px !default;
@@ -1482,21 +1919,30 @@ $listViewCardMargin:           $spacingMedium $spacingMedium $spacingMedium 0 !d
 $listViewCardWidth:            240px !default;
 $listViewCardHeight:           auto !default;
 $listViewDrillIconColor:       $iconColorDefault !default;
+// animations
+$listViewAddAnimation:         ((effect: "expand"), "fadeIn") !default;
+$listViewRemoveAnimation:      ((effect: "collapse"), "fadeOut") !default;
+$listViewUpdateAnimation:      (effect: "fadeIn") !default;
+$listViewExpandAnimation:      (effect: "expand") !default;
+$listViewCollapseAnimation:    (effect: "collapse") !default;
+$listViewPointerUpAnimation:   (effect: "none") !default;
 
 // PULL TO REFRESH
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // pull to refresh panel background color
 $pullToRefreshBgColor:             $background2Color !default;
 // duration of pull to refresh transition
 $pullToRefreshAnimationDuration:  $animationDurationMedium !default;
+// the dir of pull to refresh images
+$pullToRefreshImageDir: $imageDir !default;
 
 // SWIPE TO REVEAL
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // duration of swipe to reveal transition
 $swipeToRevealAnimationDuration: $animationDurationMedium !default;
 // text color applied to all action items
-$swipeToRevealActionTextColor:    $contrastTextColor !default;
+$swipeToRevealActionTextColor:    #ffffff !default;
 // background color applied to all action items
 $swipeToRevealActionBgColor:      $interaction1Color !default;
 // background color for More action
@@ -1507,7 +1953,7 @@ $swipeToRevealFlagActionBgColor:  #db6134 !default;
 $swipeToRevealAlertActionBgColor: #ba0006 !default;
 
 // INDEXER
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // height of each item in the indexer
 $indexerItemHeight:          18px !default;
 // width of each item in the indexer
@@ -1526,7 +1972,7 @@ $indexerTextDecorationHover: underline !default;
 $indexerFontWeight:          bold !default;
 
 // MASONRY LAYOUT
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // duration of a masonryLayout animation
 $masonryLayoutAnimationDuration:      $animationDurationMedium !default;
@@ -1541,7 +1987,7 @@ $masonryLayoutTileHeight:             150px !default;
 
 
 // FILM STRIP
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 // opacity of arrows
 $filmStripArrowOpacity: 1 !default;
@@ -1550,14 +1996,14 @@ $filmStripArrowBorderRadius: $buttonBorderRadius !default;
 
 
 // CONVEYOR BELT
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 //hover
 $conveyorBeltOverflowIndicatorHeight: $buttonHeight !default;
 
 
 // NAVIGATIONLIST
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 //sizing
 $navigationListItemMinHeight: 2.688rem !default; // only applies to vertical navlist. 43px  when root font 16px
@@ -1566,18 +2012,18 @@ $navigationListItemMinHeight: 2.688rem !default; // only applies to vertical nav
 
 //Default
 $navigationListItemLabelColorDefault:       $secondaryTextColor !default;
-$navigationListIconColorDefault:            $navigationListItemLabelColorDefault !default;
+$navigationListItemIconColorDefault:        $navigationListItemLabelColorDefault !default;
 $navigationListCollapsibleIconColorDefault: $navigationListItemLabelColorDefault !default;
 
 //Hover
 $navigationListItemBorderColorHover:        $iconColorHover !default;
 $navigationListItemBgColorHover:            $interaction2Color !default;
-$navigationListIconColorHover:              $iconColorHover !default;
+$navigationListItemIconColorHover:          $iconColorHover !default;
 
 //Selected
 $navigationListItemLabelColorSelected:      $interaction1Color !default;
 $navigationListItemBorderColorSelected:     $interaction1Color !default;
-$navigationListIconColorSelected:           $iconColorSelected !default;
+$navigationListItemIconColorSelected:       $iconColorSelected !default;
 $navigationListItemBgColorSelected:         $background2Color !default; // only applies to vertical navlist
 
 //Focus
@@ -1615,19 +2061,22 @@ $navigationListIconOnlyItemPadding:         null !default;
 //Only applicable when icon only style is "none".
 $navigationListIconOnlyIconStartEndPadding: 16px !default;
 
-//page level
-// the right and left borders will be flipped in rtl languanges
-$navigationListPageLevelIconOnlyItemBorderWidth: 0 0 0 $navigationListItemAccentBorderWidth !default;
+//This value will be ignored when $navigationListIconOnlyStyle is set to 'circle'.
+$navigationListIconOnlyItemBorderWidth:     0 0 0 $navigationListItemAccentBorderWidth !default;// the right and left borders will be flipped in rtl languanges
+//This value will be ignored when $navigationListIconOnlyStyle is set to 'circle'.
+$navigationListPageLevelIconOnlyItemBorderWidth: 0 0 0 $navigationListItemAccentBorderWidth !default;// the right and left borders will be flipped in rtl languanges
 //----------End of NavigationList(vertical) icon only variables
+
+$navigationListItemBorderWidth:                  0 0 0 $navigationListItemAccentBorderWidth !default;// the right and left borders will be flipped in rtl languanges
 
 //----------Start of Common page level variables
 //default
-$navigationListPageLevelItemTextColorDefault:    $navigationListItemLabelColorDefault !default;
-$navigationListPageLevelItemIconColorDefault:    $navigationListIconColorDefault !default;
+$navigationListPageLevelItemLabelColorDefault:    $navigationListItemLabelColorDefault !default;
+$navigationListPageLevelItemIconColorDefault:    $navigationListItemIconColorDefault !default;
 $navigationListPageLevelItemBorderColor:         null !default;
 
 //selected
-$navigationListPageLevelItemTextColorSelected:   null !default;
+$navigationListPageLevelItemLabelColorSelected:   null !default;
 $navigationListPageLevelItemIconColorSelected:   $interaction1Color !default;
 $navigationListPageLevelItemBorderColorSelected: $interaction1Color !default;
 $navigationListPageLevelItemBgColorSelected:     null !default;
@@ -1639,8 +2088,7 @@ $navigationListPageLevelItemBorderColorActive:   null !default;
 //sizing
 $navigationListPageLevelItemFontWeightSelected:  normal !default;
 $navigationListPageLevelItemBorderRadius:        null !default;
-// the right and left borders will be flipped in rtl languanges
-$navigationListPageLevelItemBorderWidth:         0 0 0 $navigationListItemAccentBorderWidth !default;// used only for vertical navlist
+$navigationListPageLevelItemBorderWidth:         0 0 0 $navigationListItemAccentBorderWidth !default;// the right and left borders will be flipped in rtl languanges
 $navigationListPageLevelItemMinHeight: $navigationListItemMinHeight !default;
 $navigationListPageLevelItemFontSize: null !default;
 //----------End of Common page level variables
@@ -1678,7 +2126,7 @@ $navigationListHierarchyMenuDisplayThresholdLevelOptionDefault: -1 !default;
 // Default
 $navigationBarItemBorderColor:  transparent !default;
 $navigationBarItemLabelColorDefault: $navigationListItemLabelColorDefault !default;
-$navigationBarItemIconColorDefault: $navigationListIconColorDefault !default;
+$navigationBarItemIconColorDefault: $navigationListItemIconColorDefault !default;
 
 // divider - used between text items when horizontal
 $navigationBarItemDividerColor: $border2Color !default;
@@ -1686,6 +2134,8 @@ $navigationBarItemDividerColor: $border2Color !default;
 // Selected
 $navigationBarItemBgColorSelected:      null !default;
 $navigationBarItemBorderColorSelected:  $interaction1Color !default;
+$navigationBarItemLabelColorSelected:   $navigationListItemLabelColorSelected !default;
+$navigationBarItemIconColorSelected:    $navigationListItemIconColorSelected !default;
 
 //Sizing
 $navigationBarFontSize: 0.812rem !default;// 10px when root font is 16px
@@ -1699,137 +2149,34 @@ $navigationBarItemPadding: 4px $navigationListItemStartEndPadding 4px !default;
 $navigationBarIconMargin: 4px !default;
 $navigationBarIconToTextPadding: 2px !default;
 
-
 //----------Start of Navigation bar icon only variables
 // values could be "circle"(alta default) or "none"(for android/windows/ios)
 $navigationBarIconOnlyStyle:  none !default;
 //space between items
 $navigationBarIconOnlyItemMargin: 4px !default;
-$navigationBarPageLevelIconOnlyItemBorderWidth: 0 0 $navigationListItemAccentBorderWidth 0 !default;
-//----------End of Navigation bar icon only variables
-
-//----------Page level variables
-$navigationBarPageLevelItemBorderWidth: 0 0 $navigationListItemAccentBorderWidth 0 !default;//horizontal
+//page level navbar variables
+$navigationBarPageLevelIconOnlyItemBorderWidth: $navigationBarItemBorderWidth !default;
 $navigationBarPageLevelItemFontSize: null !default;
 $navigationBarPageLevelItemMinHeight: $navigationBarMinHeight !default;
 $navigationBarPageLevelItemStackedIconMinHeight: $navigationBarStackedIconMinHeight !default;
 
+//----------End of Navigation bar icon only variables
+
+//----------Page level variables
+$navigationBarPageLevelItemBorderWidth: $navigationBarItemBorderWidth !default;//horizontal
+
+//selected
+$navigationBarPageLevelItemLabelColorSelected:  $navigationListPageLevelItemLabelColorSelected !default;
+$navigationBarPageLevelItemIconColorSelected:   $navigationListPageLevelItemIconColorSelected !default;
+$navigationBarPageLevelItemBgColorSelected:     $navigationListPageLevelItemBgColorSelected !default;
+
 //------End of Horizontal list variables----
 // END of NavigationList variables
-
-// GRID LAYOUT and RESPONSIVE
-//----------------------------------------------------------------
-
-// grid layout
-//----------------------------------------------------------------
-
-// the number of columns in the grid system, a number divisible by 2, 3, and 4 is preferred
-// in order to easily get columns that take up 50%, 33.3%, or 25% of the screen.
-$gridTotalColumns: 12 !default;
-
-// responsive screen sizes
-//----------------------------------
-// In some apps it may be preferable to change
-// these values to rems instead of pixels.
-//
-// For pixel values here is some helpful info on device sizes:
-// http://www.mydevice.io/devices/
-$screenSmallRange:  0, 767px !default;
-$screenMediumRange: 768px, 1023px !default;
-$screenLargeRange:  1024px, 1280px !default;
-$screenXlargeRange: 1281px, null !default;
-
-
-// responsive media queries
-//----------------------------------
-
-// You will see "print" on some media queries below.
-// By default printing portrait is treated as a medium screen and
-// printing landscape is treated as a large screen.
-
-// the $responsiveQueryXYZ variables can be set to 'none' if
-// you don't want to render a particular set of classes,
-// for example if you don't want xlarge classes you could set:
-//    $screenLargeRange:          1024px, null !default;
-//    $screenXlargeRange:         none;
-//    $responsiveQueryLargeOnly:  none;
-//    $responsiveQueryXlargeUp:   none;
-
-
-
-$responsiveQuerySmallUp:    "print, screen" !default;
-$responsiveQuerySmallOnly:  "screen and (max-width: #{upper-bound($screenSmallRange)})" !default;
-
-$responsiveQueryMediumUp:   "print, screen and (min-width: #{lower-bound($screenMediumRange)})" !default;
-$responsiveQueryMediumOnly: "print and (orientation: portrait), screen and (min-width: #{lower-bound($screenMediumRange)}) and (max-width: #{upper-bound($screenMediumRange)})" !default;
-$responsiveQueryMediumDown: "print and (orientation: portrait), screen and (max-width: #{upper-bound($screenMediumRange)})" !default;
-
-$responsiveQueryLargeUp:    "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)})" !default;
-$responsiveQueryLargeOnly:  "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)}) and (max-width: #{upper-bound($screenLargeRange)})" !default;
-$responsiveQueryLargeDown:  "print and (orientation: landscape), screen and (max-width: #{upper-bound($screenLargeRange)})" !default;
-
-$responsiveQueryXlargeUp:   "screen and (min-width: #{lower-bound($screenXlargeRange)})" !default;
-
-// by default there is no xxl screen range variable.
-// to add support for an xxl range you can do something like
-// the following in your settings file :
-//
-//     @import "../utilities/oj.utilities.math"; // change the path to where the utilities directory is
-//     $screenXlargeRange:          1281px, 1440px;
-//     $screenXXlargeRange:         1441px, null;
-//     $responsiveQueryXlargeOnly:  "screen and (min-width: #{lower-bound($screenXlargeRange)}) and (max-width: #{upper-bound($screenXlargeRange)})";
-//     $responsiveQueryXlargeDown:  "screen and (max-width: #{upper-bound($screenXlargeRange)})";
-//     $responsiveQueryXXlargeUp:   "screen and (min-width: #{lower-bound($screenXXlargeRange)})";
-$responsiveQueryXlargeOnly: null !default;
-$responsiveQueryXlargeDown: null !default;
-$responsiveQueryXXlargeUp:  null !default;
-
-
-// by default the print query is set to null,
-// to generate print classes change the value to "print"
-$responsiveQueryPrint:      null !default;
-
-
-// the default point at which we consider a screen a high resolution
-// (or retina) display.
-//
-// The value is set to 1.5 because as of 2014 there's a lot
-// of Android devices out there that are half-way between the
-// legacy screen resolutions and retina (aka "xhdpi" in Google's terminology)
-// they use a 1.5 factor so the default device pixel ratio is 1.5
-//
-// NOTE: in order to allow stand alone use of these utility mixins
-// this variable is also defined in _oj.utilities.icons.scss.
-// Because of the !default, the actual value will be the value
-// in the file loaded first.
-$highResolutionDevicePixelRatio: 1.5 !default;
-
-
-// Note: you'll see "screen and .." in the media queries above.
-// we wanted to do something like
-//     "(not print) and (min-width: #{$screen-xlarge})",
-// However that doesn't seem to be supported, the "not" negates the entire query.
-// So we're forced to enumerate the media types we do want to
-// support instead of exclude the ones we don't. Hence the use of
-// "screen and ..."
-
-
-// optimizations: variables for defaulting whether certain types of
-// responsive helper classes are generated
-//
-// $responsiveGenerateHide:                  generate classes like .oj-md-hide
-// $responsiveGenerateTextAlignEnd:          generate classes like .oj-md-text-align-end
-// $responsiveGenerateFloatStart:            generate classes like .oj-md-float-start
-// $responsiveGenerateFloatEnd:              generate classes like .oj-md-float-end
-$responsiveGenerateHide:                  true !default;
-$responsiveGenerateTextAlignEnd:          true !default;
-$responsiveGenerateFloatStart:            true !default;
-$responsiveGenerateFloatEnd:              true !default;
 
 
 
 // DVT
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 $dvtAnimationDuration: $animationDurationLong !default;
 $dvtAxisTitleTextColor: $tertiaryTextColor !default;
 
@@ -1898,6 +2245,7 @@ $dvtPictoChartItemBgColor: #a6acb1 !default;
 //----------------------------------
 $dvtMapBgColor: $dvtComponentBg2Color !default;
 $dvtMapMarkerBgColor: #333333 !default;
+$dvtMapLinkColor: $dvtDiagramLinkColor !default;
 
 // timeline
 //----------------------------------
@@ -1940,11 +2288,39 @@ $dvtTreemapNodeBorderColorHover: $interaction2Color !default;
 //----------------------------------
 $dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 
+// timeaxis
+//----------------------------------
+$dvtTimeAxisBgColor:        transparent !default;
+$dvtTimeAxisBorderColor:    $border2Color !default;
+$dvtTimeAxisLabelColor:     $textColor !default;
+$dvtTimeAxisSeparatorColor: $border2Color !default;
+
+// gantt
+//----------------------------------
+$dvtGanttBgColor:                 $dataGridBgColor !default;
+$dvtGanttBorderColor:             $dataGridBorderColor !default;
+$dvtGanttHorizontalGridlineColor: $dataGridCellBorderColor !default;
+$dvtGanttVerticalGridlineColor:   $dvtTimelineMajorAxisSeparatorColor !default;
+$dvtGanttEmptyTextColor:          $textColor !default;
+
+$dvtGanttRowBgColor:              $dataGridCellBgColor !default;
+$dvtGanttTaskBgColor:             $dvtCategory1Color !default;
+$dvtGanttTaskBorderColorSelected: $dvtBorderColor !default;
+
+$dvtGanttMajorAxisBgColor:        lighten($dataGridHeaderBgColor, 1%) !default;
+$dvtGanttMajorAxisBorderColor:    $dataGridHeaderBorderColor !default;
+$dvtGanttMajorAxisLabelColor:     $dataGridHeaderTextColor !default;
+$dvtGanttMajorAxisSeparatorColor: $dataGridHeaderBorderColor !default;
+
+$dvtGanttMinorAxisBgColor:        $dvtGanttMajorAxisBgColor !default;
+$dvtGanttMinorAxisBorderColor:    $dvtGanttMajorAxisBorderColor !default;
+$dvtGanttMinorAxisLabelColor:     $dataGridCellTextColor !default;
+$dvtGanttMinorAxisSeparatorColor: $dvtGanttMajorAxisSeparatorColor !default;
 
 
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // OPTIMIZATION VARIABLES
-//----------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 
 // Please search for the term "optimizations" to find other
@@ -1952,20 +2328,31 @@ $dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 
 
 // SLOW CSS
-//----------------------------------------------------------------
-// In certain browsers you may notice that by default we're not showing a
-// border-radius, box-shadow, or gradient even if the browser supports the
-// css property. In browsers where we feel the performance is unacceptably slow
-// we will put the following classes on the html element.
+//-----------------------------------------------------------------------------
+// IE has two rendering modes, GPU and software rendering mode.
+// There is no known way for JET to detect which rendering
+// mode is being used. Performance for border radius, box-shadow,
+// and gradient used to be quite slow in software rendering mode,
+// however as of JET 1.3 the browsers we support seem to have acceptable
+// performance.
+//
+// However if you find you want to suppress these you can do the following:
+//
+// 1.  in your javascript check the user agent and put the
+//     following classes on the html element.
 //
 //       - oj-slow-borderradius
 //       - oj-slow-boxshadow,
 //       - oj-slow-cssgradients
 //
 //     This is similar to what modernizr does with classes like no-borderradius
-// browsers that don't support border radius.
+//     for browsers that don't support border radius.
 //
-// In the CSS you may see code like this:
+//
+//  2. Set the variables $borderRadiusGeneration, $boxShadowGeneration,
+//     and $gradientGeneration to 'slowOverride', see below for more information
+//
+//      In the CSS you will see code like this:
 //
 //      .oj-button {
 //          border-radius: 2px;
@@ -1975,14 +2362,6 @@ $dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 //          border-radius: 0;
 //      }
 //
-//
-// The main reason we need this is that IE has two rendering modes,
-// GPU and software rendering mode. There is no known way for JET to
-// detect which rendering mode is being used. Performance for
-// border radius can be very slow in software rendering mode,
-// and even GPU rendering has been slow in many cases. Therefore in
-// JET the oj-slow-borderradius class is put on the html element in all
-// supported versions of IE.
 //
 // You may control output of the overrides, or choose not to generate
 // border-radius/gradients/box-shadows at all, with the variables below.
@@ -1997,6 +2376,6 @@ $dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
 //            an IE only style sheet you might want to use "off" to
 //            just not write out any  border-radius/gradient/box-shadow
 //            values in the first place.
-$borderRadiusGeneration: slowOverride !default;
-$boxShadowGeneration: slowOverride !default;
-$gradientGeneration: slowOverride !default;
+$borderRadiusGeneration: on !default;
+$boxShadowGeneration: on !default;
+$gradientGeneration: on !default;

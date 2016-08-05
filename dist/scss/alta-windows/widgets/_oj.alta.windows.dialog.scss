@@ -26,5 +26,9 @@
 @if $includeDialogClasses != false {
   @include module-include-once("alta.windows.dialog") {
     
+    .oj-dialog-close-icon { 
+        color: $buttonBgColor; 
+     }       
+
   }
 }

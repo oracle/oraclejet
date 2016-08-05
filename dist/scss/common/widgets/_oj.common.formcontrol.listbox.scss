@@ -27,7 +27,7 @@
     
     .oj-listbox-drop {
       @extend .oj-component-popup;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       top: 100%;
       background: $popupBgColor;
       border: 1px solid $popupBorderColor;
@@ -79,6 +79,7 @@
       margin: 0;
       cursor: pointer;
       min-height: 2rem;
+      word-wrap: break-word;
       -webkit-touch-callout: none;
       @include oj-user-select-property(none);
       @include oj-ltr() {
@@ -230,7 +231,7 @@
      * Applied to the spyglass (search icon) container
      */
     .oj-listbox-spyglass-box {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       text-align: center;
       vertical-align: middle;
       border:0;
@@ -251,7 +252,7 @@
      * Applied to the search box which includes the search text and the spyglass icon
      */
     .oj-listbox-search {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       width: 100%;
       display: inline-table;
       background-color: $panelBgColor;
@@ -265,7 +266,7 @@
      * Applied to the search text
      */
     .oj-listbox-input {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       width: 100%;
       color: $textColor;
       outline: none;
@@ -383,6 +384,10 @@
      */
     .oj-listbox-highlighter {
       font-weight: bold;
+    }
+    
+    .oj-form-control-inherit .oj-listbox-input {
+      @include oj-form-control-inherit(); 
     }
 
   }

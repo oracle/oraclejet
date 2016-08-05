@@ -9,46 +9,40 @@
   @include module-include-once("alta.windows.progressbar") {
 	
     .oj-progressbar-overlay {
-      @include oj-ltr() {
-        background: oj-image-url("animated-overlay.svg");
-				animation: indeterminateAnimation 2s infinite;
-				-webkit-animation: indeterminateAnimation 2s infinite; 
-				background-size: contain;
-				background-repeat: no-repeat;
-        opacity: $progressbarIndeterminateOverlayOpacity;
-				position: absolute;
-				width: inherit;
-      }
-	  
-      @include oj-rtl() {
-				background: oj-image-url("animated-overlay.svg");
-				animation: indeterminateAnimation 2s infinite reverse;
-				-webkit-animation: indeterminateAnimation 2s infinite reverse; 
-				background-size: contain;
-				background-repeat: no-repeat;
-				opacity: $progressbarIndeterminateOverlayOpacity;
-        position: absolute;
-				width: inherit;
-      }
+	  background: oj-image-url("animated-overlay.svg");
+	  background-size: contain;
+	  background-repeat: no-repeat;
+	  opacity: $progressbarIndeterminateOverlayOpacity;
+	  position: absolute;
+	  height: 100%;
+	  width: inherit;
+	  @include oj-ltr() {
+	    animation: indeterminateAnimation 2s infinite;
+	    -webkit-animation: indeterminateAnimation 2s infinite; 
+	  }
+	  @include oj-rtl() {
+	    animation: indeterminateAnimation 2s infinite reverse;
+	    -webkit-animation: indeterminateAnimation 2s infinite reverse; 
+	  }
     }
+	
+	.oj-progressbar-indeterminate .oj-progressbar-value {
+	  background-color: $progressbarBgColor;
+	  position: relative;
+	}
 		
-		.oj-progressbar-indeterminate .oj-progressbar-value {
-			background-color: $progressbarBgColor;
-			position: relative;
-		}
-		
-		@-webkit-keyframes indeterminateAnimation {
-			0%   {background-position:-20%}
-			40%   {background-position:center}
-			60%   {background-position:center}
-			100%   {background-position:120%}
-		}
+	@-webkit-keyframes indeterminateAnimation {
+	  0%   {background-position:-20%}
+	  40%   {background-position:center}
+	  60%   {background-position:center}
+	  100%   {background-position:120%}
+	}
 
-		@keyframes indeterminateAnimation {
-			0%   {background-position:-20%}
-			40%   {background-position:center}
-			60%   {background-position:center}
-			100%   {background-position:120%}
-		}
+	@keyframes indeterminateAnimation {
+	  0%   {background-position:-20%}
+	  40%   {background-position:center}
+	  60%   {background-position:center}
+	  100%   {background-position:120%}
+	}
   }
 }

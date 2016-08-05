@@ -13,6 +13,13 @@
     
     /* filmstrip */
     /* --------------------------------------------------------------- */
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-film-strip:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
     
     //applied to the root element
     .oj-filmstrip {
@@ -200,7 +207,7 @@
     
     //applied to a navigation arrow
     .oj-filmstrip-arrow {
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
         width: $conveyorBeltOverflowIndicatorHeight;
         height: $conveyorBeltOverflowIndicatorHeight;
         //specify line-height to be same as height so that arrows appear 

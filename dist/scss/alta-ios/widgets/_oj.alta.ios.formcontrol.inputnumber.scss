@@ -31,19 +31,7 @@
 
 @if $includeInputNumberClasses != false {
   @include module-include-once("alta.ios.inputnumber") {
-    // on active over button, the caret color is white
-    .oj-inputnumber:not(.oj-disabled) .oj-button.oj-inputnumber-button.oj-button-icon-only.oj-active .oj-button-icon {
-      color: $buttonTextColor;
-    }
-    // on active over button, the button background color #0582e8 (this color not used elsewhere yet)
-    .oj-inputnumber:not(.oj-disabled) .oj-button.oj-inputnumber-button.oj-button-icon-only.oj-active {
-      background-color: #0572ce; 
-    }
-    
-    .oj-inputnumber-button.oj-button.oj-inputnumber-down {
-      border-width: 0;
-    }
-    
+
     // icons
     //------------------------------------------
 
@@ -53,7 +41,11 @@
 
     .oj-inputnumber-down-icon {
       @extend .oj-fwk-icon-minus;
-    }  
+    } 
+    
+    .oj-inputnumber .oj-button {
+      width: 50px;
+    }
     
   }
 }

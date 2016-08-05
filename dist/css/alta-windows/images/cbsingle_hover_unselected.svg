@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Hover_Unchecked_Checkbox" opacity="0.8"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="20px" height="20px"
+	 viewBox="-1 3 20 20" enable-background="new -1 3 20 20" xml:space="preserve">
+<rect id="Hover_Checkbox_Background" y="4" fill="#FFFFFF" width="18" height="18"/>
+<path id="Hover_Checkbox_Border" fill="#0582E8" d="M17,5v16H1V5H17 M19,3H-1v20h20V3L19,3z"/>
+</svg>

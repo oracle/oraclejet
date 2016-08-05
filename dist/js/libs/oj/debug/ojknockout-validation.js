@@ -307,7 +307,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  * 
  * <p>
  * The <code class="prettyprint">invalidComponentTracker</code> binding attribute should be bound to 
- * a ko observable. At runtime the framework creates an instance of this type 
+ * a ko observable, and 'ojs/ojknockout-validation' should be included in the dependency list. 
+ * At runtime the framework creates an instance of this type 
  * <code class="prettyprint">oj.InvalidComponentTracker</code> and sets it on the bound observable.<br/> 
  * This object can then be used by page authors to do the following - 
  * <ul>
@@ -341,6 +342,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  *   }
  * }
  * &lt;/script>
+ * Note: Make sure you have included the 'ojs/ojknockout-validation' dependency in your require list,
+ * otherwise you will see an error about InvalidComponentTracker being undefined.
  * 
  * @class oj.InvalidComponentTracker 
  * @constructor

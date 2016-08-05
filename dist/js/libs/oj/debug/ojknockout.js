@@ -153,7 +153,7 @@ oj.ComponentBinding.create = function(name, options)
 };
 
 /**
- * Retrieves the default componnet binding instance registered with Knockout.js
+ * Retrieves the default component binding instance registered with Knockout.js
  * @return {oj.ComponentBinding} default binding instance
  * @export
  */
@@ -373,7 +373,8 @@ oj.ComponentBinding.prototype._update = function(element, valueAccessor, allBind
       valueAccessor: compatibleValueAccessor, 
       allBindingsAccessor: allBindingsAccessor, 
       bindingContext: bindingContext,
-      destroyCallback: function(){component = null;}
+      destroyCallback: function(){component = null;},
+      readOnlyProperties: {}
     };
     
     component = this._initComponent(element, componentContext);
@@ -552,12 +553,12 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
           
           for (var k = 0; k<updateKeys.length; k++)            
           {
-            var p = updateKeys[k]; 
+            var p = updateKeys[k];
             ctx.changeTracker.addChange(p, updateProps[p]);
           }
         }
       }
-      else
+      else if (!ctx.readOnlyProperties[prop]) // ignore chnages to read-only properties
       {
         ctx.changeTracker.addChange(prop, value);
       }
@@ -583,27 +584,17 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
       
   oj.ComponentBinding._registerWritebacks(jelem, ctx);
       
-  var mutationOptions = oj.ComponentBinding._extractDotNotationOptions(resolvedInitialOptions);
-  
-  // remove mutation options for the option map
-  var mutationKeys = Object.keys(mutationOptions);
-  
-  mutationKeys.forEach(
-    function(mutationOpt)
-    {
-      delete resolvedInitialOptions[mutationOpt];
-    }
-  );
+  var mutationOptions = oj.ComponentBinding.__removeDotNotationOptions(resolvedInitialOptions);
   
   // Initialization of the component happens here
   comp(resolvedInitialOptions);
   
-  
-  for (var m=0; m<mutationKeys.length; m++)
-  {
-    var mo = mutationKeys[m];
-    comp('option', mo, mutationOptions[mo]);
-  }
+  Object.keys(mutationOptions).forEach(
+    function(mo)
+    {
+      comp('option', mo, mutationOptions[mo]);
+    }
+  );
   
   var createCallback = this._bindingOptions['afterCreate'];
   if (createCallback)
@@ -645,14 +636,22 @@ function _extractValueFromChangeEvent(event, eventData)
 /**
  * @private 
  */
-function _extractOptionChange(event, eventData)
+function _extractOptionChange(ctx, event, eventData)
 {
   var nameVal = {};
   var metadata = eventData['optionMetadata'];
-  var shouldWrite = metadata ? "shouldWrite" === metadata['writeback']: false;
-  if (shouldWrite)
+  if (metadata)
   {
-    nameVal[eventData['option']] = eventData['value'];  
+    var shouldWrite = ("shouldWrite" === metadata['writeback']);
+    if (shouldWrite)
+    {
+      var name = eventData['option'];
+      nameVal[name] = eventData['value'];
+      if (metadata['readOnly'])
+      {
+        ctx.readOnlyProperties[name] = true;
+      }
+    }
   }
   return nameVal;
 };
@@ -762,7 +761,7 @@ oj.ComponentBinding._registerWritebacks = function(jelem, ctx)
   var writablePropMap = 
   {
     '^slider$' : [{'event': 'slidechange', 'getter': _extractValueFromChangeEvent}],
-    '^oj*': [{'event': 'ojoptionchange', 'getter': _extractOptionChange}]
+    '^oj*': [{'event': 'ojoptionchange', 'getter': _extractOptionChange.bind(undefined, ctx)}]
   };
   
   var cachedWriterFunctionEvaluators = {};
@@ -786,8 +785,11 @@ oj.ComponentBinding._registerWritebacks = function(jelem, ctx)
           },
           function(evt, data)
           {
-            // Prevent bubbling to parent DOM elements. Other event handlers will still be called
-            evt.stopPropagation();
+            // Ignore optionChange events that bubbled up from child components
+            if(evt.target !== jelem[0])
+            {
+              return;
+            }
             
             var nameValues = evt.data.getter(evt, data);       
            
@@ -817,7 +819,7 @@ oj.ComponentBinding._registerWritebacks = function(jelem, ctx)
               finally
               {
                 ctx.changeTracker.resume(name);
-              }
+              }  
             }
             
           }
@@ -844,7 +846,7 @@ oj.ComponentBinding._writeValueToProperty = function(name, target, value,
     if (!(name in cachedWriterFunctionEvaluators))
     {
       var inContextWriter = null;
-      var writerExpr = oj.ExpressionUtils.getPropertyWriterExpression(propertyExpression);
+      var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(propertyExpression);
       if (writerExpr != null)
       {
         inContextWriter = oj.ComponentBinding.__CreateEvaluator(writerExpr);
@@ -889,7 +891,7 @@ oj.ComponentBinding._toJS = function(prop)
 /**
  * @private
  */
-oj.ComponentBinding._extractDotNotationOptions = function(options)
+oj.ComponentBinding.__removeDotNotationOptions = function(options)
 {
   var mutationOptions = {};
   
@@ -901,6 +903,7 @@ oj.ComponentBinding._extractDotNotationOptions = function(options)
     if (opt.indexOf('.') >= 0)
     {
       mutationOptions[opt] = options[opt];
+      delete options[opt];
     }
   }
   
@@ -1043,6 +1046,61 @@ $.widget("oj._ojDetectCleanData",
  }
 );
 /**
+ * Returns a data layer renderer function and executes the template specified in
+ * the binding attribute. (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getPieCenterRenderer(bindingContext, template) {
+  return function (context) {
+    // runs the template
+    var dummyDiv = document.createElement("div");
+    dummyDiv.style.display = "none";
+    var model = bindingContext['createChildContext'](context);
+    ko['renderTemplate'](template, model, {
+                            'afterRender': function(renderedElement)
+                            {
+                                $(renderedElement)['_ojDetectCleanData']();
+                            }}, dummyDiv);
+		var elem = dummyDiv.children[0];
+		if (elem) {
+			dummyDiv.removeChild(elem);
+			$(dummyDiv).remove();
+			return elem;
+		}
+		return null;
+  };
+}
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleAttributes(name, value, bindingContext) {
+  if (name === "pieCenter" && value['template']) {
+    value['renderer'] = _getCenterRenderer(bindingContext, value['template']);
+  }
+  return {'pieCenter': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["pieCenter"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleAttributes(name, value, bindingContext);
+  },
+  'for': 'ojChart'
+});
+
+/**
  * Returns a renderer function executes the template specified in the binding attribute.
  * (for example, a knockout template).
  * @param {Object} bindingContext the ko binding context
@@ -1138,387 +1196,104 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     "use": "ComboboxOptionRenderer"
   });
 
-/*jslint browser: true*/
-/*
-** Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
-*/
-
-
 /**
- * @class Utilities for creating knockout observable to implement responsive pages.
- * @since 1.1.0
- * @expose
+ * @private
+ * @constructor
+ * Keeps track of changes for a single component
  */
-oj.ResponsiveKnockoutUtils = {};
-
-
-
-/**
- * <p>creates an observable that 
- * returns true or false based on a media query string.</p>
- * 
- * <p>Example:</p>
- * <pre class="prettyprint">
- * <code>
- *    var customQuery = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(
- *                                         '(min-width: 400px)');
- * </code></pre>
- * 
- * @param {string} queryString media query string, for example '(min-width: 400px)'
- * @return a knockout observable  that 
- *              returns true or false based on a media query string.
- * @expose
- * @static
- */
-oj.ResponsiveKnockoutUtils.createMediaQueryObservable = function(queryString)
+function ComponentChangeTracker(component, queue)
 {
-
-  if (queryString == null)
-  {
-    throw new Error("oj.ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null");
-  }
-
-  var query = window.matchMedia(queryString);
-
-  var observable = ko.observable(query.matches);
-
-  // add a listener for future changes
-  query.addListener(function(query) {
-      observable(query.matches);
-      //console.log("query listener called! query.matches = " + query.matches + ", size = " + (document.outerWidth || document.body.clientWidth));
-  });
-
-
- 
-  // There is a major bug in webkit, tested on ios 7 going from
-  // landscape to portrait.
-  //    https://bugs.webkit.org/show_bug.cgi?id=123293
-  // 
-  // Basically if you use a media query in css
-  // then the js matchmedia call won't work! 
-  //
-  // According to the bug this is known to be on webkit 538.4,
-  // but I see it on 537.51 as well which is earlier, so 
-  // assume the problem exists generally on safari.
-  // Chrome now uses blink instead of webkit, but chrome
-  // still has webkit in their user agent string, however they
-  // now only change the number after "Chrome".
-  
-  if (navigator.userAgent.indexOf("WebKit") != -1 && 
-      navigator.userAgent.indexOf("Chrome") == -1) 
-  {
-    $(window).resize(function() {
-      //console.log("Resize called! Size = " + (document.outerWidth || document.body.clientWidth));
-
-      // Somehow if I change some text in the dom on resize 
-      // the query listener is called
-      var selector = "oj-webkit-bug-123293";
-
-      if($('body').has("." + selector).length === 0) 
-      {
-        // setting display: none doesn't work, so using 
-        // oj-helper-hidden-accessible because this visually 
-        // hides the content without using display:none. 
-        // However we don't want screen readers to read 
-        // this so setting aria-hidden to true.
-        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'); // @HTMLUpdateOK 
-      }
-
-      $("." + selector).text((new Date().getMilliseconds()).toString()); // @HTMLUpdateOK 
-    });
-  }
-  
-  return observable;
+  this.Init(component, queue);
 }
 
+// Subclass from oj.Object 
+oj.Object.createSubclass(ComponentChangeTracker, oj.Object, "ComponentBinding.ComponentChangeTracker");
 
 /**
- * This function creates a computed observable, the 
- * value of which is one of the {@link oj.ResponsiveUtils.SCREEN_RANGE} constants. 
- * For example when the width is in the 
- * range defined by the sass variable $mediumScreenRange then 
- * the observable returns <code>oj.ResponsiveUtils.SCREEN_RANGE.MD</code>, 
- * but if it's in the range defined by $largeScreenRange then 
- * it returns <code>oj.ResponsiveUtils.SCREEN_RANGE.LG</code>, etc. 
- * 
- * 
- * 
- * <p>Example:</p>
- * <pre class="prettyprint">
- * <code>
- *        // create an observable which returns the current screen range
- *        self.screenRange = oj.ResponsiveKnockoutUtils.createScreenRangeObservable();
- *
- *        self.label2 = ko.computed(function() {
- *          var range = self.screenRange();
- * 
- *          if ( oj.ResponsiveUtils.compare( 
- *                       range, oj.ResponsiveUtils.SCREEN_RANGE.MD) <= 0)
- *          {
- *            // code for when screen is in small or medium range
- *          }
- *          else if (range == oj.ResponsiveUtils.SCREEN_RANGE.XL)
- *          {
- *            // code for when screen is in XL range
- *          }
- *        });
- * </code></pre>
- *
- * @return a knockout observable the value of which is one of the
- *  screen range constants, for example oj.ResponsiveUtils.SCREEN_RANGE.MD
- * @expose
- * @static
+ * @param {Function} component
+ * @param {Object} queue
  */
-oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
+ComponentChangeTracker.prototype.Init = function(component, queue)
 {
-  // queryies
-  var xxlQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XXL_UP);
-
-  var xlQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XL_UP);
-
-  var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
-
-  var mdQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP);
-
-  var smQuery = oj.ResponsiveUtils.getFrameworkQuery(
-                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.SM_UP);
+  ComponentChangeTracker.superclass.Init.call(this);
+  this._component = component;
+  this._queue = queue;
+  this._changes = {};
+  this._suspendCountMap = {};
+};
 
 
-
-  // observables
-  var xxlObservable = xxlQuery == null ? 
-                      null : 
-                      oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
-
-  var xlObservable = xlQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
-
-  var lgObservable = lgQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
-
-  var mdObservable = mdQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
-
-  var smObservable = smQuery == null ? 
-                     null : 
-                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
-
-
-  return ko.computed(function() {
-    if (xxlObservable && xxlObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.XXL; 
-
-    if (xlObservable && xlObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.XL; 
-
-    if (lgObservable && lgObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.LG; 
-
-    if (mdObservable && mdObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.MD; 
-
-    if (smObservable && smObservable())
-      return oj.ResponsiveUtils.SCREEN_RANGE.SM; 
-
-    throw new Error(" NO MATCH in oj.ResponsiveKnockoutUtils.createScreenRangeObservable");
-
-  });
-}
-
-/**
- * Returns a data layer renderer function and executes the template specified in 
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getDataLayerRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var model = bindingContext['createChildContext'](context['data']);
-    ko['renderTemplate'](template, model, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, context['parentElement']);
-    return null;
-  };
-}
-
-/**
- * Common method to handle managed attributes for both init and update
- * @param {string} name the name of the attribute
- * @param {Object} value the value of the attribute
- * @param {Object} bindingContext the ko binding context
- * @return {Object} the modified attribute
- * @private
- */
-function _handleManagedAttributes(name, value, bindingContext) {
-  if (name === "areaLayers") {
-    for (var i = 0; i < value.length; i++) {
-      var areaDataLayer = value[i]['areaDataLayer'];
-      if (areaDataLayer) {
-        var template = areaDataLayer['template'];
-        if (template != null) {
-          areaDataLayer['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
-        }
-      }
-    }
-    return {'areaLayers': value};
+ComponentChangeTracker.prototype.addChange = function(property, value)
+{
+  if (this._isSuspended(property) || this._disposed)
+  {
+    return;
   }
-  else if (name === "pointDataLayers") {
-    for (var i = 0; i < value.length; i++) {
-      var template = value[i]['template'];
-      if (template != null) {
-        value[i]['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
-      }
-    }
-    return {'pointDataLayers': value};
+  this._changes[property] = value;
+  this._queue.registerComponentChanges(this);
+};
+
+ComponentChangeTracker.prototype.dispose = function()
+{
+  this._disposed = true;
+};
+
+ComponentChangeTracker.prototype.resume = function(option)
+{
+  var count = this._suspendCountMap[option] || 0;
+  count--;
+  if (count < 0)
+  {
+    oj.Logger.error("ComponentChangeTracker suspendCount underflow");
+    return;
   }
-  return null;
-}
 
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["areaLayers", "pointDataLayers"],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedAttributes(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedAttributes(name, value, bindingContext);
-  },
-  'for': 'ojThematicMap'
-});
-
-/**
- * Returns a data layer renderer function and executes the template specified in
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getTooltipRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var dummyDiv = document.createElement("div");
-    dummyDiv.style.display = "none";
-    var model = bindingContext['createChildContext'](context);
-    ko['renderTemplate'](template, model, {
-                            'afterRender': function(renderedElement)
-                            {
-                                $(renderedElement)['_ojDetectCleanData']();
-                            }}, dummyDiv);
-    var elem = dummyDiv.children[0];
-    if (elem) {
-      dummyDiv.removeChild(elem);
-      $(dummyDiv).remove();
-      return elem;
-    }
-    return null;
-  };
-}
-
-/**
- * Common method to handle managed attributes for both init and update
- * @param {string} name the name of the attribute
- * @param {Object} value the value of the attribute
- * @param {Object} bindingContext the ko binding context
- * @return {Object} the modified attribute
- * @private
- */
-function _handleManagedTooltipAttribute(name, value, bindingContext) {
-  if (name === "tooltip" && value['template']) {
-     value['renderer'] = _getTooltipRenderer(bindingContext, value['template']);
-  }   
-  return {'tooltip': value};
-}
-
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["tooltip"],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTooltipAttribute(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTooltipAttribute(name, value, bindingContext);
-  },
-  'for': "tooltipOptionRenderer"
-});
-
-// Default declarations for all components supporting tooltips
-(function() {
-  var componentsArray = ['ojChart', 'ojDiagram', 'ojNBox', 'ojPictoChart', 'ojSunburst', 'ojTagCloud', 'ojThematicMap', 'ojTreemap',
-                         'ojDialGauge', 'ojLedGauge', 'ojRatingGauge','ojSparkChart', 'ojStatusMeterGauge'];
-  for(var i = 0; i < componentsArray.length; i++) {
-    oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({ 
-      "for": componentsArray[i],
-      "use": "tooltipOptionRenderer"
-    });
-  }                   
-})();
-
-/**
- * Returns a data layer renderer function and executes the template specified in
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getPieCenterRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var dummyDiv = document.createElement("div");
-    dummyDiv.style.display = "none";
-    var model = bindingContext['createChildContext'](context);
-    ko['renderTemplate'](template, model, {
-                            'afterRender': function(renderedElement)
-                            {
-                                $(renderedElement)['_ojDetectCleanData']();
-                            }}, dummyDiv);
-		var elem = dummyDiv.children[0];
-		if (elem) {
-			dummyDiv.removeChild(elem);
-			$(dummyDiv).remove();
-			return elem;
-		}
-		return null;
-  };
-}
-
-/**
- * Common method to handle managed attributes for both init and update
- * @param {string} name the name of the attribute
- * @param {Object} value the value of the attribute
- * @param {Object} bindingContext the ko binding context
- * @return {Object} the modified attribute
- * @private
- */
-function _handleAttributes(name, value, bindingContext) {
-  if (name === "pieCenter" && value['template']) {
-    value['renderer'] = _getCenterRenderer(bindingContext, value['template']);
+  if (count == 0)
+  {
+    delete this._suspendCountMap[option];
   }
-  return {'pieCenter': value};
-}
+  else
+  {
+    this._suspendCountMap[option] = count;
+  }
+};
 
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ["pieCenter"],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleAttributes(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleAttributes(name, value, bindingContext);
-  },
-  'for': 'ojChart'
-});
+ComponentChangeTracker.prototype.suspend = function(option)
+{
+  var count = this._suspendCountMap[option] || 0;
+  this._suspendCountMap[option] = count + 1;
+};
 
+ComponentChangeTracker.prototype.applyChanges = function(changes)
+{
+  if (!this._disposed)
+  {
+    
+    var mutationOptions = oj.ComponentBinding.__removeDotNotationOptions(changes);
+    
+    var flags = {'changed' : true}; // indicates that the callee does not need to diff the value
+    
+    this._component("option", changes, flags); 
+    for (var mo in mutationOptions)
+    {
+      this._component("option", mo, mutationOptions[mo], flags);
+    }
+  }
+};
+
+ComponentChangeTracker.prototype.flushChanges = function()
+{
+  var changes = this._changes;
+  this._changes = {};
+  return changes;
+};
+
+
+ComponentChangeTracker.prototype._isSuspended = function(option)
+{
+  var count = this._suspendCountMap[option] || 0;
+  return (count >= 1);
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1569,14 +1344,16 @@ ko.bindingHandlers['ojContextMenu'] =
     _menu = undefined;
     $menu = undefined;
 
-    // selector like "#myMenuId", or null, else malformed
+    // Accepts anything $() accepts, i.e. same things component CM option accepts,
+    // including selector like "#myMenuId", element, JQ object, etc. Also accepts 
+    // {}, meaning "use the HTML contextmenu attribute.  Else malformed.
     var menuSelector = ko.utils.unwrapObservable(valueAccessor());
 
-    if ($.type(menuSelector) !== "string")
+    if ($.isPlainObject(menuSelector))
     {
       menuSelector = element.getAttribute("contextmenu");
       if (menuSelector)
-        menuSelector = "#" + menuSelector;
+        menuSelector = document.getElementById(menuSelector);
     }
 
     // : lazily init the menu variables in case the Menu component is inited after the ojContextMenu binding is applied to launcher.
@@ -1624,8 +1401,6 @@ ko.bindingHandlers['ojContextMenu'] =
     };
 
     var launch = function(event, eventType, pressHold) {
-//        alert("launch() setting isPressHold to: " + pressHold);
-
         // ensure that pressHold doesn't result in a click.  Set this before the bailouts below.
         isPressHold = pressHold;
 
@@ -1784,296 +1559,6 @@ ko.bindingHandlers['ojContextMenu'] =
       // should we really log?  If so, warning or just info?
   }
 };
-
-/**
- * @private
- * @constructor
- * Keeps track of changes for a single component
- */
-function ComponentChangeTracker(component, queue)
-{
-  this.Init(component, queue);
-}
-
-// Subclass from oj.Object 
-oj.Object.createSubclass(ComponentChangeTracker, oj.Object, "ComponentBinding.ComponentChangeTracker");
-
-/**
- * @param {Function} component
- * @param {Object} queue
- */
-ComponentChangeTracker.prototype.Init = function(component, queue)
-{
-  ComponentChangeTracker.superclass.Init.call(this);
-  this._component = component;
-  this._queue = queue;
-  this._changes = {};
-  this._suspendCountMap = {};
-};
-
-
-ComponentChangeTracker.prototype.addChange = function(property, value)
-{
-  if (this._isSuspended(property) || this._disposed)
-  {
-    return;
-  }
-  this._changes[property] = value;
-  this._queue.registerComponentChanges(this);
-};
-
-ComponentChangeTracker.prototype.dispose = function()
-{
-  this._disposed = true;
-};
-
-ComponentChangeTracker.prototype.resume = function(option)
-{
-  var count = this._suspendCountMap[option] || 0;
-  oj.Assert.assert(count > 0, "ComponentChangeTracker suspendCount underflow");
-  count--;
-  if (count == 0)
-  {
-    delete this._suspendCountMap[option];
-  }
-  else
-  {
-    this._suspendCountMap[option] = count;
-  }
-};
-
-ComponentChangeTracker.prototype.suspend = function(option)
-{
-  var count = this._suspendCountMap[option] || 0;
-  this._suspendCountMap[option] = count + 1;
-};
-
-ComponentChangeTracker.prototype.applyChanges = function(changes)
-{
-  if (!this._disposed)
-  {
-    
-    var mutationOptions = oj.ComponentBinding._extractDotNotationOptions(changes);
-    
-    var flags = {'changed' : true}; // indicates that the callee does not need to diff the value
-    
-    this._component("option", changes, flags); 
-    for (var mo in mutationOptions)
-    {
-      this._component("option", mo, mutationOptions[mo], flags);
-    }
-  }
-};
-
-ComponentChangeTracker.prototype.flushChanges = function()
-{
-  var changes = this._changes;
-  this._changes = {};
-  return changes;
-};
-
-
-ComponentChangeTracker.prototype._isSuspended = function(option)
-{
-  var count = this._suspendCountMap[option] || 0;
-  return (count >= 1);
-};
-function _getDiagramNodeRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var model = bindingContext['createChildContext'](context['data']);
-    ko['renderTemplate'](template, model, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, context['parentElement']);
-    return null;
-  };
-};
-
-function _handleManagedDiagramAttributes(name, value, bindingContext) {
-  if (name === "template") {
-    return {'_templateFunction': _getDiagramNodeRenderer(bindingContext, value)};
-  }
-  return null;
-};
-
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
-  'attributes': ['template'],
-  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedDiagramAttributes(name, value, bindingContext);
-  },
-  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedDiagramAttributes(name, value, bindingContext);
-  },
-  'for': 'ojDiagram'
-});
-//
-// Define a template source that allows the use of a knockout array (ko[])
-// to provide storage for a template string.
-//
-// This simplifies template assignment and template usage for the user, as shown in the following example:
-//
-// Template Assignment:
-//
-//   ko.templates["myKey"] = templateText;
-//
-// Template Usage:
-//
-//   <div data-bind="template: {name: myKey}">
-//
-/*jslint browser: true*/
-
-/**
- * @export
- */
-oj.koStringTemplateEngine = {};
-
-/**
- * @export
- */
-oj.koStringTemplateEngine.install = function() 
-{
-    //define a template source that tries to key into an object first to find a template string
-
-    if (ko.templates) return;
-
-    var _templateText = {}; // Stores the text property for the template object.
-    var _templateData = {}; // Stores the data property for the template object.
-
-    // data = {},
-    var _engine = new ko['nativeTemplateEngine']();
-
-    /**
-     *  @constructor
-     *  @private
-     */
-
-    var StringTemplate = function(template) {
-
-        this._templateName = template;
-
-        this.text = function(value) 
-	{
-	    // When passed no parameters, return the template object.
-            if (!value)
-	    {
-                return _templateText[this._templateName];
-            }
-
-            _templateText[this._templateName] = value;
-        };
-
-        this.data = function(key, value)
-	{
-
-            if (!_templateData[this._templateName]) {
-		_templateData[this._templateName] = {};
-            }
-
-            if (arguments.length === 1) {
-                return _templateData[this._templateName][key];
-            }
-
-            _templateData[this._templateName][key] = value;
-        };
-    };
-
-    //
-    // Override knockout's makeTemplateSource(), returning the new stringTemplate 
-    //
-    _engine['makeTemplateSource'] = function(template, templateDocument)
-    {
-	if (typeof template == "string") 
-	{
-            templateDocument = templateDocument || document;
-            var elem = templateDocument.getElementById(template);
-
-            if (elem) 
-	    {
-		return new ko['templateSources']['domElement'](elem);
-	    }
-            return new StringTemplate(template);
-	}
-        if ((template && (template.nodeType == 1)) || (template.nodeType == 8)) 
-	{
-            return new ko['templateSources']['anonymousTemplate'](template);
-        }
-    };
-
-    //make the templates accessible
-    // ko.templates = _templateText;
-    ko.templates = _templateText;
-
-    //make this new template engine our default engine
-    ko['setTemplateEngine'](_engine);
-};
-
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-*/
-
-(function()
-{
-
-  /**
-   * @ignore
-   */
-  oj.ExpressionUtils = {};
-  
-  /**
-   * @ignore
-   */
-  oj.ExpressionUtils.getExpressionInfo = function(attrValue)
-  {
-    var info = {};
-    if (attrValue)
-    {
-      var exp = _ATTR_EXP.exec(attrValue);
-      exp = exp ? exp[1] : null;
-      if (!exp)
-      {
-       info.downstreamOnly = true;
-       exp = _ATTR_EXP_RO.exec(attrValue);
-       exp = exp ? exp[1] : null;
-      }
-      info.expr = exp;
-    }
-
-    return info;
-  }
-  
-  oj.ExpressionUtils.getPropertyWriterExpression = function(expression)
-  { 
-    var reserveddWords = ["true", "false", "null", "undefined"];
-    
-    if (expression == null || reserveddWords.indexOf(expression) >= 0)
-    {
-      return null;
-    }
-  
-    // Matches something that can be assigned to--either an isolated identifier or something ending with a property accessor
-    // This is designed to be simple and avoid false negatives, but could produce false positives (e.g., a+b.c).
-    // This also will not properly handle nested brackets (e.g., obj1[obj2['prop']];).
-    var match = expression.match(_ASSIGNMENT_TARGET_EXP);
-    
-    if (match === null)
-    {
-      return null;
-    }
-    
-    var target = match[1] ? ('Object(' + match[1] + ')' + match[2]) : expression;
-    
-    return 'function(v){' + target + '=v;}';
-  };
-  
-  var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
-  var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
-  var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
-})();
-
 
 /**
  * @ignore
@@ -2365,6 +1850,1139 @@ function _keyValueArrayForEach(array, callback)
   }
 }
 
+
+oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+  {
+    'nodeHasBindings': function(node, wrappedReturn)
+    {
+      return wrappedReturn || (node.nodeType === 1 && 
+                   oj.Components && oj.Components.isRegistered(node.nodeName))
+    },
+
+    'getBindingAccessors': function(node, bindingContext, wrappedReturn)
+    {
+      if (node.nodeType === 1)
+      {
+        var name = node.nodeName;
+        if (oj.Components && oj.Components.isRegistered(name))
+        {
+          wrappedReturn = wrappedReturn || {};
+
+          var compositionBinding  = '_ojCustomElement';
+
+          wrappedReturn[compositionBinding] = function() {}
+
+        }
+      }
+
+      return wrappedReturn;
+    }
+  }
+);
+
+/**
+ * Returns a header renderer function executes the template specified in the binding attribute.
+ * (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {Function|string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getDataGridHeaderRenderer(bindingContext, template)
+{
+    return function(context)
+    {
+        var parent, childContext, useTemplate;
+
+        parent = context['parentElement'];
+        // runs the template
+        // runs the template
+        childContext = bindingContext['createChildContext'](context['data'], null, 
+                           function(binding)
+                           {
+                               binding['$key'] = context['key'];
+                               binding['$metadata'] = context['metadata'];
+                               binding['$headerContext'] = context;
+                           }
+                       );
+    	useTemplate = _resolveDataGridTemplate(template, context);
+        ko['renderTemplate'](useTemplate, childContext, {
+                           'afterRender': function(renderedElement)
+                           {
+                               $(renderedElement)['_ojDetectCleanData']();
+                           }}, parent);
+
+        // tell the datagrid not to do anything
+        return null;
+    };
+}
+
+/**
+ * Returns a cell renderer function executes the template specified in the binding attribute.
+ * (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {Function|string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getDataGridCellRenderer(bindingContext, template)
+{
+    return function(context)
+    {
+        var parent, childContext, useTemplate;
+
+        parent = context['parentElement'];
+        // runs the template
+        childContext = bindingContext['createChildContext'](context['data'], null, 
+                           function(binding)
+                           {
+                               binding['$keys'] = context['keys'];
+                               binding['$metadata'] = context['metadata'];
+                               binding['$cellContext'] = context;
+                               binding['$cell'] = context['cell'];
+                           }
+                       );
+    	useTemplate = _resolveDataGridTemplate(template, context);
+        ko['renderTemplate'](useTemplate, childContext, {
+                           'afterRender': function(renderedElement)
+                           {
+                               $(renderedElement)['_ojDetectCleanData']();
+                           }}, parent);
+
+        // tell the datagrid not to do anything
+        return null;
+    };
+}
+
+/**
+ * If they specify a function for the template get the string of the template by
+ * calling the function and passing the cell or header context
+ * @param {Function|string} template
+ * @param {Object} context
+ * @returns {null|string}
+ * @private
+ */
+function _resolveDataGridTemplate(template, context)
+{
+    if (typeof template === 'function')
+    {
+        return template(context);
+    }
+    return template;
+};
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
+{
+  'attributes': ["header", "cell"],
+  'init': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
+  {
+    var row, rowTemplate, column, columnTemplate, cellTemplate, rowEnd, rowEndTemplate, columnEnd, columnEndTemplate;
+    if (name === "header")
+    {
+        // find row template and creates a renderer
+        row = value['row'];
+        if (row != null)
+        {
+            rowTemplate = row['template'];
+            if (rowTemplate != null)
+            {
+                row['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
+            }
+        }
+
+        // find column template and creates a renderer
+        column = value['column'];
+        if (column != null)
+        {
+            columnTemplate = column['template'];
+            if (columnTemplate != null)
+            {
+                column['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
+            }
+        }
+        
+        // find column template and creates a renderer
+        rowEnd = value['rowEnd'];
+        if (rowEnd != null)
+        {
+            rowEndTemplate = rowEnd['template'];
+            if (rowEndTemplate != null)
+            {
+                rowEnd['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
+            }
+        }
+        
+        // find column template and creates a renderer
+        columnEnd = value['columnEnd'];
+        if (columnEnd != null)
+        {
+            columnEndTemplate = columnEnd['template'];
+            if (columnEndTemplate != null)
+            {
+                columnEnd['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
+            }
+        }        
+        return {'header': value};
+    }
+    else if (name === "cell")
+    {
+        // find the cell template and creates a renderer
+        cellTemplate = value['template'];
+        if (cellTemplate != null)
+        {
+            value['renderer'] = _getDataGridCellRenderer(bindingContext, cellTemplate);
+        }
+        return {'cell': value};
+    }
+  },
+  'update': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
+  {
+    var row, rowTemplate, column, columnTemplate, cellTemplate, rowEnd, rowEndTemplate, columnEnd, columnEndTemplate;
+    if (name === "header")
+    {
+        // find row template and creates a renderer
+        row = value['row'];
+        if (row != null)
+        {
+            rowTemplate = row['template'];
+            if (rowTemplate != null)
+            {
+                row['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
+            }
+        }
+
+        // find column template and creates a renderer
+        column = value['column'];
+        if (column != null)
+        {
+            columnTemplate = column['template'];
+            if (columnTemplate != null)
+            {
+                column['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
+            }
+        }
+        
+        // find column template and creates a renderer
+        rowEnd = value['rowEnd'];
+        if (rowEnd != null)
+        {
+            rowEndTemplate = rowEnd['template'];
+            if (rowEndTemplate != null)
+            {
+                rowEnd['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowEndTemplate);
+            }
+        }
+        
+        // find column template and creates a renderer
+        columnEnd = value['columnEnd'];
+        if (columnEnd != null)
+        {
+            columnEndTemplate = columnEnd['template'];
+            if (columnEndTemplate != null)
+            {
+                columnEnd['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnEndTemplate);
+            }
+        }        
+        return {'header': value};
+    }
+    else if (name === "cell")
+    {
+        // find the cell template and creates a renderer
+        cellTemplate = value['template'];
+        if (cellTemplate != null)
+        {
+            value['renderer'] = _getDataGridCellRenderer(bindingContext, cellTemplate);
+        }
+        return {'cell': value};
+    }
+    return null;
+  },
+      
+  'for': 'ojDataGrid'
+});
+
+function _getDiagramNodeRenderer(bindingContext, template) {
+  return function (context) {
+    // runs the template
+    var model = bindingContext['createChildContext'](context['data']);
+    ko['renderTemplate'](template, model, {
+                           'afterRender': function(renderedElement)
+                           {
+                               $(renderedElement)['_ojDetectCleanData']();
+                           }}, context['parentElement']);
+    return null;
+  };
+};
+
+function _handleManagedDiagramAttributes(name, value, bindingContext) {
+  if (name === "template") {
+    return {'_templateFunction': _getDiagramNodeRenderer(bindingContext, value)};
+  }
+  return null;
+};
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ['template'],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedDiagramAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedDiagramAttributes(name, value, bindingContext);
+  },
+  'for': 'ojDiagram'
+});
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+**
+*/
+
+(function()
+{
+
+  /**
+   * @ignore
+   */
+  oj.__ExpressionUtils = {};
+  
+  /**
+   * @ignore
+   */
+  oj.__ExpressionUtils.getExpressionInfo = function(attrValue)
+  {
+    var info = {};
+    if (attrValue)
+    {
+      var exp = _ATTR_EXP.exec(attrValue);
+      exp = exp ? exp[1] : null;
+      if (!exp)
+      {
+       info.downstreamOnly = true;
+       exp = _ATTR_EXP_RO.exec(attrValue);
+       exp = exp ? exp[1] : null;
+      }
+      info.expr = exp;
+    }
+
+    return info;
+  }
+  
+  oj.__ExpressionUtils.getPropertyWriterExpression = function(expression)
+  { 
+    var reserveddWords = ["true", "false", "null", "undefined"];
+    
+    if (expression == null || reserveddWords.indexOf(expression) >= 0)
+    {
+      return null;
+    }
+  
+    // Matches something that can be assigned to--either an isolated identifier or something ending with a property accessor
+    // This is designed to be simple and avoid false negatives, but could produce false positives (e.g., a+b.c).
+    // This also will not properly handle nested brackets (e.g., obj1[obj2['prop']];).
+    var match = expression.match(_ASSIGNMENT_TARGET_EXP);
+    
+    if (match === null)
+    {
+      return null;
+    }
+    
+    var target = match[1] ? ('Object(' + match[1] + ')' + match[2]) : expression;
+    
+    return 'function(v){' + target + '=v;}';
+  };
+  
+  var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
+  var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
+  var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
+})();
+
+
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+*/
+
+/**
+ * @ignore
+ * @constructor
+ */
+oj.__ExpressionPropertyUpdater = function(element, bindingContext)
+{
+  // This function should be called when the bindings are applied initially and whenever the expression attribute changes
+  this.setupExpression = function(attrVal, propName, metadata)
+  {
+    var info = oj.__AttributeUtils.getExpressionInfo(attrVal);
+
+    if (propsWithLocalValue[propName])
+    {
+      propsWithLocalValue[propName] = null;
+    }
+
+    var oldListener = expressionListeners[propName];
+    if (oldListener)
+    {
+      oldListener['dispose']();
+      expressionListeners[propName] = null;
+    }
+
+    // Clean up property change listeners to handler the case when the type of the expression changes
+    var changeListener  = changeListeners[propName];
+    if (changeListener)
+    {
+      element.removeEventListener(propName + _CHANGED_EVENT_SUFFIX, changeListener);
+      changeListeners[propName] = null;
+    }
+
+    var readOnly = metadata['readOnly'];
+
+    var expr = info.expr;
+
+    if (expr)
+    {
+      // TODO: consider moving  __CreateEvaluator() to a more generic utility class
+      var evaluator = oj.ComponentBinding.__CreateEvaluator(expr);
+
+      if (!readOnly)
+      {
+        ko.ignoreDependencies(
+          function()
+          {
+            expressionListeners[propName] = ko.computed(
+              // The read() function for the computed will be called when the computed is created and whenever any of
+              // the expression's dependency changes
+              function()
+              {
+                if (!propsWithLocalValue[propName])
+                {
+                  var value = evaluator(bindingContext);
+                  
+                  _setElementProperty(propName, ko.utils.unwrapObservable(value));
+              
+                }
+              }
+            );
+          }
+        );
+      }
+
+      changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator, metadata['writeback'] && !info.downstreamOnly);
+
+      return true;
+    }
+
+
+    return false;
+  }
+  
+  
+  this.teardown = function(element)
+  {
+    var names = Object.keys(expressionListeners);
+    for (var i=0; i<names.length; i++)
+    {
+      expressionListeners[names[i]]['dispose']();
+    }
+    expressionListeners = {};
+
+
+    // reset change listeners
+    names = Object.keys(changeListeners);
+    for (i=0; i<names.length; i++)
+    {
+      var prop = names[i];
+      element.removeEventListener(prop + _CHANGED_EVENT_SUFFIX, changeListeners[prop]);
+    }
+    changeListeners = {};
+  }
+
+
+  function _listenToPropertyChanges(propName, expr, evaluator, writable)
+  {
+    var listener = function(evt)
+    {
+      var written  = false;
+      if (!_isSettingProperty(propName))
+      {
+        if (writable)
+        {
+          ko.ignoreDependencies(
+            function()
+            {
+              var value = evt['detail']['value'];
+
+              var target = evaluator(bindingContext);
+
+              if (ko.isWriteableObservable(target))
+              {
+                written = true;
+                target(value);
+              }
+              else
+              {
+                 var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
+                  if (writerExpr != null)
+                  {
+                    // TODO: consider caching the evaluator
+                    var wrirerEvaluator = oj.ComponentBinding.__CreateEvaluator(writerExpr);
+                    wrirerEvaluator(bindingContext)(value);
+                    written = true;
+                  }
+              }
+            }
+          );
+        }
+        if (!written)
+        {
+          propsWithLocalValue[propName] = true;
+        }
+      }
+
+    };
+
+    element.addEventListener(propName + _CHANGED_EVENT_SUFFIX, listener);
+    return listener;
+  }
+
+
+  function _setElementProperty(propName, value)
+  {
+    _startSettingProperty(propName);
+    try
+    {
+      element[propName] = value;
+    }
+    finally
+    {
+      _endSettingProperty(propName);
+    }
+  }
+  
+  function _startSettingProperty(propName)
+  {
+    var count = _settingProperties[propName] || 0;
+    count++;
+    _settingProperties[propName] = count;
+  }
+  
+  function _endSettingProperty(propName)
+  {
+    var count = _settingProperties[propName];
+    if (!count)
+    {
+      oj.Logger.error("Property count undefrlow");
+      return;
+    }
+    count--;
+    if (count === 0)
+    {
+      _settingProperties[propName] = null;
+    }
+    else
+    {
+      _settingProperties[propName] = count;
+    }
+  }
+  
+  function _isSettingProperty(propName)
+  {
+    return _settingProperties[propName];
+  }
+  
+
+  var expressionListeners = {};
+  var changeListeners = {};
+  var propsWithLocalValue = {};
+  var _settingProperties = {};
+  var _CHANGED_EVENT_SUFFIX = "-changed";
+}
+
+/*jslint browser: true*/
+/*
+** Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+*/
+
+
+/**
+ * @class Utilities for creating knockout observable to implement responsive pages.
+ * @since 1.1.0
+ * @export
+ */
+oj.ResponsiveKnockoutUtils = {};
+
+
+
+/**
+ * <p>creates an observable that 
+ * returns true or false based on a media query string.</p>
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
+ *    var customQuery = oj.ResponsiveKnockoutUtils.createMediaQueryObservable(
+ *                                         '(min-width: 400px)');
+ * </code></pre>
+ * 
+ * @param {string} queryString media query string, for example '(min-width: 400px)'
+ * @return a knockout observable  that 
+ *              returns true or false based on a media query string.
+ * @export
+ * @static
+ */
+oj.ResponsiveKnockoutUtils.createMediaQueryObservable = function(queryString)
+{
+
+  if (queryString == null)
+  {
+    throw new Error("oj.ResponsiveKnockoutUtils.createMediaQueryObservable: aborting, queryString is null");
+  }
+
+  var query = window.matchMedia(queryString);
+
+  var observable = ko.observable(query.matches);
+
+  // add a listener for future changes
+  query.addListener(function(query) {
+      observable(query.matches);
+      //console.log("query listener called! query.matches = " + query.matches + ", size = " + (document.outerWidth || document.body.clientWidth));
+  });
+
+
+ 
+  // There is a major bug in webkit, tested on ios 7 going from
+  // landscape to portrait.
+  //    https://bugs.webkit.org/show_bug.cgi?id=123293
+  // 
+  // Basically if you use a media query in css
+  // then the js matchmedia call won't work! 
+  //
+  // According to the bug this is known to be on webkit 538.4,
+  // but I see it on 537.51 as well which is earlier, so 
+  // assume the problem exists generally on safari.
+  // Chrome now uses blink instead of webkit, but chrome
+  // still has webkit in their user agent string, however they
+  // now only change the number after "Chrome".
+  
+  if (navigator.userAgent.indexOf("WebKit") != -1 && 
+      navigator.userAgent.indexOf("Chrome") == -1) 
+  {
+    $(window).resize(function() {
+      //console.log("Resize called! Size = " + (document.outerWidth || document.body.clientWidth));
+
+      // Somehow if I change some text in the dom on resize 
+      // the query listener is called
+      var selector = "oj-webkit-bug-123293";
+
+      if($('body').has("." + selector).length === 0) 
+      {
+        // setting display: none doesn't work, so using 
+        // oj-helper-hidden-accessible because this visually 
+        // hides the content without using display:none. 
+        // However we don't want screen readers to read 
+        // this so setting aria-hidden to true.
+        $('body').append('<div aria-hidden="true" class="oj-helper-hidden-accessible ' + selector + '">'); // @HTMLUpdateOK 
+      }
+
+      $("." + selector).text((new Date().getMilliseconds()).toString()); // @HTMLUpdateOK 
+    });
+  }
+  
+  return observable;
+}
+
+
+/**
+ * This function creates a computed observable, the 
+ * value of which is one of the {@link oj.ResponsiveUtils.SCREEN_RANGE} constants. 
+ * For example when the width is in the 
+ * range defined by the sass variable $mediumScreenRange then 
+ * the observable returns <code>oj.ResponsiveUtils.SCREEN_RANGE.MD</code>, 
+ * but if it's in the range defined by $largeScreenRange then 
+ * it returns <code>oj.ResponsiveUtils.SCREEN_RANGE.LG</code>, etc. 
+ * 
+ * 
+ * 
+ * <p>Example:</p>
+ * <pre class="prettyprint">
+ * <code>
+ *        // create an observable which returns the current screen range
+ *        self.screenRange = oj.ResponsiveKnockoutUtils.createScreenRangeObservable();
+ *
+ *        self.label2 = ko.computed(function() {
+ *          var range = self.screenRange();
+ * 
+ *          if ( oj.ResponsiveUtils.compare( 
+ *                       range, oj.ResponsiveUtils.SCREEN_RANGE.MD) <= 0)
+ *          {
+ *            // code for when screen is in small or medium range
+ *          }
+ *          else if (range == oj.ResponsiveUtils.SCREEN_RANGE.XL)
+ *          {
+ *            // code for when screen is in XL range
+ *          }
+ *        });
+ * </code></pre>
+ *
+ * @return a knockout observable the value of which is one of the
+ *  screen range constants, for example oj.ResponsiveUtils.SCREEN_RANGE.MD
+ * @export
+ * @static
+ */
+oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
+{
+  // queryies
+  var xxlQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XXL_UP);
+
+  var xlQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.XL_UP);
+
+  var lgQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.LG_UP);
+
+  var mdQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP);
+
+  var smQuery = oj.ResponsiveUtils.getFrameworkQuery(
+                                oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.SM_UP);
+
+
+
+  // observables
+  var xxlObservable = xxlQuery == null ? 
+                      null : 
+                      oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xxlQuery);
+
+  var xlObservable = xlQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(xlQuery);
+
+  var lgObservable = lgQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(lgQuery);
+
+  var mdObservable = mdQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(mdQuery);
+
+  var smObservable = smQuery == null ? 
+                     null : 
+                     oj.ResponsiveKnockoutUtils.createMediaQueryObservable(smQuery);
+
+
+  return ko.computed(function() {
+    if (xxlObservable && xxlObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.XXL; 
+
+    if (xlObservable && xlObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.XL; 
+
+    if (lgObservable && lgObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.LG; 
+
+    if (mdObservable && mdObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.MD; 
+
+    if (smObservable && smObservable())
+      return oj.ResponsiveUtils.SCREEN_RANGE.SM; 
+
+    throw new Error(" NO MATCH in oj.ResponsiveKnockoutUtils.createScreenRangeObservable");
+
+  });
+}
+
+/**
+ * Returns a data layer renderer function and executes the template specified in 
+ * the binding attribute. (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getDataLayerRenderer(bindingContext, template) {
+  return function (context) {
+    // runs the template
+    var model = bindingContext['createChildContext'](context['data']);
+    ko['renderTemplate'](template, model, {
+                           'afterRender': function(renderedElement)
+                           {
+                               $(renderedElement)['_ojDetectCleanData']();
+                           }}, context['parentElement']);
+    return null;
+  };
+}
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedAttributes(name, value, bindingContext) {
+  if (name === "areaLayers") {
+    for (var i = 0; i < value.length; i++) {
+      var areaDataLayer = value[i]['areaDataLayer'];
+      if (areaDataLayer) {
+        var template = areaDataLayer['template'];
+        if (template != null) {
+          areaDataLayer['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
+        }
+      }
+    }
+    return {'areaLayers': value};
+  }
+  else if (name === "pointDataLayers") {
+    for (var i = 0; i < value.length; i++) {
+      var template = value[i]['template'];
+      if (template != null) {
+        value[i]['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
+      }
+    }
+    return {'pointDataLayers': value};
+  }
+  return null;
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["areaLayers", "pointDataLayers"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedAttributes(name, value, bindingContext);
+  },
+  'for': 'ojThematicMap'
+});
+
+/**
+ * Returns a data layer renderer function and executes the template specified in
+ * the binding attribute. (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getTooltipRenderer(bindingContext, template) {
+  return function (context) {
+    // runs the template
+    var dummyDiv = document.createElement("div");
+    dummyDiv.style.display = "none";
+    var model = bindingContext['createChildContext'](context);
+    ko['renderTemplate'](template, model, {
+                            'afterRender': function(renderedElement)
+                            {
+                                $(renderedElement)['_ojDetectCleanData']();
+                            }}, dummyDiv);
+    var elem = dummyDiv.children[0];
+    if (elem) {
+      dummyDiv.removeChild(elem);
+      $(dummyDiv).remove();
+      return elem;
+    }
+    return null;
+  };
+}
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedTooltipAttribute(name, value, bindingContext) {
+  if (name === "tooltip" && value['template']) {
+     value['renderer'] = _getTooltipRenderer(bindingContext, value['template']);
+  }   
+  return {'tooltip': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["tooltip"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTooltipAttribute(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTooltipAttribute(name, value, bindingContext);
+  },
+  'for': "tooltipOptionRenderer"
+});
+
+// Default declarations for all components supporting tooltips
+(function() {
+  var componentsArray = ['ojChart', 'ojDiagram', 'ojNBox', 'ojPictoChart', 'ojSunburst', 'ojTagCloud', 'ojThematicMap', 'ojTreemap',
+                         'ojDialGauge', 'ojLedGauge', 'ojRatingGauge','ojSparkChart', 'ojStatusMeterGauge'];
+  for(var i = 0; i < componentsArray.length; i++) {
+    oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({ 
+      "for": componentsArray[i],
+      "use": "tooltipOptionRenderer"
+    });
+  }                   
+})();
+
+//
+// Define a template source that allows the use of a knockout array (ko[])
+// to provide storage for a template string.
+//
+// This simplifies template assignment and template usage for the user, as shown in the following example:
+//
+// Template Assignment:
+//
+//   ko.templates["myKey"] = templateText;
+//
+// Template Usage:
+//
+//   <div data-bind="template: {name: myKey}">
+//
+/*jslint browser: true*/
+
+/**
+ * @export
+ */
+oj.koStringTemplateEngine = {};
+
+/**
+ * @export
+ */
+oj.koStringTemplateEngine.install = function() 
+{
+    //define a template source that tries to key into an object first to find a template string
+
+    if (ko.templates) return;
+
+    var _templateText = {}; // Stores the text property for the template object.
+    var _templateData = {}; // Stores the data property for the template object.
+
+    // data = {},
+    var _engine = new ko['nativeTemplateEngine']();
+
+    /**
+     *  @constructor
+     *  @private
+     */
+
+    var StringTemplate = function(template) {
+
+        this._templateName = template;
+
+        this.text = function(value) 
+	{
+	    // When passed no parameters, return the template object.
+            if (!value)
+	    {
+                return _templateText[this._templateName];
+            }
+
+            _templateText[this._templateName] = value;
+        };
+
+        this.data = function(key, value)
+	{
+
+            if (!_templateData[this._templateName]) {
+		_templateData[this._templateName] = {};
+            }
+
+            if (arguments.length === 1) {
+                return _templateData[this._templateName][key];
+            }
+
+            _templateData[this._templateName][key] = value;
+        };
+    };
+
+    //
+    // Override knockout's makeTemplateSource(), returning the new stringTemplate 
+    //
+    _engine['makeTemplateSource'] = function(template, templateDocument)
+    {
+	if (typeof template == "string") 
+	{
+            templateDocument = templateDocument || document;
+            var elem = templateDocument.getElementById(template);
+
+            if (elem) 
+	    {
+		return new ko['templateSources']['domElement'](elem);
+	    }
+            return new StringTemplate(template);
+	}
+        if ((template && (template.nodeType == 1)) || (template.nodeType == 8)) 
+	{
+            return new ko['templateSources']['anonymousTemplate'](template);
+        }
+    };
+
+    //make the templates accessible
+    // ko.templates = _templateText;
+    ko.templates = _templateText;
+
+    //make this new template engine our default engine
+    ko['setTemplateEngine'](_engine);
+};
+
+
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+*/
+(function()
+{
+  ko['bindingHandlers']['_ojCustomElement'] =
+  {
+   
+    'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
+    {
+      var callbackId = 0;
+      var _expressionHandler;
+      var attributeListener;
+      
+      var componentCreatePromsie = oj.Components.getCreatePromise(element);
+      
+      
+      function cleanup()
+      {
+        if (_expressionHandler)
+        {
+          _expressionHandler.teardown();
+          _expressionHandler = null;
+        }
+        
+       
+        if(attributeListener)
+        {
+          element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
+          attributeListener = null;
+        }
+        
+        
+        
+        
+      };
+      
+      
+      function setup()
+      {
+        var metadata = oj.Components.getMetadata(element.tagName);
+        if (!metadata)
+        {
+          return;
+        }
+        var metadataProps = metadata['properties'];
+        if (!metadataProps)
+        {
+          return;
+        }
+        
+        var names = Object.keys(metadataProps);
+        if (names.length === 0)
+        {
+          return;
+        }
+        
+        _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext);
+        
+        names.forEach(
+          function(name)
+          {
+            var attrName = oj.__AttributeUtils.propertyNameToAttribute(name);
+            
+            if (element.hasAttribute(name))
+            {
+              var attrVal = element.getAttribute(attrName);
+              _expressionHandler.setupExpression(attrVal, name, metadataProps[name]);
+            }
+      
+          }
+        );
+        
+        attributeListener = function(evt)
+          {
+            var detail = evt['detail'];
+            var attr = detail['attribute'];
+            var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
+            
+            var metadata = metadataProps[propName];
+            _expressionHandler.setupExpression(detail['value'], propName, metadata);
+          };
+            
+        element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
+         
+        
+        element.classList.add("oj-complete");
+      };
+  
+      // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
+      // update() will be called only once as a result
+      ko.ignoreDependencies(
+        function()
+        {
+          ko.computed(
+            function()
+            {
+              // Access valueAccesor to ensure that the binding is re-initialzied when an
+              // observable ViewModel is mutated
+              valueAccessor();
+              
+              if (!ko.computedContext.isInitial()) 
+              {
+                cleanup();
+              }
+              
+              callbackId++;
+              
+              
+              function _createCallbackWithIdMatching(currentId, callback)
+              {
+                var ret = function(id, value)
+                {
+                  if (id === callbackId)
+                  {
+                    callback(value);
+                  }
+                }.bind(undefined, currentId);
+                return ret;
+              }
+              
+              componentCreatePromsie.then(
+                _createCallbackWithIdMatching(callbackId,
+                  function()
+                  {
+                    //resolved
+                    setup();
+                  }
+                ),
+                _createCallbackWithIdMatching(callbackId,
+                  function(reason)
+                  {
+                    //rejected
+                    oj.Logger.error("Component create Promise rejected. Reason: %o", 
+                        reason);
+                  }
+                )
+              
+              
+              );
+              
+              
+            },
+            null,
+            {'disposeWhenNodeIsRemoved' : element}
+          )
+        }
+      );
+  
+      ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup);
+      
+    
+  
+    }
+  }
+  
+  var _ATTRIBUTE_CHANGED = 'attribute-changed';
+})();
+
+
+
 /**
  * Returns a data layer renderer function and executes the template specified in
  * the binding attribute. (for example, a knockout template).
@@ -2418,165 +3036,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     return _handleManagedGaugeAttributes(name, value, bindingContext);
   },
   'for': 'ojStatusMeterGauge'
-});
-
-/**
- * Returns a header renderer function executes the template specified in the binding attribute.
- * (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getDataGridHeaderRenderer(bindingContext, template)
-{
-    return function(context)
-    {
-        var parent, childContext;
-
-        parent = context['parentElement'];
-        // runs the template
-        // runs the template
-        childContext = bindingContext['createChildContext'](context['data'], null, 
-                           function(binding)
-                           {
-                               binding['$key'] = context['key'];
-                               binding['$metadata'] = context['metadata'];
-                               binding['$headerContext'] = context;
-                           }
-                       );
-        ko['renderTemplate'](template, childContext, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, parent);
-
-        // tell the datagrid not to do anything
-        return null;
-    };
-}
-
-/**
- * Returns a cell renderer function executes the template specified in the binding attribute.
- * (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getDataGridCellRenderer(bindingContext, template)
-{
-    return function(context)
-    {
-        var parent, childContext;
-
-        parent = context['parentElement'];
-        // runs the template
-        childContext = bindingContext['createChildContext'](context['data'], null, 
-                           function(binding)
-                           {
-                               binding['$keys'] = context['keys'];
-                               binding['$metadata'] = context['metadata'];
-                               binding['$cellContext'] = context;
-                           }
-                       );
-        ko['renderTemplate'](template, childContext, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, parent);
-
-        // tell the datagrid not to do anything
-        return null;
-    };
-}
-
-oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
-{
-  'attributes': ["header", "cell"],
-  'init': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
-  {
-    var row, rowTemplate, column, columnTemplate, cellTemplate;
-    if (name === "header")
-    {
-        // find row template and creates a renderer
-        row = value['row'];
-        if (row != null)
-        {
-            rowTemplate = row['template'];
-            if (rowTemplate != null)
-            {
-                row['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
-            }
-        }
-
-        // find column template and creates a renderer
-        column = value['column'];
-        if (column != null)
-        {
-            columnTemplate = column['template'];
-            if (columnTemplate != null)
-            {
-                column['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
-            }
-        }
-
-        return {'header': value};
-    }
-    else if (name === "cell")
-    {
-        // find the cell template and creates a renderer
-        cellTemplate = value['template'];
-        if (cellTemplate != null)
-        {
-            value['renderer'] = _getDataGridCellRenderer(bindingContext, cellTemplate);
-        }
-        return {'cell': value};
-    }
-  },
-  'update': function(name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext)
-  {
-    var row, rowTemplate, column, columnTemplate, cellTemplate;
-    if (name === "header")
-    {
-        // find row template and creates a renderer
-        row = value['row'];
-        if (row != null)
-        {
-            rowTemplate = row['template'];
-            if (rowTemplate != null)
-            {
-                row['renderer'] = _getDataGridHeaderRenderer(bindingContext, rowTemplate);
-            }
-        }
-
-        // find column template and creates a renderer
-        column = value['column'];
-        if (column != null)
-        {
-            columnTemplate = column['template'];
-            if (columnTemplate != null)
-            {
-                column['renderer'] = _getDataGridHeaderRenderer(bindingContext, columnTemplate);
-            }
-        }
-
-        return {'header': value};
-    }
-    else if (name === "cell")
-    {
-        // find the cell template and creates a renderer
-        cellTemplate = value['template'];
-        if (cellTemplate != null)
-        {
-            value['renderer'] = _getDataGridCellRenderer(bindingContext, cellTemplate);
-        }
-        return {'cell': value};
-    }
-    return null;
-  },
-      
-  'for': 'ojDataGrid'
 });
 
 /*jslint browser: true, devel: true*/
@@ -2684,6 +3143,7 @@ function _getTableRowTemplateRenderer(bindingContext, template)
                            {
                                $(renderedElement)['_ojDetectCleanData']();
                            }}, params['rowContext']['parentElement'], 'replaceNode');
+
   };
 }
 

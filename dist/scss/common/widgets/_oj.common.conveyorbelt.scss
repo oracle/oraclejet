@@ -14,13 +14,55 @@
     /* conveyorbelt */
     /* --------------------------------------------------------------- */
     
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-conveyor-belt:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+    
     .oj-conveyorbelt {
         position: relative;
     }
     
+    .oj-conveyorbelt,
+    .oj-conveyorbelt-content-container {
+        @include oj-display-flex-property();
+        @include oj-align-items-property(center);
+    }
+    
+    //oj-conveyorbelt-vertical is applied to the root element when the
+    //conveyor orientation is vertical
+    .oj-conveyorbelt.oj-conveyorbelt-vertical {
+        @include oj-display-inline-flex-property();
+    }
+    
+    .oj-conveyorbelt.oj-conveyorbelt-vertical,
+    .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-content-container {
+        @include oj-flex-direction-property(column);
+    }
+    
+    //applied to the container around the items in the conveyor
+    .oj-conveyorbelt-content-container {
+        overflow: hidden;
+        @include oj-flex-property(1 1 auto);
+    }
+    
+    //applied to each item in the conveyor
+    .oj-conveyorbelt-item {
+        @include oj-flex-property(0 0 auto);
+    }
+    
+    //when a navList is wrapped by a conveyorBelt, allow the navList to
+    //grow so that its items can grow, like a navList not wrapped by a 
+    //conveyorBelt
+    .oj-conveyorbelt-item.oj-navigationlist {
+        @include oj-flex-property(1 0 auto);
+    }
+    
     /* overflow indicators */
     .oj-conveyorbelt-overflow-indicator {
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
         width: $conveyorBeltOverflowIndicatorHeight;
         height: $conveyorBeltOverflowIndicatorHeight;
         //FIX BUG 19571727: specify line-height to be same as height so that
@@ -30,6 +72,8 @@
         cursor: $buttonCursor;
         @include oj-border-radius($buttonBorderRadius);
         border: 1px solid;
+        @include oj-flex-property(0 0 auto);
+        position: relative;
     }
 
     .oj-conveyorbelt-overflow-indicator.oj-default {

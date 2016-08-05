@@ -54,7 +54,7 @@
     }
 
     .oj-margin-bottom {
-      margin-top: $spacingMedium;
+      margin-bottom: $spacingMedium;
     }
 
     .oj-margin-start {
@@ -74,6 +74,49 @@
         margin-left: $spacingMedium;
       }
     }
+
+    // margins
+    .oj-margin-lg {
+      margin: $spacingLarge;
+    }
+
+    .oj-margin-lg-horizontal {
+      margin-left: $spacingLarge;
+      margin-right: $spacingLarge;
+    }
+
+    .oj-margin-lg-vertical {
+      margin-top: $spacingLarge;
+      margin-bottom: $spacingLarge;
+    }
+
+    .oj-margin-lg-top {
+      margin-top: $spacingLarge;
+    }
+
+    .oj-margin-lg-bottom {
+      margin-bottom: $spacingLarge;
+    }
+
+    .oj-margin-lg-start {
+      @include oj-ltr() {
+        margin-left: $spacingLarge;
+      }
+      @include oj-rtl() {
+        margin-right: $spacingLarge;
+      }
+    }
+
+    .oj-margin-lg-end {
+      @include oj-ltr() {
+        margin-right: $spacingLarge;
+      }
+      @include oj-rtl() {
+        margin-left: $spacingLarge;
+      }
+    }
+
+
 
 
     // padding
@@ -116,5 +159,48 @@
         padding-left: $spacingMedium;
       }
     }
+
+
+    // padding
+    .oj-padding-lg {
+      padding: $spacingLarge;
+    }
+
+    .oj-padding-lg-horizontal {
+      padding-left: $spacingLarge;
+      padding-right: $spacingLarge;
+    }
+
+    .oj-padding-lg-vertical {
+      padding-top: $spacingLarge;
+      padding-bottom: $spacingLarge;
+    }
+
+    .oj-padding-lg-top {
+      padding-top: $spacingLarge;
+    }
+
+    .oj-padding-lg-bottom {
+      padding-top: $spacingLarge;
+    }
+
+    .oj-padding-lg-start {
+      @include oj-ltr() {
+        padding-left: $spacingLarge;
+      }
+      @include oj-rtl() {
+        padding-right: $spacingLarge;
+      }
+    }
+
+    .oj-padding-lg-end {
+      @include oj-ltr() {
+        padding-right: $spacingLarge;
+      }
+      @include oj-rtl() {
+        padding-left: $spacingLarge;
+      }
+    }
+    
   }
 }

@@ -12,7 +12,14 @@
 
     /* paging control */
     /* --------------------------------------------------------------- */
-    
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-paging-control:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /* Styling for the component. Set the line-height back to normal in case it 
        was set to 0 by the table/datagrid footer classes */
     .oj-pagingcontrol {
@@ -115,15 +122,15 @@
       outline: none;
     }
     
-    /* Styling for the page mode dot link when hovered. */
+    /* Styling for the page mode dot link when focused. */
     .oj-pagingcontrol-nav-dot.oj-focus {
-      outline: #4f4f4f dotted 1px;
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
     
     /* Styling for the page mode dot bullet. */
     .oj-pagingcontrol-nav-dot-bullet {
       font-size: 0;
-      background-color: #000000;
+      background-color: $boxShadowColor;
       border-radius: 50%;
       opacity: 0.2;
       position: relative;
@@ -141,14 +148,14 @@
     
     /* Styling for the page mode dot link when selected. */
     .oj-pagingcontrol-nav-dot-bullet.oj-selected {
-      background-color: #0572ce;
+      background-color: $iconColorActive;
       content: "";
       opacity: 1;
     }
     
     /* Styling for the page mode dot link when hovered. */
     .oj-pagingcontrol-nav-dot-bullet.oj-hover {
-      background-color: #0572ce;
+      background-color: $iconColorActive;
       content: "";
       opacity: 1;
     }
@@ -193,7 +200,6 @@
     .oj-pagingcontrol-nav-label {
       color: $formControlLabelColor;
       vertical-align: middle;
-      font-weight: bold;
       font-size: $fontSize;
       padding-top: 0.1em;
     }
@@ -241,7 +247,7 @@
 
     /* Styling for the page mode navigation page arrows. */
     .oj-pagingcontrol-nav-arrow {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       width: $buttonHeight;
       height: $buttonHeight;
       display: table-cell;

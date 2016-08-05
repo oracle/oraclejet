@@ -12,7 +12,14 @@
     
     /* dialog */
     /* --------------------------------------------------------------- */
-
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-dialog:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+    
     /* defines the stacking context of the dialog and for it's children '**/
     .oj-dialog-layer {
        @extend .oj-component-layer;
@@ -32,7 +39,7 @@
       // note: min-height overrides height auto, so do not 
       //       specify min-height in combination with height:auto
       // display: block;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-display-flex-property();
       @include oj-flex-direction-property(column);
     }
@@ -71,7 +78,7 @@
      cursor: $buttonCursor;
      border-width: 1px; 
      border-style: solid;
-     color: $buttonIconColor;   
+     color: $buttonIconColor;
      // We have a 1px border for active/hover, so make it transparent when inactive. 
      border-color: transparent;
     }
@@ -116,7 +123,7 @@
     .oj-dialog-body { 
       position: relative; 
       overflow: auto;   
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
     }
 
    // optional footer separator
@@ -197,13 +204,30 @@
       color: $textColor;
     }
 
-   // icons
-   //------------------------------------------
+  // Disable Chrome's automatic blue outline on the dialog container,
+  // the close wrapper, and the close icon.
+  .oj-dialog:focus, .oj-dialog-header-close-wrapper:focus,
+  .oj-dialog-header-close-wrapper:focus .oj-dialog-close-icon {
+    outline:none;
+  }
+
+  // The oj-focus-highlight class applies focus styling that may not be desirable
+  // when the focus results from pointer interaction (touch or mouse), but which is
+  // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+  // example keyboard or initial page load. See also the $focusHighlightPolicy variable,
+  // which controls when this class is set.
+  // Apply this to the dialog container and the close wrapper.
+ .oj-dialog.oj-focus-highlight,
+ .oj-dialog-header-close-wrapper.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+  }
+
+  // icons
+  //------------------------------------------
 
     .oj-dialog-close-icon { 
        @extend .oj-fwk-icon-cross;
     }
-
 
   }
 }

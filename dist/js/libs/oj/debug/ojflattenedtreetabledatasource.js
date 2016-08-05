@@ -50,6 +50,7 @@ oj.FlattenedTreeTableDataSource = function(data, options)
   this._eventHandlers = [];
   this._startIndex = 0;
   this._nodeSetList = [];
+  this._hasMore = true;
   
   // override the fetchSize with -1 if not already specified.
   if (this._data.getOption('fetchSize') == null)
@@ -63,7 +64,7 @@ oj.FlattenedTreeTableDataSource = function(data, options)
   // override the insert/removeRows function
   this._data.insertRows = function(insertAtIndex, insertAtKey, nodeSet)
   {
-    var i, row, rowIdx, rowKey;
+    var i, j, row, rowIdx, rowKey;
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
@@ -72,35 +73,29 @@ oj.FlattenedTreeTableDataSource = function(data, options)
       row = nodeSet.getData(i);
       rowKey = nodeSet.getMetadata(i)['key'];
       rowIdx = insertAtIndex + i;
-      self._nodeSetList[rowIdx] = {};
+      self._nodeSetList.splice(rowIdx, 0, {});
       self._nodeSetList[rowIdx]['nodeSet'] = nodeSet;
       self._nodeSetList[rowIdx]['startIndex'] = insertAtIndex;
-      rowArray.push(row);
+      
+      // update the startIndex of the shifted rows
+      for (j = rowIdx + 1; j < self._nodeSetList.length; j++)
+      {
+        self._nodeSetList[j]['startIndex'] = self._nodeSetList[j]['startIndex'] + 1;
+      }
+      rowArray.push(self._wrapWritableValue(rowIdx, row));
       keyArray.push(rowKey);
       indexArray.push(rowIdx);
       self._rows['data'].splice(rowIdx, 0, row);
       self._rows['keys'].splice(rowIdx, 0, rowKey);
       self._rows['indexes'].splice(rowIdx, 0, rowIdx);
     }
-    if (!self._pageSize)
-    {
-      // only publish an add event if we are not paged. If we are paged then we re-fetch later anyway
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
-    }
     self._realignRowIndices();
-    
-    if (self._pageSize)
-    {
-      setTimeout(function(){
-        self._data.refresh();
-        self._rows = null;
-        self.fetch();
-      }, 0);
-    }
+    self._hasMore = true;
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   };
   this._data.removeRows = function(rowKeys)
   {
-    var i, row, rowIdx;
+    var i, j, row, rowIdx;
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
@@ -112,25 +107,19 @@ oj.FlattenedTreeTableDataSource = function(data, options)
       rowArray.push('');
       keyArray.push('');
       indexArray.push(rowIdx);
+      self._nodeSetList.splice(rowIdx, 1);
+      // update the startIndex of the shifted rows
+      for (j = rowIdx + 1; j < self._nodeSetList.length; j++)
+      {
+        self._nodeSetList[j]['startIndex'] = self._nodeSetList[j]['startIndex'] - 1;
+      }
       self._rows['data'].splice(rowIdx, 1);
       self._rows['keys'].splice(rowIdx, 1);
       self._rows['indexes'].splice(rowIdx, 1);
     }
-    if (!self._pageSize)
-    {
-      // only publish an remove event if we are not paged. If we are paged then we re-fetch later anyway
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
-    }
     self._realignRowIndices();
-    
-    if (self._pageSize)
-    {
-      setTimeout(function(){
-        self._data.refresh();
-        self._rows = null;
-        self.fetch();
-      }, 0);
-    }
+    self._hasMore = true;
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
   };
   
   this.Init();
@@ -305,8 +294,13 @@ oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
  */
 oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
 {
-  oj.Assert.failedInAbstractFunction();
-  return null;
+  // only works for expanded keys
+  var rowIdx = this._data.getIndex(Object(id));
+  var row = this._rows['data'][rowIdx];
+  var wrappedRow = this._wrapWritableValue(rowIdx, row);
+  var result = {'data': wrappedRow, 'key': id, 'index': rowIdx};
+  
+  return Promise.resolve(result);
 };
 
 /**
@@ -372,7 +366,11 @@ oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
 {
   if (criteria == null)
   {
-      return Promise.resolve();
+    criteria = this['sortCriteria'];
+  }
+  else
+  {
+    this['sortCriteria'] = criteria;
   }
   
   var self = this;
@@ -410,6 +408,10 @@ oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
  */
 oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
 {
+  if (!this._hasMore)
+  {
+    return this._rows['data'].length;
+  }
   return -1;
 };
 
@@ -426,6 +428,10 @@ oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
  */
 oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function()
 { 
+  if (!this._hasMore)
+  {
+    return 'actual';
+  }
   return "unknown";
 };
 
@@ -433,8 +439,8 @@ oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function()
 
 oj.FlattenedTreeTableDataSource.prototype._getMetadata = function(index)
 {
-    
-  return this._nodeSetList[index]['nodeSet'].getMetadata(index - this._nodeSetList[index]['startIndex']);
+  var nodeSetStart = this._nodeSetList[index]['nodeSet'].getStart();
+  return this._nodeSetList[index]['nodeSet'].getMetadata(nodeSetStart + index - this._nodeSetList[index]['startIndex']);
 }
 
 oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
@@ -467,8 +473,8 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
         var i;
         for (i = this._startIndex; i <= endIndex; i++)
         {
-          rowArray[i - this._startIndex] = this._rows['data'][i];
-          keyArray[i - this._startIndex] = this._getMetadata(i)['key'];
+          rowArray[i - this._startIndex] = this._wrapWritableValue(i, this._rows['data'][i]);
+          keyArray[i - this._startIndex] = this._rows['keys'][i];
         }
         var result = {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
         this._endFetch(options, result, null);
@@ -500,7 +506,7 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
     {
       "success": function(nodeSet)
       {
-        self._handleFetchRowsSuccess(nodeSet, startIndex);
+        self._handleFetchRowsSuccess(nodeSet);
         options['refresh'] = true;
         var endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(self._rows, self._startIndex, self._pageSize);
         var rowArray = [];
@@ -508,8 +514,17 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
         var i;
         for (i = self._startIndex; i <= endIndex; i++)
         {
-          rowArray[i - self._startIndex] = self._rows['data'][i];
-          keyArray[i - self._startIndex] = self._getMetadata(i)['key'];
+          rowArray[i - self._startIndex] = self._wrapWritableValue(i, self._rows['data'][i]);
+          keyArray[i - self._startIndex] = self._rows['keys'][i];
+        }
+        // if there are results then we potentially have more
+        if (rowArray.length > 0)
+        {
+          self._hasMore = true;
+        }
+        else
+        {
+          self._hasMore = false;
         }
         var result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
         self._endFetch(options, result, null);
@@ -524,8 +539,9 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
   });
 };
 
-oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nodeSet, startIndex)
+oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nodeSet)
 {
+  var startIndex = nodeSet.getStart();
   var i, rowIdx;
   for (i = 0; i < nodeSet.getCount(); i++)
   {
@@ -542,7 +558,7 @@ oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nod
     this._rows['keys'] = [];
     this._rows['indexes'] = [];
   }
-  oj.FlattenedTreeTableDataSource._getRowArray(nodeSet, this, this._rows);
+  oj.FlattenedTreeTableDataSource._getRowArray(nodeSet, this, this._rows, startIndex);
 };
 
 /**
@@ -593,18 +609,15 @@ oj.FlattenedTreeTableDataSource._getEndIndex = function(rows, startIndex, pageSi
   return endIndex;
 };
 
-oj.FlattenedTreeTableDataSource._getRowArray = function(nodeSet, rowSet, rows)
+oj.FlattenedTreeTableDataSource._getRowArray = function(nodeSet, rowSet, rows, startIndex)
 {
-  var endIndex = nodeSet.getCount() - 1;
-  var startIndex = nodeSet.getStart();
-
   var i;
-  for (i = startIndex; i <= endIndex; i++)
+  for (i = 0; i < nodeSet.getCount(); i++)
   {
-    var row = nodeSet.getData(i);
-    rows['data'][i] = row;
-    rows['keys'][i] = '';
-    rows['indexes'][i] = i;
+    var row = nodeSet.getData(nodeSet.getStart() + i);
+    rows['data'][startIndex + i] = row;
+    rows['keys'][startIndex + i] = nodeSet.getMetadata(nodeSet.getStart() + i)['key'];
+    rows['indexes'][startIndex + i] = startIndex + i;
   }
 };
 
@@ -615,5 +628,37 @@ oj.FlattenedTreeTableDataSource.prototype._realignRowIndices = function()
   {
     this._rows['indexes'][i] = i;
   }
+};
+
+oj.FlattenedTreeTableDataSource.prototype._wrapWritableValue = function(index, m)
+{
+  var clonedRow = $.extend(true, {}, m);
+  var self = this;
+  var prop;
+  
+  for (prop in clonedRow)
+  {
+    if (clonedRow.hasOwnProperty(prop))
+    {
+      (function()
+      {
+        var localIndex = index;
+        var localProp = prop;
+        Object.defineProperty(clonedRow, prop,
+          {
+            get: function()
+            {
+              return self._rows['data'][localIndex][localProp];
+            },
+            set: function(newValue)
+            {
+              self._rows['data'][localIndex][localProp] = newValue;
+            }
+          });
+      })();
+    }
+  }
+  
+  return clonedRow;
 };
 });

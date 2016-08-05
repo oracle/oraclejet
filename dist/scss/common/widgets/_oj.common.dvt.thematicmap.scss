@@ -8,9 +8,16 @@
 
 @if $includeThematicMapClasses != false {
   @include module-include-once("common.thematicmap") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-thematic-map:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-thematicmap{
       @include oj-user-select-property(none);
-      outline:none;
       width:600px;
       height:375px;
     }
@@ -39,6 +46,20 @@
       background-color: $dvtMapMarkerBgColor;
       color: $textColor;
       font-size: $fontSize;
+    }
+
+    .oj-thematicmap-link {
+      color: $dvtMapLinkColor;
+    }
+
+    // Link inner hover color
+    .oj-thematicmap-link.oj-hover {
+      color: $dvtBorder2Color;
+    }
+
+    // Link outer selection color
+    .oj-thematicmap-link.oj-selected {
+      border-color: $dvtBorderColor;
     }
   }
 }

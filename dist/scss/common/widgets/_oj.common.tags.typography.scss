@@ -6,6 +6,24 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @import "../../utilities/oj.utilities";
 
+
+@mixin oj-local-font-face($family, $weight, $fontList) {
+  @font-face {
+    font-family: $family;
+    font-weight: $weight;
+    
+    $fontSrc: null;
+
+    @each $fontName in $fontList
+    {
+      $fontSrc: append($fontSrc, local($fontName), 'comma');
+    }
+
+    src: $fontSrc;
+  }
+}
+
+
 @if $includeTagsTypographyClasses != false {
   @include module-include-once("common.tagstypography") {
 
@@ -35,6 +53,7 @@
     @include oj-tag-selectors(
       $tagSelectors:   "a:active", 
       $classSelectors: ".oj-link:active") {
+        color: $linkTextColorActive;
         font-weight: $linkFontWeightActive;
         background-color: $linkBgColorActive;
         @include oj-border-radius($smallBorderRadius);
@@ -70,12 +89,14 @@
       $tagSelectors:   "h1", 
       $classSelectors: "h1.oj-header") {
           font-size: $header1FontSize;
+          font-weight: $header1FontWeight;
     }
 
     @include oj-tag-selectors(
       $tagSelectors:   "h2", 
       $classSelectors: "h2.oj-header") {
           font-size: $header2FontSize; 
+          font-weight: $header2FontWeight;
     }
 
    
@@ -83,6 +104,7 @@
       $tagSelectors:   "h3", 
       $classSelectors: "h3.oj-header") {
           font-size: $header3FontSize; 
+          font-weight: $header3FontWeight;
     }
 
     
@@ -90,6 +112,7 @@
       $tagSelectors:   "h4", 
       $classSelectors: "h4.oj-header") {
           font-size: $header4FontSize; 
+          font-weight: $header4FontWeight;
     }
 
     
@@ -97,6 +120,7 @@
       $tagSelectors:   "h5", 
       $classSelectors: "h5.oj-header") {
           font-size: $header5FontSize; 
+          font-weight: $header5FontWeight;
     }
 
 
@@ -124,6 +148,78 @@
       $tagSelectors:   "p", 
       $classSelectors: ".oj-p") {
       margin: 0 0 12px 0;
+    }
+
+
+
+    @if $fontWeightNormalization
+    {
+
+
+      $fontWeightKeys: 100,200,300,400,500,600,700,800,900; 
+      
+      @if index($fontFamily, 'Segoe UI') != null{
+        
+        $fontWeightToFamilySegoeUI: (
+          100: "Segoe UI Light",
+          200: ("Segoe UI Semilight","Segoe UI Light"),
+          300: ("Segoe UI Semilight","Segoe UI Light"),
+          400: "Segoe UI",
+          500: "Segoe UI Semibold",
+          600: "Segoe UI Semibold",
+          700: "Segoe UI Bold",
+          800: "Segoe UI Bold",
+          900: "Segoe UI Bold"
+        );
+        
+        @each $fontWeightKey in $fontWeightKeys {
+          @include oj-local-font-face("Segoe UI", $fontWeightKey, map-get($fontWeightToFamilySegoeUI, $fontWeightKey));
+        }
+      }
+
+      // needed for Roboto on chrome
+      @if (index($fontFamily, 'Roboto') != null or 
+           index($fontFamily, 'Arial') != null)
+      {
+        $fontWeightToFamilyArial: (
+          100: ("sans-serif-thin", "Arial"),
+          200: ("sans-serif-thin", "Arial"),
+          300: ("sans-serif-light", "Arial"),
+          400: ("sans-serif-regular", "Arial"),
+          500: ("sans-serif-medium", "Arial"),
+          600: ("sans-serif-medium", "Arial"),
+          700: ("sans-serif-bold", "Arial Bold"),
+          800: ("sans-serif-bold", "Arial Bold"),
+          900: ("sans-serif-bold", "Arial Bold"),
+        );
+        
+        @each $fontWeightKey in $fontWeightKeys {
+          @include oj-local-font-face("Arial", $fontWeightKey, map-get($fontWeightToFamilyArial, $fontWeightKey));
+        }
+      }
+
+      @if (index($fontFamily, 'Helvetica Neue') != null or 
+           index($fontFamily, 'BlinkMacSystemFont') != null or 
+           index($fontFamily, '-apple-system') != null )
+      {
+        $fontWeightToFamilyHelveticaNeue: (
+          100: "HelveticaNeue-Ultralight",
+          200: "HelveticaNeue-Thin",
+          300: "HelveticaNeue-Light",
+          400: "Helvetica Neue",
+          500: "HelveticaNeue-Medium",
+          600: "HelveticaNeue-Medium",
+          700: "HelveticaNeue-Bold",
+          800: "Helvetica-Bold",
+          900: "Helvetica-Bold",
+        );
+
+
+
+        @each $fontWeightKey in $fontWeightKeys {
+          @include oj-local-font-face("Helvetica Neue", $fontWeightKey, map-get($fontWeightToFamilyHelveticaNeue, $fontWeightKey));
+        }
+      }
     }
 
   }

@@ -338,6 +338,10 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         // dataLayerId:marker[index]
         subId = locator['dataLayer'] + ':marker[' + locator['index'] + ']';
       }
+      else if(subId == 'oj-thematicmap-link') {
+        // dataLayerId:link[index]
+        subId = locator['dataLayer'] + ':link[' + locator['index'] + ']';
+      }
       else if(subId == 'oj-thematicmap-tooltip') {
         subId = 'tooltip';
       }
@@ -359,6 +363,12 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       else if(subId.indexOf(':marker') > 0) {
         // dataLayerId:marker[index]
         locator['subId'] = 'oj-thematicmap-marker';
+        locator['dataLayer'] = subId.substring(0, subId.indexOf(':'));
+        locator['index'] = this._GetFirstIndex(subId);
+      }
+      else if(subId.indexOf(':link') > 0) {
+        // dataLayerId:link[index]
+        locator['subId'] = 'oj-thematicmap-link';
         locator['dataLayer'] = subId.substring(0, subId.indexOf(':'));
         locator['index'] = this._GetFirstIndex(subId);
       }
@@ -395,6 +405,9 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         {'path': 'styleDefaults/dataMarkerDefaults/opacity', 'property': 'opacity'},
         {'path': 'styleDefaults/dataMarkerDefaults/borderColor', 'property': 'border-top-color'}
       ];
+      styleClasses['oj-thematicmap-link'] = {'path': 'styleDefaults/linkDefaults/color', 'property': 'color'};
+      styleClasses['oj-thematicmap-link oj-hover'] = {'path': 'styleDefaults/linkDefaults/_hoverColor', 'property': 'color'};
+      styleClasses['oj-thematicmap-link oj-selected'] = {'path': 'styleDefaults/linkDefaults/_selectedColor', 'property': 'border-color'};
       return styleClasses;
     },
 
@@ -903,6 +916,30 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
     },
 
     /**
+     * Returns an object with the following properties for automation testing verification of the link with
+     * the specified data layer id and index.
+     *
+     * @param {string} dataLayerId
+     * @param {number} index
+     * @property {string} color
+     * @property {string} label
+     * @property {boolean} selected
+     * @property {string} tooltip
+     * @return {Object|null} An object containing properties for the link, or null if none exists.
+     * @expose
+     * @instance
+     * @memberof oj.ojThematicMap
+     */
+    getLink : function(dataLayerId, index) {
+      var ret = this._component.getAutomation().getData(dataLayerId, 'link', index);
+
+      // : Provide backwards compatibility for getters until 1.2.0.
+      this._AddAutomationGetters(ret);
+
+      return ret;
+    },
+
+    /**
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
@@ -926,7 +963,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
     _GetComponentDeferredDataPaths : function() {
       return {
         'areaLayers': ['areaDataLayer/areas', 'areaDataLayer/markers'],
-        'pointDataLayers': ['markers']
+        'pointDataLayers': ['markers', 'links']
       };
     },
 
@@ -1039,76 +1076,49 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  *     <td>Pans right in left to right locales.  Pans left in right to left locales.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>LeftArrow</kbd></td>
- *     <td>Move focus and selection to nearest base map region or marker to the left in same data layer.</td>
+ *     <td><kbd>LeftArrow or RightArrow</kbd></td>
+ *     <td>Move focus and selection to the left or right nearest data item in the collection (e.g. areas, markers, links) or 
+ *         the left link end marker if the focus is on a link and Alt + &lt; or Alt + &gt; was used to move there.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>RightArrow</kbd></td>
- *     <td>Move focus and selection to nearest base map region or marker to the right in same data layer.</td>
+ *     <td><kbd>UpArrow or DownArrow</kbd></td>
+ *     <td>Move focus and selection to the above or below nearest data item in the collection (e.g. areas, markers, links) or
+ *         to the next link above that is associated with the previous data item,
+ *         if the focus is on a link and Alt + &lt; or Alt + &gt; was used to move there.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>UpArrow</kbd></td>
- *     <td>Move focus and selection to nearest base map region or marker above in same data layer.</td>
+ *     <td><kbd>Shift + LeftArrow or Shift + RightArrow</kbd></td>
+ *     <td>Move focus and multi-select the left or right nearest data item in the collection (e.g. areas, markers, links).</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>DownArrow</kbd></td>
- *     <td>Move focus and selection to nearest base map region or marker below in same data layer.</td>
+ *     <td><kbd>Shift + UpArrow or Shift + DownArrow</kbd></td>
+ *     <td>Move focus and multi-select the nearest data item above or below in the collection (e.g. areas, markers, links).</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Shift + LeftArrow</kbd></td>
- *     <td>Move focus and multi-select nearest base map region or marker to the left in same data layer.</td>
+ *     <td><kbd>Ctrl + LeftArrow or Ctrl + RightArrow</kbd></td>
+ *     <td>Move focus to the left or right nearest data item in the collection (e.g. areas, markers, links), 
+ *         without changing the current selection.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Shift + RightArrow</kbd></td>
- *     <td>Move focus and multi-select nearest base map region or marker to the right in same data layer</td>
+ *     <td><kbd>Ctrl + UpArrow or Ctrl + DownArrow</kbd></td>
+ *     <td>Move focus to nearest data item above or below in the collection (e.g. areas, markers, links), without changing the current selection.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Shift + UpArrow</kbd></td>
- *     <td>Move focus and multi-select nearest base map region or marker above in same data layer.</td>
+ *     <td><kbd>] or [</kbd></td>
+ *     <td>Move focus and selection to nearest data item in the next data layer above or below.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Shift + DownArrow</kbd></td>
- *     <td>Move focus and multi-select nearest base map region or marker below in same data layer.</td>
+ *     <td><kbd>Shift + ] or Shift + [</kbd></td>
+ *     <td>Move focus to nearest data item in the next data layer above or below and multi-select.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Ctrl + LeftArrow</kbd></td>
- *     <td>Move focus to nearest base map region or marker to the left in same data layer, without changing the current selection.</td>
+ *     <td><kbd>Ctrl + ] or Ctrl + [</kbd></td>
+ *     <td>Move focus to nearest data item in the next data layer above or below, without changing the current selection.</td>
  *  </tr>
  *  <tr>
- *     <td><kbd>Ctrl + RightArrow</kbd></td>
- *     <td>Move focus to nearest base map region or marker to the right in same data layer, without changing the current selection.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Ctrl + UpArrow</kbd></td>
- *     <td>Move focus to nearest base map region or marker above in same data layer, without changing the current selection.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Ctrl + DownArrow</kbd></td>
- *     <td>Move focus to nearest base map region or marker below in same data layer, without changing the current selection.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>]</kbd></td>
- *     <td>Move focus and selection to nearest marker in the next data layer above.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>[</kbd></td>
- *     <td>Move focus and selection to nearest base map region or marker in the next data layer below.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Shift + ]</kbd></td>
- *     <td>Move focus to nearest marker in the next data layer above and multi-select.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Shift + [</kbd></td>
- *     <td>Move focus to nearest base map region or marker in the next data layer below and multi-select.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Ctrl + ]</kbd></td>
- *     <td>Move focus to nearest marker in the next data layer above, without changing the current selection.</td>
- *  </tr>
- *  <tr>
- *     <td><kbd>Ctrl + [</kbd></td>
- *     <td>Move focus to nearest base map region or marker in the next data layer below, without changing the current selection.</td>
+ *    <td><kbd>Alt + &lt; or Alt + &gt;</kbd></td>
+ *    <td>Move focus from a data item to an associated link. Note that the link must have been created referencing the data item's ID 
+ *        in its start/endLocation objects for an association to exist.</td>
  *  </tr>
  *  <tr>
  *     <td><kbd>Ctrl + Spacebar</kbd></td>
@@ -1131,7 +1141,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  * @ojsubid oj-thematicmap-area
  * @memberof oj.ojThematicMap
  *
- * @example <caption>Get the first area in the data layer with id 'states':</caption>
+ * @example <caption>Get the first area in the collection (e.g. areas, markers, links) with id 'states':</caption>
  * var nodes = $( ".selector" ).ojThematicMap( "getNodeBySubId", {'subId': 'oj-thematicmap-area', 'dataLayer': 'states', 'index' : 0} );
  */
 
@@ -1144,8 +1154,21 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  * @ojsubid oj-thematicmap-marker
  * @memberof oj.ojThematicMap
  *
- * @example <caption>Get the first marker in the data layer with id 'states':</caption>
+ * @example <caption>Get the first marker in the collection (e.g. areas, markers, links) with id 'states':</caption>
  * var nodes = $( ".selector" ).ojThematicMap( "getNodeBySubId", {'subId': 'oj-thematicmap-marker', 'dataLayer': 'states', 'index' : 0} );
+ */
+
+/**
+ * <p>Sub-ID for a link in the specified data layer.</p>
+ *
+ * @property {string} dataLayer The id of the data layer.
+ * @property {number} index The index of the link within the specified data layer.
+ *
+ * @ojsubid oj-thematicmap-link
+ * @memberof oj.ojThematicMap
+ *
+ * @example <caption>Get the first link in the collection (e.g. areas, markers, links) with id 'states':</caption>
+ * var nodes = $( ".selector" ).ojThematicMap( "getNodeBySubId", {'subId': 'oj-thematicmap-link', 'dataLayer': 'states', 'index' : 0} );
  */
 
 /**
@@ -1177,6 +1200,16 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  * @property {number} index The index of the marker within the specified data layer.
  *
  * @ojnodecontext oj-thematicmap-marker
+ * @memberof oj.ojThematicMap
+ */
+
+/**
+ * <p>Context for a link in the specified data layer.</p>
+ *
+ * @property {string} dataLayer The id of the data layer.
+ * @property {number} index The index of the link within the specified data layer.
+ *
+ * @ojnodecontext oj-thematicmap-link
  * @memberof oj.ojThematicMap
  */
 
@@ -1311,7 +1344,7 @@ oj.MapProviderUtils.geoJsonToBasemap = function(basemap, layer, mapProvider) {
     window[oj.MapProviderUtils._MANAGER ][oj.MapProviderUtils._UNPROCESSED] = [[], [], []];
   }
   window[oj.MapProviderUtils._MANAGER ][oj.MapProviderUtils._UNPROCESSED][0].push([basemap, layer, labels, areas, null, null, 0]);
-}
+};
 
 /**
  * Parses a GeoJSON Feature object and translates it to a Thematic Map area.
@@ -1346,7 +1379,7 @@ oj.MapProviderUtils.parseFeature = function(feature, keys, areas, labels) {
 
   // Generate area svg path
   areas[id] = oj.MapProviderUtils.geomToPath(geom);
-}
+};
 
 /**
  * Returns true if the geometry object is a supported type
@@ -1359,7 +1392,7 @@ oj.MapProviderUtils.isSupportedGeometry = function(geom) {
   if (type === oj.MapProviderUtils._TYPE_POLYGON || type === oj.MapProviderUtils._TYPE_MULTI_POLYGON)
     return true;
   return false;
-}
+};
 
 /**
  * Converts a GeoJSON Polygon or MultiPolygon geometry to a string of relative path commands.
@@ -1382,7 +1415,7 @@ oj.MapProviderUtils.geomToPath = function(geom) {
     });
   }
   return path;
-}
+};
 
 /**
  * Converts a GeoJSON Polygon coordinate array to a relative SVG path.
@@ -1402,7 +1435,7 @@ oj.MapProviderUtils.polygonToPath = function(coords) {
     path += oj.MapProviderUtils.linearRingToPath(linearArrayCoords);
   });
   return path;
-}
+};
 
 /**
  * Converts a GeoJSON LinearRing coordinate array to a relative SVG path. 
@@ -1414,42 +1447,131 @@ oj.MapProviderUtils.linearRingToPath = function(coords) {
   // [ [100.0, 0.0], [101.0, 1.0] ]
   var path, prevX, prevY;
   var prevCmd = 'M';
-  coords.forEach(function(coord) {
-    var x = coord[0];
-    var y = -coord[1]; // flip for svg because 0,0 is top left instead of bottom left
-    if (prevCmd === 'M') {
-      prevX = x;
-      prevY = y;
-      prevCmd = 'x'; // reset the previous command
-      path = 'M' + x + ' ' + y;
-      return;
-    }
-
-    var relX = x - prevX;
-    var relY = y - prevY;
-    // check to see if we can convert a l to a h/v command
-    if (prevCmd == 'l') {
-      if (prevX == x) { // vertical line
-        prevCmd = 'v';
-        prevY = y;
-        path = path + prevCmd + relY;
-        return;
-      } else if (prevY == y) { // horizontal line
-        prevCmd = 'h';
+  if (coords) {
+    coords.forEach(function(coord) {
+      var x = coord[0];
+      var y = -coord[1]; // flip for svg because 0,0 is top left instead of bottom left
+      if (prevCmd === 'M') {
         prevX = x;
-        path = path + prevCmd + relX;
+        prevY = y;
+        prevCmd = 'x'; // reset the previous command
+        path = 'M' + x + ' ' + y;
         return;
       }
-      path = path + ' ' + relX + ' ' + relY;
-    } else {
-      prevCmd = 'l';
-      path = path + 'l' + relX + ' ' + relY;
-    }
-    prevX = x;
-    prevY = y;
-  });
+
+      var relX = x - prevX;
+      var relY = y - prevY;
+      // check to see if we can convert a l to a h/v command
+      if (prevCmd == 'l') {
+        if (prevX == x) { // vertical line
+          prevCmd = 'v';
+          prevY = y;
+          path = path + prevCmd + relY;
+          return;
+        } else if (prevY == y) { // horizontal line
+          prevCmd = 'h';
+          prevX = x;
+          path = path + prevCmd + relX;
+          return;
+        }
+        path = path + ' ' + relX + ' ' + relY;
+      } else {
+        prevCmd = 'l';
+        path = path + 'l' + relX + ' ' + relY;
+      }
+      prevX = x;
+      prevY = y;
+    });
+  }
   return path + 'Z';
-}
+};
 
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojThematicMapMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "animationOnMapChange": {
+      "type": "string"
+    },
+    "areaLayers": {
+      "type": "Array<object>"
+    },
+    "basemap": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "initialZooming": {
+      "type": "string"
+    },
+    "mapProvider": {
+      "type": "object"
+    },
+    "markerZoomBehavior": {
+      "type": "string"
+    },
+    "maxZoom": {
+      "type": "number"
+    },
+    "panning": {
+      "type": "string"
+    },
+    "pointDataLayers": {
+      "type": "Array<object>"
+    },
+    "selection": {
+      "type": "object"
+    },
+    "styleDefaults": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "tooltipDisplay": {
+      "type": "string"
+    },
+    "touchResponse": {
+      "type": "string"
+    },
+    "zooming": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getArea": {},
+    "getContextByNode": {},
+    "getLink": {},
+    "getMarker": {},
+    "renderDefaultFocus": {},
+    "renderDefaultHover": {},
+    "renderDefaultSelection": {}
+  },
+  "extension": {
+    "_widgetName": "ojThematicMap"
+  }
+};
+oj.Components.registerMetadata('ojThematicMap', 'dvtBaseComponent', ojThematicMapMeta);
+oj.Components.register('oj-thematic-map', oj.Components.getMetadata('ojThematicMap'));
+})();
 });

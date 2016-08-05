@@ -13,6 +13,14 @@
   @include module-include-once("common.combobox") {
     /* combobox */
     /* --------------------------------------------------------------- */
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-combobox:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-combobox {
       position: relative;
       display: inline-block;
@@ -30,22 +38,21 @@
      */
     .oj-combobox-choice {
       @include oj-form-control-content;
-      @include oj-box-sizing-property(border-box);
-      height: $formControlTriggerHeight;
-      line-height: $formControlTriggerHeight;
-      display: block;
+      box-sizing: border-box;
+      @include oj-display-flex-property();
+      @include oj-align-items-property(center);
+      height: $formControlInputHeight;
+      width: 100%;
       outline: 0;
       overflow: hidden;
-      position: relative;
       white-space: nowrap;
       background-clip: padding-box;
+      @include oj-form-control-content-no-focus-padding;
       @include oj-ltr() {
         padding-left: $formControlPaddingHorizontal;
-        padding-right: 26px;
       }
       @include oj-rtl() {
         padding-right: $formControlPaddingHorizontal;
-        padding-left: 26px;
       }
     }
 
@@ -53,14 +60,13 @@
      * Applied to the input field
      */
     .oj-combobox-input {
-      width: 100%;
-      border: 0;
-      padding: 0;
       @include oj-box-shadow(none);
+      @include oj-flex-property(1);
+      border: 0;
       outline: 0; 
+      padding: 0;
       background-color: $formControlBgColor;
       color: $formControlInputValueColor;
-      display: inline-block;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis; 
@@ -78,25 +84,36 @@
      * Applied to the single-select drop down arrow
      */
     .oj-combobox-arrow {
-      display: inline-block;
+      box-sizing: border-box;
+      @include oj-display-inline-flex-property();
+      cursor: pointer;
       text-align: center;
-      position: absolute;
-      top: 0;
-      @include oj-ltr() {
-        right: 0;
-      }
-      @include oj-rtl() {
-        left: 0;
-      }
+      vertical-align: middle;
+      text-decoration: none;
     }
-
+    
+    .oj-combobox-arrow:hover, .oj-combobox-arrow:focus  {
+      text-decoration: none;
+    }
+    
+    /*
+     * Applied to the divider between the input and drop down arrow
+     */
+    .oj-combobox-divider {
+      box-sizing: border-box;
+      @include oj-display-inline-flex-property();
+      border-left: solid $formControlBorderWidth $formControlBorderColor;
+      height: 80%;
+      vertical-align: middle;
+    }
+    
     /* multi-select */
     
     /* 
      * Applied to the multi-select box which includes the input field and the selected choices
      */
     .oj-combobox-choices {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-form-control-content;
       height: auto;
       min-height: $formControlTriggerHeight;
@@ -140,7 +157,6 @@
      * Applied to the multi-select selected choice
      */
     .oj-combobox-selected-choice {
-      position: relative;
       line-height: 1.8rem;
       cursor: default;
       @include oj-border-radius($buttonBorderRadius);
@@ -227,6 +243,10 @@
       cursor: default;
     }
     
+    .oj-combobox.oj-disabled .oj-combobox-divider { 
+      border-color: $formControlBorderColorDisabled;
+    }
+    
     /* 
      * Disabled styles for multi-select 
      */
@@ -245,6 +265,18 @@
     .oj-combobox-multi.oj-disabled .oj-combobox-clear-entry {
       display: none;
       background: none; 
+    }
+	
+    /*
+     * Styling for focus state
+     */
+    .oj-combobox:not(.oj-disabled):not(.oj-read-only).oj-focus
+    .oj-combobox-choice,
+	.oj-combobox:not(.oj-disabled):not(.oj-read-only).oj-focus
+    .oj-combobox-choices,
+	{
+      @include oj-form-control-content-focus;
+      @include oj-form-control-content-focus-padding;
     }
         
     /* icon */
@@ -272,14 +304,31 @@
       line-height: inherit;
       padding-right: 5px;
       padding-left: 5px;
-
-      //icon font is a little too low
-      margin-top: -1px;
     }
     
     /* clear entry icon for combobox */
     .oj-combobox-clear-entry-icon {
       @extend .oj-fwk-icon-cross;
     }
+    
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    // need extra specificity since base selector has direction selectors
+    .oj-form-control-inherit .oj-combobox .oj-combobox-choice,
+    .oj-form-control-inherit .oj-combobox .oj-combobox-choices,
+    .oj-form-control-inherit .oj-combobox-input {    
+      @include oj-form-control-inherit();  
+    }
+
+    // TODO: multi combobox's color inherit does not work. the color does not get inherited. (same with select))
+    // TODO: multi combobox when it is in a narrow box, and multiple items are selected, it doesn't
+    // show all the items.
+    // TODO: single combobox's text-align: right makes the text overlap the icon 
+    // TODO: single combobox's height stretches for choice, but the icon no longer lines up
+
   }
 }

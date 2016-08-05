@@ -8,6 +8,13 @@
 @if $includeIndexerClasses != false {
   @include module-include-once("common.indexer") {
     
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-indexer:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /* Styling for the indexer widget container */
     .oj-indexer {
       width: $indexerItemWidth;
@@ -51,7 +58,7 @@
     }
 
     /* styling on focused item */
-    .oj-indexer.oj-focus-ancestor li.oj-focus {
+    .oj-indexer.oj-focus-ancestor li.oj-focus-highlight {
       outline-width: 1px;
       outline-style: dotted;
       outline-offset: -1px;

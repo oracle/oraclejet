@@ -10,8 +10,22 @@
 
     /* toolbar*/
     /* --------------------------------------------------------------- */
-    
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-toolbar:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-toolbar {
+
+        // Buttonset having display inline-flex introduces strange white spaces above and below when placed in toolbar
+        // Change toolbar to have flex display to fix this
+        @include oj-display-flex-property;
+        @include oj-align-items-property(center);
+        @include oj-flex-wrap-property(wrap);
+
         padding: 0.250em 0; //as per spec padding is only needed on top and bottom
         border-style: solid;
         border-color: $toolbarBorderColor;
@@ -23,6 +37,19 @@
     // override button margins
     .oj-toolbar .oj-button {
         margin-bottom: 0; //override hardcoded 4px in ojbutton
+    }
+
+    // spec says 4px spacing between non-separator elements in toolbar
+    .oj-toolbar > .oj-button,
+    .oj-toolbar > .oj-buttonset-multi {
+        margin-left: 0;
+        margin-right: 0.333em; // equals 4px in size 12 font
+    }
+
+    // Remove hardcoded 4px right margin from last element of toolbar
+    .oj-toolbar > .oj-buttonset-last,
+    .oj-toolbar > .oj-buttonset-multi:last-child {
+        margin-right: 0;
     }
 
     /* Apps can apply this class to a span to get a toolbar separator.  
@@ -37,11 +64,12 @@
         display:inline-block; 
         vertical-align:middle;
 
-        // spec says padding left/right 6px, but inline-block does not ignore whitespace,
-        // which means you get about ~4px from the whitespace, so use 2px.
-        // has to be margin, not padding, since the border is the separator.
+        // spec says padding left/right 6px. Since element to the left of the
+        // separator has margin-right of 4px (see above), only need 2px of 
+        // margin-left for the separator. 
+        // Has to be margin, not padding, since the border is the separator.
         margin-left: 0.167em; // equals 2px. see above
-        margin-right: 0.167em; // equals 2px. see above.
+        margin-right: 0.5em; // equals 6px. see above.
     }
 
     /* To layout multiple toolbars, an element with .oj-toolbars can contain 1 or more elements 
@@ -56,9 +84,15 @@
         background-color: $toolbarBgColor;
     }
 
+    .oj-toolbar-row {
+        @include oj-display-flex-property;
+        @include oj-align-items-property(center);
+        @include oj-flex-wrap-property(wrap);
+    }
+
     // when a toolbar is inside a toolbar row the toolbar row will do the chroming, if any
     .oj-toolbar-row .oj-toolbar {
-      display: inline-block;
+      @include oj-display-flex-property;
       background-color: transparent;
       border: 0;
     }
@@ -70,20 +104,17 @@
       @include oj-ltr()
       {
         border-left: 1px solid $toolbarBorderColor;
-        // spec says padding left/right 6px, but inline-block does not ignore whitespace,
-        // which means you get about ~4px from the whitespace, so use 2px.
-        
-        //Since the "toolbar divider" is a 1px border of second toolbar container, 
-        //the margin-left of (2+4) is the spacing on the left of the divider, 
-        //and the padding-left of 6 is the spacing on the right of the divider
-        margin-left: 0.167em; // equals 2px. see above
-        padding-left: 0.5em; //6px as per spec
+        // Since the "toolbar divider" is a 1px border of second toolbar container,
+        // the margin-left is the spacing on the left side of the divider,
+        // and the padding-left is the spacing on the right side of the divider.
+        margin-left: 0.5em; // 6px as per spec
+        padding-left: 0.5em; // 6px as per spec
       }
       @include oj-rtl()
       {
         border-right: 1px solid $toolbarBorderColor;
-        margin-right: 0.167em; // equals 2px. see above
-        padding-right: 0.5em; //6px as per spec
+        margin-right:  0.5em; // 6px as per spec
+        padding-right: 0.5em; // 6px as per spec
       }
     }
 

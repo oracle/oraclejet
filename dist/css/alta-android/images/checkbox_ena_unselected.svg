@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="enabledCheckBoxUnselected" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-	 x="0px" y="0px" width="48px" height="48px" viewBox="-7.5 8.5 48 48" enable-background="new -7.5 8.5 48 48"
-	 xml:space="preserve">
-<path fill="#6D6D6D" d="M25.5,40.49c0,0.55-0.45,1-1,1h-16c-0.55,0-1-0.45-1-1v-16c0-0.551,0.45-1,1-1h16c0.55,0,1,0.449,1,1V40.49z
-	 M23.75,25.641h-14v14h14V25.641z"/>
+<!-- Generator: Adobe Illustrator 19.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Enabled_Unchecked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48" enable-background="new 0 0 48 48" xml:space="preserve">
+<g>
+	<g>
+		<path fill="#6D6D6D" d="M31,15H17c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V17C33,15.89,32.1,15,31,15z M31,31H17
+			V17h14V31z"/>
+	</g>
+</g>
 </svg>

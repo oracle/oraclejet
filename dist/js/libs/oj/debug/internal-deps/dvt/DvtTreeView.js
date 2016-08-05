@@ -2873,7 +2873,8 @@ DvtTreeDefaults.prototype.Init = function(defaultsMap) {
   // This will only be called via subclasses.  Combine with defaults from this class before passing to super.
   var ret = {
     'skyros': dvt.JsonUtils.merge(defaultsMap['skyros'], DvtTreeDefaults.VERSION_1),
-    'alta': dvt.JsonUtils.merge(defaultsMap['alta'], {})
+    'alta': dvt.JsonUtils.merge(defaultsMap['alta'], {}),
+    'next': dvt.JsonUtils.merge(defaultsMap['next'], {})
   };
 
   DvtTreeDefaults.superclass.Init.call(this, ret);
@@ -3846,6 +3847,9 @@ var DvtTreemapNode = function(treemap, props) {
   this._headerLabelStyle = headerOptions['labelStyle'] ? new dvt.CSSStyle(headerOptions['labelStyle']) : null;
   this._bHeaderUseNodeColor = (headerOptions['useNodeColor'] ? headerOptions['useNodeColor'] : headerDefaults['useNodeColor']) == 'on';
 
+  this._className = props['className'];
+  this._style = props['style'];
+
   // Isolate Support
   this._isolate = headerOptions['isolate'] ? headerOptions['isolate'] : headerDefaults['isolate'];
   if (this._isolate == 'auto')
@@ -3864,20 +3868,20 @@ DvtTreemapNode.TEXT_STYLE_NODE = 'node';
 DvtTreemapNode.TEXT_STYLE_OFF = 'off';
 
 // Constants for All Nodes
-DvtTreemapNode.TEXT_BUFFER_HORIZ = 4;// Buffer for text alignment
+DvtTreemapNode.TEXT_BUFFER_HORIZ = 5;// Buffer for text alignment
 DvtTreemapNode.TEXT_BUFFER_VERT = 2;// Buffer for text alignment
 DvtTreemapNode.MIN_TEXT_BUFFER = 2;// Minimum buffer for text (on opposite side of alignment for example)
 DvtTreemapNode._LINE_FUDGE_FACTOR = 1;
 
 DvtTreemapNode._ANIMATION_ISOLATE_DURATION = 0.3;// in seconds
 // Constants for Group Headers
-DvtTreemapNode._MIN_TITLE_BAR_HEIGHT = 15;
-DvtTreemapNode._MIN_TITLE_BAR_HEIGHT_ISOLATE = 15;
+DvtTreemapNode._MIN_TITLE_BAR_HEIGHT = 22;
+DvtTreemapNode._MIN_TITLE_BAR_HEIGHT_ISOLATE = 22;
 DvtTreemapNode.DEFAULT_HEADER_BORDER_WIDTH = 1;
 DvtTreemapNode.DEFAULT_HEADER_WITH_NODE_COLOR_ALPHA = 0.5;
 DvtTreemapNode._ISOLATE_ICON_SIZE = 12;
-DvtTreemapNode._ISOLATE_GAP_SIZE = 1;
-DvtTreemapNode._ISOLATE_TOUCH_BUFFER = 2;
+DvtTreemapNode._ISOLATE_GAP_SIZE = 4;
+DvtTreemapNode._ISOLATE_TOUCH_BUFFER = 3;
 
 // Constants for Leaf Nodes
 DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR = '#FFFFFF';
@@ -4565,13 +4569,28 @@ DvtTreemapNode.prototype.animateUpdate = function(handler, oldNode) {
  */
 DvtTreemapNode.prototype._createShapeNode = function() {
   var context = this.getView().getCtx();
+  var options = this.getView().getOptions();
+  var bNodeGaps = options['nodeSeparators'] == 'gaps';
 
   // Create the basic shape with geometry
   var shape;
   if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
     // Create the header, which is made of an outer shape for the border and an inner shape for the fill
-    shape = new dvt.Rect(context, this._x, this._y, this._width, this._height);
-    this._innerShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+    if (bNodeGaps) {
+      var rects = this._getGeometriesWithGaps();
+
+      shape = new dvt.Rect(context, rects._shape.x, rects._shape.y, rects._shape.w, rects._shape.h);
+      this._innerShape = new dvt.Rect(context, rects._innerShape.x, rects._innerShape.y, rects._innerShape.w, rects._innerShape.h);
+
+      // Also draw a background shape to prevent bleed through during isolate
+      this._backgroundShape = new dvt.Rect(context, rects._backgroundShape.x, rects._backgroundShape.y, rects._backgroundShape.w, rects._backgroundShape.h);
+      this._backgroundShape.setSolidFill('#FFFFFF');
+      shape.addChild(this._backgroundShape);
+    }
+    else {
+      shape = new dvt.Rect(context, this._x, this._y, this._width, this._height);
+      this._innerShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+    }
 
     // Apply the style attributes to the header
     this.ApplyHeaderStyle(shape, this._innerShape);
@@ -4584,71 +4603,83 @@ DvtTreemapNode.prototype._createShapeNode = function() {
       this._isolateButton = this._createIsolateRestoreButton(shape);
   }
   else {
-    // Non-header node.  3 cases:
-    // All bevels: {shape: topLeftBevel, secondShape: bottomRightBevel, thirdShape: fill}
-    // Bottom right bevel only: {shape: bottomRightBevel, secondShape: fill}
-    // No bevels: {firstShape: fill}
+    // Non-header node.
     var fill = this.GetFill();
+    if (bNodeGaps) {
+      var rects = this._getGeometriesWithGaps();
+      shape = new dvt.Rect(context, rects._shape.x, rects._shape.y, rects._shape.w, rects._shape.h);
 
-    // Create the outermost shape
-    shape = new dvt.Rect(context, this._x, this._y, this._width, this._height);
+      // If the non-header node has children, use invisible fill so that the gaps on the
+      // children don't bleed through.
+      shape.setFill(this.hasChildren() ? dvt.SolidFill.invisibleFill() : fill);
+    }
+    else {
+      // All bevels: {shape: topLeftBevel, secondShape: bottomRightBevel, thirdShape: fill}
+      // Bottom right bevel only: {shape: bottomRightBevel, secondShape: fill}
+      // No bevels: {firstShape: fill}
 
-    // Create the bevel effect for the node: Disabled on phones/tablets for 1000+ nodes for performance reasons.
-    var bVisualEffects = this.getView().__getNodeCount() < 1000 || !dvt.Agent.isTouchDevice();
-    if (bVisualEffects && this._width >= DvtTreemapNode.MIN_SIZE_FOR_BORDER && this._height >= DvtTreemapNode.MIN_SIZE_FOR_BORDER) {
-      // Figure out the stroke colors
-      var topLeft = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
-      var bottomRight = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
-      if (this._pattern) {
-        topLeft = new dvt.SolidStroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
-        bottomRight = topLeft;
-      }
+      // Create the outermost shape
+      shape = new dvt.Rect(context, this._x, this._y, this._width, this._height);
 
-      // Retrieve the bevel colors and blend with the fill color to get the desired effect
-      var fillColor = this.getColor();
-      var topLeftColor = dvt.ColorUtils.interpolateColor(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR, fillColor, 1 - DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
-      var bottomRightColor = dvt.ColorUtils.interpolateColor(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, fillColor, 1 - DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
+      // Create the bevel effect for the node: Disabled on phones/tablets for 1000+ nodes for performance reasons.
+      var bVisualEffects = this.getView().__getNodeCount() < 1000 || !dvt.Agent.isTouchDevice();
+      if (bVisualEffects && this._width >= DvtTreemapNode.MIN_SIZE_FOR_BORDER && this._height >= DvtTreemapNode.MIN_SIZE_FOR_BORDER) {
+        // Figure out the stroke colors
+        var topLeft = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
+        var bottomRight = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
+        if (this._pattern) {
+          topLeft = new dvt.SolidStroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
+          bottomRight = topLeft;
+        }
 
-      // Creation of bevels varies based on the minimum of the width and height of the node:
-      // 0: Won't reach this code
-      // 1: No bevels
-      // 2: Bottom right bevel only
-      // 4+: All bevels
-      var minDim = Math.min(this._width, this._height);
+        // Retrieve the bevel colors and blend with the fill color to get the desired effect
+        var fillColor = this.getColor();
+        var topLeftColor = dvt.ColorUtils.interpolateColor(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR, fillColor, 1 - DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
+        var bottomRightColor = dvt.ColorUtils.interpolateColor(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, fillColor, 1 - DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
 
-      // Both bevels
-      if (minDim >= 4) {
-        // shape is the bottomRight bevel in this case
-        shape.setSolidFill(bottomRightColor);
+        // Creation of bevels varies based on the minimum of the width and height of the node:
+        // 0: Won't reach this code
+        // 1: No bevels
+        // 2: Bottom right bevel only
+        // 4+: All bevels
+        var minDim = Math.min(this._width, this._height);
 
-        // topLeftShape hides all but the bottomRight bevel
-        this._topLeftShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
-        this._topLeftShape.setSolidFill(topLeftColor);
-        this._topLeftShape.setMouseEnabled(false);
-        shape.addChild(this._topLeftShape);
+        // Both bevels
+        if (minDim >= 4) {
+          // shape is the bottomRight bevel in this case
+          shape.setSolidFill(bottomRightColor);
 
-        // fillShape exposes both bevels
-        this._fillShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
-        this._fillShape.setFill(fill);
-        this._fillShape.setMouseEnabled(false);
-        shape.addChild(this._fillShape);
-      }
-      else if (minDim >= 2) {
-        // Bottom Right Bevel
-        // shape is the bottomRight bevel in this case
-        shape.setSolidFill(bottomRightColor);
+          // topLeftShape hides all but the bottomRight bevel
+          this._topLeftShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
+          this._topLeftShape.setSolidFill(topLeftColor);
+          this._topLeftShape.setMouseEnabled(false);
+          shape.addChild(this._topLeftShape);
 
-        // fillShape exposes the bevel
-        this._fillShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
-        this._fillShape.setFill(fill);
-        this._fillShape.setMouseEnabled(false);
-        shape.addChild(this._fillShape);
+          // fillShape exposes both bevels
+          this._fillShape = new dvt.Rect(context, this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+          this._fillShape.setFill(fill);
+          this._fillShape.setMouseEnabled(false);
+          shape.addChild(this._fillShape);
+        }
+        else if (minDim >= 2) {
+          // Bottom Right Bevel
+          // shape is the bottomRight bevel in this case
+          shape.setSolidFill(bottomRightColor);
+
+          // fillShape exposes the bevel
+          this._fillShape = new dvt.Rect(context, this._x, this._y, this._width - 1, this._height - 1);
+          this._fillShape.setFill(fill);
+          this._fillShape.setMouseEnabled(false);
+          shape.addChild(this._fillShape);
+        }
+        else // No bevels
+          shape.setFill(fill);
       }
       else // No bevels
         shape.setFill(fill);
     }
-    else // No bevels
-      shape.setFill(fill);
+    shape.setStyle(this._style);
+    shape.setClassName(this._className);
   }
 
   // Add pointers between this node and the shape
@@ -4851,6 +4882,10 @@ DvtTreemapNode.prototype.ApplyHeaderStyle = function(shape, innerShape) {
     shape.setSolidFill(nodeHeaderDefaults['borderColor']);
     innerShape.setSolidFill(nodeHeaderDefaults['backgroundColor']);
   }
+
+  // Also update the background shape if one exists.
+  if (this._backgroundShape)
+    this._backgroundShape.setFill(innerShape.getFill());
 };
 
 /**
@@ -4862,7 +4897,7 @@ DvtTreemapNode.prototype.ApplyHeaderTextStyle = function(text, styleType) {
   var textStyle = [];
 
   // Top Level Header is Bold
-  if (this.GetDepth() <= 1)
+  if (this.GetDepth() <= 1 && this.getView().__getMaxDepth() >= 3)
     textStyle.push(new dvt.CSSStyle('font-weight:bold;'));
 
   // Header Default Style
@@ -4902,6 +4937,32 @@ DvtTreemapNode.prototype.handleMouseOut = function() {
 };
 
 /**
+ * Returns an object with rectangles referring to the geometries for the shapes.
+ * @return {object}
+ * @private
+ */
+DvtTreemapNode.prototype._getGeometriesWithGaps = function() {
+  var ret = {};
+  if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
+    ret._shape = new dvt.Rectangle(this._x, this._y, this._width - 1, this._titleBarHeight);
+    ret._innerShape = new dvt.Rectangle(this._x + 1, this._y + 1, this._width - 3, this._titleBarHeight - 1);
+    ret._backgroundShape = new dvt.Rectangle(this._x, this._y + this._titleBarHeight, this._width - 1, this._height - this._titleBarHeight - 1);
+  }
+  else {
+    // Non-header node with children, make 0 height so it doesn't bleed through the gaps.
+    if (this.hasChildren())
+      ret._shape = new dvt.Rectangle(this._x, this._y, 0, 0);
+    else {
+      // Allocate the gaps from the right and bottom sides.
+      var adjustedWidth = Math.max(this._width - 1, 0);
+      var adjustedHeight = Math.max(this._height - 1, 0);
+      ret._shape = new dvt.Rectangle(this._x, this._y, adjustedWidth, adjustedHeight);
+    }
+  }
+  return ret;
+};
+
+/**
  * Updates the shapes for the current layout params.
  * @private
  */
@@ -4909,10 +4970,24 @@ DvtTreemapNode.prototype._updateShapes = function() {
   if (!this._shape)
     return;
 
-  // Update the shape and color
-  this._shape.setRect(this._x, this._y, this._width, this._height);
-  if (this._innerShape)
-    this._innerShape.setRect(this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+  var options = this.getView().getOptions();
+  var bNodeGaps = options['nodeSeparators'] == 'gaps';
+  if (bNodeGaps) {
+    var rects = this._getGeometriesWithGaps();
+    this._shape.setRect(rects._shape);
+
+    if (this._innerShape)
+      this._innerShape.setRect(rects._innerShape);
+
+    if (this._backgroundShape)
+      this._backgroundShape.setRect(rects._backgroundShape);
+  }
+  else {
+    // Update the shape
+    this._shape.setRect(this._x, this._y, this._width, this._height);
+    if (this._innerShape)
+      this._innerShape.setRect(this._x + 1, this._y + 1, this._width - 2, this._height - 2);
+  }
 
   // Also update the color
   if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER || this._bHeaderUseNodeColor) {
@@ -5155,7 +5230,7 @@ var DvtTreemapLayoutBase = function() {
 dvt.Obj.createSubclass(DvtTreemapLayoutBase, dvt.Obj);
 
 /** @private @const **/
-DvtTreemapLayoutBase._GROUP_GAP = 3;
+DvtTreemapLayoutBase._GROUP_GAP = 2;
 
 
 /**
@@ -5629,10 +5704,20 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
  * @extends {DvtTreeDefaults}
  */
 var DvtTreemapDefaults = function() {
-  this.Init({'skyros': DvtTreemapDefaults.VERSION_1, 'alta': {}});
+  this.Init({'skyros': DvtTreemapDefaults.VERSION_1, 'alta': {}, 'next': DvtTreemapDefaults.SKIN_NEXT});
 };
 
 dvt.Obj.createSubclass(DvtTreemapDefaults, DvtTreeDefaults);
+
+/**
+ * Contains overrides for the next generation skin.
+ * @const
+ */
+DvtTreemapDefaults.SKIN_NEXT = {
+  'skin': dvt.CSSStyle.SKIN_NEXT,
+
+  'nodeSeparators': 'gaps'
+};
 
 /**
  * Defaults for version 1. This component was exposed after the Alta skin, so no earlier defaults are provided.
@@ -5671,7 +5756,8 @@ DvtTreemapDefaults.VERSION_1 = {
     'labelValign': 'center',
     'selectedInnerColor': '#FFFFFF',
     'selectedOuterColor': '#000000'
-  }
+  },
+  'nodeSeparators': 'bevels'
 };
 /**
  * @constructor
@@ -6193,6 +6279,8 @@ var DvtSunburstNode = function(sunburst, props)
   this._labelHalign = props['labelHalign'] ? props['labelHalign'] : nodeDefaults['labelHalign'];
 
   this._radius = props['radius'];
+  this._className = props['className'];
+  this._style = props['style'];
 };
 
 // Make DvtSunburstNode a subclass of DvtTreeNode
@@ -6290,6 +6378,11 @@ DvtSunburstNode.prototype.render = function(container) {
 
   // WAI-ARIA
   this._shape.setAriaRole('img');
+
+  // Styling attributes
+  this._shape.setStyle(this._style);
+  this._shape.setClassName(this._className);
+
   this.UpdateAriaLabel();
 
   // Create the container for the children and render
@@ -7601,7 +7694,7 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
  * @extends {DvtTreeDefaults}
  */
 var DvtSunburstDefaults = function() {
-  this.Init({'skyros': DvtSunburstDefaults.VERSION_1, 'alta': {}});
+  this.Init({'skyros': DvtSunburstDefaults.VERSION_1, 'alta': {}, 'next': {}});
 };
 
 dvt.Obj.createSubclass(DvtSunburstDefaults, DvtTreeDefaults);

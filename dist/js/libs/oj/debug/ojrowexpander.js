@@ -829,11 +829,11 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
                 range['start'] = index+1;
                 if (count === -1)
                 {
-                    range['count'] = fetchSize;
+                    range['count'] = Math.min(fetchSize, range['count']);
                 }
                 else
                 {
-                    range['count'] = Math.min(maxFetchSize, Math.min(fetchSize, count - range['start']));
+                    range['count'] = Math.min(maxFetchSize, Math.min(Math.min(fetchSize, range['count']), count - range['start']));
                 }
                 this.m_wrapped.fetchChildren(parent, range, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, depth, range, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
             }
@@ -1860,7 +1860,7 @@ oj.FlattenedTreeDataSource.prototype._deleteAllRowsBelow = function(index, count
     keys = [];
     for (var i=0; i<count; i++)
     {
-        keys.push({"row": this._getEntry(index+i)['key'], "index":index+i});
+        keys.push({"key": this._getEntry(index+i)['key'], "index":index+i});
     }
 
     // update internal cache
@@ -2681,6 +2681,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * Handles keydown event from host component (ojDataGrid or ojTable)
      * @param {Event} event
      * @param {Object} ui
+     * @return {boolean} false if the event was processed here and should not be handled by the container
      * @private
      */
     _handleKeyDownEvent: function(event, ui)
@@ -2701,13 +2702,13 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                 {
                     this._loading();
                     this.datasource.expand(this.rowKey);
-                    event.preventDefault();
+                    return false;
                 }
                 else if (code == $.ui.keyCode.LEFT && this.iconState === 'expanded')
                 {
                     this._loading();
                     this.datasource.collapse(this.rowKey);
-                    event.preventDefault();
+                    return false;
                 }
                 else if (event.altKey && code == this.constants.NUM5_KEY)
                 {
@@ -2726,11 +2727,11 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
                         context = this.getTranslatedString('accessibleRowDescription', {'level': this.depth, 'num': this.index+1, 'total': this.datasource.getWrappedDataSource().getChildCount(this.parentKey)});
                         this.component._setAccessibleContext({'context': context, 'state': '', 'ancestors': ancestorInfo});
-                        event.preventDefault();
                     }
                 }
             }
         }
+        return true;        
     },
     /**
      * Put row expander in a loading state.  This is called during expand/collapse.
@@ -2868,7 +2869,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     {
         if (node === this.icon.get(0))
         {
-            return {subId: 'oj-rowexpander-disclosure'};
+            return {'subId': 'oj-rowexpander-disclosure'};
         }
         return null;
     },
@@ -2959,4 +2960,23 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */    
 });
 
+(function() {
+var ojRowExpanderMeta = {
+  "properties": {
+    "context": {
+      "type": "Object"
+    }
+  },
+  "methods": {
+    "getNodeBySubId": {},
+    "getSubIdByNode": {},
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "ojRowExpander"
+  }
+};
+oj.Components.registerMetadata('ojRowExpander', 'baseComponent', ojRowExpanderMeta);
+oj.Components.register('oj-row-expander', oj.Components.getMetadata('ojRowExpander'));
+})();
 });

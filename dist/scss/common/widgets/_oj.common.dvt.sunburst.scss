@@ -8,9 +8,15 @@
 @if $includeSunburstClasses != false {
   @include module-include-once("common.sunburst") {
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-sunburst:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-sunburst {
       @include oj-user-select-property(none);
-      outline:none;
       width:400px;
       height:400px;
       font-size: $smallFontSize;
@@ -42,7 +48,6 @@
     }
 
     .oj-sunburst-attribute-type-text {
-      font-weight: bold;
       color: $formControlLabelColor;
       font-size: $fontSize;
     }

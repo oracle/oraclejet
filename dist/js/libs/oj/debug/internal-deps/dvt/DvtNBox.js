@@ -235,16 +235,11 @@ dvt.NBox.prototype.render = function(options, width, height) {
   // If an animation was created, play it
   if (this.Animation) {
     this.setMouseEnabled(false);
-    dvt.Playable.appendOnEnd(this.Animation, this._onAnimationEnd, this);
-    if (dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() >= 12) {
-      // Edge can return incorrect values for getBBox on text elements after animation
-      // Hacking for now by forcing a full non-animated render
-      dvt.Playable.appendOnEnd(this.Animation, function() {this.setAnimationAllowed(false); this.render(options); this.setAnimationAllowed(true);}, this);
-    }
+    dvt.Playable.appendOnEnd(this.Animation, this._getOnAnimationEndFunction(options), this);
     this.Animation.play();
   }
   else {
-    this._onAnimationEnd();
+    this._getOnAnimationEndFunction(options).call(this);
   }
 
   // Clean up the old container.  If doing black box animation, store a pointer and clean
@@ -278,31 +273,43 @@ dvt.NBox.prototype.__cleanUp = function() {
 
 
 /**
- * Hook for cleaning up animation behavior at the end of the animation.
+ * Returns hook for post-animation cleanup.
+ * @param {object} options The raw options to pass to potential render call
+ * @return {function} hook for post-animation cleanup
  * @private
  */
-dvt.NBox.prototype._onAnimationEnd = function() {
-  // Clean up the old container used by black box updates
-  if (this._oldContainer) {
-    this.removeChild(this._oldContainer);
-    this._oldContainer.destroy();
-    this._oldContainer = null;
-  }
+dvt.NBox.prototype._getOnAnimationEndFunction = function(options) {
+  return function() {
+    // Clean up the old container used by black box updates
+    if (this._oldContainer) {
+      this.removeChild(this._oldContainer);
+      this._oldContainer.destroy();
+      this._oldContainer = null;
+    }
 
-  if (this._deleteContainer) {
-    this.removeChild(this._deleteContainer);
-    this._deleteContainer.destroy();
-  }
-  this._deleteContainer = null;
+    if (this._deleteContainer) {
+      this.removeChild(this._deleteContainer);
+      this._deleteContainer.destroy();
+    }
+    this._deleteContainer = null;
 
-  this.setMouseEnabled(true);
-  if (!this.AnimationStopped) {
-    this.RenderComplete();
-  }
+    this.setMouseEnabled(true);
+    if (!this.AnimationStopped) {
+      if (this.Animation && dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() >= 12) {
+        // Edge can return incorrect values for getBBox on text elements after animation
+        // Hacking for now by forcing a full non-animated render
+        this.Animation = null;
+        this.setAnimationAllowed(false);
+        this.render(options);
+        this.setAnimationAllowed(true);
+      }
+      this.RenderComplete();
+    }
 
-  // Reset animation flags
-  this.Animation = null;
-  this.AnimationStopped = false;
+    // Reset animation flags
+    this.Animation = null;
+    this.AnimationStopped = false;
+  };
 };
 
 
@@ -1387,9 +1394,9 @@ DvtNBoxDefaults.VERSION_1 = {
     'rowLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #252525;'),
     'columnsTitleStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
     'rowsTitleStyle' : new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
-    'cellDefaults' : {'style': new dvt.CSSStyle('background-color:#e9e9e9'),
-      'maximizedStyle': new dvt.CSSStyle('background-color:#dddddd'),
-      'minimizedStyle': new dvt.CSSStyle('background-color:#e9e9e9'),
+    'cellDefaults' : {'_style': new dvt.CSSStyle('background-color:#e9e9e9'),
+      '_maximizedStyle': new dvt.CSSStyle('background-color:#dddddd'),
+      '_minimizedStyle': new dvt.CSSStyle('background-color:#e9e9e9'),
       'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_14 + 'color: #252525;'),
       'countLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_14 + 'color: #252525;'),
       'bodyCountLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;'),
@@ -5529,7 +5536,6 @@ DvtNBoxRenderer._renderInitialSelection = function(nbox) {
     var selectedItems = DvtNBoxDataUtils.getSelectedItems(nbox);
     if (selectedItems) {
       for (var i = 0; i < selectedItems.length; i++) {
-        selectedIds.push(selectedItems[i]);
         selectedMap[selectedItems[i]] = true;
       }
       var objects = nbox.getObjects();
@@ -5548,9 +5554,22 @@ DvtNBoxRenderer._renderInitialSelection = function(nbox) {
               }
             }
             if (selected) {
-              selectedIds.push(objects[i].getId());
+              // : unless the drawer is open, we don't want category node children marked as selected
+              var drawer = DvtNBoxDataUtils.getDrawer(nbox);
+              if (!drawer || drawer[dvt.NBoxConstants.ID] !== objects[i].getId()) {
+                for (j = 0; j < nodeIndices.length; j++) {
+                  node = DvtNBoxDataUtils.getNode(nbox, nodeIndices[j]);
+                  selectedMap[node[dvt.NBoxConstants.ID]] = false;
+                }
+                selectedIds.push(objects[i].getId());
+              }
             }
           }
+        }
+      }
+      for (var id in selectedMap) {
+        if (selectedMap[id]) {
+          selectedIds.push(id);
         }
       }
     }
@@ -6075,6 +6094,13 @@ DvtNBoxCellRenderer.render = function(nbox, cellData, cellContainer, availSpace)
   cellRect.setPixelHinting(true);
   var style = DvtNBoxStyleUtils.getCellStyle(nbox, cellIndex);
   DvtNBoxCellRenderer._applyStyleToRect(cellRect, style);
+
+  //Apply the custom style and classname on the cell
+  var styleObj = DvtNBoxStyleUtils.getCellStyleObject(nbox, cellIndex);
+  cellRect.setStyle(styleObj);
+  var className = DvtNBoxStyleUtils.getCellClassName(nbox, cellIndex);
+  cellRect.setClassName(className);
+
   cellContainer.addChild(cellRect);
   DvtNBoxDataUtils.setDisplayable(nbox, cellData, cellRect, 'background');
 
@@ -7343,6 +7369,7 @@ DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, 
   nodeRect.setSolidFill(color);
   if (DvtNBoxStyleUtils.getNodeBorderColor(nbox, node) && DvtNBoxStyleUtils.getNodeBorderWidth(nbox, node))
     nodeRect.setSolidStroke(DvtNBoxStyleUtils.getNodeBorderColor(nbox, node), null, DvtNBoxStyleUtils.getNodeBorderWidth(nbox, node));
+  nodeRect.setStyle(node['style']).setClassName(node['className']);
   nodeContainer.addChild(nodeRect);
   DvtNBoxDataUtils.setDisplayable(nbox, node, nodeRect, 'background');
 };
@@ -7414,6 +7441,9 @@ DvtNBoxNodeRenderer._renderNodeIndicator = function(nbox, node, nodeContainer, n
       indicatorMarker.setFill(new dvt.PatternFill(indicatorIconPattern, indicatorIconColor, color));
     else
       indicatorMarker.setSolidFill(indicatorIconColor);
+
+    //Set the Indicator marker custom style and class name
+    indicatorMarker.setStyle(indicatorIcon['style']).setClassName(indicatorIcon['className']);
 
     // If indicatorIcon is too wide, add clip path
     if (indicatorIconWidthWithStroke > nodeLayout['indicatorSectionWidth']) {
@@ -7494,6 +7524,8 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
     else
       iconMarker.setSolidFill(iconColor);
 
+    //set the Icon Marker custom style and class name
+    iconMarker.setStyle(icon['style']).setClassName(icon['className']);
 
     // If icon is on one of the ends, add clip path
     if (nodeLayout['indicatorSectionWidth'] == 0 || nodeLayout['labelSectionWidth'] == 0) {
@@ -8010,6 +8042,9 @@ DvtNBoxCategoryNodeRenderer._renderNodeIndicator = function(nbox, node, nodeCont
     else {
       indicatorMarker.setSolidFill(indicatorIconColor);
     }
+    //Set the Indicator marker custom style and class name
+    indicatorMarker.setStyle(indicatorIcon['style']).setClassName(indicatorIcon['className']);
+
     nodeContainer.addChild(indicatorMarker);
     DvtNBoxDataUtils.setDisplayable(nbox, node, indicatorMarker, dvt.NBoxConstants.INDICATOR_ICON);
     retVal = true;
@@ -8349,6 +8384,9 @@ DvtNBoxDrawerRenderer._renderHeader = function(nbox, data, drawerContainer) {
         else {
           indicatorMarker.setSolidFill(indicatorIconColor);
         }
+        //Set the Indicator marker custom style and class name
+        indicatorMarker.setStyle(indicatorIcon['style']).setClassName(indicatorIcon['className']);
+
         countIndicatorShape.addChild(indicatorMarker);
       }
     }
@@ -9700,13 +9738,55 @@ DvtNBoxStyleUtils.getRowLabelStyle = function(nbox, rowIndex) {
 
 
 /**
- * Returns the cell style for the specified cell index
- * @param {dvt.NBox} nbox
+ * Returns the cell style css for the specified cell index
+ * @param {dvt.NBox} nbox the nbox displayable
  * @param {number} cellIndex the specified cell index
  * @return {dvt.CSSStyle} the cell style for the specified cell index
  */
 DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
+  var styleKey = DvtNBoxStyleUtils._getCellStyleKey(nbox, cellIndex);
+  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKey);
+  var nBoxCellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_' + styleKey];
+
+  var cellStyle = new dvt.CSSStyle();
+  dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
+    var attribute = dvt.CSSStyle.cssStringToObjectProperty(entry);
+    //Pick the value from cell style options or from cell style default
+    var value = (cellStyleOption && cellStyleOption[attribute] != null) ? cellStyleOption[attribute] :
+        nBoxCellDefault.getStyle(entry);
+    cellStyle.setStyle(entry, value);
+  });
+
+  return cellStyle;
+};
+
+/**
+ * Returns the cell style object for the specified cell index
+ * @param {dvt.NBox} nbox the nbox displayable
+ * @param {number} cellIndex the specified cell index
+ * @return {object} the cell style object for the specified cell index
+ */
+DvtNBoxStyleUtils.getCellStyleObject = function(nbox, cellIndex) {
+  var styleKey = DvtNBoxStyleUtils._getCellStyleKey(nbox, cellIndex);
+  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKey);
+  if (cellStyleOption) {
+    dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
+      delete cellStyleOption[dvt.CSSStyle.cssStringToObjectProperty(entry)];
+    });
+  }
+
+  return cellStyleOption;
+};
+
+/**
+ * Returns the cell style key based on the state of the cell
+ * @param {dvt.NBox} nbox the nbox displayable
+ * @param {number} cellIndex the specified cell index
+ * @return {string} cell style key based on the state of the cell
+ * @private
+ */
+DvtNBoxStyleUtils._getCellStyleKey = function(nbox, cellIndex) {
   var styleKey = dvt.NBoxConstants.STYLE;
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
@@ -9716,13 +9796,70 @@ DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     styleKey = 'maximizedStyle';
   }
-  var defaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][styleKey];
-  var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-  if (cell[styleKey]) {
-    return dvt.JsonUtils.merge(new dvt.CSSStyle(cell[styleKey]), defaults);
-  }
+  return styleKey;
+};
 
-  return defaults;
+/**
+ * Get the Cell option object for the given cell index
+ * This merges the properties of cell public default style with cell styles
+ * @param {dvt.NBox} nbox the nbox displayable
+ * @param {number} cellIndex the specified cell index
+ * @param {string} styleKey  style key based on the state of the cell
+ * @return {object} object representing cell style attributes
+ * @private
+ */
+DvtNBoxStyleUtils._getCellStyleOption = function(nbox, cellIndex, styleKey) {
+  var options = nbox.getOptions();
+  var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
+
+  //Cell style properites from public defaults
+  var cellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][styleKey];
+  if (cellDefault && !(cellDefault instanceof Object)) {
+    cellDefault = dvt.CSSStyle.cssStringToObject(cellDefault);
+  }
+  //Merge the properties from public defaults with cell style properties
+  var cellStyle = cell[styleKey];
+  if (cellStyle) {
+    if (!(cellStyle instanceof Object))
+      cellStyle = dvt.CSSStyle.cssStringToObject(cellStyle);
+    cellStyle = dvt.JsonUtils.merge(cellStyle, cellDefault);
+  } else if (cellDefault) {
+    cellStyle = dvt.JsonUtils.clone(cellDefault);
+  }
+  return cellStyle;
+};
+
+/**
+ * Returns the cell style properties
+ * @return {array}  Array of cell style properties
+ * @private
+ */
+DvtNBoxStyleUtils._getCellStyleProperties = function() {
+  return [dvt.CSSStyle.BACKGROUND,
+    dvt.CSSStyle.BACKGROUND_COLOR,
+    dvt.CSSStyle.BORDER_STYLE,
+    dvt.CSSStyle.BORDER_COLOR,
+    dvt.CSSStyle.BORDER_WIDTH];
+};
+
+/**
+ * Returns the cell className for the specified cell index to directly set the class on cell
+ * @param {dvt.NBox} nbox the nbox displayable
+ * @param {number} cellIndex the specified cell index
+ * @return {string} the cell class name
+ */
+DvtNBoxStyleUtils.getCellClassName = function(nbox, cellIndex) {
+  var className = 'className';
+  var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
+  var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
+  if (DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
+    className = 'minimizedClassName';
+  }
+  else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
+    className = 'maximizedClassName';
+  }
+  var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
+  return cell[className];
 };
 
 
@@ -9987,6 +10124,9 @@ DvtNBoxStyleUtils.getStyledCategoryIndicatorIcon = function(nbox, categoryNode) 
   if (baseIcon['borderStyle']) indicatorIcon['borderStyle'] = baseIcon['borderStyle'];
   if (baseIcon['borderColor']) indicatorIcon['borderColor'] = baseIcon['borderColor'];
   if (baseIcon['borderRadius']) indicatorIcon['borderRadius'] = baseIcon['borderRadius'];
+
+  if (baseIcon['style']) indicatorIcon['style'] = baseIcon['style'];
+  if (baseIcon['className']) indicatorIcon['className'] = baseIcon['className'];
 
   // Shape
   var match = true;

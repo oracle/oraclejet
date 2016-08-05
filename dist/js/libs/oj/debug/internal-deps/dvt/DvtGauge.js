@@ -565,6 +565,22 @@ DvtGaugeAutomation.prototype.getDomElementForSubId = function(subId) {
 };
 
 /**
+ * @override
+ */
+DvtGaugeAutomation.prototype.GetSubIdForDomElement = function(displayable) {
+  var gauge = this._gauge;
+  var options = gauge.getOptions();
+  for (var i = 0; i < options['max']; i++) {
+    var item = this._gauge.__getRatingGaugeItem(i);
+    if (item == displayable) {
+      return 'item[' + i + ']';
+    }
+  }
+  return null;
+};
+
+
+/**
  * Returns the value of the gauge. Used for verification.
  * @return {Number} the value of the gauge
  */
@@ -775,6 +791,8 @@ DvtGaugeEventManager.prototype.OnMouseDown = function(event) {
     this.hideTooltip();
     var coords = this.GetRelativePosition(event.pageX, event.pageY);
     this._gauge.__processValueChangeStart(coords.x, coords.y);
+    //  - Need to prevent default because of firefox issue
+    event.preventDefault();
   }
   else // Don't call super if editing, just handle it in this subclass
     DvtGaugeEventManager.superclass.OnMouseDown.call(this, event);
@@ -1817,7 +1835,10 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
 
   // Scale is relative to reference size of 100
   var scale = Math.min(bounds.w / 100, bounds.h / 100);
-  if (type == 'rectangle') {
+  if (type == 'square') {
+    shape = new dvt.Rect(context, cx - r, cy - r, 2 * r, 2 * r);
+  }
+  else if (type == 'rectangle') {
     shape = new dvt.Rect(context, bounds.x, bounds.y, bounds.w, bounds.h);
   }
   else if (type == 'diamond') {
@@ -1875,6 +1896,10 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
   }
   if (borderColor)
     shape.setSolidStroke(borderColor);
+
+  // Custom style and class
+  shape.setClassName(options['className']);
+  shape.setStyle(options['style']);
 
   // rotate the shape if needed
   var rotation = isSkyros ? options['rotation'] + 90 : options['rotation'];
@@ -2696,6 +2721,9 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   if (borderColor)
     shape.setSolidStroke(borderColor);
 
+  shape.setClassName(options['className']);
+  shape.setStyle(options['style']);
+
   // Add the shape
   if (bRender)
     container.addChild(shape);
@@ -2835,7 +2863,7 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
 
   // Gradient
   if (DvtGaugeDefaults.isSkyrosSkin(gauge)) {
-    arColors = [dvt.ColorUtils.getDarker(color, .9), color, dvt.ColorUtils.getBrighter(color, .7)];
+    arColors = [dvt.ColorUtils.getDarker(color, .1), color, dvt.ColorUtils.getBrighter(color, .7)];
     gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1, 1], [0, 0.04, 0.73]);
   }
   else {
@@ -2843,6 +2871,8 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
     gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1], [0, 1]);
   }
   shape.setFill(gradient);
+  shape.setClassName(options['plotArea']['className']);
+  shape.setStyle(options['plotArea']['style']);
 };
 
 
@@ -3194,7 +3224,9 @@ DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds
   else if (isPlotArea && plotAreaBorderColor) {
     shape.setSolidStroke(plotAreaBorderColor);
   }
-
+  var options = gauge.getOptions();
+  shape.setClassName(isPlotArea ? options['plotArea']['className'] : options['className']);
+  shape.setStyle(isPlotArea ? options['plotArea']['style'] : options['style']);
   container.addChild(shape);
 };
 
@@ -4828,25 +4860,33 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       'color': options['unselectedState']['color'],
       'borderColor': options['unselectedState']['borderColor'],
       'visualEffects': options['visualEffects'],
-      'source': options['unselectedState']['source']};
+      'source': options['unselectedState']['source'],
+      'className': options['unselectedState']['className'],
+      'style': options['unselectedState']['style']};
     var selectedOptions = {'value': 0,
       'type': options['selectedState']['shape'],
       'color': selectedColor,
       'borderColor': selectedBorderColor,
       'visualEffects': options['visualEffects'],
-      'source': options['selectedState']['source']};
+      'source': options['selectedState']['source'],
+      'className': options['selectedState']['className'],
+      'style': options['selectedState']['style']};
     var changedOptions = {'value': 0,
       'type': options['changedState']['shape'],
       'color': changedColor,
       'borderColor': changedBorderColor,
       'visualEffects': options['visualEffects'],
-      'source': options['changedState']['source']};
+      'source': options['changedState']['source'],
+      'className': options['changedState']['className'],
+      'style': options['changedState']['style']};
     var hoverOptions = {'value': 0,
       'type': options['hoverState']['shape'],
       'color': options['hoverState']['color'],
       'borderColor': options['hoverState']['borderColor'],
       'visualEffects': options['visualEffects'],
-      'source': options['hoverState']['source']};
+      'source': options['hoverState']['source'],
+      'className': options['hoverState']['className'],
+      'style': options['hoverState']['style']};
 
     if (options['unselectedState']['shape'] == 'dot') {
       unselectedOptions['type'] = 'circle';
@@ -4908,6 +4948,9 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
     }
 
     if (shape) {
+      // Custom style and class
+      shape.setClassName(options['className']);
+      shape.setStyle(options['style']);
       var use = new dvt.Use(context, x, y, shape);
       shapesContainer.addChild(use);
     }

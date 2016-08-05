@@ -1,0 +1,9 @@
+/**
+ * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(["ojs/ojcore","jquery","ojs/ojcomponentcore","ojs/ojdvt-base","ojs/internal-deps/dvt/DvtTimeAxis"],function(a,g,c,b,d){a.Na("oj.ojTimeAxis",g.oj.dvtBaseComponent,{widgetEventPrefix:"oj",yg:function(a,b,c){return d.TimeAxis.newInstance(a,b,c)},Cf:function(){var a=this._super();a.push("oj-timeaxis");return a},tj:function(){return["optionChange"]},Mi:function(){var a=this.options.translations,b=this._super();b["DvtUtilBundle.TIMEAXIS"]=a.componentName;return b},co:function(){null==this.options._resources&&
+(this.options._resources={});var b=this.options._resources,c=a.Ea.qn("datetime"),d=c.createConverter({hour:"numeric",minute:"2-digit",second:"2-digit"}),g=c.createConverter({hour:"numeric",minute:"2-digit"}),l=c.createConverter({hour:"numeric"}),m=c.createConverter({month:"numeric",day:"2-digit"}),s=c.createConverter({month:"long"}),t=c.createConverter({year:"numeric"}),r=c.createConverter({month:"short"}),c=c.createConverter({year:"2-digit"}),r={seconds:d,minutes:g,hours:l,days:m,weeks:m,months:r,
+quarters:r,years:c};b.converter={seconds:d,minutes:g,hours:l,days:m,weeks:m,months:s,quarters:s,years:t};b.converterVert=r;b.axisClass="oj-timeaxis-container";b.axisLabelClass="oj-timeaxis-label";b.axisSeparatorClass="oj-timeaxis-separator";b.borderTopVisible=!1;b.borderRightVisible=!1;b.borderBottomVisible=!1;b.borderLeftVisible=!1;b.firstDayOfWeek=a.$a.YE()}});a.Components.Va("ojTimeAxis","dvtBaseComponent",{properties:{converter:{type:"object"},end:{type:"string|number"},scale:{type:"string"},
+start:{type:"string|number"}},methods:{},extension:{_widgetName:"ojTimeAxis"}});a.Components.register("oj-time-axis",a.Components.getMetadata("ojTimeAxis"))});

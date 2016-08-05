@@ -6,8 +6,7 @@
 //*****************************************************************************
 @function lower-bound($range){
   @if length($range) <= 0 {
-    // sass won't let us error here because we're in a function
-    @return "called lower-bound function but the range is empty";
+    @error "called lower-bound function but the range is empty";
   }
   @return nth($range,1);
 }
@@ -17,8 +16,7 @@
 //*****************************************************************************
 @function upper-bound($range) {
   @if length($range) < 2 {
-    // sass won't let us error here because we're in a function
-    @return "called upper-bound function the range is less than 2 items";
+    @error "called upper-bound function the range is less than 2 items";
   }
   @return nth($range, 2);
 }
@@ -34,10 +32,65 @@
 
   @if type-of($number) == 'number' and not unitless($number) 
   {
-    $devisors: ('em':1em, 'ex:':1ex, 'px':1px, 'in':1in, 'cm':1cm, 'mm':1mm, 'pt':1pt, 'pc':1pc);
+    $divisors: ('em':1em, 'rem':1rem, 'ex:':1ex, 'px':1px, 'in':1in, 'cm':1cm, 'mm':1mm, 'pt':1pt, 'pc':1pc);
     $unit: unit($number);
-    $devisor: map-get($devisors, $unit);
-    @return $number / $devisor;
+    $divisor: map-get($divisors, $unit);
+    @return $number / $divisor;
   }
   @return $number; 
 }
+
+//*****************************************************************************
+// converts 0px, 0em, 0%, etc. to 0, leaving other inputs unchanged, given the 
+// CSS convention that 0 should be unitless
+//*****************************************************************************
+@function oj-strip-unit-from-zero($number)
+{
+  @if oj-strip-unit($number) == 0
+  {
+    @return 0;
+  }
+  @return $number;
+} 
+
+//*****************************************************************************
+// converts 0 to 0px, leaving other inputs unchanged, for use in a calc(),
+// since calc(10%-0) fails, but calc(10%-0px) works, despite the CSS convention
+// that 0 should be unitless
+//*****************************************************************************
+@function oj-add-unit-to-zero($number)
+{
+  @if $number == 0
+  {
+    @return 0px;
+  }
+  @return $number; 
+}
+
+//*****************************************************************************
+// maps 0 to 0, 7px to 7, 10% to 10%, else throws an error
+//*****************************************************************************
+@function oj-convert-to-jqui-position-syntax($number)
+{
+  // This function converts from CSS syntax conventions (0, 7px, 10%) to the values supported 
+  // by the JQUI position utility ( https://api.jqueryui.com/position/ ), which are 0, 7, and 
+  // 10%, respectively.  This function throws an error for inputs other than 0, px, or %.
+
+  @if type-of($number) != 'number' 
+  {
+    @error "oj-convert-to-jqui-position-syntax function param must be of form 0, 7px, 10%, but was #{$number}.";
+  }
+
+  @if $number == 0 or unit($number) == "%"
+  {
+    @return $number;
+  }
+
+  @if unit($number) == "px"
+  {
+    @return oj-strip-unit($number);
+  }
+
+  @error "oj-convert-to-jqui-position-syntax function param must be of form 0, 7px, 10%, but was #{$number}.";
+}
+

@@ -87,7 +87,7 @@
     margin-top: $labelInlineMarginTop;
     // box sizing required for firefox or the 
     // gutter padding  doesn't work
-    @include oj-box-sizing-property(border-box);
+    box-sizing: border-box;
 
     @include oj-ltr {
       padding-right: $labelInlineGutter; 

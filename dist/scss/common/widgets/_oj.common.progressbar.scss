@@ -5,9 +5,16 @@
   @include module-include-once("common.progressbar") {
     /* progressbar */
     /* --------------------------------------------------------------- */
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-progressbar:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
 
     .oj-progressbar { 
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       height: 16px;   
       overflow: hidden; 
       background: $progressbarBgColor; 
@@ -16,20 +23,9 @@
     }
     .oj-progressbar-value {
       margin: 0; 
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       height: 100%; 
       background: $progressbarValueBgColor; 
-    }
-
-    .oj-progressbar-overlay {
-      height: 100%;
-      opacity: $progressbarIndeterminateOverlayOpacity;
-      @include oj-ltr() {
-        background: oj-image-url("animated-overlay.gif");
-      }
-      @include oj-rtl() {
-        background: oj-image-url("animated-overlay-rtl.gif");
-      }
     }
 	
     .oj-progressbar-start-label,

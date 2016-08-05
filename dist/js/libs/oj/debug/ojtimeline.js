@@ -3,11 +3,11 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeline'], function (oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline'], function (oj, $, comp, base, dvt)
 {
 /**
  * @ojcomponent oj.ojTimeline
- * @augments oj.dvtBaseComponent
+ * @augments oj.dvtTimeComponent
  * @since 1.1.0
  *
  * @classdesc
@@ -108,7 +108,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @example <caption>Initialize the Timeline via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojTimeline'}">
  */
-oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
+oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
 {
   widgetEventPrefix: "oj",
   options:
@@ -250,15 +250,47 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
     styleClasses['oj-timeline-series-empty-text'] = {'path': 'styleDefaults/series/emptyTextStyle', 'property': 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-timeline-series-label'] = {'path': 'styleDefaults/series/labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
 
-    // Zoom Icons
-    styleClasses['oj-timeline-zoomin-icon'] = {'path': '_resources/zoomIn', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomin-icon oj-hover'] = {'path': '_resources/zoomIn_h', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomin-icon oj-active'] = {'path': '_resources/zoomIn_a', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomin-icon oj-disabled'] = {'path': '_resources/zoomIn_d', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomout-icon'] = {'path': '_resources/zoomOut', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomout-icon oj-hover'] = {'path': '_resources/zoomOut_h', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomout-icon oj-active'] = {'path': '_resources/zoomOut_a', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-zoomout-icon oj-disabled'] = {'path': '_resources/zoomOut_d', 'property': 'CSS_URL'};
+    // Zoom Control Icons
+    styleClasses['oj-timeline-zoomin-icon'] = [
+      {'path': '_resources/zoomIn', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomIn_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomIn_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomin-icon oj-hover'] = [
+      {'path': '_resources/zoomIn_h', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomIn_h_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomIn_h_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomin-icon oj-active'] = [
+      {'path': '_resources/zoomIn_a', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomIn_a_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomIn_a_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomin-icon oj-disabled'] = [
+      {'path': '_resources/zoomIn_d', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomIn_d_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomIn_d_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomout-icon'] = [
+      {'path': '_resources/zoomOut', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomOut_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomOut_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomout-icon oj-hover'] = [
+      {'path': '_resources/zoomOut_h', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomOut_h_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomOut_h_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomout-icon oj-active'] = [
+      {'path': '_resources/zoomOut_a', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomOut_a_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomOut_a_bc', 'property': 'border-color'}
+    ];
+    styleClasses['oj-timeline-zoomout-icon oj-disabled'] = [
+      {'path': '_resources/zoomOut_d', 'property': 'CSS_URL'},
+      {'path': '_resources/zoomOut_d_bgc', 'property': 'background-color'},
+      {'path': '_resources/zoomOut_d_bc', 'property': 'border-color'}
+    ];
 
     // Scroll Indicator Icons
     styleClasses['oj-timeline-scroll-indicator-back'] = {'path': '_resources/scrollLeft', 'property': 'CSS_URL'};
@@ -274,12 +306,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
   },
 
   //** @inheritdoc */
-  _GetEventTypes : function()
-  {
-    return ['optionChange', 'viewportChange'];
-  },
-
-  //** @inheritdoc */
   _GetTranslationMap: function() {
     // The translations are stored on the options object.
     var translations = this.options['translations'];
@@ -291,131 +317,36 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
     ret['DvtUtilBundle.ZOOM_IN'] = translations['tooltipZoomIn'];
     ret['DvtUtilBundle.ZOOM_OUT'] = translations['tooltipZoomOut'];
 
-    // Add full month strings
-    var monthNames = oj.LocaleData.getMonthNames("wide");
-    ret['DvtUtilBundle.MONTH_JANUARY'] = monthNames[0];
-    ret['DvtUtilBundle.MONTH_FEBRUARY'] = monthNames[1];
-    ret['DvtUtilBundle.MONTH_MARCH'] = monthNames[2];
-    ret['DvtUtilBundle.MONTH_APRIL'] = monthNames[3];
-    ret['DvtUtilBundle.MONTH_MAY'] = monthNames[4];
-    ret['DvtUtilBundle.MONTH_JUNE'] = monthNames[5];
-    ret['DvtUtilBundle.MONTH_JULY'] = monthNames[6];
-    ret['DvtUtilBundle.MONTH_AUGUST'] = monthNames[7];
-    ret['DvtUtilBundle.MONTH_SEPTEMBER'] = monthNames[8];
-    ret['DvtUtilBundle.MONTH_OCTOBER'] = monthNames[9];
-    ret['DvtUtilBundle.MONTH_NOVEMBER'] = monthNames[10];
-    ret['DvtUtilBundle.MONTH_DECEMBER'] = monthNames[11];
-
-    // Add full day strings
-    var dayNames = oj.LocaleData.getDayNames("wide");
-    ret['DvtUtilBundle.DAY_SUNDAY'] = dayNames[0];
-    ret['DvtUtilBundle.DAY_MONDAY'] = dayNames[1];
-    ret['DvtUtilBundle.DAY_TUESDAY'] = dayNames[2];
-    ret['DvtUtilBundle.DAY_WEDNESDAY'] = dayNames[3];
-    ret['DvtUtilBundle.DAY_THURSDAY'] = dayNames[4];
-    ret['DvtUtilBundle.DAY_FRIDAY'] = dayNames[5];
-    ret['DvtUtilBundle.DAY_SATURDAY'] = dayNames[6];
-
-    // Add abbreviated day strings
-    var dayShortNames = oj.LocaleData.getDayNames("abbreviated");
-    ret['DvtUtilBundle.DAY_SHORT_SUNDAY'] = dayShortNames[0];
-    ret['DvtUtilBundle.DAY_SHORT_MONDAY'] = dayShortNames[1];
-    ret['DvtUtilBundle.DAY_SHORT_TUESDAY'] = dayShortNames[2];
-    ret['DvtUtilBundle.DAY_SHORT_WEDNESDAY'] = dayShortNames[3];
-    ret['DvtUtilBundle.DAY_SHORT_THURSDAY'] = dayShortNames[4];
-    ret['DvtUtilBundle.DAY_SHORT_FRIDAY'] = dayShortNames[5];
-    ret['DvtUtilBundle.DAY_SHORT_SATURDAY'] = dayShortNames[6];
-
     return ret;
   },
 
   //** @inheritdoc */
-  _HandleEvent: function(event)
-  {
-    var type = event['type'];
-    if(type === 'viewportChange')
-    {
-      var viewportStart = new Date(event['viewportStart']).toISOString();
-      var viewportEnd = new Date(event['viewportEnd']).toISOString();
-      var minorAxisScale = event['minorAxisScale'];
-      var viewportChangePayload = {
-        'viewportStart': viewportStart,
-        'viewportEnd': viewportEnd,
-        'minorAxisScale': minorAxisScale
-      };
-
-      this._UserOptionChange('viewportStart', viewportStart);
-      this._UserOptionChange('viewportEnd', viewportEnd);
-      this._UserOptionChange('minorAxis.scale', minorAxisScale);
-      this._trigger('viewportChange', null, viewportChangePayload);
-    }
-    else
-    {
-      this._super(event);
-    }
-  },
-
-  //** @inheritdoc */
-  _LoadResources: function()
-  {
-    // Ensure the resources object exists
-    if (this.options['_resources'] == null)
-      this.options['_resources'] = {};
+  _LoadResources: function() {
+    this._super();
 
     var resources = this.options['_resources'];
+    var converter = resources['converter'];
 
-    // Create default converters
+    // Create default converters for vertical timeline
     var converterFactory = oj.Validation.converterFactory("datetime");
-    var secondsConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'});
-    var minutesConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit'});
-    var hoursConverter = converterFactory.createConverter({'hour': 'numeric'});
-    var daysConverter = converterFactory.createConverter({'month': 'numeric', 'day': '2-digit'});
-    var monthsConverter = converterFactory.createConverter({'month': 'long'});
-    var yearsConverter = converterFactory.createConverter({'year': 'numeric'});
-
     var monthsConverterVert = converterFactory.createConverter({'month': 'short'});
     var yearsConverterVert = converterFactory.createConverter({'year': '2-digit'});
 
-    var converter = {
-      'seconds': secondsConverter,
-      'minutes': minutesConverter,
-      'hours': hoursConverter,
-      'days': daysConverter,
-      'weeks': daysConverter,
-      'months': monthsConverter,
-      'quarters': monthsConverter,
-      'years': yearsConverter
-    };
     var converterVert = {
-      'seconds': secondsConverter,
-      'minutes': minutesConverter,
-      'hours': hoursConverter,
-      'days': daysConverter,
-      'weeks': daysConverter,
+      'seconds': converter['seconds'],
+      'minutes': converter['minutes'],
+      'hours': converter['hours'],
+      'days': converter['days'],
+      'weeks': converter['weeks'],
       'months': monthsConverterVert,
       'quarters': monthsConverterVert,
       'years': yearsConverterVert
     };
 
-    resources['converter'] = converter;
-    resources['converterVert'] = converterVert;
-  },
+    resources['converterVert'] = converterVert;    
 
-  /**
-   * {@ojinclude "name":"nodeContextDoc"}
-   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   *
-   * @example {@ojinclude "name":"nodeContextExample"}
-   *
-   * @expose
-   * @instance
-   * @memberof oj.ojTimeline
-   */
-  getContextByNode: function(node)
-  {
-    // context objects are documented with @ojnodecontext
-    return this.getSubIdByNode(node);
+    // first day of week; locale specific
+    resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
   },
 
   //** @inheritdoc */
@@ -672,4 +603,67 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojTimeline
  */
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojTimelineMeta = {
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "end": {
+      "type": "string|number"
+    },
+    "majorAxis": {
+      "type": "object"
+    },
+    "minorAxis": {
+      "type": "object"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "overview": {
+      "type": "object"
+    },
+    "referenceObjects": {
+      "type": "Array<object>"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "series": {
+      "type": "Array<object>"
+    },
+    "start": {
+      "type": "string|number"
+    },
+    "styleDefaults": {
+      "type": "object"
+    },
+    "viewportEnd": {
+      "type": "string|number"
+    },
+    "viewportStart": {
+      "type": "string|number"
+    }
+  },
+  "methods": {
+    "getContextByNode": {}
+  },
+  "extension": {
+    "_widgetName": "ojTimeline"
+  }
+};
+oj.Components.registerMetadata('ojTimeline', 'dvtBaseComponent', ojTimelineMeta);
+oj.Components.register('oj-timeline', oj.Components.getMetadata('ojTimeline'));
+})();
 });

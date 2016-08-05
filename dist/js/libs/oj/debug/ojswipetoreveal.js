@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojoffcanvas'],
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
@@ -33,7 +33,6 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
  *
- *
  * <table class="generic-table styling-table">
  *   <thead>
  *     <tr>
@@ -61,6 +60,32 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  *   </tbody>
  * </table>
  *
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Offcanvas wrapper element</td>
+ *       <td><kbd>Swipe</kbd></td>
+ *       <td>Reveals the offcanvas element.  Depending on the distance relative to the target is swiped, the offcanvas will either be closed (swipe distance too short), opened, or the default action is performed (swipe distance passed the specified threshold).</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Offcanvas wrapper element</td>
+ *       <td><kbd>Pan</kbd></td>
+ *       <td>Reveals the offcanvas element.  If a default action is specified, the default action will get the entire space of the offcanvas after the user panned past a specified distance threshold.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
  */
 oj.SwipeToRevealUtils = {};
 

@@ -37,29 +37,20 @@
     // icons
     //------------------------------------------
 
-    // hide calendar icon when not in time-only mode, because we show picker 
-    //  when user taps input field
-    .oj-inputdatetime-date-only .oj-inputdatetime-calendar-icon,
-    .oj-inputdatetime-date-time .oj-inputdatetime-calendar-icon
+    // hide calendar icon, because our default for showOn=focus, ditto for
+    //  time icon when in time-only mode
+    .oj-inputdatetime-calendar-icon,
+    .oj-inputdatetime-time-only .oj-inputdatetime-time-icon
     {
       display: none;
     }
-
-    .oj-inputdatetime-date-only .oj-inputdatetime-input
+    
+    .oj-inputdatetime-date-only .oj-inputdatetime-input,
+    .oj-inputdatetime-time-only .oj-inputdatetime-input
     {
-      //need to include end border radius because we dont show any trigger icon
-      @include oj-ltr()
-      { 
-        @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
+      //need to include end border radius for cases we do not show trigger icon
+      @include oj-border-radius($formControlBorderRadius,
                                   $slowOverride: false);
-      }
-
-      @include oj-rtl()
-      { 
-        @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
-                                  $slowOverride: false); 
-      }
-      
       @include oj-border-radius-slowoverride();
     }
   }

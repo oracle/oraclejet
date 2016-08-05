@@ -13,6 +13,14 @@
   @include module-include-once("common.inputsearch") {
     /* InputSearch */
     /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-input-search:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-inputsearch {
       display: inline-block;
       position: relative;
@@ -29,8 +37,9 @@
      */
     .oj-inputsearch-choice {
       @include oj-form-control-content;
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-display-flex-property();
+      @include oj-align-items-property(center);
       @if $inputSearchIconPosition == start {
         @include oj-flex-direction-property(row-reverse);
       }
@@ -75,9 +84,8 @@
      * Applied to the search button
      */
     .oj-inputsearch-search-button {
-      @include oj-box-sizing-property(border-box);
+      box-sizing: border-box;
       @include oj-display-inline-flex-property();
-      @include oj-align-items-property(center);
       cursor: pointer;
       text-align: center;
       vertical-align: middle;
@@ -111,7 +119,7 @@
      * Styling for focus state
      */
     .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus
-    .oj-inputsearch-choice {
+      .oj-inputsearch-choice {
       @include oj-form-control-content-focus;
       @include oj-form-control-content-focus-padding;
     }
@@ -123,7 +131,7 @@
       @include oj-form-control-border-message-width($inputSearchBgColor);
       border-style: solid;
       border-color: $borderColorError;
-      
+
     }
 
     /* 
@@ -155,6 +163,24 @@
 
     .oj-inputsearch.oj-disabled .oj-inputsearch-search-button { 
       cursor: default;
+    }
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit .oj-inputsearch-choice,
+    .oj-form-control-inherit .oj-inputsearch-input {
+      @include oj-form-control-inherit();
+    }
+
+    // if a focus border width is set reset it back to 0
+    @if ($formControlInputBorderWidthFocus != null) {                      
+      .oj-form-control-inherit .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice  {
+        border-width:0;
+      }
     }
   }
 }

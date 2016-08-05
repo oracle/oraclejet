@@ -25,6 +25,10 @@
 
 @if $includeDialogClasses != false {
   @include module-include-once("alta.ios.dialog") {
-    
+
+    .oj-dialog-close-icon { 
+        color: $buttonBgColor; 
+     }       
+
   }
 }

@@ -14,13 +14,66 @@
     /* buttonset */
     /* --------------------------------------------------------------- */
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-buttonset:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /* oj-buttonset-multi is present iff it's a multi-button buttonset, which is the only kind of buttonset to which 
        buttonset styling should be applied.  When a single button is wrapped in a buttonset (typically for use with 
        the "checked" option), that's an implementation detail; users still see it as a standalone button, so it 
        should be themed as such. */
     .oj-buttonset-multi { 
-        display: inline-block; // so buttonset shows in same row as rest of containing toolbar, unlike display:block
+        @include oj-display-inline-flex-property; // so buttonset shows in same row as rest of containing toolbar, unlike display:flex
+        @include oj-align-items-property(center);
         white-space:nowrap; // so buttonset's buttons are all in one line
+    }
+
+    // Button widths
+    //----------------------------------
+
+    // Applying oj-buttonset-width-equal will force buttonset buttons' widths to be equal, overriding any theming defaults
+    // app can set oj-buttonset-width-equal on buttonset or on an ancestor such as toolbar or document
+    .oj-buttonset-width-equal .oj-buttonset-multi .oj-button,
+    .oj-buttonset-width-equal.oj-buttonset-multi .oj-button {
+        @include oj-flex-property(1);
+        overflow: hidden;
+    }
+
+    // Apply the default width setting to equal-width buttonsets. Apps can override this rule as needed.
+    .oj-buttonset-width-equal .oj-buttonset-multi,
+    .oj-buttonset-width-equal.oj-buttonset-multi {
+        width: $buttonsetEqualWidthOverallWidth;
+    }
+
+    // Applying oj-buttonset-width-auto will force buttonset buttons' widths to be determined by the total width of their icons/label contents, overriding any theming defaults
+    // app can set oj-buttonset-width-auto on buttonset or on an ancestor such as toolbar or document
+    .oj-buttonset-width-auto .oj-buttonset-multi .oj-button, 
+    .oj-buttonset-width-auto.oj-buttonset-multi .oj-button {
+        @include oj-flex-property(auto);
+    }
+
+    // In themes with default auto-width buttonsets, allow buttons to grow/shrink according to app-specified width
+    .oj-buttonset-multi .oj-button {
+        @include oj-flex-property(auto);
+    }
+
+    // Apply theme default buttonset width settings based on chroming values
+    @if $buttonsetEqualWidthChromingList {
+        @each $chroming in $buttonsetEqualWidthChromingList {
+            .oj-buttonset-multi.oj-button-#{$chroming}-chrome {
+                &:not(.oj-buttonset-width-auto) {
+                    & .oj-button {
+                        @include oj-justify-content-property(center);
+                        @include oj-flex-property(1);
+                        overflow: hidden;
+                    }
+                    width: $buttonsetEqualWidthOverallWidth; // Apply the default width setting to equal-width buttonsets. Apps can override this rule as needed.
+                }
+            }
+        }
     }
 
 
@@ -30,20 +83,6 @@
 
     /* Due to limitations in CSS syntax, the buttonset rules that depend on the chroming level check whether 
        the buttonset itself has .oj-button-XXX-chrome.  This is why we put those classes on the buttonset itself.*/
-    
-    .oj-buttonset-multi.oj-button-full-chrome, 
-    .oj-buttonset-multi.oj-button-outlined-chrome {
-        // inline-block makes whitespace appear between the buttons if the html has any whitespace 
-        // between the tags.  We previously avoided this by removing all the text nodes at create time, but it caused 
-        // problems with the KO foreach binding.  To make the whitespace go away, we now set font size to 0.
-        // This means we have to set vertical-align to top, and must set the button font-size 
-        // explicitly below.  In iOS9 only, the first-choice font-family of our iOS theme doesn't seem to support font-size
-        // 0, so that the whitespace isn't successfully removed, so the iOS theme sets a font-family that supports 
-        // font-size 0, and restores the usual font-family on the individual buttons below.
-        font-size: 0;
-        font-family: $buttonsetFontFamily;
-        vertical-align: top;
-    }
 
     .oj-buttonset-multi.oj-button-full-chrome .oj-button, 
     .oj-buttonset-multi.oj-button-outlined-chrome .oj-button {
@@ -54,29 +93,17 @@
         // buttons that wrap to the next line 
         margin-left: 0; 
         margin-right: 0;
-        
-        font-size: $buttonFontSize; // see above comment about inline-block whitespace
-        font-family: $buttonsetButtonFontFamily; // ditto
     }
 
-
-    // Alternate button sizes
-    //----------------------------------
-
-
-    .oj-buttonset-multi.oj-button-full-chrome .oj-button-sm.oj-button, 
-    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-sm.oj-button {
-        font-size: $buttonSmallFontSize; // see above comment about inline-block whitespace
+    // Half chromed buttonset buttons should have normal button spacing between them (3px in size 12 font), as if they're not in a buttonset at all.
+    .oj-buttonset-multi.oj-button-half-chrome .oj-button {
+        margin-left: 0;
+        margin-right: 0.25em; // equals 3px in size 12 font
     }
 
-    .oj-buttonset-multi.oj-button-full-chrome .oj-button-lg.oj-button, 
-    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-lg.oj-button {
-        font-size: $buttonLargeFontSize; // see above comment about inline-block whitespace
-    }
-
-    .oj-buttonset-multi.oj-button-full-chrome .oj-button-xl.oj-button, 
-    .oj-buttonset-multi.oj-button-outlined-chrome .oj-button-xl.oj-button {
-        font-size: $buttonXlargeFontSize; // see above comment about inline-block whitespace
+    // Remove hardcoded 4px right margin from last element of half-chrome buttonset
+    .oj-buttonset-multi.oj-button-half-chrome .oj-buttonset-last {
+        margin-right: 0;
     }
 
 

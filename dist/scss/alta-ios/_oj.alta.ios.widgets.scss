@@ -56,6 +56,7 @@
 @import "widgets/oj.alta.ios.dvt.base";
 @import "widgets/oj.alta.ios.dvt.chart";
 @import "widgets/oj.alta.ios.dvt.diagram";
+@import "widgets/oj.alta.ios.dvt.gantt";
 @import "widgets/oj.alta.ios.dvt.gauge";
 @import "widgets/oj.alta.ios.dvt.nbox";
 @import "widgets/oj.alta.ios.dvt.pictochart";
@@ -63,6 +64,7 @@
 @import "widgets/oj.alta.ios.dvt.thematicmap";
 @import "widgets/oj.alta.ios.dvt.treemap";
 @import "widgets/oj.alta.ios.dvt.sunburst";
+@import "widgets/oj.alta.ios.dvt.timeaxis";
 @import "widgets/oj.alta.ios.dvt.timeline";
 
 // form controls and messaging
@@ -91,5 +93,6 @@
 @import "widgets/oj.alta.ios.formlayout";
 
 // appplication layout
+@import "widgets/oj.alta.ios.applayout";
 @import "widgets/oj.alta.ios.applayout.hybrid";
 @import "widgets/oj.alta.ios.applayout.web";

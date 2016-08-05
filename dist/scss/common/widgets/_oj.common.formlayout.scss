@@ -108,6 +108,18 @@
      float:none; 
   }
   
+  // when labels are inline we don't float. we need this selector to be more specific than the
+  // .oj-label label selector in common.formcontrol.label.scss which has rtl/ltr, otherwise
+  // we get that float:right if we have .oj-md-labels-inline on the label in rtl mode.
+  .#{$selectorPrefix}-label-inline.oj-label label {
+      @include oj-ltr {
+        float: none;
+      }
+      @include oj-rtl(){
+        float: none;
+      }
+    }  
+  
     // when labels are inline we don't float. 
   .#{$selectorPrefix}-label-inline .oj-label-required-icon,
   .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) .oj-label-required-icon,
@@ -139,7 +151,7 @@
     margin-top: $labelInlineMarginTop;
     // box sizing required for firefox or the 
     // gutter padding  doesn't work
-    @include oj-box-sizing-property(border-box);
+    box-sizing: border-box;
 
     @include oj-ltr {
       padding-right: $labelInlineGutter; 
@@ -158,15 +170,31 @@
     margin-top: 0;
   }
   
-  // radioset/checkboxset are inline-top aligned, but they need to be
-  // a couple pixels higher than other input components to have the label
-  // line up with the first radio's label
-  .#{$selectorPrefix}-label-inline.oj-radioset-label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
-  .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
-  .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
-    margin-top: -2px;
-    margin-bottom: 0;
+
+  
+  @if ($radioCheckboxRenderInputAs == 'backgroundImage') {
+    // radioset/checkboxset are inline-top aligned, but they need to be
+    // a couple pixels higher than other input components to have the label
+    // line up with the first radio's label
+    .#{$selectorPrefix}-label-inline.oj-radioset-label,
+    .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
+    .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
+    .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+      margin-top: .6rem;
+      margin-bottom: 0;
+    }
+  } @else {
+    // radioset/checkboxset's inline main label needs slightly different alignment
+    // than the other form controls to line up with the first radio's label.
+    // a couple pixels higher than other input components to have the label
+    // line up with the first radio's label
+    .#{$selectorPrefix}-label-inline.oj-radioset-label,
+    .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
+    .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
+    .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
+      margin-top: 1px;
+      margin-bottom: 0;
+    }   
   }
 
   // This is for cases where there are label modifiers (required, etc), in which case
@@ -284,6 +312,11 @@
     // to subtract wrappableMarginBottom
     .oj-form > .oj-form-control-group {
       margin-bottom: ($formLayoutMarginBottom - $wrappableMarginBottom);
+    }
+    
+    // This keeps the form controls lined up in case one has an inline message.
+    .oj-form-control-group .oj-form-control {
+      vertical-align: top;
     }
 
 

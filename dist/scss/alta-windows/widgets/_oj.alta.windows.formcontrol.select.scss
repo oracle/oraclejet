@@ -38,24 +38,37 @@
       @extend .oj-fwk-icon-caret03-s;
     }
 
-    .oj-select-native .oj-select-arrow.oj-select-open-icon {
-      margin-top:1px;
+    .oj-select-select::-ms-value {
+      background-color: $formControlBgColor; 
+      color: $formControlInputValueColor;
     }
 
-    .oj-select-multiple-open-icon {
+    .oj-select-select[disabled] {
+      background: $formControlBgColor; 
+    }
+
+    .oj-select .oj-select-multiple-open-icon {
       display:none;
     }
 
-    .oj-select-select::-ms-expand {
+    .oj-select .oj-select-select::-ms-expand {
       display:none;
+    }
+
+    .oj-select-select {
+      -moz-appearance:none;
+    }
+
+    .oj-select-native.oj-enabled .oj-select-select:active {      
+      background-color: $selectTriggerBgColorActive;
     }
 
     .oj-select-native .oj-select-select[multiple] {
       overflow-x: hidden;
       overflow-y: scroll;
-      height: 10rem;
       padding-left: 0;
       padding-right: 0;
+      min-height: $formControlTriggerHeight * 2;
     }
   }
 }

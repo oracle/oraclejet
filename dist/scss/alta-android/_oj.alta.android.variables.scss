@@ -1,10 +1,6 @@
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.property";
 
-// WARNING:
-// android theme UNDER DEVELOPMENT!
-// currently defining android overrides for alta web values so need to import alta web var files
-
 // This is the variable file for the Oracle Alta Android look and feel.
 
 // path to platform specific images directory, note that any images present in the alta images
@@ -12,10 +8,13 @@
 $imageDir: "images/" !default;
 
 
+$themeName:           alta !default;
+$themeTargetPlatform: android !default; // targets the android 5 look and feel
 
 //----------------------------------------------------------------
-// "ABSTRACT" STYLING
-//     in general these "abstract" variables are not used directly
+// PALETTE VARIABLES: 
+//       these can be thought of as the color palette for the
+//       application. Thes variables are not used directly
 //       in the widget files, rather they are referred to by
 //       other variables. 
 //----------------------------------------------------------------
@@ -29,7 +28,7 @@ $background2Color: #f6f6f7 !default;
 $background3Color: #fcfdfe !default;
 $background4Color: #e2e2e5 !default;
 $background5Color: #fafafa !default;
-$background6Color: #e4e8ea !default;
+$background6Color: #daeaf8 !default;
 
 
 // border colors
@@ -61,9 +60,6 @@ $interaction6Color: #dae9f5 !default;
 //       these variables are used broadly in the widget files
 //----------------------------------------------------------------
 
-
-$fontFamily: 'Roboto', 'Droid Sans', Arial, sans-serif !default;
-
 // font
 //----------------------------------
 // http://www.google.com/design/spec/style/typography.html#typography-styles
@@ -88,6 +84,9 @@ $headerTextColor:       #595959 !default;
 $formControlLabelColor: #3a3a3a !default;
 $linkTextColor:         #2F6BAC !default;
 
+//icon colors
+//------------------------------------
+$iconColorHover:    #85bbe7 !default;
 
 // border radius
 //----------------------------------
@@ -110,8 +109,10 @@ $opacityDisabled: .5 !default;
 
 // animation
 //----------------------------------
-$animationDrillInDefault:   coverUp     !default;
-$animationDrillOutDefault:  revealDown  !default;
+$animationNavChildDefault:           coverUp     !default;
+$animationNavParentDefault:          revealDown  !default;
+$animationNavSiblingEarlierDefault:  pushEnd     !default;
+$animationNavSiblingLaterDefault:    pushStart   !default;
 
 
 //----------------------------------------------------------------
@@ -126,7 +127,6 @@ $animationDrillOutDefault:  revealDown  !default;
 // link text color defined in "text colors" section, look for "$linkTextColor"
 $linkTextDecoration:      none !default;
 $linkTextDecorationHover: none !default;
-$linkFontWeightActive:    normal !default;
 $linkBgColorActive:       $interaction5Color !default;
 
 // WINDOW
@@ -161,6 +161,12 @@ $dvtChartSubtitleTextColor: $secondaryTextColor !default;
 // MENU
 //----------------------------------------------------------------
 
+// Controls whether "swipe down to dismiss" is supported for sheet menus.
+// Note that this only applies to swipes starting on the menu, since any touch 
+// outside the menu will dismiss, regardless of whether it turns into a swipe.
+// Valid values are "dismiss" and "none".
+$menuSheetSwipeDownBehavior: "dismiss" !default;
+
 // horizontal spacing
 //----------------------------------
 
@@ -191,7 +197,7 @@ $menuPadding:                         0.5rem !default; // 8px @16px font
 // menu items (.oj-menu-item) and their anchors
 $menuItemBorderColor:                 transparent !default;
 $menuItemTextColor:                   $primaryTextColor !default;
-$menuItemLineHeight:                  48/16 !default;
+$menuItemLineHeight:                  48/16 !default; // 48px @16px font
 
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:           transparentize($menuItemTextColor, 0.74) !default;
@@ -205,6 +211,21 @@ $menuIconColor:                       $interaction1Color !default;
 
 // submenu icons
 $menuSubmenuIconColor:                #999 !default;
+
+
+// sheet menus
+//----------------------------------
+
+// sheet menus (.oj-menu-sheet)
+$menuSheetFontSize:                   1.0625rem !default; // 17px @16px font
+$menuSheetMarginHorizontal:           1rem !default; // 16px @16px font
+
+// sheet menu items (.oj-menu-item) and their anchors
+$menuSheetItemTextColor:              $secondaryTextColor !default;
+$menuSheetItemLineHeight:             48/17 !default; // 48px @17px font, where 17 is 1.0625rem @16px font
+
+// focused sheet menu items (.oj-focus)
+$menuSheetItemBorderColorFocus:       transparent !default;
 
 
 // BUTTONS
@@ -282,11 +303,9 @@ $buttonIconColorHover:            $buttonTextColorHover !default;
 $buttonBorderColorHover:          $buttonBgColorHover !default;
 
 // active
-$buttonBgColorActive:             #044f91 !default;
 $buttonTextColorActive:           $buttonTextColor !default; // #ffffff
 
 // selected
-$buttonBgColorSelected:           $buttonBgColorActive !default;
 
 // selected and hovered
 // No "selected and hovered" spec, so handling is arbitrary
@@ -322,15 +341,13 @@ $buttonHalfChromeIconColor:               $buttonHalfChromeTextColor !default;
 // Unlike full chrome, there is a spec for half-chrome hover, per email: from filmstrip/conveyor
 // fwd/back button specs, use SVG fill colors for text/icon color, and use background colors from spec wiki
 $buttonHalfChromeTextColorHover:          $buttonTextColor !default;
-$buttonHalfChromeBgColorHover:            #0582e8 !default; // confirmed that it's intentional for this color to be just slightly different than the usual #0572ce
+$buttonHalfChromeBgColorHover:            lighten($interaction1Color, 5%) !default; 
 
 // half chrome active
 $buttonHalfChromeTextColorActive:         $buttonTextColor !default;
-$buttonHalfChromeBgColorActive:           $buttonBgColorActive !default;
 
 // half chrome selected
 $buttonHalfChromeTextColorSelected:       $buttonHalfChromeTextColorActive !default;
-$buttonHalfChromeBgColorSelected:         $buttonHalfChromeBgColorActive !default;
 
 // half chrome selected and hovered
 $buttonHalfChromeTextColorSelectedHover:  darken($buttonTextColor, 20%) !default;
@@ -370,6 +387,13 @@ $buttonConfirmColor:        #268901 !default;
 // BUTTONSET
 //----------------------------------------------------------------
 
+// width
+//----------------------------------
+// default: equal width only for full- and outline-chrome buttons, not half chrome
+$buttonsetEqualWidthChromingList: full outlined !default; // default should be equal width buttonsets for these chroming values (auto width for all others)
+
+// DIALOG
+//----------------------------------------------------------------
 
 // TOOLBAR
 //----------------------------------------------------------------
@@ -415,7 +439,6 @@ $formControlBgColorDisabled: transparent !default;
 // form labels
 //----------------------------------
 // label text color defined above, look for "text colors"
-$formControlLabelFontWeight: normal !default;
 $formControlLabelFontSize:   $smallestFontSize !default;
 $formControlLabelRequiredChar: '' !default;
 
@@ -461,6 +484,10 @@ $inputTextBorderStyleDisabled:        none none dotted none !default;
 $inputSearchIconPosition: start !default; // Possible values are 'start' and 'end'
 $inputSearchIconPadding: 0 8px 0 0 !default;
 
+// INPUT NUMBER
+// the spacing between the input and the buttonset
+$inputNumberInputToButtonMargin: 16px !default;
+
 // RADIOSET AND CHECKBOXSET
 // Android has input rendered as a background image and label comes before the image
 
@@ -488,6 +515,9 @@ $selectRenderModeOptionDefault: native !default;
 
 // arrow
 $selectArrowColor: #727272 !default;
+
+// picker
+$selectPickerBgColor: $background1Color !default;
 
 // SLIDER
 //----------------------------------------------------------------
@@ -574,7 +604,7 @@ $switchThumbBorderWidthSelectedHover: $switchThumbBorderWidthHover !default;
 $switchTrackBgColorSelectedHover:        $interaction1Color !default; // #0572ce
 $switchTrackBorderColorSelectedHover:    $switchTrackBgColorSelectedHover !default; // #0572ce
 $switchThumbBgColorSelectedHover:        $switchTrackBgColorSelectedHover !default; // #0572ce
-$switchThumbBorderColorSelectedHover:    #9dd9ff !default;
+$switchThumbBorderColorSelectedHover: adjust-color($interaction1Color, $lightness: 47%, $saturation: 5%) !default; // #c4e4ff
 
 // ACTIVE OFF
 $switchThumbHeightActive: $switchThumbHeightHover !default;
@@ -636,18 +666,19 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 //----------------------------------------
 //Default
 $navigationListPageLevelItemIconColorDefault: $formControlLabelColor !default;
-$navigationListPageLevelItemTextColorDefault: $formControlLabelColor !default;
+$navigationListPageLevelItemLabelColorDefault: $formControlLabelColor !default;
 //Selected
 $navigationListPageLevelItemBgColorSelected: transparent !default;
-$navigationListPageLevelItemTextColorSelected: $interaction1Color !default;
+$navigationListPageLevelItemLabelColorSelected: $interaction1Color !default;
 //Active
-$navigationListPageLevelItemBgColorActive: #eef7fe !default;
-$navigationListPageLevelItemBorderColorActive: #85bbe7 !default;
+$navigationListPageLevelItemBgColorActive: $background2Color !default;
+$navigationListPageLevelItemBorderColorActive: $iconColorHover !default;
 
 //sizing
+$navigationListItemAccentBorderWidth:       3px !default;
 $navigationListItemStartEndPadding:         0.625rem !default; //10px when root font 16px
 
-$navigationListPageLevelItemBorderWidth:    0 0 0 2px !default;
+$navigationListPageLevelItemBorderWidth:    0 0 1px 2px !default;
 $navigationListPageLevelItemMinHeight: 2.9375rem !default; // 47px when root font size is 16px
 $navigationListPageLevelItemFontSize: 0.875rem !default; //14px when root font size is 16px;
 
@@ -661,7 +692,7 @@ $navigationBarPageLevelItemBorderWidth: 0 0 2px 0 !default;
 $navigationBarPageLevelItemFontSize: 0.875rem !default; //14 px when root font is 16px
 $navigationBarPageLevelItemStackedIconMinHeight: 3rem !default;//48px when root font is 16px
 $navigationBarPageLevelItemMinHeight: 3rem !default; //48px when root font is 16px;
-
+$navigationBarPageLevelIconOnlyItemBorderWidth: $navigationBarPageLevelItemBorderWidth !default;
 // END of NavigationList variables
 
 // PROGRESSBAR
@@ -675,8 +706,9 @@ $progressbarIndeterminateOverlayOpacity: 1 !default;
 // LISTVIEW
 //----------------------------------------------------------------
 // the right and left margins will be flipped in rtl languanges
-$listViewCardMargin:       8px 8px 8px 0 !default;
-$listViewHeaderFontSize:   $header5FontSize !default;
+$listViewCardMargin:         8px 8px 8px 0 !default;
+$listViewHeaderFontSize:     $header5FontSize !default;
+$listViewPointerUpAnimation: (effect: "ripple") !default;
 
 // DATAGRID
 //----------------------------------------------------------------
@@ -696,8 +728,6 @@ $dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColorFocus !defau
 //-------------------------------------------------------------
 // Padding
 $appLayoutHybridPadding: 1rem !default;
-// Bar
-$appLayoutHybridHeaderOpacity: 1 !default;
 // Header
 $appLayoutHybridHeaderMinHeight: 56px !default;
 $appLayoutHybridHeaderBoxShadow: 0 1px 3px rgba(0,0,0,.3) !default;

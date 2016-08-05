@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Hover_Checked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="48px" height="48px" viewBox="12 -12 48 48" enable-background="new 12 -12 48 48" xml:space="preserve">
+<g id="Hover_Checkmark_background">
+	<g>
+		<path fill="#0582E8" d="M43.03,3h-14c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C45.03,3.9,44.13,3,43.03,3z"/>
+	</g>
+</g>
+<path id="checkmark" fill="#FFFFFF" d="M41.88,10.21l-7.78,5.82l-0.07-0.05l-0.07,0.05l-3.78-2.76c-0.2-0.15-0.2-0.39-0.01-0.54
+	l0.69-0.53c0.19-0.15,0.51-0.15,0.71-0.01l2.45,1.79l6.48-4.85c0.2-0.15,0.51-0.14,0.71,0.01l0.68,0.53
+	C42.08,9.83,42.07,10.07,41.88,10.21z"/>
+</svg>

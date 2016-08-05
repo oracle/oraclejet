@@ -73,6 +73,7 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
+    this._focusable({'element': this.element, 'applyHighlight': true});
     return dvt.SparkChart.newInstance(context, callback, callbackObj);
   },
 
@@ -1028,6 +1029,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       styleClasses['oj-chart-stock-falling'] = {'path': 'styleDefaults/stockFallingColor', 'property': 'background-color'};
       styleClasses['oj-chart-stock-range'] = {'path': 'styleDefaults/stockRangeColor', 'property': 'background-color'};
       styleClasses['oj-chart-stock-rising'] = {'path': 'styleDefaults/stockRisingColor', 'property': 'background-color'};
+      styleClasses['oj-chart-tooltip-label'] = {'path': 'styleDefaults/tooltipLabelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-title'] = {'path': 'title/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-xaxis-tick-label'] = {'path': 'xAxis/tickLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-xaxis-title'] = {'path': 'xAxis/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
@@ -1086,6 +1088,9 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       ret['DvtChartBundle.LABEL_OPEN'] = translations['labelOpen'];
       ret['DvtChartBundle.LABEL_CLOSE'] = translations['labelClose'];
       ret['DvtChartBundle.LABEL_VOLUME'] = translations['labelVolume'];
+      ret['DvtChartBundle.LABEL_Q1'] = translations['labelQ1'];
+      ret['DvtChartBundle.LABEL_Q2'] = translations['labelQ2'];
+      ret['DvtChartBundle.LABEL_Q3'] = translations['labelQ3'];
       ret['DvtChartBundle.LABEL_MIN'] = translations['labelMin'];
       ret['DvtChartBundle.LABEL_MAX'] = translations['labelMax'];
       ret['DvtChartBundle.LABEL_OTHER'] = translations['labelOther'];
@@ -1492,4 +1497,263 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     }
   });
 
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojChartMeta = {
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "coordinateSystem": {
+      "type": "string"
+    },
+    "dataCursor": {
+      "type": "string"
+    },
+    "dataCursorBehavior": {
+      "type": "string"
+    },
+    "dataCursorPosition": {
+      "type": "object"
+    },
+    "dataLabel": {},
+    "dnd": {
+      "type": "object"
+    },
+    "dragMode": {
+      "type": "string"
+    },
+    "drilling": {
+      "type": "string"
+    },
+    "footnote": {
+      "type": "object"
+    },
+    "groups": {
+      "type": "Array<object>|Array<string>"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "hideAndShowBehavior": {
+      "type": "string"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "initialZooming": {
+      "type": "string"
+    },
+    "legend": {
+      "type": "object"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "otherThreshold": {
+      "type": "number"
+    },
+    "overview": {
+      "type": "object"
+    },
+    "pieCenter": {
+      "type": "object"
+    },
+    "pieCenterLabel": {
+      "type": "object"
+    },
+    "plotArea": {
+      "type": "object"
+    },
+    "polarGridShape": {
+      "type": "string"
+    },
+    "selection": {
+      "type": "Array<string>|Array<object>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "series": {
+      "type": "Array<object>"
+    },
+    "sorting": {
+      "type": "string"
+    },
+    "splitDualY": {
+      "type": "string"
+    },
+    "splitterPosition": {
+      "type": "number"
+    },
+    "stack": {
+      "type": "string"
+    },
+    "stackLabel": {
+      "type": "string"
+    },
+    "styleDefaults": {
+      "type": "object"
+    },
+    "subtitle": {
+      "type": "object"
+    },
+    "timeAxisType": {
+      "type": "string"
+    },
+    "title": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "valueFormats": {
+      "type": "Array<object>"
+    },
+    "xAxis": {
+      "type": "object"
+    },
+    "y2Axis": {
+      "type": "object"
+    },
+    "yAxis": {
+      "type": "object"
+    },
+    "zoomAndScroll": {
+      "type": "string"
+    },
+    "zoomDirection": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getDataItem": {},
+    "getGroup": {},
+    "getGroupCount": {},
+    "getLegend": {},
+    "getPlotArea": {},
+    "getSeries": {},
+    "getSeriesCount": {},
+    "getTitle": {},
+    "getValuesAt": {},
+    "getXAxis": {},
+    "getY2Axis": {},
+    "getYAxis": {}
+  },
+  "extension": {
+    "_widgetName": "ojChart"
+  }
+};
+oj.Components.registerMetadata('ojChart', 'dvtBaseComponent', ojChartMeta);
+oj.Components.register('oj-chart', oj.Components.getMetadata('ojChart'));
+})();
+
+(function() {
+var ojSparkChartMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "areaClassName": {
+      "type": "string"
+    },
+    "areaColor": {
+      "type": "string"
+    },
+    "areaStyle": {
+      "type": "object"
+    },
+    "barGapRatio": {
+      "type": "number"
+    },
+    "baselineScaling": {
+      "type": "string"
+    },
+    "className": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "firstColor": {
+      "type": "string"
+    },
+    "highColor": {
+      "type": "string"
+    },
+    "items": {
+      "type": "Array<object>|Array<number>"
+    },
+    "lastColor": {
+      "type": "string"
+    },
+    "lineStyle": {
+      "type": "string"
+    },
+    "lineType": {
+      "type": "string"
+    },
+    "lineWidth": {
+      "type": "number"
+    },
+    "lowColor": {
+      "type": "string"
+    },
+    "markerShape": {
+      "type": "string"
+    },
+    "markerSize": {
+      "type": "number"
+    },
+    "referenceObjects": {
+      "type": "Array<object>"
+    },
+    "style": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    },
+    "visualEffects": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getDataItem": {}
+  },
+  "extension": {
+    "_widgetName": "ojSparkChart"
+  }
+};
+oj.Components.registerMetadata('ojSparkChart', 'dvtBaseComponent', ojSparkChartMeta);
+oj.Components.register('oj-spark-chart', oj.Components.getMetadata('ojSparkChart'));
+})();
 });

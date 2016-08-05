@@ -6,6 +6,7 @@
 define(['./DvtToolkit'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
+(function(dvt) {
 /**
  * This is the base class for all time based components (Gantt, Timeline).  It handles the following:
  * - all common attributes (start time, end time etc.)
@@ -30,6 +31,10 @@ dvt.TimeComponent = function(context, callback, callbackObj)
 
 dvt.Obj.createSubclass(dvt.TimeComponent, dvt.BaseComponent);
 
+dvt.TimeComponent.ZOOM_BY_VALUE = 1.5;
+dvt.TimeComponent.SCROLL_LINE_HEIGHT = 15;
+dvt.TimeComponent.WHEEL_UNITS_PER_LINE = 40;
+
 /**
  * Initializes the view.
  * @param {dvt.Context} context The rendering context.
@@ -48,14 +53,21 @@ dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj)
  * Renders the component using the specified xml.  If no xml is supplied to a component
  * that has already been rendered, this function will rerender the component with the
  * specified size.
- * @param {string} xml The component xml.
- * @param {number} width The width of the component.
- * @param {number} height The height of the component.
+ * @param {object} options list of options
+ * @param {number} width the width of the component
+ * @param {number} height the height of the component
+ * @override
  */
-dvt.TimeComponent.prototype.render = function(width, height, options) 
+dvt.TimeComponent.prototype.render = function(options, width, height) 
 {
   if (options)
+  {
+    this._resources = options['_resources'];
+    if (this._resources == null)
+      this._resources = [];
+
     this.SetOptions(options);
+  }
 
   // Store the size
   this.Width = width;
@@ -74,13 +86,18 @@ dvt.TimeComponent.prototype.render = function(width, height, options)
  */
 dvt.TimeComponent.prototype.SetOptions = function(options)
 {
-  this.Options = dvt.JsonUtils.clone(options);
+  // Combine the user options with the defaults and store
+  this.Options = this.Defaults.calcOptions(options);
+
+  // Disable animation for canvas and xml
+  if (!dvt.Agent.isEnvironmentBrowser()) {
+    this.Options['animationOnDisplay'] = 'none';
+    this.Options['animationOnDataChange'] = 'none';
+  }
 };
 
 dvt.TimeComponent.prototype._applyParsedProperties = function(props)
 {
-  this._origStart = props.origStart;
-  this._origEnd = props.origEnd;
   this._start = props.start;
   this._end = props.end;
   this._inlineStyle = props.inlineStyle;
@@ -94,7 +111,8 @@ dvt.TimeComponent.prototype._applyParsedProperties = function(props)
  */
 dvt.TimeComponent.prototype.applyStyleValues = function()
 {
-  this._style.parseInlineStyle(this._inlineStyle);
+  if (this._style)
+    this._style.parseInlineStyle(this._inlineStyle);
 };
 
 //////////// attribute methods ////////////////////////////
@@ -116,8 +134,9 @@ dvt.TimeComponent.prototype.getAdjustedEndTime = function()
 
 /**
  * Returns the overall (virtualized) length of the content
+ * @return {number} the content length
  */
-dvt.TimeComponent.prototype.getContentLength = function() 
+dvt.TimeComponent.prototype.getContentLength = function()
 {
   return this._contentLength;
 };
@@ -143,10 +162,75 @@ dvt.TimeComponent.prototype.isRTL = function()
 
 /**
  * Returns whether the component has a vertical orientation.
+ * @return {boolean} true if vertical, false otherwise.
  */
 dvt.TimeComponent.prototype.isVertical = function()
 {
   return this._isVertical;
+};
+
+/**
+ * Retrieve the time axis.
+ * @return {dvt.TimeAxis} the time axis
+ */
+dvt.TimeComponent.prototype.getTimeAxis = function()
+{
+  return null;
+};
+
+/**
+ */
+dvt.TimeComponent.prototype.prepareViewportLength = function()
+{
+  this.setRelativeStartPos(0);
+  if (this._viewStartTime && this._viewEndTime)
+  {
+    var viewTime = this._viewEndTime - this._viewStartTime;
+    if (viewTime > 0)
+    {
+      var widthFactor = this._canvasLength / viewTime;
+      this.setContentLength(widthFactor * (this._end - this._start));
+      this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
+    }
+  }
+  else
+  {
+    var timeAxis = this.getTimeAxis();
+    var zoomLevelLength = timeAxis.getZoomLevelLengths()[timeAxis._zoomLevelOrder];
+    var startTime = this._start;
+    var endTime = this._end;
+    if (this._viewStartTime == null)
+    {
+      if (this._viewEndTime != null)
+      {
+        this._viewStartTime = this._viewEndTime - (this._canvasLength / zoomLevelLength) * (endTime - startTime);
+        if (this._viewStartTime < this._start)
+          this._viewStartTime = this._start;
+        var viewTime = this._viewEndTime - this._viewStartTime;
+        var widthFactor = this._canvasLength / viewTime;
+        this.setContentLength(widthFactor * (this._end - this._start));
+        this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
+      }
+      else
+      {
+        this._viewStartTime = this._start;
+        this.setRelativeStartPos(0);
+        this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
+        if (this._viewEndTime > this._end)
+          this._viewEndTime = this._end;
+      }
+    }
+    else
+    {
+      this._viewEndTime = (this._canvasLength / zoomLevelLength) * (endTime - startTime) + this._viewStartTime;
+      if (this._viewEndTime > this._end)
+        this._viewEndTime = this._end;
+      viewTime = this._viewEndTime - this._viewStartTime;
+      widthFactor = this._canvasLength / viewTime;
+      this.setContentLength(widthFactor * (this._end - this._start));
+      this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
+    }
+  }
 };
 
 /**
@@ -184,59 +268,201 @@ dvt.TimeComponent.prototype.getTimeZoomCanvas = function()
   return this._timeZoomCanvas;
 };
 
+/**
+ * Renders the zoom controls of this component.
+ * @param {object} options The zoom controls properties
+ */
+dvt.TimeComponent.prototype.renderZoomControls = function(options)
+{
+  var context = this.getCtx();
+  var timeAxis = this.getTimeAxis();
+
+  // Zoom in states
+  var zoomInOptions = options['zoomInProps'];
+  var imageSize = zoomInOptions['imageSize'];
+  var cssUrl = zoomInOptions['cssUrl'];
+  var cssUrlHover = zoomInOptions['cssUrlHover'];
+  var cssUrlActive = zoomInOptions['cssUrlActive'];
+  var cssUrlDisabled = zoomInOptions['cssUrlDisabled'];
+  var enabledBackgroundColor = zoomInOptions['enabledBackgroundColor'];
+  var enabledBorderColor = zoomInOptions['enabledBorderColor'];
+  var hoverBackgroundColor = zoomInOptions['hoverBackgroundColor'];
+  var hoverBorderColor = zoomInOptions['hoverBorderColor'];
+  var activeBackgroundColor = zoomInOptions['activeBackgroundColor'];
+  var activeBorderColor = zoomInOptions['activeBorderColor'];
+  var disabledBackgroundColor = zoomInOptions['disabledBackgroundColor'];
+  var disabledBorderColor = zoomInOptions['disabledBorderColor'];
+
+  var upState = dvt.TransientButton.getStateFromURL(context, cssUrl, imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
+  var overState = dvt.TransientButton.getStateFromURL(context, cssUrlHover, imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
+  var downState = dvt.TransientButton.getStateFromURL(context, cssUrlActive, imageSize, imageSize, activeBackgroundColor, activeBorderColor);
+  var disabledState = dvt.TransientButton.getStateFromURL(context, cssUrlDisabled, imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
+
+  var zoomInPosX = zoomInOptions['posX'];
+  var zoomInPosY = zoomInOptions['posY'];
+
+  if (this.zoomin == null)
+  {
+    this.zoomin = new dvt.TransientButton(context, upState, overState, downState,
+        disabledState, this.EventManager, this.EventManager.HandleZoomInClick);
+    // In order for tooltips to show up, we need to associate the buttons through the event manager
+    this.EventManager.associate(this.zoomin, this.zoomin);
+  }
+  else
+  {
+    this.zoomin.setUpState(upState);
+    this.zoomin.setOverState(overState);
+    this.zoomin.setDownState(downState);
+    this.zoomin.setDisabledState(disabledState);
+  }
+
+  // Zoom out states
+  var zoomOutOptions = options['zoomOutProps'];
+  imageSize = zoomOutOptions['imageSize'];
+  cssUrl = zoomOutOptions['cssUrl'];
+  cssUrlHover = zoomOutOptions['cssUrlHover'];
+  cssUrlActive = zoomOutOptions['cssUrlActive'];
+  cssUrlDisabled = zoomOutOptions['cssUrlDisabled'];
+  enabledBackgroundColor = zoomOutOptions['enabledBackgroundColor'];
+  enabledBorderColor = zoomOutOptions['enabledBorderColor'];
+  hoverBackgroundColor = zoomOutOptions['hoverBackgroundColor'];
+  hoverBorderColor = zoomOutOptions['hoverBorderColor'];
+  activeBackgroundColor = zoomOutOptions['activeBackgroundColor'];
+  activeBorderColor = zoomOutOptions['activeBorderColor'];
+  disabledBackgroundColor = zoomOutOptions['disabledBackgroundColor'];
+  disabledBorderColor = zoomOutOptions['disabledBorderColor'];
+
+  upState = dvt.TransientButton.getStateFromURL(context, cssUrl, imageSize, imageSize, enabledBackgroundColor, enabledBorderColor);
+  overState = dvt.TransientButton.getStateFromURL(context, cssUrlHover, imageSize, imageSize, hoverBackgroundColor, hoverBorderColor);
+  downState = dvt.TransientButton.getStateFromURL(context, cssUrlActive, imageSize, imageSize, activeBackgroundColor, activeBorderColor);
+  disabledState = dvt.TransientButton.getStateFromURL(context, cssUrlDisabled, imageSize, imageSize, disabledBackgroundColor, disabledBorderColor);
+
+  var zoomOutPosX = zoomOutOptions['posX'];
+  var zoomOutPosY = zoomOutOptions['posY'];
+
+  if (this.zoomout == null)
+  {
+    this.zoomout = new dvt.TransientButton(context, upState, overState, downState,
+        disabledState, this.EventManager, this.EventManager.HandleZoomOutClick);
+    // In order for tooltips to show up, we need to associate the buttons through the event manager
+    this.EventManager.associate(this.zoomout, this.zoomout);
+  }
+  else
+  {
+    this.zoomout.setUpState(upState);
+    this.zoomout.setOverState(overState);
+    this.zoomout.setDownState(downState);
+    this.zoomout.setDisabledState(disabledState);
+  }
+
+  this.zoomin.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
+  this.zoomout.setTooltip(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
+  this.zoomin.hide();
+  this.zoomout.hide();
+
+  if (dvt.TimeAxis.supportsTouch())
+  {
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'role', 'button');
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomin.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_IN', null));
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'role', 'button');
+    dvt.ToolkitUtils.setAttrNullNS(this.zoomout.getElem(), 'aria-label', dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'ZOOM_OUT', null));
+  }
+
+  this.zoomin.setTranslateX(zoomInPosX);
+  this.zoomout.setTranslateX(zoomOutPosX);
+
+  this.zoomin.setTranslateY(zoomInPosY);
+  this.zoomout.setTranslateY(zoomOutPosY);
+
+  if (this.zoomin.getParent() != this._canvas)
+    this._canvas.addChild(this.zoomin);
+  if (this.zoomout.getParent() != this._canvas)
+    this._canvas.addChild(this.zoomout);
+
+  var contentLength = this.getContentLength();
+  if (contentLength >= timeAxis.getMaxContentLength())
+    this.disableZoomButton(true);
+  if (this._canvasLength >= contentLength)
+    this.disableZoomButton(false);
+};
+
 dvt.TimeComponent.prototype.HandleMouseWheel = function(event)
 {
   dvt.EventManager.consumeEvent(event);
   var wheelDelta = event.wheelDelta;
-  if (this.hasValidOptions() && wheelDelta)
-  {
-    var compPagePos = this.getCtx().getStageAbsolutePosition();
-    if (this._isVertical)
-      var compLoc = event.pageY - compPagePos.y;
-    else
-      compLoc = event.pageX - compPagePos.x;
-    var widthFactor = (this._end - this._start) / this._contentLength;
-    var time = widthFactor * compLoc + this._viewStartTime;
+  var wheelEvent = event.getNativeEvent();
 
-    wheelDelta = (wheelDelta * .02) + 1;
-    this.handleZoomWheel(this.getContentLength() * wheelDelta, time, compLoc, true);
+  if (this.hasValidOptions())
+  {
+    // manually check the x delta because dvt.MouseEvent ignores x delta at the time of writing.
+    // performs similar check on delta x as that of dvt.MouseEvent.Init()'s check on delta y.
+    if (wheelEvent.wheelDeltaX != null)
+      event.wheelDeltaX = wheelEvent.wheelDeltaX / dvt.TimeComponent.WHEEL_UNITS_PER_LINE; // number of lines scrolled per mouse wheel click
+    else if (wheelEvent.deltaX != null)
+    {
+      if (wheelEvent.deltaMode == wheelEvent.DOM_DELTA_LINE)
+        event.wheelDeltaX = -wheelEvent.deltaX;
+      else if (wheelEvent.deltaMode == wheelEvent.DOM_DELTA_PIXEL)
+        event.wheelDeltaX = -wheelEvent.deltaX / dvt.TimeComponent.SCROLL_LINE_HEIGHT; // number of lines scrolled per mouse wheel click
+    }
+
+    if (wheelDelta) // if vertical mouse wheel amount is defined, non null, non zero
+    {
+      var compPagePos = this.getCtx().getStageAbsolutePosition();
+      if (this._isVertical)
+        var compLoc = event.pageY - compPagePos.y;
+      else
+        compLoc = event.pageX - compPagePos.x;
+      var widthFactor = (this._end - this._start) / this.getContentLength();
+
+      if (this.isRTL() && !this._isVertical)
+        var time = this._viewEndTime - widthFactor * compLoc;
+      else
+        time = widthFactor * compLoc + this._viewStartTime;
+
+      event.zoomTime = time;
+      event.zoomCompLoc = compLoc;
+      event.zoomWheelDelta = (wheelDelta * .02) + 1;
+    }
   }
 };
 
 dvt.TimeComponent.prototype.handleZoomWheel = function(newLength, time, compLoc, triggerViewportChangeEvent)
 {
-  if (newLength > this._maxContentLength)
-  {
-    newLength = this._maxContentLength;
-    this.disableZoomButton(true);
-  }
-  else
-    this.enableZoomButton(true);
-  if (this._canvasLength > newLength)
-  {
-    newLength = this._canvasLength;
-    this.disableZoomButton(false);
-  }
-  else
-    this.enableZoomButton(false);
-  var zoomIn = this._contentLength <= newLength;
   var oldViewTime = this._viewEndTime - this._viewStartTime;
-  var viewLength = (oldViewTime / (this._end - this._start)) * this._contentLength;
+  var viewLength = (oldViewTime / (this._end - this._start)) * this.getContentLength();
   this.setContentLength(newLength);
-  var viewTime = (viewLength / this._contentLength) * (this._end - this._start);
+  var viewTime = (viewLength / this.getContentLength()) * (this._end - this._start);
   if (time)
   {
-    var widthFactor = (this._end - this._start) / this._contentLength;
-    this._viewStartTime = time - (compLoc * widthFactor);
-    if (this._viewStartTime < this._start)
-      this._viewStartTime = this._start;
-    this._viewEndTime = this._viewStartTime + viewTime;
-    if (this._viewEndTime > this._end)
+    var widthFactor = (this._end - this._start) / this.getContentLength();
+    if (this.isRTL() && !this._isVertical)
     {
-      this._viewEndTime = this._end;
+      this._viewEndTime = time + (compLoc * widthFactor);
+      if (this._viewEndTime > this._end)
+        this._viewEndTime = this._end;
       this._viewStartTime = this._viewEndTime - viewTime;
       if (this._viewStartTime < this._start)
+      {
         this._viewStartTime = this._start;
+        this._viewEndTime = this._viewStartTime + viewTime;
+        if (this._viewEndTime > this._end)
+          this._viewEndTime = this._end;
+      }
+    }
+    else
+    {
+      this._viewStartTime = time - (compLoc * widthFactor);
+      if (this._viewStartTime < this._start)
+        this._viewStartTime = this._start;
+      this._viewEndTime = this._viewStartTime + viewTime;
+      if (this._viewEndTime > this._end)
+      {
+        this._viewEndTime = this._end;
+        this._viewStartTime = this._viewEndTime - viewTime;
+        if (this._viewStartTime < this._start)
+          this._viewStartTime = this._start;
+      }
     }
     this.setRelativeStartPos((1 / widthFactor) * (this._start - this._viewStartTime));
   }
@@ -248,36 +474,7 @@ dvt.TimeComponent.prototype.handleZoomWheel = function(newLength, time, compLoc,
       this._viewStartTime = this._start;
     this.setRelativeStartPos(0);
   }
-  if (zoomIn)
-  {
-    while (this._zoomLevelOrder > 0)
-    {
-      var minLength = this._zoomLevelLengths[this._zoomLevelOrder - 1];
-      if (this._contentLength >= minLength)
-      {
-        this._zoomLevelOrder--;
-        this._timeAxis.decreaseScale();
-        this._scale = this._timeAxis._scale;
-      }
-      else
-        break;
-    }
-  }
-  else
-  {
-    while (this._zoomLevelOrder < this._zoomLevelLengths.length - 1)
-    {
-      var minLength = this._zoomLevelLengths[this._zoomLevelOrder];
-      if (this._contentLength < minLength)
-      {
-        this._zoomLevelOrder++;
-        this._timeAxis.increaseScale();
-        this._scale = this._timeAxis._scale;
-      }
-      else
-        break;
-    }
-  }
+
   this.applyTimeZoomCanvasPosition();
 };
 
@@ -292,7 +489,7 @@ dvt.TimeComponent.prototype.zoomBy = function(dz)
     var compLoc = this.Height / 2;
   else
     compLoc = this.Width / 2;
-  var widthFactor = (this._end - this._start) / this._contentLength;
+  var widthFactor = (this._end - this._start) / this.getContentLength();
   var time = widthFactor * compLoc + this._viewStartTime;
   this.handleZoomWheel(this.getContentLength() * shiftRatio, time, compLoc, true);
 };
@@ -303,10 +500,10 @@ dvt.TimeComponent.prototype.beginPinchZoom = function(x1, y1, x2, y2)
     this._initialPinchZoomLoc = Math.sqrt((y1 - y2) * (y1 - y2)) + (y1 < y2 ? y1 : y2);
   else
     this._initialPinchZoomLoc = Math.sqrt((x1 - x2) * (x1 - x2)) + (x1 < x2 ? x1 : x2);
-  var widthFactor = (this._end - this._start) / this._contentLength;
+  var widthFactor = (this._end - this._start) / this.getContentLength();
   this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
   this._initialPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-  this._initialPinchZoomLength = this._contentLength;
+  this._initialPinchZoomLength = this.getContentLength();
 };
 
 dvt.TimeComponent.prototype.contPinchZoom = function(x1, y1, x2, y2)
@@ -327,7 +524,7 @@ dvt.TimeComponent.prototype.endPinchZoom = function()
   if (this._triggerViewportChange)
   {
     this._triggerViewportChange = false;
-    this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._scale));
+    this.dispatchEvent(this.createViewportChangeEvent());
   }
 };
 
@@ -340,7 +537,7 @@ dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
   if (this._isVertical)
   {
     var newTranslateY = this._timeZoomCanvas.getTranslateY() - delta;
-    var minTranslateY = -(this._contentLength - this._canvasLength - this._startY);
+    var minTranslateY = -(this.getContentLength() - this._canvasLength - this._startY);
     var maxTranslateY = this._startY;
 
     if (newTranslateY < minTranslateY)
@@ -359,7 +556,7 @@ dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
   else
   {
     var newTranslateX = this._timeZoomCanvas.getTranslateX() - delta;
-    var minTranslateX = -(this._contentLength - this._canvasLength - this._startX);
+    var minTranslateX = -(this.getContentLength() - this._canvasLength - this._startX);
     var maxTranslateX = this._startX;
 
     if (newTranslateX < minTranslateX)
@@ -380,9 +577,9 @@ dvt.TimeComponent.prototype.panZoomCanvasBy = function(delta)
 dvt.TimeComponent.prototype.handleZoom = function(zoomIn)
 {
   if (!zoomIn)
-    this.zoomBy(dvt.Timeline.ZOOM_BY_VALUE);
+    this.zoomBy(dvt.TimeComponent.ZOOM_BY_VALUE);
   else
-    this.zoomBy(1 / dvt.Timeline.ZOOM_BY_VALUE);
+    this.zoomBy(1 / dvt.TimeComponent.ZOOM_BY_VALUE);
 };
 
 dvt.TimeComponent.prototype.enableZoomButton = function(isZoomIn)
@@ -448,7 +645,7 @@ dvt.TimeComponent.prototype.setAbsoluteStartPos = function(startPos)
 dvt.TimeComponent.prototype.getRelativeStartPos = function()
 {
   if (this.isRTL() && !this._isVertical)
-    return this._canvasLength - this._contentLength - this._startPos;
+    return this._canvasLength - this.getContentLength() - this._startPos;
   else
     return this._startPos;
 };
@@ -460,7 +657,7 @@ dvt.TimeComponent.prototype.getRelativeStartPos = function()
 dvt.TimeComponent.prototype.setRelativeStartPos = function(startPos)
 {
   if (this.isRTL() && !this._isVertical)
-    this._startPos = this._canvasLength - this._contentLength - startPos;
+    this._startPos = this._canvasLength - this.getContentLength() - startPos;
   else
     this._startPos = startPos;
 };
@@ -500,6 +697,509 @@ dvt.TimeComponent.prototype.setStartYOffset = function(startY)
 {
   this._startY = startY;
 };
+
+dvt.TimeComponent.prototype.processEvent = function(event)
+{
+  if (event)
+    this.dispatchEvent(event);
+};
+
+/**
+ * Creates a viewportChange event object
+ * @return {object} the viewportChange event object
+ */
+dvt.TimeComponent.prototype.createViewportChangeEvent = function()
+{
+  return null;
+};
+
+//////////// event handlers, called by TimeComponentEventManager ////////////////////////////
+dvt.TimeComponent.prototype.HandleKeyDown = function(event)
+{
+};
+
+dvt.TimeComponent.prototype.HandleMouseDown = function(event)
+{
+};
+
+dvt.TimeComponent.prototype.beginDragPan = function(compX, compY)
+{
+  this._currentX = compX;
+  this._currentY = compY;
+};
+
+dvt.TimeComponent.prototype.endDragPan = function()
+{
+  this.endPan();
+};
+
+dvt.TimeComponent.prototype.HandleTouchEnd = function(event)
+{
+  if (this._selectionMode != 'none')
+    this.handleShapeClick(event, (this._selectionMode == 'multiple'));
+};
+
+dvt.TimeComponent.prototype.handleShapeClick = function(event)
+{
+};
+
+dvt.TimeComponent.prototype.HandleMouseClick = function(event)
+{
+  this.handleShapeClick(event, (event.ctrlKey && this._selectionMode == 'multiple'));
+};
+
+/**
+ * @protected
+ * Ends panning.
+ */
+dvt.TimeComponent.prototype.endPan = function()
+{
+  if (this._triggerViewportChange)
+  {
+    this._triggerViewportChange = false;
+    this.dispatchEvent(this.createViewportChangeEvent());
+  }
+};
+
+dvt.TimeComponent.prototype.contDragPan = function(compX, compY)
+{
+  if (this._currentX && this._currentY)
+  {
+    var deltaX = this._currentX - compX;
+    var deltaY = this._currentY - compY;
+    if (deltaX == 0 && deltaY == 0)
+      return false;
+
+    this._triggerViewportChange = true;
+    this._currentX = compX;
+    this._currentY = compY;
+    this.panBy(deltaX, deltaY);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Pans the Timeline by the specified amount.
+ * @param {number} deltaX The number of pixels to pan in the x direction.
+ * @param {number} deltaY The number of pixels to pan in the y direction.
+ * @protected
+ */
+dvt.TimeComponent.prototype.panBy = function(deltaX, deltaY)
+{
+  this.panZoomCanvasBy(deltaX);
+};
+/**
+ * Base event manager for Timeline and Gantt.
+ * @param {dvt.TimeComponent} comp The owning dvt.Timeline or dvt.Gantt.
+ * @extends {dvt.EventManager}
+ * @constructor
+ */
+dvt.TimeComponentEventManager = function(comp)
+{
+  this.Init(comp.getCtx(), comp.processEvent, comp);
+  this._comp = comp;
+  this._isDragPanning = false;
+  this._isPinchZoom = false;
+};
+
+dvt.Obj.createSubclass(dvt.TimeComponentEventManager, dvt.EventManager);
+
+// TODO: shouldn't this be in the toolkit?
+/**
+ * Mousewheel event type
+ * @type {string}
+ */
+dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL = 'wheel';
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.addListeners = function(displayable)
+{
+  dvt.TimeComponentEventManager.superclass.addListeners.call(this, displayable);
+  dvt.SvgDocumentUtils.addDragListeners(this._comp, this._onDragStart, this._onDragMove, this._onDragEnd, this);
+  if (!dvt.Agent.isTouchDevice())
+  {
+    if (dvt.Agent.isPlatformGecko())
+      displayable.addEvtListener(dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
+    else
+      displayable.addEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  }
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.removeListeners = function(displayable)
+{
+  dvt.TimeComponentEventManager.superclass.removeListeners.call(this, displayable);
+  if (!dvt.Agent.isTouchDevice())
+  {
+    if (dvt.Agent.isPlatformGecko())
+      displayable.removeEvtListener(dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL, this.OnMouseWheel, false, this);
+    else
+      displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
+  }
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnKeyDown = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnKeyDown.call(this, event);
+  this._comp.HandleKeyDown(event);
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnClick = function(event)
+{
+  if (this._isDragPanning)
+    return;
+
+  dvt.TimeComponentEventManager.superclass.OnClick.call(this, event);
+  this._comp.HandleMouseClick(event);
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.PreOnMouseDown = function(event)
+{
+  this._isDragPanning = false;
+  dvt.TimeComponentEventManager.superclass.PreOnMouseDown.call(this, event);
+  this._comp.HandleMouseDown(event);
+};
+
+/**
+ * Mouse wheel event handler.
+ * @param {mousewheel} event The mousewheel event.
+ * @protected
+ */
+dvt.TimeComponentEventManager.prototype.OnMouseWheel = function(event)
+{
+  this._comp.HandleMouseWheel(event);
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnTouchStartBubble = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnTouchStartBubble.call(this, event);
+  this._comp.HandleTouchStart(event);
+  // iOS does not set focus on touch, so need to force focus
+  var stage = this._comp.getCtx().getStage();
+  var wrappingDiv = stage.getSVGRoot().parentNode;
+  wrappingDiv.focus();
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnTouchEndBubble = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnTouchEndBubble.call(this, event);
+  this._comp.HandleTouchEnd(event);
+};
+
+/**
+ * Drag start callback.
+ * @param {dvt.BaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onDragStart = function(event)
+{
+  if (this._comp.hasValidOptions())
+  {
+    if (dvt.Agent.isTouchDevice())
+      return this._onTouchDragStart(event);
+    else
+      return this._onMouseDragStart(event);
+  }
+};
+
+/**
+ * Drag move callback.
+ * @param {dvt.BaseEvent} event
+ * @return {boolean}
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onDragMove = function(event)
+{
+  if (dvt.Agent.isTouchDevice())
+    return this._onTouchDragMove(event);
+  else
+    return this._onMouseDragMove(event);
+};
+
+/**
+ * Drag end callback.
+ * @param {dvt.BaseEvent} event
+ * @return {boolean}
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onDragEnd = function(event)
+{
+  if (dvt.Agent.isTouchDevice())
+    return this._onTouchDragEnd(event);
+  else
+    return this._onMouseDragEnd(event);
+};
+
+/**
+ * Return the relative position relative to the stage, based on the cached stage absolute position.
+ * @param {number} pageX
+ * @param {number} pageY
+ * @return {dvt.Point} The relative position.
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._getRelativePosition = function(pageX, pageY) {
+  if (!this._stageAbsolutePosition)
+    this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
+
+  return new dvt.Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
+};
+
+/**
+ * Mouse drag start callback.
+ * @param {dvt.BaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onMouseDragStart = function(event)
+{
+  if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON)
+  {
+    var relPos = this._getRelativePosition(event.pageX, event.pageY);
+    this._comp.beginDragPan(relPos.x, relPos.y);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Mouse drag move callback.
+ * @param {dvt.BaseEvent} event
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onMouseDragMove = function(event)
+{
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  if (this._comp.contDragPan(relPos.x, relPos.y))
+    this._isDragPanning = true;
+};
+
+/**
+ * Mouse drag end callback.
+ * @param {dvt.BaseEvent} event
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onMouseDragEnd = function(event)
+{
+  this._comp.endDragPan();
+  // Clear the stage absolute position cache
+  this._stageAbsolutePosition = null;
+};
+
+/**
+ * Touch drag start callback.
+ * @param {dvt.BaseEvent} event
+ * @return {boolean} Whether drag is initiated.
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onTouchDragStart = function(event)
+{
+  var touches = event.touches;
+  if (touches.length == 1)
+  {
+    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    this._comp.beginDragPan(relPos.x, relPos.y);
+    return true;
+  }
+  else if (touches.length == 2)
+  {
+    this._comp.endDragPan();
+    this._isPinchZoom = true;
+    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    this._comp.beginPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
+    dvt.EventManager.consumeEvent(event);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Touch drag move callback.
+ * @param {dvt.BaseEvent} event
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onTouchDragMove = function(event)
+{
+  var touches = event.touches;
+  // make sure this is a single touch and not a multi touch
+  if (touches.length == 1)
+  {
+    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    this._comp.contDragPan(relPos.x, relPos.y);
+    event.preventDefault();
+  }
+  else if (touches.length == 2)
+  {
+    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    this._comp.contPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
+    event.preventDefault();
+  }
+};
+
+/**
+ * Touch drag end callback.
+ * @param {dvt.BaseEvent} event
+ * @private
+ */
+dvt.TimeComponentEventManager.prototype._onTouchDragEnd = function(event)
+{
+  if (!this._isPinchZoom)
+  {
+    this._comp.endDragPan();
+    event.preventDefault();
+  }
+  else
+  {
+    this._isPinchZoom = false;
+    this._comp.endPinchZoom();
+    event.preventDefault();
+  }
+  // Clear the stage absolute position cache
+  this._stageAbsolutePosition = null;
+};
+
+/**
+ * Zooms by the specified amount.
+ * @param {number} dz A number specifying the zoom ratio. dz = 1 means no zoom.
+ */
+dvt.TimeComponentEventManager.prototype.zoomBy = function(dz)
+{
+  this._comp.zoomBy(dz);
+};
+
+/**
+ * Pans by the specified amount.
+ * @param {number} dx A number from specifying the pan ratio in the x direction, e.g. dx = 0.5 means pan end by 50%..
+ * @param {number} dy A number from specifying the pan ratio in the y direction, e.g. dy = 0.5 means pan down by 50%.
+ */
+dvt.TimeComponentEventManager.prototype.panBy = function(dx, dy)
+{
+  var deltaX = dx * this._comp._canvasLength * (dvt.Agent.isRightToLeft(this._context) ? -1 : 1);
+  var deltaY = dy * this._comp._canvasSize;
+  if (deltaX != 0)
+    this._comp._triggerViewportChange = true;
+
+  this._comp.panBy(deltaX, deltaY);
+  this._comp.endPan();
+};
+
+/**
+ * Zoom in button click handler.
+ * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
+ */
+dvt.TimeComponentEventManager.prototype.HandleZoomInClick = function(event)
+{
+  this._comp.handleZoom(true);
+};
+
+/**
+ * Zoom out button click handler.
+ * @param {dvt.BaseEvent} event The dispatched event to be processed by the object.
+ */
+dvt.TimeComponentEventManager.prototype.HandleZoomOutClick = function(event)
+{
+  this._comp.handleZoom(false);
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.GetTouchResponse = function()
+{
+  return dvt.EventManager.TOUCH_RESPONSE_TOUCH_HOLD;
+};
+
+/**
+ * TimeComponent keyboard handler.
+ * @param {dvt.EventManager} manager The owning dvt.EventManager.
+ * @class dvt.TimeComponentKeyboardHandler
+ * @extends {dvt.KeyboardHandler}
+ * @constructor
+ */
+dvt.TimeComponentKeyboardHandler = function(manager)
+{
+  this.Init(manager);
+};
+
+dvt.Obj.createSubclass(dvt.TimeComponentKeyboardHandler, dvt.KeyboardHandler);
+
+/**
+ * @override
+ */
+dvt.TimeComponentKeyboardHandler.prototype.isSelectionEvent = function(event)
+{
+  return this.isNavigationEvent(event) && !event.ctrlKey;
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentKeyboardHandler.prototype.isMultiSelectEvent = function(event)
+{
+  return event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey;
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event) 
+{
+  if (dvt.KeyboardEvent.isPlus(event))
+  {
+    this._eventManager.HandleZoomInClick();
+  }
+  else if (dvt.KeyboardEvent.isMinus(event))
+  {
+    this._eventManager.HandleZoomOutClick();
+  }
+  else
+  {
+    var keyCode = event.keyCode;
+    if (keyCode == dvt.KeyboardEvent.PAGE_UP)
+    {
+      if (event.shiftKey)
+        this._eventManager.panBy(-0.25, 0);
+      else
+        this._eventManager.panBy(0, -0.25);
+
+      dvt.EventManager.consumeEvent(event);
+    }
+    else if (keyCode == dvt.KeyboardEvent.PAGE_DOWN)
+    {
+      if (event.shiftKey)
+        this._eventManager.panBy(0.25, 0);
+      else
+        this._eventManager.panBy(0, 0.25);
+
+      dvt.EventManager.consumeEvent(event);
+    }
+  }
+
+  return dvt.TimeComponentKeyboardHandler.superclass.processKeyDown.call(this, event);
+};
+})(dvt);
 
   return dvt;
 });

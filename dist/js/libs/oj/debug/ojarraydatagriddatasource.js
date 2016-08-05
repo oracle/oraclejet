@@ -26,6 +26,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  *      it will be used as the index of the header.
  * @param {string=} options.rowHeader.default disable default row headers or provide them as indexes 'none' or 'index'
  * @param {Object=} options.initialSort the information about the array if it is pre-sorted
+ * @param {string=} options.initialSort.axis the axis that the array is sorted on valid values are 'column', 'row'
  * @param {string|number=} options.initialSort.key the key that the array is sorted on
  * @param {string=} options.initialSort.direction valid values are ascending or descending
  * @export
@@ -53,7 +54,7 @@ oj.ArrayDataGridDataSource = function(data, options)
     {
         // undefined if no row header, 'm_defaultIndex' if indexed, other strings keys, numbers index of array
         this.columns = options['columns'];
-        this._sortInfo = options['initialSort'];        
+        this['sortCriteria'] = options['initialSort'];        
     }
     oj.ArrayDataGridDataSource.superclass.constructor.call(this, data);
 };
@@ -83,6 +84,25 @@ oj.ArrayDataGridDataSource.prototype.Init = function()
     // call super
     oj.ArrayDataGridDataSource.superclass.Init.call(this);
 };
+
+/**
+ * @export
+ * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
+ * JavaScript array.sort() for details)
+ */
+oj.ArrayDataGridDataSource.prototype.comparator = null;
+
+/**
+ * @export
+ * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
+ * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
+ * 
+ * @type {Object} criteria the sort criteria.
+ * @property {string} criteria.axis the sort axis valid values are "column", "row"
+ * @property {string|number} criteria.key The key that identifies which field to sort
+ * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ */
+oj.ArrayDataGridDataSource.prototype.sortCriteria = null;
 
 /**
  * Extract the row header from the options
@@ -169,6 +189,9 @@ oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function(data)
  * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
  * @return {number} the total number of rows/columns.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -192,6 +215,9 @@ oj.ArrayDataGridDataSource.prototype.getCount = function(axis)
  * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the 
  *         count returned in getCount function is an estimate.  The default value is "exact".
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -246,9 +272,9 @@ oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
     else if (axis === 'column')
     {
         key = this._getHeaderData(axis, index);
-        if (this._sortInfo != null && this._sortInfo['key'] === key)
+        if (this['sortCriteria'] != null && this['sortCriteria']['key'] === key)
         {
-            return {'key': this._getHeaderData(axis, index), 'sortDirection': this._sortInfo['direction']};
+            return {'key': this._getHeaderData(axis, index), 'sortDirection': this['sortCriteria']['direction']};
         }
 
         return {'key': key};
@@ -264,11 +290,16 @@ oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
  * @param {number} headerRange.count the size of the range in which the header data are fetched.  
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -306,7 +337,7 @@ oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callba
         {
             callbackObjects = {};
         }
-        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange);
+        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange, null);
     }
 };
 
@@ -320,6 +351,17 @@ oj.ArrayDataGridDataSource.prototype._getCellData = function(row, column)
 {
     var col = this.columns[column];
     return this.getDataArray()[row][col];
+};
+
+/**
+ * Retrieve the data for the cell of a specified indexes.
+ * @param {number} row the row index in which to get the data.
+ * @param {number} column the column index in which to get the data.
+ * @private
+ */
+oj.ArrayDataGridDataSource.prototype._setCellData = function(row, column, newValue)
+{
+    this.getDataArray()[row][this.columns[column]] = newValue;
 };
 
 /**
@@ -349,6 +391,9 @@ oj.ArrayDataGridDataSource.prototype._getCellMetadata = function(row, column)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -405,6 +450,9 @@ oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks
  * @param {string|number|null} indexes.column the index for the column axis
  * @return {Promise} a Promise object which upon resolution will pass in an object containing the keys for each axis
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
 {
@@ -422,6 +470,9 @@ oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
  * @param {string|number|null} keys.column the key for the column axis
  * @return {Promise} a promise object containing the index for each axis
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -444,6 +495,9 @@ oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -455,7 +509,23 @@ oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callba
         callbackObjects = {};
     }
 
-    // reset sort order if no criteria is specified
+    // keep a copy of the original unsorted array.  Both array and observable array have slice method.
+    if (this.origData == undefined)
+    {
+        this._origSortCriteria = this['sortCriteria'];     
+        this.origData = this.data.slice();        
+    }
+
+    if (criteria == null)
+    {
+      criteria = this['sortCriteria'];
+    }
+    else
+    {
+        this['sortCriteria'] = criteria;        
+    }
+
+    // reset sort order if no criteria is set in the call or as a property
     if (criteria == null)
     {
         this._resetSortOrder(callbacks, callbackObjects);
@@ -468,16 +538,7 @@ oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callba
     
     if (axis === 'column')
     {
-        // keep a copy of the original unsorted array.  Both array and observable array have slice method.
-        if (this.origData == undefined)
-        {
-            this._origSortInfo = this._sortInfo;     
-            this.origData = this.data.slice();        
-        }
-    
-        this._sortInfo = {'key': headerKey, 'direction': direction};
-        
-        this.getDataArray().sort(this._naturalSort(direction, headerKey));
+        this.getDataArray().sort(this._getComparator());
 
         if (callbacks != null && callbacks['success'] != null)
         {
@@ -493,8 +554,8 @@ oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callba
             sortArray[i] = this.getDataArray()[headerIndex][this.columns[i]];
         }
 
-        //sort the given array with no headerKye specified
-        sortArray.sort(this._naturalSort(direction));
+        //sort the given array with no headerKey specified
+        sortArray.sort(this._getComparator());
 
         //reorder the columns property
         for (i = 0; i < this.columns.length; i += 1)
@@ -535,7 +596,7 @@ oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callb
     if (this.origData != null)
     {
         this.data = this.origData;
-        this._sortInfo = this._origSortInfo;
+        this['sortCriteria'] = this._origSortCriteria;
     }
 
     // reset column order if row header was sorted before
@@ -556,6 +617,9 @@ oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callb
  * @return {string|null} the name of the feature.  For sort, the valid return values are: "full", "none".  Returns null if the
  *         feature is not recognized.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -572,13 +636,33 @@ oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
 };
 
 /**
- * Get a comparator fuicntion for natural sorting of objects
- * @param {string} direction ascending, descending 
- * @param {string|number=} key the key or index to perform the sort on
+ * Get the sort comparator either from the property or the internal one in natural sort
  * @returns {function(Object, Object)|undefined} a comapartor function, dependent on direction
  * @private
  */
-oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key)
+oj.ArrayDataGridDataSource.prototype._getComparator = function()
+{
+    var comparator, key, direction, axis;
+    comparator = this['comparator'];
+    if (comparator == null)
+    {
+      key = this['sortCriteria']['key']; 
+      direction = this['sortCriteria']['direction'];
+      axis = this['sortCriteria']['axis'];
+      return this._naturalSort(direction, key, axis);
+    }
+    return comparator;
+};
+
+/**
+ * Get a comparator fuicntion for natural sorting of objects
+ * @param {string} direction ascending, descending 
+ * @param {string|number} key the key or index to perform the sort on
+ * @param {string} axis
+ * @returns {function(Object, Object)|undefined} a comapartor function, dependent on direction
+ * @private
+ */
+oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key, axis)
 {
     if (direction === 'ascending')
     {
@@ -586,7 +670,7 @@ oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key)
         {
             var as, bs;
             //Get the values the array we're sorting
-            if (key != undefined)
+            if (key != undefined && axis == 'column')
             {
                 //if the sorting item is an array it will be indexed with strings of ints and needs
                 //to be accessed using ints not strings
@@ -637,7 +721,7 @@ oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key)
         return function(a, b)
         {
             var as, bs;
-            if (key != undefined)
+            if (key != undefined && axis == 'column')
             {
                 //if the sorting item is an array it will be indexed with strings of ints and needs
                 //to be accessed using ints not strings                
@@ -694,6 +778,9 @@ oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
  */
 oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {
@@ -714,7 +801,7 @@ oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, c
     if (atKey === null)
     {
         this.data.push(moveData);
-        atKeyIndex = this.data.length - 1;        
+        atKeyIndex = this.data.length - 1;
     }
     else
     {
@@ -746,7 +833,10 @@ oj.ArrayDataGridDataSource.prototype.move = function(moveKey, atKey, position, c
  *        Valid values are: "before", "after".
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
- */ 
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayDataGridDataSource 
+ */
 oj.ArrayDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {
     return "valid";
@@ -984,6 +1074,9 @@ oj.ArrayHeaderSet = function(start, end, axis, callback)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the data object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getData = function(index, level)
 {
@@ -1009,6 +1102,9 @@ oj.ArrayHeaderSet.prototype.getData = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the metadata object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -1030,6 +1126,9 @@ oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
  * databody would increment the level by 1. The Array case only supports level count of 1.
  * @return {number} the number of levels of the result set
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getLevelCount = function()
 {
@@ -1056,6 +1155,9 @@ oj.ArrayHeaderSet.prototype.getLevelCount = function()
  *              aren't included in this headerSet:</caption>                     
  * {'extent':5, 'more': {'before':false, 'after':true}}
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
 {
@@ -1071,6 +1173,9 @@ oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header
  * @return {number} the number of levels spanned by the header at the specified position
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -1084,6 +1189,9 @@ oj.ArrayHeaderSet.prototype.getDepth = function(index, level)
  * along the innermost header.
  * @return {number} the actual count of the result set.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayHeaderSet 
  */
 oj.ArrayHeaderSet.prototype.getCount = function()
 {
@@ -1137,12 +1245,24 @@ oj.ArrayCellSet = function(startRow, endRow, startColumn, endColumn, callback)
  * @param {Object} indexes the index of each axis in which we want to retrieve the data from.  
  * @param {number} indexes.row the index of the row axis.
  * @param {number} indexes.column the index of the column axis.
- * @return {Object} the data object for the specified index.
+ * @return {Object} an object with property data with the data for the specified index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getData = function(indexes)
 {
-    return this.m_callback._getCellData(indexes['row'], indexes['column']);
+    var self, returnObj, rowIndex, columnIndex;
+    self = this;
+    rowIndex = indexes['row'];
+    columnIndex = indexes['column'];
+    returnObj = {};
+    Object.defineProperty(returnObj, 'data', {
+        get: function(){return self.m_callback._getCellData(rowIndex, columnIndex)}, 
+        set: function (newValue) { self.m_callback._setCellData(rowIndex, columnIndex, newValue)}
+    });
+    return returnObj;
 };
 
 /**
@@ -1154,6 +1274,9 @@ oj.ArrayCellSet.prototype.getData = function(indexes)
  * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are: 
  *         1) keys - the key (of each axis) of the cell.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getMetadata = function(indexes)
 {
@@ -1165,6 +1288,9 @@ oj.ArrayCellSet.prototype.getMetadata = function(indexes)
  * @param {string} axis the axis in which to inquire the actual count of the result set.
  * @return {number} the start index of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getStart = function(axis)
 {
@@ -1185,6 +1311,9 @@ oj.ArrayCellSet.prototype.getStart = function(axis)
  * @param {string} axis the axis in which to inquire the actual count of the result set.
  * @return {number} the actual count of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.ArrayCellSet 
  */
 oj.ArrayCellSet.prototype.getCount = function(axis)
 {

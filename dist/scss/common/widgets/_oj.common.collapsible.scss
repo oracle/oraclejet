@@ -13,6 +13,13 @@
 @if $includeCollapsibleClasses != false {
   @include module-include-once("common.collapsible") {
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-collapsible:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+    
     .oj-collapsible {
       margin-bottom: 10px;
       -webkit-tap-highlight-color: transparent;
@@ -126,12 +133,47 @@
       outline-offset: -5px;
     }
 
+    .oj-collapsible-header-icon:focus {
+      outline: none;
+    }
+
+    .oj-collapsible-header-icon.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+			
+
     /*
      * set hand cursor while over the clickable area
      */
     .oj-collapsible-header.oj-hover,
     .oj-collapsible-header-icon.oj-hover {
       cursor: pointer;
+    }
+
+    /*
+     * applied to the disclosure icon
+     */
+    .oj-collapsible-header .oj-collapsible-header-icon,
+    .oj-collapsible-header .oj-collapsible-header-icon:hover {
+      color: $iconColorDefault;
+    }
+
+    /*
+     * applied to the disclosure icon when it's hovered
+     * add .oj-collapsible-header .oj-collapsible-header-icon.oj-hover
+     * to override color set in a:hover.oj-clickable-icon-nocontext
+     */
+    .oj-collapsible-header.oj-hover .oj-collapsible-header-icon,
+    .oj-collapsible-header .oj-collapsible-header-icon.oj-hover {
+      color: $iconColorHover;
+    }
+
+    /*
+     * applied to the disclosure icon when it's active
+     */
+    .oj-collapsible-header.oj-active .oj-collapsible-header-icon,
+    .oj-collapsible-header .oj-collapsible-header-icon.oj-active {
+      color: $iconColorActive;
     }
 
     /*

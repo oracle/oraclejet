@@ -1,0 +1,156 @@
+// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.gantt.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeGanttClasses != false {
+  @include module-include-once("common.gantt") {
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-gantt:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+    
+    /* Styling for the gantt widget */
+    .oj-gantt {
+      @include oj-animation-duration-property ($dvtAnimationDuration);
+      @include oj-user-select-property(none);
+      outline: none;
+    }
+
+    /* Styling for the container (around time axis and databody) */
+    .oj-gantt-container {
+      fill: $dvtGanttBgColor;
+      stroke: $dvtGanttBorderColor;
+      stroke-width: 1px; 
+    }
+
+    /* Styling for the empty text */
+    .oj-gantt-no-data-message {
+      fill: $dvtGanttEmptyTextColor;
+      font-size:$smallFontSize;
+    }
+
+    /* Styling for horizontal grid lines */
+    .oj-gantt-horizontal-gridline
+    {
+      stroke: $dvtGanttHorizontalGridlineColor;
+      stroke-width: 1px;
+    }
+
+    /* Styling for vertical grid lines */
+    .oj-gantt-vertical-gridline
+    {
+      stroke: $dvtGanttVerticalGridlineColor;
+      stroke-dasharray: 5,5;
+    }
+
+    /* Styling for all rows */
+    .oj-gantt-row {
+      fill: $dvtGanttRowBgColor;
+    }
+
+    /* Styling for all task bars */
+    .oj-gantt-task {
+      fill: $dvtGanttTaskBgColor;
+    }
+    
+    /* Styling for all task bars when hover */
+    .oj-gantt-task.oj-hover {
+      stroke-width: 2;
+    }
+    
+    /* Styling for all task bars when selected */
+    .oj-gantt-task.oj-selected {
+      stroke: $dvtGanttTaskBorderColorSelected;
+    }
+
+    /* Styling for all task labels */
+    .oj-gantt-task-label {
+      font-size:$smallFontSize;
+      font-family:$fontFamily;
+    }
+        
+    /* Styling for the major time axis */
+    .oj-gantt-major-axis {
+      fill: $dvtGanttMajorAxisBgColor;
+      stroke: $dvtGanttMajorAxisBorderColor;
+    }
+
+    /* Styling for the major time axis labels */
+    .oj-gantt-major-axis-label {
+      fill: $dvtGanttMajorAxisLabelColor;
+      font-size: $fontSize;
+      font-weight: 500;
+    }
+    
+    /* Styling for the major time axis separators */
+    .oj-gantt-major-axis-separator {
+      stroke: $dvtGanttMajorAxisSeparatorColor;
+    }
+    
+    /* Styling for the minor time axis */
+    .oj-gantt-minor-axis {
+      fill: $dvtGanttMinorAxisBgColor;
+      stroke: $dvtGanttMinorAxisBorderColor;
+    }
+    
+    /* Styling for the minor time axis labels */
+    .oj-gantt-minor-axis-label {
+      fill: $dvtGanttMinorAxisLabelColor;
+      font-size: $smallFontSize;
+      font-weight: normal;
+    }
+    
+    /* Styling for the minor time axis separators */
+    .oj-gantt-minor-axis-separator {
+      stroke: $dvtGanttMinorAxisSeparatorColor;
+    }
+                
+    /* Styling for the zoom in icon */
+    .oj-gantt-zoomin-icon {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
+      background-color:$background1Color;
+      border-color:#d6d7d8;
+    }
+    
+    /* Styling for the zoom in icon on hover */
+    .oj-gantt-zoomin-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_hov.png");
+    }
+    
+    /* Styling for the zoom in icon on active */
+    .oj-gantt-zoomin-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
+    }
+    
+    /* Styling for the zoom in icon when disabled */
+    .oj-gantt-zoomin-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/func_plus_16_dis.png");
+    }
+    
+    .oj-gantt-zoomout-icon {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
+      background-color:$background1Color;
+      border-color:#d6d7d8;
+    }
+    
+    .oj-gantt-zoomout-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_hov.png");
+    }
+    
+    .oj-gantt-zoomout-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
+    }
+    
+    .oj-gantt-zoomout-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/func_minus_16_dis.png");
+    }
+  }
+}

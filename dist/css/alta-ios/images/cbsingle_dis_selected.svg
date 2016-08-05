@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Disabled_Checked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="22px" height="22px" viewBox="1 1 22 22" enable-background="new 1 1 22 22" xml:space="preserve">
+<path id="Disabled_Checkbox" opacity="0.5" fill-rule="evenodd" clip-rule="evenodd" fill="#5A5A5A" d="M23,12c0,6.08-4.92,11-11,11
+	S1,18.08,1,12S5.92,1,12,1S23,5.92,23,12z M9.57,15.01l-2.66-3.26L6,12.7L9.7,17L18,8.05L16.97,7L9.57,15.01z"/>
+<path id="Checkmark_1_" opacity="0.5" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M16.97,7L18,8.05L9.7,17L6,12.7
+	l0.91-0.96l2.66,3.26L16.97,7z"/>
+</svg>

@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'promise'], function(oj, ko)
+define(['ojs/ojcore', 'knockout', 'promise', 'ojs/ojanimation'], function(oj, ko)
 {
 
 /**
@@ -35,6 +35,16 @@ oj.ModuleAnimations._DESCRIPTORS = {
   'fade': {
     oldViewClass: 'oj-animation-fade',
     newViewClass: 'oj-animation-fade',
+    newViewOnTop: false
+  },
+  'pushStart': {
+    oldViewClass: 'oj-animation-revealstart',
+    newViewClass: 'oj-animation-coverstart',
+    newViewOnTop: false
+  },
+  'pushEnd': {
+    oldViewClass: 'oj-animation-revealend',
+    newViewClass: 'oj-animation-coverend',
     newViewOnTop: false
   },
   'revealDown': {
@@ -418,7 +428,23 @@ oj.ModuleAnimations.zoomOut = oj.ModuleAnimations._getImplementation('zoomOut');
 oj.ModuleAnimations.fade = oj.ModuleAnimations._getImplementation('fade');
 
 /**
- * ModuleAnimation implementation for drilling in to views by
+ * ModuleAnimation implementation for changing views by
+ * having the new view push out the old view towards the start of the reading order.
+ * @export
+ * @memberof oj.ModuleAnimations
+ */
+oj.ModuleAnimations.pushStart = oj.ModuleAnimations._getImplementation('pushStart');
+
+/**
+ * ModuleAnimation implementation for changing views by
+ * having the new view push out the old view towards the end of the reading order.
+ * @export
+ * @memberof oj.ModuleAnimations
+ */
+oj.ModuleAnimations.pushEnd = oj.ModuleAnimations._getImplementation('pushEnd');
+
+/**
+ * ModuleAnimation implementation for navigating to child views by
  * using animations that are dependent on the platform theme.
  * <p>The default animations for each platform theme are as follows:</p>
  * <ul>
@@ -428,16 +454,54 @@ oj.ModuleAnimations.fade = oj.ModuleAnimations._getImplementation('fade');
  *   <li>Windows theme: zoomIn</li>
  * </ul>
  * <p>The default animation can be changed with the following theme variable:<br>
- * <code class="prettyprint">$animationDrillInDefault</code>: specify
- * the animation for drilling in to views.<br>
+ * <code class="prettyprint">$animationNavChildDefault</code>: specify
+ * the animation for navigating to child views.<br>
  * <p>Valid values are the names of specific animation implementations such as
  * "coverStart".</p>
  * @export
  * @memberof oj.ModuleAnimations
  * @example <caption>Set the default in the theme (SCSS) :</caption>
- * $animationDrillInDefault:  coverStart  !default;
+ * $animationNavChildDefault:  coverStart  !default;
  */
-oj.ModuleAnimations.drillIn = oj.ModuleAnimations._getNavigateImplementation('drillIn');
+oj.ModuleAnimations.navChild = oj.ModuleAnimations._getNavigateImplementation('navChild');
+
+/**
+ * ModuleAnimation implementation for navigating to parent views by
+ * using animations that are dependent on the platform theme.
+ * <p>The default animations for each platform theme are as follows:</p>
+ * <ul>
+ *   <li>Web theme: revealEnd</li>
+ *   <li>iOS theme: revealEnd</li>
+ *   <li>Android theme: revealDown</li>
+ *   <li>Windows theme: zoomOut</li>
+ * </ul>
+ * <p>The default animation can be changed with the following theme variable:<br>
+ * <code class="prettyprint">$animationNavParentDefault</code>: specify
+ * the animation for navigating to parent views.</p>
+ * <p>Valid values are the names of specific animation implementations such as
+ * "revealEnd".</p>
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @example <caption>Set the default in the theme (SCSS) :</caption>
+ * $animationNavParentDefault:  revealEnd  !default;
+ */
+oj.ModuleAnimations.navParent = oj.ModuleAnimations._getNavigateImplementation('navParent');
+
+/**
+ * ModuleAnimation implementation for drilling in to views by
+ * using animations that are dependent on the platform theme.
+ * <p>The default animations for each platform theme are as follows:</p>
+ * <ul>
+ *   <li>Web theme: coverStart</li>
+ *   <li>iOS theme: coverStart</li>
+ *   <li>Android theme: coverUp</li>
+ *   <li>Windows theme: zoomIn</li>
+ * </ul>
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @deprecated This is deprecated.  Please use <a href="#navChild">navChild</a> instead.
+ */
+oj.ModuleAnimations.drillIn = oj.ModuleAnimations.navChild;
 
 /**
  * ModuleAnimation implementation for drilling out of views by
@@ -449,17 +513,55 @@ oj.ModuleAnimations.drillIn = oj.ModuleAnimations._getNavigateImplementation('dr
  *   <li>Android theme: revealDown</li>
  *   <li>Windows theme: zoomOut</li>
  * </ul>
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @deprecated This is deprecated.  Please use <a href="#navParent">navParent</a> instead.
+ */
+oj.ModuleAnimations.drillOut = oj.ModuleAnimations.navParent;
+
+/**
+ * ModuleAnimation implementation for navigating to sibling views earlier in the reading order by
+ * using animations that are dependent on the platform theme.
+ * <p>The default animations for each platform theme are as follows:</p>
+ * <ul>
+ *   <li>Web theme: none</li>
+ *   <li>iOS theme: none</li>
+ *   <li>Android theme: pushEnd</li>
+ *   <li>Windows theme: pushEnd</li>
+ * </ul>
  * <p>The default animation can be changed with the following theme variable:<br>
- * <code class="prettyprint">$animationDrillOutDefault</code>: specify
- * the animation for drilling out of views.</p>
+ * <code class="prettyprint">$animationNavSiblingEarlierDefault</code>: specify
+ * the animation for navigating to sibling views earlier in the reading order.</p>
  * <p>Valid values are the names of specific animation implementations such as
- * "revealEnd".</p>
+ * "pushEnd".</p>
  * @export
  * @memberof oj.ModuleAnimations
  * @example <caption>Set the default in the theme (SCSS) :</caption>
- * $animationDrillOutDefault:  revealEnd  !default;
+ * $animationNavSiblingEarlierDefault:  pushEnd  !default;
  */
-oj.ModuleAnimations.drillOut = oj.ModuleAnimations._getNavigateImplementation('drillOut');
+oj.ModuleAnimations.navSiblingEarlier = oj.ModuleAnimations._getNavigateImplementation('navSiblingEarlier');
+
+/**
+ * ModuleAnimation implementation for navigating to sibling views later in the reading order by
+ * using animations that are dependent on the platform theme.
+ * <p>The default animations for each platform theme are as follows:</p>
+ * <ul>
+ *   <li>Web theme: none</li>
+ *   <li>iOS theme: none</li>
+ *   <li>Android theme: pushStart</li>
+ *   <li>Windows theme: pushStart</li>
+ * </ul>
+ * <p>The default animation can be changed with the following theme variable:<br>
+ * <code class="prettyprint">$animationNavSiblingLaterDefault</code>: specify
+ * the animation for navigating to sibling views later in the reading order.</p>
+ * <p>Valid values are the names of specific animation implementations such as
+ * "pushStart".</p>
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @example <caption>Set the default in the theme (SCSS) :</caption>
+ * $animationNavSiblingLaterDefault:  pushStart  !default;
+ */
+oj.ModuleAnimations.navSiblingLater = oj.ModuleAnimations._getNavigateImplementation('navSiblingLater');
 
 /**
   * Returns an implementation of ModuleAnimation interface that switches between different animation implementations
@@ -523,6 +625,78 @@ oj.ModuleAnimations.switcher = function(callback)
   };
 
   return new AnimateProxy();
+};
+
+/**
+  * Create and return a ModuleAnimation implementation that combines base effects from {@link oj.AnimationUtils}
+  *
+  * @param {null|string|Object} oldViewEffect - an animation effect for the outgoing view.<br><br>
+  *                              If this is null, no animation will be applied.<br>
+  *                              If this is a string, it should be one of the effect method names in oj.AnimationUtils.<br>
+  *                              If this is an object, it should describe the effect:
+  * @param {string} oldViewEffect.effect - the name of an effect method in oj.AnimationUtils
+  * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
+  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.  
+  *                                                 Refer to the method description in {@link oj.AnimationUtils} for available options.
+  * @param {null|string|Object} newViewEffect - an animation effect for the incoming view.<br><br>
+  *                                             This is in the same format as oldViewEffect.
+  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view. 
+  *                  This is needed for certain effects such as sliding the new view in to cover the old view.
+  *                  Default is false.
+  * @return {Object} an implementation of the ModuleAnimation interface
+  * @export
+  * 
+  * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
+  * var customAnimation = oj.ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
+  */
+oj.ModuleAnimations.createAnimation = function(oldViewEffect, newViewEffect, newViewOnTop)
+{
+  return {
+    'canAnimate': oj.ModuleAnimations._defaultCanAnimate,
+    'prepareAnimation': function(context) {
+      var viewParents = {};
+      var oldView = oj.ModuleAnimations._getOldView(context);
+      
+      if (newViewEffect && !newViewOnTop)
+      {
+        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }
+      
+      if (oldViewEffect)
+      {
+        viewParents['oldViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }
+
+      if (newViewEffect && newViewOnTop)
+      {
+        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }    
+
+      return viewParents;  
+    },
+    'animate': function(context) {
+      var oldViewHost = context['oldViewParent'];
+      var newViewHost = context['newViewParent'];
+
+      var promises = [];
+
+      if (oldViewHost && oldViewEffect)
+      {
+        promises.push(oj.AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
+      }
+
+      if (newViewHost && newViewEffect)
+      {
+        promises.push(oj.AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
+      }
+
+      var animatePromise = Promise.all(promises);
+
+      return animatePromise.then(function(result) {
+        oj.ModuleAnimations._postAnimationProcess(context);
+      });
+    }
+  };
 };
 
 });

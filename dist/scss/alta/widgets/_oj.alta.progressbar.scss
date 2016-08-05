@@ -7,6 +7,15 @@
 
 @if $includeProgressbarClasses != false  {
   @include module-include-once("alta.progressbar") {
-   
+    .oj-progressbar-overlay {
+      height: 100%;
+      opacity: $progressbarIndeterminateOverlayOpacity;
+      @include oj-ltr() {
+        background: oj-image-url("animated-overlay.gif");
+      }
+      @include oj-rtl() {
+        background: oj-image-url("animated-overlay-rtl.gif");
+      }
+    }
   }
 }

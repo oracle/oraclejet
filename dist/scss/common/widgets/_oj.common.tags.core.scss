@@ -35,6 +35,7 @@
         background-position: top left;    
         color: $bodyTextColor;  
         background-color: $bodyBgColor;
+        touch-action: $bodyTouchAction;
     }
   }
 }

@@ -107,6 +107,49 @@
   }
 }
 
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its padding, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit {
+//     @include oj-form-control-padding-override(
+//        $padding: "0 5px");
+//   }
+//
+@mixin oj-form-control-padding-override($padding:null) {
+  @if ($padding != null) {
+    & .oj-inputtext-input,
+    & .oj-inputtext-nocomp,
+    & .oj-inputpassword-input,
+    & .oj-inputpassword-nocomp,
+    & .oj-textarea-input,
+    & .oj-textarea-nocomp,
+    & .oj-inputnumber-input,
+    & .oj-inputsearch-input,
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-inputdatetime .oj-inputdatetime-input {
+      padding: #{$padding};          
+    }
+  }
+}
+
+// This allows the form control to inherit styles from the container.
+// Usage Example:
+//  .oj-form-control-inherit .oj-inputnumber-input { @include oj-form-control-inherit();}
+@mixin oj-form-control-inherit() {
+  text-align:inherit;
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  background-color: inherit;
+  border-width: 0;
+}
+
 // returns the difference between the bottom border width on focus and the bottom border width
 // when not in focus.
 @function value-bottom-difference ($borderWidthFocus, $borderWidth) {

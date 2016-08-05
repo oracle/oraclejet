@@ -20,6 +20,10 @@
       @include oj-animation-duration-property ($dvtAnimationDuration);
     }
     
+    .oj-dvtbase:focus {
+      outline:none;
+    }
+
     // attribute group color used by oj.ColorAttributeGroupHandler
     .oj-dvt-category1 {
       color: $dvtCategory1Color;
@@ -105,10 +109,16 @@
       font-size: $smallFontSize;
       font-family: $fontFamily;
     }
-    
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-legend:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-legend {
       @include oj-user-select-property(none);
-      outline:none;
       font-size: $smallFontSize;
       color: $textColor;
     }

@@ -334,7 +334,95 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojDiagram
      * @instance
      */
-    optionChange: null
+    optionChange: null,
+    /**
+     * Triggered immediately before any container node in the diagram is expanded.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.nodeId the id of the expanding object 
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">beforeExpand</code> callback:</caption>
+     * $(".selector").ojDiagram({
+     *   'beforeExpand': function (event, data) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeExpand</code> event:</caption>
+     * $(".selector").on({
+     *   'ojbeforeExpand': function (event, data) {};
+     * });
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     */
+    beforeExpand: null,
+    /**
+     * Triggered when a node has been expanded. The ui object contains one property, "nodeId", which is the id of the node that has been expanded.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.nodeId the id of the expanded object 
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">expand</code> callback:</caption>
+     * $(".selector").ojDiagram({
+     *   'expand': function (event, data) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
+     * $(".selector").on({
+     *   'ojexpand': function (event, data) {};
+     * });
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     */    
+    expand: null,
+    /**
+     * Triggered immediately before any container node in the diagram is collapsed.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.nodeId the id of the collapsing object 
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">beforeCollapse</code> callback:</caption>
+     * $(".selector").ojDiagram({
+     *   'beforeCollapse': function (event, data) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeCollapse</code> event:</caption>
+     * $(".selector").on({
+     *   'ojbeforeCollapse': function (event, data) {};
+     * });
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     */
+    beforeCollapse: null,
+    /**
+     * Triggered when a node has been collapsed.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.nodeId the id of the collapsed object 
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">collapse</code> callback:</caption>
+     * $(".selector").ojDiagram({
+     *   'collapse': function (event, data) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
+     * $(".selector").on({
+     *   'ojcollapse': function (event, data) {};
+     * });
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojDiagram
+     * @instance
+     */        
+    collapse: null
   },
 
   //** @inheritdoc */
@@ -388,11 +476,12 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
    */
   _getContextHandler: function() {
     var thisRef = this;
-    var contextHandlerFunc = function (parentElement, rootElement, data, state, previousState) {
+    var contextHandlerFunc = function (parentElement, rootElement, childContent, data, state, previousState) {
       var context = {
         'component': oj.Components.getWidgetConstructor(thisRef.element),
         'parentElement': parentElement,
         'rootElement': rootElement,
+        'content' : childContent,
         'data': data,
         'state': state,
         'previousState' : previousState,
@@ -559,7 +648,33 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _GetEventTypes : function() {
-    return ['optionChange'];
+    return ['optionChange', 'beforeExpand', 'beforeCollapse', 'expand', 'collapse'];
+  },
+  
+  //** @inheritdoc */
+  _HandleEvent: function(event) {
+    var type = event['type'];
+    if (type === 'beforeExpand') {
+      this.expand(event['id'], true);
+    }    
+    else if (type === 'beforeCollapse') {
+      this.collapse(event['id'], true);
+    }
+    else if (type === 'expand' || type === 'collapse') {
+      this._trigger(type, null, {'nodeId': event['id']});
+    }
+    else {
+      this._super(event);
+    }
+  },
+
+  //** @inheritdoc */
+  _setOptions : function(options, flags) {
+    if (options['expanded']) {
+      this._component.clearDisclosedState();
+    }
+    // Call the super to update the property values
+    this._superApply(arguments);
   },
 
   //** @inheritdoc */
@@ -569,8 +684,66 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
 
     // Safe to modify super's map because function guarentees a new map is returned
     var ret = this._super();
+    ret['DvtDiagramBundle.PROMOTED_LINK'] = translations['promotedLink'];
+    ret['DvtDiagramBundle.PROMOTED_LINKS'] = translations['promotedLinks'];
+    ret['DvtDiagramBundle.PROMOTED_LINK_ARIA_DESC'] = translations['promotedLinkAriaDesc'];    
     ret['DvtUtilBundle.DIAGRAM'] = translations['componentName'];
     return ret;
+  },
+
+  //** @inheritdoc */
+  _LoadResources: function() {
+    // Ensure the resources object exists
+    if (this.options['_resources'] == null)
+      this.options['_resources'] = {};
+
+    var resources = this.options['_resources'];
+    if (oj.DomUtils.getReadingDirection() === "rtl") {
+      resources['collapse_ena'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ena_rtl.svg'), 'width':20, 'height':20};
+      resources['collapse_ovr'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ovr_rtl.svg'), 'width':20, 'height':20};
+      resources['collapse_dwn'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-dwn_rtl.svg'), 'width':20, 'height':20};
+      resources['expand_ena'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ena_rtl.svg'), 'width':20, 'height':20};
+      resources['expand_ovr'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ovr_rtl.svg'), 'width':20, 'height':20};
+      resources['expand_dwn'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-dwn_rtl.svg'), 'width':20, 'height':20};      
+    }
+    else { //ltr
+      resources['collapse_ena'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ena.svg'), 'width':20, 'height':20};
+      resources['collapse_ovr'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-ovr.svg'), 'width':20, 'height':20};
+      resources['collapse_dwn'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-collapse-button-dwn.svg'), 'width':20, 'height':20};
+      resources['expand_ena'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ena.svg'), 'width':20, 'height':20};
+      resources['expand_ovr'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-ovr.svg'), 'width':20, 'height':20};
+      resources['expand_dwn'] = {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/diagram/container-expand-button-dwn.svg'), 'width':20, 'height':20};      
+    }
+  },
+
+  /**
+   * Collapses an expanded node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
+   * @param {String} nodeId The id of the node to collapse
+   * @param {boolean} vetoable Whether the event should be vetoable
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  collapse: function(nodeId, vetoable) {
+    var result = this._trigger("beforeCollapse", null, {'nodeId': nodeId});
+    if (!vetoable || result !== false) {
+      this._component.collapse(nodeId);
+    }
+  },
+
+  /**
+   * Expands a collapsed parent node. When vetoable is set to false, beforeExpand event will still be fired but the event cannot be veto.
+   * @param {String} nodeId The id of the node to expand
+   * @param {boolean} vetoable Whether the event should be vetoable
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  expand: function(nodeId, vetoable) {
+    var result = this._trigger("beforeExpand", null, {'nodeId': nodeId});
+    if (!vetoable || result !== false) {
+      this._component.expand(nodeId);
+    }
   },
 
   /**
@@ -643,6 +816,32 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
     var auto = this._component.getAutomation();
     return auto.getLink(linkIndex);
   },
+  
+  /**
+   * Returns an object with the following properties for automation testing verification of the promoted link between 
+   * specified nodes.
+   *
+   * @param {number} startNodeIndex Start node index
+   * @param {number} endNodeIndex End node index
+   * @property {string} color Link color
+   * @property {string} endConnectorType The type of end connector on the link
+   * @property {string} endNode The id of the end node.
+   * @property {boolean} selected The selected state of the link
+   * @property {string} startConnectorType The type of start connector on the link
+   * @property {string} startNode The id of the start node.
+   * @property {string} style Link style
+   * @property {string} tooltip Link tooltip
+   * @property {number} width Link width
+   * @property {number} count Number of links it represents
+   * @return {Object|null} An object containing properties for the link at the given index, or null if none exists.   
+   * @expose
+   * @instance
+   * @memberof oj.ojDiagram
+   */
+  getPromotedLink: function(startNodeIndex, endNodeIndex) {
+    var auto = this._component.getAutomation();
+    return auto.getPromotedLink(startNodeIndex, endNodeIndex);
+  },
 
   /**
    * {@ojinclude "name":"nodeContextDoc"}
@@ -670,4 +869,337 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   }
 });
 
+/**
+ * @class 
+ * @name oj.DiagramUtils
+ * 
+ * @classdesc
+ * <h3>Diagram Layout UUtilities</h3>
+ *
+ * <p> DiagramUtils is a helper object that provides a function to generate a layout callback for ojDiagram out of JSON object. 
+ * A JSON object contains positions for the nodes, paths for the links and properties for positioning a label for a node and a link.
+ * See object details {@link oj.DiagramUtils.getLayout}
+ *
+ * <h3> Usage : </h3>
+ * <pre class="prettyprint">
+ * <code>
+ * // create JSON object that contains positions for the nodes and SVG paths for the links
+ * // the nodes and links are identified by ids
+ * var data = {
+ *  "nodes":[
+ *   {"id":"N0", "x":100, "y":0},
+ *   {"id":"N1", "x":200, "y":100},
+ *   {"id":"N2", "x":100, "y":200},
+ *   {"id":"N3", "x":0, "y":100}
+ * ],
+ * "links":[
+ *   {"id":"L0", "path":"M120,20L220,120"},
+ *   {"id":"L1", "path":"M220,120L120,220"},
+ *   {"id":"L2", "path":"M120,220L20,120"},
+ *   {"id":"L3", "path":"M20,120L120,20"}
+ * ]
+ * };
+ * //generate the layout callback function using data and the oj.DiagramUtils
+ * // pass the generated function to the oj.ojDiagram as the 'layout' option
+ * var layoutFunc = oj.DiagramUtils.getLayout(data);
+ * </code></pre>
+ * @export
+ * @constructor
+ */
+oj.DiagramUtils = function() {
+};
+
+/**
+ * The complete label layout object used to position node and link label
+ * @typedef {Object} oj.DiagramUtils~LabelLayout
+ * @property {number} x x-coordinate for the label
+ * @property {number} y y-coordinate for the label
+ * @property {number} rotationPointX x-coordinate for label rotation point
+ * @property {number} rotationPointY y-coordinate for label rotation point
+ * @property {number} number angle of rotation for the labelLayout
+ * @property {string} halign horizontal alignment for the label. Valid values are "left", "right" or "center"
+ * @property {string} valign vertical alignment for the label. Valid values are "top", "middle", "bottom" or "baseline". 
+ *                           The default value is <code class="prettyprint">"top"</code>
+ */
+
+/**
+ * A function that generates the layout callback function for the ojDiagram component.
+ * @param {Object} obj JSON object that defines positions of nodes, links paths and label layouts. The object supports the following properties.
+ * @property {Array<Object>} obj.nodes An array of objects with the following properties that describe a position for the diagram node and a layout for the node's label
+ * @property {number} obj.nodes.x x-coordinate for the node
+ * @property {number} obj.nodes.y y-coordinate for the node
+ * @property {Object} obj.nodes.labelLayout An object that defines label layout for the node. See {@link oj.DiagramUtils~LabelLayout} object. 
+ *                                          The object defines absolute coordinates for label position.
+ * @property {Array<Object>} obj.links An array of objects with the following properties that describe a path for the diagram link and a layout for the link's label.
+ * @property {string} obj.links.path A string that represents an SVG path for the link.
+ * @property {string} obj.links.coordinateSpace The coordinate container id for the. If specified the link points will be applied relative to that container. 
+ *                                              If the value is not set, the link points are in the global coordinate space.
+ * @property {Object} obj.links.labelLayout An object that defines label layout for the link. See {@link oj.DiagramUtils~LabelLayout} object.
+ *
+ * @property {Object} obj.nodeDefaults An object that defines the default layout of the node label
+ * @property {Object|Function} obj.nodeDefaults.labelLayout An object that defines default label layout for diagram nodes.
+ *                         See {@link oj.DiagramUtils~LabelLayout} object. The object defines relative coordinates for label position.
+ *                         E.g. if all the node labels should be positioned with a certain offset relative to the node, 
+ *                         a label position can be defined using an object in node defaults.
+ *                         <p>Alternatively a label layout can be defined with a function. The function will receive the following parameters:
+ *                           <ul>
+ *                             <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
+ *                             <li>{DvtDiagramLayoutContextNode} - layout context for the current node</li>
+ *                           </ul>
+ *                           The return value of the function is a label object with the following properties : {@link oj.DiagramUtils~LabelLayout}. 
+ *                           The object defines absolute coordinates for label position.
+ *                          </p>
+ * @property {Object} obj.linkDefaults An object that defines a function for generating a link path and a default layout for the link label
+ * @property {Function} obj.linkDefaults.path a callback function that will be used to generate a link path. The function will receive the following parameters:
+ *                      <ul>
+ *                        <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
+ *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
+ *                      </ul>
+ *                      The return value of the function is a string that represents an SVG path for the link 
+ * @property {Function} obj.linkDefaults.labelLayout a function that defines default label layout for diagram links. The function will receive the following parameters:
+ *                      <ul>
+ *                        <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
+ *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
+ *                      </ul>
+ *                      The return value of the function is a label object with the following properties {@link oj.DiagramUtils~LabelLayout}
+ * @returns {Function} layout callback function
+ * @export
+ */
+oj.DiagramUtils.getLayout = function(obj) {
+  var layoutFunc = function(layoutContext) {
+    
+    // position nodes and node labels
+    if (obj['nodes'] && layoutContext.getNodeCount() > 0) {
+      var nodesDataMap = oj.DiagramUtils._dataArrayToMap(obj['nodes']);
+      var defaultLabelLayout = obj['nodeDefaults'] && obj['nodeDefaults']['labelLayout'] ? obj['nodeDefaults']['labelLayout'] : null;
+      for (var ni = 0;ni < layoutContext.getNodeCount();ni++) {
+        var node = layoutContext.getNodeByIndex(ni);
+        var nodeData = nodesDataMap[node.getId()];
+        oj.DiagramUtils._positionChildNodes(node.getChildNodes(), nodeData ? nodeData['nodes'] : null, layoutContext, defaultLabelLayout);
+        oj.DiagramUtils._positionNodeAndLabel(node, nodeData, layoutContext, defaultLabelLayout);
+      }
+    }
+    
+    // position links and link labels
+    if (obj['links'] && layoutContext.getLinkCount() > 0) {
+      var linksDataMap = oj.DiagramUtils._dataArrayToMap(obj['links']);
+      var defaultPath = obj['linkDefaults'] && obj['linkDefaults']['path'] ? obj['linkDefaults']['path'] : null;
+      var defaultLabelLayout = obj['linkDefaults'] && obj['linkDefaults']['labelLayout'] ? obj['linkDefaults']['labelLayout'] : null;
+      for (var li = 0;li < layoutContext.getLinkCount();li++) {
+        var link = layoutContext.getLinkByIndex(li);
+        var linkData = linksDataMap[link.getId()];
+        if (linkData && linkData['path']) {
+          link.setPoints(linkData['path']);
+        }
+        else if (defaultPath && defaultPath instanceof Function) {
+          link.setPoints(defaultPath(layoutContext, link));
+        }
+        if (linkData && linkData['coordinateSpace']) {
+          link.setCoordinateSpace(linkData['coordinateSpace']);
+        }        
+        //position label if it exists
+        if (linkData['labelLayout']) {
+          oj.DiagramUtils._setLabelPosition(link, linkData['labelLayout']);
+        }
+        else if (defaultLabelLayout && defaultLabelLayout instanceof Function ) {
+          oj.DiagramUtils._setLabelPosition(link, defaultLabelLayout(layoutContext, link));
+        }
+      }
+    }
+  };
+  return layoutFunc;
+};
+
+/**
+ * Converts a data array of nodes or links to a map
+ * @param {Array} dataArray data array of node or links
+ * @return {Object} a map of nodes or links
+ * @private
+ * @instance
+ * @memberof oj.DiagramUtils
+ */
+oj.DiagramUtils._dataArrayToMap = function(dataArray) {
+  var m = {};
+  if (dataArray) {
+    for (var i = 0; i < dataArray.length; i++) {
+      m[dataArray[i]['id']] = dataArray[i];
+    }
+  }
+  return m;
+};
+
+/**
+ * Positions child nodes and their labels
+ * @param {Array} nodes An array of diagram nodes
+ * @param {Array} nodesData An array of objects that describe a position for a diagram node and a layout for the node's label
+ * @param {Object} layoutContext Layout context for diagram
+ * @param {Object|Function} defaultLabelLayout Default label layout defined as an object or a function
+ * @private
+ */
+oj.DiagramUtils._positionChildNodes =  function(nodes, nodesData, layoutContext, defaultLabelLayout){
+  if (nodes && nodesData) {
+    var nodesDataMap = oj.DiagramUtils._dataArrayToMap(nodesData);
+    for (var ni = 0;ni < nodes.length;ni++) {
+      var node = nodes[ni];
+      var nodeData = nodesDataMap[node.getId()];
+      oj.DiagramUtils._positionChildNodes(node.getChildNodes(), nodeData ? nodeData['nodes'] : null, layoutContext, defaultLabelLayout);
+      oj.DiagramUtils._positionNodeAndLabel(node, nodeData, layoutContext, defaultLabelLayout);
+    }
+  }
+};
+
+/**
+ * Position a diagram nodes and its label
+ * @param {Object} node A node to position
+ * @param {Object} nodeData An object that defines a position for the node and a layout for the node's label
+ * @param {Object} layoutContext Layout context for diagram
+ * @param {Object|Function} defaultLabelLayout Default label layout defined as an object or a function
+ * @private
+ */
+oj.DiagramUtils._positionNodeAndLabel = function(node, nodeData, layoutContext, defaultLabelLayout) {
+  if (node && nodeData) {
+    node.setPosition({'x': nodeData['x'], 'y': nodeData['y']});
+    //node has a label - position it
+    if (nodeData['labelLayout']) { 
+      //layout should be an object - expect absolute positions
+      oj.DiagramUtils._setLabelPosition(node, nodeData['labelLayout']);
+    }
+    else if (defaultLabelLayout && defaultLabelLayout instanceof Function) {
+      oj.DiagramUtils._setLabelPosition(node, defaultLabelLayout(layoutContext, node));
+    }
+    else if (defaultLabelLayout) {
+      //layout should be an object - expect relative positions
+      oj.DiagramUtils._setLabelPosition(node, defaultLabelLayout, node.getPosition());
+    }
+  }
+};
+
+/**
+ * Sets label position for a link or a node
+ * @param {Object} obj layout context for node or link
+ * @param {Object} labelLayout an object with the following properties for the label layout
+ * @property {number} x x-coordinate for the label position
+ * @property {number} y y-coordinate for the label position
+ * @property {number} rotationPointX x-coordinate for the rotation point
+ * @property {number} rotationPointY y-coordinate for the rotation point
+ * @property {number} angle angle for the angle of rotation
+ * @property {string} halign horizontal alignment for the label
+ * @property {string} valign vertical alignment for the label 
+ * @param {Object=} offset an object with the following properties for the label offset
+ * @property {number} x x-coordinate
+ * @property {number} y y-coordinate
+ * @private
+ * @instance
+ * @memberof oj.DiagramUtils
+ */
+oj.DiagramUtils._setLabelPosition = function(obj, labelLayout, offset) {
+  offset = offset ? offset : {'x':0,'y':0};
+  obj.setLabelPosition({'x': labelLayout['x'] + offset['x'], 'y': labelLayout['y'] + offset['y']});
+  var rotationPointX = labelLayout['rotationPointX'], 
+      rotationPointY = labelLayout['rotationPointY'];
+  if (!isNaN(rotationPointX) && !isNaN(rotationPointY)) {
+    obj.setLabelRotationPoint({'x':rotationPointX + offset['x'], 'y':rotationPointY + offset['y']});
+  }
+  obj.setLabelRotationAngle(labelLayout['angle']);
+  obj.setLabelHalign(labelLayout['halign']);
+  obj.setLabelValign(labelLayout['valign']);
+};
+
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojDiagramMeta = {
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "expanded": {
+      "type": "Array<string>|string"
+    },
+    "focusRenderer": {},
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "hoverRenderer": {},
+    "layout": {},
+    "linkHighlightMode": {
+      "type": "string"
+    },
+    "links": {
+      "type": "Array<object>"
+    },
+    "maxZoom": {
+      "type": "number"
+    },
+    "minZoom": {
+      "type": "number"
+    },
+    "nodeHighlightMode": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "Array<object>"
+    },
+    "panDirection": {
+      "type": "string"
+    },
+    "panning": {
+      "type": "string"
+    },
+    "renderer": {},
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "selectionRenderer": {},
+    "styleDefaults": {
+      "type": "object"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    },
+    "zooming": {
+      "type": "string"
+    },
+    "zoomRenderer": {}
+  },
+  "methods": {
+    "collapse": {},
+    "expand": {},
+    "getContextByNode": {},
+    "getLink": {},
+    "getLinkCount": {},
+    "getNode": {},
+    "getNodeCount": {},
+    "getPromotedLink": {},
+    "renderDefaultFocus": {},
+    "renderDefaultHover": {},
+    "renderDefaultSelection": {}
+  },
+  "extension": {
+    "_widgetName": "ojDiagram"
+  }
+};
+oj.Components.registerMetadata('ojDiagram', 'dvtBaseComponent', ojDiagramMeta);
+oj.Components.register('oj-diagram', oj.Components.getMetadata('ojDiagram'));
+})();
 });

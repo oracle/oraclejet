@@ -15,9 +15,9 @@
 
     /* styles the root of the popup component that wraps all messaging content */
     
-    /* wraps all messaging content that displays inside popup */
+    /* wraps all messaging content that displays inside popup. */
     .oj-messaging-popup-container {
-      max-width: 340px; 
+      max-width: 320px; 
     }
     
     /* separator inside popup container */
@@ -103,6 +103,7 @@
     .oj-message-content {
       display: inline-block;
       width:95%;
+      word-wrap: break-word;
     }
     /* 
      * wraps the message summary and detail parts 

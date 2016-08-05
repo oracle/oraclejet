@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Disabled_Selected_Radio_Button" opacity="0.5"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="23px" height="23px"
-	 viewBox="0 0 23 23" enable-background="new 0 0 23 23" xml:space="preserve">
-<circle opacity="0.8" fill="#FFFFFF" cx="11.5" cy="11.5" r="11.5"/>
-<path fill="#0572CE" d="M23,11.5C23,17.85,17.85,23,11.5,23C5.15,23,0,17.85,0,11.5C0,5.15,5.15,0,11.5,0C17.85,0,23,5.15,23,11.5z
-	 M11.5,2C6.25,2,2,6.25,2,11.5c0,5.25,4.25,9.5,9.5,9.5c5.25,0,9.5-4.25,9.5-9.5C21,6.25,16.75,2,11.5,2z"/>
-<circle fill="#0572CE" cx="11.52" cy="11.48" r="5.5"/>
+<svg version="1.1" opacity="0.5"
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="20px" height="20px"
+viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve">
+<style type="text/css">
+.st0{fill:#FFFFFF;}
+.st1{fill:#0572CE;}
+.st2{fill:#2B71B9;}
+</style>
+<path class="st0" d="M10,0c5.5,0,10,4.5,10,10s-4.5,10-10,10S0,15.5,0,10S4.5,0,10,0z"/>
+<path class="st1" d="M20,10c0,5.5-4.5,10-10,10S0,15.5,0,10S4.5,0,10,0S20,4.5,20,10z M10,2c-4.4,0-8,3.6-8,8s3.6,8,8,8s8-3.6,8-8
+	S14.4,2,10,2z"/>
+<circle id="inner_ellipse" class="st2" cx="10" cy="10.1" r="5"/>
 </svg>

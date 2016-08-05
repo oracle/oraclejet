@@ -4,7 +4,7 @@
  */
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'ojs/ojmenu', 
-        'jqueryui-amd/sortable', 'ojs/ojtouchproxy'], 
+        'jqueryui-amd/widgets/sortable', 'ojs/ojtouchproxy'], 
        function(oj, $)
 {
 
@@ -219,14 +219,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
     options : 
     {
       /** 
-       * The id or zero-based index of the tab that is selected.<p>
+       * The id or zero-based index of the tab that is selected. 
+       * Note: using zero-based index is deprecated, please use id in the future.<p>
+       *
        * Setter value: either an id or index.<p>
-       * Getter value: id or index. If the selected tab has a page author provided id, that id is returned, otherwise that tab's index will be returned.
+       * Getter value: id or index. If the selected tab has a page author provided id then that id is returned, otherwise that tab's index will be returned.
        *
        * @expose 
        * @memberof! oj.ojTabs
        * @instance
-       * @type {number|string}
+       * @type {string|number}
        * @default <code class="prettyprint">0</code>
        *
        * @example <caption>Initialize the tabs with the 
@@ -244,20 +246,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       selected : 0, 
 
       /** 
-       * Array contains either ids or zero-based indices of the tabs that should be disabled.<p> 
+       * Array contains either ids or zero-based indices of the tabs that should be disabled. 
+       * Note: using zero-based indices is deprecated, please use ids in the future.<p> 
+       *
        * Setter value: array of either ids or indices.<p>
-       * Getter value: array of either ids or indices. If a disabled tab has a page author provided id, that id is returned, otherwise that tab's index will be returned.
+       * Getter value: array of either ids or indices. If a disabled tab has a page author provided id then that id is returned, otherwise that tab's index will be returned.
        *
        * @expose 
        * @memberof! oj.ojTabs
        * @instance
-       * @default <code class="prettyprint">false</code>
-       * @type {Array}
+       * @default <code class="prettyprint">null</code>
+       * @type {Array|null}
        *
-       * @example [ 0, "myTabDiv" ] would disable the first tab and the tab with id="myTabDiv"
+       * @example [ "disableMe" ] would disable the tab with id="disableMe"
        * @example <caption>Initialize the tabs with the 
        * <code class="prettyprint">disabledTabs</code> option specified:</caption>
-       * $( ".selector" ).ojTabs( { "disabledTabs": [0, "myTabDiv"] } );
+       * $( ".selector" ).ojTabs( { "disabledTabs": ["disableMe"] } );
        * 
        */
       disabledTabs : null, 
@@ -364,13 +368,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       edge : "top", 
 
       /** 
-       * Specifies if the tabs can be closed (removed)
+       * Specifies if the tabs can be removed.
+       * If removable is false, all tabs are not removable.
+       * If removable is true, all tabs are removable.<p>
+       * If an array is specified, the array contains ids of the tabs that are removable. 
        *
        * @expose 
        * @memberof! oj.ojTabs
        * @instance
-       * @type {boolean}
+       * @type {boolean|Array}
        * @default <code class="prettyprint">false</code>
+       *
+       * @example <caption>Initialize an ojTabs with the <code class="prettyprint">removable</code> option.</caption>
+       * $( ".selector" ).ojTabs( { "removable": ["removeMe"] } );
        *
        * @example <caption>Get or set the <code class="prettyprint">removable</code> option for
        *      an ojTabs after initialization:</caption>
@@ -402,16 +412,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       reorderable : false,
 
       /**
-       * Identifies the JET Menu that the component should launch as a context menu on right-click or
-       * <kbd>Shift-F10</kbd>. If specified, the browser's native context menu will be replaced by the
-       * specified JET Menu.
-       * 
-       * <p>To specify a JET context menu on a DOM element that is not a JET component, see the
-       * <code class="prettyprint">ojContextMenu</code> binding.  
-       * 
-       * <p>To make the page semantically accurate from the outset, applications are encouraged to specify the
-       * context menu via the standard HTML5 syntax shown in the below example.  When the component is
-       * initialized, the context menu thus specified will be set on the component.
+       * <p>The JET Menu should be initialized before the Tabs using it as a 
+       * context menu. 
+       *
+       * @ojfragment contextMenuInitOrderDoc - Decomped to fragment so Tabs, Tree, and MasonryLayout can convey their init order restrictions.
+       * @memberof oj.ojTabs
+       */
+      /**
+       * {@ojinclude "name":"contextMenuDoc"}
        *
        * <p>When defining a contextMenu, ojTabs will provide built-in behavior for "cut" and "paste"
        *  if the following format for menu &lt;li&gt; item's is used (no &lt;a&gt; 
@@ -424,13 +432,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * </ul>
        * The available translated text will be applied to menu items defined this way.
        *
-       * <p>The JET Menu should be initialized before any component using it as a context menu.
-       * 
        * @member
        * @name contextMenu
        * @memberof! oj.ojTabs
        * @instance
-       * @type {string | null}
+       * @type {Element|Array.<Element>|string|jQuery|NodeList}
        * @default <code class="prettyprint">null</code>
        * 
        * @example <caption>Initialize a JET Tabs with a context menu:</caption>
@@ -471,7 +477,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeselect</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeselect", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforeselect", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeSelect : null,
 
@@ -495,7 +504,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojselect</code> event:</caption>
-       * $( ".selector" ).on( "ojselect", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojselect", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       select : null, 
 
@@ -520,7 +532,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforedeselect</code> event:</caption>
-       * $( ".deselector" ).on( "ojbeforedeselect", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforedeselect", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeDeselect : null,
 
@@ -544,7 +559,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojdeselect</code> event:</caption>
-       * $( ".deselector" ).on( "ojdeselect", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojdeselect", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       deselect : null, 
 
@@ -567,7 +585,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeremove</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeremove", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforeremove", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeRemove : null,
 
@@ -589,7 +610,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojremove</code> event:</caption>
-       * $( ".selector" ).on( "ojremove", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojremove", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       remove : null, 
 
@@ -612,7 +636,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforereorder</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforereorder", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforereorder", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeReorder : null,
 
@@ -634,7 +661,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojreorder</code> event:</caption>
-       * $( ".selector" ).on( "ojreorder", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojreorder", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       reorder : null, 
 
@@ -655,6 +685,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
        *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
        *
+       * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
+       * $(".selector").ojTabs({
+       *   'optionChange': function (event, data) {}
+       * });
+       * @example <caption>Bind an event listener to the ojoptionchange event</caption>
+       * $(".selector").on({
+       *   'ojoptionchange': function (event, data) {
+       *       // verify that the component firing the event is a component of interest
+       *       if ($(event.target).is(".mySelector")) {
+       *           window.console.log("option that changed is: " + data['option']);
+       *       }
+       *   };
+       * });
        */
       optionChange: null
 
@@ -682,9 +725,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       // - ojtabs touch support issues
       //only handle context menu if not touch device
       this._menu = {};
-      this._menu.$container = false;
-      this._menu.$elemPasteBefore = false;
-      this._menu.$elemPasteAfter = false;
+      this._menu.usermenu = false;
+      this._menu.$menuItems = [];
+      this._menu.$container = null;
+      this._menu.$elemPasteBefore = null;
+      this._menu.$elemPasteAfter = null;
 
       this._initMenu();
 
@@ -737,8 +782,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           return ;
         }
 
-//        console.log("_NotifyContextMenuGesture() eventType=" + eventType + " event.type=" + event.type);
-
         //got here either by right mouse click (event.which == 3)
         //or <shift F10> key (event.keyCode = 121 and event.shiftKey = true)
         //or pressHold
@@ -753,12 +796,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         }
 
         if (this._menu.$elemRemove) {
-          if (tab.hasClass("oj-disabled") &&
+          // if tab is disable or not removable and if "remove" is only item,  dont display context menu
+          var isDisabled = tab.hasClass("oj-disabled");
+          if ((isDisabled || this._getCloseIcons(tab).length == 0) &&
               this._menu.$container.children().length == 1) {
               event.preventDefault();
               return;
           }
-          if (tab.hasClass("oj-disabled"))
+          if (isDisabled || ! this._isTabRemovable(tab))
             this._menu.$elemRemove.addClass("oj-disabled");
           else
             this._menu.$elemRemove.removeClass("oj-disabled");
@@ -818,23 +863,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           break;
 
         case _DELETE_KEY:
-          if (this.options.removable)
+          var tab = this.active;
+
+          // James: remove tab keystroke doesn't seem to work with JAWS. 
+          // ALT+DEL seems to conflict with a JAWS keystroke. I have raised an issue on the Authoring 
+          // Practices for this. Could we just use Delete as well or does that sound like a bad idea?
+          // simulate a click on the close icon of the current selected header
+          if (tab && this._getCloseIcons(tab).length > 0)
           {
-            // James: remove tab keystroke doesn't seem to work with JAWS. 
-            // ALT+DEL seems to conflict with a JAWS keystroke. I have raised an issue on the Authoring 
-            // Practices for this. Could we just use Delete as well or does that sound like a bad idea?
-            // simulate a click on the close icon of the current selected header
-            var anchor = this._getCloseIcons(this.active);
-            if (anchor)
-            {
-              event.preventDefault();
-              this._removeTabHandler(
-                {
-                  target : anchor, 
-                  currentTarget : anchor, 
-                  preventDefault : $.noop
-                }, event);
-            }
+            event.preventDefault();
+            this._removeTab(tab, null, event);
           }
           return;
 
@@ -857,7 +895,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         // but the tab will already be selected by the time the announcement finishes.
         focusedTab.attr("aria-selected", "false");
         selTab.attr("aria-selected", "true");
-        var idOrIndex = this._getTabIdOrIndex(selTab);
 
         var self = this;
         this.activating = this._delay(function ()
@@ -866,9 +903,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           if (! self || !self.tabs)
             return;
 
-          //Note: need setOption on ojtabs to display the selected panel
-//          self.option("selected", idOrIndex,
-//                      {'_context': {originalEvent: event}});
           self._activate(selTab, event);
         },
         this.delay);
@@ -981,6 +1015,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
       if (key === "disabledTabs")
       {
+        if (value === null)
+          value = []; 
+
         if (Array.isArray(value))
         {
           this._setOjDisabledOnTab(value);
@@ -1093,6 +1130,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       this._processTabs();
 
       this._refresh();
+
+      //set selected if needed
+      if (! this.element.children(".oj-tabs-selected").length) {
+        var selected = this._getNextEnabledTab(-1);
+        if (selected >= 0) {
+          this._fireSelectEvents(selected);
+        }
+      }
+
     },
 
     _refresh : function ()
@@ -1154,7 +1200,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
         // - er for placing buttons alongside tabs
         this._addFacets();
-
       }
 
       if (this.options.selected === undefined || 
@@ -1207,6 +1252,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         .attr("role", "tablist");
 
       var tabbarIndex = this.tablist.index();
+      var startBtn, trailingBtn;
 
       // - er for placing buttons alongside tabs
       //add oj-start class to the facets before the tab bar
@@ -1216,23 +1262,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           var facet = $(this);
           if (facet.index() < tabbarIndex) {
             facet.addClass("oj-start");
+            startBtn = facet;
           }
           else {
+            if (! trailingBtn)
+              trailingBtn = facet;
             facet.removeClass("oj-start");
           }
         });
 
       // - support bottom positioned tabs
       var tabContents = this.element.children(".oj-tabs-panel");
+
+      // - ojtab removing first tab
+      //don't insert <ul> between <!-- ko foreach: tabs --> and <!-- /ko -->
       if (edge == "start" || edge == "top")
       {
-        // add before the first tab content
-        $(tabContents[0]).before(this.tablist); // @HTMLUpdateOK
+        // add <ul> after the start button or as the first child of the container
+        if (startBtn)
+          startBtn.after(this.tablist); // @HTMLUpdateOK
+        else
+          this.element.prepend(this.tablist); // @HTMLUpdateOK
       }
       else
       {
-        // add after the last tab content
-        $(tabContents[tabContents.length - 1]).after(this.tablist); // @HTMLUpdateOK
+        // add <ul> before the trailing button or as the last child of the container
+        if (trailingBtn)
+          trailingBtn.before(this.tablist); // @HTMLUpdateOK
+        else
+          this.element.append(this.tablist); // @HTMLUpdateOK
       }
 
       //list of tabs
@@ -1270,7 +1328,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
         var anchorId = anchor.uniqueId().attr("id");
         var panelId = tab.attr("data-content");
-        var panel = self.element.find(self._sanitizeSelector("#" + panelId));
+        var panel = self.element.find(self._sanitizeIdSelector(panelId));
 
 /*
         if (tab.hasClass("oj-disabled")) 
@@ -1307,6 +1365,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
     _setupEvents : function ()
     {
+      var self = this;
+
       var events = 
       {
         'keydown' : this._tabKeydown
@@ -1316,7 +1376,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       var selectOnClick = false;
       if (event)
       {
-        var self = this;
         $.each(event.split(" "), function (index, eventName)
         {
           // - mousedown is a better default for jtab selecton than click 
@@ -1354,12 +1413,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         {
           "click" : this._removeTabHandler
         }
-        this._on(this._getCloseIcons(enabledTabs), revents);
+        var closeIcons = this._getCloseIcons(enabledTabs);
+        this._on(closeIcons, revents);
+        this._AddHoverable(closeIcons);
+        this._AddActiveable(closeIcons);
       }
 
-      this._focusable(enabledTabs);
-      this._hoverable(enabledTabs);
-      this._activeable(enabledTabs);
+      this._focusable({
+        'element': enabledTabs,
+        'applyHighlight': true
+      });
+
+      this._AddHoverable(enabledTabs);
+      this._AddActiveable({
+        'element': enabledTabs,
+        'afterToggle': function(eventtype) {
+          //after mousedown, clear the "oj-focus-highlight" class
+          if (eventtype === "mousedown") {
+            enabledTabs.filter(".oj-focus-highlight").blur();
+          }
+        }
+      });
 
     },
 
@@ -1552,31 +1626,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
     _createCloseIcons : function ()
     {
+      var removable = this.options.removable;
+
       // - for vertical tabs, removable option should be ignored
       //create close icon only if it's horizontal and  not disabled
-      if (this.options.removable && (this._isHorizontal()))
+      if (removable && this._isHorizontal())
       {
-        var removeCueText = this.getTranslatedString("removeCueText");
+        var removeCueText = this.getTranslatedString("removeCueText"),
+            self = this;
+
         this._getEnabledTabs().each(function (index)
         {
-          var div = $(this).find("> :first-child");
-          div.addClass("oj-removable");
+          if (self._isTabRemovable($(this)))
+          {
+            var div = $(this).find("> :first-child");
+            div.addClass("oj-removable");
 
-          //add cue text for removable icon for screen reader users
-          var rmId = _ID_PREFIX + "rm_" + index;
-          $(this).attr("aria-describedby", rmId);
+            //add cue text for removable icon for screen reader users
+            var rmId = _ID_PREFIX + "rm_" + index;
+            $(this).attr("aria-describedby", rmId);
 
-          $("<a href='#'>")
-            .addClass("oj-tabs-icon oj-component-icon oj-clickable-icon-nocontext " + _CLOSE_ICON)
-            .attr(
-              {
-                "id": rmId,
-                "tabIndex" : "-1",
-                "aria-label" : removeCueText,
-                "role" : "presentation"
-              })
-            .appendTo(div); // @HTMLUpdateOK
-
+            $("<a href='#'>")
+              .addClass("oj-tabs-icon oj-component-icon oj-clickable-icon-nocontext " + _CLOSE_ICON)
+              .attr(
+                {
+                  "id": rmId,
+                  "tabIndex" : "-1",
+                  "aria-label" : removeCueText,
+                  "role" : "presentation"
+                })
+              .appendTo(div); // @HTMLUpdateOK
+          }
         });
       }
     },
@@ -1614,7 +1694,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           this._tearDownTouchReorder();
 
         //destroy sortable
-        this.tablist.sortable("destroy");
+        if (this.tablist.sortable("instance"))
+          this.tablist.sortable("destroy");
         this._sortable = undefined;
       }
 
@@ -1686,6 +1767,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           .removeAttr("aria-hidden")
           .removeAttr("aria-controls")
           .removeAttr("aria-disabled")
+          .removeAttr("aria-describedby")
           .removeAttr("role")
           .removeAttr("data-content")
           .removeClass("oj-active oj-disabled oj-selected oj-tabs-gen-id oj-tabs-tab")
@@ -1758,11 +1840,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
     },
 
-    _removeTabHandler : function (event, flags)
+    _isTabRemovable : function (tab)
     {
-      var icon = $(event.currentTarget),
-          tab = icon.closest("li"),
-          panel = this._getPanelForTab(tab),
+      var removable = this.options.removable;
+      return (removable && 
+              (! Array.isArray(removable) || removable.indexOf(tab.attr("id")) > -1));
+    },
+
+    _removeTab : function (tab, event, flags)
+    {
+      if (! this._isTabRemovable(tab))
+        return;
+
+      var panel = this._getPanelForTab(tab),
           eventData = 
           {
             /** @expose */
@@ -1771,13 +1861,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
             content : panel
           };
 
-      var oEvent = flags? flags: event;
+      var oEvent = flags ? flags : event ? event : 
+                      {
+                        target : tab, 
+                        currentTarget : tab, 
+                        preventDefault : $.noop
+                      };
 
       //trigger before delete event and only delete if it's not cancelled
       if (tab && this._trigger("beforeRemove", oEvent, eventData) !== false)
       {
         // - deleteing a tab scrolls page back to the top
-        event.preventDefault();
+        if (event)
+          event.preventDefault();
 
         //if tab to be removed is selected, select the next enabled tab
         if (tab.hasClass("oj-selected"))
@@ -1821,6 +1917,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
         this._trigger("remove", oEvent, eventData);
       }
+    },
+
+    _removeTabHandler : function (event, flags)
+    {
+      this._removeTab($(event.currentTarget).closest("li"), event, flags);
+    },
+
+    /**
+     * Remove a tab from the tab bar.
+     * 
+     * @expose 
+     * @memberof! oj.ojTabs
+     * @instance
+     *
+     * @param {string} tabId The id of the tab that is to be removed.
+     * 
+     * @example <caption>Invoke the <code class="prettyprint">removeTab</code> method:</caption>
+     * $( ".selector" ).ojTabs( "removeTab", "removeMe" );
+     *
+     */
+    removeTab : function (tabId)
+    {
+      if (typeof tabId !== 'string')
+        throw new Error("'" + tabId + "' is not a tab id");
+
+      this._removeTab(this._getTab(tabId), null, null);
     },
 
     _wrapLi : function (header, contentId)
@@ -1934,7 +2056,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       if (index >= 0 && index < tabbar.children().length)
       {
         var tabAfter = tabbar.children(":eq(" + index + ")")
-        var contentAfter = this.element.children("#" + tabAfter.attr("aria-controls"));
+        var contentAfter = this.element.children(
+          this._sanitizeIdSelector(tabAfter.attr("aria-controls")));
 
         tabAfter.before(tab); // @HTMLUpdateOK
         contentAfter.before(content); // @HTMLUpdateOK
@@ -2426,13 +2549,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         return false;
       }
 
-      var anchor = this._getCloseIcons(obj);
-      this._removeTabHandler(
-        {
-          target : anchor, 
-          currentTarget : anchor, 
-          preventDefault : $.noop
-        }, event);
+      this._removeTab(obj, null, event);
     },
 
     /**
@@ -2480,7 +2597,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           t = $.type(menu);
         }
 
-        if (t == "string" && menu)
+        if (menu)
         {
           var $m = $(menu);                  // get the user's <ul> list   
           if ($m.length)
@@ -2489,6 +2606,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           }
         }
       }
+      this._menu.usermenu = !! menu;
 
       //add default context menu
       this._addContextMenu();
@@ -2500,6 +2618,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       {
         var menuItem = this._buildContextMenuItem(command);
         $ul.append(menuItem); //@HTMLUpdateOK
+        this._menu.$menuItems.push(menuItem);
       }
     },
 
@@ -2512,7 +2631,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
     _addContextMenu: function()
     {
       var $menuContainer = $(this.options["contextMenu"]);
-      if (! $menuContainer && ! this.options.reorderable && ! this.options.removable)
+      if ($menuContainer.length == 0 && ! this.options.reorderable && ! this.options.removable)
         return;
 
       var self = this;
@@ -2530,7 +2649,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         $menuContainer.ojMenu();
 
         //don't call setOption
-        this.options.contextMenu = '#' + menuId;
+        this.options["contextMenu"] = this._sanitizeIdSelector(menuId);
       }
 
       var itemList = [];
@@ -2578,11 +2697,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
     _clearMenu : function()
     {
       var menu = this._menu;
-      if (menu)
+      if (menu && menu.$container)
       {
         menu.$container.off("ojselect");
+        if (! menu.usermenu)
+        {
+          menu.$container.ojMenu("destroy");
+          menu.$container.remove();
+        }
+        if (menu.$menuItems) {
+          for (; menu.$menuItems.length > 0;) { 
+            menu.$menuItems.pop().remove();
+          }
+        }
         menu.$container = null;
       }
+
+      menu.$elemPasteBefore = null;
+      menu.$elemPasteAfter = null;
+      menu.$elemRemove = null;
     },
 
     // - tabs lose selection when moved (sortable tabs)
@@ -2633,6 +2766,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
       // - add new tab. move it to first place. add another tab.first tab disappears.
       this.refresh();
+
+      //remove the "oj-focus-highlight" class from the old active tab
+      prevTab.blur();
       mvTab.focus();
 
       //fire reorder event
@@ -2643,12 +2779,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
     // - ojtabs do not work with tabs whose id has '::' 
     _sanitizeSelector: function( hash ) {
-      return hash ? hash.replace( /[!"$%&'()*+,.\/:;<=>?@\[\]\^`{|}~]/g, "\\$&" ) : "";
+      return hash ? hash.replace( /[#!"$%&'()*+,.\/:;<=>?@\[\]\^`{|}~]/g, "\\$&" ) : "";
+    },
+
+    // - can not add new tab if existing selected tab has non-blessed jquery id
+    //return "#" + sanitized idSelector
+    _sanitizeIdSelector: function( idSelector ) {
+      return idSelector ? "#" + this._sanitizeSelector(idSelector) : "";
     },
 
     _getPanelForTab : function (tab)
     {
-      return this.element.find(this._sanitizeSelector("#" + $(tab).attr("aria-controls")));
+      return this.element.find(this._sanitizeIdSelector($(tab).attr("aria-controls")));
     },
 
     _getUniqueId: function (panel)
@@ -2684,7 +2826,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         //security test
         var selector = this._sanitizeSelector(idOrIndex);
         if (oj.DomUtils.isValidIdentifier(selector)) {
-          var tabOrContent = this.element.find("#" + selector);
+          var tabOrContent = this.element.find(this._sanitizeIdSelector(selector));
 
           if (tabOrContent.length) {
             index = this.tabs.index(tabOrContent);
@@ -2702,7 +2844,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
       if (typeof selected === 'number')
         return selected;
 
-      return this.tabs.index($("#" + selected));
+      return this.tabs.index($(this._sanitizeIdSelector(selected)));
     },
 
     /* 
@@ -2846,7 +2988,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           var facetId = self._getUniqueId(facet);
 
           //if facet doesn't exist add it to the tab bar 
-          if (navRoot.find("#" + facetId).length == 0)
+          if (navRoot.find(self._sanitizeIdSelector(facetId)).length == 0)
           {
             //add start facet
             if (facet.hasClass("oj-start")) {
@@ -3045,4 +3187,44 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 }
 ());
 
+(function() {
+var ojTabsMeta = {
+  "properties": {
+    "disabledTabs": {
+      "type": "Array"
+    },
+    "edge": {
+      "type": "string"
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "removable": {
+      "type": "boolean|Array"
+    },
+    "reorderable": {
+      "type": "boolean"
+    },
+    "selected": {
+      "type": "string|number"
+    },
+    "selectOn": {
+      "type": "string"
+    },
+    "truncation": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "addTab": {},
+    "refresh": {},
+    "removeTab": {}
+  },
+  "extension": {
+    "_widgetName": "ojTabs"
+  }
+};
+oj.Components.registerMetadata('ojTabs', 'baseComponent', ojTabsMeta);
+oj.Components.register('oj-tabs', oj.Components.getMetadata('ojTabs'));
+})();
 });

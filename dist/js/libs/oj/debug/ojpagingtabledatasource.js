@@ -136,7 +136,14 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
       self.dataSource.fetch(options).then(function(result)
       {
         result['startIndex'] = 0;
-        self._updateEndIndex(result['data'].length);
+        if (result['data'].length > 0)
+        {
+          self._updateEndIndex(self._startIndex + result['data'].length - 1, true);
+        }
+        else
+        {
+          self._updateEndIndex(-1, true);
+        }
         oj.PagingTableDataSource.superclass.handleEvent.call(self, oj.PagingModel.EventType['PAGE'], {'page' : self._getPageFromStartIndex(), 'previousPage' : previousPage});
         resolve(null);
       },
@@ -268,7 +275,14 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
     {
       self.dataSource.fetch(options).then(function(result)
       {
-        self._updateEndIndex(result['data'].length);
+        if (result['data'].length > 0)
+        {
+          self._updateEndIndex(self._startIndex + result['data'].length - 1, true);
+        }
+        else
+        {
+          self._updateEndIndex(-1, true);
+        }
         resolve(result);
       },
       function(e)
@@ -324,7 +338,6 @@ oj.PagingTableDataSource.prototype.getCapability = function(feature)
  * Attach an event handler to the datasource
  * @param {string} eventType eventType supported by the datasource
  * @param {function(Object)} eventHandler event handler function
- * @return {function(Object)} the event handler function attached to the event 
  * @export
  * @expose
  * @memberof! oj.PagingTableDataSource
@@ -339,7 +352,6 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
   {
     var ev = function(event){self._handleSyncEvent(event, eventHandler);}
     dataSource.on(eventType, ev);
-    return ev;
   }
   else if (eventType == oj.TableDataSource.EventType['ADD'] ||
            eventType == oj.TableDataSource.EventType['REMOVE'] ||
@@ -347,7 +359,6 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
   {
     var ev = function(event){self._handleRowEvent(event, eventHandler);}
     dataSource.on(eventType, ev);
-    return ev;
   }
   else if (eventType == oj.TableDataSource.EventType['REFRESH'] ||
            eventType == oj.TableDataSource.EventType['RESET'])
@@ -357,18 +368,16 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
       eventHandler(event);
     }
     dataSource.on(eventType, ev);
-    return ev;
   }
   else if (eventType == oj.PagingModel.EventType['PAGE'] ||
+           eventType == oj.PagingModel.EventType['BEFOREPAGE'] ||
            eventType == oj.PagingModel.EventType['PAGECOUNT'])
   {
     oj.PagingTableDataSource.superclass.on.call(this, eventType, eventHandler);
-    return eventHandler;
   }
   else
   {
     dataSource.on(eventType, eventHandler);
-    return eventHandler;
   }
 };
 
@@ -387,10 +396,9 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
       eventType == oj.PagingModel.EventType['PAGECOUNT'])
   {
     oj.PagingTableDataSource.superclass.off.call(this, eventType, eventHandler);
-    return eventHandler;
   }
   var dataSource = (/** @type {{off: Function}} */ (this.dataSource));
-  return dataSource.off(eventType, eventHandler);
+  dataSource.off(eventType, eventHandler);
 };
 
 /**
@@ -406,6 +414,15 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
  */
 oj.PagingTableDataSource.prototype.sort = function(criteria)
 {
+  if (criteria == null)
+  {
+    criteria = this['sortCriteria'];
+  }
+  else
+  {
+    this['sortCriteria'] = criteria;
+  }
+  
   return this.dataSource.sort(criteria);
 };
 
@@ -459,7 +476,10 @@ oj.PagingTableDataSource.prototype._handleRowEvent = function(event, eventHandle
     if (rowIdx !== undefined) 
     {
       // adjust by startIndex
-      rowIdx = rowIdx - this._startIndex;
+      if (this._fetchType == 'page')
+      {
+        rowIdx = rowIdx - this._startIndex;
+      }
       
       if (rowIdx < 0 || rowIdx >= this._startIndex + this._pageSize)
       {
@@ -484,7 +504,10 @@ oj.PagingTableDataSource.prototype._handleRowEvent = function(event, eventHandle
     }
   }
   
-  this._updateEndIndex(event['data'].length);
+  if (event['indexes'].length > 0)
+  {
+    this._updateEndIndex(event['indexes'][event['indexes'].length - 1], false);
+  }
   
   event['startIndex'] = this._startIndex;
   eventHandler(event);
@@ -498,7 +521,15 @@ oj.PagingTableDataSource.prototype._handleSyncEvent = function(event, eventHandl
   {
     this._startIndex = event['startIndex'];
   }
-  this._updateEndIndex(event['data'].length);
+  
+  if (event['data'].length > 0)
+  {
+    this._updateEndIndex(event['startIndex'] + event['data'].length - 1, true);
+  }
+  else
+  {
+    this._updateEndIndex(-1, true);
+  }
   
   if (this._fetchType == 'page')
   {
@@ -515,28 +546,23 @@ oj.PagingTableDataSource.prototype._handleSyncEvent = function(event, eventHandl
   }
 };
 
-oj.PagingTableDataSource.prototype._updateEndIndex = function(resultSize)
-{
-  var totalSize = this.totalSize();
-  
-  if (totalSize > 0)
+oj.PagingTableDataSource.prototype._updateEndIndex = function(lastRowIdx, reset)
+{ 
+  if (reset)
   {
-    this._endIndex = this._startIndex + this._pageSize - 1;
-    this._endIndex = this._endIndex > totalSize - 1 ? totalSize - 1 : this._endIndex;
+    this._endIndex = lastRowIdx;
   }
   else
   {
-    // if we have unknown total size then use the resultSize to constrain the end index
-    // if resultSize < pageSize then we have less than a full page of results
-    if (resultSize > 0)
-    {
-      this._endIndex = this._startIndex + resultSize - 1;
-    }
-    else
-    {
-      // we don't have any records in the fetch so the indexes should be -1;   
-      this._endIndex = -1;
-    }
+    // only update if greater
+    this._endIndex = lastRowIdx > this._endIndex ? lastRowIdx : this._endIndex;
+  }
+
+  var totalSize = this.totalSize();
+
+  if (totalSize > 0)
+  {
+    this._endIndex = this._endIndex > totalSize - 1 ? totalSize - 1 : this._endIndex;
   }
 };
 
@@ -683,19 +709,19 @@ oj.PagingModel.EventType =
     /** Triggered before the current page has changed. <p>
      * This event is vetoable.<p>
      * The event payload contains:<p>
-     * <b>page</b> The new current page
+     * <b>page</b> The new current page<br>
      * <b>previousPage</b> The old current page
      */
     'BEFOREPAGE': "beforePage",
     /** Triggered when the current page has changed<p>
      * The event payload contains:<p>
-     * <b>page</b> The new current page
+     * <b>page</b> The new current page<br>
      * <b>previousPage</b> The old current page
      */
     'PAGE': "page",
     /** Triggered when the page count has changed<p>
      * The event payload contains:<p>
-     * <b>pageCount</b> The new page count
+     * <b>pageCount</b> The new page count<br>
      * <b>previousPageCount</b> The old page count
      */
     'PAGECOUNT': "pageCount"

@@ -276,17 +276,14 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     // disabled option declared in superclass, but we still want the above API doc
 
     /**
-     * Identifies the JET Menu that the component should launch as a context 
-     * menu on right-click or <kbd>Shift-F10</kbd>. If specified, the browser's 
-     * native context menu will be replaced by the specified JET Menu.
-     * 
-     * <p>To specify a JET context menu on a DOM element that is not a JET 
-     * component, see the <code class="prettyprint">ojContextMenu</code> binding.  
-     * 
-     * <p>To make the page semantically accurate from the outset, applications 
-     * are encouraged to specify the context menu via the standard HTML5 syntax 
-     * shown in the below example.  When the component is initialized, the 
-     * context menu thus specified will be set on the component.
+     * <p>The JET Menu should be initialized before the MasonryLayout using it as a 
+     * context menu. 
+     *
+     * @ojfragment contextMenuInitOrderDoc - Decomped to fragment so Tabs, Tree, and MasonryLayout can convey their init order restrictions.
+     * @memberof oj.ojMasonryLayout
+     */
+    /**
+     * {@ojinclude "name":"contextMenuDoc"}
      *
      * <p>When defining a contextMenu, ojMasonryLayout will provide built-in 
      * behavior for "cut" and "paste" if the following format for menu &lt;li&gt; 
@@ -297,14 +294,12 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
      * </ul>
      * The available translated text will be applied to menu items defined this way.
      *
-     * <p>The JET Menu should be initialized before any component using it as a 
-     * context menu.
      * 
      * @member
      * @name contextMenu
      * @memberof! oj.ojMasonryLayout
      * @instance
-     * @type {string | null}
+     * @type {Element|Array.<Element>|string|jQuery|NodeList}
      * @default <code class="prettyprint">null</code>
      * 
      * @example <caption>Initialize a JET MasonryLayout with a context menu:</caption>
@@ -671,7 +666,13 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     //prepare the context menu here instead of in a context menu "beforeOpen" event
     this._prepareContextMenuBeforeOpen(event);
     
-    this._OpenContextMenu(event, eventType, {"launcher": $(event.target).closest(":tabbable")});
+    //FIX : only allow reordering if context menu was 
+    //launched from reorder handle, so only show context menu if it 
+    //contains items that are not hidden (i.e. not cut/paste)
+    var $menuContainer = this._menu.$container;
+    var $menuItems = $menuContainer.children().not(".oj-helper-hidden");
+    if ($menuItems && $menuItems.length > 0)
+      this._OpenContextMenu(event, eventType, {"launcher": $(event.target).closest(":tabbable")});
   },
 
   // isInit is true for init (create and re-init), false for refresh
@@ -1507,7 +1508,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       t = $.type(menu);
     }
 
-    if (t !== "string")
+    if (!menu)
       return;
 
     // get the user's <ul> list  
@@ -1608,7 +1609,21 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   _prepareContextMenuBeforeOpen: function(e)
   {
     var elem = this.element;
-    var tile = _findContainingTile(e.originalEvent.target, elem[0]);
+    
+    //FIX : only allow reordering if context menu was 
+    //launched from reorder handle
+    var target = e.originalEvent.target;
+    var options = this.options;
+    var reorderHandle = options.reorderHandle;
+    var reorderAllowed = false;
+    if (reorderHandle)
+    {
+      var closestHandle = $(target).closest(reorderHandle);
+      if (closestHandle && closestHandle.length > 0)
+        reorderAllowed = true;
+    }
+    
+    var tile = _findContainingTile(target, elem[0]);
     this._menu.tile = tile;
 
     //set menu items disabled state
@@ -1620,6 +1635,20 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       var elemCut = this._menu.$elemCut;
       if (elemCut)
       {
+        //FIX : only allow reordering if context menu was 
+        //launched from reorder handle
+        var cutHidden = elemCut.hasClass("oj-helper-hidden");
+        if (!reorderAllowed && !cutHidden)
+        {
+          elemCut.addClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        else if (reorderAllowed && cutHidden)
+        {
+          elemCut.removeClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        
         var cutDisabled = elemCut.hasClass(_OJ_DISABLED);
         var bDisable = false;
         //disable "cut" if this tile has already been cut
@@ -1641,6 +1670,20 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       var elemPasteBefore = this._menu.$elemPasteBefore;
       if (elemPasteBefore)
       {
+        //FIX : only allow reordering if context menu was 
+        //launched from reorder handle
+        var pasteBeforeHidden = elemPasteBefore.hasClass("oj-helper-hidden");
+        if (!reorderAllowed && !pasteBeforeHidden)
+        {
+          elemPasteBefore.addClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        else if (reorderAllowed && pasteBeforeHidden)
+        {
+          elemPasteBefore.removeClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        
         var pasteBeforeDisabled = elemPasteBefore.hasClass(_OJ_DISABLED);
         var bDisable = false;
         //disable "pasteBefore" if this is the tile that was cut or if the cut 
@@ -1666,6 +1709,20 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       var elemPasteAfter = this._menu.$elemPasteAfter;
       if (elemPasteAfter)
       {
+        //FIX : only allow reordering if context menu was 
+        //launched from reorder handle
+        var pasteAfterHidden = elemPasteAfter.hasClass("oj-helper-hidden");
+        if (!reorderAllowed && !pasteAfterHidden)
+        {
+          elemPasteAfter.addClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        else if (reorderAllowed && pasteAfterHidden)
+        {
+          elemPasteAfter.removeClass("oj-helper-hidden");
+          bRefreshMenu = true;
+        }
+        
         var pasteAfterDisabled = elemPasteAfter.hasClass(_OJ_DISABLED);
         var bDisable = false;
         //disable "pasteAfter" if this is the tile that was cut or if the cut 
@@ -1944,6 +2001,17 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   _handleDragStart: function(event)
   {
     var options = this.options;
+    
+    //FIX : if drag didn't start on reorder handle, don't
+    //reorder tile
+    if (options.reorderHandle)
+    {
+      var target = event.originalEvent.target;
+      var closestHandle = $(target).closest(options.reorderHandle);
+      if (!closestHandle || closestHandle.length < 1)
+        return;
+    }
+    
     //don't try to start another drag while there's already one happening
     //(in case the previous transition is still running)
     if (options.reorderHandle && !this._bDragging)
@@ -1983,6 +2051,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    */
   _handleDragEnter: function(event)
   {
+    //FIX : only process drag and drop event if masonryLayout
+    //started the drag
+    if (!this._bDragging)
+      return;
+    
     var originalEvent = event.originalEvent;
     var relatedTarget = originalEvent.relatedTarget;
     var elem = this.element[0];
@@ -2027,6 +2100,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    */
   _handleDragOver: function(event)
   {
+    //FIX : only process drag and drop event if masonryLayout
+    //started the drag
+    if (!this._bDragging)
+      return false;
+    
     var originalEvent = event.originalEvent;
     var dataTransfer = originalEvent.dataTransfer;
     dataTransfer.dropEffect = 'move';
@@ -2047,6 +2125,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    */
   _handleDragLeave: function(event)
   {
+    //FIX : only process drag and drop event if masonryLayout
+    //started the drag
+    if (!this._bDragging)
+      return;
+    
     var originalEvent = event.originalEvent;
     var relatedTarget = originalEvent.relatedTarget;
     var elem = this.element[0];
@@ -2108,6 +2191,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     //the hide tile timeout may not have fired yet, so clear it now
     this._clearDragStartHideTileTimeout();
     
+    //FIX : only process drag and drop event if masonryLayout
+    //started the drag
+    if (!this._bDragging)
+      return;
+    
     //only process the dragend if we're not currently processing a drop (for 
     //example if the mouse button was released outside of the masonryLayout)
     if (!this._bDropping)
@@ -2152,6 +2240,11 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
    */
   _handleDrop: function(event)
   {
+    //FIX : only process drag and drop event if masonryLayout
+    //started the drag
+    if (!this._bDragging)
+      return false;
+    
     //FIX : if the drop happens before the drag move layout 
     //animation is done, finish that layout cycle immediately before processing
     //the drop
@@ -2254,9 +2347,26 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       var elem = this.element[0];
       var elemUnderPoint = document.elementFromPoint(clientX, clientY);
       var tileUnderPoint = _findContainingTile(elemUnderPoint, elem);
+      
+      //FIX : only allow reordering if tile has reorder 
+      //handle
+      var tileHasReorderHandle = false;
+      if (tileUnderPoint)
+      {
+        var $tileUnderPoint = $(tileUnderPoint);
+        var options = this.options;
+        var reorderHandle = options.reorderHandle;
+        if (reorderHandle)
+        {
+          var handleInTile = $tileUnderPoint.find(reorderHandle);
+          tileHasReorderHandle = handleInTile && handleInTile.length > 0;
+        }
+      }
+      
       if (tileUnderPoint && 
           tileUnderPoint !== this._dropSite && 
-          tileUnderPoint !== this._draggedTile)
+          tileUnderPoint !== this._draggedTile &&
+          tileHasReorderHandle)
       {
         var offset = _getRelativePosition(elem);
         var relX = pageX - offset.left;
@@ -4281,4 +4391,27 @@ MasonryLayoutCommon._PHASE_LAYOUT = 2;
  * Layout phase: show inserted tiles.
  */
 MasonryLayoutCommon._PHASE_SHOW = 3;
+(function() {
+var ojMasonryLayoutMeta = {
+  "properties": {
+    "disabled": {
+      "type": "boolean"
+    },
+    "reorderHandle": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "insertTile": {},
+    "refresh": {},
+    "removeTile": {},
+    "resizeTile": {}
+  },
+  "extension": {
+    "_widgetName": "ojMasonryLayout"
+  }
+};
+oj.Components.registerMetadata('ojMasonryLayout', 'baseComponent', ojMasonryLayoutMeta);
+oj.Components.register('oj-masonry-layout', oj.Components.getMetadata('ojMasonryLayout'));
+})();
 });

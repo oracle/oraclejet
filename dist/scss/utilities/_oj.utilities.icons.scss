@@ -404,7 +404,7 @@ $testBgColorContentBefore: null;//orange;
   overflow:       hidden;
   direction:      ltr;
   text-align:     center;
-  @include oj-box-sizing-property(content-box);
+  box-sizing: content-box;
   @content;
 
   background-color: $testBgColorBase; // test the layout within the allotted space
@@ -412,7 +412,7 @@ $testBgColorContentBefore: null;//orange;
   &:before
   {
     display: inline-block;
-    @include oj-box-sizing-property(content-box);
+    box-sizing: content-box;
 
     background-color: $testBgColorBaseBefore; // test the layout within the allotted space
   }
@@ -682,7 +682,7 @@ $testBgColorContentBefore: null;//orange;
   text-transform: none;
   color:          $color;
   text-align:     center; 
-  @include oj-box-sizing-property(content-box);
+  box-sizing: content-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 

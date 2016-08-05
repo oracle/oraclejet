@@ -5,10 +5,16 @@
 // This is the variable file for the Oracle Alta look and feel.
 
 
-// DEPRECATED starting in JET version 1.2.0
 $includeAllClasses: true !default;
-$includeDeprecatedGridClasses:        $includeAllClasses !default;
-$includeDeprecatedFormLayoutClasses:  $includeAllClasses !default;
+
+// DEPRECATED grid and form layout classes starting in JET version 1.2.0
+// In 1.3 these need to be
+$includeDeprecatedGridClasses:        false !default;
+$includeDeprecatedFormLayoutClasses:  false !default;
+
+
+$themeName:           alta !default;
+$themeTargetPlatform: web !default;
 
 // PATHS
 //----------------------------------
@@ -16,6 +22,12 @@ $includeDeprecatedFormLayoutClasses:  $includeAllClasses !default;
 
 // path to images
 $imageDir: "images/" !default;
+
+
+// COMPATIBILITY
+//----------------------------------
+
+$allowTagSelectors: true !default;
 
 
 // interaction state colors
@@ -76,9 +88,6 @@ $iconColorHover:    #85bbe7 !default;
 // font
 //----------------------------------
 
-// font family
-$fontFamily: "Helvetica Neue", Helvetica, Arial, sans-serif !default;
-
 // font size
 
 // $rootFontSize is only used on the html element
@@ -102,6 +111,9 @@ $largeFontSize:    1.286rem !default;  // 18px when root 14px
 $largestFontSize:  1.429rem !default;  // 20px when root 14px
 
 
+$fontWeightNormalization: $allowTagSelectors !default;
+
+
 
 // text colors
 //----------------------------------
@@ -111,16 +123,17 @@ $secondaryTextColor:    lighten($textColor, 10%) !default; // = #454545;
 $tertiaryTextColor:     lighten($textColor, 25%) !default; // = #737373;
 $contrastTextColor:     #ffffff !default;
 $textColorDisabled:     #9e9e9e !default;
-$formControlLabelColor: #4f4f4f !default;
+$formControlLabelColor: #666666 !default;
 $headerTextColor:       #252525 !default;
 $linkTextColor:         #045fab !default;
+$linkTextColorActive:   darken($linkTextColor, 10%) !default;
 $linkTextColorVisited:  $linkTextColor !default;
 $linkTextColorDisabled: $textColorDisabled !default;
 
 
 // interaction cue colors
 //----------------------------------
-$colorRequired: $interaction1Color !default;
+$colorRequired: #045fab !default;
 
 
 // icon colors
@@ -161,7 +174,23 @@ $windowBgColor:     $background2Color !default;
 
 // HEADERS
 //----------------------------------------------------------------
-$headerFontWeight:      bold !default;
+$header1FontSize: 2.429rem         !default; // 34px when root 14px
+$header2FontSize: 1.714rem         !default; // 24px when root 14px
+$header3FontSize: $largestFontSize !default; // 20px when root 14px
+$header4FontSize: $largeFontSize   !default; // 18px when root 14px
+$header5FontSize: $mediumFontSize  !default; // 16px when root 14px
+
+
+
+// $header[1|2|3|4|5]FontWeight vars can be used 
+// to override the default font weight, they are  
+// applied to h[1|2|3|4|5] tags
+$header1FontWeight: 200   !default;
+$header2FontWeight: 300   !default;
+$header3FontWeight: 300   !default;
+$header4FontWeight: 400   !default;
+$header5FontWeight: 400   !default;
+
 
 // PANEL
 //----------------------------------------------------------------
@@ -180,14 +209,10 @@ $panel1BgColor:     #eff2f5 !default;
 $panel1BorderColor: $border1Color !default;
 
 $panel2BgColor:     #e8f2fb !default;
-$panel2BorderColor: adjust-color($panel2BgColor,
-                                 $lightness: $panelBorderColorLightnessAdjustment,
-                                 $saturation: $panelBorderColorSaturationAdjustment) !default;
+$panel2BorderColor: adjust-color($panel2BgColor, $lightness: $panelBorderColorLightnessAdjustment, $saturation: $panelBorderColorSaturationAdjustment) !default;
 
 $panel5BgColor:     #fce8fe !default;
-$panel5BorderColor: adjust-color($panel5BgColor,
-                                 $lightness: $panelBorderColorLightnessAdjustment,
-                                 $saturation: $panelBorderColorSaturationAdjustment) !default;
+$panel5BorderColor: adjust-color($panel5BgColor, $lightness: $panelBorderColorLightnessAdjustment, $saturation: $panelBorderColorSaturationAdjustment) !default;
 
 
 // FORM CONTROLS
@@ -201,6 +226,9 @@ $formControlBgColor:             $background3Color !default;
 $formControlBgColorDisabled:     #efeff1 !default;
 $formControlValueColorDisabled:  $textColorDisabled !default;
 $formControlBorderColorDisabled: $formControlBgColorDisabled !default;
+// ios requires an opacity to honor the background color, 
+// otherwise it lightens the background color you set when the input is disabled
+$formControlOpacityDisabled: 1 !default;
 
 // placeholder
 $formControlPlaceholderFontStyle: italic !default;
@@ -210,15 +238,16 @@ $formLayoutLabelInlineAlign: end !default;
 
 // RADIOSET AND CHECKBOXSET
 
-$radioCheckboxRowHeight: auto !default;
+$radioCheckboxRowHeight: 1.73rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
 
-// INPUTDATE / INPUTDATETIME
-//----------------------------------------------------------------
-
+// INPUT DATE/TIME
+//-----------------------------------------------------------------------------
 //options
-// For option 'datePicker:showOn' in ojInputDate
-$inputDateShowOnOptionDefault: image !default;
+// For option 'renderMode' in ojInputDate / ojInputDateTime / ojInputDate
+$inputDateTimeRenderModeOptionDefault: jet !default;
+
+$inputDateTimeKeyboardEditOptionDefault: enabled !default;
 
 // SLIDER
 //----------------------------------------------------------------
@@ -233,6 +262,10 @@ $sliderThumbBgColorHover:       $interaction2Color !default;
 
 // horizontal spacing
 //----------------------------------
+
+// Controls whether a "glass pane" is displayed behind dropDown menus.
+// Valid values are "modal" and "modeless".
+$menuDropDownModality: "modeless" !default;
 
 // Need rems, not ems, since we set icon font size (and if we didn't, app often would).
 
@@ -261,6 +294,14 @@ $menuIconColorDisabled:   $iconColorDisabled !default;
 $menuDividerMargin:       0.083rem !default; // 1px @12px font, 1.162px @14px font. This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
 
 
+// sheet menus
+//----------------------------------
+
+// On desktop, the browser's "status bar tooltip" can appear over the menu, so bump it a little 
+// off the bottom, like iOS:
+$menuSheetMarginBottom:   14px !default; // value must be 0, px, or %, e.g. 0, 10px, 5%
+
+
 // BUTTONS
 //----------------------------------------------------------------
 
@@ -273,6 +314,7 @@ $menuDividerMargin:       0.083rem !default; // 1px @12px font, 1.162px @14px fo
 //----------------------------------
 
 // default
+$buttonBgColor:                   $background6Color !default;
 $buttonBorderColor:               $border3Color !default;
 $buttonInternalBorderColor:       null !default;
 
@@ -281,6 +323,7 @@ $buttonIconColorHover:            $iconColorHover !default;
 $buttonBorderColorHover:          $buttonBorderColor !default;
 
 // active
+$buttonBgColorActive:             $interaction1Color !default;
 $buttonInternalBorderColorActive: $buttonBorderColor !default;
 
 // selected - default to use active values
@@ -356,6 +399,10 @@ $buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonInternalBorder
 //----------------------------------------------------------------
 $listViewHeaderBorderWidth: 1px !default;
 
+// DATAGRID
+//----------------------------------------------------------------
+$dataGridCellPadding:                 0.5em !default;
+
 // BUTTONSET
 //----------------------------------------------------------------
 
@@ -370,7 +417,7 @@ $listViewHeaderBorderWidth: 1px !default;
 //Default
 $navigationListItemLabelColorDefault:       $linkTextColor !default;
 $navigationListCollapsibleIconColorDefault: $iconColorDefault !default;
-$navigationListIconColorDefault:            $iconColorDefault !default;
+$navigationListItemIconColorDefault:            $iconColorDefault !default;
 //Hover
 $navigationListItemIconOnlyBgColorHover:    $interaction2Color !default;
 //Selected
@@ -407,6 +454,69 @@ $navigationBarIconOnlyStyle:  circle !default;
 
 $navigationListItemContrastLabelColorDisabled:  #616365 !default;
 
+// TRAIN
+//-----------------------------------------------------------------------------
+
+// unvisited state
+$trainBgColor:                           $buttonBgColor !default;
+$trainBorderColor:                       $buttonBorderColor !default;
+$trainLabelColor:                        $linkTextColor !default;
+
+// visited state 
+$trainBgColorVisited:                    $background1Color !default;
+$trainBorderColorVisited:                $interaction1Color !default;
+$trainLabelColorVisited:                 #72007C !default;
+
+// selected state
+$trainBgColorSelected:                   $interaction1Color !default;
+$trainBorderColorSelected:               $trainBgColorSelected !default;
+$trainLabelFontWeightSelected:           normal !default;
+
+// disabled state 
+$trainBgColorDisabled:                   $buttonBgColorDisabled !default;
+$trainBorderColorDisabled:               $buttonBorderColorDisabled !default;
+$trainLabelColorDisabled:                $linkTextColorDisabled !default;
+$trainOpacityDisabled:                   $opacityDisabled !default;
+
+// hover state 
+$trainBgColorHover:                      $iconColorHover !default;
+$trainBorderColorHover:                  $trainBgColorHover !default;
+
+// active state 
+$trainBgColorActive :              $trainBgColorHover !default;
+$trainBorderColorActive:           $trainBgColorHover !default;
+$trainLabelTextDecorationActive:         underline !default;
+$trainLabelFontWeightActive:             normal !default;
+$trainIconBoxShadowActive:               none !default;
+
+// valid values are 'none' and 'numeric'
+$trainButtonStyleType:                   none !default;
+
+// the default width of a step
+$trainStepWidth:                         100px !default;
+
+$trainLabelPaddingTop:                   1px !default;
+
+// the diameter of the "button" representing a stop
+$trainButtonDiameter:                    14px !default;
+
+// message icon diameter
+$trainIconDiameter:                      9px !default;
+
+// connector variables
+// step connector type. Valid values are 'individual' or 'continuous. A 'continuous'
+// connector is a single shape behind all of the step buttons while the 'individual'
+// connector renders seperate shapes between each step.
+$trainConnectorType:                     continuous !default;
+$trainConnectorBgColor:                  $background4Color !default;
+$trainContinuousConnectorBgColorSelected:$interaction5Color !default;
+$trainConnectorHeight:                   8px !default;
+
+// the diameter of the connector circle around the button in the continuous 
+// connector design
+$trainButtonContinuousConnectorDiameter: $trainButtonDiameter + 8px !default;
+
+
 // FILM STRIP
 //----------------------------------------------------------------
 
@@ -431,5 +541,15 @@ $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
 
 $indexerTextColor:         $linkTextColor !default;
 $indexerTextColorDisabled: $linkTextColorDisabled !default;
+$indexerFontWeight: normal !default;
+
+// DVT
+//-----------------------------------------------------------------------------
+
+// timeline
+//----------------------------------
+$dvtTimelineItemTitleColor:            #4f4f4f !default;
+$dvtTimelineMajorAxisLabelColor:       #4f4f4f !default;
+$dvtTimelineOverviewLabelColor:        #4f4f4f !default;
 
 @import "../common/oj.common.variables";

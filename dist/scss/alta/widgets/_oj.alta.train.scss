@@ -21,7 +21,69 @@
 
 @if $includeTrainClasses != false {
   @include module-include-once("alta.train") {
+      
+    .oj-train-button.oj-active,
+    .oj-train-button.oj-hover.oj-active
+    {
+       @extend .oj-train-button.oj-hover;
+    }
+    /* The message icon to be displayed on the step */
+    .oj-train-icon {
+      @if $trainButtonContinuousConnectorDiameter != $trainButtonDiameter {
+        bottom: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+        @include oj-ltr() {
+          right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;	  
+        }
+        @include oj-rtl() {
+          left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
+        }
+      }
+    }
+    
+    .oj-train-icon.oj-confirmation {
+      @include oj-icon-content(
+        $icon: oj-common-image-url("alertModifier_complete.png")
+      );
+    }
 
-  
+    .oj-train-icon.oj-info{
+      @include oj-icon-content(
+        $icon: oj-common-image-url("alertModifier_info.png")
+      );
+    }
+
+    .oj-train-icon.oj-warning {
+      @include oj-icon-content(
+        $icon: oj-common-image-url("alertModifier_warning.png")
+      );
+    }
+
+    .oj-train-icon.oj-error {
+      @include oj-icon-content(
+        $icon: oj-common-image-url("alertModifier_error.png")
+      );
+    }
+   .oj-train-icon,
+   .oj-train-icon.oj-confirmation,
+   .oj-train-icon.oj-error,
+   .oj-train-icon.oj-info,
+   .oj-train-icon.oj-warning,
+   .oj-train-button.oj-disabled .oj-train-icon,
+   .oj-train-button.oj-hover .oj-train-icon,
+   .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
+   .oj-train-button.oj-active .oj-train-icon.oj-error,
+   .oj-train-button.oj-active .oj-train-icon.oj-info,
+   .oj-train-button.oj-active .oj-train-icon.oj-warning
+   .oj-train-button.oj-selected .oj-train-icon.oj-confirmation,
+   .oj-train-button.oj-selected .oj-train-icon.oj-error,
+   .oj-train-button.oj-selected .oj-train-icon.oj-info,
+   .oj-train-button.oj-selected .oj-train-icon.oj-warning,
+   .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
+   .oj-train-button.oj-visited .oj-train-icon.oj-error,
+   .oj-train-button.oj-visited .oj-train-icon.oj-info,
+   .oj-train-button.oj-visited .oj-train-icon.oj-warning {
+     background-color: transparent;
+     border-color: transparent;
+   }
   }
 }

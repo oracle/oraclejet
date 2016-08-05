@@ -1437,8 +1437,10 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (tooltip)
       arrowElem.attr("title", tooltip);
     arrowElem.attr("aria-labelledby", arrowId + " " + elemId);
-    this._hoverable(arrowElem);
-    this._activeable(arrowElem);
+
+    //  - filmstrip: next/previous oj-hover colors doesn't go away in touch device
+    this._AddHoverable(arrowElem);
+    this._AddActiveable(arrowElem);
     
     var options = this.options;
     var navArrowPlacement = options.arrowPlacement;
@@ -2727,4 +2729,38 @@ var _ADJACENT = "adjacent",
 // end static members and functions ////////////////////////////////////////////
 
 }()); // end of FilmStrip wrapper function
+(function() {
+var ojFilmStripMeta = {
+  "properties": {
+    "arrowPlacement": {
+      "type": "string"
+    },
+    "arrowVisibility": {
+      "type": "string"
+    },
+    "currentItem": {
+      "type": "string|number"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "maxItemsPerPage": {
+      "type": "number"
+    },
+    "orientation": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getItemsPerPage": {},
+    "getPagingModel": {},
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "ojFilmStrip"
+  }
+};
+oj.Components.registerMetadata('ojFilmStrip', 'baseComponent', ojFilmStripMeta);
+oj.Components.register('oj-film-strip', oj.Components.getMetadata('ojFilmStrip'));
+})();
 });

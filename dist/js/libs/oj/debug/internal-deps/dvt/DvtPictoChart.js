@@ -645,7 +645,7 @@ DvtPictoChartDefaults.VERSION_1 = {
   '_textStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
   '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
   '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 1px'),
-  '_tooltipLabelStyle': new dvt.CSSStyle('color: #737373; padding: 0px 2px'),
+  '_tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px'),
   '_tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px')
 };
 // Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -840,6 +840,22 @@ DvtPictoChartItem.prototype.getBorderColor = function() {
  */
 DvtPictoChartItem.prototype.getBorderWidth = function() {
   return this._item['borderWidth'];
+};
+
+/**
+ * Returns the class name of the item.
+ * @return {string}
+ */
+DvtPictoChartItem.prototype.getClassName = function() {
+  return this._item['className'];
+};
+
+/**
+ * Returns the style object of the item.
+ * @return {object}
+ */
+DvtPictoChartItem.prototype.getStyle = function() {
+  return this._item['style'];
 };
 
 /**
@@ -1477,6 +1493,8 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
         marker.setSolidFill(item.getColor());
         marker.setSolidStroke(item.getBorderColor(), null, item.getBorderWidth());
         marker.setDataColor(item.getColor());
+        marker.setClassName(item.getClassName());
+        marker.setStyle(item.getStyle());
       }
 
       // Draw clip path if the marker is fractional

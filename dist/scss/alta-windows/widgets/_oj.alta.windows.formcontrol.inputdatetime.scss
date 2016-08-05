@@ -37,14 +37,14 @@
     // icons
     //------------------------------------------
 
-    // hide calendar icon when not in time-only mode, because we show picker 
-    //  when user taps input field
-    .oj-inputdatetime-date-only .oj-inputdatetime-calendar-icon,
-    .oj-inputdatetime-date-time .oj-inputdatetime-calendar-icon
+    // hide calendar icon, because our default for showOn=focus, ditto for
+    //  time icon when in time-only mode
+    .oj-inputdatetime-calendar-icon,
+    .oj-inputdatetime-time-only .oj-inputdatetime-time-icon
     {
       display: none;
     }
-
+    
     .oj-inputdatetime-date-only .oj-inputdatetime-input
     {
       //need to include end border radius because we dont show any trigger icon

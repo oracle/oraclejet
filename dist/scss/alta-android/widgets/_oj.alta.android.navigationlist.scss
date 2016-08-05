@@ -29,34 +29,19 @@
             @include oj-flex-property(0 0 auto);
         }
 
-        // Add 1px border-bottom as a separator
-        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
-        {
-            //Padding at start of item
-            //Need to override border-bottom as eariler border was added as part of rtl mixin
-            @include oj-rtl() {
-                padding-right: calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
-                border-bottom-width: 1px;
-            }
-            @include oj-ltr() {
-                padding-left:  calc(#{$navigationListItemStartEndPadding} - #{$navigationListItemAccentBorderWidth});
-                border-bottom-width: 1px;
-            }
-        }
-
         // Icons only bar should have same color as icons with text color.
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorDefault;
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorSelected;
         }
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
-            color: $navigationListIconColorHover;
+            color: $navigationListItemIconColorHover;
         }
 
         //Add bottom border to separate list items

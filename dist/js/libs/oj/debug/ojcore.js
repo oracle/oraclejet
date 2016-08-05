@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['require', 'ojL10n!ojtranslations/nls/ojtranslations'], function(require, ojt)
+define(['require', 'ojL10n!ojtranslations/nls/ojtranslations', 'promise'], function(require, ojt)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -45,9 +45,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.0.2",
-  'build' : "1",
-  'revision': "26417",
+  'version': "2.1.0-b1",
+  'build' : "7",
+  'revision': "27723",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -57,22 +57,22 @@ var oj = _scope['oj'] =
   }
 
 };
-// Copyright (c) 2011, 2013, Oracle and/or its affiliates. 
+// Copyright (c) 2011, 2013, Oracle and/or its affiliates.
 // All rights reserved.
 
 /*jslint browser: true*/
 
 /**
- * @class  
+ * @class
  * @name oj.Logger
- * 
+ *
  * @classdesc
  * <h3>JET Logger</h3>
  *
  * <p>Logger object writes into the native browser console or a custom writer, if a custom writer is set as an option.
  * To use a custom writer, implement the following writer methods: log(), info(), warn(), error()
  *
- * <p>When any of the logging methods is called, it compares the requested log level with the value of a log level option 
+ * <p>When any of the logging methods is called, it compares the requested log level with the value of a log level option
  * and logs the message if the log level is sufficient.
  *
  * <p>If the logging options are changed at a later point, the Logger will use the modified options for the subsequent log operations.
@@ -86,7 +86,7 @@ var oj = _scope['oj'] =
  * //optional calls, see defaults
  * oj.Logger.option("level",  oj.Logger.LEVEL_INFO);
  * oj.Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
- * 
+ *
  * // logging a message
  * oj.Logger.info("My log level is %d", oj.Logger.option("level"));  // string formatting
  * oj.Logger.warn("Beware of bugs", "in the above code");            // multiple parameters
@@ -100,39 +100,39 @@ var oj = _scope['oj'] =
  * });
  * </code></pre>
  *
- * @desc 
+ * @desc
  * oj.Logger cannot be instantiated
  * @export
- */ 
-oj.Logger = {}; 
+ */
+oj.Logger = {};
 /**
  * Log level none
  * @const
- * @export 
+ * @export
  */
 oj.Logger.LEVEL_NONE = 0;
 /**
  * Log level error
  * @const
- * @export 
+ * @export
  */
 oj.Logger.LEVEL_ERROR = 1;
 /**
  * Log level warning
  * @const
- * @export 
+ * @export
  */
 oj.Logger.LEVEL_WARN = 2;
 /**
  * Log level info
  * @const
- * @export 
+ * @export
  */
 oj.Logger.LEVEL_INFO = 3;
 /**
  * Log level - general message
  * @const
- * @export 
+ * @export
  */
 oj.Logger.LEVEL_LOG = 4;
 
@@ -148,9 +148,9 @@ oj.Logger._options = oj.Logger._defaultOptions;
 /*public members*/
 /**
  * Writes an error message.
- * @param {...Object|string} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter. 
+ * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
- * @export 
+ * @export
  */
 oj.Logger.error = function(args)
 {
@@ -158,10 +158,10 @@ oj.Logger.error = function(args)
 };
 
 /**
- * Writes an informational  message. 
- * @param {...Object|string} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter. 
+ * Writes an informational  message.
+ * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
- * @export 
+ * @export
  */
 oj.Logger.info = function(args)
 {
@@ -170,9 +170,9 @@ oj.Logger.info = function(args)
 
 /**
  * Writes a warning message.
- * @param {...Object|string} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter. 
+ * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
- * @export 
+ * @export
  */
 oj.Logger.warn = function(args)
 {
@@ -181,9 +181,9 @@ oj.Logger.warn = function(args)
 
 /**
  * Writes a general message.
- * @param {...Object|string} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter. 
+ * @param {...} args The method supports a variable number of arguments, string substitutions and accepts a function as a parameter.
  *                                See examples in the overview section above.
- * @export 
+ * @export
  */
 oj.Logger.log = function(args)
 {
@@ -200,14 +200,14 @@ oj.Logger.log = function(args)
  * <i>oj.Logger.option(optionName)</i> gets the value associated the the specified optionName<br/>
  * <i>oj.Logger.option()</i> gets an object containing key/value pairs representing the logger options hash<br/>
  * <i>oj.Logger.option(optionName, value)</i> sets  the option value associated with optionName<br/>
- * <i>oj.Logger.option(options)</i> sets  one or more options for the logger 
- * 
+ * <i>oj.Logger.option(options)</i> sets  one or more options for the logger
+ *
  * @example <caption>Overriding default options</caption>
  * oj.Logger.option("level",  oj.Logger.LEVEL_INFO);
  * oj.Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
  *
  * @param {Object|string=} key
- * @param {Object|string=} value 
+ * @param {Object|string=} value
  * @export
  */
 oj.Logger.option = function (key, value)
@@ -225,7 +225,7 @@ oj.Logger.option = function (key, value)
   if (typeof key === "string" && value === undefined) {
      return oj.Logger._options[key] === undefined ? null : oj.Logger._options[key];
   }
-     
+
   //setters
   if (typeof key === "string") {
     oj.Logger._options[key] = value;
@@ -242,7 +242,7 @@ oj.Logger.option = function (key, value)
 
 /* private members*/
 /*
- * Helper method - calls a specified method on the available writer (console or custom) 
+ * Helper method - calls a specified method on the available writer (console or custom)
  * if the logging level is sufficient
  */
 oj.Logger._write = function(level, method, args)
@@ -263,12 +263,12 @@ oj.Logger._write = function(level, method, args)
     else if (writer[method]) {
       writer[method] = Function.prototype.bind.call(writer[method], writer);
       oj.Logger._write(level, method, args);
-    } 
+    }
   }
 };
 
 /*
- * Helper method - returns available writer (console or custom) 
+ * Helper method - returns available writer (console or custom)
  */
 oj.Logger._getWriter = function()
 {
@@ -288,7 +288,7 @@ oj.Logger._getWriter = function()
  */
 oj.Logger._validateOption = function(key)
 {
-  return oj.Logger._defaultOptions[key] !== undefined; 
+  return oj.Logger._defaultOptions[key] !== undefined;
 };
 /*
 ** Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
@@ -485,8 +485,8 @@ oj.Object.exportPrototypeSymbol = function(name, valueMapping)
 
 /**
  * Creates a subclass of a baseClass
- * @param {Function} extendingClass The class to extend from the base class
- * @param {Function} baseClass class to make the superclass of extendingClass
+ * @param {Object} extendingClass The class to extend from the base class
+ * @param {Object} baseClass class to make the superclass of extendingClass
  * @param {string=} typeName to use for new class.  If not specified, the typeName will be extracted from the
  * baseClass's function if possible
  * @export
@@ -533,7 +533,7 @@ oj.Object.createSubclass = function(
  * from the source object's prototype chain will not be included.
  * To copy properties from another class with methods defined on the prototype, pass
  * otherClass.prototype as the source.
- * @param {Function} targetClass - the function whose prototype will be used a
+ * @param {Object} targetClass - the function whose prototype will be used a
  * copy target
  * @param {Object} source - object whose properties will be copied
  * @export
@@ -565,7 +565,7 @@ oj.Object._tempSubclassConstructor = function(){};
  * Returns the class object for the instance
  * @param {Object=} otherInstance - if specified, the instance whose type
  * should be returned. Otherwise the type if this instance will be returned
- * @return {Function} the class object for the instance
+ * @return {Object} the class object for the instance
  * @final
  * @export
  */
@@ -617,7 +617,7 @@ oj.Object.prototype.toDebugString = function()
 
 /**
  * Returns the type name for a class derived from oj.Object
- * @param {Function!|null} clazz Class to get the name of
+ * @param {Object|null} clazz Class to get the name of
  * @return {String} name of the Class
  * @export
  */
@@ -686,7 +686,7 @@ oj.Object.prototype.Init = function()
  * still need to ensure that their class has been initialized when the factory
  * method is called.
  *
- * @param {Function} clazz The class to ensure initialization of
+ * @param {Object} clazz The class to ensure initialization of
  * @export
  */
 oj.Object.ensureClassInitialization = function(clazz)
@@ -716,8 +716,8 @@ oj.Object.prototype.equals = function(
  * Binds the supplied callback function to an object
  * @param {Object!} obj - object that will be available to the supplied callback
  * function as 'this'
- * @param {Function!} func - the original callback
- * @return {Function} a function that will be invoking the original callback with
+ * @param {Object!} func - the original callback
+ * @return {function()} a function that will be invoking the original callback with
  * 'this' object assigned to obj
  * @export
  */
@@ -1813,10 +1813,24 @@ oj.Config.setLocale = function(locale, callback)
     var prefix = "ojL10n!ojtranslations/nls/",
         requestedBundles = [prefix + locale + "/ojtranslations"];
     
+    var timezoneBundleCount = 0;
+    
     // Request LocaleElements only if ojlocaledata module is loaded
     if (oj.LocaleData) 
     {
-      requestedBundles.push(prefix + locale + "/localeElements");    
+      requestedBundles.push(prefix + locale + "/localeElements");
+      
+      if (oj.TimezoneData)
+      {
+        var tzBundles = oj.TimezoneData.__getBundleNames();
+        timezoneBundleCount = tzBundles.length;
+        tzBundles.forEach(
+          function(bundle)
+          {
+            requestedBundles.push(prefix + locale + bundle)
+          }
+        );
+      }
     }
     
     require(requestedBundles,
@@ -1827,6 +1841,12 @@ oj.Config.setLocale = function(locale, callback)
         if (localeElements)
         {
           oj.LocaleData.__updateBundle(localeElements);
+        }
+        
+        for (var i=0; i<timezoneBundleCount; i++)
+        {
+          var tzBundle = arguments[i+2];
+          oj.TimezoneData.__mergeIntoLocaleElements(tzBundle);
         }
         
         if (callback)
@@ -1971,31 +1991,6 @@ oj.Config.logVersionInfo = function()
 {
     console.log(oj.Config.getVersionInfo());
 };
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-**
-*/
-
-// CustomEvent()
-(function () {  
-  if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
-    return;
-  }
-  
-  function CustomEvent (event, params) {
-    params = params || {bubbles: false, cancelable: false, detail: undefined};
-    
-    var evt = document.createEvent('CustomEvent');
-    
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
-    return evt;
-   }
-
-  CustomEvent.prototype = window.Event.prototype;
-
-  window['CustomEvent'] = CustomEvent;
-})();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2022,6 +2017,7 @@ oj.AgentUtils.BROWSER =
   FIREFOX: "firefox",
   SAFARI: "safari",
   CHROME: "chrome",
+  EDGE: "edge",
   UNKNOWN: "unknown"
 };
 /**
@@ -2034,6 +2030,8 @@ oj.AgentUtils.ENGINE =
   TRIDENT: "trident",
   WEBKIT: "webkit",
   GECKO: "gecko",
+  BLINK: "blink",
+  EDGE_HTML: "edgehtml",
   UNKNOWN: "unknown"
 };
 /**
@@ -2055,7 +2053,7 @@ oj.AgentUtils.OS =
  * Parses the browser user agent string determining what browser and layout engine
  * is being used.
  *
- * @param {?=} userAgent a specific agent string but defaults to navigator userAgent if not provided
+ * @param {Object|null|string=} userAgent a specific agent string but defaults to navigator userAgent if not provided
  * @return {{os: oj.AgentUtils.OS, browser: oj.AgentUtils.BROWSER, browserVersion: number,
  *          engine: oj.AgentUtils.ENGINE, engineVersion: number, hashCode: number}}
  * @public
@@ -2119,12 +2117,26 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
       engineVersion = oj.AgentUtils._parseFloatVersion(userAgent, /trident\/(\d+[.]\d+)/);
     }
   }
+  else if (userAgent.indexOf("edge") > -1)
+  {
+    browser = oj.AgentUtils.BROWSER.EDGE;
+    browserVersion = engineVersion  = oj.AgentUtils._parseFloatVersion(userAgent, /edge\/(\d+[.]\d+)/);
+    engine = oj.AgentUtils.ENGINE.EDGE_HTML;
+  }
   else if (userAgent.indexOf("chrome") > -1)
   {
     browser = oj.AgentUtils.BROWSER.CHROME;
     browserVersion = oj.AgentUtils._parseFloatVersion(userAgent, /chrome\/(\d+[.]\d+)/);
-    engine = oj.AgentUtils.ENGINE.WEBKIT;
-    engineVersion = oj.AgentUtils._parseFloatVersion(userAgent, /applewebkit\/(\d+[.]\d+)/);
+    if (browserVersion >= 28)
+    {
+      engine = oj.AgentUtils.ENGINE.BLINK;
+      engineVersion = browserVersion;
+    }
+    else
+    {
+      engine = oj.AgentUtils.ENGINE.WEBKIT;
+      engineVersion = oj.AgentUtils._parseFloatVersion(userAgent, /applewebkit\/(\d+[.]\d+)/);
+    }
   }
   else if (userAgent.indexOf("safari") > -1)
   {
@@ -2179,172 +2191,241 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern)
 };
 
 
+
 /*
 ** Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 */
+/*jslint browser: true*/
+
 /**
- * Theme utilities.
+ * 
+ * @class Services for getting information from the theme
  * @since 1.2.0
- * @ignore
+ * @export
  */
-oj.ThemeUtils = {};
+oj.ThemeUtils = function(){};
+
+/**
+ * get the name of the current theme
+ * @export
+ * @static
+ *
+ * @return {String|null} the name of the theme
+ */
+oj.ThemeUtils.getThemeName = function()
+{
+  
+  // get the map of theme info
+  var themeMap = oj.ThemeUtils.parseJSONFromFontFamily("oj-theme-json") || {};
+
+  return themeMap['name'];
+}
 
 
 /**
- * Return map or null.
+ * get the target platform of the current theme
+ * @export
+ * @static
  *
- * <p>we send down json as the font family in classes 
- * that look something like this:<p>
+ * @return {String|null} the target platform can be any string the theme 
+ * wants to send down, but the usual values are 'web', 'ios', 'android', 'windows'
+ */
+oj.ThemeUtils.getThemeTargetPlatform = function()
+{
+  
+  // get the map of theme info
+  var themeMap = oj.ThemeUtils.parseJSONFromFontFamily("oj-theme-json") || {};
+
+  return themeMap['targetPlatform'];
+}
+
+
+
+/**
+ * clear values cached in  [oj.ThemeUtils.parseJSONFromFontFamily]{@link oj.ThemeUtils.parseJSONFromFontFamily}
+ * @export
+ * @static
  *
+ */
+oj.ThemeUtils.clearCache = function()
+{
+  this._cache = null;
+}
+
+
+/**
+ *
+ * <p>json can be sent down as the font family in classes 
+ * that look something like this 
+ * (on the sass side of things see the file 
+ * scss/utilities/_oj.utilities.json.scss
+ * for information on jet mixins available to generate json):<p>
+ *
+ * <p>Example CSS</p>
  * <pre class="prettyprint">
  * <code>
- * .oj-button-option-defaults {
+ * .demo-map-json {
  *    font-family: '{"foo":"bar", "binky": 4}';
  * }
+ *
+ * .demo-list-json {
+ *    font-family: '["foo","bar","binky"}';
+ * }
+ * </code></pre>
+ * <p>Example Usage</p>
+ * <pre class="prettyprint">
+ * <code>
+ * var mymap = oj.ThemeUtils.parseJSONFromFontFamily("demo-map-json");
+ * var myarray = oj.ThemeUtils.parseJSONFromFontFamily("demo-list-json");
  * </code></pre>
  *
- * <p>This function applies the class and then reads the font-family off a dom
- * element and then parses it as json</p>
- *
+ * This function 
+ * <ul>
+ *   <li>Gets the font family string by creating a dom element, 
+ *      applying the selector passed in, calling getcomputedstyle, 
+ *      and then reading the value for font-family.
+ *   </li>
+ *   <li>Parses the font family value by calling JSON.pars.</li>
+ *   <li>Caches the parsed value because calling getComputedStyle is a perf hit. 
+ *       Subsequent requests for the same selector will return the cached value. 
+ *       Call [oj.ThemeUtils.clearCache]{@link oj.ThemeUtils.clearCache} if new css is loaded.</li>
+ *   <li>Return the parsed value.</li>
+ * </ul>
  * 
+ * <p>
+ * If new css is loaded call oj.ThemeUtils.clearCache to clear the cache</p>
  *
- * @param {string} selector a class selector name, for example 'oj-button-option-default';
+ *
+ * @param {string} selector a class selector name, for example 'demo-map-json';
+ * @return {*} the result of parsing the font family with JSON.parse. 
+ *      The returned value is cached, so if you modify the returned 
+ *      value it will be reflected in the cache.
+ * @throws {SyntaxError} If JSON.parse throws a SyntaxError exception we will log an error and rethrow 
+ * @export
+ * @static
  */
 oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
 {
+
  
-  var elem = /** @type {(Element | null)} */ (document.getElementsByClassName(selector).item(0));
+ // NOTE: I first tried code inspired by 
+ // https://css-tricks.com/making-sass-talk-to-javascript-with-json/
+ // so I was using :before and content, for example
+ //   .oj-button-option-defaults:before {
+ //     content: '{"foo":"bar", "binky": 4}';
+ //    }
+ // 
+ //  however IE 11 has a bug where the computed style doesn't actually 
+ //  seem to be computed when it comes to :before,
+ //  so if you set a class that affects :before after the page loads 
+ //  on IE getComputedStyle doesn't work.
+ //  See the pen below, the yellow box has the class applied in js,
+ //  computedstyle works on chrome, doesn't work on IE11 for 
+ //  class applied after page load.
+ //     http://codepen.io/gabrielle/pen/OVOwev
 
-  if(elem === null) {
+  // if needed create the cache and initialize some things
+  if (this._cache == null)
+  {
+    this._cache = {};
 
-    // create a meta element, the hope is that the browser is smart enough to realize the 
-    // meta element isn't visible and therefore we avoid perf issues of calling 
-    // getcomputedstyle
-    elem = document.createElement("meta");
-    elem.className = selector;
-    document.head.appendChild(elem); // @HTMLUpdateOK 
+    // magic value that means null in the cache
+    this._null_cache_value = {};
+
+    // font family is inherited, so even if no selector/json 
+    // is sent down we will get a string like 
+    // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element. 
+    // So save off the font family from the head 
+    // element to compare to what we read off our generated element. 
+    this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
   }
 
-  var style = window.getComputedStyle(elem)
+  // see if we already have a map for this component's option defaults
+  var jsonval =  this._cache[selector];
 
-  if (style)
+  // if there's something already cached return it
+  if (jsonval === this._null_cache_value)
+  {
+    return null;
+  }
+  else if (jsonval != null)
+  {
+    return jsonval;
+  }
+    
+
+  // there's nothing cached, so we need to create a dom element to apply the class to. 
+  // We're creating a meta element, 
+  // the hope is that the browser is smart enough to realize the 
+  // meta element isn't visible and therefore we avoid perf issues of calling 
+  // getcomputedstyle
+  var elem = document.createElement("meta");
+  elem.className = selector;
+  document.head.appendChild(elem); // @HTMLUpdateOK 
+  var rawfontstring = window.getComputedStyle(elem).getPropertyValue('font-family');
+
+  if (rawfontstring != null)
   {
 
-    var jsonval = style.getPropertyValue('font-family');
+    // if the raw font string is the same value as the saved header 
+    // font value then log a warning that no value was sent down.
 
-    //console.log("raw jsonval - " + selector + ': ' + jsonval + );
-
-    if (jsonval && jsonval != "none")
+    if (rawfontstring == this._headfontstring)
     {
-
+      oj.Logger.warn("parseJSONFromFontFamily: When the selector ", selector, 
+        " is applied the font-family read off the dom element is ", rawfontstring, 
+        ". The parent dom elment has the same font-family value.",
+        " This is interpreted to mean that no value was sent down for selector ", 
+        selector, ". Null will be returned.");
+    }
+    else
+    {
       // remove inconsistent quotes
-      jsonval = jsonval.replace(/^['"]+|\s+|\\|(;\s?})+|['"]$/g, '');
+      var fontstring = rawfontstring.replace(/^['"]+|\s+|\\|(;\s?})+|['"]$/g, '');
 
-      //console.log("dequoted jsonval - " + selector + ': ' + jsonval);
+      //console.log("json fontstring for selector " + selector + ': ' + fontstring);
 
-      if (jsonval)
+      if (fontstring)
       {
 
         try {
 
-          jsonval = JSON.parse(jsonval);
+          jsonval = JSON.parse(fontstring);
         }
         catch(e)
         {
           oj.Logger.error("Error parsing json for selector " + selector + 
-                          ".\nString being parsed is " + jsonval + "\n" + e);
-          return null;
-        }
+                          ".\nString being parsed is " + fontstring + ". Error is:\n", e);
+          
+          // remove the meta tag
+          document.head.removeChild(elem); // @HTMLUpdateOK 
+          throw e;
 
-        return jsonval;
+        }
       }
     }
-    
   }
 
-  // a theme may or may not send anything down, so 
-  // if we don't find something log at level info
-  oj.Logger.info("No json found for selector " + selector);
-  return null;
+  // remove the meta tag
+  document.head.removeChild(elem); // @HTMLUpdateOK 
+
+  // cache the result 
+  if (jsonval == null)
+  {
+    this._cache[selector] = this._null_cache_value;
+  }
+  else
+  {
+    this._cache[selector] = jsonval;
+  }
+  
+  //console.log(this._cache);
+
+  return jsonval;
 }
 
 
 
-/**
- * This method can be called from setDefaultOptions to 
- * get a map of option name/value defaults set in a theme.
- * widgets can support defaulting certain properties in the theme. 
- *
- * Overall process is 
- *  1. use sass variables in the theme files: the syntax would
- *     be $[componentName][optionName]OptionDefault, 
- *     for example $buttonChromingOptionDefault: 'half';
- *  2. create a json string for all the default values of a component and 
- *     send it down as font family. 
- *     The styntax of the class name is
- *        .oj-[componentName]-option-defaults {
- *          font-family: '"chroming": "half","display":"icons"';}
- *  3. Set the class on an element, read the computed style for font-family, 
- *     then call JSON.parse on it to get a map of option name/values.
- *  4. Cache the parsed option map so that you only call getComputedStyle 
- *     once per component type per page. 
- * 
- *
- * NOTE: originally in my sass I was not using font-family, 
- * instead I first tried code inspired by 
- * https://css-tricks.com/making-sass-talk-to-javascript-with-json/
- * so I was using :before and content, for example
- *   .oj-button-option-defaults:before {
- *     content: '{"foo":"bar", "binky": 4}';
- *    }
- * 
- *  however IE 11 has a bug where the computed style doesn't actually 
- *  seem to be computed when it comes to :before,
- *  so if you set a class that affects :before after the page loads 
- *  on IE getComputedStyle doesn't work.
- *  See the pen below, the yellow box has the class applied in js,
- *  computedstyle works on chrome, doesn't work on IE11 for 
- *  class applied after page load.
- *     http://codepen.io/gabrielle/pen/OVOwev
- *
- * @param {string} componentName the name of the component, for example 'button'
- */
-oj.ThemeUtils.getOptionDefaultMap = function(componentName)
-{
-
-  componentName = componentName.toLowerCase();
-
-  if (oj.ThemeUtils.optionDefaults == null)
-  {
-    // create option defaults map to remember defaults
-    oj.ThemeUtils.optionDefaults = {};
-  }
-
-  // see if we already have a map for this component's option defaults
-  var componentOptionDefaults = oj.ThemeUtils.optionDefaults[componentName];
-
-  if(componentOptionDefaults == null)
-  {
-    // we don't have option defaults yet for this component, 
-    // so create a string for the standard naming convention selector
-    var selector = 'oj-' + componentName + '-option-defaults';
-
-    // console.log("requesting defaults for selector - " + selector );
-
-    // get the defaults from the css
-    componentOptionDefaults = oj.ThemeUtils.parseJSONFromFontFamily(selector);
-
-    // if no defaults are found set to an empty map
-    if (componentOptionDefaults == null)
-      componentOptionDefaults = {};
-
-    // save the defaults map
-    oj.ThemeUtils.optionDefaults[componentName] = componentOptionDefaults;
-  }
- 
-  // return the option defaults map
-  return componentOptionDefaults;
-}
 
 /*jslint browser: true*/
 /*
@@ -2355,9 +2436,9 @@ oj.ThemeUtils.getOptionDefaultMap = function(componentName)
 /**
  * @class Utilities for responsive pages.
  * @since 1.1.0
- * @expose
+ * @export
  */
-oj.ResponsiveUtils = {};
+oj.ResponsiveUtils = function() {};
 
 
 /**
@@ -2373,7 +2454,7 @@ oj.ResponsiveUtils = {};
  * <p>These constants are used to identify these ranges.</p>
  * @enum {string}
  * @constant
- * @expose
+ * @export
  */
 oj.ResponsiveUtils.SCREEN_RANGE ={
    /**
@@ -2413,7 +2494,7 @@ oj.ResponsiveUtils.SCREEN_RANGE ={
  * <p>These constants are used to identify these queries.</p>
  * @enum {string}
  * @constant
- * @expose
+ * @export
  */
 oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY = {
    /**
@@ -2564,7 +2645,7 @@ oj.ResponsiveUtils._getMediaQueryFromClass = function(selector)
  * @param {oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY} frameworkQueryKey one of the FRAMEWORK_QUERY_KEY constants,
  *                       for example oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY.MD_UP
  * @return {string | null} the media query to use for the framework query key passed in
- * @expose
+ * @export
  * @static
  */
 oj.ResponsiveUtils.getFrameworkQuery = function(frameworkQueryKey)
@@ -2588,7 +2669,7 @@ oj.ResponsiveUtils.getFrameworkQuery = function(frameworkQueryKey)
  * argument is less than the second. Zero if the two are equal.
  * 1 or greater if the first argument is more than the second.
  *
- * @expose
+ * @export
  * @static
  */
 oj.ResponsiveUtils.compare = function(size1, size2)
@@ -2640,7 +2721,7 @@ oj.StringUtils._TRIM_ALL_RE = /^\s*|\s*$/g;
  /**
   * Returns true if the value is null, undefined or if the trimmed value is of zero length.
   *
-  * @param {Object|string|null} value
+  * @param {Object|string|null=} value
   * @returns {boolean} true if the string or Object (e.g., Array) is of zero length.
   * @export
   */
@@ -2779,6 +2860,12 @@ oj.CollectionUtils._copyIntoImpl = function(
   currentLevel)
 {
   var k, targetKey, keys;
+  
+  if (maxRecursionDepth === undefined || maxRecursionDepth === null)
+  {
+    maxRecursionDepth = Number.MAX_VALUE;
+  }
+  
   if (target && source && (target !== source))
   {    
     keys = Object.keys(source);
@@ -2802,11 +2889,13 @@ oj.CollectionUtils._copyIntoImpl = function(
       if (recurse && currentLevel < maxRecursionDepth)
       {
         var targetVal = target[targetKey];
-        if (oj.CollectionUtils.isPlainObject(targetVal) && oj.CollectionUtils.isPlainObject(sourceVal))
+        if (oj.CollectionUtils.isPlainObject(sourceVal) && 
+           (targetVal == null || oj.CollectionUtils.isPlainObject(targetVal))) 
         {
           recursed = true;
+          target[targetKey] = targetVal || {};
           oj.CollectionUtils._copyIntoImpl(
-                                          targetVal,
+                                          target[targetKey],
                                           sourceVal,
                                           keyConverter,
                                           true,
@@ -2855,7 +2944,7 @@ oj.Translations.setBundle = function(bundle)
 
 /**
  * Retrives a translated resource for a given key
- * @param {string} key
+ * @param {string} key resource key
  * @return {Object|string|null} resource associated with the key or null if none was found
  * @export
  */
@@ -2866,16 +2955,16 @@ oj.Translations.getResource = function(key)
 
 /**
  * Applies parameters to a format pattern
- * @param {string} pattern. Tokens ike {0}, {1}, {name} within the pattern 
+ * @param {string} pattern pattern that may contain tokens like {0}, {1}, {name}. These tokens
  * will be used to define string keys for retrieving values from the parameters
- * object. Token strings should not contain comma (') 
+ * object. Token strings should not contain comma (,) 
  * or space characters, since they are reserved for future format type enhancements. 
  * The reserved characters within a pattern are:
  * $ { } [ ]  
  * These characters will not appear in the formatted output unless they are escaped
  * with a dollar character ('$').
  * 
- * @param {Object|Array} parameters to be inserted into the string. Both arrays and
+ * @param {Object|Array} parameters parameters to be inserted into the string. Both arrays and
  * Javascript objects with string keys are accepted.
  * 
  * @return formatted message or null if the pattern argument was null
@@ -2888,7 +2977,7 @@ oj.Translations.applyParameters = function(pattern, parameters)
 
 /**
  * Retrieves a translated string after inserting optional parameters
- * @param {string} key - translations resource key
+ * @param {string} key  translations resource key
  * The key is used to retrieve a format pattern from the resource bundle.
  * Tokens like {0}, {1}, {name} within the pattern will be used to define placement
  * for the optional parameters.  Token strings should not contain comma (,) 
@@ -2944,7 +3033,7 @@ oj.Translations.getTranslatedString = function(key, var_args)
 
 /**
  * Provides a key-to-value map of the translated resources for a given component name
- * @param {string} componentName
+ * @param {string} componentName name of the component
  * @return a map of translated resources
  * @export
  */
@@ -3122,5 +3211,755 @@ oj.Translations._getBundle = function()
   }
   return {};
 };
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/**
+ * Internally used by the {@link oj.BusyContext} to track a components state
+ * while it is performing a task such as animation or fetching data.
+ *
+ * @constructor
+ * @param {Function|Object|undefined} description of the component and cause
+ *        of the busy state
+ */
+oj.BusyState = function (description)
+{
+  /**
+   * @ignore
+   * @private
+   * @type {?}
+   */
+  this._description = description;
+
+  /**
+   * @ignore
+   * @private
+   * @type {number}
+   */
+  this._addedWaitTs = window["performance"].now(); // closure compiler doesn't know this new global
+
+  /**
+   * @ignore
+   * @private
+   * @type {string}
+   */
+  this._id = this._addedWaitTs.toString(36) + "_" + Math.random().toString(36);
+};
+
+Object.defineProperties(oj.BusyState.prototype,
+  {
+    /**
+     * Identifies the usage instance of a busy state.
+     * @memberof oj.BusyState
+     * @instance
+     * @property {!string} id
+     */
+    "id" : {
+      "get" : function ()
+      {
+        return this._id;
+      },
+      "enumerable" : true
+    },
+    /**
+     * Further definition of the busy state instance.
+     * @memberof oj.BusyState
+     * @instance
+     * @property {?string} description
+     */
+    "description" :
+      {
+        "get" : function ()
+        {
+          if ($.isFunction(this._description))
+            return this._description();
+          else if (this._description)
+            return this._description.toString();
+          else
+            return undefined;
+        },
+        "enumerable" : true
+      }
+  });
+
+/**
+ * @public
+ * @override
+ * @returns {string} returns the value of the object as a string
+ */
+oj.BusyState.prototype.toString = function ()
+{
+  var buff = "oj.BusyState";
+
+  //using the collection syntax here to access id, description properties to make the
+  //closure compiler happy.
+
+  buff += " [id=" + this["id"];
+
+  if (this["description"])
+    buff += ", description=" + this["description"];
+
+  var elapsed = window["performance"].now() - this._addedWaitTs;
+  buff += ", elapsed=" + elapsed + "]";
+
+  return buff;
+};
+
+/**
+ * @public
+ * @param {Object} target object to compare
+ * @returns {boolean} <code>true</code> if the "id" and "description" properties
+ *           are equal
+ */
+oj.BusyState.prototype.equals = function (target)
+{
+  // using this syntax to make the closure compiler happy.
+  return this["id"] === target["id"] && this["description"] === target["description"];
+};
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/**
+ * This context tracks busy states of components.  Busy states, include but are
+ * not limited to, animation and data fetch.  Initially this context will be
+ * scoped for the page but in the future the scopes could be at the module
+ * or composite component level.
+ *
+ * @export
+ * @constructor
+ * @since 2.1.0
+ * @class Framework service for querying the busy state of components on the page.
+ */
+oj.BusyContext = function ()
+{
+  this.Init();
+};
+
+oj.Object.createSubclass(oj.BusyContext, oj.Object, "oj.BusyContext");
+
+/**
+ * @instance
+ * @protected
+ */
+oj.BusyContext.prototype.Init = function ()
+{
+  oj.BusyContext.superclass.Init.call(this);
+
+  /**
+   * Busy states cache.
+   *
+   * @type {?}
+   * @ignore
+   * @private
+   */
+  this._statesMap = new window["Map"]();  // closure compiler doesn't know of the Map type yet
+
+  /**
+   * Coordinates resolution of the master when ready promise with one or more slave
+   * when ready promises having a timeout period.
+   *
+   * @type {Object}
+   * @ignore
+   * @private
+   */
+  this._mediator = {
+    /**
+     * Returns a master primise that will resolve when all busy states have been resolved.
+     *
+     * @returns {Promise}
+     * @ignore
+     * @private
+     */
+    getMasterWhenReadyPromise : function ()
+    {
+      if (!this._masterWhenReadyPromise)
+        this._masterWhenReadyPromise = new Promise(this._captureWhenReadyPromiseResolver.bind(this));
+      return this._masterWhenReadyPromise;
+    },
+    /**
+     * Triggers resolution of the master promise and clears all timeouts associated with slave
+     * when ready promises.
+     *
+     * @returns {void}
+     * @ignore
+     * @private
+     */
+    resolveMasterWhenReadyPromise : function ()
+    {
+      this._clearAllSlaveTimeouts();
+      if (this._masterWhenReadyPromiseResolver)
+        this._masterWhenReadyPromiseResolver(true);
+      this._masterWhenReadyPromise = null;
+      this._masterWhenReadyPromiseResolver = null;
+    },
+    /**
+     * Returns a promise that will resolve when the master promise resolves or reject when
+     * the slave timeout promise rejects.
+     *
+     * @param {?} statesMap
+     * @param {number} timeout
+     * @returns {Promise}
+     * @ignore
+     * @private
+     */
+    getSlaveTimeoutPromise : function (statesMap, timeout)
+    {
+      var timer;
+      var slaveTimeoutPromise = new Promise(function (resolve, reject)
+      {
+        timer = window.setTimeout(function ()
+        {
+          // There could be a bit of a race condition here with the logging and the use of
+          // Promise.race.  The timer could expire and log a rejection even though the master
+          // promised resolved slightly sooner.
+
+          oj.BusyContext._log(statesMap);
+          oj.Logger.info("BusyContext.whenReady: rejected");
+          var busyStates = oj.BusyContext._values(statesMap);
+          var error = new Error("whenReady timeout of " + timeout +
+            "ms expired with the following busy states: " + busyStates.join(", "));
+          error["busyStates"] = busyStates;
+          reject(error);
+        }, timeout);
+      });
+      this._slaveTimeoutPromiseTimers.push(timer);
+
+      //closure compiler doesn't recognize "Promise.race".
+      return Promise["race"]([this.getMasterWhenReadyPromise(), slaveTimeoutPromise]);
+    },
+    /**
+     * Clears all window timeout timeers that are slave when ready promises.
+     *
+     * @returns {void}
+     * @ignore
+     * @private
+     */
+    _clearAllSlaveTimeouts : function ()
+    {
+      var slaveTimeoutPromiseTimers = this._slaveTimeoutPromiseTimers;
+      this._slaveTimeoutPromiseTimers = [];
+      for (var i = 0; i < slaveTimeoutPromiseTimers.length; i++)
+        window.clearTimeout(slaveTimeoutPromiseTimers[i]);
+    },
+    /**
+     * Promise executor function passed as the single master promise constructor.  Captures the
+     * promise resolve callback function.  The resolve promise function will be called when all the
+     * busy states have been removed.
+     *
+     * @param {Function} resolve
+     * @param {Function} reject
+     * @returns {void}
+     * @ignore
+     * @private
+     */
+    _captureWhenReadyPromiseResolver : function (resolve, reject)
+    {
+      this._masterWhenReadyPromiseResolver = resolve;
+    },
+    /**
+     * Array of setTimeout timers that should be cancled when the busy state resolves.
+     *
+     * @type {Array.<number>}
+     * @ignore
+     * @private
+     */
+    _slaveTimeoutPromiseTimers : []
+      /**
+       * The master when ready promise that will resovle when all busy states resolve.
+       *
+       * @type {Promise|undefined}
+       * @ignore
+       * @private
+       */
+      //_masterWhenReadyPromise : undefined,
+      /**
+       * The resolve function of the masterWhenReadyPromise.
+       *
+       * @type {Function|undefined}
+       * @ignore
+       * @private
+       */
+      //_masterWhenReadyPromiseResolver : undefined
+  };
+};
+
+
+/**
+ * Logs the current registered busy states ordered acceding by the order they were added.
+ * The cost of compiling the list is only made if the logger level is info.
+ * @param {?} statesMap busy states
+ * @returns {void}
+ * @private
+ */
+oj.BusyContext._log = function (statesMap)
+{
+  if (oj.Logger.option('level') !== oj.Logger.LEVEL_INFO)
+    return;
+
+  oj.Logger.info(">> Busy states: %d", statesMap.size);
+
+  var busyStates = oj.BusyContext._values(statesMap);
+  if (busyStates.length > 0)
+    oj.Logger.info(busyStates.join("\n"));
+};
+
+/**
+ * @param {?} statesMap busy states
+ * @return {Array.<oj.BusyState>} Returns an array of busy states entries from the states map
+ * @private
+ */
+oj.BusyContext._values = function (statesMap)
+{
+  var busyStates = [];
+  statesMap.forEach(function (value)
+  {
+    busyStates.push(value);
+  });
+
+  return busyStates;
+};
+
+/**
+ * Called by components or services performing a task that should be considered
+ * in the overall busy state of the page. An example would be animation or fetching data.
+ *
+ * @since 2.1.0
+ * @export
+ * @param {{description: ?}} options object that describes the busy state being registered.<br/>
+ *         description: Option additional information of what is registering a busy state. Added to
+ *                      logging and handling rejected status. Can be supplied as a Object or a
+ *                      function.  If the type is an object the toString function needs to be
+ *                      implemented.
+ * @returns {Function} resolve function called by the registrant when the busy state completes.
+ *                     The resultant function will throw an error if the busy state is no longer
+ *                     registered.
+ */
+oj.BusyContext.prototype.addBusyState = function (options)
+{
+  oj.Logger.info("BusyContext.addBusyState: start");
+
+  var statesMap = this._statesMap;
+
+  /** @type {oj.BusyState} */
+  var busyState = new oj.BusyState(options["description"]);
+
+  oj.Logger.info(">> " + busyState);
+
+  statesMap.set(busyState.id, busyState);
+
+  oj.Logger.info("BusyContext.addBusyState: end");
+
+  return this._removeBusyState.bind(this, busyState);
+};
+
+/**
+ * Returns a Promise that will resolve when all registered busy states have completed or a maximum
+ * timeout period has elapsed. The promise will be rejected if all the busy states are not resolved
+ * within the timeout period.
+ *
+ * @see oj.BusyContext#applicationBoostrapComplete
+ * @since 2.1.0
+ * @export
+ * @param {number=} timeout "optional" maximum period in milliseconds the resultant promise
+ *        will wait
+ * @returns {Promise}
+ */
+oj.BusyContext.prototype.whenReady = function (timeout)
+{
+  oj.Logger.info("BusyContext.whenReady: start, timeout:%d", timeout);
+  /** @type {?} */
+  var statesMap = this._statesMap;
+
+  if (statesMap.size === 0)
+  {
+    // no busy states, promise resolves immediately
+    oj.Logger.info("BusyContext.whenReady: resolved");
+    return Promise.resolve(true);
+  }
+  else
+  {
+    var mediator = this._mediator;
+    var promise;
+    if (isNaN(timeout))
+      promise = mediator.getMasterWhenReadyPromise();
+    else
+      promise = mediator.getSlaveTimeoutPromise(statesMap, timeout);
+
+    oj.Logger.info("BusyContext.whenReady: end");
+    return promise;
+  }
+};
+
+/**
+ * @since 2.1.0
+ * @export
+ * @returns {boolean} <code>true</code> if the page is not busy
+ */
+oj.BusyContext.prototype.isReady = function ()
+{
+  oj.Logger.info("BusyContext.isReady: start");
+  var statesMap = this._statesMap;
+
+  var rtn = statesMap.size === 0;
+  oj.BusyContext._log(statesMap);
+
+  oj.Logger.info("BusyContext.isReady: end");
+  return rtn;
+};
+
+/**
+ * @private
+ * @param {oj.BusyState} busyState added busy state
+ * @returns {void}
+ * @throws {Error} Busy state has already been resolved
+ */
+oj.BusyContext.prototype._removeBusyState = function (busyState)
+{
+  // The BusyState object is passed here instead of just the generated id to provide a more
+  // descriptive message when the busy state is removed twice. The description (if provided) of
+  // the busy state will be captured in the error message.
+
+  var statesMap = this._statesMap;
+
+  if (!statesMap["delete"](busyState.id)) // quoted to make the closure compiler happy
+  {
+    throw new Error("Busy state has already been resolved:\n" + busyState);
+  }
+
+  // no more busy states; resolve pending promises.
+  if (statesMap.size === 0)
+  {
+    var mediator = this._mediator;
+    oj.Logger.info("BusyContext._removeBusyState: resolving whenReady promises");
+    mediator.resolveMasterWhenReadyPromise();
+  }
+
+  oj.Logger.info("BusyContext._removeBusyState: end");
+};
+
+/**
+ * <p>This function should be invoke by application domain logic to indicate all application
+ * libraries are loaded and bootstrap processes complete.  The assumed strategy is that the
+ * application will set a single global variable "oj_whenReady" from a inline script from the
+ * document header section indicating the {@link oj.BusyContext#whenReady}
+ * should {@link oj.BusyContext#addBusyState} until the application determines its bootstrap
+ * sequence has completed.</p>
+ *
+ * Inline Script Example:
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;head&gt;
+ *   &lt;script type=&quot;text/javascript&quot;&gt;
+ *     // The "oj_whenReady" global variable enables a strategy that the busy context whenReady,
+ *     // will implicitly add a busy state, until the application calls applicationBoostrapComplete
+ *     // on the busy state context.
+ *     window["oj_whenReady"] = true;
+ *   &lt;/script&gt;
+ * ...
+ * ...
+ * </code></pre>
+ *
+ * Requirejs callback Example:
+ * <pre class="prettyprint">
+ * <code>
+ * require(['knockout', 'jquery', 'app', 'ojs/ojknockout', 'ojs/ojselectcombobox' ...],
+ *   function(ko, $, app)
+ *   {
+ *     // release the application bootstrap busy state
+ *     oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();
+ *     ...
+ *     ...
+ *   });
+ * </code></pre>
+ *
+ * @since 2.1.0
+ * @export
+ * @returns {void}
+ */
+oj.BusyContext.prototype.applicationBoostrapComplete = function ()
+{
+  if (!("oj_whenReady" in window) || !window["oj_whenReady"])
+  {
+    oj.Logger.info("BusyContext.applicationBoostrapComplete: strategy not enabled.");
+    return;
+  }
+
+  var bootstrapWhenReadyResolver = this._bootstrapWhenReadyResolver;
+  this._bootstrapWhenReadyResolver = null;
+  if (bootstrapWhenReadyResolver)
+    bootstrapWhenReadyResolver();
+  else
+    oj.Logger.warning("BusyContext.applicationBoostrapComplete already invoked.");
+};
+
+/**
+ * @ignore
+ * @returns {void}
+ */
+oj.BusyContext.prototype.__bootstrapAddBusyState = function ()
+{
+  // called from a static block in Context.js.  Function is not exported and ignored from JSDoc.
+  if (!("oj_whenReady" in window) || !window["oj_whenReady"])
+    return;
+
+  var options = {"description" : 'Application loading.' +
+      ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
+      ' Application bootstrap busy state is released by calling' +
+      ' "oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();".'};
+  this._bootstrapWhenReadyResolver = this.addBusyState(options);
+};
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/**
+ * This is a general purpose context.  Initially it only exposes the BusyContext
+ * that keeps track of components that are currently animating or fetching data.
+ * In the future this context might be expanded for other purposes.  Instances
+ * of contexts might be further scoped to modules and composite components.
+ * Initially the single BusyContext will be scoped for the page.
+ *
+ * @export
+ * @constructor
+ * @since 2.1.0
+ * @class Context scoped for the page.  Exposes additional contexts.
+ */
+oj.Context = function ()
+{
+  this.Init();
+};
+
+oj.Object.createSubclass(oj.Context, oj.Object, "oj.Context");
+
+/**
+ * @instance
+ * @protected
+ */
+oj.Context.prototype.Init = function ()
+{
+  oj.Context.superclass.Init.call(this);
+};
+
+/**
+ * Returns a context that is scoped as per the node.
+ * @param {Element} node DOM element used to provide the correct context
+ * @returns {oj.Context} context object scoped per the target node
+ */
+oj.Context.getContext = function(node)
+{
+  // this method is not exported as customer facing API yet.
+  // initial impl will default to the page context.
+  return oj.Context.getPageContext();
+};
+
+/**
+ * Static factory method that returns the page context.
+ * @export
+ * @since 2.1.0
+ * @return {oj.Context} context scoped for the page
+ */
+oj.Context.getPageContext = function ()
+{
+  if (!oj.Context._pageContext)
+    oj.Context._pageContext = new oj.Context();
+
+  return oj.Context._pageContext;
+};
+
+/**
+ * @since 2.1.0
+ * @export
+ * @returns {oj.BusyContext} busy state context
+ */
+oj.Context.prototype.getBusyContext = function ()
+{
+  if (!this._busyContext)
+    this._busyContext = new oj.BusyContext();
+
+  return this._busyContext;
+};
+
+// If the app has opt'd in on the strategy, add a busy state for the purpose of blocking
+// until the app bootstrap has compoeted.
+oj.Context.getPageContext().getBusyContext().__bootstrapAddBusyState();
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+**
+**
+*/
+
+// CustomEvent()
+(function () {  
+  if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
+    return;
+  }
+  
+  function CustomEvent (event, params) {
+    params = params || {bubbles: false, cancelable: false, detail: undefined};
+    
+    var evt = document.createEvent('CustomEvent');
+    
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window['CustomEvent'] = CustomEvent;
+})();
+/*
+** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+**
+*/
+
+(function()
+{
+
+  /**
+   * @ignore
+   */
+  oj.__AttributeUtils = {};
+  
+  /**
+   * @ignore
+   * @return {{expr: (null|string), downstreamOnly: boolean}} 
+   */
+  oj.__AttributeUtils.getExpressionInfo = function(attrValue)
+  {
+    var info = {};
+    if (attrValue)
+    {
+      var exp = _ATTR_EXP.exec(attrValue);
+      exp = exp ? exp[1] : null;
+      if (!exp)
+      {
+       info.downstreamOnly = true;
+       exp = _ATTR_EXP_RO.exec(attrValue);
+       exp = exp ? exp[1] : null;
+      }
+      info.expr = exp;
+    }
+
+    return info;
+  }
+  
+  /**
+   * @ignore
+   * @param {string} attr attribute name
+   * @return {string} property name
+   */
+  oj.__AttributeUtils.attributeToPropertyName = function(attr)
+  {
+    return attr.toLowerCase().replace(/-(.)/g,
+      function(match, group1)
+      {
+        return group1.toUpperCase();
+      }
+    );
+  }
+  
+  /**
+   * @ignore
+   * @param {string} name property name
+   * @return {string} attribute name
+   */
+  oj.__AttributeUtils.propertyNameToAttribute = function(name)
+  {
+    return name.replace(/([A-Z])/g,
+      function(match)
+      {
+        return '-' + match.toLowerCase();
+      }
+    );
+  }
+  
+  /**
+   * @ignore
+   * @param {string} propName property name
+   * @param {string} val attribute value
+   * @param {string} type property type
+   * @return {*} coerced value
+   */
+  oj.__AttributeUtils.coerceValue = function(propName, val, type)
+  {
+    // We only support primitive types and JSON objects for coerced properties
+    var typeLwr = type.toLowerCase();
+    var coercedType;
+    switch (typeLwr) {
+      case "boolean":
+        // Boolean attributes are considered true if the attribute is:
+        // 1) Set to the empty string
+        // 2) Present in the DOM without a value assignment
+        // 3) Set to the 'true' string
+        // 4) Set to the case-insensitive attribute name
+        // Boolean values are considered false if set to the false string.
+        // An error is thrown for all other values and the attribute value will not be set.
+        if (val == null || val === "true" || val === "" || val.toLowerCase() === oj.__AttributeUtils.propertyNameToAttribute(propName))
+        {
+          coercedType = true;
+        }
+        else if (val === "false")
+        {
+          coercedType = false;
+        }
+        break;
+      case "number":
+        if (!isNaN(val))
+        {
+          coercedType = Number(val);
+        }
+        break;
+      case "string":
+        coercedType = val;
+        break;
+      default:
+        try
+        {
+          coercedType = JSON.parse(val);
+        } 
+        catch (ex) 
+        {
+          // Error will be logged at the end
+        }
+    }
+
+    if (coercedType == null) 
+    {
+      oj.Logger.error("Unable to parse value %s for property %s with type %s.", val, propName, type);
+    }
+    return coercedType;
+  }
+  
+  
+  
+  var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
+  var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
+  
+})();
+
+
 ;return oj;
 });

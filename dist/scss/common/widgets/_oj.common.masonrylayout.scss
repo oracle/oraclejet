@@ -66,6 +66,13 @@
     /* masonrylayout */
     /* --------------------------------------------------------------- */
     
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-masonry-layout:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     //applied to the root element
     .oj-masonrylayout {
         //specify min size so that it's always greater than 0 and the component
@@ -139,7 +146,7 @@
     
     //base styles for tile size classes
     %oj-masonrylayout-tile-size-base {
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
         margin: $masonryLayoutTileMargin;
         position: absolute;
     }

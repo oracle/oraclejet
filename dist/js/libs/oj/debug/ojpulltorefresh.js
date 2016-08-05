@@ -3,13 +3,12 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
+define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
-        * @param {Object} Hammer
         */
-       function(oj, $, Hammer)
+       function(oj, $)
  
 {
 
@@ -30,6 +29,27 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * use this to execute any logic required to refresh the content inside the panel.  For example, fetching new cotent for the ListView inside
  * the container.  The application must resolve or reject the Promise so that this class can do the neccessary cleanup.
  *
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Pull to refresh panel element</td>
+ *       <td><kbd>Pan</kbd></td>
+ *       <td>Shows the pull to refresh panel as user pan downward.  Refresh action is triggered if the user pan downward over a specified threshold.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
  */
 oj.PullToRefreshUtils = {};
 

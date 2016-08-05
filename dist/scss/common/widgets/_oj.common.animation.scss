@@ -63,6 +63,15 @@
       }
     }
     
+    .oj-animation-coverend.oj-enter {
+      @include oj-ltr() {
+        @extend .oj-animation-coverright.oj-enter;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-coverleft.oj-enter;
+      }
+    }
+    
     @include oj-keyframes-at-rule(oj-animation-slideout30-left) {
       from {left: 0;}
       to {left: -30%;}
@@ -87,6 +96,15 @@
       }
       @include oj-rtl() {
         @extend .oj-animation-coverright.oj-leave;
+      }
+    }
+    
+    .oj-animation-coverend.oj-leave {
+      @include oj-ltr() {
+        @extend .oj-animation-coverright.oj-leave;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-coverleft.oj-leave;
       }
     }
     
@@ -117,6 +135,15 @@
       @include oj-animation-fill-mode-property(forwards);
     }
 
+    .oj-animation-revealstart.oj-leave {
+      @include oj-ltr() {
+        @extend .oj-animation-revealleft.oj-leave;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-revealright.oj-leave;
+      }
+    }
+
     .oj-animation-revealend.oj-leave {
       @include oj-ltr() {
         @extend .oj-animation-revealright.oj-leave;
@@ -144,6 +171,15 @@
       @include oj-animation-fill-mode-property(forwards);
     }
 
+    .oj-animation-revealstart.oj-enter {
+      @include oj-ltr() {
+        @extend .oj-animation-revealleft.oj-enter;
+      }
+      @include oj-rtl() {
+        @extend .oj-animation-revealright.oj-enter;
+      }
+    }
+    
     .oj-animation-revealend.oj-enter {
       @include oj-ltr() {
         @extend .oj-animation-revealright.oj-enter;
@@ -191,18 +227,55 @@
 
     $animationNavigateMethods: ();
 
-    @if ($animationDrillInDefault)
+    @if ($animationNavChildDefault)
     {
-      $animationNavigateMethods: map-merge($animationNavigateMethods, (drillIn: $animationDrillInDefault));
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navChild: $animationNavChildDefault));
     }
 
-    @if ($animationDrillOutDefault)
+    @if ($animationNavParentDefault)
     {
-      $animationNavigateMethods: map-merge($animationNavigateMethods, (drillOut: $animationDrillOutDefault));
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navParent: $animationNavParentDefault));
+    }
+
+    @if ($animationNavSiblingEarlierDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navSiblingEarlier: $animationNavSiblingEarlierDefault));
+    }
+
+    @if ($animationNavSiblingLaterDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navSiblingLater: $animationNavSiblingLaterDefault));
     }
 
     .oj-animation-navigate-methods {
       font-family: oj-json-from-map($animationNavigateMethods);
+    }
+
+    $animationEffectDefaultOptions: (fadeIn: (duration: $animationDurationMedium),
+                                     fadeOut: (duration: $animationDurationMedium),
+                                     expand: (duration: $animationDurationMedium),
+                                     collapse: (duration: $animationDurationMedium),
+                                     zoomIn: (duration: $animationDurationMedium),
+                                     zoomOut: (duration: $animationDurationMedium),
+                                     slideIn: (duration: $animationDurationMedium),
+                                     slideOut: (duration: $animationDurationMedium),
+                                     flipIn: (duration: $animationDurationMedium),
+                                     flipOut: (duration: $animationDurationMedium),
+                                     ripple: (duration: $animationDurationMedium));
+
+    .oj-animation-effect-default-options {
+      font-family: oj-json-from-map($animationEffectDefaultOptions);
+    }
+
+    .oj-animation-effect-ripple {
+      background-color: #888888;
+      opacity: 0.6;
+      border-radius: 50%;
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      left: 0;
+      top: 0;
     }
 
   }

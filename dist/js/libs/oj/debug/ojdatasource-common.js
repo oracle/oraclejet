@@ -216,6 +216,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @export
  * @class oj.TableDataSource
  * @classdesc Abstract object representing data used by table component.  Implementations of TableDataSource must implement all of the functions documented here.
+ * @extends oj.DataSource
  * @param {Object} data data supported by the components
  * @param {Object=} options Options for the TableDataSource
  * @constructor
@@ -253,6 +254,19 @@ oj.TableDataSource.prototype.Init = function()
 {
   oj.TableDataSource.superclass.Init.call(this);
 };
+
+/**
+ * @export
+ * @expose
+ * @memberof! oj.TableDataSource
+ * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
+ * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
+ * 
+ * @type {Object} criteria the sort criteria.
+ * @property {Object} criteria.key The key that identifies which field to sort
+ * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ */
+oj.TableDataSource.prototype.sortCriteria = null;
 
 /**
  * Return the row data found at the given index.
@@ -506,7 +520,9 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @param {number} headerRange.count the size of the range in which the header data are fetched.  
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(oj.HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
@@ -563,7 +579,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name sort
  * @memberof! oj.DataGridDataSource
  * @instance
-* @param {Object} criteria the sort criteria.  Specifies null to reset sort state.
+ * @param {Object} criteria the sort criteria.  Specifies null to reset sort state.
  * @param {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
  * @param {Object} criteria.key The key that identifies which header to sort
  * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)

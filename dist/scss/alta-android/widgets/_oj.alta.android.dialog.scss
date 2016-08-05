@@ -26,5 +26,9 @@
 @if $includeDialogClasses != false {
   @include module-include-once("alta.android.dialog") {
     
+    .oj-dialog-close-icon { 
+        color: $buttonBgColor; 
+     }       
+
   }
 }

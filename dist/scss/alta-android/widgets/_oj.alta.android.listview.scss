@@ -50,5 +50,11 @@
         .oj-listview-group-item.oj-focus {
             outline-style: none;
         }
+
+        /* Styling for the affordance icon */
+        .oj-listview-drag-handle {
+            width: 36px;
+            height: 24px;
+        }
   }
 }

@@ -512,4 +512,89 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @type {string|null}
  * @default <code class="prettyprint">null</code>
  */
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
+(function() {
+var ojTreemapMeta = {
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string"
+    },
+    "animationOnDisplay": {
+      "type": "string"
+    },
+    "animationUpdateColor": {
+      "type": "string"
+    },
+    "colorLabel": {
+      "type": "string"
+    },
+    "groupGaps": {
+      "type": "string"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>"
+    },
+    "highlightMatch": {
+      "type": "string"
+    },
+    "hoverBehavior": {
+      "type": "string"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number|string"
+    },
+    "isolatedNode": {
+      "type": "string"
+    },
+    "layout": {
+      "type": "string"
+    },
+    "nodeDefaults": {
+      "type": "object"
+    },
+    "nodes": {
+      "type": "Array<object>"
+    },
+    "nodeSeparators": {
+      "type": "string"
+    },
+    "selection": {
+      "type": "Array<string>"
+    },
+    "selectionMode": {
+      "type": "string"
+    },
+    "sizeLabel": {
+      "type": "string"
+    },
+    "sorting": {
+      "type": "string"
+    },
+    "tooltip": {
+      "type": "object"
+    },
+    "touchResponse": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getNode": {}
+  },
+  "extension": {
+    "_widgetName": "ojTreemap"
+  }
+};
+oj.Components.registerMetadata('ojTreemap', 'dvtBaseComponent', ojTreemapMeta);
+oj.Components.register('oj-treemap', oj.Components.getMetadata('ojTreemap'));
+})();
 });

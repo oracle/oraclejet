@@ -10,40 +10,25 @@
 @if $includeAppLayoutClasses != false {
   @include module-include-once("common.applayout") {
 
-    // OFFCANVAS
-    %oj-applayout-offcanvas-wrapper {
+    // POSITIONING CLASSES
+    .oj-applayout-fixed-top,
+    .oj-applayout-fixed-bottom {
       position: fixed;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: $appLayoutFixedZindex;
+    }
+    .oj-applayout-fixed-top {
       top: 0;
+    }
+    .oj-applayout-fixed-bottom {
       bottom: 0;
-      left: 0;
-      right: 0;
     }
 
-    %oj-applayout-offcanvas {
-      z-index: 2;
+    // Marker class used with the fixed positioning classes to adjust content paddings
+    // to prvent overlap
+    .oj-applayout-content {
     }
 
-    // SCROLLABLE CONTAINERS
-    %oj-applayout-scrollable-wrapper {
-      position: relative;
-      height: 100%;
-    }
-    %oj-applayout-scrollable {
-      overflow: auto;
-      /* To enable momentum scrolling on android devices */
-      z-index: 0;
-      /* To enable momentum scrolling on ios devices */
-      -webkit-overflow-scrolling: touch;
-    }
-
-    // PAGE LAYOUT
-    %oj-applayout-page {
-      @include oj-display-flex-property();
-      @include oj-flex-direction-property(column);
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
   }
 }

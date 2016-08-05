@@ -15,7 +15,13 @@
 // The oj-slider class defines the dimensions of a the slider
 // when embedded in a form control.
 
-//
+// This is to prevent the flash of unstyled content before the html becomes JET components.
+@if $initialVisibility == hidden {
+  oj-slider:not(.oj-complete) {
+    visibility: hidden;
+  }      
+}
+
 .oj-slider {
   // relative position needed for correct sizing.
   display: inline-block;
@@ -28,7 +34,7 @@
     text-align: right;
   }
 
-  @include oj-box-sizing-property(border-box);
+  box-sizing: border-box;
 
   /* This ensures that the slider bounding box will include
    the thumb radius - important for form controls. */
@@ -102,7 +108,7 @@
 //
 .oj-slider-thumb {
   position: absolute;
-  @include oj-box-sizing-property(border-box);
+  box-sizing: border-box;
   cursor: default;
   touch-action: none;
   background-color: $sliderThumbBgColor;
@@ -133,7 +139,7 @@
 .oj-slider-bar {
    @include oj-border-radius($sliderBarThickness);
    background-color: $sliderBarBgColor;
-   @include oj-box-sizing-property(border-box);
+   box-sizing: border-box;
    position: absolute;
 }
 
@@ -183,11 +189,26 @@
    right: -$sliderBarHitArea/2 + $sliderBarThickness/2;
 }
 
-
 // oj-slider-bar-value represents the filled part of the slider bar
 .oj-slider-bar-value {
    @include oj-border-radius($sliderBarThickness);
    background: $sliderBarValueBgColor;	
+}
+
+// Add a border to the slider bar when in hi-contrast mode.
+.oj-hicontrast .oj-slider-bar,
+.oj-hicontrast .oj-slider-bar-value {
+   border: 1px solid;
+}
+
+// center align the slider bar value for high contrast (horizontal slider)
+.oj-hicontrast .oj-slider-horizontal .oj-slider-bar-value {
+   margin-top: -($sliderBarThickness/2 + 1px);
+}
+
+// Center align the slider bar value for high contrast (vertical slider)
+.oj-hicontrast .oj-slider-vertical .oj-slider-bar-value {
+   margin-left: -($sliderBarThickness/2 + 1px);
 }
 
 // Color of the bar value when active
@@ -203,6 +224,12 @@
 .oj-disabled .oj-slider-bar-value {
    opacity: $formControlOpacityDisabled;
    background: $sliderBarValueBgColorDisabled;	
+}
+
+// Hi contrast disabled sliders have a dotted border on the bar
+.oj-hicontrast .oj-disabled .oj-slider-bar,
+.oj-hicontrast .oj-disabled .oj-slider-bar-value {
+   border-style: dotted;
 }
 
 //
@@ -269,6 +296,21 @@
 }
 .oj-slider-vertical .oj-slider-range-max {
    top: 0;
+}
+
+//
+// Since the slider thumb gains focus, address high contrast focus/selected states for the thumb only.
+//
+.oj-hicontrast .oj-slider-thumb.oj-focus {
+   border: 3px solid;
+}
+
+.oj-hicontrast .oj-slider-thumb.oj-selected {
+   border: 3px double;
+}
+
+.oj-hicontrast .oj-disabled .oj-slider-thumb {
+   border: 1px dotted;
 }
 
 .oj-slider-thumb.oj-hover {
@@ -393,6 +435,20 @@
    background-color: $sliderThumbBgColorActive;
    border-color: $sliderThumbBorderColorActive;
 }
+
+ .oj-slider-thumb:focus {
+    outline:none; // e.g. Chrome adds blue outline to focused element
+ }
+
+//  The oj-focus-highlight class applies focus styling that may not be desirable
+//  when the focus results from pointer interaction (touch or mouse), but which is
+//  needed for accessibility when the focus occurs by a non-pointer mechanism, for
+//  example keyboard or initial page load.
+//  See also the $focusHighlightPolicy variable, which controls when this 
+//  class is set.
+ .oj-slider-thumb.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+ }
 
 //
 // The following three classses are used in demos 

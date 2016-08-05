@@ -18,15 +18,18 @@ define(['ojs/ojcore', 'jquery', 'promise'], function(oj, $)
 /**
  * @constructor
  * @class oj.Events
- * @classdesc Supports event system for the common model ([oj.Collection]{@link oj.Collection} and [oj.Model]{@link oj.Model})
+ * @classdesc Supports event system for the common model ([oj.Collection]{@link oj.Collection} and 
+ * [oj.Model]{@link oj.Model})
  */
 oj.Events = window['oj']['Events'] =
 /** @lends oj.Events */
 {       
     /**
      * Add an event handler for an event type to the model or collection object.
-     * @param {String|Object} eventType Types of event handlers to add (may be a single event type, a space-delimited set of event types, or an object mapping events to callbacks). 
-     * @param {function(String, Object)} callback User's event handler callback function (called with the eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
+     * @param {String|Object} eventType Types of event handlers to add (may be a single event type, a 
+     * space-delimited set of event types, or an object mapping events to callbacks). 
+     * @param {function(String, Object)} callback User's event handler callback function (called with the 
+     * eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
      * @param {Object=} context A context for the event 
      */
     'on': function (eventType, callback, context) {
@@ -35,9 +38,12 @@ oj.Events = window['oj']['Events'] =
 
     /**
      * Remove an event handler for an event type from the model or collection object.
-     * @param {String|Object=} eventType Types of event handlers to remove (may be a single event type, a space-delimited set of event types, or a map of events to callbacks). If omitted, remove all event handlers. 
-     * @param {function(String, Object)=} callback If provided, remove handlers only for eventType events with the given callback function. 
-     * @param {Object=} context If provided, remove handlers only for eventType events with the given callback function and context object. 
+     * @param {String|Object=} eventType Types of event handlers to remove (may be a single event type, a 
+     * space-delimited set of event types, or a map of events to callbacks). If omitted, remove all event handlers. 
+     * @param {function(String, Object)=} callback If provided, remove handlers only for eventType events with the 
+     * given callback function. 
+     * @param {Object=} context If provided, remove handlers only for eventType events with the given callback 
+     * function and context object. 
      */
     'off': function(eventType, callback, context) {
              return this._offInternal(eventType, callback, context, false);
@@ -45,19 +51,25 @@ oj.Events = window['oj']['Events'] =
     
     /**
      * Fire the given event type(s) for all registered handlers.
-     * @param {String} eventType Types of event handlers to fire (may be a single event type or a space-delimited set of event types). 
+     * @param {String} eventType Types of event handlers to fire (may be a single event type or a space-delimited 
+     * set of event types). 
      */        
     'trigger': function(eventType) {
                  var args = Array.prototype.slice.call(arguments);
-                 // Inject a silent setting in there: if this is being called outside we want to fire all relevant events
+                 // Inject a silent setting in there: if this is being called outside we want to fire all relevant 
+                 // events
                  args.unshift(false);
                  return oj.Events.TriggerInternal.apply(this, args);
              },
             
     /**
-     * Add an event handler for an event type to the model or collection object, but only fire it once, then remove it from the list of handlers.
-     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited set of event types). 
-     * @param {function(String, Object)} callback User's event handler callback function (called with the eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
+     * Add an event handler for an event type to the model or collection object, but only fire it once, then remove 
+     * it from the list of handlers.
+     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited 
+     * set of event types). 
+     * @param {function(String, Object)} callback User's event handler callback function (called with the 
+     * eventType and model or collection object as parameters--the context will be the model or collection unless 
+     * specified by context, below). 
      * @param {Object=} context A context for the event
      */
     'once': function(eventType, callback, context) {
@@ -65,10 +77,14 @@ oj.Events = window['oj']['Events'] =
             },
                
     /**
-     * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on the called object.
+     * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on 
+     * the called object.
      * @param {Object} otherObj Model or collection object on which to add this event handler. 
-     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited set of event types). 
-     * @param {function(String, Object)} callback User's event handler callback function (called with the eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
+     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited 
+     * set of event types). 
+     * @param {function(String, Object)} callback User's event handler callback function (called with the 
+     * eventType and model or collection object as parameters--the context will be the model or collection 
+     * unless specified by context, below). 
      */
     'listenTo': function(otherObj, eventType, callback) {
                 var eventArray, e, event, attr, eventString, listenerObj, index, prop, eventMap = {};
@@ -88,7 +104,8 @@ oj.Events = window['oj']['Events'] =
                             event = eventArray[e].event;
                             attr = eventArray[e].attribute;
                             listenerObj = {event: event, attribute: attr, object: otherObj, callback: eventMap[prop]};
-                            index = this._checkForHandler(this['_listeningTo'], listenerObj, oj.Events._listenersIdentical);
+                            index = this._checkForHandler(this['_listeningTo'], listenerObj, 
+                                                          oj.Events._listenersIdentical);
                             eventString = attr ? event + ":" + attr : event;    
                             if (this['_listeningTo'] === undefined) {
                                 this['_listeningTo'] = [];
@@ -110,10 +127,14 @@ oj.Events = window['oj']['Events'] =
             },
 
     /**
-     * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on the called object.  Only fire once.
+     * Add an event handler for an event type to a second model or collection object ("otherObj"), but track it on 
+     * the called object.  Only fire once.
      * @param {Object} otherObj Model or collection object on which to add this event handler. 
-     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited set of event types). 
-     * @param {function(String, Object)} callback User's event handler callback function (called with the eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below). 
+     * @param {String} eventType Types of event handlers to add (may be a single event type or a space-delimited 
+     * set of event types). 
+     * @param {function(String, Object)} callback User's event handler callback function (called with the 
+     * eventType and model or collection object as parameters--the context will be the model or collection unless 
+     * specified by context, below). 
      */
     'listenToOnce': function(otherObj, eventType, callback) {
                 var eventArray, e, event, attr, eventString, listenerObj, index, prop, eventMap = {};
@@ -133,7 +154,8 @@ oj.Events = window['oj']['Events'] =
                             event = eventArray[e].event;
                             attr = eventArray[e].attribute;
                             listenerObj = {event: event, attribute: attr, object: otherObj, callback: eventMap[prop]};
-                            index = this._checkForHandler(this['_listeningTo'], listenerObj, oj.Events._listenersIdentical);
+                            index = this._checkForHandler(this['_listeningTo'], listenerObj, 
+                                                          oj.Events._listenersIdentical);
                             eventString = attr ? event + ":" + attr : event;    
                             if (this['_listeningTo'] === undefined) {
                                 this['_listeningTo'] = [];
@@ -148,10 +170,14 @@ oj.Events = window['oj']['Events'] =
             },
             
     /**
-     * Remove event handlers from a model or collection object. If the arguments are omitted, removes all event handlers from the model or collection.
-     * @param {Object=} otherObj If specified, remove event handlers that target otherObj from this model or collection. 
-     * @param {String=} eventType If specified, remove the event handlers for the given event types from this model or collection 
-     * @param {function(String, Object)=} callback If specified, remove event handlers that call the given user callback function from this model or collection 
+     * Remove event handlers from a model or collection object. If the arguments are omitted, removes all event 
+     * handlers from the model or collection.
+     * @param {Object=} otherObj If specified, remove event handlers that target otherObj from this model or 
+     * collection. 
+     * @param {String=} eventType If specified, remove the event handlers for the given event types from this 
+     * model or collection 
+     * @param {function(String, Object)=} callback If specified, remove event handlers that call the given user 
+     * callback function from this model or collection 
      */
     'stopListening': function(otherObj, eventType, callback) {
                         var eventArray, actualType, eventMap = {}, e, oneEvent, oneAttr, event, objEqual,
@@ -202,7 +228,9 @@ oj.Events = window['oj']['Events'] =
                                         attrEqual = oneAttr ? oneAttr === event.attribute : true;
                                         if (objEqual && eventEqual && callbackEqual && attrEqual) {
                                             cb = this['_listeningTo'][i].object._offInternal;
-                                            cb.apply(this['_listeningTo'][i].object, [this['_listeningTo'][i].event, this['_listeningTo'][i].callback, this['_listeningTo'][i].context, true]);
+                                            cb.apply(this['_listeningTo'][i].object, [this['_listeningTo'][i].event, 
+                                                     this['_listeningTo'][i].callback, 
+                                                     this['_listeningTo'][i].context, true]);
                                             this['_listeningTo'].splice(i, 1);
                                         }
                                     }                        
@@ -266,24 +294,31 @@ oj.Events['unbind'] = oj.Events['off'];
          *  </ul>
          */
         'REFRESH' : "refresh",
-        /** Triggered when a collection is sorted.  If the second argument to the callback is set (options) and 'add' is true, it means this sort event was triggered as a result of an add <p>
+        /** Triggered when a collection is sorted.  If the second argument to the callback is set (options) and 
+         * 'add' is true, it means this sort event was triggered as a result of an add <p>
          *  The event passes these arguments to the handler:<br>
          *  <ul>
          *  <b>collection</b>: the collection being sorted<br>
-         *  <b>options</b>: <b>add</b>: true if this sort event was triggered as the result of an add call, undefined or false if not
+         *  <b>options</b>: <b>add</b>: true if this sort event was triggered as the result of an add call, 
+         *  undefined or false if not
          *  </ul>
          */
         'SORT' : "sort",
-        /** Triggered when a model's attributes are changed.  This can be the result of a clear call on a model; a property set call on a model; an unset call on a model; or the changing of properties due to the merging of models (in an add, for example) <p>
+        /** Triggered when a model's attributes are changed.  This can be the result of a clear call on a model; 
+         * a property set call on a model; an unset call on a model; or the changing of properties due to the 
+         * merging of models (in an add, for example) <p>
          * The event passes these arguments to the handler:<br>
          * <ul>
          * <b>model</b>: the model on which the change occurred<br>
          * <b>value</b>: for property-specific change events, the new value of the property being changed<br>
-         * <b>options</b>: any options passed in to the call that triggered the change event.  This is the second argument passed for overall change events, and the third parameter (after value) for property-specific change events.
+         * <b>options</b>: any options passed in to the call that triggered the change event.  This is the second 
+         * argument passed for overall change events, and the third parameter (after value) for property-specific 
+         * change events.
          * </ul>
          */
         'CHANGE' : "change",
-        /** Triggered when a model is deleted from the data service (and thus from its Collection), due to a model destroy call<p>
+        /** Triggered when a model is deleted from the data service (and thus from its Collection), due to a model 
+         * destroy call<p>
          * The event passes these arguments to the handler:<br>
          * <ul>
          * <b>model</b>: the model being deleted<br>
@@ -291,7 +326,8 @@ oj.Events['unbind'] = oj.Events['off'];
          * </ul>
          */
         'DESTROY' : "destroy",
-        /** Triggered by a collection during a remove call once all models passed in have been removed and destroyed<p>
+        /** Triggered by a collection during a remove call once all models passed in have been removed and 
+         * destroyed<p>
          * The event passes these arguments to the handler:<br>
          * <ul>
          * <b>collection</b>: the collection from which the models have been removed<br>
@@ -322,7 +358,8 @@ oj.Events['unbind'] = oj.Events['off'];
          *  The event passes these arguments to the handler:<br>
          *  <b>collection or model</b>: the collection or model that made the call that resulted in the error<br>
          *  <b>xhr</b>: the xhr argument for the failing request, if any<br>
-         *  <b>options</b>: any options passed in to the call that triggered the failing request, plus the status and error as textStatus and errorThrown
+         *  <b>options</b>: any options passed in to the call that triggered the failing request, plus the status 
+         *  and error as textStatus and errorThrown
          *  </ul>
          */
         'ERROR' : "error",
@@ -343,7 +380,8 @@ oj.Events['unbind'] = oj.Events['off'];
          */
         'READY' : "ready",
         /** Triggered for any of the above events <p>
-         * The event passes the name of the actual event and then any arguments normally passed to that event following the name
+         * The event passes the name of the actual event and then any arguments normally passed to that event 
+         * following the name
          */
         'ALL' : "all"
     };
@@ -357,7 +395,7 @@ oj.Events['unbind'] = oj.Events['off'];
 oj.Events.Mixin = function(myClass, source) {
     var methodName, obj = source || this;
     for (methodName in obj ) {
-        if (typeof obj[methodName] === 'function' /*&& !Object.hasOwnProperty(myClass.prototype, methodName)*/ ) {
+        if (typeof obj[methodName] === 'function') {
             myClass[methodName] = obj[methodName];
         }
     }
@@ -385,7 +423,8 @@ oj.Events._onceInternal = function(eventType, callback, context, listenTo, other
                    this.eventHandlers[event] = [];
                }
 
-               this.eventHandlers[event].push({callback: eventMap[prop], context: context, attribute: attr, once: true, fired: false, listen:listenTo, otherObj:otherObj});    
+               this.eventHandlers[event].push({callback: eventMap[prop], context: context, attribute: attr, 
+                                               once: true, fired: false, listen:listenTo, otherObj:otherObj});    
             }
         }
    }
@@ -408,7 +447,8 @@ oj.Events._getContext = function(obj, handler) {
 };
 
 oj.Events.TriggerInternal = function(silent, eventType) {
-    var eventArray = this._getEvents(eventType), e, event, attr, eventsToFire, handlers, i, args, allHandlers, callback;
+    var eventArray = this._getEvents(eventType), e, event, attr, eventsToFire, handlers, i, args, allHandlers, 
+                     callback;
                   
     eventsToFire = [];                  
     for (e = 0; e < eventArray.length; e=e+1) {  
@@ -425,7 +465,8 @@ oj.Events.TriggerInternal = function(silent, eventType) {
                 args = Array.prototype.slice.call(arguments);                
                 if (handlers && handlers[i] && handlers[i].once) {
                       // Remove it: only want to fire once--make sure we remove it from the original
-                      this._removeHandler(oj.Events._getHandlers(this.eventHandlers, eventsToFire[e].event, true), handlers[i]);
+                      this._removeHandler(oj.Events._getHandlers(this.eventHandlers, eventsToFire[e].event, true), 
+                                          handlers[i]);
                       // Now take it out of the other object's "listen to" list, if relevant
                       if (handlers[i].otherObj) {
                           // Clean up the "other object" if this was a triggered listenOnce
@@ -462,11 +503,13 @@ oj.Events.TriggerInternal = function(silent, eventType) {
                }
                if (allHandlers && allHandlers[i] && allHandlers[i].once) {
                    // Remove it: only want to fire once
-                   this._removeHandler(this._getHandlers(this.eventHandlers, oj.Events.EventType['ALL'], true), allHandlers[i]);
+                   this._removeHandler(this._getHandlers(this.eventHandlers, oj.Events.EventType['ALL'], true), 
+                                       allHandlers[i]);
                     // Now take it out of the other object's "listen to" list, if relevant
                     if (allHandlers[i].otherObj) {
                         // Clean up the "other object" if this was a triggered listenOnce
-                        allHandlers[i].otherObj['stopListening'](this, oj.Events.EventType['ALL'], allHandlers[i].callback);
+                        allHandlers[i].otherObj['stopListening'](this, oj.Events.EventType['ALL'], 
+                                                                 allHandlers[i].callback);
                     }
                }
            }
@@ -495,7 +538,8 @@ oj.Events.OnInternal = function(eventType, callback, context, listenTo, ignoreSi
                     this.eventHandlers[event] = [];
                 }
 
-                eventObj = {callback: eventMap[prop], context: context, attribute:attr, listen: listenTo, ignoreSilent:ignoreSilent};
+                eventObj = {callback: eventMap[prop], context: context, attribute:attr, listen: listenTo, 
+                           ignoreSilent:ignoreSilent};
                 if (this._checkForHandler(this.eventHandlers[event], eventObj, oj.Events._handlersIdentical) === -1) {
                     this.eventHandlers[event].push(eventObj);    
                 }
@@ -591,11 +635,15 @@ oj.Events._removeHandler = function(handlers, handler) {
     
     if (handlers) {
         for (i=handlers.length-1; i >= 0; i=i-1){
-            callbacks = (handler.callback === undefined || handler.callback === null || handlers[i].callback == handler.callback);
+            callbacks = (handler.callback === undefined || handler.callback === null || 
+                         handlers[i].callback == handler.callback);
 
-            contexts = (handler.context === undefined || handler.context === null || handlers[i].context == handler.context);
-            attrs = (handler.attribute === undefined || handler.attribute === null || handlers[i].attribute == handler.attribute);
-            listenEq = (handler.listen === undefined || handler.listen === null || handlers[i].listen == handler.listen);
+            contexts = (handler.context === undefined || handler.context === null || 
+                        handlers[i].context == handler.context);
+            attrs = (handler.attribute === undefined || handler.attribute === null || 
+                     handlers[i].attribute == handler.attribute);
+            listenEq = (handler.listen === undefined || handler.listen === null || 
+                        handlers[i].listen == handler.listen);
             onceEq = (handler.once === undefined || handler.once === null || handlers[i].once == handler.once);
             if (callbacks && contexts && attrs && listenEq && onceEq){
                 handlers.splice(i, 1);
@@ -616,11 +664,14 @@ oj.Events._getEvents = function(eventString) {
 };
 
 oj.Events._handlersIdentical = function(handler1, handler2) {
-   return (handler1.callback === handler2.callback) && (handler1.attribute === handler2.attribute) && (handler1.context === handler2.context) && (handler1.listen === handler2.listen) && (handler1.once === handler2.once);
+   return (handler1.callback === handler2.callback) && (handler1.attribute === handler2.attribute) && 
+          (handler1.context === handler2.context) && (handler1.listen === handler2.listen) && 
+          (handler1.once === handler2.once);
 };
 
 oj.Events._listenersIdentical = function(listener1, listener2) {
-   return (listener1.event === listener2.event) && (listener1.attribute === listener2.attribute) && (listener1.context === listener2.context) && (listener1.object === listener2.object);    
+   return (listener1.event === listener2.event) && (listener1.attribute === listener2.attribute) && 
+          (listener1.context === listener2.context) && (listener1.object === listener2.object);    
 };
 
 oj.Events._checkForHandler = function(handlerList, handler, handlerTest) {
@@ -702,23 +753,26 @@ oj.Model.prototype.defaults = {};
 
 /**
  * @export
- * @desc The model's unique ID.  This can be set by the application or retrieved from the data service. This ID will be appended to the URL for single-record data operations (update, delete). 
+ * @desc The model's unique ID.  This can be set by the application or retrieved from the data service. This ID 
+ * will be appended to the URL for single-record data operations (update, delete). 
  * 
  * @type String
  */
 oj.Model.prototype.id = null;
 
 /**
- * @desc The name of the model property to be used as the unique ID. See [id]{@link oj.Model#id}. This defaults to a value of "id".
+ * @desc The name of the model property to be used as the unique ID. See [id]{@link oj.Model#id}. This defaults to 
+ * a value of "id".
  *  
- * @type {string||null}
+ * @type {string|null}
  * @export
  */
 oj.Model.prototype.idAttribute = "id";
 
 /**
  * @export
- * @desc The base url on the data service used to perform CRUD operations on models.  If not defined, the model will look to its collection.  One or the other must be defined before CRUD operations can succeed.
+ * @desc The base url on the data service used to perform CRUD operations on models.  If not defined, the model 
+ * will look to its collection.  One or the other must be defined before CRUD operations can succeed.
  * 
  * @type String
  */
@@ -728,15 +782,17 @@ oj.Model.prototype.urlRoot = null;
  * @export
  * @desc A callback to allow users to completely customize the data service URLs
  * The callback should accept these parameters:<p>
- * <b>operation (String)</b>: one of "create", "read", "update", "patch", or "delete", indicating the type of operation for which to return the URL<br>
+ * <b>operation (String)</b>: one of "create", "read", "update", "patch", or "delete", indicating the type of 
+ * operation for which to return the URL<br>
  * <b>model (Object)</b>: the oj.Model object requesting the URL<br>
  * <b>options (Object)</b>: one or more of the following properties:<br>
  * <ul>
  * <b>recordID</b>: id of the record involved, if relevant<br>
  * </ul>
  * 
- * customURL callbacks should return either: null, in which case the default will be used; a url string, which will be used with the standard
- * HTTP method for the type of operation, or an Object with with any other attributes that should be passed to the ajax call.<br>
+ * customURL callbacks should return either: null, in which case the default will be used; a url string, which 
+ * will be used with the standard HTTP method for the type of operation, or an Object with with any other 
+ * attributes that should be passed to the ajax call.<br>
  * This object must at minimum include the URL, and other attributes as follows:<br>
  * <ul>
  * <b>url</b>: giving the custom URL string<br>
@@ -774,7 +830,8 @@ oj.Model._init = function(model, attributes, options, properties) {
 
     model.attributes = {};
     if (model['defaults'] && !options.ignoreDefaults) {
-        model.attributes = oj.Model._cloneAttributes($.isFunction(model['defaults']) ? model['defaults']() : model['defaults'], null);
+        model.attributes = oj.Model._cloneAttributes($.isFunction(model['defaults']) ? model['defaults']() : 
+                                                                                       model['defaults'], null);
     }
 
     // First, copy all properties passed in
@@ -836,12 +893,17 @@ oj.Model._init = function(model, attributes, options, properties) {
 /**
  * Create a new, specific type of model object to represent single records from a JSON data set.
  * @param {Object=} properties Properties for the new Model class.<br>
- *                  <b>defaults</b>: an Object containing starting attribute/value pairs for some or all of the model's potential attributes<br>
- *                  <b>parse</b>: a user callback function to allow parsing of JSON record objects as they are returned from the data service<br>
- *                  <b>parseSave</b>: a user callback function to allow conversion of models back into a format appropriate for the data service on save calls<br>
- *                  <b>urlRoot</b>: the URL to use to get records from the data service in the abscence of a collection (when an id is appended)<br>
+ *                  <b>defaults</b>: an Object containing starting attribute/value pairs for some or all of the 
+ *                  model's potential attributes<br>
+ *                  <b>parse</b>: a user callback function to allow parsing of JSON record objects as they are 
+ *                  returned from the data service<br>
+ *                  <b>parseSave</b>: a user callback function to allow conversion of models back into a format 
+ *                  appropriate for the data service on save calls<br>
+ *                  <b>urlRoot</b>: the URL to use to get records from the data service in the abscence of a 
+ *                  collection (when an id is appended)<br>
  *                  <b>initialize</b>: a user callback function to be called when this model is created<br>
- *                  <b>validate</b>: a user callback function that will be called before a save to the data service occurs. The callback is passed the current set of attributes and save options. 
+ *                  <b>validate</b>: a user callback function that will be called before a save to the data 
+ *                  service occurs. The callback is passed the current set of attributes and save options. 
  *                  <br>
  * @param {Object=} classProperties properties that attach to the whole class
  * @return {function(new:Object, ...)} new Model object
@@ -956,7 +1018,8 @@ oj.Model.prototype.Merge = function(model, comparator, silent) {
         if (model.attributes.hasOwnProperty(prop)) {
             valueChange = (this.attributes[prop] != model.attributes[prop]);
             if (isStringComparator) {
-                // We have a string comparator--does it match this property?  If we hit a property that doesn't match, we need sort
+                // We have a string comparator--does it match this property?  If we hit a property that doesn't 
+                // match, we need sort
                 if (prop === comparator) {
                     // The property matches the comparator property: are we changing the value?
                     if (valueChange) {
@@ -1044,8 +1107,8 @@ oj.Model.prototype._setPropInternal = function(prop, value, copyRegardless) {
     if (copyRegardless || !equality) {
         this.attributes[prop] = value;
         this.SetupId();
-        // Return value management here seems bizarre due to backbone tests: do the direct set if copyRegardless, but only return if the
-        // inner equals was different
+        // Return value management here seems bizarre due to backbone tests: do the direct set if copyRegardless, 
+        // but only return if the inner equals was different
         return !equality;
     }
     return false;
@@ -1061,8 +1124,8 @@ oj.Model.prototype._addChange = function(property, value) {
 
 /**
  * @ignore
- * @param {Object||string} prop
- * @param {Object||null||undefined} value
+ * @param {Object|string} prop
+ * @param {Object|null|undefined} value
  * @param {boolean} copyRegardless
  * @param {boolean} propertyBag
  * @param {Object=} options
@@ -1147,14 +1210,15 @@ oj.Model.prototype._setProp = function(prop, value, copyRegardless, propertyBag,
  * Clears all attributes from the model<br>
  * Events:<p>
  * <ul>
- * <b>change:attr</b>: fired for each attribute cleared, passing the model, name of the changed property, and options<br>
+ * <b>change:attr</b>: fired for each attribute cleared, passing the model, name of the changed property, and 
+ * options<br>
  * <b>change:all</b>: fired after all attributes have been cleaered, passing the model and options<br>
  * </ul>
  * <p>
  * 
  * @param {Object=} options <b>silent</b>: if true, do not fire events<br>
  *                          <b>validate</b>: if true, validate the unsetting of all properties
- * @return {Object||boolean} the model, or false if validation on clear fails
+ * @return {Object|boolean} the model, or false if validation on clear fails
  * @export
  */
 oj.Model.prototype.clear = function(options) {
@@ -1246,12 +1310,12 @@ oj.Model.prototype.Match = function(id, cid) {
  * <b>change:all</b>: fired after all attributes have been set, passing the model and options<br>
  * </ul>
  * <p>
- * @param {string||Object} property Property attribute name to set, or an Object containing attribute/value pairs
+ * @param {string|Object} property Property attribute name to set, or an Object containing attribute/value pairs
  * @param {Object=} value Value for property if property is not an Object containing attribute/value pairs
  * @param {Object=} options Options: <br>
  * <b>silent</b>: prevent events from firing<br>
  * <b>unset</b>: delete all the properties passed in rather than setting them<br>
- * @returns {Object||boolean} the model itself, false if validation failed on set
+ * @returns {Object|boolean} the model itself, false if validation failed on set
  * @export
  */
 oj.Model.prototype.set = function (property, value, options) {
@@ -1260,7 +1324,8 @@ oj.Model.prototype.set = function (property, value, options) {
     if (arguments && arguments.length > 0) {
         // Check if first arg is not a string (property name)
         if (!oj.StringUtils.isString(property)) {
-            // Options, if present, must be second argument...value, because a string/value pair wasn't what was passed in
+            // Options, if present, must be second argument...value, because a string/value pair wasn't what was 
+            // passed in
             opts = value || {};
             // For set, pass entire thing to setProp
             if (opts['unset']) {
@@ -1298,7 +1363,8 @@ oj.Model.prototype.set = function (property, value, options) {
  * Deletes the given property from the model.<br>
  * Events:<p>
  * <ul>
- * <b>change:attr</b>: fired for each attribute unset: passing the model, name of the changed property, and options<br>
+ * <b>change:attr</b>: fired for each attribute unset: passing the model, name of the changed property, and 
+ * options<br>
  * <b>change:all</b>: fired after all attributes have been unset: passing the model and options<br>
  * @param {string} property Property to remove from model 
  * @param {Object=} options <br>
@@ -1359,14 +1425,20 @@ oj.Model.prototype.has = function (property) {
  * Loads the Model object from the data service URL. Performs a data "read."<br>
  * Events:<p>
  * <ul>
- * <b>request</b>: fired when the request to fetch is going to the server, passing the model, xhr object, and options<br>
+ * <b>request</b>: fired when the request to fetch is going to the server, passing the model, xhr object, and 
+ * options<br>
  * <b>sync</b>: fired when the model is fetched from the data service, passing the model and the raw response<br>
  * <b>error</b>: fired if there is an error during the fetch, passing the model, xhr ajax object, and options<br>
  * </ul>
  * <p>
  * @param {Object=} options Options to control fetch<p>
- * <b>success</b>: a user callback called when the fetch has completed successfully. This makes the fetch an asynchronous process. The callback is called passing the Model object, raw response, and the fetch options argument.<p>
- * <b>error</b>: a user callback function called if the fetch fails. The callback is called passing the model object, xhr, and options arguments.<p>
+ * <b>success</b>: a user callback called when the fetch has completed successfully. This makes the fetch an 
+ * asynchronous process. The callback is called passing the Model object, raw response, and the fetch options 
+ * argument.<p>
+ * <b>error</b>: a user callback function called if the fetch fails. The callback is called passing the model 
+ * object, xhr, and options arguments.<p>
+ * @return {Object} xhr ajax object, by default.  If [sync]{@link oj.Model#sync} has been replaced, this would be 
+ * the value returned by the custom implementation.
  * @export
  */
 oj.Model.prototype.fetch = function (options) { 
@@ -1394,9 +1466,9 @@ oj.Model.prototype.fetch = function (options) {
                 self.set(self['parse'](response), opts);
             }
              if (success) {
-                 success.call(self, this, response, options);
+                 success.call(oj.Model.GetContext(opts, self), self, response, options);
              }};
-    oj.Model._internalSync("read", this, opts);
+    return oj.Model._internalSync("read", this, opts);
 };
 
 oj.Model.prototype['parse'] = function (rawData) {
@@ -1488,7 +1560,7 @@ oj.Model.prototype.pairs = function() {
 /**
  * Return attribute/value pairs for the model minus those attributes listed in keys
  * 
- * @param {Array||Object} keys keys to exclude from the returned attribute/value pairs
+ * @param {Array|Object} keys keys to exclude from the returned attribute/value pairs
  * 
  * @returns {Object} array of the model's attribute/value pairs except those listed in keys
  * @export
@@ -1517,7 +1589,7 @@ oj.Model.prototype.omit = function(keys) {
 /**
  * Return attribute/value pairs for the model for the keys
  * 
- * @param {Array||Object} keys keys for which to return attribute/value pairs
+ * @param {Array|Object} keys keys for which to return attribute/value pairs
  * 
  * @returns {Object} array of the model's attribute/value pairs filtered by keys
  * @export
@@ -1647,8 +1719,8 @@ oj.Model._processArgs = function(args) {
             else {
                 // Not a property bag?  We assume arguments are a series of attr/values
                 for (i = 0; i < args.length; i+=2) {
-                    // Process the arg as long as its: defined, and isn't the last argument where we're supposed to ignore the last argument
-                    // due to it being 'options'
+                    // Process the arg as long as its: defined, and isn't the last argument where we're supposed to 
+                    // ignore the last argument due to it being 'options'
                     if (args[i] !== undefined || i < args.length-1 || (!ignoreLastArg && i === args.length-1)) {
                         attributes[args[i]] = args[i+1];
                     }
@@ -1683,27 +1755,35 @@ oj.Model._triggerError = function(self, silent, options, status, err, xhr) {
  * Saves the current Model object to the data service. Performs a data "update."<br>
  * Events:<p>
  * <ul>
- * <b>change:attr</b>: fired for each attribute changed, if passed in as part of the save: passing the model, name of the changed property, and options<br>
- * <b>change:all</b>: fired after all attributes have been set, if passed in as part of the save: passing the model and options<br>
- * <b>request</b>: fired when the request to save is going to the server, passing the model, xhr object, and options<br>
+ * <b>change:attr</b>: fired for each attribute changed, if passed in as part of the save: passing the model, name 
+ * of the changed property, and options<br>
+ * <b>change:all</b>: fired after all attributes have been set, if passed in as part of the save: passing the 
+ * model and options<br>
+ * <b>request</b>: fired when the request to save is going to the server, passing the model, xhr object, and 
+ * options<br>
  * <b>sync</b>: fired when the model is saved to the data service, passing the model and the raw response<br>
  * <b>error</b>: fired if there is an error during the save, passing the model, xhr ajax object, and options<br>
  * </ul>
  * <p>
  * @param {Object=} attributes One or more attribute name/value pairs to set on the model before the save. 
  * @param {Object=} options Options to control save<br>
- * <b>success</b>: a user callback called when the save has completed successfully. This makes the save an asynchronous process. The callback is called passing the Model object, response from the AJAX call, and the fetch options argument.<p>
+ * <b>success</b>: a user callback called when the save has completed successfully. This makes the save an 
+ * asynchronous process. The callback is called passing the Model object, response from the AJAX call, and the 
+ * fetch options argument.<p>
  * <b>error</b>: a user callback function called if the save fails. <p>
- * <b>contextType</b>: in case the user's REST service requires a different POST content type than the default, 'application/json'<p>
+ * <b>contextType</b>: in case the user's REST service requires a different POST content type than the default, 
+ * 'application/json'<p>
  * <b>validate</b>: should the validation routine be called if available<p>
  * <b>wait</b>: if true, wait for the server call before setting the attributes on the model<p>
  * <b>patch</b>: should only changed attributes be sent via a PATCH?<p>
- * <b>attrs</b>: pass a set of attributes to completely control the set of attributes that are saved to the server (generally used with patch)
+ * <b>attrs</b>: pass a set of attributes to completely control the set of attributes that are saved to the 
+ * server (generally used with patch)
  * @return {Object|boolean} returns false if validation failed
  * @export
  */
 oj.Model.prototype.save = function (attributes, options) {    
-    var forceNew, success, callback, self, userErr, patch, argResults = oj.Model._processArgs(arguments), opts, oldAttrs, attrArgs;
+    var forceNew, success, callback, self, userErr, patch, argResults = oj.Model._processArgs(arguments), opts, 
+        oldAttrs, attrArgs;
     attrArgs = attributes === undefined ? undefined : argResults.attributes;
     
     options = options || {};
@@ -1751,7 +1831,7 @@ oj.Model.prototype.save = function (attributes, options) {
                     options['xhr'] = opts['xhr'];
                 }
                 
-                if (resp) {
+                if (resp && !oj.Object.isEmpty(resp)) {
                     if ($.isFunction(self['parse'])) {
                         attrs = self['parse'](resp);
                     }
@@ -1760,11 +1840,21 @@ oj.Model.prototype.save = function (attributes, options) {
                     }
                     
                     self.attributes = $.extend(true, self.attributes, attrs);
-                    self.SetupId();
+
+                    // Merge attrs from response/parse into arg attrs if different--server takes priority in case 
+                    // of 'wait'
+                    if (opts['wait']) {
+                        for (var prop in attrArgs) {
+                            if (attrs.hasOwnProperty(prop)) {
+                                // Prioritize the one in attrs
+                                attrArgs[prop] = attrs[prop];
+                            }
+                        }
+                    }
+                    self.SetupId();            
                 }
-                
                 oj.Model._fireSyncEvent(self, resp, opts, false);
-                
+
                 if (opts['wait']) {
                     self.set(attrArgs);
                 }
@@ -1793,7 +1883,7 @@ oj.Model.prototype.save = function (attributes, options) {
        if (opts['xhr']) {
           options['xhr'] = opts['xhr'];
       }
-       if (resp) {
+       if (resp && !oj.Object.isEmpty(resp)) {
             if ($.isFunction(self['parse'])) {
                 attrs = self['parse'](resp);
             }
@@ -1803,13 +1893,24 @@ oj.Model.prototype.save = function (attributes, options) {
             if (!self._checkValid(attrs, opts, true)) {
                 return;
             }
+
             self.attributes = $.extend(true, self.attributes, attrs);
-            self.SetupId();
+            
+            // Merge attrs from response/parse into arg attrs if different--server takes priority in case of 'wait'
+            if (opts['wait']) {
+                for (var prop in attrArgs) {
+                    if (attrs.hasOwnProperty(prop)) {
+                        // Prioritize the one in attrs
+                        attrArgs[prop] = attrs[prop];
+                    }
+                }
+            }
+            self.SetupId();            
        }
-       if (opts['wait']) {
+        oj.Model._fireSyncEvent(self, resp, opts, false);
+        if (opts['wait']) {
            self.set(attrArgs);
-       }
-       oj.Model._fireSyncEvent(self, resp, opts, false);
+        }
        
         if (callback) {
             callback.call(oj.Model.GetContext(opts, self), self, resp, options);
@@ -1825,8 +1926,8 @@ oj.Model.prototype.save = function (attributes, options) {
     // Turn on parse flag
     opts['parse'] = true;
 
-    // Bizarre case tested by backboneJS--if this is a new model, but we're patching, make sure we only save the explicit attrs
-    // if passed in by user
+    // Bizarre case tested by backboneJS--if this is a new model, but we're patching, make sure we only save the 
+    // explicit attrs if passed in by user
     if (patch) {
         opts['saveAttrs'] = opts['attrs'];
     }
@@ -1940,7 +2041,8 @@ oj.Model.GetContext = function(options, model) {
 };
 
 /**
- * Determines if this model object has been assigned an id value yet. This indicates whether or not the model's data has been saved to or fetched from the data service at any point.
+ * Determines if this model object has been assigned an id value yet. This indicates whether or not the model's 
+ * data has been saved to or fetched from the data service at any point.
  * @returns {boolean} true if the Model object has not had its id set yet, false if not.
  * @export
  */
@@ -1957,10 +2059,14 @@ oj.Model.prototype.GetId = function () {
 };
 
 /**
- * Return the set of attributes and values that have changed since the last set.  Note that a Model.fetch() uses set to store the returned attribute data. If attribute/value pairs are passed in, check those to see if they're different than the model.
+ * Return the set of attributes and values that have changed since the last set.  Note that a Model.fetch() uses 
+ * set to store the returned attribute data. If attribute/value pairs are passed in, check those to see if they're 
+ * different than the model.
  * Return false if there were no changes
  * @param {Object=} attributes One or more attribute/value pairs to check against the model for changes 
- * @return {Object||boolean} the set of all attribute value pairs that have changed since last set, if no attributes passed in; the set of all attribute value pairs that are different than those listed in the attributes parameter, if present.  False if no changes
+ * @return {Object|boolean} the set of all attribute value pairs that have changed since last set, if no 
+ * attributes passed in; the set of all attribute value pairs that are different than those listed in the 
+ * attributes parameter, if present.  False if no changes
  * @export
  */
 oj.Model.prototype.changedAttributes = function(attributes) {
@@ -1979,9 +2085,12 @@ oj.Model.prototype.changedAttributes = function(attributes) {
 };
 
 /**
- * Return true if the Model object has had any changes made to its values, or if any changes have been made to the optional set of attributes passed in.
+ * Return true if the Model object has had any changes made to its values, or if any changes have been made to 
+ * the optional set of attributes passed in.
  * @param {Array=} attribute One or more attributes to check for changes 
- * @returns {boolean} true if the Model object has had any changes since retrieval or last update at all (if no attributes parameter); true if the Model object has had changes to one or more of the passed-in attributes since retrieval or last update (if attributes parameter present).
+ * @returns {boolean} true if the Model object has had any changes since retrieval or last update at all (if no 
+ * attributes parameter); true if the Model object has had changes to one or more of the passed-in attributes 
+ * since retrieval or last update (if attributes parameter present).
  * @export
  */
 oj.Model.prototype.hasChanged = function(attribute) {
@@ -1993,17 +2102,26 @@ oj.Model.prototype.hasChanged = function(attribute) {
 
 
 /**
- * Delete the record represented by this model object from the data service.  If the server responds with virtual mode response properties (such as totalResults), these will be picked up at the end of the delete by the model's collection.  Note that by default, the delete isn't sent with an HTTP data type so the object returning these properties needs to be a string version of the JSON object.<br>
+ * Delete the record represented by this model object from the data service.  If the server responds with virtual 
+ * mode response properties (such as totalResults), these will be picked up at the end of the delete by the 
+ * model's collection.  Note that by default, the delete isn't sent with an HTTP data type so the object 
+ * returning these properties needs to be a string version of the JSON object.<br>
  * Events:<p>
  * <ul>
- * <b>destroy</b>: fired when the model is destroyed, either before or after the server call, depending on the setting of wait.  The model and model's collection are passed in<br>
- * <b>request</b>: fired right as the call is made to request the server delete the model.  Passes the model, xhr ajax object, and options.<br>
- * <b>sync</b>: fired after the server succeeds in destroying the model.  Passes the model, the raw response data, and options.
+ * <b>destroy</b>: fired when the model is destroyed, either before or after the server call, depending on the 
+ * setting of wait.  The model and model's collection are passed in<br>
+ * <b>request</b>: fired right as the call is made to request the server delete the model.  Passes the model, 
+ * xhr ajax object, and options.<br>
+ * <b>sync</b>: fired after the server succeeds in destroying the model.  Passes the model, the raw response data, 
+ * and options.
  * </ul>
  * @param {Object=} options Options for the destroy operation:<br>
- * <b>wait</b>: if true, wait until the server is done to fire the destroy event.  Otherewise, fire immediately and regardless of success or failure<br>
- * <b>success</b>: callback function called if the server call succeeds, passing the model, response data, and options<br>
- * <b>error</b>: callback function on failure of the server call, firing an error event and passing the model, xhr, status, and error values.<br>
+ * <b>wait</b>: if true, wait until the server is done to fire the destroy event.  Otherewise, fire immediately 
+ * and regardless of success or failure<br>
+ * <b>success</b>: callback function called if the server call succeeds, passing the model, response data, and 
+ * options<br>
+ * <b>error</b>: callback function on failure of the server call, firing an error event and passing the model, 
+ * xhr, status, and error values.<br>
  * @export
  */
 oj.Model.prototype.destroy = function (options) {
@@ -2127,12 +2245,15 @@ oj.Model.prototype.previousAttributes = function() {
  * @param {Object=} options to control sync:<br>
  * <b>success</b>: called if sync succeeds:<br>
  * <ul>
- * For create, called with the response (attribute/value pairs); status (Ajax by default, but user-defined); xhr object (Ajax--if available)<br>
+ * For create, called with the response (attribute/value pairs); status (Ajax by default, but user-defined); 
+ * xhr object (Ajax--if available)<br>
  * For read, called with the response (attribute/value pairs being fetched)<br>
  * For update, same as create<br>
- * For delete, called with the oj.Model deleted, the data response (ignored), and the options passed to the destroy call<br>
+ * For delete, called with the oj.Model deleted, the data response (ignored), and the options passed to the 
+ * destroy call<br>
  * </ul>
- * <b>error</b>: called if sync fails.  Called with xhr, status, and error info, per jQuery Ajax (all if available)<p>
+ * <b>error</b>: called if sync fails.  Called with xhr, status, and error info, per jQuery Ajax (all if 
+ * available)<p>
  * 
  * @return {Object} xhr object
  * @memberOf oj.Model
@@ -2161,7 +2282,8 @@ oj.Model._internalSync = function(method, model, options) {
     
     // Do parsing if necessary and tuck it on options
     if (method === "create" || method === "patch" || method === "update") {
-        options.parsedData = model['parseSave'].call(model, method==="patch" ? options['attrs'] : options['saveAttrs']);
+        options.parsedData = model['parseSave'].call(model, method==="patch" ? options['attrs'] : 
+                                                                               options['saveAttrs']);
     }
     var recordId = null;
     if (model instanceof oj.Model) {
@@ -2236,7 +2358,8 @@ oj.sync = function(method, model, options) {
         if (model instanceof oj.Model) {
             var url = options['url'] ? options['url'] : oj.Model.GetPropValue(model, 'url');
             restService = new oj.RestImpl(url, customURL);
-            return _fireAndReturn(restService.getRecord(success, error, model.GetId(), options, oj.Model.GetContext(options, model)));
+            return _fireAndReturn(restService.getRecord(success, error, model.GetId(), options, 
+                                  oj.Model.GetContext(options, model)));
         }
         // Collection fetch
         var url = model.GetCollectionFetchUrl(options);
@@ -2250,10 +2373,12 @@ oj.sync = function(method, model, options) {
         recordId = model.GetId();
     }
     if (method.valueOf() === "update") {
-        return _fireAndReturn(restService.updateRecord(success, recordId, options.parsedData, error, options, model, false));
+        return _fireAndReturn(restService.updateRecord(success, recordId, options.parsedData, error, options, 
+                              model, false));
     }
     if (method.valueOf() === "patch") {
-        return _fireAndReturn(restService.updateRecord(success, recordId, options.parsedData, error, options, model, true));
+        return _fireAndReturn(restService.updateRecord(success, recordId, options.parsedData, error, options, 
+                              model, true));
     }
     if (method.valueOf() === "delete") {
         return _fireAndReturn(restService.deleteRecord(recordId, error, options, model));
@@ -2270,8 +2395,9 @@ oj.Model._urlError = function(ajaxOptions) {
 
 /**
  * @export
- * @desc Master Ajax entry point for all oj.Model and oj.Collection server interactions, when they are using the default sync implementations.
- * oj.ajax passes through to jQuery ajax by default.  See {@link http://api.jquery.com/jquery.ajax/} for expected parameters and return value.
+ * @desc Master Ajax entry point for all oj.Model and oj.Collection server interactions, when they are using the 
+ * default sync implementations.  oj.ajax passes through to jQuery ajax by default.  
+ * See {@link http://api.jquery.com/jquery.ajax/} for expected parameters and return value.
  * 
  * @return {Object} xhr object
  * @memberOf oj
@@ -2367,7 +2493,7 @@ oj.RestImpl.prototype.getRecords = function(callback, errFunc, options, context)
 	};
         ajaxOptions = this._addHeaderProp(ajaxOptions);
         ajaxOptions = oj.RestImpl.addOptions(ajaxOptions, options, urlInfo);
-	options.xhr = this.ajax(ajaxOptions);
+	options.xhr = this.ajax(ajaxOptions, context);
         return options.xhr;
 };
 
@@ -2390,7 +2516,7 @@ oj.RestImpl.prototype.getRecord = function(success, error, recordID, options, co
 	};
         ajaxOptions = this._addHeaderProp(ajaxOptions);
         ajaxOptions = oj.RestImpl.addOptions(ajaxOptions, options, urlInfo);
-	options.xhr = this.ajax(ajaxOptions);    
+	options.xhr = this.ajax(ajaxOptions, context);    
         return options.xhr;
 };
 
@@ -2415,7 +2541,7 @@ oj.RestImpl.prototype.updateRecord = function(callback, recordID, record, error,
     ajaxOptions = this._addHeaderProp(ajaxOptions);
     ajaxOptions = oj.RestImpl.addOptions(ajaxOptions, options, urlInfo);
     ajaxOptions = oj.RestImpl._beforeSendMod(emulateHTTP, ajaxOptions);
-    options.xhr = this.ajax(ajaxOptions);
+    options.xhr = this.ajax(ajaxOptions, context);
     return options.xhr;
 };
 
@@ -2486,7 +2612,8 @@ oj.RestImpl._emulateJSON = function(options) {
 oj.RestImpl.prototype._getURL = function(operation, rootURL, customURL, recordID, context, options) {
    var httpMethod = this._getHTTPMethod(operation, options);
    if ($.isFunction(customURL)) {
-       var result = customURL.call(this, operation, context, oj.Model.SetCustomURLOptions(recordID, context, options));
+       var result = customURL.call(this, operation, context, 
+                                   oj.Model.SetCustomURLOptions(recordID, context, options));
        if (oj.StringUtils.isString(result)) {
            var retObj = {'url': result, 'type' : httpMethod.method};
            if (httpMethod._method) {
@@ -2535,7 +2662,7 @@ oj.RestImpl.prototype.deleteRecord = function(recordID, error, options, context)
     }
     ajaxOptions = oj.RestImpl.addOptions(ajaxOptions, options, urlInfo);
     ajaxOptions = oj.RestImpl._beforeSendMod(emulateHTTP, ajaxOptions);
-    options.xhr = this.ajax(ajaxOptions);
+    options.xhr = this.ajax(ajaxOptions, context);
     return options.xhr;
 };
 
@@ -2559,7 +2686,7 @@ oj.RestImpl.prototype.addRecord = function(record, error, options, context) {
     };
     ajaxOptions = this._addHeaderProp(ajaxOptions);
     ajaxOptions = oj.RestImpl.addOptions(ajaxOptions, options, urlInfo);
-    options.xhr = this.ajax(ajaxOptions);  
+    options.xhr = this.ajax(ajaxOptions, context);  
 
     return options.xhr;
 };
@@ -2583,12 +2710,16 @@ oj.RestImpl.prototype.getLocale = function() {
     return oj.Config.getLocale();
 };
 
-oj.RestImpl.prototype.ajax = function(settings) {
+oj.RestImpl.prototype.ajax = function(settings, collection) {
     if (settings.url === null || settings.url === undefined) {
         throw new oj.URLError();
     }
 
-    return window['oj']['ajax'](settings);
+    var xhr = window['oj']['ajax'](settings);
+    if (collection._addxhr) {
+        collection._addxhr(xhr);        
+    }
+    return xhr;
 };
 
 
@@ -2676,7 +2807,8 @@ oj.OAuth.prototype.clientCredentialGrant = function()
 {
 	var headers = {}, self = this;
 	headers[self.accessTokenRequest.auth_header] = 'Basic ' + 
-		oj.OAuth._base64_encode(self.accessTokenRequest['client_id']+':'+self.accessTokenRequest['client_secret']);
+		oj.OAuth._base64_encode(self.accessTokenRequest['client_id']+':'+
+                self.accessTokenRequest['client_secret']);
 		
 	$.ajax({
 		type: 'POST',
@@ -2730,7 +2862,8 @@ oj.OAuth.prototype.cleanAccessTokenResponse = function()
 /**
  * Set request part of the OAuth object (client credentials, uri endpoint)
  * @param {Object} data current client credentials and uri
- * @example <caption>'Initialize' request part of the OAuth object with client credentials and calculate access_token</caption>
+ * @example <caption>'Initialize' request part of the OAuth object with client credentials and calculate 
+ * access_token</caption>
  * myOAuth.setAccessTokenRequest({...Client Credentials ...});
  * myOAuth.clientCredentialGrant();
  *
@@ -2765,7 +2898,7 @@ oj.OAuth.prototype.cleanAccessTokenRequest = function()
  * @private
  * @param {Object} oauth
  * @param {Object} attributes
- * @param {string||null} header
+ * @param {string|null} header
  */
 oj.OAuth._init = function(oauth, attributes, header) 
 {
@@ -2775,7 +2908,8 @@ oj.OAuth._init = function(oauth, attributes, header)
 	
 	if(attributes['access_token']) { // access_token has higher preference
 		oj.OAuth._initAccessToken(oauth.accessTokenResponse, attributes);
-	} else if(attributes['client_id'] && attributes['client_secret'] && attributes['bearer_url']) { // Client Credential Grant		
+	} else if(attributes['client_id'] && attributes['client_secret'] && attributes['bearer_url']) { 
+            // Client Credential Grant		
 		oj.OAuth._initAccessToken(oauth.accessTokenRequest, attributes);
 	}
 	oauth.accessTokenRequest.auth_header = header;
@@ -2847,7 +2981,9 @@ oj.OAuth._cleanAccessToken = function(oauthObj) {
  * @class oj.Collection 
  * @classdesc Collection of Model objects 
  * 
- * @param {Array=} models Set of model objects to put into collection at construction time.  If models contain actual oj.Model objects, then any custom parse callback set on the collection must be able to handle oj.Model objects as a possible argument
+ * @param {Array=} models Set of model objects to put into collection at construction time.  If models contain actual
+ *                 oj.Model objects, then any custom parse callback set on the collection must be able to handle
+ *                 oj.Model objects as a possible argument
  * @param {Object=} options Passed through to the user's initialize routine, if any, upon construction 
  * @constructor
  * @mixes oj.Events
@@ -2875,7 +3011,8 @@ oj.Collection.prototype.model = null;
 
 
 /**
- * @desc Function specifying how to construct the id for models in this collection.  Override to change the construction of the id.
+ * @desc Function specifying how to construct the id for models in this collection.  Override to change the
+ * construction of the id.
  * @type {(function(Object):(String)|null)} 
  * @export
  */
@@ -2889,7 +3026,8 @@ oj.Collection.prototype.modelId = function(attrs) {
 
 /**
  * @export
- * @desc Total number of models in the collection.  When the collection is virtual, not all of the models may be locally available.
+ * @desc Total number of models in the collection.  When the collection is virtual, not all of the models may be
+ * locally available.
  * 
  * @type number
  */
@@ -2918,7 +3056,8 @@ oj.Collection.prototype.url = null;
 
 /**
  * @export
- * @desc Changes that have occured due to adds/removes since the last fetch.  This is a list of indicies that have changed (location at which a model was added, deleted, or set).  They do not shift with subsequent operations
+ * @desc Changes that have occured due to adds/removes since the last fetch.  This is a list of indicies that have
+ * changed (location at which a model was added, deleted, or set).  They do not shift with subsequent operations
  * @type Array
  */
 oj.Collection.prototype.changes = [];
@@ -2926,7 +3065,8 @@ oj.Collection.prototype.changes = [];
 
 /**
  * A callback to allow users to customize the data service URLs.  The callback should accept these parameters:<p>
- * <b>operation</b>: one of "create", "read", "update", "patch", or "delete", indicating the type of operation for which to return the URL<p>
+ * <b>operation</b>: one of "create", "read", "update", "patch", or "delete", indicating the type of operation for
+ * which to return the URL<p>
  * <b>collection</b>: the oj.Collection object requesting the URL<p>
  * <b>options</b>: any of the following properties:<br>
  * <ul>
@@ -2938,12 +3078,15 @@ oj.Collection.prototype.changes = [];
  * <b>until</b>: Retrieve records with timestamps up to the given timestamp.  Default is "until"<br>
  * <b>sort</b>:  field(s) by which to sort, if set<br>
  * <b>sortDir</b>: sort ascending or descending (asc/dsc)<br>
- * <b>query</b>: a set of attributes indicating filtering that should be done on the server.  See [where]{@link oj.Collection#where} for complete documentation of query values<br>
- * <b>all</b>: true (along with 'query', above) indicates that this is a findWhere or where type call that is expecting all models meeting the query condition to be returned<br>
+ * <b>query</b>: a set of attributes indicating filtering that should be done on the server.  See 
+ * [where]{@link oj.Collection#where} for complete documentation of query values<br>
+ * <b>all</b>: true (along with 'query', above) indicates that this is a findWhere or where type call that is 
+ * expecting all models meeting the query condition to be returned<br>
  * </ul>
  * <p>
- * customURL callbacks should return either: null, in which case the default will be used; a url string, which will be used with the standard
- * HTTP method for the type of operation, or an Object with any other attributes that should be passed to the ajax call.<br>
+ * customURL callbacks should return either: null, in which case the default will be used; a url string, which 
+ * will be used with the standard HTTP method for the type of operation, or an Object with any other attributes 
+ * that should be passed to the ajax call.<br>
  * This object must at minimum include the URL, and other attributes as follows:<br>
  * <ul>
  * <b>url</b>: the custom URL string<br>
@@ -2951,7 +3094,7 @@ oj.Collection.prototype.changes = [];
  * <b>(other)</b>: (optional) any other attributes to pass in the ajax call<br>
  * </ul>
  * <p>
- *  @type {(function(string,Object,Object):(string|Object|null))|null}
+ *  @type {function(string,Object,Object):(string|Object|null)|null}
  * @export
  */
 oj.Collection.prototype.customURL = null;
@@ -2962,14 +3105,21 @@ oj.Collection.prototype.customURL = null;
  * <b>response</b>: the response coming back from the fetch call<p>
  * <p>
  * The callback should return either null, in which case the collection will look for the default properties, or
- * an object containing one or more of the following attribute/value pairs (note that the Collection will look back to the response for default paging return properties if 
+ * an object containing one or more of the following attribute/value pairs (note that the Collection will look back 
+ * to the response for default paging return properties if 
  * not found in the returned object):<br>
  * <ul>
- * <b>totalResults</b>: the total number of records available on the server side, not just in the current result.  By default the collection looks in the response for "totalResults"<br>
- * <b>limit</b>: the actual fetchSize from the server.  This may not be the client's fetchSize or the number of records in the current result.  By default the collection looks in the response for "limit".  This becomes the collection's "lastFetchSize" property<br>
- * <b>count</b>: the actual number of records returned by the server in the last result.  This becomes the collection's "lastFetchCount".  By default the collection looks in the response for "count".<br>
- * <b>offset</b>: the actual starting record number of the current result.  By default the collection looks in the response for "offset"<br>
- * <b>hasMore</b>: boolean indicating whether or not there are more records available beyond the current result.  By default the collection looks in the response for "hasMore"<br>
+ * <b>totalResults</b>: the total number of records available on the server side, not just in the current result.  
+ * By default the collection looks in the response for "totalResults"<br>
+ * <b>limit</b>: the actual fetchSize from the server.  This may not be the client's fetchSize or the number of 
+ * records in the current result.  By default the collection looks in the response for "limit".  This becomes the 
+ * collection's "lastFetchSize" property<br>
+ * <b>count</b>: the actual number of records returned by the server in the last result.  This becomes the 
+ * collection's "lastFetchCount".  By default the collection looks in the response for "count".<br>
+ * <b>offset</b>: the actual starting record number of the current result.  By default the collection looks in the 
+ * response for "offset"<br>
+ * <b>hasMore</b>: boolean indicating whether or not there are more records available beyond the current result.  
+ * By default the collection looks in the response for "hasMore"<br>
  * </ul>
  * <p>
  *                  
@@ -2997,7 +3147,8 @@ oj.Collection.prototype.hasMore = false;
 
 /**
  * @export
- * @desc The total number of records available for this collection regardless of whether they have been fetched or not.  For non-virtual collections this will equal the length.
+ * @desc The total number of records available for this collection regardless of whether they have been fetched or 
+ * not.  For non-virtual collections this will equal the length.
  * 
  * @type number
  */
@@ -3006,7 +3157,8 @@ oj.Collection.prototype.totalResults = undefined;
 /**
  * 
  * @export
- * @desc The number of records actually fetched the last time the collection fetched from the server.  This may or may not match [fetchSize]{@link oj.Collection#fetchSize} or [lastFetchSize]{@link oj.Collection#lastFetchSize}
+ * @desc The number of records actually fetched the last time the collection fetched from the server.  This may or 
+ * may not match [fetchSize]{@link oj.Collection#fetchSize} or [lastFetchSize]{@link oj.Collection#lastFetchSize}
  * 
  * @type number
  */
@@ -3014,7 +3166,8 @@ oj.Collection.prototype.lastFetchCount = undefined;
 
 /**
  * @export
- * @desc For virtual collections, the number of records to be kept in memory at any one time.  The default of -1 indicates that no records are thrown out
+ * @desc For virtual collections, the number of records to be kept in memory at any one time.  The default of -1 
+ * indicates that no records are thrown out
  * 
  * @type number
  */
@@ -3022,7 +3175,8 @@ oj.Collection.prototype.modelLimit = -1;
 
 /**
  * @export
- * @desc The actual starting index number at which models from the last server fetch were inserted into the collection.
+ * @desc The actual starting index number at which models from the last server fetch were inserted into the 
+ * collection.
  * 
  * @type number
  */
@@ -3030,7 +3184,9 @@ oj.Collection.prototype.offset = undefined;
 
 /**
  * @export
- * @desc The number of records to be fetched from the server in any one round trip.  The server's fetch size comes back as the "limit" property.  The default value of -1 indicates that virtualization is not being used or is not available, and all records will be fetched.<br>
+ * @desc The number of records to be fetched from the server in any one round trip.  The server's fetch size comes 
+ * back as the "limit" property.  The default value of -1 indicates that virtualization is not being used or is 
+ * not available, and all records will be fetched.<br>
  * The number of records actually fetched comes back as [count]{@link oj.Collection#count}<br>
  * 
  * @type number
@@ -3039,8 +3195,10 @@ oj.Collection.prototype.fetchSize = -1;
 
 /**
  * @export
- * @desc Sort direction for string-based sort comparators (model attribute names).  A value of 1 indicates ascending sorts, -1 indicates descending.  The default is 1 (ascending).<br>
- * Users should call sort() after changing sort direction to ensure that models in the collection are sorted correctly, or, for virtual collections, that there are no left over models in an incorrect order.
+ * @desc Sort direction for string-based sort comparators (model attribute names).  A value of 1 indicates 
+ * ascending sorts, -1 indicates descending.  The default is 1 (ascending).<br>
+ * Users should call sort() after changing sort direction to ensure that models in the collection are sorted 
+ * correctly, or, for virtual collections, that there are no left over models in an incorrect order.
  * 
  * @type number
  */
@@ -3049,10 +3207,13 @@ oj.Collection.prototype.sortDirection = 1;
 /**
  * @export
  * @desc If set to a string, sort the collection using the given attribute of a model.<p>
- * If set to a function(Model), the function should return a string giving the model attribute by which the sort should take place.<p>
- * If set to a function(Model1, Model2), then this function is called comparing Model1 and Model2 (see the JavaScript array.sort() for details)<p>
+ * If set to a function(Model), the function should return a string giving the model attribute by which the sort 
+ * should take place.<p>
+ * If set to a function(Model1, Model2), then this function is called comparing Model1 and Model2 (see the 
+ * JavaScript array.sort() for details)<p>
  * In the virtual case, comparator must be a string-based field comparator, which will be passed to the server.<p>
- * Users should call sort() after making any changes to the comparator to ensure that the models are correctly sorted, or that there are no leftover models sorted incorrectly in the virtual case.
+ * Users should call sort() after making any changes to the comparator to ensure that the models are correctly 
+ * sorted, or that there are no leftover models sorted incorrectly in the virtual case.
  * 
  * @type {String|function(Object)|function(Object,Object)}
  */
@@ -3066,14 +3227,25 @@ oj.Collection.prototype.Init = function()
 /**
  * Create a new, specific type of Collection object to represent a collection of records from a JSON data set.
  * @param {Object=} properties Properties for the new Collection class.<p>
- *                  <b>parse</b>: a user callback function to allow parsing of the JSON collection after it's returned from the data service.  If a collection is initialized with actual oj.Models or collection.set is used with actual oj.Models, the parse callback must expect that the argument passed to it may contain raw JSON data *or* oj.Model objects<br>
- *                  <b>model</b>: the specific type of [model]{@link oj.Model} object to use for each member of the collection<br>
+ *                  <b>parse</b>: a user callback function to allow parsing of the JSON collection after it's 
+ *                  returned from the data service.  If a collection is initialized with actual oj.Models or 
+ *                  collection.set is used with actual oj.Models, the parse callback must expect that the argument 
+ *                  passed to it may contain raw JSON data *or* oj.Model objects<br>
+ *                  <b>model</b>: the specific type of [model]{@link oj.Model} object to use for each member of 
+ *                  the collection<br>
  *                  <b>url</b>: the URL string to use to get records from the data service<br>
- *                  <b>initialize</b>: a user callback function to be called when this collection is created.  Called with collection, models, options.<br>
- *                  <b>comparator</b>: a user callback used on sort calls. May also be set to false to prevent sorting.  See [comparator]{@link oj.Collection#comparator}<br>
- *                  <b>fetchSize</b>: the number of records to be fetched on each round trip to the server.  Overrides [fetchSize]{oj.Collection#fetchSize}. If not set, the collection will not consider itself virtual<br>
- *                  <b>modelLimit</b>: the number of records to be held in memory at any one time, if virtualization is in force.  The default is all records.  This uses an LRU algorithm to determine which to roll off as more records are added.<br>
- * @param {Object=} classProperties optional properties that get attached to the constructor of the extended Collection
+ *                  <b>initialize</b>: a user callback function to be called when this collection is created.  
+ *                  Called with collection, models, options.<br>
+ *                  <b>comparator</b>: a user callback used on sort calls. May also be set to false to prevent 
+ *                  sorting.  See [comparator]{@link oj.Collection#comparator}<br>
+ *                  <b>fetchSize</b>: the number of records to be fetched on each round trip to the server.  
+ *                  Overrides [fetchSize]{oj.Collection#fetchSize}. If not set, the collection will not consider 
+ *                  itself virtual<br>
+ *                  <b>modelLimit</b>: the number of records to be held in memory at any one time, if 
+ *                  virtualization is in force.  The default is all records.  This uses an LRU algorithm to 
+ *                  determine which to roll off as more records are added.<br>
+ * @param {Object=} classProperties optional properties that get attached to the constructor of the extended 
+ * Collection
  * @return {function(new:Object, ...)} new Collection object
  * @this {oj.Collection}
  * @export
@@ -3147,7 +3319,8 @@ oj.Collection._init = function(collection, models, options, properties) {
 
     // Check options
     options = options || {};
-    optionlist = ["comparator", "customPagingOptions", "customURL", oj.Collection._FETCH_SIZE_PROP, "model", "modelLimit", "sortDirection", "url"];
+    optionlist = ["comparator", "customPagingOptions", "customURL", oj.Collection._FETCH_SIZE_PROP, "model", 
+                  "modelLimit", "sortDirection", "url"];
     for (i = 0; i < optionlist.length; i++) {            
         if (options.hasOwnProperty(optionlist[i]) && options[optionlist[i]] !== undefined) {
             collection[optionlist[i]] = options[optionlist[i]];            
@@ -3174,6 +3347,10 @@ oj.Collection._init = function(collection, models, options, properties) {
         }
     }
     collection._setLength();
+    if (!models) {
+        // Make sure totalResults is uninitialized at first, though, for non virtual case--0 could be the length of the first fetch
+        collection['totalResults'] = undefined;
+    }
     
     if (properties && properties['initialize']) {
         properties['initialize'].call(collection, models, options);
@@ -3232,7 +3409,8 @@ oj.Collection.prototype._getModelsLength = function() {
     return this._getModels().length;
 };
 
-// Designed to check if index exceeds the length of the models.  If we're in a virtual and "no totalResults" case, we're never over the upper limit
+// Designed to check if index exceeds the length of the models.  If we're in a virtual and "no totalResults" case, 
+// we're never over the upper limit
 oj.Collection.prototype._overUpperLimit = function(index) {
     if (index < this._getModelsLength()) {
         return false;
@@ -3367,23 +3545,6 @@ oj.Collection.prototype._setModelIndex = function(index) {
     }
 }
 
-oj.Collection.prototype._verifyIndices = function() {
-    var models = this._getModels();
-    var count = 0;
-    for (var i = 0; i < models.length; i++) {
-        if (models[i]) {
-            count++;
-            var found = this._modelIndices.indexOf(i);
-            if (found === -1) {
-                console.log("ERROR: Could not find:" + i);
-            }
-        }
-    }
-    if (count !== this._modelIndices.length) {
-        console.log("ERROR: Model index count is wrong");
-    }
-    console.log("all ok");
-}
     
 // Insert the given model at the given index
 oj.Collection.prototype._insertModelIndex = function(start) {
@@ -3535,7 +3696,8 @@ oj.Collection.prototype._cloneInternal = function(withProperties) {
         for (i = 0; i < this._modelIndices.length; i++) {
             indices.push(this._modelIndices[i]);
         }
-        // Sort them in reverse order so we eliminate the higher indexes first so as not to disrupt the position of the earlier ones
+        // Sort them in reverse order so we eliminate the higher indexes first so as not to disrupt the position of 
+        // the earlier ones
         indices.sort(function(a,b) {
             return a-b;
         });
@@ -3590,12 +3752,13 @@ oj.Collection.prototype._setLength = function()
  * @param {Object} collection
  * @param {Object=} attrs
  * @param {Object=} options
- * @returns {null||Object}
+ * @returns {null|Object}
  * @private
  */
 oj.Collection._createModel = function(collection, attrs, options) {
     if (collection['model']) {    
-        return $.isFunction(collection['model']) ? new collection['model'](attrs, options) : new collection['model'].constructor(attrs, options);
+        return $.isFunction(collection['model']) ? new collection['model'](attrs, options) : 
+                                                   new collection['model'].constructor(attrs, options);
     }
     return null;
 };
@@ -3638,20 +3801,29 @@ oj.Collection.prototype._newModel = function(m, parse, options, ignoreDefaults) 
  * Events:<p>
  * <ul>
  * <b>add</b>: fired for each model added, passing the collection, model added, and options<br>
- * <b>alladded</b>: fired after all models have been added, passing the collection, array of models added, and options<br>
+ * <b>alladded</b>: fired after all models have been added, passing the collection, array of models added, and 
+ * options<br>
  * </ul>
  * <p>
- * Note that for virtual collections, if a new model is added after being saved up to the server, no add event will be fired as the 
- * collection will already "see" the model as existing.  Note that a warning will be logged if this add is not a force, not merging, and duplicate IDs are found.
- * @param {Object|Array} m Model object (or array of models) to add. These can be already-created instance of the oj.Model object, or sets of attribute/values, which will be wrapped by add() using the collection's model.
+ * Note that for virtual collections, if a new model is added after being saved up to the server, no add event 
+ * will be fired as the 
+ * collection will already "see" the model as existing.  Note that a warning will be logged if this add is not 
+ * a force, not merging, and duplicate IDs are found.
+ * @param {Object|Array} m Model object (or array of models) to add. These can be already-created instance of 
+ * the oj.Model object, or sets of attribute/values, which will be wrapped by add() using the collection's model.
  * @param {Object=} options <b>silent</b>: if set, do not fire events<br>
  *                          <b>at</b>: splice the new model into the collection at the value given (at:index)<br>
- *                          <b>merge</b>: if set, and if the given model already exists in the collection (matched by [id]{@link oj.Model#id}), then merge the attribute/value sets, firing change events<br>
+ *                          <b>merge</b>: if set, and if the given model already exists in the collection (matched 
+ *                          by [id]{@link oj.Model#id}), then merge the attribute/value sets, firing change 
+ *                          events<br>
  *                          <b>sort</b>: if set, do not re-sort the collection even if the comparator is set.<br>
- *                          <b>force</b>: if set to true, do an add to the collection no matter whether the item is found or not<br>
- *                          <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not<br>
+ *                          <b>force</b>: if set to true, do an add to the collection no matter whether the item is 
+ *                          found or not<br>
+ *                          <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ *                          whether it is or not<br>
  * 
- * @returns {Promise|Array} The model or models added to the collection (or found/merged if appropriate).  If deferred or virtual, return the model or models added in a promise when the set has completed
+ * @returns {Promise|Array} The model or models added to the collection (or found/merged if appropriate).  If 
+ * deferred or virtual, return the model or models added in a promise when the set has completed
  * @export
  */
 oj.Collection.prototype.add = function(m, options) {    
@@ -3702,7 +3874,8 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
                 collection._spliceModels(index, 0, newModel);
             }
             collection._getModel(index).SetCid();
-            // Increment at so that later models will be added right after their predecessors, if an array is passed in
+            // Increment at so that later models will be added right after their predecessors, if an array is 
+            // passed in
             at = at + 1;
         }
         if (newModel.GetCollection() === undefined) {
@@ -3714,7 +3887,8 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
     }
 
     function resortAndFireEvents(collection, existingModel, modelFoundInCollection, newModel, deferred) {
-        // Now resort if required (don't resort if either told not to, or if 'at' option is set) and if there's more than one model
+        // Now resort if required (don't resort if either told not to, or if 'at' option is set) and if there's 
+        // more than one model
         if (fillIn) {
             options = options || {};
             options['fillIn'] = true;
@@ -3748,7 +3922,8 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
                 addedModels.push(newModel);
             }
             else {
-                modelFoundInCollection.TriggerInternal(silent, oj.Events.EventType['ADD'], modelFoundInCollection, collection, options);
+                modelFoundInCollection.TriggerInternal(silent, oj.Events.EventType['ADD'], modelFoundInCollection, 
+                                                       collection, options);
                 addedModels.push(modelFoundInCollection);
             }
         }    
@@ -3767,10 +3942,11 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
             if (!force) {
                 existingModel = collection._getLocal(newModel);
                 if (existingModel && fillIn && at !== existingModel.index) {
-                    // We're filling in a virtual collection: we should *not* be finding the new model already in the collection
-                    // if we're not merging and not forcing: this indicates duplicate ids
+                    // We're filling in a virtual collection: we should *not* be finding the new model already in 
+                    // the collection if we're not merging and not forcing: this indicates duplicate ids
                     //throw new Error("Duplicate IDs fetched or added without merging");
-                    oj.Logger.warn("Duplicate ID fetched or added without merging, the id = " + existingModel.GetId());
+                    oj.Logger.warn("Duplicate ID fetched or added without merging, the id = " + 
+                                   existingModel.GetId());
                 }
             }
 
@@ -3790,13 +3966,15 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
 
     function doAdd(collection, model, deferred) {
         added = false;
-        var newModel = collection._newModel(model, true, options, false), modelToTryAndMerge = null, modelFoundInCollection = null;
+        var newModel = collection._newModel(model, true, options, false), modelToTryAndMerge = null, 
+            modelFoundInCollection = null;
         if (newModel != null) {
             index = -1;
             // Make sure ID is up to date
             newModel.SetupId();
 
-            // Use original model array not cloned model if merging--otherwise we won't find the model in the collection
+            // Use original model array not cloned model if merging--otherwise we won't find the model in the 
+            // collection
             modelToTryAndMerge = model instanceof oj.Model ? model : newModel;
             if (deferred) {
                 if (force) {
@@ -3806,16 +3984,20 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
                         resolve(model);
                     });
                 }
-                return collection._getInternal(modelToTryAndMerge, {'silent':true}, deferred, true).then(function (modInfo) {
+                return collection._getInternal(modelToTryAndMerge, {'silent':true}, deferred, true).then(
+                                                                 function (modInfo) {
                                                                     modelFoundInCollection = modInfo['m'];
-                                                                    var mod = mergeAttrs(collection, modelToTryAndMerge, modelFoundInCollection, newModel, deferred);
+                                                                    var mod = mergeAttrs(collection, 
+                                                                        modelToTryAndMerge, modelFoundInCollection, 
+                                                                        newModel, deferred);
                                                                     modelReturnList.push(mod);
                                                                  });
             }
             if (!force && merge) {
-                // Grab the actual model we want to merge from the collection, if the caller has indicated that we aren't
-                // forcing an add and we want to merge
-                modelFoundInCollection = fillIn ? collection._getLocal(modelToTryAndMerge) : collection.get(modelToTryAndMerge);
+                // Grab the actual model we want to merge from the collection, if the caller has indicated that 
+                // we aren't forcing an add and we want to merge
+                modelFoundInCollection = fillIn ? collection._getLocal(modelToTryAndMerge) : 
+                                                  collection.get(modelToTryAndMerge);
             }
             var modelAdded = mergeAttrs(collection, modelToTryAndMerge, modelFoundInCollection, newModel, deferred);
             if (modelAdded) {
@@ -3855,7 +4037,8 @@ oj.Collection.prototype._addInternal = function(m, options, fillIn, deferred) {
             }
             currentStep.then(function() {
                 if (addedModels.length > 0) {
-                    self.TriggerInternal(options['silent'], oj.Events.EventType['ALLADDED'], self, addedModels, options);
+                    self.TriggerInternal(options['silent'], oj.Events.EventType['ALLADDED'], self, addedModels, 
+                                         options);
                 }
                 allResolve(oj.Collection._returnModels(modelReturnList));
             }, allReject);
@@ -3884,18 +4067,25 @@ oj.Collection.prototype._hasComparator = function() {
 };
 
 /**
- * Sort the models in the collection.  For virtual collections, any locally stored models are cleaned out in preparation for new fetches sending server-sorted models down to the client.  No fetch is automatically performed.<p>
+ * Sort the models in the collection.  For virtual collections, any locally stored models are cleaned out in 
+ * preparation for new fetches sending server-sorted models down to the client.  No fetch is automatically 
+ * performed.<p>
  * For non-virtual collections, the models are sorted based on the comparator property.<p>
  * See [comparator}{@link oj.Collection#comparator}<p>
- * For virtual collections, all sorting must be handled by the server.  If the string (attribute) comparator and sortDirection are set, then this information
- * will be passed back via URL parameters, or passed to the customURL callback for application-construction of the appropriate URL.  Function-based custom comparators are ignored in virtual collections.
+ * For virtual collections, all sorting must be handled by the server.  If the string (attribute) comparator and 
+ * sortDirection are set, then this information
+ * will be passed back via URL parameters, or passed to the customURL callback for application-construction of the 
+ * appropriate URL.  Function-based custom comparators are ignored in virtual collections.
  * Events:<p>
  * Fires a sort event, passing the collection and options<p>
  * @param {Object=} options <b>silent</b>: if true, do not fire the sort event<br>
- * <b>startIndex</b>: if provided, and if collection is virtual, do a fetch of startIndex+fetchSize immediately after the sort and return a promise.  See [comparator}{@link oj.Collection#setRangeLocal}<p>
- * @return {Promise|null} if virtual and if startIndex is provided in options, a promise Object that resolves upon completion.  The promise will be passed an Object containing start and count properties that represent
- * the *actual* starting position (start), count (count), and array (models) of the Models fetched, which may be fewer than what was requested.  The promise will be rejected on
- * an error and will pass the ajax status, xhr object, error, and collection, if relevant.
+ * <b>startIndex</b>: if provided, and if collection is virtual, do a fetch of startIndex+fetchSize immediately 
+ * after the sort and return a promise.  See [comparator}{@link oj.Collection#setRangeLocal}<p>
+ * @return {Promise|null} if virtual and if startIndex is provided in options, a promise Object that resolves upon 
+ * completion.  The promise will be passed an Object containing start and count properties that represent
+ * the *actual* starting position (start), count (count), and array (models) of the Models fetched, which may be 
+ * fewer than what was requested.  The promise will be rejected on an error and will pass the ajax status, 
+ * xhr object, error, and collection, if relevant.
  * 
  * @export
  */
@@ -3913,7 +4103,8 @@ oj.Collection.prototype.sort = function(options) {
     if (this.IsVirtual()) {        
         var totalResults =  this['totalResults'];
         if (this._hasTotalResults()) {
-            // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to preallocate)
+            // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to 
+            // preallocate)
             this._setModels(new Array(totalResults), true);
         }
         else {
@@ -3987,7 +4178,8 @@ oj.Collection.SortFunc = function(a, b, comparator, collection, self) {
 };
 
 /**
- * Return the index at which the given model would be inserted, using the collection comparator See [sort}{@link oj.Collection#sort}.  Not supported for virtual collections.
+ * Return the index at which the given model would be inserted, using the collection comparator See 
+ * [sort}{@link oj.Collection#sort}.  Not supported for virtual collections.
  * 
  * @param {Object} model model for which to determine the insert point
  * @param {String|Object=} comparator optional comparator to override the default
@@ -4125,7 +4317,8 @@ oj.Collection.prototype._handlePromise = function(result) {
  * Remove the first model from the collection and return it.<br>
  * For events that may be fired, see [remove]{@link oj.Collection#remove}.<br>
  * @param {Object=} options same as remove, plus: <br>
- *                          <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ *                          <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ *                          whether it is or not
  * @return {Promise} model that was removed.  If this is a virtual collection, this will return a promise
  *                  which will resolve passing the model value that was removed
  * @export
@@ -4176,12 +4369,13 @@ oj.Collection.prototype._getDeferred = function(options) {
 
 /**
  * Return the last model in the collection.  If n is passed in, then the last n models are returned as an array
- * Note that if the collection is virtual, and totalResults is not returned by the server, the results returned by last can be
- * difficult to predict.  They depend on the fetch sizes, last known offset of a fetch, etc.  If code is using a server that does not return
- * totalResults the use of last is not recommended.<br>
+ * Note that if the collection is virtual, and totalResults is not returned by the server, the results returned 
+ * by last can be difficult to predict.  They depend on the fetch sizes, last known offset of a fetch, etc.  
+ * If code is using a server that does not return totalResults the use of last is not recommended.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * @param {number=} n number of models to return.  Defaults to 1
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not
  * @return {Promise|Object|null} array of n models from the end of the Collection.  If this is a virtual collection,
  *                             this will return a promise which will resolve passing the array or single model
  * @export
@@ -4230,18 +4424,23 @@ oj.Collection.prototype.last = function(n, options) {
     return array;
 };
 
-// Loop calling at() in a deferred way and return a promise to be resolved when all the elements are sequentially fetched
+// Loop calling at() in a deferred way and return a promise to be resolved when all the elements are sequentially 
+// fetched
 oj.Collection.prototype.IterativeAt = function (start, end) {
     var array = [], i;
     var self = this;
     return new Promise(function(allResolve, allReject) {
         var doTask = function(index) {
-                        return new Promise(function(resolve, reject) {
-                            self._deferredAt(index, null).then(function(model) {
-                                array.push(model);
-                                resolve(index+1);
-                            }, reject);
-                        });
+            // Make sure we're not asking beyond what we know the server can deliver, if virtual
+            if (self.IsVirtual() && self._hasTotalResults() && index >= self['totalResults']) {
+                return Promise.resolve(index+1);
+            }
+            return new Promise(function(resolve, reject) {
+                self._deferredAt(index, null).then(function(model) {
+                    array.push(model);
+                    resolve(index+1);
+                }, reject);
+            });
         };
 
         var currentStep = Promise.resolve(start);
@@ -4279,11 +4478,17 @@ oj.Collection.prototype._calculateNextStart = function() {
  * Fetch the next set of models from the server.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * 
- * @param {number} n number of models to fetch.  If undefined or null, the collection will attempt to use the overall [fetchSize]{@link oj.Collection#fetchSize} property value
+ * @param {number} n number of models to fetch.  If undefined or null, the collection will attempt to use the 
+ * overall [fetchSize]{@link oj.Collection#fetchSize} property value
  * @param {Object=} options Options to control next<p>
- *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes the fetch an asynchronous process. The callback is called passing the Collection object, raw response, and the options argument.<br>
- *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called passing the collection object, xhr, and options arguments.<br>
- * @return {Object} xhr ajax object, by default.  null if nothing to fetch (the success callback will still be called).  Note if [sync]{@link oj.Collection#sync} has been replaced, this would be the value returned by the custom implementation.
+ *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes 
+ *                  the fetch an asynchronous process. The callback is called passing the Collection object, raw 
+ *                  response, and the options argument.<br>
+ *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called 
+ *                  passing the collection object, xhr, and options arguments.<br>
+ * @return {Object} xhr ajax object, by default.  null if nothing to fetch (the success callback will still be 
+ * called).  Note if [sync]{@link oj.Collection#sync} has been replaced, this would be the value returned by the 
+ * custom implementation.
  * @export
  */
 oj.Collection.prototype.next = function(n, options) {
@@ -4293,7 +4498,8 @@ oj.Collection.prototype.next = function(n, options) {
     var start = this._calculateNextStart();
     var length = this._getLength();
     if (length === 0 && options[oj.Collection._FETCH_SIZE_PROP] > 0) {
-        // If we have a fetch size and we have no length let next() do a fetchSize fetch starting at zero to kick things off
+        // If we have a fetch size and we have no length let next() do a fetchSize fetch starting at zero to 
+        // kick things off
         start = 0;
     } else if (start >= length) {
         // No op -- still call success because the items are already fetched.  
@@ -4320,16 +4526,24 @@ oj.Collection.prototype._calculatePrevStart = function(n) {
  * @export
  * Fetch the previous set of models from the server.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
- * @param {number} n number of models to fetch.  If undefined or null, the collection will attempt to use the overall fetchSize property value
+ * @param {number} n number of models to fetch.  If undefined or null, the collection will attempt to use the 
+ * overall fetchSize property value
  * @param {Object=} options Options to control previous<p>
- *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes the fetch an asynchronous process. The callback is called passing the Collection object, raw response, and the options argument.<p>
- *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called passing the collection object, xhr, and options arguments.<p>
- * @return {Object} xhr ajax object, by default. null if there is nothing earlier to fetch (no fetch has happened or the last fetch started at 0).  The success callback will still be called.  Note if [sync]{@link oj.Collection#sync} has been replaced, this would be the value returned by the custom implementation.
+ *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes 
+ *                  the fetch an asynchronous process. The callback is called passing the Collection object, raw 
+ *                  response, and the options argument.<p>
+ *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called 
+ *                  passing the collection object, xhr, and options arguments.<p>
+ * @return {Object} xhr ajax object, by default. null if there is nothing earlier to fetch (no fetch has happened 
+ * or the last fetch started at 0).  The success callback will still be called.  Note if 
+ * [sync]{@link oj.Collection#sync} has been replaced, this would be the value returned by the custom 
+ * implementation.
  */
 oj.Collection.prototype.previous = function(n, options) {
     options = options || {};
     if (this['offset'] === 0) {
-        // No op -- still call success (if we've fetched before--lastFetchCount is other than zero) because the items are already fetched.  
+        // No op -- still call success (if we've fetched before--lastFetchCount is other than zero) because the 
+        // items are already fetched.  
         var self = this;
         if (options['success'] && this['lastFetchCount']) {
             options['success'].call(oj.Model.GetContext(options, self), self, null, options);
@@ -4381,7 +4595,8 @@ oj.Collection.prototype.setFetchSize = function(n) {
  * Return the array of models found in the Collection starting with index n.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * @param {number=} n index at which to start the returned array of models.  Defaults to 1.
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not
  * @return {Array|Promise} array of models from the collection.  If this is a virtual collection, or
  *                  if deferred is passed as true, return a promise which resovles passing the array of models.
  * @export
@@ -4412,7 +4627,8 @@ oj.Collection.prototype.rest = function(n, options) {
  * Events:<p>
  * <ul>
  * <b>remove</b>: fired for each model removed, passing the model removed, collection, and options<br>
- * <b>allremoved</b>: fired after all models have been removed, passing the collection, array of models removed, and options<br>
+ * <b>allremoved</b>: fired after all models have been removed, passing the collection, array of models removed, 
+ * and options<br>
  * </ul>
  * <p>
  * @param {Object|Array} m model object or array of models to remove. 
@@ -4511,8 +4727,10 @@ oj.Collection.prototype._modelEvent = function(event, model, collection, options
  * <p>
  * @param {Object=} options user options<p>
  *                          <b>silent</b>: if set, do not fire a refresh event<p>
- * <b>startIndex</b>: if provided, and if collection is virtual, do a fetch of startIndex+fetchSize immediately after the refresh and return a promise.  See [comparator}{@link oj.Collection#setRangeLocal}<p>
- * @return {Promise} promise object resolved when complete (in case there is a fetch for non-virtual mode).  If startIndex is provided as an option, the returned promise resolution is the same as setRangeLocal.
+ * <b>startIndex</b>: if provided, and if collection is virtual, do a fetch of startIndex+fetchSize immediately 
+ * after the refresh and return a promise.  See [comparator}{@link oj.Collection#setRangeLocal}<p>
+ * @return {Promise} promise object resolved when complete (in case there is a fetch for non-virtual mode).  If 
+ * startIndex is provided as an option, the returned promise resolution is the same as setRangeLocal.
  * @export
  */
 oj.Collection.prototype.refresh = function(options)
@@ -4540,7 +4758,7 @@ oj.Collection.prototype.refresh = function(options)
                                     resolve({'collection':collection, 'response':response, 'options':options});                                    
                                 };
                     opt['error'] = function (xhr, status, error) {
-                                    reject(oj.Collection._createRejectionError(xhr, status, error, self, options));
+                                    reject(oj.Collection._createRejectionError(xhr, status, error, self, options, false));
                                 };
                     self.fetch(opt);
                     return;        
@@ -4591,14 +4809,18 @@ oj.Collection.prototype.refresh = function(options)
 };
 
 /**
- * Remove and replace the collection's entire list of models with a new set of models, if provided. Otherwise, empty the collection.  totalResults is reset when no new data is passed in, set to the new length in the non-virtual case if data is passed in, and left as was in the virtual case if data is passed in.<br>
+ * Remove and replace the collection's entire list of models with a new set of models, if provided. Otherwise, 
+ * empty the collection.  totalResults is reset when no new data is passed in, set to the new length in the 
+ * non-virtual case if data is passed in, and left as was in the virtual case if data is passed in.<br>
  * Events (if silent is not set):<p>
  * <ul>
- * <b>reset</b>: fired passing the collection and options.  The new length of the collection should be in effect when the event is fired<br>
+ * <b>reset</b>: fired passing the collection and options.  The new length of the collection should be in effect 
+ * when the event is fired<br>
  * For events that may be fired if data is passed in, see [add]{@link oj.Collection#add}.
  * </ul>
  * <p>
- * @param {Object=} data Array of model objects or attribute/value pair objects with which to replace the collection's data. 
+ * @param {Object=} data Array of model objects or attribute/value pair objects with which to replace the 
+ * collection's data. 
  * @param {Object=} options user options, passed to event, unless silent<br>
  *                          <b>silent</b>: if set, do not fire events<p>
  * @returns {Object|Array} The model or models added to the collection, if passed in
@@ -4625,9 +4847,9 @@ oj.Collection.prototype.reset = function(data, options)
 
     var silent = opts['silent'] !== undefined && opts['silent'];
     if (!data) {
-        // Clear totalresults.  If not virtual, _setLength will reset it to the length
-        this['totalResults'] = undefined;
         this._setLength();
+        // Clear totalresults
+        this['totalResults'] = undefined;
         this.TriggerInternal(silent, oj.Events.EventType['RESET'], this, opts, null);
         return null;
     }
@@ -4648,14 +4870,19 @@ oj.Collection.prototype.reset = function(data, options)
 };
 
 /**
- * Return the model object found at the given index of the collection, or a promise object that will pass the model as an argument when it resolves.<p>
+ * Return the model object found at the given index of the collection, or a promise object that will pass the model 
+ * as an argument when it resolves.<p>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.
  * @param {number} index Index for which to return the model object. 
- * @param {Object=} options <b>fetchSize</b>: fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting <br>
- *                  <b>deferred</b>: if true, return a deferred/promise object as described below.  If not specified, the type of return value will be determined by whether or not the collection is virtual<br>
+ * @param {Object=} options <b>fetchSize</b>: fetch size to use if the call needs to fetch more records from the 
+ * server, if virtualized.  Overrides the overall fetchSize setting <br>
+ *                  <b>deferred</b>: if true, return a deferred/promise object as described below.  If not 
+ *                  specified, the type of return value will be determined by whether or not the collection is 
+ *                  virtual<br>
  *                  
- * @return {Object|null} Model [model]{@link oj.Model} located at index. If index is out of range, returns null.  If this is a virtual collection, or
- *                  if deferred is specified and true, at will return a Promise object which will resolve passing the model at the given index (or null if out of range)
+ * @return {Object|null} Model [model]{@link oj.Model} located at index. If index is out of range, returns null.  
+ * If this is a virtual collection, or if deferred is specified and true, at will return a Promise object which 
+ * will resolve passing the model at the given index (or null if out of range)
  * @export
  */
 oj.Collection.prototype.at = function(index, options)
@@ -4691,7 +4918,8 @@ oj.Collection.prototype._atInternal = function(index, options, local, deferred) 
 /**
  * Return a promise, the resolution of which indicates that all promise-returning API in process have completed.
  * 
- * @returns {Promise} a promise that when resolved, indicates that all unresolved promise-returning API calls made at the moment of the whenReady have completed
+ * @returns {Promise} a promise that when resolved, indicates that all unresolved promise-returning API calls 
+ * made at the moment of the whenReady have completed
  * @export
  */
 oj.Collection.prototype.whenReady = function() {
@@ -4746,6 +4974,71 @@ oj.Collection.prototype._addPromise = function(promiseTask) {
     return this._promises;
 };
 
+// Add an xhr to a list of active xhrs
+oj.Collection.prototype._addxhr = function(xhr) {
+    if (xhr && xhr.abort) {
+        if (this._xhrs === undefined) {
+            this._xhrs = [];
+        }
+        // Listen to this xhr to know when to remove it
+        xhr.done(function() {
+            // Find the xhr
+            var loc = this._xhrs ? this._xhrs.indexOf(xhr) : -1;
+            if (loc > -1) {
+                // Remove it from the list
+                this._xhrs.splice(loc, 1);
+            }   
+        });
+        this._xhrs.push(xhr);
+    }
+};
+
+/**
+ * Cancel all xhr requests known to this collection as still pending.  Return a promise that is resolved when all of the requests abort, and all
+ * the promises tied to those requests resolve with an error
+ * 
+ * @returns {Promise} a promise that when resolved, indicates that all the open xhr objects generated by this collection have aborted
+ * @export
+ */
+oj.Collection.prototype.abort = function() {
+    // Abort all pending XHR requests
+    var self = this;
+    if (this._xhrs) {
+        return new Promise(function(resolve, reject) {
+            // Count down so we can remove them
+            for (var i = self._xhrs.length-1; i >= 0; i--) {
+                self._xhrs[i].then(function(data, status, xhr) {
+                    if (status === "abort") {
+                        // Remove from list
+                        self._xhrs.splice(i, 1);
+                        // If this is the last one, resolve the promise we returned
+                        if (self._xhrs.length === 0) {
+                            self.whenReady().then(function() {
+                                resolve(null);
+                            }, function() {
+                                resolve(null);
+                            });
+                        }
+                    }
+                },function(xhr, status, error) {
+                     // Remove from list
+                     self._xhrs.splice(i, 1);
+                     // If this is the last one, resolve the promise we returned
+                     if (self._xhrs.length === 0) {
+                         self.whenReady().then(function() {
+                             resolve(null);
+                         }, function() {
+                             resolve(null);
+                         });
+                     }
+                  });
+                self._xhrs[i].abort();
+            }
+        });
+    }
+    return Promise.resolve();
+};
+
 oj.Collection.prototype._deferredAt = function(index, options) {
     var self = this;
     // If it's virtual, we need to see if this item has been fetched or not: if not, we need to fetch it + fetchSize
@@ -4759,7 +5052,7 @@ oj.Collection.prototype._deferredAt = function(index, options) {
             opts['startIndex'] = index;
             opts['error'] = function(xhr, status, error) {
                 // Handle potential errors
-                reject(oj.Collection._createRejectionError(xhr, status, error, self, options));
+                reject(oj.Collection._createRejectionError(xhr, status, error, self, options, false));
                 return;
             }
 
@@ -4781,7 +5074,8 @@ oj.Collection.prototype._deferredAt = function(index, options) {
 /**
  * Return the first model object from the collection whose client ID is the given model cid
  * @param {string} clientId Client ID (see Model cid) for which to return the model object, if found. 
- * @return {Object|null} First model object in the collection where model.cid = clientId. If none are found, returns null.
+ * @return {Object|null} First model object in the collection where model.cid = clientId. If none are found, 
+ * returns null.
  * 
  * @throws {Error} when called on a virtual Collection if the item isn't found in memory
  * @export
@@ -4809,16 +5103,20 @@ oj.Collection.prototype.getByCid = function(clientId)
 
 
 /**
- * Return the first model object from the collection whose model id value is the given id or cid, or the id or cid from a passed in model
+ * Return the first model object from the collection whose model id value is the given id or cid, or the id or 
+ * cid from a passed in model
  * Note this method will not function as expected if the id or cid is not set<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * 
  * @param {Object|string} id ID, cid, or Model (see Model id or cid) for which to return the model object, if found. 
  * @param {Object=} options <p>
- *                  <b>fetchSize</b>: fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting<p>
- *                  <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
- * @return {Object|null|Promise} First model object in the collection where model.id = id or model.cid = id. If none are found, returns null.
- *                  If deferred or virtual, return a promise passing the model when done
+ *                  <b>fetchSize</b>: fetch size to use if the call needs to fetch more records from the server, 
+ *                  if virtualized.  Overrides the overall fetchSize setting<p>
+ *                  <b>deferred</b>: if true, return a promise as though this collection were virtual whether it 
+ *                  is or not
+ * @return {Object|null|Promise} First model object in the collection where model.id = id or model.cid = id. If 
+ *                  none are found, returns null.  If deferred or virtual, return a promise passing the model 
+ *                  when done
  * @export
  */
 oj.Collection.prototype.get = function(id, options)
@@ -4968,7 +5266,7 @@ oj.Collection.prototype._getInternal = function(id, options, deferred, fillIn) {
             opts['startID'] = id;
             opts['error'] = function(xhr, status, error) {
                 // Handle potential errors
-                reject(oj.Collection._createRejectionError(xhr, status, error, self, options));
+                reject(oj.Collection._createRejectionError(xhr, status, error, self, options, false));
             }
             opts['success'] = function(collection, response, retOpts) {
                 resp(response);
@@ -5017,7 +5315,7 @@ oj.Collection.prototype['parse'] = function (response) {
 // Determine if actual means we are complete
 oj.Collection.prototype._checkActual = function(start, count, actual) {
     // Are we at the end with what actually came back?  Then this request should satisfy the setLocalRange
-    if (this._hasTotalResults() && this['totalResults'] > 0 && (actual.start + actual.count >= this['totalResults'])) {
+    if (this._hasTotalResults() && (actual.start + actual.count >= this['totalResults'])) {
         return true;
     }
     return (actual.start === start && actual.count === count);
@@ -5025,14 +5323,17 @@ oj.Collection.prototype._checkActual = function(start, count, actual) {
 
 /**
  * 
- * Tell the collection to try and ensure that the given range is available locally.  Note that if the collection is virtual, setRangeLocal may make repeated fetch calls to the server to satisfy the request, stopping only when the range has been made local or the end of the records on the server is reached.<br>
+ * Tell the collection to try and ensure that the given range is available locally.  Note that if the collection 
+ * is virtual, setRangeLocal may make repeated fetch calls to the server to satisfy the request, stopping only 
+ * when the range has been made local or the end of the records on the server is reached.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * 
  * @param {number} start starting index to make local
  * @param {number} count number of elements to make local
- * @return {Promise} a promise Object that resolves upon completion.  The promise will be passed an Object containing start and count properties that represent
- * the *actual* starting position (start), count (count), and array (models) of the Models fetched, which may be fewer than what was requested.  The promise will be rejected on
- * an error and will pass the ajax status, xhr object, error, and collection, if relevant.
+ * @return {Promise} a promise Object that resolves upon completion.  The promise will be passed an Object 
+ * containing start and count properties that represent the *actual* starting position (start), count (count), 
+ * and array (models) of the Models fetched, which may be fewer than what was requested.  The promise will be 
+ * rejected on an error and will pass the ajax status, xhr object, error, and collection, if relevant.
  * @export
  */
 oj.Collection.prototype.setRangeLocal = function(start, count) {
@@ -5044,8 +5345,8 @@ oj.Collection.prototype.setRangeLocal = function(start, count) {
 
 oj.Collection.prototype._setRangeLocalInternal = function(start, count) {
     if (this.IsVirtual()) { 
-        // make sure we reconcile the length to what we think the totalresults are--if there have been any non fetched changes in
-        // length we don't want to be placing things wrong
+        // make sure we reconcile the length to what we think the totalresults are--if there have been any non 
+        // fetched changes in length we don't want to be placing things wrong
         this._resetModelsToFullLength();
     }
     var actual = this._getLocalRange(start, count);
@@ -5074,7 +5375,7 @@ oj.Collection.prototype._setRangeLocalFetch = function(start, count, placement, 
                         // The range wasn't fulfilled: try again                       
                         var newPlacement = actual.start + actual.count;
                         // Try the next block...don't repeat the request
-                        var newStart = start + count;
+                        var newStart = start + (self['lastFetchCount'] ? self['lastFetchCount'] : count);
                         if (newStart < self['totalResults']) {
                             self._setRangeLocalFetch(newStart, count, newPlacement, original, resolve, reject, fill);
                         }
@@ -5115,7 +5416,7 @@ oj.Collection.prototype._setRangeLocalFetch = function(start, count, placement, 
     }
     opts['error'] = function(xhr, status, error) {
         // Handle potential errors
-        reject(oj.Collection._createRejectionError(xhr, status, error, self, null));
+        reject(oj.Collection._createRejectionError(xhr, status, error, self, null, false));
         return;
     }
     opts['success'] = function(collection, response, retOpts) {
@@ -5134,12 +5435,15 @@ oj.Collection.prototype._setRangeLocalFetch = function(start, count, placement, 
     }
 };
 
-oj.Collection._createRejectionError = function(xhr, status, error, collection, options) {
+oj.Collection._createRejectionError = function(xhr, status, error, collection, options, fireError) {
     var silent = false;
     if (options && options['silent']) {
         silent = options['silent'];
     }
-    oj.Model._triggerError(collection, silent, options, status, error, xhr);
+    // To avoid duplication in many cases...
+    if (fireError) {
+        oj.Model._triggerError(collection, silent, options, status, error, xhr);
+    }
     var err = new Error(status);
     err['xhr'] = xhr;
     err['error'] = error;
@@ -5211,7 +5515,8 @@ oj.Collection.prototype._getLocalRange = function(start, count) {
     }
     var firstMissingModel = this._getFirstMissingModel(start, limit);
     if (firstMissingModel > -1) {
-        return {'start':start, 'count':(firstMissingModel-start),'models':this._getModelArray(start, firstMissingModel-start)};
+        return {'start':start, 'count':(firstMissingModel-start),'models':this._getModelArray(start, 
+                                                                          firstMissingModel-start)};
     }
     // Make sure start doesn't overrun the end!
     if (start > limit) {
@@ -5239,22 +5544,39 @@ oj.Collection.prototype._getFirstMissingModel = function(start, limit) {
  * Loads the Collection object from the data service URL. Performs a data "read."<p>
  * Events:<p>
  * <ul>
- * <b>request</b>: fired when the request to fetch is going to the server, passing the collection, xhr object, and options<br>
- * <b>sync</b>: fired when the collection is fetched from the data service, passing the collection and the raw response<br>
+ * <b>request</b>: fired when the request to fetch is going to the server, passing the collection, xhr object, and 
+ * options<br>
+ * <b>sync</b>: fired when the collection is fetched from the data service, passing the collection and the raw 
+ * response<br>
  * <b>error</b>: fired if there is an error during the fetch, passing the collection, xhr object, options<br>
  * </ul>
  * <p>
  * @param {Object=} options Options to control fetch<p>
- *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes the fetch an asynchronous process. The callback is called passing the Collection object, raw response, and the fetch options argument.<br>
- *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called passing the collection object, xhr, and options arguments.<br>
- *                  <b>add</b>: if set, new records retrieved from the data service will be added to those models already in the collection. If not set, the records retrieved will be passed to the reset() method, effectively replacing the previous contents of the collection with the new data.  Not supported for virtual/paging cases.<br>
- *                  <b>set</b>: if true, fetch will try to use the set function to try and merge the fetched models with those already in the collection, on the client.  The default behavior is to reset the collection before adding back in the fetched models.  This default is the reverse of Backbone's current default.<br>
- *                  <b>startIndex</b>: numeric index with which to start fetching Models from the server.  The page setting controls the number of Models to be fetched.  startID takes precedence over startIndex if both are specified.  If both are specified and startID isn't supported then startIndex will be used instead.<br>
- *                  <b>startID</b>: unique ID of the Model to start fetching from the server.  The page setting controls the number of Models to be fetched.  Note if this is not supported by the server then startID will be ignored.<br>
+ *                  <b>success</b>: a user callback called when the fetch has completed successfully. This makes 
+ *                  the fetch an asynchronous process. The callback is called passing the Collection object, raw 
+ *                  response, and the fetch options argument.<br>
+ *                  <b>error</b>: a user callback function called if the fetch fails. The callback is called 
+ *                  passing the collection object, xhr, and options arguments.<br>
+ *                  <b>add</b>: if set, new records retrieved from the data service will be added to those models 
+ *                  already in the collection. If not set, the records retrieved will be passed to the reset() 
+ *                  method, effectively replacing the previous contents of the collection with the new data.  
+ *                  Not supported for virtual/paging cases.<br>
+ *                  <b>set</b>: if true, fetch will try to use the set function to try and merge the fetched models 
+ *                  with those already in the collection, on the client.  The default behavior is to reset the 
+ *                  collection before adding back in the fetched models.  This default is the reverse of 
+ *                  Backbone's current default.<br>
+ *                  <b>startIndex</b>: numeric index with which to start fetching Models from the server.  The 
+ *                  page setting controls the number of Models to be fetched.  startID takes precedence over 
+ *                  startIndex if both are specified.  If both are specified and startID isn't supported then 
+ *                  startIndex will be used instead.<br>
+ *                  <b>startID</b>: unique ID of the Model to start fetching from the server.  The page setting 
+ *                  controls the number of Models to be fetched.  Note if this is not supported by the server 
+ *                  then startID will be ignored.<br>
  *                  <b>since</b>: fetch records having a timestamp since the given UTC time<br>
  *                  <b>until</b>: fetch records having a timestamp up to the given UTC time<br>
  *                  <b>fetchSize</b>: use specified page size instead of collection's setting<br>
- * @return {Object} xhr ajax object, by default.  If [sync]{@link oj.Collection#sync} has been replaced, this would be the value returned by the custom implementation.
+ * @return {Object} xhr ajax object, by default.  If [sync]{@link oj.Collection#sync} has been replaced, this 
+ * would be the value returned by the custom implementation.
  * @export
  */
 oj.Collection.prototype.fetch = function (options) {
@@ -5353,8 +5675,8 @@ oj.Collection.prototype._fetchInternal = function(options, placement, fillIn) {
              // Clean out the old models if we're not "adding" or infilling for virtual
              doReset(self, opt, fillIn);
              
-             // Parse each returned model (if appropriate), and put it into the collection, either from the zeroth offset if non-virtual
-             // or using the appropriate offset if virtual
+             // Parse each returned model (if appropriate), and put it into the collection, either from the 
+             // zeroth offset if non-virtual or using the appropriate offset if virtual
              try {
                 var manageLRU = false;
                 // Check for passed in offset
@@ -5411,8 +5733,8 @@ oj.Collection.prototype._putDataIntoCollection = function(data, placement, manag
            // Don't fire add events
            addOpt['silent'] = true;           
            this._addInternal(dataList[i], addOpt, true, false);
-           // If virtual, make sure the item was really added where we thought--in other words, what's there now shouldn't match what was there
-           // otherwise could be duplicate id and don't increment counter
+           // If virtual, make sure the item was really added where we thought--in other words, what's there now 
+           // shouldn't match what was there otherwise could be duplicate id and don't increment counter
            if (this._atInternal(insertPos, null, true, false) !== prevItem) {
                insertPos++;
            }
@@ -5421,7 +5743,8 @@ oj.Collection.prototype._putDataIntoCollection = function(data, placement, manag
     return dataList;
 };
 
-// Parse each model returned, if appropriate, and push them into the (empty) collection with appropriate offsets if virtual
+// Parse each model returned, if appropriate, and push them into the (empty) collection with appropriate offsets 
+// if virtual
 oj.Collection.prototype._fillInCollectionWithParsedData = function(data, placement, manageLRU, opt) {
     opt = opt || {};
     var parse = opt['parse'];
@@ -5469,8 +5792,8 @@ oj.Collection.prototype._fillInCollectionWithParsedData = function(data, placeme
                 // Don't fire add events
                 addOpt['silent'] = true;
                 this._addInternal(parsedModel, addOpt, true, false);
-                // If virtual, make sure the item was really added where we thought--in other words, what's there now shouldn't match what was there
-                // otherwise could be duplicate id and don't increment counter
+                // If virtual, make sure the item was really added where we thought--in other words, what's there 
+                // now shouldn't match what was there otherwise could be duplicate id and don't increment counter
                 if (this._atInternal(insertPos, null, true, false) !== prevItem) {
                     insertPos++;
                 }           
@@ -5487,8 +5810,8 @@ oj.Collection._reportError = function(collection, e, errorFunc, options) {
     }
 };
     
-// Used in virtualization to conduct server-based searches: returns list of fetched models via a promise but does not add them to the collection
-// model list
+// Used in virtualization to conduct server-based searches: returns list of fetched models via a promise but does 
+// not add them to the collection model list
 oj.Collection.prototype._fetchOnly = function(options) {
     var opt = options || {},
         success = opt['success'], 
@@ -5608,44 +5931,52 @@ oj.Collection.prototype._setPagingReturnValues = function(response, options, dat
     }
     // What limit was actually used to generate this response?
     options = options || {};
-    this['lastFetchSize'] = this._getReturnProperty(customObj, response, 'limit', options['fetchSize'], this['fetchSize']);
+    this['lastFetchSize'] = this._getReturnProperty(customObj, response, 'limit', options['fetchSize'], 
+                                                    this['fetchSize']);
     
     // What offset was actually used to generate this response?
     this['offset'] = this._getReturnProperty(customObj, response, 'offset', options['startIndex'], 0);
 
     // How many records actually came back?
-    this['lastFetchCount'] = this._getReturnProperty(customObj, response, 'count', this['lastFetchCount'], this['lastFetchCount']);
+    this['lastFetchCount'] = this._getReturnProperty(customObj, response, 'count', this['lastFetchCount'], 
+                                                     this['lastFetchCount']);
     
     // What is the total number of records possible for this collection?
-    this['totalResults'] = this._cleanTotalResults(this._getReturnProperty(customObj, response, 'totalResults', this['totalResults'], this['totalResults']));
+    this['totalResults'] = this._cleanTotalResults(this._getReturnProperty(customObj, response, 'totalResults', 
+                                                   this['totalResults'], this['totalResults']));
     
     // Is there more?
     this['hasMore'] = this._getHasMore(oj.Collection._getProp(customObj, response, 'hasMore'), 
                                        this['offset'], this['lastFetchSize'], this['totalResults']);
 
-    // Adjust total results to account for the case where the server tells us there's no more data, and totalResults wasn't set 
-    // by the server...but don't do it for simple gets/adds
+    // Adjust total results to account for the case where the server tells us there's no more data, and 
+    // totalResults wasn't set by the server...but don't do it for simple gets/adds
     if (!fillIn) {
         // We want to know if the server *actually* returned values for these things, not if they defaulted above
-        var totalResultsReturned = this._cleanTotalResults(parseInt(oj.Collection._getProp(customObj, response, 'totalResults'),10));
+        var totalResultsReturned = this._cleanTotalResults(parseInt(oj.Collection._getProp(customObj, response, 
+                                    'totalResults'),10));
         var lastFetchCountReturned = parseInt(oj.Collection._getProp(customObj, response, 'count'), 10);
-        this['totalResults'] = this._adjustTotalResults(totalResultsReturned, this['hasMore'], this['offset'], lastFetchCountReturned, data && Array.isArray(data) ? data.length : 0);
+        this['totalResults'] = this._adjustTotalResults(totalResultsReturned, this['hasMore'], this['offset'], 
+                                lastFetchCountReturned, data && Array.isArray(data) ? data.length : 0);
     }
     
     // Was fetchSize set?  If not, set it to limit
-    if (!this.IsVirtual() && this['totalResults'] && this['totalResults'] !== this['lastFetchCount'] && this['lastFetchSize']) {
+    if (!this.IsVirtual() && this['totalResults'] && this['totalResults'] !== this['lastFetchCount'] && 
+        this['lastFetchSize']) {
         this.setFetchSize(this['lastFetchSize']);
     }
 };
 
-oj.Collection.prototype._adjustTotalResults = function(totalResultsReturned, hasMore, offset, lastFetchCount, dataLength) {
-    // Fix for : if hasMore is false, and totalResults wasn't set by the server, we should set it to the last 
-    // thing fetched here.  There is no more.
+oj.Collection.prototype._adjustTotalResults = function(totalResultsReturned, hasMore, offset, lastFetchCount, 
+  dataLength) {
+    // Fix for : if hasMore is false, and totalResults wasn't set by the server, we should set it to 
+    // the last thing fetched here.  There is no more.
     if (!hasMore) {
         // No more data, per server
         if (isNaN(totalResultsReturned)) {
             // TotalResults was not returned by the server here
-            // If lastFetchCount was set, use that as the final total.  Otherwise, use the length of data passed in...all + offset
+            // If lastFetchCount was set, use that as the final total.  Otherwise, use the length of data passed 
+            // in...all + offset
             var count = !isNaN(lastFetchCount) ? lastFetchCount : dataLength;
             return count + offset;
         }
@@ -5681,14 +6012,19 @@ oj.Collection.prototype._getOffset = function() {
  * Events:<p>
  * <ul>
  * <b>add</b>: fired when the model is added, passing the collection, model added, and options, if not silent<br>
- * <b>alladded</b>: fired after all models have been added, passing the collection, array of models added, and options<br>
+ * <b>alladded</b>: fired after all models have been added, passing the collection, array of models added, and 
+ * options<br>
  * <b>request:</b>: fired when the request to save is going to the server<br>
  * <b>sync:</b>: fired when the model is saved to the data service, passing the model and the raw response<br>
  * </ul>
- * @param {Object=} attributes Set of attribute/value pairs with which to initialize the new model object, or a new Model object
- * @param {Object=} options Options to control save (see [save]{@link oj.Model#save}), or add (see [add]{@link oj.Collection#add}).  Plus:<p>
- *                          <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not<br>
- * @return {Object|boolean|Promise} new model or false if validation failed.  If virtual, returns a promise that resolves with the new model
+ * @param {Object=} attributes Set of attribute/value pairs with which to initialize the new model object, or a new 
+ * Model object
+ * @param {Object=} options Options to control save (see [save]{@link oj.Model#save}), or add (see 
+ * [add]{@link oj.Collection#add}).  Plus:<p>
+ *                          <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ *                          whether it is or not<br>
+ * @return {Object|boolean|Promise} new model or false if validation failed.  If virtual, returns a promise that 
+ * resolves with the new model
  * @export
  */
 oj.Collection.prototype.create = function (attributes, options) {
@@ -5762,8 +6098,8 @@ oj.Collection.prototype.create = function (attributes, options) {
                                     }
                                     if (options['wait']) {
                                         // Trigger delayed add event
-                                        // Force the add if virtual because we know it was successfully saved: we don't
-                                        // want to go back to the server to check
+                                        // Force the add if virtual because we know it was successfully saved: we 
+                                        // don't want to go back to the server to check
                                         if (self.IsVirtual()) {
                                             addOpts['force'] = true;
                                         }
@@ -5824,39 +6160,54 @@ oj.Collection.prototype.pluck = function(attr) {
 };
 
 /**
- * Return an array of models that contain the given attribute/value pairs.  Note that this function, along with findWhere, expects server-resolved
- * filtering to return *all* models that meet the criteria, even in virtual cases.  The fetchSize will be set to the value of totalResults for this call to indicate that
- * all should be returned.<br>
+ * Return an array of models that contain the given attribute/value pairs.  Note that this function, along with 
+ * findWhere, expects server-resolved filtering to return *all* models that meet the criteria, even in virtual 
+ * cases.  The fetchSize will be set to the value of totalResults for this call to indicate that all should 
+ * be returned.<br>
  * Events: for events, if virtual, see [fetch]{@link oj.Collection#fetch}
  * 
- * @param {Object|Array} attrs attribute/value pairs to find.  The attribute/value pairs are ANDed together.  If attrs is an array of attribute/value pairs, then these are ORed together
- *                             If the value is an object (or an array of objects, in which case the single attribute must meet all of the value/comparator conditions), then if it has both 'value' and 'comparator' parameters these will be interpreted as
- *                             expressions needing custom commparisons.  The comparator value may either be a string or a comparator callback function.
- *                             Strings are only valid where the filtering is sent back to the data service (virtual collections).  In the case of a comparator
- *                             function, the function always takes the signature function(model, attr, value), and for non-virtual collections, is called for each 
- *                             Model in the collection with the associated attribute and value.  The function should return true if the model meets the attribute/value
- *                             condition, and false if not.  For cases where the filtering is to be done on the server, the function will be called once per attr/value pair
- *                             with a null model, and the function should return the string to pass as the comparison in the expression for the filtering parameter
- *                             in the URL sent back to the server.  Note that the array of value object case is really only meaningful for server-evaluated filters where
- *                             a complex construction on a single attribute might be needed (e.g., x>v1 && x <=v2)
+ * @param {Object|Array} attrs attribute/value pairs to find.  The attribute/value pairs are ANDed together.  If 
+ *                             attrs is an array of attribute/value pairs, then these are ORed together
+ *                             If the value is an object (or an array of objects, in which case the single 
+ *                             attribute must meet all of the value/comparator conditions), then if it has both 
+ *                             'value' and 'comparator' parameters these will be interpreted as
+ *                             expressions needing custom commparisons.  The comparator value may either be a 
+ *                             string or a comparator callback function.  Strings are only valid where the 
+ *                             filtering is sent back to the data service (virtual collections).  In the case of 
+ *                             a comparator function, the function always takes the signature function(model, 
+ *                             attr, value), and for non-virtual collections, is called for each 
+ *                             Model in the collection with the associated attribute and value.  The function 
+ *                             should return true if the model meets the attribute/value condition, and false if 
+ *                             not.  For cases where the filtering is to be done on the server, the function will 
+ *                             be called once per attr/value pair with a null model, and the function should 
+ *                             return the string to pass as the comparison in the expression for the filtering 
+ *                             parameter in the URL sent back to the server.  Note that the array of value object 
+ *                             case is really only meaningful for server-evaluated filters where a complex 
+ *                             construction on a single attribute might be needed (e.g., x>v1 && x <=v2)
  *                             For example:<p>
  *                             {Dept:53,Name:'Smith'}<br>
- *                             will return an array of models that have a Dept=53 and a Name=Smith, or, for server-filtered
- *                             collections, a ?q=Dept=53+Name=Smith parameter will be sent with the URL.<p>
+ *                             will return an array of models that have a Dept=53 and a Name=Smith, or, for 
+ *                             server-filtered collections, a ?q=Dept=53+Name=Smith parameter will be sent with 
+ *                             the URL.<p>
  *                             [{Dept:53},{Dept:90}]<br>
- *                             will return all models that have a Dept of 53 or 90.  Or, ?q=Dept=53,Dept=90 will be sent to the server.<p>
- *                             {Dept:{value:53,comparator:function(model, attr, value) { return model.get(attr) !== value;}}}<br>
+ *                             will return all models that have a Dept of 53 or 90.  Or, ?q=Dept=53,Dept=90 will 
+ *                             be sent to the server.<p>
+ *                             {Dept:{value:53,comparator:function(model, attr, value) { return model.get(attr) !== 
+ *                             value;}}}<br>
  *                             will return all models that do not have a Dept of 53.<p>
  *                             {Dept:{value:53,comparator:'<>'}}<br>
- *                             For server-evaluated filters, a parameter ?q=Dept<>53 will be sent with the URL.  This form is an
- *                             error on locally-evaluated colleection filters<p>
+ *                             For server-evaluated filters, a parameter ?q=Dept<>53 will be sent with the URL.  
+ *                             This form is an error on locally-evaluated colleection filters<p>
  *                             {Dept:{value:53,comparator:function(model, attr, value) { return "<>";}}}<br>
  *                             expresses the same thing for server-evaluated filters<p>
  *                             {Dept:[{value:53,comparator:'<'},{value:90,comparator:'<'}]}<br>
- *                             For server-evaluated filters, a parameter ?q=Dept>53+Dept<93 will be sent to the server<p>
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not<p>
+ *                             For server-evaluated filters, a parameter ?q=Dept>53+Dept<93 will be sent to the 
+ *                             server<p>
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not<p>
  * 
- * @return {Array|Promise} array of models.  If virtual or deferred, a promise that resolves with the returned array from the server
+ * @return {Array|Promise} array of models.  If virtual or deferred, a promise that resolves with the returned 
+ * array from the server
  * @export
  */
 oj.Collection.prototype.where = function(attrs, options) {
@@ -5872,13 +6223,14 @@ oj.Collection.prototype._whereInternal = function(attrs, options) {
             var success = function(collection, fetchedModels, options) {
                 resolve(fetchedModels);
             };
-            // Send the attributes for a server-based filter; also indicate that we need *all* the attributes.  In the standard
-            // REST URL construction this is accomplished by leaving off fetchSize/start indices, etc.
+            // Send the attributes for a server-based filter; also indicate that we need *all* the attributes.  
+            // In the standard REST URL construction this is accomplished by leaving off fetchSize/start indices, 
+            // etc.
             var opt = {'query':attrs,  
                        'all': true,
                        'success': success,
                        'error': function(xhr, status, error) {
-                           reject(oj.Collection._createRejectionError(xhr, status, error, self, options));
+                           reject(oj.Collection._createRejectionError(xhr, status, error, self, options, true));
                        }};
             self._fetchOnly(opt);
         });
@@ -5902,11 +6254,13 @@ oj.Collection.prototype._whereInternal = function(attrs, options) {
 /**
  * Return a collection of models that contain the given attribute/value pairs.
  * Note that this returns a non-virtual collection with all the models returned by the server,
- * even if the original collection is virtual.  Virtual collections doing filtering on the server should return all models that meet
+ * even if the original collection is virtual.  Virtual collections doing filtering on the server should return 
+ * all models that meet
  * the critera.  See [where]{@link oj.Collection#where}
  * See [where]{@link oj.Collection#where} for complete documentation of events and parameters
  *
- * @return {Object|Promise} A collection containing models with given attribute/value pairs.  If virtual or deferred, a promise that resolves with the collection returned by the server
+ * @return {Object|Promise} A collection containing models with given attribute/value pairs.  If virtual or
+ * deferred, a promise that resolves with the collection returned by the server
  * @export
  */
 oj.Collection.prototype.whereToCollection = function(attrs, options) {
@@ -5949,7 +6303,8 @@ oj.Collection.prototype._throwErrIfVirtual = function(func) {
 };
 
 /**
- * Return an array whose entries are determined by the results of calling the passed iterator function.  The iterator will be called for each model in the collection
+ * Return an array whose entries are determined by the results of calling the passed iterator function.  The 
+ * iterator will be called for each model in the collection
  * 
  * @param {function(Object)} iterator function to determine the mapped value for each model
  * @param {Object=} context context with which to make the calls on iterator
@@ -5995,7 +6350,8 @@ oj.Collection.prototype.size = function() {
 };
 
 /**
- * Return the models sorted determined by the iterator function (or property, if a string value).  If a function, the function should return the attribute by which to sort.
+ * Return the models sorted determined by the iterator function (or property, if a string value).  If a function, 
+ * the function should return the attribute by which to sort.
  * 
  * @param {String|function(Object)} iterator method called or property used to get the attribute to sort by.
  * @param {Object=} context context with which to make the calls on iterator
@@ -6032,7 +6388,8 @@ oj.Collection.prototype.sortBy = function(iterator, context) {
 };
 
 /**
- * @desc Return the collection with models grouped into sets determined by the iterator function (or property, if a string value)
+ * @desc Return the collection with models grouped into sets determined by the iterator function (or property, if 
+ * a string value)
  * 
  * @param {String|function(Object)} iterator method called or property (if a string) used to get the group key
  * @param {Object=} context context with which to make the calls on iterator
@@ -6062,11 +6419,13 @@ oj.Collection.prototype.groupBy = function(iterator, context) {
 };
 
 /**
- * @desc Return an object with models as values for their properties determined by the iterator function or property string
+ * @desc Return an object with models as values for their properties determined by the iterator function or 
+ * property string
  * 
  * @param {String|function(Object)} iterator method called or property (if a string) used to get the index attribute
  * @param {Object=} context context with which to make the calls on iterator
- * @returns {Object} models listed as property values where the properties are the values returned by iterator or the attribute value given by the iterator string
+ * @returns {Object} models listed as property values where the properties are the values returned by iterator or 
+ * the attribute value given by the iterator string
  * 
  * @throws {Error} when called on a virtual collection
  * @export
@@ -6089,7 +6448,8 @@ oj.Collection.prototype.indexBy = function(iterator, context) {
 };
 
 /**
- * Return the "minimum" model in the collection, as determined by calls to iterator.  The return value of iterator (called with a model passed in) will be compared against the current minimum
+ * Return the "minimum" model in the collection, as determined by calls to iterator.  The return value of 
+ * iterator (called with a model passed in) will be compared against the current minimum
  * 
  * @param {function(Object)} iterator function to determine a model's value for checking for the minimum
  * @param {Object=} context context with which to make the calls on iterator
@@ -6123,7 +6483,8 @@ oj.Collection.prototype.min = function(iterator, context) {
 };
 
 /**
- * Return the "maximum" model in the collection, as determined by calls to iterator.  The return value of iterator (called with a model passed in) will be compared against the current maximum
+ * Return the "maximum" model in the collection, as determined by calls to iterator.  The return value of 
+ * iterator (called with a model passed in) will be compared against the current maximum
  * 
  * @param {function(Object)} iterator function to determine a model's value for checking for the maximum
  * @param {Object=} context context with which to make the calls on iterator
@@ -6159,7 +6520,8 @@ oj.Collection.prototype.max = function(iterator, context) {
  * @export
  * @desc Return an array of models that cause passed-in iterator to return true
  * 
- * @param {function(Object)} iterator function to determine if a model should be included or not.  Should return true or false
+ * @param {function(Object)} iterator function to determine if a model should be included or not.  Should return 
+ * true or false
  * @param {Object=} context context with which to make the calls on iterator
  * @returns {Array} array of models that caused iterator to return true
  * 
@@ -6202,7 +6564,8 @@ oj.Collection.prototype.without = function(var_args) {
             // Get the id
             id = arguments[j].GetId();             
             if (model.Match(id, cid)) {
-                // If it's found, don't return it--we're "subtracting" those from the return value, which starts as all models in the collection
+                // If it's found, don't return it--we're "subtracting" those from the return value, which starts 
+                // as all models in the collection
                 add = false;
                 break;
             }
@@ -6267,9 +6630,11 @@ oj.Collection.prototype.isEmpty = function() {
 
 /**
  * @export
- * @desc Return true if any of the models in the collection pass the test made by calling the iterator function parameter
+ * @desc Return true if any of the models in the collection pass the test made by calling the iterator function 
+ * parameter
  * 
- * @param {function(Object)} iterator function called with each model to determine if it "passes".  The function should return true or false.
+ * @param {function(Object)} iterator function called with each model to determine if it "passes".  The function 
+ * should return true or false.
  * @param {Object=} context context with which to make the calls on iterator
  * @returns {boolean} true if any of the models cause the iterator function to return true
  * 
@@ -6294,9 +6659,11 @@ oj.Collection.prototype.any = function(iterator, context) {
  * Events: for events, if virtual, see [fetch]{@link oj.Collection#fetch}<br>
  * @param {Object|Array} attrs attribute/value pairs to find.  
  * See [where]{@link oj.Collection#where} for more details and examples.
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not<p>
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not<p>
  * 
- * @returns {Object|Promise} first model found with the attribute/value pairs.  If virtual or deferred, a promise that resolves with the returned array from the server
+ * @returns {Object|Promise} first model found with the attribute/value pairs.  If virtual or deferred, a promise 
+ * that resolves with the returned array from the server
  */
 oj.Collection.prototype.findWhere = function(attrs, options) {
     var deferred = this._getDeferred(options);
@@ -6326,9 +6693,12 @@ oj.Collection.prototype.findWhere = function(attrs, options) {
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * 
  * @param {number} start model to start the return array with
- * @param {number=} end model to end the return array with, if specified (not inclusive).  If not, returns to the end of the collection
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
- * @return {Array|Promise} array of model objects from start to end, or a promise that resolves specifying the returned array when done
+ * @param {number=} end model to end the return array with, if specified (not inclusive).  If not, returns to the 
+ * end of the collection
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not
+ * @return {Array|Promise} array of model objects from start to end, or a promise that resolves specifying the 
+ * returned array when done
  * @export
  */
 oj.Collection.prototype.slice = function(start, end, options) {
@@ -6357,16 +6727,21 @@ oj.Collection.prototype.slice = function(start, end, options) {
 };
 
 /**
- * Update the collection with a model or models.  Depending on the options, new models will be added, existing models will be merged, and unspecified models will be removed.
+ * Update the collection with a model or models.  Depending on the options, new models will be added, existing 
+ * models will be merged, and unspecified models will be removed.
  * The model cid is used to determine whether a given model exists or not.<br>
- * May fire events as specified by [add]{@link oj.Collection#add} or [remove]{@link oj.Collection#remove}, depending on the options.
+ * May fire events as specified by [add]{@link oj.Collection#add} or [remove]{@link oj.Collection#remove}, 
+ * depending on the options.
  * 
- * @param {Object} models an array of or single model with which to update the collection.  If models contains actual oj.Model objects, then any custom 'parse' function set on the collection needs to take that into account and be prepared to handle an array of oj.Model.
+ * @param {Object} models an array of or single model with which to update the collection.  If models contains 
+ * actual oj.Model objects, then any custom 'parse' function set on the collection needs to take that into 
+ * account and be prepared to handle an array of oj.Model.
  * @param {Object=} options <b>add</b>:false stops the addition of new models<br>
  *                          <b>remove</b>: false stops the removal of missing models<br>
  *                          <b>merge</b>: false prevents the merging of existing models<br>
  *                          <b>silent</b>: true prevents notifications on adds, removes, etc.<br>
- *                          <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ *                          <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ *                          whether it is or not
  * 
  * @returns {Promise|null} if deferred or virtual, return a promise that resolves when the set has completed
  * @export
@@ -6380,7 +6755,8 @@ oj.Collection._removeAfterSet = function(collection, models, remove, foundModels
     // Now remove models that weren't found
     // get an array of all models
 
-    // Can't avoid looping over everything because we *have* to clean up even unfetched models, in order to fire events, etc.
+    // Can't avoid looping over everything because we *have* to clean up even unfetched models, in order to fire 
+    // events, etc.
     if (remove) {    
         for (var i = models.length-1; i >= 0; i=i-1) {
             if (foundModels.indexOf(i) == -1) {
@@ -6439,7 +6815,8 @@ oj.Collection.prototype._setInternal = function(models, parse, options, deferred
     for (i = 0; i < modelList.length; i=i+1) {
         currModel = this._updateModel(this._newModel(modelList[i], parse, options, true), add, merge, deferred);
         if (currModel !== -1) {
-            // And swap it into the position as passed in, if no comparator and we're removing, so that the slots are exact
+            // And swap it into the position as passed in, if no comparator and we're removing, so that the slots 
+            // are exact
             var obj = this._swapModels(currModel, i, remove, add);
             var newLoc = obj.index;
             if (obj.swapped) {
@@ -6468,7 +6845,8 @@ oj.Collection.prototype._deferredSet = function(modelList, modelsCopy, options, 
     return new Promise(function(allResolve, allReject) {
         var doTask = function(index) {
                         return new Promise(function(resolve, reject) {
-                            self._updateModel(self._newModel(modelList[index], parse, options, true), add, merge, true).then(function (currModel) {
+                            self._updateModel(self._newModel(modelList[index], parse, options, true), add, merge, 
+                                                             true).then(function (currModel) {
                                                 if (currModel !== -1) {
                                                     foundModels.push(currModel);
                                                 }
@@ -6490,7 +6868,8 @@ oj.Collection.prototype._deferredSet = function(modelList, modelsCopy, options, 
 };
 
 
-// Return the index of the given model after updating it, if it was found.  Otherwise it is added and a -1 is returned
+// Return the index of the given model after updating it, if it was found.  Otherwise it is added and a -1 is 
+// returned
 oj.Collection.prototype._updateModel = function(model, add, merge, deferred) {
     function update(collection, found, deferred) {
         var index = found ? found.index : -1;
@@ -6545,7 +6924,8 @@ oj.Collection.prototype._updateModel = function(model, add, merge, deferred) {
 /**
  * Return a copy of the Collection's list of current attribute/value pairs.
  *
- * @return {Array|Promise} an array containing all the Collection's current sets of attribute/value pairs.  If virtual, a promise that will resolve with that array
+ * @return {Array|Promise} an array containing all the Collection's current sets of attribute/value pairs.  If 
+ * virtual, a promise that will resolve with that array
  * 
  * @export
  */
@@ -6570,9 +6950,11 @@ oj.Collection.prototype.toJSON = function() {
  * Return the first model object in the collection, or an array of the first n model objects from the collection.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * @param {number=} n Number of model objects to include in the array, starting with the first. 
- * @param {Object=} options deferred: if true, return a promise as though this collection were virtual whether it is or not
- * @return {Array|null|Promise} An array of n model objects found in the collection, starting with the first. If n is not included,
- *                      returns all of the collection's models as an array.  If deferred or virtual, returns a promise that resolves with the array or model
+ * @param {Object=} options deferred: if true, return a promise as though this collection were virtual whether it 
+ * is or not
+ * @return {Array|null|Promise} An array of n model objects found in the collection, starting with the first. If n 
+ * is not included, returns all of the collection's models as an array.  If deferred or virtual, returns a promise 
+ * that resolves with the array or model
  * @export
  */
 oj.Collection.prototype.first = function(n, options) {
@@ -6630,10 +7012,11 @@ oj.Collection.prototype.first = function(n, options) {
  * Return the array index location of the given model object.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * @param {Object} model Model object (or Model id) to locate 
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not
 
- * @return {number|Promise} The index of the given model object, or a promise that will resolve with the index when complete.
- *                  If the object is not found, returns -1.
+ * @return {number|Promise} The index of the given model object, or a promise that will resolve with the index 
+ * when complete.  If the object is not found, returns -1.
  * @export
  */
 oj.Collection.prototype.indexOf = function(model, options) {
@@ -6657,9 +7040,11 @@ oj.Collection.prototype.indexOf = function(model, options) {
  * Determine if the given model object is present in the collection.<br>
  * For events that may be fired if the collection is virtual, see [fetch]{@link oj.Collection#fetch}.<br>
  * @param {Object} model Model object (or Model id) to locate 
- * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not
+ * @param {Object=} options <b>deferred</b>: if true, return a promise as though this collection were virtual 
+ * whether it is or not
 
- * @return {boolean|Promise} true if the model is contained in the collection, false if not. If deferred, a promise that will resolve with true or false when complete.
+ * @return {boolean|Promise} true if the model is contained in the collection, false if not. If deferred, a 
+ * promise that will resolve with true or false when complete.
  * @export
  */
 oj.Collection.prototype.contains = function(model, options) {
@@ -6700,7 +7085,8 @@ oj.Collection.prototype._localIndexOf = function(model) {
  * @param {Object=} options Options for the method:<p>
  * <b>silent</b>: if set, do not fire a remove event <br>
  * <b>deferred</b>: if true, return a promise as though this collection were virtual whether it is or not<br>
- * @return {Object|Promise} the model that was removed, or a promise that will resolve with the model that was removed when complete
+ * @return {Object|Promise} the model that was removed, or a promise that will resolve with the model that was 
+ * removed when complete
  * @export
  */
 oj.Collection.prototype.pop = function(options) {
@@ -6723,7 +7109,8 @@ oj.Collection.prototype.pop = function(options) {
  * For events that may be fired if the collection is virtual, see [add]{@link oj.Collection#add}.<br>
  * @param {Object} m model to add to the end of the Collection
  * @param {Object=} options same options as [add]{@link oj.Collection#add}
- * @return {Promise} if deferred or virtual, a promise that will be resolved when the function is done.  Otherwise undefined
+ * @return {Promise} if deferred or virtual, a promise that will be resolved when the function is done.  Otherwise 
+ * undefined
  * @export
  */
 oj.Collection.prototype.push = function(m, options) {
@@ -6926,7 +7313,8 @@ oj.Collection.prototype._getSortDirStr = function() {
  * @param {Object} collection the collection to be read (fetched)
  * @param {Object=} options to control sync<br>
  * <b>success</b>: called if sync succeeds.  Called with the array of JSON data being fetched<br>
- * <b>error</b>: called if sync fails.  Called with xhr, status, and error info, per jQuery Ajax (all if available)<br>
+ * <b>error</b>: called if sync fails.  Called with xhr, status, and error info, per jQuery Ajax (all if 
+ * available)<br>
  * @return {Object} xhr response from ajax by default
  * @alias oj.Collection.prototype.sync
  */

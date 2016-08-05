@@ -336,16 +336,27 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       // may need to do an extra wrapping if the element has triggers
       if (this._DoWrapElementAndTriggers())
       {
-        this._wrapElement();
+        this._WrapElement();
       }
+      this._focusable({
+        'element': this._wrapper, 
+        'applyHighlight': true
+      });
+    }
+    else
+    {
+      this._focusable({
+        'element': this.element, 
+        'applyHighlight': true
+      });
     }
 
     
     // remove pattern attribute to not trigger html5 validation + inline bubble
-    if ('pattern' in savedAttributes)
-    {
-      node.removeAttr('pattern');
-    }
+//    if ('pattern' in savedAttributes)
+//    {
+//      node.removeAttr('pattern');
+//    }
     
     this._defaultRegExpValidator = {};
     this._eventHandlers = null;
@@ -392,7 +403,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     return ret;
   },
   
-  _processDisabledReadOnly : function __processDisabledReadOnly(key, value) 
+  _processDisabledReadOnly : function (key, value) 
   {
     if (key === "disabled")
     {
@@ -416,7 +427,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @override
    */
-  _setOption : function __setOption(key, value)
+  _setOption : function (key, value)
   {
     var retVal = this._superApply(arguments);
     
@@ -439,7 +450,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @override
    */
-  _destroy : function __destroy()
+  _destroy : function ()
   {
     var ret = this._superApply(arguments);
 
@@ -462,7 +473,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     return ret;
   },
   
-  _attachDetachEventHandlers: function __attachDetachEventHandlers() 
+  _attachDetachEventHandlers: function () 
   {
     
     if(!this.options["readOnly"] && !this.options["disabled"]) {
@@ -528,7 +539,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @private
    */
-  _processAttrCheck : function __processAttrCheck()
+  _processAttrCheck : function ()
   {
     
     var attrCheck = this._ATTR_CHECK;
@@ -553,7 +564,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @param {Event} event
    */
-  _onBlurHandler : function __onBlurHandler(event) 
+  _onBlurHandler : function (event) 
   {
     this._SetValue(this._GetDisplayValue(), event);
   },
@@ -567,7 +578,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @param {Event} event
    */
-  _onKeyDownHandler : function __onKeyDownHandler(event) 
+  _onKeyDownHandler : function (event) 
   {
     if(event.keyCode === $.ui.keyCode.ENTER) 
     {
@@ -582,7 +593,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @param {Event} event
    */
-  _onInputHandler : function __onInputHandler(event) 
+  _onInputHandler : function (event) 
   {
     this._SetRawValue(this._GetContentElement().val(), event);
   },
@@ -599,8 +610,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   {
     return this._WIDGET_CLASS_NAMES;
   },
-          
-            
+
   /**
    * Whether the this.element and triggers should be wrapped. 
    * Method so that additional conditions can be placed
@@ -619,24 +629,29 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * 
    * @private
    */
-  _wrapElementInRootDomElement : function _wrapElementInRootDomElement() 
+  _wrapElementInRootDomElement : function () 
   {
     //@HTMLUpdateOK
-    $(this.element).wrap( $("<div>").addClass(this._WIDGET_CLASS_NAMES) );
-    this._wrapper = this.element.parent();
+    if (this.OuterWrapper) {
+      this._wrapper = $(this.OuterWrapper).addClass(this._WIDGET_CLASS_NAMES);
+      this._wrapper.append(this.element);
+    } else {
+      $(this.element).wrap( $("<div>").addClass(this._WIDGET_CLASS_NAMES) );
+      this._wrapper = this.element.parent();
+    }
   },
           
-            
   /**
    * Wraps the this.element and adds _ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES classes to the wrapped element.
    * We might need this extra wrapper if the component has input+triggers (like inputDate).
    * 
-   * @private
+   * @protected
+   * @return {jQuery}
    */
-  _wrapElement : function _wrapElement() 
+  _WrapElement : function () 
   {
     //@HTMLUpdateOK
-    $(this.element).wrap( $("<div>").addClass(this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES) );
+    return $(this.element).wrap( $("<div>").addClass(this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES) ).parent();
   },
   
   /**
@@ -649,7 +664,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @instance
    * @memberOf !oj.inputBase
    */
-  _AppendInputHelper : function __AppendInputHelper()
+  _AppendInputHelper : function ()
   {
     if(this._INPUT_HELPER_KEY && this._DoWrapElement()) 
     {
@@ -672,7 +687,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @return {jQuery|string}
    * @ignore
    */
-  _EscapeXSS : function __EscapeXSS(escapeMe) 
+  _EscapeXSS : function (escapeMe) 
   {
     return $("<span>" + escapeMe + "</span>").text();
   },
@@ -684,7 +699,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @instance
    * @memberOf !oj.inputBase
    */
-  _AppendInputHelperParent : function __AppendInputHelperParent() 
+  _AppendInputHelperParent : function () 
   {
     return this.widget();
   },
@@ -754,7 +769,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @param {string} sub
    * @return {string}
    */
-  _GetSubId : function __getSubId(sub)
+  _GetSubId : function (sub)
   {
     return this["uuid"] + "_" + sub;
   },
@@ -785,18 +800,6 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     return retVal;
   },
   
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values.
-   * @expose
-   * @override
-   * @instance
-   * @memberof oj.inputBase
-   * @param {Object} locator An Object containing at minimum a subId property whose value is a string, documented by the component, that allows the component to 
-   *                        look up the subcomponent associated with that string.  It contains:<p>
-   *                        component: optional - in the future there may be more than one component contained within a page element<p>
-   *                        subId: the string, documented by the component, that the component expects in getNodeBySubId to locate a particular subcomponent
-   * @returns {Object|null} the subcomponent located by the subId string passed in locator, if found.<p>
-   */
   getNodeBySubId: function(locator)
   {
     return this._super(locator);
@@ -816,7 +819,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @example <caption>Invoke the <code class="prettyprint">widget</code> method:</caption>
    * var widget = $( ".selector" ).ojFoo( "widget" ); // Foo is InputText, InputPassword, TextArea
    */       
-  widget : function _widget() 
+  widget : function () 
   {
     return this._DoWrapElement() ? this._wrapper : this.element;
   }
@@ -848,6 +851,21 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
  * <code>$( ":oj-inputPassword" )            // selects all JET input on the page
  * </code>
  * </pre>
+ * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -951,38 +969,6 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
     pattern: ""
   },
 
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   *
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputText
-   * @instance
-   *
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property. See the table for details on its fields.
-   *
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   *
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   *
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node
-   * or a hint node within the popup.
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   *
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojInputPassword( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
   getNodeBySubId: function(locator)
   {
     var node = this._superApply(arguments), subId;
@@ -1010,6 +996,60 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
   }
 
 });
+
+// Fragments:
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *    <tr>
+ *       <td>Input</td>
+ *       <td><kbd>Tap</kbd></td>
+ *       <td>Sets focus to input. If hints, title or messages exist in a notewindow,
+ *       popup the notewindow.</td>
+ *     </tr>
+ *    {@ojinclude "name":"labelTouchDoc"}
+ *   </tbody>
+ *  </table>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojInputPassword
+ */
+
+ /**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Input element</td>
+ *       <td><kbd>Tab In</kbd></td>
+ *       <td>Set focus to the input. 
+ *       If hints, title or messages exist in a notewindow, 
+ *        pop up the notewindow.</td>
+ *     </tr> 
+ *     {@ojinclude "name":"labelKeyboardDoc"}   
+ *   </tbody>
+ * </table>
+ *
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojInputPassword
+ */
+
 
 //////////////////     SUB-IDS     //////////////////
 /**
@@ -1049,6 +1089,21 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
  * <code>$( ":oj-textarea" )            // selects all JET textarea on the page
  * </code>
  * </pre>
+  * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -1148,38 +1203,6 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
     pattern: ""
   },
 
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   *
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputText
-   * @instance
-   *
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property. See the table for details on its fields.
-   *
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   *
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   *
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node
-   * or a hint node within the popup.
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   *
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojTextArea( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
   getNodeBySubId: function(locator)
   {
     var node = this._superApply(arguments), subId;
@@ -1219,6 +1242,60 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
 
 });
 
+  // Fragments:
+
+	/**
+	 * <table class="keyboard-table">
+	 *   <thead>
+	 *     <tr>
+	 *       <th>Target</th>
+	 *       <th>Gesture</th>
+	 *       <th>Action</th>
+	 *     </tr>
+	 *   </thead>
+	 *   <tbody>
+	 *    <tr>
+	 *       <td>TextArea</td>
+	 *       <td><kbd>Tap</kbd></td>
+	 *       <td>Sets focus to textarea. If hints, title or messages exist in a notewindow,
+   *       popup the notewindow.</td>
+	 *     </tr>
+	 *    {@ojinclude "name":"labelTouchDoc"}
+	 *   </tbody>
+	 *  </table>
+	 *
+	 *
+	 * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+	 * @memberof oj.ojTextArea
+	 */
+
+   /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>TextArea</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the textarea. 
+   *       If hints, title or messages exist in a notewindow, 
+   *        pop up the notewindow.</td>
+   *     </tr> 
+   *     {@ojinclude "name":"labelKeyboardDoc"}   
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojTextArea
+   */
+
+
 //////////////////     SUB-IDS     //////////////////
 /**
  * <p>Sub-ID for the ojTextArea component's textarea element.</p>
@@ -1257,6 +1334,21 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  * <code>$( ":oj-inputText" )            // selects all JET input on the page
  * </code>
  * </pre>
+  * <h3 id="touch-section">
+ *   Touch End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"touchDoc"}
+ *
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
+ *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -1355,38 +1447,6 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
     pattern: ""
   },
 
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   *
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputText
-   * @instance
-   *
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property. See the table for details on its fields.
-   *
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   *
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   *
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node
-   * or a hint node within the popup.
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   *
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojInputText( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
   getNodeBySubId: function(locator)
   {
     var node = this._superApply(arguments), subId;
@@ -1426,6 +1486,59 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
 
 });
 
+  // Fragments:
+
+	/**
+	 * <table class="keyboard-table">
+	 *   <thead>
+	 *     <tr>
+	 *       <th>Target</th>
+	 *       <th>Gesture</th>
+	 *       <th>Action</th>
+	 *     </tr>
+	 *   </thead>
+	 *   <tbody>
+	 *    <tr>
+	 *       <td>Input</td>
+	 *       <td><kbd>Tap</kbd></td>
+	 *       <td>Sets focus to input. If hints, title or messages exist in a notewindow,
+   *       popup the notewindow.</td>
+	 *     </tr>
+	 *    {@ojinclude "name":"labelTouchDoc"}
+	 *   </tbody>
+	 *  </table>
+	 *
+	 *
+	 * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+	 * @memberof oj.ojInputText
+	 */
+
+   /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Key</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>Input</td>
+   *       <td><kbd>Tab In</kbd></td>
+   *       <td>Set focus to the input. 
+   *       If hints, title or messages exist in a notewindow, 
+   *        pop up the notewindow.</td>
+   *     </tr> 
+   *     {@ojinclude "name":"labelKeyboardDoc"}   
+   *   </tbody>
+   * </table>
+   *
+   *
+   * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojInputText
+   */
+
 //////////////////     SUB-IDS     //////////////////
 /**
  * <p>Sub-ID for the ojInputText component's input element.</p>
@@ -1438,4 +1551,101 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
  * var node = $( ".selector" ).ojInputText( "getNodeBySubId", {'subId': 'oj-inputtext-input'} );
  */
 
+(function() {
+var inputBaseMeta = {
+  "properties": {
+    "converter": {
+      "type": "Object"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "readOnly": true,
+      "writeback": true
+    },
+    "readOnly": {
+      "type": "boolean"
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    // Boolean indicating whether a widget needs a wrapping element, e.g. ojInputNumber would set this to true.
+    "_hasWrapper": true,
+    "_innerElement": 'input',
+    "_widgetName": "inputBase"
+  }
+};
+oj.Components.registerMetadata('inputBase', 'editableValue', inputBaseMeta);
+})();
+
+(function() {
+var ojInputPasswordMeta = {
+  "properties": {
+    "pattern": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {},
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'input',
+    "_widgetName": "ojInputPassword"
+  }
+};
+oj.Components.registerMetadata('ojInputPassword', 'inputBase', ojInputPasswordMeta);
+oj.Components.register('oj-input-password', oj.Components.getMetadata('ojInputPassword'));
+})();
+
+(function() {
+var ojInputTextMeta = {
+  "properties": {
+    "pattern": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {},
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'input',
+    "_widgetName": "ojInputText"
+  }
+};
+oj.Components.registerMetadata('ojInputText', 'inputBase', ojInputTextMeta);
+oj.Components.register('oj-input-text', oj.Components.getMetadata('ojInputText'));
+})();
+
+(function() {
+var ojTextAreaMeta = {
+  "properties": {
+    "pattern": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {},
+  "extension": {
+    "_hasWrapper": true,
+    "_innerElement": 'textarea',
+    "_widgetName": "ojTextArea"
+  }
+};
+oj.Components.registerMetadata('ojTextArea', 'inputBase', ojTextAreaMeta);
+oj.Components.register('oj-text-area', oj.Components.getMetadata('ojTextArea'));
+})();
 });

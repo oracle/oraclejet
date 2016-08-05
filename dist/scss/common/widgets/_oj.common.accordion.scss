@@ -13,6 +13,13 @@
     /* accordion */
     /* --------------------------------------------------------------- */
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-accordion:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     /*
      * applied to the disabled accordion header
      */

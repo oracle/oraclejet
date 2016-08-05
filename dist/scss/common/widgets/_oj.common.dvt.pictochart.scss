@@ -8,9 +8,16 @@
 
 @if $includePictoChartClasses != false {
   @include module-include-once("common.pictochart") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-picto-chart:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-pictochart {
       @include oj-user-select-property(none);
-      outline: none;
       display: inline-block;
     }
 

@@ -57,7 +57,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  *  Radioset does not have a readOnly option since HTML does not support
  *  readonly on radios and checkboxes.
  * </p>
- * 
+ * <p>
+ * In native themes, the label element is required. The label element is used to render the
+ * radio image.
+ * </p> 
  * 
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -112,6 +115,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * information, if the <code class="prettyprint">required</code> and 
  * <code class="prettyprint">help</code> options are set. 
  * </p>
+ * <p>
+ * In native themes, the label element is required. The label element is used to render the
+ * radio image.
+ * </p> 
  * 
  *  * <h3 id="styling-section">
  *   Styling
@@ -146,6 +153,49 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * 
  *           <ul>
  *             <li>The class must be applied to the span surrounding the input and label to keep them aligned.</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+*     <tr>
+ *       <td>oj-radioset-no-chrome</td>
+ *       <td><p>Use this styleclass if you don't want the chrome around the set.
+ *
+ *           <p>The class is applied as follows:
+ *
+ *           <ul>
+ *             <li>The class must be applied to the div where you bind ojRadioset.</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-radioset-input-start</td>
+ *       <td><p>Use this styleclass to order the radio at the start and label text at the end 
+ *       even if a theme has a different default order.
+ *
+ *           <p>The class is applied as follows:
+ *
+ *           <ul>
+ *             <li>The class must be applied to the div where you bind ojRadioset.</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-radioset-input-end</td>
+ *       <td><p>Use this styleclass to order the radio at the end and the label text at the start 
+ *       even if a theme has a different default order.
+ *
+ *           <p>The class is applied as follows:
+ *
+ *           <ul>
+ *             <li>The class must be applied to the div where you bind ojRadioset.</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-focus-highlight</td>
+ *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}
+ *           <ul>
+ *             <li>The class must be applied to the div where you apply oj-choice-row or oj-choice-row-inline.</li>
  *           </ul>
  *       </td>
  *     </tr>
@@ -356,7 +406,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
                  {attribute: "placeholder"},
                  {attribute: "required", coerceDomValue: true, validateOption: true},
                  {attribute: "title"}
-                 // {attribute: "value", defaultOptionValue: null} // code below sets value
+                 // {attribute: "value"} // code below sets value
                ]; 
     
     this._super(originalDefaults, constructorOptions);
@@ -554,17 +604,15 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     var launcher = checked.length ? checked : radios.filter(":enabled").first();
     this._OpenContextMenu(event, eventType, {"launcher": launcher});
   },
-  // Override to set launcher to label if input is hidden.
+  // Override to set launcher to widget
   _GetMessagingLauncherElement : function ()
   {
-    var inputElem = this._GetContentElement();
-    var renderInputAs = oj.ThemeUtils.getOptionDefaultMap("radioset")["renderInputAs"];
-    
-    // input is hidden if renderInputAs is html, so in this case we need the launcher to be the widget.
-    if (renderInputAs && renderInputAs !== _HTML)   
-      return this.widget();
-    else
-      return inputElem;
+    // focus events only get triggered on input, but they do bubble up and we will capture them
+    // on the widget.
+    // mouseenter events get called once once if the user hovers over for the entire widget. if
+    // we put it on the inputs, it gets called every time you leave and enter a new input. Plus,
+    // this doesn't work when we hide the input like we do in the native themes.
+     return this.widget();                          
   },
   /**
    * _setup is called on create and refresh. Use the disabled option to 
@@ -630,42 +678,40 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * what this means is we need to 'check' the radio whose value matches the
    * displayValue.
    * 
-   * @param {String} displayValue of the new string to be displayed
+   * @param {String} displayValue the value of the checkbox that needs to be checked
    * @override
    * @protected
    * @memberof oj.ojRadioset
   */  
   _SetDisplayValue : function (displayValue) 
   {
-    var valueFilter, radioWithMatchingValue, notMatchingRadios;
+    var length = this.$radios.length;
+    var radioInputValue, i, $radio;
 
-    // Find a radio whose value matches displayValue, and set its checked option to true.
-    // Set the checked option to false for the other radios, since only one radio can
-    // be checked at a time.
-    // We do this so that the radio state matches the value option value.
-    valueFilter = "[value='" + displayValue + "']"; 
-    if (this.$radios !== undefined)
+    // go through each _ojRadioCheckbox and see if it needs to be checked or unchecked.
+    for (i = 0; i < length; i++)
     {
-      radioWithMatchingValue = 
-          this.$radios.filter(valueFilter);
-      
-      // found a radio with a matching value
-      if (radioWithMatchingValue !== undefined && radioWithMatchingValue.length > 0)
+      $radio = $(this.$radios[i]);
+      radioInputValue = $radio[0].value;
+      // does the radio's value match the displayValue?
+      var checked = $radio._ojRadioCheckbox("option", "checked"); 
+      if (displayValue === radioInputValue)
       {
-        notMatchingRadios = this.$radios.not(valueFilter);
-        radioWithMatchingValue._ojRadioCheckbox("option", "checked", true);
-        // uncheck all of the rest!
-        if (notMatchingRadios !== undefined && notMatchingRadios.length > 0)
-          notMatchingRadios._ojRadioCheckbox("option", "checked", false);
+        // yes. this needs to be checked, if it isn't already
+        if (!checked)
+        {
+          $radio._ojRadioCheckbox("option", "checked", true);
+        }
       }
       else
       {
-        // did not find any radios with a matching value, so uncheck
-        // all of them.
-        this.$radios._ojRadioCheckbox("option", "checked", false);
+        /// no. this needs to be unchecked, if it isn't already
+        if (checked)
+        {
+          $radio._ojRadioCheckbox("option", "checked", false);
+        }
       }
-    }
-    
+    } 
   },
   /**
    * Returns the element's value. Normally, this is a call to this.element.val(),
@@ -719,7 +765,9 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    */
   _GetContentElement : function ()
   {
-    return this._findRadiosWithMatchingName();
+    if (this.$radios != null)
+      return this.$radios;
+    else this._findRadiosWithMatchingName();
   },
     /**
    * Called when a aria-required attribute needs to be set or removed. 
@@ -741,6 +789,9 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * Called to find out if aria-required is unsupported. This is needed for the label.
    * It is not legal to have aria-required on radio/checkboxes, nor on
    * radiogroup/group.
+   * If aria-required is not supported, then we wrap the required icon as well as the
+   * help icons so that JAWS can read required. We don't do this for form controls that use
+   * aria-required because if we did JAWS would read required twice.
    * @memberof oj.ojRadioset
    * @instance
    * @protected
@@ -868,13 +919,20 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *     <tr>
    *       <td>Input</td>
    *       <td><kbd>Tap</kbd></td>
-   *       <td>Select the input.</td>
+   *       <td>Select the input. In some themes, the input is not visible, 
+   *       so you will tap on the label.</td>
    *     </tr>
    *     <tr>
    *       <td>Input's label</td>
    *       <td><kbd>Tap</kbd></td>
    *       <td>Select the corresponding input.</td>
-   *     </tr>  
+   *     </tr> 
+	 *     <tr>
+	 *       <td>Input or Label</td>
+	 *       <td><kbd>Press & Hold</kbd></td>
+	 *       <td>If hints, title or messages exist in a notewindow, 
+   *        pop up the notewindow.</td>
+	 *    </tr> 
    *     {@ojinclude "name":"labelTouchDoc"}  
    *   </tbody>
    * </table>
@@ -904,8 +962,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *       <td>Select the next input in the group.</td>
    *     </tr>
    *     <tr>
-   *       <td>Tabbable element immediately before radioset</td>
-   *       <td><kbd>Tab</kbd></td>
+   *       <td>Radioset</td>
+   *       <td><kbd>Tab In</kbd></td>
    *       <td>Set focus to the checked radio input. If hints, title or messages exist in a notewindow, 
    *        pop up the notewindow.</td>
    *     </tr> 
@@ -935,4 +993,27 @@ var _HTML = "html";
 
 }());
 
+(function() {
+var ojRadiosetMeta = {
+  "properties": {
+    "disabled": {
+      "type": "boolean"
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_widgetName": "ojRadioset"
+  }
+};
+oj.Components.registerMetadata('ojRadioset', 'editableValue', ojRadiosetMeta);
+oj.Components.register('oj-radioset', oj.Components.getMetadata('ojRadioset'));
+})();
 });

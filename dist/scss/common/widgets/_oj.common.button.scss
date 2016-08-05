@@ -183,31 +183,47 @@
     /* button */
     /* --------------------------------------------------------------- */
 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-button:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-toggle-button:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
     .oj-button { 
-        display: inline-block;
-        
-        // makes it vertically line up nicely with form controls, and in a toolbar, etc.
+        @include oj-display-inline-flex-property;
+
+        @include oj-justify-content-property(center);
+        min-width: 0; // By default, flex items won’t shrink below their minimum content size unless min-width specified
+
+        // vertically center containing items
+        @include oj-align-items-property(center);
+
+        // Required for buttons to line up in FF (see Bug 23025205)
         vertical-align: middle;
 
         padding: 0; 
         border: 1px solid;   
         
         // AltaWeb spec says 3px spacing (i.e. margin) between buttons, so 1.5px margin on left and right.
-        // Since Buttons are inline-block, the spacing is approximately 3px whenever the HTML has any 
+        // Since Buttons are inline-flex, the spacing is approximately 3px whenever the HTML has any 
         // whitespace between the elements, which is usually the case. Therefore leaving off left/right margins.
         margin-bottom: $wrappableMarginBottom;
         
-        text-align: center; 
         white-space: nowrap; 
+        overflow: hidden;
 
         @include oj-border-radius( $buttonBorderRadius );
-        @include oj-box-sizing-property(border-box);
+        box-sizing: border-box;
         
         height: $buttonHeight;
-        // the line-height is needed for the case where 
-        // you use an anchor tag to create the button, 
-        // otherwise the text isn't centered
-        line-height: $buttonHeight;
         
         // font-size and font-family are needed for the
         // case where you use a button tag to create
@@ -227,17 +243,29 @@
         cursor: $buttonCursor; 
     }
 
+    // display inline-flex doesn't seem to quite work in IE 11 for input based buttons; they do not behave inline unless they're display inline-block
+    // luckily having flex display for these is not essential because labels are automatically vertically aligned properly.
+    input.oj-button[type="button"], 
+    input.oj-button[type="submit"], 
+    input.oj-button[type="reset"] {
+        display: inline-block;
+    }
+
     /* The root element of toggle (radio and checkbox) buttons */
     .oj-button-toggle {
         position: relative; // See comments for bug 20867328 below
     }
 
-    /* The <label> of toggle (radio and checkbox) buttons */
+    /* The <label> of toggle (radio and checkbox) buttons or <div> of <button> type buttons*/
     .oj-button-label {
         cursor: inherit; // follow oj-button's lead
         
         // very important: make <label> fill up the containing oj-button <span> so all clicks, hovers, etc. are received by the <label>
-        display: inline-block;
+        @include oj-display-inline-flex-property;
+        @include oj-align-items-property(center);
+        @include oj-justify-content-property(center);
+        width: 100%;
+        height: 100%;
     }
 
     /* The <input> of toggle (radio and checkbox) buttons */
@@ -252,6 +280,13 @@
     .oj-button .oj-button-icon {
         font-weight: normal; 
         text-shadow: none;
+    }
+
+    // Since buttons can have variable widths ensure button text truncates with ellipsis if button gets too small
+    .oj-button .oj-button-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
 
@@ -295,8 +330,14 @@
         outline:none; // e.g. Chrome adds blue outline to focused element
     }
 
-    .oj-button.oj-focus {
-        @include oj-browser-focus-outline-approximation($buttonTextColor);
+    // The oj-focus-highlight class applies focus styling that may not be desirable
+    // when the focus results from pointer interaction (touch or mouse), but which is
+    // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+    // example keyboard or initial page load.
+    // See also the $focusHighlightPolicy variable, which controls when this 
+    // class is set.  That variable affects multiple components, not just Button.
+    .oj-button.oj-focus-highlight {
+        @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
 
     .oj-button.oj-disabled {
@@ -677,14 +718,6 @@
 
     // Button padding and alignment
     //----------------------------------
-
-
-    .oj-button-icon {
-        vertical-align: middle;
-        // despite being vertically aligned, the icons don't seem to want to be 
-        // vertically centered so add a small margin to the bottom
-        margin-bottom: 3px;
-    }
 
     @include oj-button-padding();
     @include oj-button-padding('.oj-button-sm', 

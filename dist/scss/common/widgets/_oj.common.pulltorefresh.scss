@@ -74,7 +74,7 @@
      */
     .oj-pulltorefresh-icon-initial {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_00.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_00.svg")
         ); 
     }
 
@@ -83,7 +83,7 @@
      */
     .oj-pulltorefresh-icon-10-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_10.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_10.svg")
         ); 
     }
 
@@ -92,7 +92,7 @@
      */
     .oj-pulltorefresh-icon-20-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_20.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_20.svg")
         ); 
     }
 
@@ -101,7 +101,7 @@
      */
     .oj-pulltorefresh-icon-30-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_30.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_30.svg")
         ); 
     }
 
@@ -110,7 +110,7 @@
      */
     .oj-pulltorefresh-icon-40-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_40.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_40.svg")
         ); 
     }
 
@@ -119,7 +119,7 @@
      */
     .oj-pulltorefresh-icon-50-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_50.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_50.svg")
         ); 
     }
 
@@ -128,7 +128,7 @@
      */
     .oj-pulltorefresh-icon-60-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_60.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_60.svg")
         ); 
     }
 
@@ -137,7 +137,7 @@
      */
     .oj-pulltorefresh-icon-70-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_70.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_70.svg")
         ); 
     }
 
@@ -146,7 +146,7 @@
      */
     .oj-pulltorefresh-icon-80-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_80.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_80.svg")
         ); 
     }
 
@@ -155,7 +155,7 @@
      */
     .oj-pulltorefresh-icon-90-percent {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_90.svg")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_90.svg")
         ); 
     }
 
@@ -164,7 +164,7 @@
      */
     .oj-pulltorefresh-icon-full {
         @include oj-icon-content(
-             $icon: oj-image-url("pull_to_refresh_full.gif")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_full.gif")
         ); 
     }
   }

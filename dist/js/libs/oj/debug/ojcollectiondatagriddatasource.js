@@ -55,6 +55,9 @@ oj.CollectionHeaderSet.prototype.setModels = function(models)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the data object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getData = function(index, level)
 {
@@ -91,6 +94,9 @@ oj.CollectionHeaderSet.prototype.getData = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
  * @return {Object} the metadata object for the specific index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getMetadata = function(index, level)
 {
@@ -128,6 +134,9 @@ oj.CollectionHeaderSet.prototype.getMetadata = function(index, level)
  * databody would increment the level by 1.
  * @return {number} the number of levels of the result set
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getLevelCount = function()
 {
@@ -154,6 +163,9 @@ oj.CollectionHeaderSet.prototype.getLevelCount = function()
  *              aren't included in this headerSet:</caption>                     
  * {'extent':5, 'more': {'before':false, 'after':true}}
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getExtent = function(index, level)
 { 
@@ -169,6 +181,9 @@ oj.CollectionHeaderSet.prototype.getExtent = function(index, level)
  * @param {number=} level the level of the header, 0 is the outermost header
  * @return {number} the number of levels spanned by the header at the specified position
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getDepth = function(index, level)
 {
@@ -182,6 +197,9 @@ oj.CollectionHeaderSet.prototype.getDepth = function(index, level)
  * along the innermost header.
  * @return {number} the actual count of the result set.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionHeaderSet 
  */
 oj.CollectionHeaderSet.prototype.getCount = function()
 {
@@ -278,12 +296,15 @@ oj.CollectionCellSet.prototype.setModels = function(models)
  * @param {Object} indexes the index of each axis in which we want to retrieve the data from.  
  * @param {number} indexes.row the index of the row axis.
  * @param {number} indexes.column the index of the column axis.
- * @return {Object} the data object for the specified index.
+ * @return {Object} an object with property data for the specified index.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getData = function(indexes)
 {
-    var column, model;
+    var columnKey, model, self, returnObj;
 
     // indexes are validated in _getModel
     model = this._getModel(indexes);
@@ -291,11 +312,17 @@ oj.CollectionCellSet.prototype.getData = function(indexes)
     {
         return null;
     }
-
-    // extract column index
-    column = indexes['column'];
-
-    return model.get(this.m_columns[column]);
+ 
+    columnKey = this.m_columns[indexes['column']];
+    self = this;    
+    returnObj = {}; 
+    Object.defineProperty(returnObj, 'data', {
+        get: function(){ return model.get(columnKey); },
+        set: function (newValue) { 
+            model.set(columnKey, newValue, {'silent':true}); 
+        }
+    });
+    return returnObj;
 };
 
 /**
@@ -307,6 +334,9 @@ oj.CollectionCellSet.prototype.getData = function(indexes)
  * @return the metadata object for the specific index.  The metadata that the DataGrid supports are: 
  *         1) keys - the key (of each axis) of the cell.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getMetadata = function(indexes)
 {
@@ -357,6 +387,9 @@ oj.CollectionCellSet.prototype._getModel = function(indexes)
  * @param {string} axis the axis in which to inquire the actual count of the result set.
  * @return {number} the actual count of the result set for the specified axis.  
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionCellSet 
  */
 oj.CollectionCellSet.prototype.getCount = function(axis)
 {
@@ -529,6 +562,9 @@ oj.CollectionDataGridDataSource.prototype._isDataAvailable = function()
  * @param {string} axis the axis in which we inquire for the total count.  Valid values are "row" and "column".
  * @return {number} the total number of rows/columns.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCount = function(axis)
 {
@@ -579,6 +615,9 @@ oj.CollectionDataGridDataSource.prototype.getCount = function(axis)
  * @return {string} "actual" if the count returned in getCount function is the actual count, "estimate" if the
  *         count returned in getCount function is an estimate.  The default value is "actual".
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCountPrecision = function(axis)
 {
@@ -599,11 +638,16 @@ oj.CollectionDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @param {number} headerRange.count the size of the range in which the header data are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
 {
@@ -629,7 +673,9 @@ oj.CollectionDataGridDataSource.prototype.fetchHeaders = function(headerRange, c
  * @param {number} headerRange.count the size of the range in which the header data are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.  The valid callback
  *        types are "success" and "error".
- * @param {function(HeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ * @param {function(HeaderSet, headerRange, endHeaderSet)} callbacks.success the callback to invoke when fetch headers completed successfully.
+ *        The function takes three paramaters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
+ *        and a HeaderSet object representing the end headers along the axis.
  * @param {function({status: Object})} callbacks.error the callback to invoke when fetch cells failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
@@ -654,11 +700,6 @@ oj.CollectionDataGridDataSource.prototype._handleHeaderFetchSuccess = function(h
             end = Math.min(this.columns.length, start+count);
             headerSet = new oj.CollectionHeaderSet(start, end, this.columns, undefined, this._sortInfo);
         }
-        else
-        {
-            // no row header, return empty result set
-            headerSet = new oj.ArrayHeaderSet(start, start, axis, null);
-        }
     }
     else if (axis === "row")
     {
@@ -679,17 +720,12 @@ oj.CollectionDataGridDataSource.prototype._handleHeaderFetchSuccess = function(h
             // resolveModels will invoke callbacks
             return;
         }
-        else
-        {
-            // no row header, return empty result set
-            headerSet = new oj.ArrayHeaderSet(start, start, axis, null);
-        }
     }
 
     // invoke callback
     if (callbacks != null && callbacks['success'])
     {
-        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange);
+        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange, null);
     }
 };
 
@@ -818,6 +854,9 @@ oj.CollectionDataGridDataSource.prototype._resolveModels = function(rowStart, ro
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource
  */
 oj.CollectionDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
 {
@@ -914,7 +953,7 @@ oj.CollectionDataGridDataSource.prototype._fetchCells = function(cellRanges)
                     this._setupColumns(model);
                 }
                 // now we can complete the fetch
-                this._fetchCellsComplete();
+                this._fetchCellsComplete(cellRanges);
             }.bind(this));
 
             // process must be done after columns are discovered
@@ -922,7 +961,7 @@ oj.CollectionDataGridDataSource.prototype._fetchCells = function(cellRanges)
         }
         else
         {
-            this._fetchCellsComplete();
+            this._fetchCellsComplete(cellRanges);
         }
     }.bind(this), function (e)
     {
@@ -1007,10 +1046,22 @@ oj.CollectionDataGridDataSource.prototype._processPendingCellErrorCallbacks = fu
 
 /**
  * Finish fetch cells operation
+ * @param {Array.<Object>} cellRanges Information about the cell range.  A cell range is defined by an array
+ *        of range info for each axis, where each range contains three properties: axis, start, count.
+ * @param {string} cellRanges.axis the axis associated with this range where cells are fetched.  Valid
+ *        values are "row" and "column".
+ * @param {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
+ * @param {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @private
  */
-oj.CollectionDataGridDataSource.prototype._fetchCellsComplete = function()
+oj.CollectionDataGridDataSource.prototype._fetchCellsComplete = function(cellRanges)
 {
+    // make sure we only callback when we have the most recent request
+    if (this.pendingCellCallback.cellRanges != cellRanges)
+    {
+        return;
+    }
+    
     // check outstanding header calls
     if (this.pendingHeaderCallback != null)
     {
@@ -1099,6 +1150,9 @@ oj.CollectionDataGridDataSource.prototype.keys = function(indexes)
  * @param {Object} keys.column the key for the column axis
  * @return {Object} a Promise object which upon resolution will pass in an object containing the indexes for each axis
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.indexes = function(keys)
 {
@@ -1152,6 +1206,9 @@ oj.CollectionDataGridDataSource.prototype.indexes = function(keys)
  * @return {string|null} the name of the feature.  For sort, the valid return values are: "full", "none".  Returns null if the
  *         feature is not recognized.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.getCapability = function(feature)
 {
@@ -1181,6 +1238,9 @@ oj.CollectionDataGridDataSource.prototype.getCapability = function(feature)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
 {
@@ -1362,6 +1422,9 @@ oj.CollectionDataGridDataSource.prototype._setSortInfo = function(key)
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" properties.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.move = function(moveKey, atKey, position, callbacks, callbackObjects)
 {
@@ -1410,6 +1473,9 @@ oj.CollectionDataGridDataSource.prototype.move = function(moveKey, atKey, positi
  *        Valid values are: "before", "after".
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
+ * @expose
+ * @instance
+ * @memberof! oj.CollectionDataGridDataSource 
  */
 oj.CollectionDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
 {

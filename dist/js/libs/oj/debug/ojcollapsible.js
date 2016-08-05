@@ -221,7 +221,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforeexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforeexpand", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeExpand : null,
 
@@ -243,7 +246,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojexpand</code> event:</caption>
-       * $( ".selector" ).on( "ojexpand", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojexpand", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       expand : null,
 
@@ -266,7 +272,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojbeforecollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojbeforecollapse", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       beforeCollapse : null,
 
@@ -288,7 +297,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojcollapse</code> event:</caption>
-       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {} );
+       * $( ".selector" ).on( "ojcollapse", function( event, ui ) {
+       *      // verify that the component firing the event is a component of interest 
+       *      if ($(event.target).is(".mySelector")) {} 
+       * } );
        */
       collapse : null,
 
@@ -313,6 +325,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
        *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
        *
+       * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
+       * $(".selector").ojCollapsible({
+       *   'optionChange': function (event, data) {}
+       * });
+       * @example <caption>Bind an event listener to the ojoptionchange event</caption>
+       * $(".selector").on({
+       *   'ojoptionchange': function (event, data) {
+       *       // verify that the component firing the event is a component of interest
+       *       if ($(event.target).is(".mySelector")) {
+       *           window.console.log("option that changed is: " + data['option']);
+       *       }
+       *   };
+       * });
        */
       optionChange: null
 
@@ -351,7 +376,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Setting the launcher to the "twisty" icon, since that seems to be the only tabbable thing in the collapsible,
       // and it seems to remain tabbable even if the collapsible is disabled.  See the superclass JSDoc for _OpenContextMenu
       // for tips on choosing a launcher.
-      this._OpenContextMenu(event, eventType, {"launcher": this.element.find(".oj-collapsible-header-icon").first()});
+      this._OpenContextMenu(event, eventType, {"launcher": this._getCollapsibleIcon().first()});
     },
 
     _createIcons : function ()
@@ -447,6 +472,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       else //disclosureIcon
         return "> .oj-collapsible-header > .oj-collapsible-header-icon";
     },
+
+    _getCollapsibleIcon : function ()
+    {
+      return this.header.find(".oj-collapsible-header-icon");
+    },
+
 
     _setOption : function (key, value, flags)
     {
@@ -659,10 +690,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           "ojfocusout" : this._focusHandler
         });
 
-        this._hoverable(expandArea);
-        this._focusable(expandArea);
-        this._activeable(expandArea);
+        this._focusable({
+          'element': this._getCollapsibleIcon(),
+          'applyHighlight': true
+        });
 
+        this._AddHoverable(expandArea);
+        this._AddActiveable(expandArea);
       }
     },
 
@@ -690,7 +724,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       event.stopPropagation();
 
       //set focus on the disclosure icon
-      this.header.find(".oj-collapsible-header-icon").focus();
+      this._getCollapsibleIcon().focus();
 
     },
 
@@ -797,8 +831,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           }
         }
 
-        this.header
-          .find(".oj-collapsible-header-icon").toggleClass(OPEN_ICON, isExpanded)
+        this._getCollapsibleIcon().toggleClass(OPEN_ICON, isExpanded)
             // logic or cause same icon for expanded/collapsed state would remove the oj-icon-class
             .toggleClass(CLOSE_ICON, (! isExpanded || OPEN_ICON === CLOSE_ICON))
           .end();
@@ -982,7 +1015,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       case 'oj-collapsible-disclosure':
       case 'oj-collapsible-header-icon':
-        return this.header.find(".oj-collapsible-header-icon")[0];
+        return this._getCollapsibleIcon()[0];
       }
 
       // Non-null locators have to be handled by the component subclasses
@@ -1102,4 +1135,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 }
 ());
 
+(function() {
+var ojCollapsibleMeta = {
+  "properties": {
+    "disabled": {
+      "type": "boolean"
+    },
+    "expandArea": {
+      "type": "string"
+    },
+    "expanded": {
+      "type": "boolean"
+    },
+    "expandOn": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "collapse": {},
+    "expand": {},
+    "refresh": {}
+  },
+  "extension": {
+    "_widgetName": "ojCollapsible"
+  }
+};
+oj.Components.registerMetadata('ojCollapsible', 'baseComponent', ojCollapsibleMeta);
+oj.Components.register('oj-collapsible', oj.Components.getMetadata('ojCollapsible'));
+})();
 });

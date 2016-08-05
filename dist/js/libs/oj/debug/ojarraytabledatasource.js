@@ -34,7 +34,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 oj.ArrayTableDataSource = function(data, options)
 {
   // Initialize
-  this.data = {};   // This was put in to keep closure happy...
+  this.data = data || {};   // This was put in to keep closure happy...
   if (!(data instanceof Array) &&
       (typeof (data) != 'function' &&
        typeof (data.subscribe) != 'function'))
@@ -120,6 +120,24 @@ oj.ArrayTableDataSource = function(data, options)
 
 // Subclass from oj.DataSource 
 oj.Object.createSubclass(oj.ArrayTableDataSource, oj.TableDataSource, "oj.ArrayTableDataSource");
+
+/**
+ * @export
+ * @desc If set to a function(row1, row2), then this function is called comparing raw row data (see the
+ * JavaScript array.sort() for details)
+ */
+oj.ArrayTableDataSource.prototype.comparator = null;
+
+/**
+ * @export
+ * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
+ * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
+ * 
+ * @type {Object} criteria the sort criteria.
+ * @property {Object} criteria.key The key that identifies which field to sort
+ * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
+ */
+oj.ArrayTableDataSource.prototype.sortCriteria = null;
 
 /**
  * Initializes the instance.
@@ -386,7 +404,7 @@ oj.ArrayTableDataSource.prototype.reset = function(data, options)
 
 /**
  * Performs a sort on the data source.
- * @param {Object} criteria the sort criteria.
+ * @param {Object|null} criteria the sort criteria.
  * @param {Object} criteria.key The key that identifies which field to sort
  * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @return {Promise} promise object triggering done when complete.
@@ -399,61 +417,19 @@ oj.ArrayTableDataSource.prototype.sort = function(criteria)
 {
   if (criteria == null)
   {
-    this['comparator'] = null;
-    return Promise.resolve();
+    criteria = this['sortCriteria'];
   }
+  else
+  {
+    this['sortCriteria'] = criteria;
+  }
+  
   this._checkDataLoaded();
-  
-  var key = criteria['key']; 
-  var direction = criteria['direction'];
-  var comparator = null;
-  
-  if (direction == 'ascending')
-  {
-    comparator = function(row) 
-    {
-      if ($.isFunction(row[key]))
-      {
-        return row[key]();
-      }
-      return row[key];
-    };
-  }
-  else if (direction == 'descending')
-  {
-    comparator = function(rowA, rowB) {
-      var a, b;
-      if ($.isFunction(rowA[key]))
-      {
-        a = rowA[key]();
-        b = rowB[key]();
-      }
-      else
-      {
-        a = rowA[key];
-        b = rowB[key];
-      }
-      
-      if (a === b)
-      {
-        return 0;
-      }
-      return a > b ? -1 : 1;
-    };
-  }
-  this['comparator'] = comparator;
-  this['direction'] = direction;
   var self = this;
-  
   return new Promise(function(resolve, reject) {
     criteria = criteria || {};
-
-    // Check for comparator
-    if (!self._hasComparator())
-    {
-      return;
-    }
-    var comparator = self['comparator'];
+    var comparator = self._getComparator();
+    
     self._rows['data'].sort(function(a, b)
     {
       return oj.ArrayTableDataSource._sortFunc(a, b, comparator, self);
@@ -513,7 +489,7 @@ oj.ArrayTableDataSource.prototype._addToRowSet = function(m, index, options)
         var self = this;
         for (j = 0; j < this._rows['data'].length; j++)
         {
-          if (oj.ArrayTableDataSource._sortFunc(row, this._rows['data'][j], this['comparator'], self) < 0)
+          if (oj.ArrayTableDataSource._sortFunc(row, this._rows['data'][j], self._getComparator(), self) < 0)
           {
             this._rows['data'].splice(j, 0, row);
             rowArray['indexes'].push(j);
@@ -557,6 +533,13 @@ oj.ArrayTableDataSource.prototype._checkDataLoaded = function()
 {
   if (!this._isDataLoaded())
   {
+    if (!(this.data instanceof Array) &&
+        typeof (this.data) == 'function' &&
+        typeof (this.data.subscribe) == 'function')
+    {
+      // if we have an observableArray, reload just in case it was changed
+      this._data = (/** @type {Function} */(this.data))();
+    }
     this._rows = this._getRowArray(this._data);
     this._totalSize = this._data.length;
   }
@@ -590,10 +573,11 @@ oj.ArrayTableDataSource.prototype._fetchInternal = function(options)
     var endIndex = oj.ArrayTableDataSource._getEndIndex(this._rows, this._startIndex, pageSize);
     var rowArray = [];
     var keyArray = [];
-    var i;
+    var i, wrappedRow;
     for (i = this._startIndex; i <= endIndex; i++)
     {
-      rowArray[i - this._startIndex] = this._rows['data'][i];
+      wrappedRow = this._wrapWritableValue(i, this._rows['data'][i]);
+      rowArray[i - this._startIndex] = wrappedRow;
       keyArray[i - this._startIndex] = this._getId(this._rows['data'][i]);
     }
   }
@@ -621,7 +605,7 @@ oj.ArrayTableDataSource.prototype._fetchInternal = function(options)
 oj.ArrayTableDataSource.prototype._getInternal = function(id, options)
 {
   options = options || {};
-  var i, j, row, key;
+  var i, j, row, wrappedRow, key;
   var result = null;
   for (i = 0; i < this._rows['data'].length; i++)
   {
@@ -644,23 +628,65 @@ oj.ArrayTableDataSource.prototype._getInternal = function(id, options)
           }
           if (equal)
           {
-            result = {'data': row, 'key': key, 'index': this._rows['indexes'][i]};
+            wrappedRow = this._wrapWritableValue(i, row);
+            result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
           }
         }
       }
       else if (key == id)
       {
-        result = {'data': row, 'key': key, 'index': this._rows['indexes'][i]};
+        wrappedRow = this._wrapWritableValue(i, row);
+        result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
       }
     }
   }
   return result;
 };
 
-oj.ArrayTableDataSource.prototype._hasComparator = function()
+oj.ArrayTableDataSource.prototype._getComparator = function()
 {
   var comparator = this['comparator'];
-  return comparator !== undefined && comparator !== null;
+  
+  if (comparator == null)
+  {
+    var key = this['sortCriteria']['key']; 
+    var direction = this['sortCriteria']['direction'];
+  
+    if (direction == 'ascending')
+    {
+      comparator = function(row) 
+      {
+        if ($.isFunction(row[key]))
+        {
+          return row[key]();
+        }
+        return row[key];
+      };
+    }
+    else if (direction == 'descending')
+    {
+      comparator = function(rowA, rowB) {
+        var a, b;
+        if ($.isFunction(rowA[key]))
+        {
+          a = rowA[key]();
+          b = rowB[key]();
+        }
+        else
+        {
+          a = rowA[key];
+          b = rowB[key];
+        }
+
+        if (a === b)
+        {
+          return 0;
+        }
+        return a > b ? -1 : 1;
+      };
+    }
+  }
+  return comparator;
 };
 
 // Realign all the indices of the rows (after sort for example)
@@ -875,7 +901,7 @@ oj.ArrayTableDataSource.prototype._getId = function(row)
     {
       if (idAttribute[i] in row)
       {
-        id[i] =  row[idAttribute[i]];
+        id[i] =  oj.ArrayTableDataSource._getKey(row, idAttribute[i]);
       }
       else
       {
@@ -888,7 +914,7 @@ oj.ArrayTableDataSource.prototype._getId = function(row)
   {
     if (idAttribute in row)
     {
-      id = row[idAttribute];
+      id = oj.ArrayTableDataSource._getKey(row, idAttribute);
     }
     else
     {
@@ -935,6 +961,7 @@ oj.ArrayTableDataSource.prototype._getIdAttr = function(row)
 oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
 {
   var keyA, keyB, i, retVal;
+  var direction = self['sortCriteria']['direction'];
 
   if ($.isFunction(comparator))
   {
@@ -948,7 +975,7 @@ oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
       var attrs2 = oj.StringUtils.isString(keyB) ? keyB.split(",") : [keyB];
       for (i = 0; i < attrs1.length; i++)
       {
-        retVal = oj.ArrayTableDataSource._compareKeys(attrs1[i], attrs2[i], self['direction']);
+        retVal = oj.ArrayTableDataSource._compareKeys(attrs1[i], attrs2[i], direction);
         if (retVal !== 0)
         {
           return retVal;
@@ -968,7 +995,7 @@ oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
     {
       keyA = oj.ArrayTableDataSource._getKey(a, attrs[i]);
       keyB = oj.ArrayTableDataSource._getKey(b, attrs[i]);
-      retVal = oj.ArrayTableDataSource._compareKeys(keyA, keyB, self['direction']);
+      retVal = oj.ArrayTableDataSource._compareKeys(keyA, keyB, direction);
       if (retVal !== 0)
       {
         return retVal;
@@ -976,6 +1003,39 @@ oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
     }
   }
   return 0;
+};
+
+oj.ArrayTableDataSource.prototype._wrapWritableValue = function(index, m)
+{
+  var returnObj = {};
+  var self = this;
+  var prop;
+  
+  for (prop in m)
+  {
+    if (m.hasOwnProperty(prop))
+    {
+      (function()
+      {
+        var localIndex = index;
+        var localProp = prop;
+        Object.defineProperty(returnObj, prop,
+          {
+            get: function()
+            {
+              return self._rows['data'][localIndex][localProp];
+            },
+            set: function(newValue)
+            {
+              self._rows['data'][localIndex][localProp] = newValue;
+            },
+            enumerable: true
+          });
+      })();
+    }
+  }
+  
+  return returnObj;
 };
 
 oj.ArrayTableDataSource._LOGGER_MSG =

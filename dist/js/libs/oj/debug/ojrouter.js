@@ -28,6 +28,12 @@ define(['ojs/ojcore', 'knockout', 'signals', 'promise'], function(oj, ko, signal
  */
 var _ojBaseUrl;
 /**
+ * Hold the title before being modified by router
+ * @private
+ * @type {?string}
+ */
+var _originalTitle;
+/**
  * Hold the current page, usually 'index.html'
  * @private
  * @const
@@ -65,6 +71,13 @@ var _DEFAULT_ROOT_NAME = 'root';
  * @type {string}
  */
 var _ROUTER_PARAM = 'oj_Router=';
+/**
+ * The separator used to build the title from router labels.
+ * @private
+ * @const
+ * @type {string}
+ */
+var _TITLE_SEP = ' | ';
 
 /**
  * Maximum size of URL
@@ -101,6 +114,13 @@ var _transitionQueue = [];
  * @private
  */
 var _queuePromise;
+/**
+ * The instance of the root router.
+ * @private
+ * @const
+ * @type {!oj.Router}
+ */
+var rootRouter;
 
 /**
  * Retrieve current URL without the hash part
@@ -202,16 +222,28 @@ function getRouterFullName(router) {
 }
 
 /**
- * Retrieve the absolute path to the current state.
+ * Retrieves the absolute path to the current state. If one of the parent router current state is
+ * not defined, the path is meaningless so returns undefined.
  * @private
  * @param {oj.Router|undefined} router
- * @return {!string} path
+ * @return {string|undefined} path
  */
 function getCurrentPath(router) {
-   var path;
+   var path, sId;
 
    if (router) {
-      path = getCurrentPath(router._parentRouter) + router._currentState()._id + '/';
+      path = getCurrentPath(router._parentRouter);
+
+      if (path) {
+         sId = router._stateId();
+
+         if (sId) {
+            path += sId + '/';
+         }
+         else {
+            path = undefined;
+         }
+      }
    }
    else {
       path = '/';
@@ -370,6 +402,50 @@ function buildSelected(router) {
    }
 
    return states;
+}
+
+/**
+ * Build a page title using the label of the current child routers state
+ * @private
+ * @param  {oj.Router|undefined} router
+ * @return {!{segment: string, title: string}}
+ */
+function _buildTitle(router) {
+   if (!router) {
+      return { title: '', segment: '' };
+   }
+
+   // Recurse leaf first
+   var titleInfo = _buildTitle(_getChildRouter(router, router._stateId()));
+
+   // If we don't have a title yet, build one.
+   if (titleInfo.title === '') {
+      var state = router._currentState();
+      if (state) {
+         // If a title property is present, it has precedence.
+         var title = state._title;
+         if (title !== undefined) {
+            if (typeof title === 'function') {
+               title = title();
+            }
+            titleInfo.title = String(title);
+         }
+         else {
+            // Otherwise, compose the title with the label
+            title = state._label;
+            if (title !== undefined) {
+               title =  String(title);
+               // Append existing segment
+               if (titleInfo.segment !== '') {
+                  title += _TITLE_SEP + titleInfo.segment;
+               }
+               titleInfo.segment = title;
+            }
+         }
+      }
+   }
+
+   return titleInfo;
 }
 
 /**
@@ -725,7 +801,7 @@ function _parseUrlAndCompare(url) {
    reducedChanges = allChanges.filter(function(change) {
       // Update the bookmarkable data
       var ex = extra[change.router._name];
-      if (ex) {
+      if (ex !== undefined) {
          change.router._extra = ex;
       }
 
@@ -811,6 +887,30 @@ function _resolveTransition() {
    return promise.then(function(params) {
       var done = _transitionQueue.shift();
       oj.Logger.info('>> Done with: path=%s, url=%s', done.path, done.url);
+      if (params['hasChanged'] === true) {
+         // Build the window title that will appear in the browser history
+         var titleInfo = _buildTitle(rootRouter);
+         var title;
+
+         if (titleInfo.title !== '') {
+            title = titleInfo.title;
+         }
+         else {
+            if (_originalTitle && _originalTitle.length > 0) {
+               title = _originalTitle;
+               if (titleInfo.segment !== '') {
+                  title += _TITLE_SEP + titleInfo.segment;
+               }
+            }
+            else {
+               title = titleInfo.segment;
+            }
+         }
+
+         if (title !== window.document.title) {
+            window.document.title = title;
+         }
+      }
       dispatchTransitionedToState(params);
       return params;
    }, function(error) {
@@ -1224,7 +1324,7 @@ oj.Router = function(key, parentRouter, parentState) {
             'attached': {
                value: function(params) {
                   // Retrieve router passed as a parameter to ojModule using params defined above.
-                  var paramRouter = params['valueAccessor']()['params']['ojRouter']['parentRouter'],
+                  var paramRouter = ko.unwrap(params['valueAccessor']())['params']['ojRouter']['parentRouter'],
                       state = paramRouter._currentState();
                   if (state) {
                      state.viewModel = params['viewModel'];
@@ -1268,28 +1368,27 @@ Object.defineProperties(oj.Router.prototype, {
 
 /**
  * Create the instance of the root router.
- * @private
- * @const
- * @type {oj.Router}
  */
-var rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined, undefined);
+rootRouter = new oj.Router(_DEFAULT_ROOT_NAME, undefined, undefined);
 
 /**
  * Function use to handle the popstate event.
  */
 function handlePopState() {
-   var i,
-       sr,
-       subRouter = null;
+   var i, sr;
+   var sId = rootRouter._stateId();
+   var subRouter = null;
 
    oj.Logger.info('Handling popState event with URL: %s', window.location.href);
 
    // First retrieve the sub-router associated with the current state, if there is one.
-   for (i = 0; i < rootRouter._childRouters.length; i++) {
-      sr = rootRouter._childRouters[i];
-      if (rootRouter._stateId() && rootRouter._stateId() === sr._parentState) {
-         subRouter = sr;
-         break;
+   if (sId) {
+      for (i = 0; i < rootRouter._childRouters.length; i++) {
+         sr = rootRouter._childRouters[i];
+         if (sId === sr._parentState) {
+            subRouter = sr;
+            break;
+         }
       }
    }
 
@@ -1425,24 +1524,27 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  *    </tr>
  *   </tbody>
  * </table>
- * @param {string=} option.label the string for the link.
+ * @param {string=} option.label the string for the link. This is also used to compose the title of
+ * the page when no title property is defined.
  * See the {@link oj.RouterState#label} property.
  * @param {*=} option.value the object associated with this state.
  * See the {@link oj.RouterState#value} property.
  * @param {boolean=} option.isDefault true if this state is the default.
  * See the Router {@link oj.Router#defaultStateId|defaultStateId} property.
- * @param {(function(): boolean) | (function(): Promise)=} option.canEnter A callback that either
+ * @param {(string|function():string)=} option.title the string to be used for the title of the page.
+ * See the {@link oj.RouterState#title} property.
+ * @param {(function(): boolean|function(): Promise)=} option.canEnter A callback that either
  * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
  * The default value is a method that always returns true.
  * See the {@link oj.RouterState#canEnter} property.
- * @param {(function())|(function(): Promise)=} option.enter A callback or the
+ * @param {(function()|function(): Promise)=} option.enter A callback or the
  * promise of a callback which execute when entering this state.
  * See the {@link oj.RouterState#enter} property.
- * @param {(function(): boolean)|(function(): Promise)=} option.canExit  A callback that either
+ * @param {(function(): boolean|function(): Promise)=} option.canExit  A callback that either
  * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
  * The default value is a method that always returns true.
  * See the {@link oj.RouterState#canExit} property.
- * @param {(function())|(function(): Promise)=} option.exit A callback or the
+ * @param {(function()|function(): Promise)=} option.exit A callback or the
  * promise of a callback which execute when exiting this state.
  * See the {@link oj.RouterState#exit} property.
  * @return {!oj.Router} the oj.Router object this method was called on.
@@ -1520,6 +1622,7 @@ function _initialize() {
       if (!_ojBaseUrl) {
          _ojBaseUrl = getBaseUrl();
       }
+      _originalTitle = window.document.title;
 
       /**
        * Listen to URL changes caused by back/forward button
@@ -1644,7 +1747,12 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
       path = stateIdPath;
    }
    else {
-      path = getCurrentPath(this._parentRouter) + stateIdPath;
+      path = getCurrentPath(this._parentRouter);
+      if (!path) {
+         return Promise.reject(new Error('Invalid path "' + stateIdPath +
+                               '". The parent router does not have a current state.'));
+      }
+      path += stateIdPath;
    }
 
    oj.Logger.info('Destination path: %s', path);
@@ -1715,7 +1823,7 @@ oj.Router.prototype.store = function(data) {
 
    // Walk the parent routers
    while (router) {
-      if (router._extra) {
+      if (router._extra !== undefined) {
          extraState[router._name] = router._extra;
       }
       router = router._parentRouter;
@@ -1728,7 +1836,7 @@ oj.Router.prototype.store = function(data) {
       for (i = 0; i < router._childRouters.length; i++) {
          sr = router._childRouters[i];
          if (router._stateId() && router._stateId() === sr._parentState) {
-            if (sr._extra) {
+            if (sr._extra !== undefined) {
                extraState[sr._name] = sr._extra;
             }
             nextLevel = sr;
@@ -1788,6 +1896,8 @@ oj.Router.prototype.dispose = function() {
       _ojBaseUrl = '';
       _urlAdapter = {};
       this._name = _DEFAULT_ROOT_NAME;
+      // Restore title
+      window.document.title = _originalTitle;
 
       window.removeEventListener('popstate', handlePopState);
       oj.Router._transitionedToState.removeAll();
@@ -2082,6 +2192,7 @@ oj.Router.urlPathAdapter = function () {
          }
 
          value = value || router._defaultStateId;
+
       //   if (value) {
       //      changes.push({ value: value, router: router, stateId: value });
       //   }
@@ -2121,7 +2232,7 @@ oj.Router.urlPathAdapter = function () {
          if (ns.stateId) {
             newUrl += '/' + ns.stateId;
          }
-         if (ns.router.extra) {
+         if (ns.router._extra !== undefined) {
             extraState[ns.router._name] = ns.router._extra;
          }
       });
@@ -2211,7 +2322,8 @@ oj.Router.urlParamAdapter = function () {
       //   if (value) {
       //      changes.push({ value: value, router: router, stateId: value });
       //   }
-		 changes.push({ value: value, router: router });
+
+		   changes.push({ value: value, router: router });
          router = _getChildRouter(router, value);
       } while (router);
 
@@ -2249,7 +2361,7 @@ oj.Router.urlParamAdapter = function () {
             newUrl += sep + ns.router._name + '=' + ns.stateId;
             sep = '&'; // From now on, use this separator
          }
-         if (ns.router._extra) {
+         if (ns.router._extra !== undefined) {
             extraState[ns.router._name] = ns.router._extra;
          }
       });
@@ -2336,18 +2448,18 @@ return rootRouter;
     * See the {@link oj.RouterState#value} property.
     * @param {boolean=} options.isDefault true if this state is the default.
     * See the {@link oj.Router#defaultStateId|defaultStateId} property.
-    * @param {(function(): boolean) | (function(): Promise)=} options.canEnter A callback that either
+    * @param {(function(): boolean|function(): Promise)=} options.canEnter A callback that either
     * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
     * The default value is a method that always returns true.
     * See the {@link oj.RouterState#canEnter} property.
-    * @param {(function()) | (function(): Promise)=} options.enter A callback or
+    * @param {(function()|function(): Promise)=} options.enter A callback or
     * the promise of a callback which execute when entering this state.
     * See the {@link oj.RouterState#enter} property.
-    * @param {(function(): boolean)|(function(): Promise)=} options.canExit  A callback that either
+    * @param {(function(): boolean|function(): Promise)=} options.canExit  A callback that either
     * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
     * The default value is a method that always returns true.
     * See the {@link oj.RouterState#canExit} property.
-    * @param {(function()) | (function(): Promise)=} options.exit A callback or
+    * @param {(function()|function(): Promise)=} options.exit A callback or
     * the promise of a callback which execute when exiting this state.
     * See the {@link oj.RouterState#canExit} property.
     * @param {oj.Router=} router The router this state belongs to. If undefined, the method
@@ -2371,7 +2483,7 @@ return rootRouter;
        * current state of the router does not change.
        * The default value is a method that always returns true.
        * @name oj.RouterState#canEnter
-       * @type {(function(): boolean)|(function(): Promise)|undefined}
+       * @type {function():boolean|function():Promise}
        */
       this._canEnter = options['canEnter'];
       if (this._canEnter) {
@@ -2383,7 +2495,7 @@ return rootRouter;
        * state.
        * This callback executes after the router stateId changes.
        * @name oj.RouterState#enter
-       * @type {(function())|(function(): Promise)|undefined}
+       * @type {function()|function():Promise}
        */
       this._enter = options['enter'];
       if (this._enter) {
@@ -2397,7 +2509,7 @@ return rootRouter;
        * current state of the router does not change.
        * The default value is a method that always returns true.
        * @name oj.RouterState#canExit
-       * @type {(function(): boolean)|(function(): Promise)|undefined}
+       * @type {function():boolean|function():Promise}
        */
       this._canExit = options['canExit'];
       if (this._canExit) {
@@ -2409,7 +2521,7 @@ return rootRouter;
        * state.
        * This callback executes before the router stateId changes.
        * @name oj.RouterState#exit
-       * @type {(function())|(function(): Promise)|undefined}
+       * @type {function()|function():Promise}
        */
       this._exit = options['exit'];
       if (this._exit ) {
@@ -2425,6 +2537,9 @@ return rootRouter;
 
       /**
        * The string to be used for the navigation component that will transition to this state.
+       * This is also used to build the title of the page when the {@link oj.RouterState#title}
+       * property is not defined. The title will be composed of the labels of all current
+       * states in the router hierarchy like "My Page | label lvl1 | label lvl2".
        * @name oj.RouterState#label
        * @type {string|undefined}
        * @example <caption>Use the label property for the text of anchor tags in a list:</caption>
@@ -2436,6 +2551,18 @@ return rootRouter;
        * &lt;/ul>
        */
       this._label = options['label'];
+
+      /**
+       * The string to be used for the page title. This can either be a string or a function
+       * returning a string. When more than one level of child router is defined, the title of
+       * the current state of the router nested the deepest has precedence. If the leaf router
+       * current state does not have a title property defined, the title of the current state of
+       * the parent router is used. If no title property is defined in the router hierarchy, a
+       * title is built using the {@link oj.RouterState#label} property.
+       * @name oj.RouterState#title
+       * @type {string|function():string|undefined}
+       */
+      this._title = options['title'];
 
       /**
        * @private
@@ -2481,6 +2608,11 @@ return rootRouter;
          'label': {
             get: function () { return this._label; },
             set: function(newValue) { this._label = newValue; },
+            enumerable: true
+         },
+         'title': {
+            get: function () { return this._title; },
+            set: function(newValue) { this._title = newValue; },
             enumerable: true
          },
          'canEnter': {

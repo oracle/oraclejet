@@ -156,8 +156,9 @@
 
 @mixin oj-box-sizing-property ($boxSizingValue)
 {
-    // supported without -moz in ff 31, remove mixin?
-    -moz-box-sizing: $boxSizingValue;
+    @warn "mixin oj-box-sizing-property deprecated, prefixing box sizing on jet supported browsers not needed, use box-sizing property directly";
+    // supported without -moz in ff 29
+    // -moz-box-sizing: $boxSizingValue;
     box-sizing: $boxSizingValue;
 }
 
@@ -217,7 +218,7 @@
 	backface-visibility: $backfaceVisibilityValue;
 }
 
-@mixin oj-transition-property ($transitionValue)
+@mixin oj-transition-property ($transitionValue...)
 {
         -webkit-transition: $transitionValue;
         transition: $transitionValue;

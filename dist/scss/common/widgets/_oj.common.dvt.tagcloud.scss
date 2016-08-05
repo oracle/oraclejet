@@ -8,9 +8,16 @@
 
 @if $includeTagCloudClasses != false {
   @include module-include-once("common.tagcloud") {
-    .oj-tagcloud{
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-tag-cloud:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    .oj-tagcloud {
       @include oj-user-select-property(none);
-      outline:none;
       width:100%;
       height:300px;
       color: $textColor;

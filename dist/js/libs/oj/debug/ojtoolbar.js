@@ -251,6 +251,8 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * @expose
          * @memberof oj.ojToolbar
          * @instance
+         * @since 1.2.0
+         * 
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.  
@@ -309,7 +311,10 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
          * });
          * 
          * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
-         * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+         * $( ".selector" ).on( "ojcreate", function( event, ui ) {
+         *     // verify that the component firing the event is a component of interest
+         *     if ($(event.target).is(".mySelector")) {}
+         * });
          */
         // create event declared in superclass, but we still want the above API doc
     },
@@ -345,14 +350,17 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
     },
 
     _setOption: function( key, value ) { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
-        // previously called super at end, so that optionChange (fired at end of super) is fired at very end, but now must call at start, so that 
-        // when the chroming case calls refresh() on Button/Buttonset, callees see the new value of the option.
-        this._superApply( arguments );
-
         if ( key === "disabled" ) {
             oj.Logger.warn("Caller attempted to set the 'disabled' option on Toolbar, but Toolbar does not support the 'disabled' option.  See API doc.  Ignoring the call.");
             return;
-        } else if ( key === "chroming" ) {
+        }
+
+        // Call super() after the "disabled" check returns, to avoid super() setting oj-disabled, etc.
+        // Call it before handling chroming case, so that when that case calls refresh() on Button/Buttonset, callees see the new value of the option.
+        // (Previously called super() at end, so that optionChange (fired at end of super) is fired at very end.)
+        this._superApply( arguments );
+
+        if ( key === "chroming" ) {
             // refresh the top-level buttons, and refresh the buttonsets to make them refresh their buttons, so that all toolbar buttons are refreshed.
             // Reason: to make them re-fetch their chroming option, in case it's still set to the default dynamic getter, 
             // which takes its value from the containing buttonset or toolbar if present.
@@ -662,11 +670,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      *   <tbody>
      *     <tr>
      *       <td><kbd>LeftArrow</kbd></td>
-     *       <td>Navigates to the previous enabled button on the left, wrapping around at the end.</td>
+     *       <td>Navigate to the previous enabled button on the left, wrapping around at the end.</td>
      *     </tr>
      *     <tr>
      *       <td><kbd>RightArrow</kbd></td>
-     *       <td>Navigates to the next enabled button on the right, wrapping around at the end.</td>
+     *       <td>Navigate to the next enabled button on the right, wrapping around at the end.</td>
      *     </tr>
      *   </tbody>
      * </table>
@@ -726,8 +734,28 @@ oj.Components.setDefaultOptions({
     // same Q as for Button: does this correctly handle the case where the theme has no $var, in which case we want there to effectively be no dynamic getter so that the prototype default is used?
     'ojToolbar': {
         'chroming': oj.Components.createDynamicPropertyGetter( function(context) {
-            return oj.ThemeUtils.getOptionDefaultMap("toolbar")["chroming"];
+            return (oj.ThemeUtils.parseJSONFromFontFamily('oj-toolbar-option-defaults') || {})["chroming"];
         })
     }
 });
+(function() {
+var ojToolbarMeta = {
+  "properties": {
+    "chroming": {
+      "type": "string"
+    },
+    "disabled": {}
+  },
+  "methods": {
+    "destroy": {},
+    "refresh": {},
+    "widget": {}
+  },
+  "extension": {
+    "_widgetName": "ojToolbar"
+  }
+};
+oj.Components.registerMetadata('ojToolbar', 'baseComponent', ojToolbarMeta);
+oj.Components.register('oj-toolbar', oj.Components.getMetadata('ojToolbar'));
+})();
 });

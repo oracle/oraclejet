@@ -311,11 +311,29 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       content: oj-prepend-slash($oj-fwk-icon-folderhierarchy);
     }
 
+    @if global-variable-exists(oj-fwk-icon-corner-drag) and $oj-fwk-icon-corner-drag != '' {
+      .oj-fwk-icon-corner-drag:before {
+        content: oj-prepend-slash($oj-fwk-icon-corner-drag);
+      }
+   }
+
     @if global-variable-exists(oj-fwk-icon-checkmark) and $oj-fwk-icon-checkmark != '' {
       .oj-fwk-icon-checkmark:before {
         content: oj-prepend-slash($oj-fwk-icon-checkmark);
       }
-   }
+    }
+    
+    @if global-variable-exists(oj-fwk-icon-info) and $oj-fwk-icon-info != '' {
+      .oj-fwk-icon-info:before {
+        content: $oj-fwk-icon-info;
+      }
+    }
+   
+    @if global-variable-exists(oj-fwk-icon-warning) and $oj-fwk-icon-warning != '' {
+      .oj-fwk-icon-warning:before {
+        content: $oj-fwk-icon-warning;
+      }
+    }
 
     @if global-variable-exists(oj-fwk-icon-plus) and $oj-fwk-icon-plus != '' {
       .oj-fwk-icon-plus:before {

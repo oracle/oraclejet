@@ -793,6 +793,13 @@ DvtLegendDefaults.getGapSize = function(legend, defaultSize) {
   var scalingFactor = Math.min(dvt.TextUtils.getTextStringHeight(legend.getCtx(), legend.getOptions()['textStyle']) / 14, 1);
   return Math.ceil(defaultSize * scalingFactor);
 };
+
+/**
+ * @override
+ */
+DvtLegendDefaults.prototype.getNoCloneObject = function(legend) {
+  return {'sections': {'items': {'_dataContext': true}} };
+};
 /**
  * Event Manager for dvt.Legend.
  * @param {dvt.Legend} legend
@@ -2270,6 +2277,7 @@ DvtLegendRenderer._createLegendText = function(container, textSpace, label, styl
 DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, i) {
   // Apply the default styles
   var legendOptions = legend.getOptions();
+  var context = legend.getCtx();
   var symbolType = item['type'] != null ? item['type'] : item['symbolType'];
 
   if (!item['markerShape'])
@@ -2290,10 +2298,10 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
 
   var symbol;
   if (symbolType == 'line') {
-    symbol = DvtLegendRenderer._createLine(legend.getCtx(), x, y, symbolWidth, rowHeight, item);
+    symbol = DvtLegendRenderer._createLine(context, x, y, symbolWidth, rowHeight, item);
   }
   else if (symbolType == 'lineWithMarker') {
-    symbol = DvtLegendRenderer._createLine(legend.getCtx(), x, y, symbolWidth, rowHeight, item);
+    symbol = DvtLegendRenderer._createLine(context, x, y, symbolWidth, rowHeight, item);
 
     // only if not found in hiddenCategories
     if (!DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item), legend))
@@ -2301,6 +2309,20 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
   }
   else if (symbolType == 'image') {
     symbol = DvtLegendRenderer._createImage(legend, x, y, symbolWidth, symbolHeight, rowHeight, item);
+  }
+  else if (symbolType == '_verticalBoxPlot') {
+    symbolHeight = Math.max(Math.round(symbolHeight / 4) * 4, 4); // must be an integer multiple of 4 to ensure perfect rendering
+    symbol = new dvt.Container(context);
+    symbol.addChild(DvtLegendRenderer._createMarker(legend, cx, cy + symbolHeight / 4, symbolWidth, symbolHeight / 2, DvtLegendRenderer._getBoxPlotOptions(item, 'q2')));
+    symbol.addChild(DvtLegendRenderer._createMarker(legend, cx, cy - symbolHeight / 4, symbolWidth, symbolHeight / 2, DvtLegendRenderer._getBoxPlotOptions(item, 'q3')));
+  }
+  else if (symbolType == '_horizontalBoxPlot') {
+    var isRTL = dvt.Agent.isRightToLeft(context);
+    symbolWidth = Math.max(Math.round(symbolWidth / 4) * 4, 4); // must be an integer multiple of 4 to ensure perfect rendering
+    var xOffset = symbolWidth / 4 * (isRTL ? 1 : -1);
+    symbol = new dvt.Container(context);
+    symbol.addChild(DvtLegendRenderer._createMarker(legend, cx + xOffset, cy, symbolWidth / 2, symbolHeight, DvtLegendRenderer._getBoxPlotOptions(item, 'q2')));
+    symbol.addChild(DvtLegendRenderer._createMarker(legend, cx - xOffset, cy, symbolWidth / 2, symbolHeight, DvtLegendRenderer._getBoxPlotOptions(item, 'q3')));
   }
   else {
     symbol = DvtLegendRenderer._createMarker(legend, cx, cy, symbolWidth, symbolHeight, item);
@@ -2349,8 +2371,6 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   var color = item['markerColor'] ? item['markerColor'] : item['color'];
   var style = item['markerStyle'] ? item['markerStyle'] : item['style'];
   var className = item['markerClassName'] ? item['markerClassName'] : item['className'];
-
-
   var pattern = item['pattern'];
 
   var legendMarker;
@@ -2371,7 +2391,7 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   }
 
   // Use pixel hinting for crisp squares
-  if (shape == 'square')
+  if (shape == 'square' || shape == 'rectangle')
     legendMarker.setPixelHinting(true);
 
   legendMarker.setClassName(className).setStyle(style);
@@ -2413,6 +2433,23 @@ DvtLegendRenderer._createLine = function(context, x, y, colWidth, rowHeight, ite
 };
 
 /**
+ * Return the item options for the half-shape of box plot symbol.
+ * @param {object} item The legend item options
+ * @param {string} prefix 'q2' or 'q3'
+ * @return {object}
+ * @private
+ */
+DvtLegendRenderer._getBoxPlotOptions = function(item, prefix) {
+  return {
+    'markerShape': 'rectangle',
+    'color': item['_boxPlot'][prefix + 'Color'],
+    'pattern': item['_boxPlot']['_' + prefix + 'Pattern'],
+    'className': item['_boxPlot'][prefix + 'ClassName'],
+    'style': item['_boxPlot'][prefix + 'Style']
+  };
+};
+
+/**
  * Get the category from a legend item.
  * @param {object} item The legend item
  * @return {String}
@@ -2441,8 +2478,6 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
 
   return dvt.ArrayUtils.getIndex(hiddenCategories, category) !== -1;
 };
-
-
 dvt.exportProperty(dvt, 'Legend', dvt.Legend);
 dvt.exportProperty(dvt.Legend, 'newInstance', dvt.Legend.newInstance);
 dvt.exportProperty(dvt.Legend.prototype, 'destroy', dvt.Legend.prototype.destroy);
