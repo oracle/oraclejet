@@ -9,7 +9,11 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'], 
        
-function(oj)
+       /*
+        * @param {Object} oj 
+        * @param {jQuery} $
+        */
+       function(oj, $)
 {
 
 /**

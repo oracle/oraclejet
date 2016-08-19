@@ -19,6 +19,27 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojeditablevalue',
  * http://jquery.org/license
  */
 
+ /**
+ * @private
+ */
+function _getNativePickerDate(converter, isoString) 
+{
+  isoString = converter.parse(isoString);
+  
+  var valueParams = oj.IntlConverterUtils._dateTime(isoString, ["date", "fullYear", "month", "hours", "minutes", "seconds"], true);
+  var date = new Date();
+
+  date.setFullYear(valueParams["fullYear"]);
+  date.setDate(valueParams["date"]);
+  date.setMonth(valueParams["month"]);
+  date.setHours(valueParams["hours"]);
+  date.setMinutes(valueParams["minutes"]);
+  date.setSeconds(valueParams["seconds"]);
+  date.setMilliseconds(0);
+
+  return date;
+}
+
 /**
  * Placed here to avoid duplicate code for ojdatepicker + ojtimepicker
  *
@@ -857,6 +878,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     this._drawYear = this._currentYear = 0;
 
     this._datePickerDefaultValidators = {};
+    this._nativePickerConverter = null;
 
     var nodeName = this.element[0].nodeName.toLowerCase();
     this._isInLine = (nodeName === "div" || nodeName === "span");
@@ -1057,6 +1079,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       this._datePickerDefaultValidators[oj.ValidatorFactory.VALIDATOR_TYPE_DATERESTRICTION] = this._getValidator("dayFormatter");
 
       this._AfterSetOptionValidators();
+    }
+    else if(key === "converter") 
+    {
+      this._nativePickerConverter = null;
     }
 
     if (key === "datePicker" && flags["subkey"] === "currentMonthPos")
@@ -3528,7 +3554,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       // picker expects the fields like 'date' and 'mode' to retain its names. Use bracket notation
       //  to avoid closure compiler from renaming them
       var pickerOptions = {};
-      pickerOptions['date'] = oj.IntlConverterUtils.isoToLocalDate(this._getDateIso());
+      pickerOptions['date'] = _getNativePickerDate(this._getNativeDatePickerConverter(), this._getDateIso());
       pickerOptions['mode'] = "date";
       
       return this._ShowNativeDatePicker(pickerOptions);
@@ -3537,6 +3563,22 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     {
       return this._showHTMLDatePicker();
     }
+  },
+
+  /**
+   * TODO: Technically i think should be used for the calendar, but later since late in release
+   * @ignore
+   */
+  _getNativeDatePickerConverter: function () {
+    if(this._nativePickerConverter === null) {
+      var resolvedOptions = this._GetConverter().resolvedOptions();
+      var options = {};
+      $.extend(options, resolvedOptions, {"isoStrFormat": "offset"});
+
+      this._nativePickerConverter = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(options);
+    }
+    
+    return this._nativePickerConverter;
   },
 
   /**
@@ -3550,15 +3592,16 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   {
     var minDate = this._getMinMaxDateIso("min");
     var maxDate = this._getMinMaxDateIso("max");
+    var conv = this._getNativeDatePickerConverter();
     
     if (minDate)
     {
-      pickerOptions['minDate'] = oj.IntlConverterUtils.isoToLocalDate(minDate).valueOf();
+      pickerOptions['minDate'] = _getNativePickerDate(conv, minDate).valueOf();
     }
     
     if (maxDate)
     {
-      pickerOptions['maxDate'] = oj.IntlConverterUtils.isoToLocalDate(maxDate).valueOf();
+      pickerOptions['maxDate'] = _getNativePickerDate(conv, minDate).valueOf();
     }
     
     var self = this;
@@ -3608,10 +3651,11 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       // The native date picker will preserve the timezone set on the supplied date upon returning,
       // however the returned value has its time part reset to 00:00 when in 'date' mode
       //  - need to copy time over hence
-      var isoString = oj.IntlConverterUtils._copyTimeOver(this._getDateIso(), oj.IntlConverterUtils.dateToLocalIso(date));
-      
+      var isoString = oj.IntlConverterUtils._dateTime(this._getDateIso(), {"month": date.getMonth(), "date": date.getDate(), "fullYear": date.getFullYear()});
+      var formattedTime = this._GetConverter().format(isoString);
+
       // _SetValue will inturn call _SetDisplayValue
-      this._SetValue(isoString, {});
+      this._SetValue(formattedTime, {});
     }
 
     this._onClose(this._ON_CLOSE_REASON_SELECTION);
@@ -5309,7 +5353,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // picker expects the fields like 'date' and 'mode' to retain its names. Use bracket notation
     //  to avoid closure compiler from renaming them
     var pickerOptions = {};
-    pickerOptions['date'] = oj.IntlConverterUtils.isoToLocalDate(this._getValue());
+    var converter = this._getTimeSourceConverter();
+    var date = _getNativePickerDate(converter, this._getValue());
+    
+    pickerOptions['date'] = date;
     pickerOptions['mode'] = 'time';
     
     var splitIncrements = splitTimeIncrement(this.options["timePicker"]["timeIncrement"]);
@@ -5327,16 +5374,14 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if (minDate)
     {
       // get a correctly formatted ISO date string
-      var minDateProcessed = minDate ? 
-        oj.IntlConverterUtils.isoToLocalDate(oj.IntlConverterUtils._minMaxIsoString(minDate, this._getValue())) : null;
+      var minDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(minDate, this._getValue()));
       pickerOptions['minDate'] = minDateProcessed.valueOf();
     }
     
     if (maxDate)
     {
     // get a correctly formatted ISO date string
-      var maxDateProcessed = maxDate ? 
-        oj.IntlConverterUtils.isoToLocalDate(oj.IntlConverterUtils._minMaxIsoString(maxDate, this._getValue())) : null;
+      var maxDateProcessed = _getNativePickerDate(converter, oj.IntlConverterUtils._minMaxIsoString(maxDate, this._getValue()));
       pickerOptions['maxDate'] = maxDateProcessed.valueOf();
     }
     
@@ -5356,7 +5401,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
         //  The value returned after pick will have the supplied timezone preserved, however, the
         //  date portion will be reset to current date when in 'time' mode. This will not impact us 
         //  because we extract only the time portion to be set on the component.
-        var formattedTime = self._GetConverter().format(oj.IntlConverterUtils.dateToLocalIso(date));
+        var isoString = oj.IntlConverterUtils._dateTime(self._getValue(), {"hours": date.getHours(), "minutes": date.getMinutes(), "seconds": date.getSeconds()});
+        var formattedTime = self._GetConverter().format(isoString);
         
         // _SetValue will inturn call _SetDisplayValue
         self._SetValue(formattedTime, {});
@@ -6647,10 +6693,12 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     //  for case when the picker is cancelled, this callback gets called without the parameter
     if (date)
     {
-      var isoString = oj.IntlConverterUtils.dateToLocalIso(date);
-      
+      var isoString = oj.IntlConverterUtils._dateTime(this._getDateIso(), {"month": date.getMonth(), "date": date.getDate(), "fullYear": date.getFullYear(), 
+                                            "hours": date.getHours(), "minutes": date.getMinutes(), "seconds": date.getSeconds()});
+      var formattedTime = this._GetConverter().format(isoString);
+
       // _SetValue will inturn call _SetDisplayValue
-      this._SetValue(isoString, {});
+      this._SetValue(formattedTime, {});
     }
     
     this._onClose(this._ON_CLOSE_REASON_SELECTION);

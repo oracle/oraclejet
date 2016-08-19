@@ -38302,7 +38302,7 @@ dvt.ToolkitUtils.getUrlPathById = function(id) {
   // If <base> is defined on the document, we have to use the full URL.
   // document.baseURI is not supported in IE, so we have to check if the <base> tag exists in the document.
   var hasBase = dvt.Agent.isPlatformIE() ? document.querySelector('base') != null : document.URL != document.baseURI;
-  var root = hasBase ? document.URL + '#' : '#';
+  var root = hasBase ? document.URL.split('#')[0] + '#' : '#';
   return root + id;
 };
 

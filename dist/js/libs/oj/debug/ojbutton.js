@@ -827,7 +827,18 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 })
                 .bind( "keydown" + this.eventNamespace, function(event) {
                     if ( self._IsEffectivelyDisabled() )
-                        return false;
+                        // ...then bail out always, also eating event unless key is Tab or left/right arrow, since:
+                        // - Must allow Tab so KB user can't get stuck here. 
+                        // - Nice to allow Buttonset/Toolbar's left/right arrow handling too, but not strictly essential as long as user 
+                        //   can Tab out and back in, since (if app refreshed Buttonset/Toolbar after disabling button as required), the 
+                        //   tab-back-in will go to an enabled button of the Buttonset/Toolbar, or skip Buttonset/Toolbar if all buttons disabled.
+                        // - Must eat Enter/Space/DownArrow to prevent that functionality from occurring. (For non-anchor buttons, the native 
+                        //   disabled status prevents some of those on at least some platforms.)
+                        // Since anchor buttons don't have a native disabled status, they remain tabbable when disabled (when not in a 
+                        // Buttonset/Toolbar, which set tabindex -1 on disabled buttons), thus are most susceptible to having key events
+                        // while disabled.
+                        return event.keyCode === $.ui.keyCode.TAB || event.keyCode === $.ui.keyCode.LEFT || event.keyCode === $.ui.keyCode.RIGHT;
+
                     var isSpace = event.keyCode === $.ui.keyCode.SPACE;
                     var isAnchor = self.type === "anchor";
                     

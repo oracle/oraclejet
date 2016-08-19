@@ -3199,13 +3199,13 @@ DvtChartEventManager.prototype.GetDropTargetType = function(event) {
   if (paBounds.containsPoint(relPos.x, relPos.y))
     return 'plotArea';
 
-  if (DvtChartAxisUtils.axisContainsPoint(this._chart.xAxis, relPos))
+  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'x') && DvtChartAxisUtils.axisContainsPoint(this._chart.xAxis, relPos))
     return 'xAxis';
 
-  if (DvtChartAxisUtils.axisContainsPoint(this._chart.yAxis, relPos))
+  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'y') && DvtChartAxisUtils.axisContainsPoint(this._chart.yAxis, relPos))
     return 'yAxis';
 
-  if (DvtChartAxisUtils.axisContainsPoint(this._chart.y2Axis, relPos))
+  if (DvtChartAxisUtils.isAxisRendered(this._chart, 'y2') && DvtChartAxisUtils.axisContainsPoint(this._chart.y2Axis, relPos))
     return 'y2Axis';
 
   return null;

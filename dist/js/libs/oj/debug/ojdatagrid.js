@@ -6916,7 +6916,8 @@ DvtDataGrid.prototype.removeColumnsFromRight = function(databody)
     threshold = this.m_currentScrollLeft + this.getViewportWidth() + this.getColumnThreshold();
 
     // don't clean up if end of row header is not below the bottom of viewport
-    if (this.m_endColPixel <= threshold)
+    // no rows in databody, nothing to remove    
+    if (this.m_endColPixel <= threshold || rows.length < 1)
     {
         return;
     }
@@ -6926,7 +6927,7 @@ DvtDataGrid.prototype.removeColumnsFromRight = function(databody)
         this.m_stopColumnFetch = false;
     }
 
-    columns = rows[1];
+    columns = rows[0];
     column = columns['lastChild'];
     width = this.getElementWidth(column);
     while (this.m_endColPixel - width > threshold)
@@ -19685,9 +19686,9 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         {
             return self._trigger('beforeEdit', details['event'], details['ui']);
         });    
-        this.grid.addListener('beforeEndEdit', function(details)
+        this.grid.addListener('beforeEditEnd', function(details)
         {
-            return self._trigger('beforeEndEdit', details['event'], details['ui']);
+            return self._trigger('beforeEditEnd', details['event'], details['ui']);
         });            
     },
     /**
@@ -21837,7 +21838,7 @@ DvtDataGrid.prototype._leaveEditing = function(event, element, cancel)
         this._disableAllFocusableElements(element);
         this._highlightActive();
     }
-    rerender = this.fireEvent('beforeEndEdit', details);
+    rerender = this.fireEvent('beforeEditEnd', details);
     if (rerender)
     {
         this.m_currentMode = 'navigation';
@@ -21852,7 +21853,7 @@ DvtDataGrid.prototype._leaveEditing = function(event, element, cancel)
         this._scrollToActive(this.m_active);                
         this._enableAllFocusableElements(element);
         // focus on first focusable item in the cell
-        this._setFocusToFirstFocusableElement(element)
+        this._setFocusToFirstFocusableElement(element);
     }
     return rerender;
 };

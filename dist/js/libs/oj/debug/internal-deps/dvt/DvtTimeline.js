@@ -1486,7 +1486,7 @@ DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options)
   ret.orientation = options['orn'];
   ret.overviewPosition = options['ovp'];
   ret.selectionMode = options['selmode'];
-  ret.isRtl = options['rtl'];
+  ret.isRtl = options['rtl'].toString();
 
   ret.borderTopStyle = options['_bts'];
   ret.borderTopColor = options['_btc'];
@@ -2596,7 +2596,8 @@ dvt.Timeline.prototype.render = function(options, width, height)
 
   // Set the timeline as the only keyboard listener
   // Prevents overview from receiving keyboard events
-  this.getCtx().setKeyboardFocusArray([this]);
+  if (!dvt.TimeAxis.supportsTouch())
+    this.getCtx().setKeyboardFocusArray([this]);
 };
 
 /**

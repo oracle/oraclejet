@@ -201,7 +201,7 @@
         @include oj-display-inline-flex-property;
 
         @include oj-justify-content-property(center);
-        min-width: 0; // By default, flex items won’t shrink below their minimum content size unless min-width specified
+        min-width: 0; // By default, flex items won't shrink below their minimum content size unless min-width specified
 
         // vertically center containing items
         @include oj-align-items-property(center);

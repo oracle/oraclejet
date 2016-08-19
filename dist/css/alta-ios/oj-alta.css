@@ -586,7 +586,7 @@ html[dir="rtl"] .oj-margin-lg-end {
   padding-top: 10px; }
 
 .oj-padding-bottom {
-  padding-top: 10px; }
+  padding-bottom: 10px; }
 
 html:not([dir="rtl"]) .oj-padding-start {
   padding-left: 10px; }
@@ -615,7 +615,7 @@ html[dir="rtl"] .oj-padding-end {
   padding-top: 20px; }
 
 .oj-padding-lg-bottom {
-  padding-top: 20px; }
+  padding-bottom: 20px; }
 
 html:not([dir="rtl"]) .oj-padding-lg-start {
   padding-left: 20px; }

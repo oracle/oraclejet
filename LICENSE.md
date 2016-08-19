@@ -28,7 +28,7 @@ Software as contributed to or provided by such licensor, or (ii) the Larger Work
 to deal in both
 
 (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if 
-one is included with the Software (each a “Larger Work” to which the Software is contributed by such licensors),
+one is included with the Software (each a ï¿½Larger Workï¿½ to which the Software is contributed by such licensors),
 without restriction, including without limitation the rights to copy, create derivative works of, 
 display, perform, and distribute the Software and make, use, sell, offer for sale, import, export, 
 have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights 
