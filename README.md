@@ -22,7 +22,7 @@ Oracle JET is a modular toolkit allowing developers to use as much or as little 
 ## Examples
 Here is a list of places to see Oracle JET in action:
 * [Oracle JET website](http://oraclejet.org)
-* [Oracle JET Cookbook](http://www.oracle.com/webfolder/technetwork/jet/uiComponents-formControls.html) - Every component with live code demos
+* [Oracle JET Cookbook](http://www.oracle.com/webfolder/technetwork/jet/jetCookbook.html) - Every component with live code demos
 * [Sample applications and Tutorials](http://www.oracle.com/webfolder/technetwork/jet/globalExamples.html)
 
 
