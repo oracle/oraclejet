@@ -36,11 +36,6 @@
 
   box-sizing: border-box;
 
-  /* This ensures that the slider bounding box will include
-   the thumb radius - important for form controls. */
-  padding-left: $sliderThumbWidthActive/2;
-  padding-right: $sliderThumbHeightActive/2;
-
   // disable the "copy" feature on iOS
   -webkit-touch-callout: none;
    // Prevent showing selection handles on press-hold for Mobile Safari and Android Chrome
@@ -56,6 +51,13 @@
    max-width: $formControlLargeMaxWidth;
    min-width: $formControlMinWidth;
    width: 100%;
+}
+
+.oj-slider.oj-slider-horizontal {
+  /* This ensures that the slider bounding box will include
+   the thumb radius - important for form controls. */
+  padding-left: $sliderThumbWidthActive/2;
+  padding-right: $sliderThumbHeightActive/2;
 }
 
 .oj-slider.oj-slider-vertical {
@@ -89,7 +91,7 @@
 }
 
 .oj-slider-vertical.oj-form-control .oj-slider-container {
-  height: 100%;
+  height: 150px;
   // Note - the height and width variables are swapped for vertical sliders.
   min-height: $sliderThumbWidth*2;
 }
@@ -192,7 +194,7 @@
 // oj-slider-bar-value represents the filled part of the slider bar
 .oj-slider-bar-value {
    @include oj-border-radius($sliderBarThickness);
-   background: $sliderBarValueBgColor;	
+   background: $sliderBarValueBgColor;  
 }
 
 // Add a border to the slider bar when in hi-contrast mode.
@@ -213,17 +215,17 @@
 
 // Color of the bar value when active
 .oj-slider-bar-value.oj-active  {
-   background: $sliderBarValueBgColorActive;	
+   background: $sliderBarValueBgColorActive;  
 }
 
 .oj-disabled .oj-slider-bar {
    opacity: $formControlOpacityDisabled;
-   background: $sliderBarBgColorDisabled;	
+   background: $sliderBarBgColorDisabled; 
 }
 
 .oj-disabled .oj-slider-bar-value {
    opacity: $formControlOpacityDisabled;
-   background: $sliderBarValueBgColorDisabled;	
+   background: $sliderBarValueBgColorDisabled;  
 }
 
 // Hi contrast disabled sliders have a dotted border on the bar
@@ -471,6 +473,167 @@
    text-align: center;
 }
 
+//// Color Picker ///
+
+.oj-slider-color-picker.oj-slider-horizontal {
+  /* This ensures that the slider bounding box will include
+   the thumb radius - important for form controls. */
+  padding-left: $sliderColorPickerThumbWidthActive/2;
+  padding-right: $sliderColorPickerThumbHeightActive/2;
+}
+
+.oj-slider-color-picker.oj-slider-vertical {
+    // Note - the height and width variables are swapped for vertical sliders.
+   padding-left: $sliderColorPickerThumbHeightActive/2;
+   padding-right: $sliderColorPickerThumbWidthActive/2;
+}
+
+.oj-slider-color-picker.oj-slider-vertical > .oj-slider-container {
+  margin-top: $sliderColorPickerThumbWidthActive/2;
+  margin-bottom: $sliderColorPickerThumbWidthActive/2;
+}
+
+.oj-slider-color-picker.oj-slider-vertical.oj-form-control .oj-slider-container {
+  // Note - the height and width variables are swapped for vertical sliders.
+  min-height: $sliderColorPickerThumbWidth*2;
+}
+
+.oj-slider-color-picker .oj-slider-thumb {
+  background-color: transparent;
+  border-width: $sliderColorPickerThumbBorderWidth;
+  @include oj-border-radius($sliderColorPickerThumbBorderRadius);
+}
+
+.oj-slider-color-picker .oj-slider-bar {
+  @include oj-border-radius($sliderColorPickerBarThickness);
+}
+
+// For horizontal orientations, set the width of the slider-bar and the slider-bar-value
+.oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar, .oj-slider-color-picker.oj-slider-horizontal .oj-slider-bar-value {
+   height: $sliderColorPickerBarThickness;
+   margin-top: -$sliderColorPickerBarThickness/2;
+}
+
+// For vertical orientations, set the width of the slider-bar and the slider-bar-value
+.oj-slider-color-picker.oj-slider-vertical .oj-slider-bar, .oj-slider-color-picker.oj-slider-vertical .oj-slider-bar-value {
+   width: $sliderColorPickerBarThickness;
+   margin-left: -$sliderColorPickerBarThickness/2;
+}
+
+.oj-slider-color-picker .oj-slider-bar:after {
+   top: -$sliderBarHitArea/2 + $sliderColorPickerBarThickness/2;
+   bottom: -$sliderBarHitArea/2 + $sliderColorPickerBarThickness/2;
+   left: -$sliderBarHitArea/2 + $sliderColorPickerBarThickness/2;
+   right: -$sliderBarHitArea/2 + $sliderColorPickerBarThickness/2;
+}
+
+// oj-slider-bar-value represents the filled part of the slider bar
+.oj-slider-color-picker .oj-slider-bar-value {
+   @include oj-border-radius($sliderColorPickerBarThickness);
+}
+
+.oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb  {
+  width: $sliderColorPickerThumbWidth;
+  height: $sliderColorPickerThumbHeight;
+  margin-top: -$sliderColorPickerThumbHeight/2;
+  margin-left: -$sliderColorPickerThumbWidth/2;
+}
+
+.oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb {
+  width: $sliderColorPickerThumbHeight;
+  height: $sliderColorPickerThumbWidth;
+   @include oj-ltr() {
+     margin-left: -$sliderColorPickerThumbHeight/2;
+   }
+   @include oj-rtl() {    
+     margin-right: -$sliderColorPickerThumbHeight/2;
+   }
+   margin-bottom: -$sliderColorPickerThumbWidth/2;
+   margin-top: -$sliderColorPickerThumbWidth/2;
+}
+
+@if ($sliderColorPickerThumbWidth == $sliderColorPickerThumbWidthActive) {
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {
+    left: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbWidth)/2);
+    right: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbWidth)/2);
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
+    // Note - the height and width variables are swapped for vertical sliders.
+    left: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbHeight)/2);
+    right: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbHeight)/2);
+  }
+}
+
+@if ($sliderColorPickerThumbHeight == $sliderColorPickerThumbHeightActive) {
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {
+    top: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbHeight)/2);
+    bottom: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbHeight)/2);
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
+    // Note - the height and width variables are swapped for vertical sliders.
+    top: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbWidth)/2);
+    bottom: oj-strip-unit-from-zero(-($sliderThumbHitArea - $sliderColorPickerThumbWidth)/2);
+  }
+}
+
+@if ($sliderColorPickerThumbWidth != $sliderColorPickerThumbWidthActive) {
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
+    margin-left: -$sliderColorPickerThumbWidthActive/2;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
+      // Note - the height and width variables are swapped for vertical sliders.
+     @include oj-ltr() {
+       margin-left: -$sliderColorPickerThumbHeightActive/2;
+     }
+     @include oj-rtl() {    
+       margin-right: -$sliderColorPickerThumbHeightActive/2;
+     }
+  }
+
+  .oj-slider-color-picker .oj-slider-thumb.oj-active {
+     width: $sliderColorPickerThumbWidthActive;
+  }
+
+  // adjust hit area for larger Active thumbs
+  // (otherwise hit area will be too large when the active thumb expands)
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {
+      top: - ($sliderThumbHitArea - $sliderColorPickerThumbHeightActive)/2;
+      bottom: -($sliderThumbHitArea - $sliderColorPickerThumbHeightActive)/2;
+      left: -($sliderThumbHitArea - $sliderColorPickerThumbWidthActive)/2;
+      right: -($sliderThumbHitArea - $sliderColorPickerThumbWidthActive)/2;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
+      // Note - the height and width variables are swapped for vertical sliders.
+      top: - ($sliderThumbHitArea - $sliderColorPickerThumbWidthActive)/2;
+      bottom: -($sliderThumbHitArea - $sliderColorPickerThumbWidthActive)/2;
+      left: -($sliderThumbHitArea - $sliderColorPickerThumbHeightActive)/2;
+      right: -($sliderThumbHitArea - $sliderColorPickerThumbHeightActive)/2;
+  }
+}
+
+@if ($sliderColorPickerThumbHeight != $sliderColorPickerThumbHeightActive) {
+  .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
+    margin-top: -$sliderColorPickerThumbHeightActive/2;
+  }
+
+  .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb.oj-active {
+     // Note - the height and width variables are swapped for vertical sliders.
+     margin-bottom: -$sliderColorPickerThumbWidthActive/2;
+     margin-top: -$sliderColorPickerThumbWidthActive/2;
+  }
+
+  .oj-slider-color-picker .oj-slider-thumb.oj-active {
+     height: $sliderColorPickerThumbHeightActive;
+  }
+}
+
+.oj-slider-color-picker .oj-slider-bar-value {
+    display: none;
+}
 
  }
-}
+ }

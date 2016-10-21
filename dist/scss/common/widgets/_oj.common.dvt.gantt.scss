@@ -56,6 +56,12 @@
       fill: $dvtGanttRowBgColor;
     }
 
+    /* Styling for all row labels */
+    .oj-gantt-row-label {
+      fill: $headerTextColor;
+      font-size: $fontSize;
+    }
+
     /* Styling for all task bars */
     .oj-gantt-task {
       fill: $dvtGanttTaskBgColor;
@@ -63,6 +69,11 @@
     
     /* Styling for all task bars when hover */
     .oj-gantt-task.oj-hover {
+      stroke-width: 2;
+    }
+
+    /* Styling for all task bars when focus */
+    .oj-gantt-task.oj-focus {
       stroke-width: 2;
     }
     
@@ -73,8 +84,8 @@
 
     /* Styling for all task labels */
     .oj-gantt-task-label {
-      font-size:$smallFontSize;
-      font-family:$fontFamily;
+      color: $primaryTextColor;
+      font-size: $smallFontSize;
     }
         
     /* Styling for the major time axis */
@@ -88,6 +99,7 @@
       fill: $dvtGanttMajorAxisLabelColor;
       font-size: $fontSize;
       font-weight: 500;
+      font-family:$fontFamily;
     }
     
     /* Styling for the major time axis separators */
@@ -106,6 +118,7 @@
       fill: $dvtGanttMinorAxisLabelColor;
       font-size: $smallFontSize;
       font-weight: normal;
+      font-family:$fontFamily;
     }
     
     /* Styling for the minor time axis separators */

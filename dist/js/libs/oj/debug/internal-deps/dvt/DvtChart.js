@@ -13500,7 +13500,7 @@ DvtChartDataUtils._sanitizeDateTime = function(context, dateTime) {
   var ret = null;
 
   // First try the converter if available
-  var isoToDateConverter = context.getLocaleHelpers['isoToDateConverter'];
+  var isoToDateConverter = context.getLocaleHelpers()['isoToDateConverter'];
   if (isoToDateConverter) {
     // Enclose in a try/catch because the converter will throw an exception if the string is not in iso format
     try {
@@ -13511,8 +13511,10 @@ DvtChartDataUtils._sanitizeDateTime = function(context, dateTime) {
     }
 
     // Convert to number
-    if (ret != null)
+    if (ret != null && ret.getTime)
       ret = ret.getTime();
+    else
+      ret = null;
   }
 
   // Try Date.parse next. It will return NaN for invalid inputs.

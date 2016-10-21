@@ -916,8 +916,28 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Iso to date converter to be called for JS that requires Dates
     helpers['isoToDateConverter'] = function(input) {
-      return (typeof(input) == 'string') ? oj.IntlConverterUtils.isoToLocalDate(input) : input;
-    }
+       if (typeof(input) == 'string') {
+         var dateWithTimeZone = oj.IntlConverterUtils.isoToDate(input);
+         var localIsoTime = dateWithTimeZone.toJSON() ? oj.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
+         return oj.IntlConverterUtils.isoToLocalDate(localIsoTime);
+       }
+       else
+         return input;
+     }
+ 
+     // Date to iso converter to be called before passing to the date time converter
+     helpers['dateToIsoWithTimeZoneConverter'] = function(input) {
+       if (input instanceof Date) {
+         var timeZoneOffest = -1*input.getTimezoneOffset();
+         var offsetSign = (timeZoneOffest >= 0 ? "+" : "-");
+         var offsetHour = Math.floor(Math.abs(timeZoneOffest)/60);
+         var offsetMinutes = Math.abs(timeZoneOffest)%60;
+         var isoTimeZone =  offsetSign+(offsetHour.toString().length !== 2 ? "0"+offsetHour : offsetHour)+":"+ (offsetMinutes.toString().length !== 2 ? offsetMinutes+"0" : offsetMinutes);
+         return oj.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+       }
+       else
+         return input;    
+     }
 
     this._context.setLocaleHelpers(helpers);
   },
@@ -1213,8 +1233,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     if (eventType === "touch")
       return;
     // Position context menus relative to the current keyboard focus when keyboard triggered
-    else if (eventType === "keyboard")
-      this._OpenContextMenu(event, eventType, {"position": {"of": this._component.getKeyboardFocus()}});
+    else if (eventType === "keyboard") {
+      var compElementRect = this.element[0].getBoundingClientRect(),
+        focusElementRect = this._component.getKeyboardFocus() ? this._component.getKeyboardFocus().getBoundingClientRect() : null;
+      var position = focusElementRect ? 
+        "left+" + (focusElementRect.left + focusElementRect.width*.5 - compElementRect.left) + " top+" + (focusElementRect.top + focusElementRect.height*.5 - compElementRect.top) : "center";
+      this._OpenContextMenu(event, eventType, {"position": {"at": position}});
+    }
     else
       this._super(menu, event, eventType);
   },

@@ -1722,7 +1722,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     var numMonths = this._getNumberOfMonths(),
         cols = numMonths[1],
-        width = 300;
+        width = 275;
 
     this._dpDiv.removeClass("oj-datepicker-multi-2 oj-datepicker-multi-3 oj-datepicker-multi-4").width("");
     if (view === 'year' || view === 'month')
@@ -1736,7 +1736,17 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
       if (cols > 1)
       {
-        this._dpDiv.addClass("oj-datepicker-multi-" + cols).css("width", (width * cols) + "px");
+        // Try to determine the width dynamically
+        var calendar = this._dpDiv.find(".oj-datepicker-calendar");
+        var daySelectors = calendar.find("tbody a");
+        var cellWidth = parseFloat(daySelectors.css("width"));
+        var padding = parseFloat(calendar.css("margin-left"));
+        if (!isNaN(cellWidth) && !isNaN(padding))
+        {
+          width = cellWidth * (this.options["datePicker"]["weekDisplay"] === "number" ? 8 : 7) + (padding * 2);
+        }
+
+        this._dpDiv.addClass("oj-datepicker-multi-" + cols).css("width", (width * cols + (this._isInLine ? 2 : 0)) + "px");
       }
       this._dpDiv[(numMonths[0] !== 1 || numMonths[1] !== 1 ? "add" : "remove") + "Class"]("oj-datepicker-multi");
     }
@@ -4341,6 +4351,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       /**
        * @expose
        */
+      footerLayout : "",
+
+      /**
+       * @expose
+       */
       timeIncrement : "00:30:00:00",
 
       /**
@@ -4508,6 +4523,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     }
   },
 
+  _isWheelPicker: function ()
+  {    
+    return oj.Config['temporarilyEnableWheelStyleTimePickerForJet22'];
+  },
+
   /**
    * @ignore
    */
@@ -4528,42 +4548,66 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 
     this._timeSourceConverter = null;
 
-    this._timePickerDisplay = $("<div id='" + this._GetSubId(this._TIME_PICKER_ID) + "' class='oj-listbox-drop' style='display:none'></div>");
-    $("body").append(this._timePickerDisplay); //@HTMLUpdateOK
+    var pickerAttrs = this.options.pickerAttributes;
 
     var self = this;
 
-    this._popUpTimePickerDisplay = this._timePickerDisplay.ojPopup(
+    if (this._isWheelPicker())
     {
-      "initialFocus": "none",
-      "rootAttributes": {"class": "datetimepicker-dropdown"},
-      "chrome": "none",
-      "modality": "modeless",
-      "open": function ()
+      this._wheelPicker = $("<div id='" + this._GetSubId(this._TIME_PICKER_ID) + 
+                            "' class='oj-timepicker-content' style='display:none'></div>");
+      $("body").append(this._wheelPicker); //@HTMLUpdateOK
+
+      this._popUpWheelPicker = this._wheelPicker.ojPopup(
       {
-
-        var selected = $("[aria-selected]", self._timePickerDisplay);
-        if (selected.length === 1)
-        {
-          self._checkScrollTop(selected.parent(), true);
+        "initialFocus": "none",
+        "rootAttributes": {"class": "oj-timepicker-popup"},
+        "chrome": "default",
+        "modality": "modeless",
+        "open": function () {
+        },
+        "beforeClose": function () {
         }
+      });
 
-        if (self.options["timePicker"]["showOn"] === "image" ||
-            !self._isIndependentInput()) 
-        {
-          $("ul", self._timePickerDisplay).focus();
-        }
-      },
-      "beforeClose": function ()
+      if (pickerAttrs)
+        oj.EditableValueUtils.setPickerAttributes(this._popUpWheelPicker.ojPopup("widget"), pickerAttrs);
+    }
+
+    else
+    {
+      this._timePickerDisplay = $("<div id='" + this._GetSubId(this._TIME_PICKER_ID) + "' class='oj-listbox-drop' style='display:none'></div>");
+      $("body").append(this._timePickerDisplay); //@HTMLUpdateOK
+
+      this._popUpTimePickerDisplay = this._timePickerDisplay.ojPopup(
       {
-         self._timeListBoxScrollTop = $("ul", self._timePickerDisplay).scrollTop();
-      }
-    });
+        "initialFocus": "none",
+        "rootAttributes": {"class": "datetimepicker-dropdown"},
+        "chrome": "none",
+        "modality": "modeless",
+        "open": function ()
+        {
+          var selected = $("[aria-selected]", self._timePickerDisplay);
+          if (selected.length === 1)
+          {
+            self._checkScrollTop(selected.parent(), true);
+          }
 
-    var pickerAttrs = this.options.pickerAttributes;
-    if (pickerAttrs)
-      oj.EditableValueUtils.setPickerAttributes(this._popUpTimePickerDisplay.ojPopup("widget"), pickerAttrs);
+          if (self.options["timePicker"]["showOn"] === "image" ||
+              !self._isIndependentInput()) 
+          {
+            $("ul", self._timePickerDisplay).focus();
+          }
+        },
+        "beforeClose": function ()
+        {
+          self._timeListBoxScrollTop = $("ul", self._timePickerDisplay).scrollTop();
+        }
+      });
 
+      if (pickerAttrs)
+        oj.EditableValueUtils.setPickerAttributes(this._popUpTimePickerDisplay.ojPopup("widget"), pickerAttrs);
+    }
     // I want to wrap the inputTime if it is all by itself, or if it is
     // part of the inline inputDateTime component which is the inline date stacked on top of an
     // inputTime. The inline error messages will go under the inputTime part. TODO: how?
@@ -4574,7 +4618,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 
   _timepickerShowing: function ()
   {
-    return this._popUpTimePickerDisplay.ojPopup("isOpen") || this._nativePickerShowing;
+    return (this._isWheelPicker() ? this._popUpWheelPicker.ojPopup("isOpen")
+      : this._popUpTimePickerDisplay.ojPopup("isOpen")) || this._nativePickerShowing;
   },
 
   /**
@@ -4597,7 +4642,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     }
     else
     {
-
       //if isoString has a different timezone then the one provided in the converter, need to perform 
       //conversion so pass it through the method
       if(this.options["value"])
@@ -4639,6 +4683,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   _setOption : function (key, value, flags)
   {
     var retVal = null;
+    var footer;
 
     //When a null, undefined, or "" value is passed in set to null for consistency
     //note that if they pass in 0 it will also set it null
@@ -4650,11 +4695,26 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       }
 
       retVal = this._super(key, value, flags);
-      this._generateTime();
+
+      if (this._isWheelPicker())
+        this._createWheelPickerDom();
+      else
+        this._generateTime();
       return retVal;
     }
 
+    //set options on the timePicker wipe out the footerLayout settings
+    //save footerLayout and restore after superApply
+    else if (key === "timePicker" && this._isWheelPicker() && value["footerLayout"] === undefined)
+    {
+      footer = this.options["timePicker"]["footerLayout"];
+    }
+
     retVal = this._superApply(arguments);
+
+    //restore footerLayout
+    if (footer)
+      this.options["timePicker"]["footerLayout"] = footer;
 
     if(key === "disabled")
     {
@@ -4694,7 +4754,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if(key in redrawTimePicker)
     {
       //changing back to original code of invoking _generateTime per discussion
-      this._generateTime();
+      if (this._isWheelPicker())
+        this._createWheelPickerDom();
+      else
+        this._generateTime();
     }
 
     return retVal;
@@ -4720,7 +4783,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       this._triggerNode.remove();
     }
 
-    this._timePickerDisplay.remove();
+    if (this._timePickerDisplay)
+      this._timePickerDisplay.remove();
+
+    if (this._wheelPicker)
+      this._wheelPicker.remove();
 
     return retVal;
   },
@@ -4790,7 +4857,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
             break;
           case kc.UP: ;
           case kc.DOWN:
-            $("ul", this._timePickerDisplay).focus();
+            if (this._isWheelPicker())
+              this._wheelPicker.focus();
+            else
+              $("ul", this._timePickerDisplay).focus();
             handled = true;
             break;
           default:;
@@ -5337,6 +5407,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       this.element.blur();
       return this._showNativeTimePicker();
     }
+    else if (this._isWheelPicker())
+    {
+      return this._showWheelPicker();
+    }
     else
     {
       return this._showHTMLTimePicker();
@@ -5496,7 +5570,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   {
     if (!isPickerNative(this) && this._timepickerShowing())
     {
-      this._popUpTimePickerDisplay.ojPopup("close");
+      if (this._isWheelPicker())
+        this._popUpWheelPicker.ojPopup("close");
+      else
+        this._popUpTimePickerDisplay.ojPopup("close");
       this._onClose(reason);
     }
 
@@ -5568,7 +5645,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     //when developer invokes ("option", "value", "..")
     if(this._timepickerShowing())
     {
-      this._generateTime();
+      if (this._isWheelPicker())
+        this._createWheelPickerDom();
+      else
+        this._generateTime();
     }
   },
 
@@ -5674,7 +5754,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    * @protected
    * @override
    * @instance
-   * @memberof! oj.ojInputDate
+   * @memberof! oj.ojInputTime
    */
   _GetImplicitValidators : function ()
   {
@@ -5790,6 +5870,285 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     this._superApply(arguments);
   },
 
+ /**
+   * Return true if the element is in the timepicker popup
+   * 
+   * @param {?Element} element
+   * @return {boolean} 
+   *
+   * @memberof! oj.ojInputTime
+   * @instance
+   * @protected
+   */
+  _InPopup: function(element)
+  {
+    if (!element)
+      return false;
+
+    var picker;
+    if (this._isWheelPicker())
+      picker = this._wheelPicker;
+    else
+      picker = this._timePickerDisplay;
+
+    return $.contains(picker[0], element);
+  },
+
+  /**
+   * Generate the HTML for the header of the time picker.
+   * 
+   * @private
+   */
+  _generateHeader : function()
+  {
+    var isRTL = this._IsRTL();
+
+    var cancelText = this._EscapeXSS(this.getTranslatedString("cancelText"));
+    var cancelButton = "<a role='button' href='#' class='oj-enabled oj-default oj-timepicker-cancel-button'" + " title='" + cancelText + "'>" + cancelText + "</a>";
+
+    var okText = this._EscapeXSS(this.getTranslatedString("okText"));
+    var okButton = "<a role='button' href='#' class='oj-enabled oj-default oj-timepicker-ok-button'" + " title='" + okText + "'>" + okText + "</a>";
+
+    var header = "<div class='oj-timepicker-header" + (this.options["disabled"] ? " oj-disabled " : " oj-enabled oj-default ") + "'>";
+
+    header += cancelButton;
+    header += okButton;
+
+    header += "</div>";
+    return header;
+  },
+
+  /**
+   * Generate the HTML for the footer of the time picker.
+   * 
+   * @private
+   */
+  _generateFooter : function __generateFooter(footerLayoutDisplay, gotoTime)
+  {
+    var footerLayout = "";
+    var currentText = this._EscapeXSS(this.getTranslatedString("currentTimeText"));
+    var nowControl = "<a role='button' href='#' class='oj-timepicker-now oj-priority-secondary oj-enabled'" + ">" + currentText + "</a>";
+
+    if(footerLayoutDisplay && footerLayoutDisplay.length > 1) //keep the code for future multiple buttons
+    {
+      var nowIndex = footerLayoutDisplay.indexOf("now"),
+          loop = 0,
+          footerLayoutButtons = [{index: nowIndex, content: (gotoTime ? nowControl : "")}];
+
+      //rather than using several if + else statements, sort the content to add by index of the strings
+      footerLayoutButtons.sort(function(a, b)
+      {
+        return a.index - b.index;
+      });
+
+      //continue to loop until the index > -1 [contains the string]
+      while(loop < footerLayoutButtons.length && footerLayoutButtons[loop].index < 0) { loop++; }
+
+      while(loop < footerLayoutButtons.length)
+      {
+        footerLayout += footerLayoutButtons[loop++].content;
+      }
+
+      if(footerLayout.length > 0)
+      {
+        footerLayout = "<div class='oj-timepicker-footer'>" + footerLayout + "</div>";
+      }
+    }
+    return footerLayout;
+  },
+
+  /**
+   * Get the ISO string for the min or max date limit if applicable
+   *
+   * @private
+   */
+  _getIsoDateLimit : function(converter, optionName, valueDate)
+  {
+    // Fetch option from correct picker
+    var dateIso = this._isContainedInDateTimePicker() ? this._datePickerComp["widget"].options[optionName] : this.options[optionName];
+    // Fill in date from value
+    dateIso = dateIso ? oj.IntlConverterUtils._minMaxIsoString(dateIso, this._getValue()) : dateIso;
+    // Move to the converter's timezone
+    dateIso = dateIso ? converter.parse(dateIso) : dateIso;
+    // If the dates don't match, then min or max doesn't apply to this value
+    var date = dateIso ? oj.IntlConverterUtils._clearTime(dateIso) : null;
+    if (valueDate && date && valueDate.substring(0, valueDate.indexOf("T")) !== date.substring(0, date.indexOf("T")))
+    {
+      dateIso = null;
+    }
+
+    return dateIso;    
+  },
+
+  /**
+   * Get the ISO string for the current value
+   *
+   * @private
+   */
+  _getIsoDateValue : function(converter)
+  {
+    var processDateIso = this._getValue();
+    if(!processDateIso) 
+    {
+      processDateIso = new Date();
+      processDateIso.setHours(0);
+      processDateIso.setMinutes(0);
+      processDateIso.setSeconds(0);
+      processDateIso.setMilliseconds(0);
+      processDateIso = oj.IntlConverterUtils.dateToLocalIso(processDateIso);
+    }
+    processDateIso = converter.parse(processDateIso);
+    
+    return processDateIso;
+  },
+
+  /**
+   * Get the local strings for AM/PM representation
+   *
+   * @private
+   */
+  _getAmPmStrings : function()
+  {
+    var factory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+    var converter = factory.createConverter({"pattern": "a"});
+
+    return [converter.format("2016-01-01T01:00:00Z"),
+            converter.format("2016-01-01T13:00:00Z")];
+  },
+
+  /**
+   * Create the wheel timepicker DOM
+   *
+   * @private
+   */
+  _createWheelPickerDom : function __createWheelPickerDom()
+  {
+    var wheelPicker = this._wheelPicker;
+    wheelPicker.empty();
+    
+    var converter = this._GetConverter();
+    var options = converter.resolvedOptions();
+    if (options.isoStrFormat === "zulu")
+    {
+      options.isoStrFormat = "offset";
+      var factory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+      converter = factory.createConverter(options);
+      options = converter.resolvedOptions();
+    }
+
+    var converterUtils = oj.IntlConverterUtils;
+    var value = this._getValue();
+    var date = new Date();
+    if (!value)
+    {
+      value = oj.IntlConverterUtils.dateToLocalIso(date);
+    }
+    value = converter.parse(value);  // Convert to proper timezone
+    var valueDate = converterUtils._clearTime(value);
+
+    var minDateIso = this._getIsoDateLimit(converter, "min", valueDate);
+    var maxDateIso = this._getIsoDateLimit(converter, "max", valueDate);
+
+    var footerLayoutDisplay = this.options["timePicker"]["footerLayout"];
+
+    var timePickerModel = this._timePickerModel = new TimePickerModel(null);
+    var pattern = options["pattern"] || options["patternFromOptions"];
+    if (pattern)
+    {
+      timePickerModel["format"] = pattern;
+    }
+
+    timePickerModel["ampmStrings"] = this._getAmPmStrings();
+
+    //set increment before setting value so that positions will be calculated correctly
+    var timeIncrement = this.options["timePicker"]["timeIncrement"];
+    if (timeIncrement)
+    {
+      var splitIncrements = splitTimeIncrement(timeIncrement);
+      timePickerModel["increment"] = splitIncrements.hourIncr * 60 + splitIncrements.minuteIncr;
+    }
+
+    //set value
+    timePickerModel["isoValue"] = this._getIsoDateValue(converter);
+
+    //set min and max values
+    if (minDateIso)
+      timePickerModel["isoMin"] = minDateIso;
+
+    if (maxDateIso)
+      timePickerModel["isoMax"] = maxDateIso;
+
+    //add header, wheel group and footer
+    wheelPicker.append($(this._generateHeader(wheelPicker)));
+    this._wheelGroup = $(createWheelGroup(timePickerModel));
+    wheelPicker.append(this._wheelGroup);
+    wheelPicker.append($(this._generateFooter(footerLayoutDisplay, date)));
+    
+    //add aria labels to wheels for accessibility
+    wheelPicker.find(".oj-timepicker-hour").attr("aria-label", this.getTranslatedString("hourWheelLabel"));
+    wheelPicker.find(".oj-timepicker-minute").attr("aria-label", this.getTranslatedString("minuteWheelLabel"));
+    wheelPicker.find(".oj-timepicker-meridian").attr("aria-label", this.getTranslatedString("ampmWheelLabel"));
+
+    //add content
+    this._wheelPicker.append(wheelPicker);
+  },
+
+  /**
+   * Shows the wheel timepicker
+   *
+   * @private
+   */
+  _showWheelPicker : function __showWheelPicker()
+  {
+    if (this._isContainedInDateTimePicker())
+    {
+      //need to hide the datePickerComp prior to showing timepicker
+      this._datePickerComp["widget"].hide();
+    }
+
+    var self = this,
+        popUpWheelPicker = this._popUpWheelPicker;
+
+    this._createWheelPickerDom();
+    this._wheelPicker.find(".oj-timepicker-cancel-button").on('click', 
+      function(event)
+      {
+        event.preventDefault();
+        popUpWheelPicker.ojPopup("close");
+        self._onClose(self._ON_CLOSE_REASON_CANCELLED);
+      });
+
+    this._wheelPicker.find(".oj-timepicker-ok-button").on('click', 
+      function(event)
+      {
+        self._SetValue(self._timePickerModel["isoValue"], event);
+
+        event.preventDefault();
+        popUpWheelPicker.ojPopup("close");
+        self._onClose(self._ON_CLOSE_REASON_SELECTION);
+      });
+
+    //now control
+    this._wheelPicker.find(".oj-timepicker-now").on('click', 
+      function(event)
+      {
+        var value = oj.IntlConverterUtils.dateToLocalIso(new Date());
+        value = self._GetConverter().parse(value);  // Convert to proper timezone
+        self._timePickerModel["isoValue"] = value;
+        event.preventDefault();
+      });
+
+    var position = oj.PositionUtils.normalizeHorizontalAlignment({"my" : "start top", "at" : "start bottom", "of" : this.element, "collision" : "flipfit flipfit"}, this._IsRTL());
+
+    // ojPopup open must be passed the input container (this.element.parent)
+    // as the launcher so that any event within the container won't auto-dismiss
+    // the dialog.
+    popUpWheelPicker.ojPopup("open", this.element.parent(), position);
+
+    //set focus on the 1st child
+    this._wheelGroup.children().first().focus();
+  },
+
   /**
    * Return the subcomponent node represented by the documented locator attribute values. <br/>
    * If the locator is null or no subId string is provided then this method returns the element that
@@ -5825,14 +6184,24 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   getNodeBySubId: function(locator)
   {
     var node = null,
-        subId = locator && locator['subId'];
+        subId = locator && locator['subId'],
+        wheelPicker = this._wheelPicker;
 
     if(subId) {
       switch(subId)
       {
-      case "oj-listbox-drop": node = this._timePickerDisplay[0]; break;
+      case "oj-listbox-drop": node = this._timePickerDisplay ? this._timePickerDisplay[0] : null; break;
       case "oj-inputdatetime-time-icon": node = $(".oj-inputdatetime-time-icon", this._triggerNode)[0]; break;
       case "oj-inputdatetime-time-input": node = this.element[0]; break;
+
+      case "oj-timepicker-content": node = wheelPicker ? wheelPicker[0] : null; break;
+      case "oj-timepicker-cancel-button": node = $(".oj-timepicker-cancel-button", wheelPicker)[0]; break;
+      case "oj-timepicker-ok-button": node = $(".oj-timepicker-ok-button", wheelPicker)[0]; break;
+      case "oj-timepicker-hour": node = $(".oj-timepicker-hour", wheelPicker)[0]; break;
+      case "oj-timepicker-minute": node = $(".oj-timepicker-minute", wheelPicker)[0]; break;
+      case "oj-timepicker-meridian": node = $(".oj-timepicker-meridian", wheelPicker)[0]; break;
+      case "oj-timepicker-now": node = $(".oj-timepicker-now", wheelPicker)[0]; break;
+
       default: node = null;
       }
     }
@@ -5859,9 +6228,17 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   getSubIdByNode: function(node)
   {
     var timeIcon = $(".oj-inputdatetime-time-icon", this._triggerNode),
-        subId = null;
+        subId = null,
+        wheelPicker = this._wheelPicker,
+        checks = [{"selector": ".oj-timepicker-cancel-button", "ele": wheelPicker},
+                  {"selector": ".oj-timepicker-ok-button", "ele": wheelPicker},
+                  {"selector": ".oj-timepicker-hour", "ele": wheelPicker},
+                  {"selector": ".oj-timepicker-minute", "ele": wheelPicker},
+                  {"selector": ".oj-timepicker-meridian", "ele": wheelPicker},
+                  {"selector": ".oj-timepicker-now", "ele": wheelPicker}];
 
-    if(node === this._timePickerDisplay[0])
+
+    if(this._timePickerDisplay && node === this._timePickerDisplay[0])
     {
       subId = "oj-listbox-drop";
     }
@@ -5872,6 +6249,24 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     else if(node === this.element[0])
     {
       subId = "oj-inputdatetime-time-input";
+    }
+    else if(wheelPicker && node === wheelPicker[0])
+    {
+      subId = "oj-timepicker-content";
+    }
+    else
+    {
+      for(var i=0; i < checks.length; i++)
+      {
+        var map = checks[i],
+            entry = $(map["selector"], map["ele"]);
+
+        if(entry.length === 1 && entry[0] === node)
+        {
+          subId = map["selector"].substr(1);
+          break;
+        }
+      }
     }
 
     return subId || this._superApply(arguments);
@@ -5901,11 +6296,16 @@ oj.Components.setDefaultOptions(
       {
         return (oj.ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {})["renderMode"];
       }),
-
     'keyboardEdit': oj.Components.createDynamicPropertyGetter(
       function()
       {
         return (oj.ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {})["keyboardEdit"];
+      }),
+
+    'timePicker': oj.Components.createDynamicPropertyGetter(
+      function()
+      {
+        return (oj.ThemeUtils.parseJSONFromFontFamily('oj-inputdatetime-option-defaults') || {})["timePicker"];
       })
     }
   }
@@ -6007,6 +6407,1095 @@ oj.Components.setDefaultOptions(
  * // Foo is ojInputTime, ojInputDateTime, etc.
  * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-listbox-drop'} );
  */
+
+function createWheelItem(model, position)
+{
+  var _item;
+  var _position;
+  var _disabled = false;
+
+  function updatePosition(newPosition)
+  {
+    _item.classList.remove("oj-timepicker-wheel-item-position" + _position);
+    _item.classList.add("oj-timepicker-wheel-item-position" + newPosition);
+    _position = newPosition;
+    return Promise.resolve();
+  }
+
+  function itemFocusHandler()
+  {
+    _item.parentNode.focus();
+  }
+
+  var text = model.getText(position);
+  if (text)
+  {
+    _item = document.createElement("div");
+    _item.classList.add("oj-timepicker-wheel-item");
+    _item.classList.add("oj-timepicker-wheel-item-position" + position);
+    _position = position;
+    if (model.isDisabled(position))
+    {
+      _disabled = true;
+      _item.classList.add("oj-disabled");
+    }
+
+    _item.ojUpdatePosition = updatePosition;
+    
+    var content = document.createElement("div");
+    content.textContent = text;
+    content.classList.add("oj-timepicker-wheel-item-content");
+    _item.appendChild(content);
+ 
+    Object.defineProperty(_item, "ojDisabled", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _disabled;
+      },
+      'set': function(disabled)
+      {
+        if (disabled !== _disabled)
+        {
+          $(_item).toggleClass("oj-disabled");
+          _disabled = disabled;
+        }
+      }
+    });
+    
+    // The item div and its content div can get focus from mouse click on IE,
+    // which doesn't happen on other browsers.  Add a focus handler so that
+    // focus can be redirected to the wheel.
+    _item.addEventListener("focus", itemFocusHandler, false);
+    content.addEventListener("focus", itemFocusHandler, false);
+  }
+
+  return _item;
+}
+
+/* global Promise, Hammer */
+
+function createWheel(model, isNumber, classList)
+{
+  var CURRENT_POSITION = 7;
+  var PAN_SPIN_THRESHOLD = 2;
+  var TAP_THRESHOLDS = [0.152, 0.362, 0.638, 0.848];
+  var MOMENTUM_FACTOR = 0.007;
+
+  var KEYCODE_BACKSPACE = 8;
+  var KEYCODE_UP = 38;
+  var KEYCODE_DOWN = 40;
+
+  var _wheel;
+  var _items = [];
+  var _panStartY;
+  var _panLastSpinY;
+  var _panLastZone;
+  var _momentum;
+
+  createDom(classList);
+  var $wheel = $(_wheel);
+
+  defineMethods();
+  defineEvents();
+  refresh();
+
+  return _wheel;
+
+  function createDom(classList)
+  {
+    _wheel = document.createElement("div");
+    _wheel.classList.add("oj-timepicker-wheel");
+    if (classList)
+      _wheel.classList.add(classList);
+    _wheel.setAttribute("id", "_ojWheel" + createWheel.counter++);
+    _wheel.setAttribute("tabIndex", "0");
+    _wheel.setAttribute("role", "spinbutton");
+    model.wheel = _wheel;
+  }
+
+  function defineMethods()
+  {
+    _wheel.ojSpinUp = spinUp;
+    _wheel.ojSpinDown = spinDown;
+    _wheel.ojRefresh = refresh;
+    _wheel.ojLinked = function()
+    {
+      return model["linked"];
+    };
+  }
+
+  function defineEvents()
+  {
+    var mc = new Hammer(_wheel);
+    mc.get('pan').set({ direction: Hammer["DIRECTION_VERTICAL"] });
+    mc.get('swipe').set({ direction: Hammer["DIRECTION_VERTICAL"] });
+
+    mc.on("tap", tapHander);
+    mc.on("swipeup", swipeUpHandler);
+    mc.on("swipedown", swipeDownHandler);
+
+    mc.on("panstart", panStartHandler);
+    mc.on("panend pancancel", panEndHandler);
+
+    mc.on("panup pandown", panHandler);
+
+    _wheel.addEventListener('wheel', wheelHandler, false);
+    _wheel.addEventListener('keydown', keydownHandler, false);
+    _wheel.addEventListener('focus', focusHandler, false);
+    _wheel.addEventListener('blur', blurHandler, false);
+  }
+
+  function spinUp()
+  {
+    var next = _items[CURRENT_POSITION + 1];
+    if (next)
+    {
+      spin(1);
+      var oldItem = _items.shift();
+      if (oldItem)
+      {
+        _wheel.removeChild(oldItem);
+      }
+      var newItem = createWheelItem(model, CURRENT_POSITION);
+      if (newItem)
+      {
+        _wheel.appendChild(newItem);
+      }
+      _items.push(newItem);
+    }
+  }
+
+  function spinDown()
+  {
+    var prev = _items[CURRENT_POSITION - 1];
+    if (prev)
+    {
+      spin(-1);
+      var oldItem = _items.pop();
+      if (oldItem)
+      {
+        _wheel.removeChild(oldItem);
+      }
+      var newItem = createWheelItem(model, -CURRENT_POSITION);
+      if (newItem)
+      {
+        _wheel.insertBefore(newItem, _items[0]);
+      }
+      _items.unshift(newItem);
+    }
+  }
+
+  function spin(direction)
+  {
+    for (var i = 0; i < _items.length; i++)
+    {
+      var item = _items[i];
+      if (item)
+      {
+        item.ojUpdatePosition(i - CURRENT_POSITION - direction);            
+      }
+    }
+
+    _wheel.setAttribute("aria-valuenow", model.getText(0));
+  }
+
+  function refresh()
+  {
+    _items.forEach(function(item)
+    {
+      if (item)
+      {
+        _wheel.removeChild(item);
+      }
+    });
+    _items = [];
+
+    for (var offset = -CURRENT_POSITION; offset <= CURRENT_POSITION; offset++)
+    {
+      var item = createWheelItem(model, offset);
+      if (item)
+      {
+        _wheel.appendChild(item);
+      }
+
+      _items.push(item);
+    };
+
+    // Set the current value on the wheel for accessibility
+    _wheel.setAttribute("aria-valuenow", model.getText(0));
+  }
+
+  function keydownHandler(event)
+  {
+    var keyCode = event.keyCode;
+
+    switch (keyCode) {
+    case KEYCODE_UP:
+      model["position"]++;
+      event.preventDefault();
+      break;
+    case KEYCODE_DOWN:
+      model["position"]--;
+      event.preventDefault();
+      break;
+    case KEYCODE_BACKSPACE:
+      model.keyboardValue = model.keyboardValue.slice(0,-1);
+      event.preventDefault();
+      break;
+
+    default:
+      if ((keyCode > 47 && keyCode < 58) || // number keys
+          (keyCode > 95 && keyCode < 112) || // numpad keys
+          (!isNumber &&(keyCode > 64 && keyCode < 91))) // letter keys
+      {
+        model["keyboardValue"] += event.key;
+      }
+      break;
+    }
+  }
+
+  function tapHander(event)
+  {
+    _wheel.focus();
+    var tapY = event["center"].y;
+    var wheelTop = $wheel.offset().top;
+    var wheelHeight = $wheel.height();
+    var tapFraction = (tapY - wheelTop) / wheelHeight;
+    var tapZone = 0;
+
+    while ((tapZone < 4) && (tapFraction > TAP_THRESHOLDS[tapZone]))
+    {
+      tapZone++;
+    }
+
+    if (tapZone !== 2)
+    {
+      model["position"] += (tapZone - 2);
+    }
+  }
+  
+  function swipeUpHandler(event)
+  {
+    _wheel.focus();
+    var velocity = event.velocityY;
+    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
+    _momentum = Math.floor(extraPixels / $wheel.height() * 5);
+    event.preventDefault();
+  }
+
+  function swipeDownHandler(event)
+  {
+    _wheel.focus();
+    var velocity = event.velocityY;
+    var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
+    _momentum = -Math.floor(extraPixels / $wheel.height() * 5);
+    event.preventDefault();
+  }
+
+  function panStartHandler(event)
+  {
+    _wheel.focus();
+    _panStartY = _panLastSpinY = event["center"].y;
+    _panLastZone = 0;
+    _momentum = 0;
+  }
+ 
+  function panEndHandler(event)
+  {
+    _wheel.focus();
+    if (_momentum)
+    {
+      model["position"] += _momentum;
+    }
+      
+    _panStartY = _panLastSpinY = null;
+    _panLastZone = null;
+  }
+ 
+  function panHandler(event)
+  {
+    _wheel.focus();
+    var panY = event["center"].y;
+    var newZone = Math.round(((_panStartY - panY) / $wheel.height()) * 5);
+    if (newZone !== _panLastZone && Math.abs(_panLastSpinY - panY) > PAN_SPIN_THRESHOLD)
+    {
+      _panLastSpinY = panY;
+      model["position"] += newZone - _panLastZone;
+      _panLastZone = newZone;
+    }
+    event.preventDefault();
+  }
+
+  function wheelHandler(event)
+  {
+    if (event["deltaY"])
+    {
+      event.currentTarget.focus();
+      event.preventDefault();
+    }
+    if (event["deltaY"] < 0)
+    {
+      model["position"]++;
+    }
+    if (event["deltaY"] > 0)
+    {
+      model["position"]--;
+    }
+  }
+
+  function focusHandler()
+  {
+    model.keyboardValue = "";
+    _wheel.classList.add("oj-focus");
+  };
+
+  function blurHandler()
+  {
+    _wheel.classList.remove("oj-focus");
+    model.update();
+  };
+}
+
+createWheel.counter = 0;
+/**
+ * @constructor
+ */
+function TimePickerModel(properties)
+{
+  /** @const */
+  var ISO_TIME = /^.*T(\d{2})(?::?(\d{2}).*$)/;
+  /** @const */
+  var MIN_TIME = 0;
+  /** @const */
+  var MAX_TIME = 60 * 24;
+  /** @const */
+  var HOURS12 = 12 * 60;
+  
+  var FORMAT_MAP = {
+    'h': hFormat,
+    'hh': hhFormat,
+    'H': HFormat,
+    'HH': HHFormat,
+    'mm': mmFormat
+  };
+  var PARSER_MAP = {
+    'h': hour12Parser,
+    'hh': hour12Parser,
+    'H': numberParser,
+    'HH': numberParser,
+    'mm': numberParser
+  };
+  
+  var _value = 0;
+
+  var _increment;
+  var _min = MIN_TIME;
+  var _minValue = MIN_TIME;
+  var _max = MAX_TIME;
+  var _maxValue = MAX_TIME;
+
+  var _format;
+  var _12Hour;
+  var _grouped = "auto";
+  var _wheelOrder = "";
+  var _ampmStrings = ["AM", "PM"];
+
+  var _minuteModel = new WheelModel(this, {
+    'valueRange': 60,
+    'displayRange': 60,
+    'valueMultiplier': 1,
+    'displayMultiplier': 1  
+  });
+  var _hourModel = new WheelModel(this, {
+    'valueMultiplier': 60,
+    'displayMultiplier': 1
+  });
+  var _ampmModel = new WheelModel(this, {
+    'valueRange': 2,
+    'displayRange': 2,
+    'formatter': ampmFormat,
+    'parser': ampmParser,
+    'valueMultiplier': HOURS12, 
+    'displayMultiplier': 1 
+  });
+  var _models = [_minuteModel, _hourModel, _ampmModel];
+
+  var _settingProps = false;
+  
+//  /** type {TimePickerModel} */
+  var self = this;
+
+  defineProperties();
+  defineMethods();
+  setProperties(properties);
+
+  function defineProperties()
+  {
+    _settingProps = true;
+
+    Object.defineProperty(self, "increment", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _increment;
+      },
+      'set': function(increment)
+      {
+        _increment = Math.floor(increment);
+        refreshSettings();
+      }
+    });
+    self["increment"] = 1;
+
+    Object.defineProperty(self, "grouped", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _grouped;
+      },
+      'set': function(grouped)
+      {
+        switch (grouped)
+        {
+        case "auto":
+        case "all":
+        case "none":
+        case "hoursMinutes":
+        case "hoursMeridiem":
+          _grouped = grouped;
+          break;
+        default:
+          throw new Error("invalid grouped value: " + grouped);
+        }
+
+        refreshSettings();
+      }
+    });
+
+    Object.defineProperty(self, "min", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _min;
+      },
+      'set': function(min)
+      {
+        _min = Math.floor(min);
+        refreshSettings();
+      }
+    });
+
+    Object.defineProperty(self, "isoMin", {
+      'enumerable': true,
+      'get': function()
+      {
+        return minutesToIso(_min);
+      },
+      'set': function(iso)
+      {
+        var newMin = isoToMinutes(iso);
+        if (!isNaN(newMin))
+        {
+          self["min"] = newMin;
+        }
+        else
+        {
+          console.log("Invalid ISO min time: " + iso);
+        }
+      }
+    });
+
+    Object.defineProperty(self, "max", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _max - 1;
+      },
+      'set': function(max)
+      {
+        _max = Math.floor(max) + 1;
+        refreshSettings();
+      }
+    });
+
+    Object.defineProperty(self, "isoMax", {
+      'enumerable': true,
+      'get': function()
+      {
+        return minutesToIso(_max);
+      },
+      'set': function(iso)
+      {
+        var newMax = isoToMinutes(iso);
+        if (!isNaN(newMax))
+        {
+          self["max"] = newMax;
+        }
+        else
+        {
+          console.log("Invalid ISO max time: " + iso);
+        }
+      }
+    });
+
+    Object.defineProperty(self, "value", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _value;
+      },
+      'set': function(value)
+      {
+        _value = Math.floor(value);
+        refreshSettings();
+
+      }
+    });
+
+    Object.defineProperty(self, "isoValue", {
+      'enumerable': true,
+      'get': function()
+      {
+        return minutesToIso(_value);
+      },
+      'set': function(iso)
+      {
+        var newValue = isoToMinutes(iso);
+        if (!isNaN(newValue))
+        {
+          self["value"] = newValue;
+        }
+        else
+        {
+          console.log("Invalid ISO value time: " + iso);
+        }
+      }
+    });
+
+    Object.defineProperty(self, "format", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _format;
+      },
+      'set': function(format)
+      {
+        _format = format;
+        // remove stuff between quotes.
+        // remove anything that is not h, H, m or a
+        format = format.replace(/\'[^']*\'/g, "").replace(/[^hHma]*/g, "");
+        // Normalize multiple h or H to a single h, same for mulpiple m's
+        _wheelOrder = format.replace(/(h|H)+/, "h").replace(/m+/, "m");
+
+        var matches = format.match(/([hH]+)/);
+        var hourCode = matches[1];
+        _hourModel["formatter"] = FORMAT_MAP[hourCode];
+        _hourModel["parser"] = PARSER_MAP[hourCode];
+        
+        matches = format.match(/(m+)/);
+        var minuteCode = matches[1];
+        _minuteModel["formatter"] = FORMAT_MAP[minuteCode];
+        _minuteModel["parser"] = PARSER_MAP[minuteCode];
+
+        _12Hour = _wheelOrder.indexOf("a") >= 0;
+        refreshSettings();
+      }
+    });
+
+    Object.defineProperty(self, "wheelOrder", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _wheelOrder;
+      }
+    });
+
+    Object.defineProperty(self, "ampmStrings", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _ampmStrings;
+      },
+      'set': function(ampmStrings)
+      {
+        _ampmStrings = ampmStrings;
+      }
+    });
+
+    _settingProps = false;
+  }
+
+  function defineMethods()
+  {
+    self.setProperties = setProperties;
+  }
+
+  function setProperties(properties)
+  {
+    try
+    {
+      _settingProps = true;
+
+      if (properties)
+      {
+        for (var key in properties)
+        {
+          self[key] = properties[key];
+        }
+      }
+    }
+    finally
+    {
+      _settingProps = false;
+      refreshSettings();
+    }
+  }
+
+  /**
+   * recalculates dependent values after settings change
+   */
+  function refreshSettings()
+  {
+    if (!_settingProps)
+    {
+      _minValue = Math.ceil(_min / _increment) * _increment;
+      _maxValue = Math.ceil((_max - 1)/ _increment) * _increment;
+
+      if (_maxValue < _minValue)
+      {
+        throw new Error("Invalid min and max settings with current increment: " +
+                _min + " " + _max + + _increment);
+      }
+
+      if (_value < _minValue)
+      {
+        _value = _minValue;
+      }
+
+      if (_value > _maxValue)
+      {
+        _value = _maxValue;
+      }
+
+      _value = Math.round(_value / _increment) * _increment;
+
+      if (_12Hour)
+      {
+        _hourModel["displayRange"] = 12;
+
+        var grouped = _grouped;
+        if (grouped === "auto")
+        {
+          // If the increment is a divisor or multiple of 60
+          // Then use hoursMeridiem grouping
+          var divisor = gcd(_increment, 60);
+          if (divisor === _increment || divisor === 60)
+          {
+            grouped = "hoursMeridiem";
+          }
+          else
+          {
+            divisor = gcd(_increment, HOURS12);
+            if (divisor === _increment)
+            {
+              grouped = "all";
+            }
+            else
+            {
+              grouped = "all";
+            }
+          }
+        }
+
+        switch (grouped)
+        {
+        case "all":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = 24 * 60;
+          _minuteModel["linked"] = true;
+
+          _hourModel["displayMultiplier"] = 60;
+          _hourModel["valueMultiplier"] = 1;
+          _hourModel["valueRange"] = 24 * 60;
+          _hourModel["linked"] = true;
+
+          _ampmModel["displayMultiplier"] = 1;
+          _ampmModel["valueMultiplier"] = 60 * 12;
+          _ampmModel["valueRange"] = 2;
+          _ampmModel["linked"] = true;
+          break;
+
+        case "none":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = 60;
+          _minuteModel["linked"] = false;
+
+          _hourModel["displayMultiplier"] = 1;
+          _hourModel["valueMultiplier"] = 60;
+          _hourModel["valueRange"] = 12;
+          _hourModel["linked"] = false;
+
+          _ampmModel["displayMultiplier"] = 1;
+          _ampmModel["valueMultiplier"] = 60 * 12;
+          _ampmModel["valueRange"] = 2;
+          _ampmModel["linked"] = false;
+          break;
+
+        case "hoursMinutes":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = HOURS12;
+          _minuteModel["linked"] = true;
+
+          _hourModel["displayMultiplier"] = 60;
+          _hourModel["valueMultiplier"] = 1;
+          _hourModel["valueRange"] = HOURS12;
+          _hourModel["linked"] = true;
+
+          _ampmModel["displayMultiplier"] = 1;
+          _ampmModel["valueMultiplier"] = 60 * 12;
+          _ampmModel["valueRange"] = 2;
+          _ampmModel["linked"] = false;
+          break;
+
+        case "hoursMeridiem":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = 60;
+          _minuteModel["linked"] = false;
+
+          _hourModel["displayMultiplier"] = 1;
+          _hourModel["valueMultiplier"] = 60;
+          _hourModel["valueRange"] = 24;
+          _hourModel["linked"] = true;
+
+          _ampmModel["displayMultiplier"] = 1;
+          _ampmModel["valueMultiplier"] = 60 * 12;
+          _ampmModel["valueRange"] = 2;
+          _ampmModel["linked"] = true;
+          break;
+        }
+      }
+      else // 24 hour
+      {
+        _hourModel.displayRange = 24;
+        
+        var grouped = _grouped;
+        if (grouped === "auto")
+        {
+          // If the increment is a divisor or multiple of 60
+          // Then no grouping
+          var divisor = gcd(_increment, 60);
+          if (divisor === _increment || divisor === 60)
+          {
+            grouped = "none";
+          }
+          else
+          {
+            grouped = "all";
+          }
+        }
+
+        switch (grouped)
+        {
+        case "none":
+        case "hoursMeridiem":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = 60;
+          _minuteModel["linked"] = false;
+
+          _hourModel["displayMultiplier"] = 1;
+          _hourModel["valueMultiplier"] = 60;
+          _hourModel["valueRange"] = 24;
+          _hourModel["linked"] = false;
+          break;
+
+        case "all":
+        case "hoursMinutes":
+          _minuteModel["displayMultiplier"] = 1;
+          _minuteModel["valueMultiplier"] = 1;
+          _minuteModel["valueRange"] = 24 * 60;
+          _minuteModel["linked"] = true;
+
+          _hourModel["displayMultiplier"] = 60;
+          _hourModel["valueMultiplier"] = 1;
+          _hourModel["valueRange"] = 24 * 60;
+          _hourModel["linked"] = true;
+          break;
+        }
+      }
+
+      for (var i = 0; i < _models.length; i++)
+      {
+        _models[i].refresh();
+      }
+    }
+  }
+
+  function isoToMinutes(isoString)
+  {
+    var matches = ISO_TIME.exec(isoString);
+    var hours = parseInt(matches[1], 10);
+    var minutes = parseInt(matches[2], 10);
+    return hours * 60 + minutes;
+  }
+  function minutesToIso(minutes)
+  {
+    minutes = Math.floor(minutes);
+    var hours = Math.floor(minutes / 60);
+    minutes = minutes % 60;
+    return "T" + HHFormat(hours) + ":" + mmFormat(minutes);
+  }
+
+  function hFormat(value)
+  {
+    if (value === 0)
+      return "12";
+    
+    return "" + value;
+  }
+
+  function hhFormat(value)
+  {
+    if (value === 0)
+      return "12";
+    
+    value = "0" + value;
+    return value.slice(-2);
+  }
+
+  function HFormat(value)
+  {
+    return "" + value;
+  }
+
+  function HHFormat(value)
+  {
+    value = "0" + value;
+    return value.slice(-2);
+  }
+
+  function mmFormat(value)
+  {
+    value = "0" + value;
+    return value.slice(-2);
+  }
+
+  function ampmFormat(value)
+  {
+    return _ampmStrings[value];
+  }
+
+  function numberParser(value)
+  {
+    if (value.match(/^\d+$/))
+    {
+      return parseInt(value, 10);
+    }
+    return -1;
+  }
+
+  function hour12Parser(value)
+  {
+    if (value.match(/^\d+$/))
+    {
+      var hour =  parseInt(value, 10);
+      if (hour === 0)
+      {
+        hour = -1;
+      }
+      if (hour === 12)
+      {
+        hour = 0;
+      }
+
+      return hour;
+    }
+    return -1;
+  }
+
+  function ampmParser(value)
+  {
+    value = value.toLowerCase().charAt();
+    if (value === "a")
+      return 0;
+    else if (value === "p")
+      return 1;
+    else
+      return -1;
+  }
+
+  self.getWheelModel = function(type)
+  {
+    switch (type)
+    {
+      case "hour":
+        return _hourModel;
+
+      case "minute":
+        return _minuteModel;
+
+      case "ampm":        
+        return (_12Hour ? _ampmModel : null);
+      default:
+        console.log("Unknown wheel type: " + type);
+    };
+  };
+
+  function mod(val1, val2)
+  {
+    // Make modulus out of remainder.  The fancy stuff deals with neg values.
+    return ((val1 % val2) + val2) % val2;
+  }
+
+  function gcd(a, b) {
+    if (b === 0)
+    {
+        return a;
+    }
+    return gcd(b, a % b);
+  }
+}
+
+
+function createWheelGroup(timePickerModel)
+{
+  var KEYCODE_LEFT = 37;
+  var KEYCODE_RIGHT = 39;
+
+
+  var _group;
+  var _wheels = [];
+
+  createDom();
+  defineMethods();
+  defineEvents();
+  refresh();
+
+  return _group;
+
+  function createDom()
+  {
+    _group = document.createElement("div");
+    _group.classList.add("oj-timepicker-wheel-group");
+  }
+  
+  function defineMethods()
+  {
+    _group.ojRefresh = refresh;
+  }
+
+  function defineEvents()
+  {
+    _group.addEventListener("keydown", keydownHandler, false);
+  }
+
+  function keydownHandler(event)
+  {
+    var wheel = event.target;
+    var keyCode = event.keyCode;
+
+    switch (keyCode) {
+    case KEYCODE_LEFT:
+      $(wheel).prev().focus();
+      break;
+    case KEYCODE_RIGHT:
+      $(wheel).next().focus();
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  function focusHandler(event)
+  {
+    var wheel = event.target;
+    if (wheel.ojLinked())
+    {
+      for (var i = 0; i < _wheels.length; i++)
+      {
+        if (_wheels[i].ojLinked())
+        {
+          _wheels[i].classList.add("oj-active");
+        }
+      }
+    }
+    else
+    {
+      wheel.classList.add("oj-active");
+    }
+  }
+
+  function blurHandler()
+  {
+    for (var i = 0; i < _wheels.length; i++)
+    {
+      _wheels[i].classList.remove("oj-active");
+    }
+  }
+
+  function refresh()
+  {
+    var wheel;
+    while (wheel = _group.firstChild)
+    {
+      _group.removeChild(wheel);
+    }
+    _wheels = [];
+
+    createWheels();
+  }
+
+  function createWheels()
+  {
+    var wheelOrder = timePickerModel["wheelOrder"];
+
+    var hourModel = timePickerModel.getWheelModel("hour");
+    var hourWheel = createWheel(hourModel, true, "oj-timepicker-hour");
+    var minuteModel = timePickerModel.getWheelModel("minute");
+    var minuteWheel = createWheel(minuteModel, true, "oj-timepicker-minute");
+
+    var ampmModel;
+    var ampmWheel;
+    if (wheelOrder.indexOf("a") >= 0)
+    {
+      ampmModel = timePickerModel.getWheelModel("ampm");
+      ampmWheel = createWheel(ampmModel, false, "oj-timepicker-meridian");
+    }
+
+    var codes = wheelOrder.split("");
+    var i;
+    for (i = 0; i < codes.length; i++)
+    {
+      switch (codes[i])
+      {
+        case "h":
+          _wheels.push(hourWheel);
+          break;
+        case "m":
+          _wheels.push(minuteWheel);
+          break;
+        case "a":
+          _wheels.push(ampmWheel);
+          break;
+        default:
+          console.log("Unknown wheelOrder code: " + codes[i]);
+      }
+    }
+    for (i = 0; i < _wheels.length; i++)
+    {
+      var wheel = _wheels[i];
+      wheel.addEventListener("focus", focusHandler, false);
+      wheel.addEventListener("blur", blurHandler, false);
+      _group.appendChild(wheel);
+    }
+  }
+}
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -7092,6 +8581,485 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojInputDateTime
  */
+
+/**
+ * @constructor
+ * @param {TimePickerModel} parentModel parent picker model
+ * @param {Object} properties initial property values
+ */
+function WheelModel(parentModel, properties)
+{
+  var SPIN_TIMES = [150, 100, 50, 25, 16];  // Note: No transitions for faster spins
+
+  var _value = 0;
+
+  var _position = 0;
+  var _currentPosition = 0;
+  
+  var _displayRange = 1;
+  var _valueRange = 1;
+  var _increment = 1;
+  var _wheelSize;
+  var _keyboardValue = "";
+  var _min;
+  var _max;
+  var _wrapped;
+  
+  var _valueMultiplier;
+  var _valueUpperMultiplier;
+  var _displayMultiplier = 1;
+  var _displayUpperMultiplier;
+  
+  var _spinning = false;
+  var _settingProps = false;
+  
+  var self = this;
+
+  defineProperties();
+  defineMethods();
+  setProperties(properties);
+
+  function defineProperties()
+  {
+    Object.defineProperty(self, "position", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _position;
+      },
+      'set': function(position)
+      {
+        var val = mod(position, _wheelSize) * _increment;
+        if ((val >= _min) && (val < _max) &&
+            (position !== _position))
+        {
+          self["value"] += (position - _position) * _increment;
+        }
+     }
+    });
+
+    Object.defineProperty(self, "value", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _value;
+      },
+      'set': function(value)
+      {
+        value = Math.round(value / _increment) * _increment;
+
+        if (validValue(value) && _value !== value)
+        {
+          _value = mod(value, _valueRange);
+          setPosition();
+          if (self["linked"])
+          {
+            parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
+          }
+        }
+      }
+    });
+
+    Object.defineProperty(self, "increment", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _increment;
+      },
+      'set': function(increment)
+      {
+        if (_increment !== increment)
+        {
+          _increment = increment;
+          refreshSettings();
+        }
+      }
+    });
+
+    
+    Object.defineProperty(self, "valueMultiplier", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _valueMultiplier;
+      },
+      'set': function(valueMultiplier)
+      {
+        if (_valueMultiplier !== valueMultiplier)
+        {
+          _valueMultiplier = valueMultiplier;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "valueRange", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _valueRange;
+      },
+      'set': function(valueRange)
+      {
+        if (_valueRange !== valueRange)
+        {
+          _valueRange = valueRange;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "displayMultiplier", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _displayMultiplier;
+      },
+      'set': function(displayMultiplier)
+      {
+        if (_displayMultiplier !== displayMultiplier)
+        {
+          _displayMultiplier = displayMultiplier;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "displayRange", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _displayRange;
+      },
+      'set': function(displayRange)
+      {
+        if (_displayRange !== displayRange)
+        {
+          _displayRange = displayRange;
+          refreshSettings();
+        }
+      }
+    });
+
+    Object.defineProperty(self, "keyboardValue", {
+      'enumerable': true,
+      'get': function()
+      {
+        return _keyboardValue;
+      },
+      'set': function(keyboardValue)
+      {
+        _keyboardValue = keyboardValue;
+        if (self["parser"] && _keyboardValue)
+        {
+          var value = self["parser"](_keyboardValue);
+          if (value >= 0)
+          {
+            value = displayValueToWheelValue(_value, value);
+            if (_min <= value && value < _max)
+            {
+              self["value"] = value;
+            }
+          }
+          
+          // Clear _keyboardValue when the user has typed in 2 digits or after
+          // 1 second, so that a new value can be accepted.
+          if (_keyboardValue.length >= 2)
+          {
+            _keyboardValue = "";
+          }
+          else
+          {
+            setTimeout(function() {
+              _keyboardValue = "";
+            }, 1000);
+          }
+        }
+      }
+    });
+  };
+
+  function defineMethods()
+  {
+    self.getText = function(position)
+    {
+      var text;
+      var pos = mod(_currentPosition, _wheelSize) + position;
+      var haveText = _wrapped || (pos >= 0 && pos < _wheelSize);
+      if (self["formatter"] && haveText)
+      {
+        var val = positionToDisplayValue(_currentPosition + position);
+        text = self["formatter"](val);
+      }
+      return text;
+    };
+
+    self.isDisabled = function(position)
+    {      
+      var value = mod(_currentPosition + position, _wheelSize) * _increment;
+      if (_min !== 0 && value < _min)
+      {
+        return true;
+      }
+      if (_max !== _valueRange && value >= _max)
+      {
+        return true;
+      }
+      return false;
+    };
+
+    /**
+     * 
+     * called by wheel on blur
+     */
+    self.update = function()
+    {
+      parentModel["value"] = wheelValueToParentValue(parentModel["value"], _value);
+    };
+
+    self.refresh = refresh;
+    self.setProperties = setProperties;
+  }
+
+  function setProperties(properties)
+  {
+    if (properties)
+    {
+      for (var key in properties)
+      {
+        self[key] = properties[key];
+      }
+    }
+  }
+
+  function refresh()
+  {
+    var needRefresh = false;
+    var parentValue = parentModel.value;
+    self["value"] = parentValueToWheelValue(parentValue);
+
+    var parentMax = parentModel["max"];
+    var newMax;
+    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMax))
+    {
+      newMax = parentValueToWheelValue(parentMax) + 1;
+    }
+    else
+    {
+      newMax = _valueRange;
+    }
+    if (_max !== newMax)
+    {
+      needRefresh = true;
+      _max = newMax;
+    }
+
+    var parentMin = parentModel["min"];
+    var newMin;
+    if (parentValueUpperPart(parentValue) === parentValueUpperPart(parentMin))
+    {
+      newMin = parentValueToWheelValue(parentMin);
+    }
+    else
+    {
+      newMin = 0;
+    }
+    if (_min !== newMin)
+    {
+      needRefresh = true;
+      _min = newMin;
+    }
+
+    var parentIncrement = parentModel["increment"];
+    var inc = gcd(parentIncrement, _valueUpperMultiplier);  // For example 60 for minutes
+
+    // If increment is a multiple of 60 then min and max are 0;
+    if (inc === _valueUpperMultiplier)
+    {
+      _min = 0;
+      _max = 1;
+      needRefresh = true;
+    }
+    else if (self["linked"] && parentIncrement > _valueMultiplier)
+    {
+      inc = parentIncrement;
+    }
+    else if (mod(inc, _valueMultiplier) === 0)
+    {
+      inc = inc / _valueMultiplier;
+    }
+    else
+    {
+      inc = 1;
+    }
+    if (_increment !== inc)
+    {
+      _increment = inc;
+      needRefresh = true;
+    }
+
+    _wheelSize = Math.floor(_valueRange / _increment);
+    _wrapped = _wheelSize > 4;
+    
+    if (self.wheel && needRefresh)
+    {
+      self.wheel.ojRefresh();
+    }
+  }
+
+  function setPosition()
+  {
+    var newPos = mod(wheelValueToPosition(_value), _wheelSize);
+    var oldPos = mod(self.position, _wheelSize);
+    var diff = newPos - oldPos;
+    if (_wrapped)
+    {
+      if (newPos > oldPos)
+      {
+        if (oldPos + _wheelSize - newPos < Math.abs(diff))
+        {
+          diff = newPos - oldPos - _wheelSize;
+        }
+      }
+      else 
+      {
+        if (newPos + _wheelSize - oldPos < Math.abs(diff))
+        {
+          diff = newPos + _wheelSize - oldPos;
+        }
+      }
+    }
+    if (diff !== 0)
+    {
+      _position += diff;
+
+      if (self.wheel)
+      {
+        if (!_spinning)
+        {
+          _spinning = true;
+          spinWheel.call(self);
+        }
+      }
+      else
+      {
+        _currentPosition = _position;
+      }
+    }
+  }
+
+  /**
+   * recalculates dependent values after settings change
+   */
+  function refreshSettings()
+  {
+    _valueUpperMultiplier = _valueMultiplier * _valueRange;
+    _displayUpperMultiplier = _displayMultiplier * _displayRange;
+  }
+
+  function spinWheel()
+  {
+    SPIN_TIMES.forEach(function(time)
+    {
+      self.wheel.classList.remove("oj-timepicker-wheel-spin-" + time);
+    });
+
+    var dist = Math.abs(_position - _currentPosition);
+    if (dist === 0)
+    {
+      _spinning = false;
+      return;
+    }
+
+    var delay;
+
+    dist--;
+    dist = Math.min(dist, SPIN_TIMES.length - 1);
+    delay = SPIN_TIMES[dist];
+    self.wheel.classList.add("oj-timepicker-wheel-spin-" + SPIN_TIMES[dist]);
+
+    if (_position > _currentPosition)
+    {
+      _currentPosition++;
+      self.wheel.ojSpinUp();
+    }
+    if (_position < _currentPosition)
+    {
+      _currentPosition--;
+      self.wheel.ojSpinDown();
+    }
+    if (delay)
+    {
+      setTimeout(spinWheel.bind(self), delay);
+    }
+  }
+
+  function validValue(value)
+  {
+    if (_wrapped)
+      return true;
+    
+    return (_min <= value && value < _max);
+  }
+
+  function mod(val1, val2)
+  {
+    // Make modulus out of remainder.  The fancy stuff deals with neg values.
+    return ((val1 % val2) + val2) % val2;
+  }
+
+  function gcd(a, b) {
+    if (b === 0)
+    {
+        return a;
+    }
+    return gcd(b, a % b);
+  }
+
+  function positionToDisplayValue(position)
+  {
+    return wheelValueToDisplayValue(positionToWheelValue(position));
+  }
+
+  function wheelValueToPosition(value)
+  {
+    return Math.floor(value / _increment);
+  }
+
+  function wheelValueToParentValue(parentValue, value)
+  {
+    return Math.floor(parentValue / _valueUpperMultiplier ) * _valueUpperMultiplier +
+                  mod(value, _valueRange) * _valueMultiplier +
+                  mod(parentValue, _valueMultiplier);
+  }
+
+  function parentValueToWheelValue(value)
+  {
+    return mod(Math.floor(value / _valueMultiplier), _valueRange);
+  }
+
+  function parentValueUpperPart(value)
+  {
+    return Math.floor(value / _valueUpperMultiplier );
+  }
+
+  function positionToWheelValue(position)
+  {
+    return mod(mod(position, _wheelSize) * _increment, _valueRange);
+  }
+
+  function wheelValueToDisplayValue(value)
+  {
+    return mod(Math.floor(value / _displayMultiplier), _displayRange);
+  }
+
+  function displayValueToWheelValue(wheelValue, displayValue)
+  {
+    return Math.floor(wheelValue / _displayUpperMultiplier ) * _displayUpperMultiplier +
+                mod(displayValue, _displayRange) * _displayMultiplier +
+                mod(wheelValue, _displayMultiplier);
+  }
+}
 
 (function() {
 var ojInputTimeMeta = {

@@ -2691,40 +2691,321 @@ OraI18nUtils._normalizeIsoString = function (isoString)
  * initialize the converter.<p>
  * @property {string=} options.year - allowed values are "2-digit", "numeric". When no options are 
  * set the default value of "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the year, padded: 00-99.</td>
+ *       <td>2001 => 01, 2016 => 16</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the year depending on the value.</td>
+ *       <td>2010, 199</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {number=} options.two-digit-year-start - the 100-year period 2-digit year. 
  * During parsing, two digit years will be placed in the range two-digit-year-start to two-digit-year-start + 100 years. 
  * The default is 1950.
+ * <p style='padding-left: 5px;'>
+ * Example: if two-digit-year-start is 1950, 10 is parsed as 2010<br/><br/>
+ * Example: if two-digit-year-start is 1900, 10 is parsed as 1910
+ * </p>
+ *
  * @property {string=} options.month - specifies how the month is formatted. Allowed values are 
  * "2-digit", "numeric", "narrow", "short", "long". The last 3 values behave in the same way as for 
  * weekday, indicating the length of the string used. When no options are set the default value of 
  * "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the month, padded: 01-12.</td>
+ *       <td>1 => 01, 12 => 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the month depending on the value.</td>
+ *       <td>1, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>narrow</td>
+ *       <td>narrow name of the month.</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>abbreviated name of the month.</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>wide name of the month.</td>
+ *       <td>January</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.day - specifies how the day is formatted. Allowed values are "2-digit",
  *  "numeric". When no options are set the default value of "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the day in month, padded: 01-31.</td>
+ *       <td>1 => 01, 27 => 27</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the day in month depending on the value.</td>
+ *       <td>1, 31</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.hour - specifies how the hour is formatted. Allowed values are 
  * "2-digit" or "numeric". The hour is displayed using the 12 or 24 hour clock, depending on the 
  * locale. See 'hour12' for details.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the hour, padded: 01-24 depending on the locale.</td>
+ *       <td>1 => 01, 24 => 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the day in month depending on the value.</td>
+ *       <td>1, 24</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.minute - specifies how the minute is formatted. Allowed values are 
- * "2-digit", "numeric".
+ * "2-digit", "numeric". Although allowed values for minute are numeric and 2-digit, minute is always 
+ * displayed as 2 digits: 00-59.
+ *
  * @property {string=} options.second - specifies whether the second should be displayed as "2-digit" 
- * or "numeric".
+ * or "numeric". Although allowed values for second are numeric and 2-digit, second is always displayed 
+ * as 2 digits: 00-59.
+ *
+ * @property {string=} options.millisecond - specifies how the minute is formatted. Allowed 
+ * value is "numeric". millisecond is always displayed as 3-digits except the case where only millisecond 
+ * is present (hour and minute not specified) in which case we display it as no-padded number, example: .5
+ *
  * @property {string=} options.weekday - specifies how the day of the week is formatted. If absent, it 
  * is not included in the date formatting. Allowed values are "narrow", "short", "long" indicating the 
  * length of the string used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>narrow</td>
+ *       <td>narrow name of the day of week.</td>
+ *       <td>M</td>
+ *     </tr>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>abbreviated name of the day of week.</td>
+ *       <td>Mon</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>wide name of the day of week.</td>
+ *       <td>Monday</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.era - specifies how the era is included in the formatted date. If 
  * absent, it is not included in the date formatting. Allowed values are "narrow", "short", "long".
+ * Although allowed values are narrow, short, long, we only display era in abbreviated format: BC, AD.
+ *
  * @property {string=} options.timeZoneName - allowed values are "short", "long".
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>short name of the time zone.</td>
+ *       <td>short: short name of the time zone: PDT, PST, EST, EDT. Note: Not all locales have 
+ *           translations for short time zone names, in this case we display the English short name</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>short name of the time zone.</td>
+ *       <td>Pacific Standard Time, Pacific Daylight Time.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.timeZone - The possible values of the timeZone property are valid IANA 
  * timezone IDs. If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>IANA ID</td>
+ *       <td>America/Los_Angeles, Europe/Paris</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Offset</td>
+ *       <td>Etc/GMT-8. The offset is positive if the local time zone is behind UTC and negative if it is ahead. 
+ *           The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14). Which means that Etc/GMT-8 
+ *           is equivalent to UTC+08.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.isoStrFormat - specifies in which format the ISO string is returned. 
  * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto". 
  * The default format is auto.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>offset</td>
+ *       <td>time zone offset from UTC.</td>
+ *       <td>2016-01-05T11:30:00-08:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>zulu</td>
+ *       <td>zulu time or UTC time.</td>
+ *       <td>2016-01-05T19:30:00Z</td>
+ *     </tr>
+ *     <tr>
+ *       <td>local</td>
+ *       <td>local time, does not contain time zone offset.</td>
+ *       <td>2016-01-05T19:30:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>auto</td>
+ *       <td>auto means the returned ISO string depends on the input string and options</td>
+ *       <td></td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.dst - The dst option can be used for time only values in conjunction with offset. 
  * Setting dst to true indicates the time is in DST. By default the time is interpreted as standard time. 
  * The possible values of dst are: "true" or "false". Default is "false".
+ * <p style='padding-left: 5px;'>
+ * Due to Daylight Saving Time, there is a possibility that a time exists twice If the time falls in the duplicate window 
+ * (switching from daylight saving time to standard time). The application can disambiguate the time in the overlapping 
+ * period using the dst option. Setting dst to true indicates the time is in DST. By default the time is interpreted as 
+ * standard time.<br/><br/>
+ * Example: On November 1st, 2105 in US the time between 1 and 2 AM will be repeated. The dst option can indicate the 
+ * distinction as follows. Initially the time is in DST, so dst:'true' is specified.<br/>
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset', dst : true};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:59:59 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-07:00
+ * <br/><br/>
+ * If the user does not pass the dst option, the time will be interpreted as standard time. 
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles'};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:59:59 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-08:00
+ * <br/><br/>
+ * At 2AM, DST will be over and the clock brings back to 1AM. Then the dst option should be false or not specified.
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset'};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:00:00 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:00:00-08:00
+ * </p>
  *
  * @property {boolean=} options.hour12 - specifies what time notation is used for formatting the time. 
  * A true value uses the 12-hour clock and false uses the 24-hour clock (often called military time 
  * in the US). This property is undefined if the hour property is not used when formatting the date.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>true</td>
+ *       <td>T13:10  is formatted as “1:10 PM”</td>
+ *     </tr>
+ *     <tr>
+ *       <td>false</td>
+ *       <td>T13:10 is formatted as “13:10”</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
  * 
  * @property {string=} options.pattern - a localized string pattern, where the the characters used in 
  * pattern conform to Unicode CLDR for date time formats. This will override all other options 
@@ -2732,17 +3013,319 @@ OraI18nUtils._normalizeIsoString = function (isoString)
  * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
  * convenience of specifying an explicit format mask. Setting a 'pattern' will override the default 
  * locale specific format.
- * NOTE: The supported tokens for timezone are of 'Z', 'VV', and 'X'.
+ * NOTE: The supported tokens for timezone are of 'Z', 'VV', and 'X'.<br/><br/>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Letter</th>
+ *       <th>Date or Time Component</th>
+ *       <th>Examples</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>G, GG, GGG</td>
+ *       <td>Era designator</td>
+ *       <td>AD</td>
+ *     </tr>
+ *     <tr>
+ *       <td>y</td>
+ *       <td>numeric representation of year</td>
+ *       <td>1, 2014</td>
+ *     </tr>
+ *     <tr>
+ *       <td>yy</td>
+ *       <td>2-digit representation of year</td>
+ *       <td>01, 14</td>
+ *     </tr>
+ *     <tr>
+ *       <td>yyyy</td>
+ *       <td>4-digit representation of year</td>
+ *       <td>0001, 2014</td>
+ *     </tr>
+ *     <tr>
+ *       <td>M</td>
+ *       <td>Numeric representation of month in year: (1-12)</td>
+ *       <td>1, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MM</td>
+ *       <td>2-digit representation of month in year: (01-12)</td>
+ *       <td>01, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMM</td>
+ *       <td>Formatted  name of the month, abbreviated</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMMM</td>
+ *       <td>Formatted  name of the month, wide</td>
+ *       <td>January</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMMMM</td>
+ *       <td>Formatted  name of the month, narrow</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLL</td>
+ *       <td>Stand-alone name of the month, abbreviated</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLLL</td>
+ *       <td>Stand-alone name of the month, wide</td>
+ *       <td>January</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLLLL</td>
+ *       <td>Stand-alone name of the month, narrow</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>d</td>
+ *       <td>Numeric representation of  day in month (1-31)</td>
+ *       <td>1, 21</td>
+ *     </tr>
+ *     <tr>
+ *       <td>dd</td>
+ *       <td>2-digit representation of  day in month (01-31)</td>
+ *       <td>01, 21</td>
+ *     </tr>
+ *     <tr>
+ *       <td>E, EE, EEE</td>
+ *       <td>Formatted name of day in week, abbreviated</td>
+ *       <td>Tue</td>
+ *     </tr>
+ *     <tr>
+ *       <td>EEEE</td>
+ *       <td>Formatted name of day in week, wide</td>
+ *       <td>Tuesday</td>
+ *     </tr>
+ *     <tr>
+ *       <td>EEEEE</td>
+ *       <td>Formatted name of day in week, narrow</td>
+ *       <td>T</td>
+ *     </tr>
+ *     <tr>
+ *       <td>c, cc, ccc</td>
+ *       <td>Stand-alone name of day in week, abbreviated</td>
+ *       <td>Tue</td>
+ *     </tr>
+ *     <tr>
+ *       <td>cccc</td>
+ *       <td>Stand-alone name of day in week, wide</td>
+ *       <td>Tuesday</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ccccc</td>
+ *       <td>Stand-alone name of day in week, narrow</td>
+ *       <td>T</td>
+ *     </tr>
+ *     <tr>
+ *       <td>a</td>
+ *       <td>am/pm marker</td>
+ *       <td>PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>H</td>
+ *       <td>Numeric hour in day (0-23)</td>
+ *       <td>1, 23</td>
+ *     </tr>
+ *     <tr>
+ *       <td>HH</td>
+ *       <td>2-digit hour in day (00-23)</td>
+ *       <td>01, 23</td>
+ *     </tr>
+ *     <tr>
+ *       <td>h</td>
+ *       <td>Numeric  hour in am/pm (1-12)</td>
+ *       <td>1, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>hh</td>
+ *       <td>2-digit hour in day (01-12)</td>
+ *       <td>01, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>k</td>
+ *       <td>Numeric  hour in day (1-24)</td>
+ *       <td>1, 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>kk</td>
+ *       <td>2-digit hour in day (1-24)</td>
+ *       <td>01, 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>K</td>
+ *       <td>Numeric  hour in am/pm (0-11)</td>
+ *       <td>1, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>KK</td>
+ *       <td>2-digit hour in am/pm (0-11)</td>
+ *       <td>01, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>m, mm</td>
+ *       <td>2-digit  minute in hour (00-59)</td>
+ *       <td>05, 59</td>
+ *     </tr>
+ *     <tr>
+ *       <td>s, ss</td>
+ *       <td>2-digit second in minute (00-59)</td>
+ *       <td>01, 59</td>
+ *     </tr>
+ *     <tr>
+ *       <td>S</td>
+ *       <td>Numeric  Millisecond (0-999)</td>
+ *       <td>1, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>SS</td>
+ *       <td>2-digit Millisecond (00-999)</td>
+ *       <td>01, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>SSS</td>
+ *       <td>3-digit Millisecond (000-999)</td>
+ *       <td>001, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>z, zz, zzz</td>
+ *       <td>Abbreviated time zone name</td>
+ *       <td>PDT, PST</td>
+ *     </tr>
+ *     <tr>
+ *       <td>zzzz</td>
+ *       <td>Full time zone name</td>
+ *       <td>Pacific Standard Time, Pacific Daylight Time</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Z, ZZ, ZZZ</td>
+ *       <td>Sign hours minutes</td>
+ *       <td>-0800</td>
+ *     </tr>
+ *     <tr>
+ *       <td>X</td>
+ *       <td>Sign hours</td>
+ *       <td>-08</td>
+ *     </tr>
+ *     <tr>
+ *       <td>XX</td>
+ *       <td>Sign hours minutes</td>
+ *       <td>-0800</td>
+ *     </tr>
+ *     <tr>
+ *       <td>XXX</td>
+ *       <td>Sign hours:minutes</td>
+ *       <td>-08:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>VV</td>
+ *       <td>Time zone ID</td>
+ *       <td>Americs/Los_Angeles</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
  * 
  * @property {string=} options.formatType - determines the 'standard' date and/or time format lengths 
  * to use. Allowed values: "date", "time", "datetime". See 'dateFormat' and 'timeFormat' options. 
  * When set a value must be specified.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>datetime</td>
+ *       <td>date and time portions are displayed.</td>
+ *       <td>“September 20, 2015 12:04 PM”, “September 20, 2015 12:05:35 PM Pacific Daylight Time”</td>
+ *     </tr>
+ *     <tr>
+ *       <td>date</td>
+ *       <td>date portion only is displayed.</td>
+ *       <td>“September 20, 2015”</td>
+ *     </tr>
+ *     <tr>
+ *       <td>time</td>
+ *       <td>time portion only is displayed.</td>
+ *       <td>“12:05:35”</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.dateFormat - specifies the standard date format length to use when 
  * formatType is set to "date" or "datetime". Allowed values are : "short" (default), "medium", "long", 
  * "full". 
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>9/20/15</td>
+ *     </tr>
+ *     <tr>
+ *       <td>medium</td>
+ *       <td>Sep 20, 2015</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>September 20, 2015</td>
+ *     </tr>
+ *     <tr>
+ *       <td>full</td>
+ *       <td>Sunday, September 20, 2015</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
  * @property {string=} options.timeFormat - specifies the standard time format length to use when 
  * 'formatType' is set to "time" or "datetime". Allowed values: "short" (default), "medium", "long", 
  * "full". 
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>12:11 PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>medium</td>
+ *       <td>12:11:23 PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>12:12:19 PM PDT</td>
+ *     </tr>
+ *     <tr>
+ *       <td>full</td>
+ *       <td>12:12:37 PM Pacific Daylight Time</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
  * 
  * @example <caption>Create a date time converter using no options. This uses the default value for 
  * year, month, day properties</caption>
@@ -2872,19 +3455,58 @@ oj.IntlDateTimeConverter.prototype.format = function (value)
  * @param {string} value - value to be formatted. This value is compared with the current date 
  * on the client to arrive at the relative formatted value.
  * @param {Object} relativeOptions - an Object literal containing the following properties. The 
- * default options are ignored during relative formatting - <br>
- * <ul>
- * <li><b>formatUsing</b>: Specifies the relative formatting convention to use for (calendar or) 
- * the date field type. allowed values: "displayName". <br>Setting value to 'displayName' uses the 
- * relative display name for the instance of the dateField, and one or two past and future instances.
- * </li>
- * <li><b>dateField</b>: allowed values are: "day", "week", "month", "year"</li>
- * </ul>
+ * default options are ignored during relative formatting - 
+ * @param {string=} relativeOptions.formatUsing - Specifies the relative formatting convention to. 
+ * Allowed values are "displayName" and “calendar”. Setting value to 'displayName' uses the relative 
+ * display name for the instance of the dateField, and one or two past and future instances. 
+ * When omitted we use the implicit rules.
+ * @param {string=} relativeOptions.dateField - To be used in conjunction of 'displayName'  value 
+ * of formatUsing attribute.  Allowed values are: "day", "week", "month", "year", "hour", "minute", "second".
+ * @param {string=} relativeOptions.relativeTime - Allowed values are: "fromNow", "toNow". 
+ * "fromNow" means the system's current date is the reference and "toNow" means the value attribute 
+ * is the reference. Default "fromNow".
+ * @param {boolean=} relativeOptions.dateOnly - A boolean value that can be used in conjunction with 
+ * “calendar” of formatUsing attribute.  When set to true date only format is used. Example: “Sunday”  
+ * instead of “Sunday at 2:30 PM”. Default value is false.
+ * @param {string=} relativeOptions.timeZone - The timeZone attribute can be used to specify the 
+ * time zone of the  value parameter.  The system’s time zone is used for the current time. If timeZone 
+ * attribute is not specified, we use the system’s time zone  for both. The value parameter, which is an 
+ * iso string, can be Z or contain and offset, in this case  the timeZone attribute is overwritten.
+ *
  * @return {string|null} relative date. null if the value falls out side the supported relative range.
  * @throws {Object} an instance of {@link oj.ConverterError}
  * 
- * @example <caption>To convert Javascript Date to an iso string before passing to <code class="prettyprint">formatRelative</code></caption>
- * var formatted = converter.formatRelative(oj.IntlConverterUtils.dateToLocalIso(new Date()));
+ * @example <caption>Relative time in the future using implicit rules</caption>
+ * var dateInFuture = new Date();
+ * dateInFuture.setMinutes(dateInFuture.getMinutes() + 41);
+ * var formatted = converter.formatRelative(oj.IntlConverterUtils.dateToLocalIso(dateInFuture)); -> in 41 minutes
+ *
+ * @example <caption>Relative time in the past using implicit rules</caption>
+ * var dateInPase = new Date();
+ * dateInPase.setHours( dateInPast.getHours() - 20);
+ * var formatted = converter.formatRelative(oj.IntlConverterUtils.dateToLocalIso(dateInPase)); -> 20 hours ago
+ *
+ * @example <caption>Relative time using dateField. Assuming system’s current date is 2016-07-28.</caption>
+ * Format relative year:
+ * var options = {formatUsing: ”displayName”, dateField: “year”};
+ * var formatted = converter.formatRelative("2015-06-01T00:00:00", options); -> last year
+ *
+ * @example <caption>Relative time using relativeTime. Assuming system’s current date is 2016-07-28.</caption>
+ * var options = {formatUsing: ”displayName”, dateField: “day”, relativeTime: ”fromNow”};
+ * var formatted = converter.formatRelative("2016-07-28T00:00:00", options); -> tomorrow
+ * options = {formatUsing: ”displayName”, dateField: “day”, relativeTime: toNow};
+ * formatted = converter.formatRelative("2016-07-28T00:00:00", options); -> yesterday
+ *
+ * @example <caption>Relative time using calendar. Assuming system’s current date is 2016-07-28.</caption>
+ * var options = {formatUsing: ”calendar”};
+ * var formatted = converter.formatRelative("2016-07-28T14:15:00", options); -> tomorrow at 2:30 PM
+ *
+ * 
+ * @example <caption>Relative time using timeZone. Assuming that the system’s time zone is America/Los_Angeles.</caption>
+ * var options = {timeZone:”America/New_York”};
+ * var nyDateInFuture = new Date();
+ * nyDateInFuture.setHours(nyDateInFuture.getHours() + 6);
+ * var formatted = converter.formatRelative(oj.IntlConverterUtils.dateToLocalIso(nyDateInFuture), options); -> in 3 hours
  * 
  * @see oj.IntlConverterUtils.dateToLocalIso
  * 
@@ -6938,6 +7560,7 @@ OraDateTimeConverter = (function () {
   var _getParseRegExp;
   var _getPatternResolvedOptions;
   var _getECMAResolvedOptions;
+  var _getRelativeTimeResolvedOptions;
   var _validateRange; 
   var _getCompareISODatesOptions;
   var _arrayIndexOfDay;
@@ -6961,6 +7584,15 @@ OraDateTimeConverter = (function () {
   var _getTimezoneName;
   var _getTimeZone;
   var _parseZone;
+  var _convertToLocalDate;
+  var _getTimeDiff;
+  var _replaceParams;
+  var _formatRelativeCalendar;
+  var _formatRelativeDisplayName;
+  var _formatRelativeImplicit;
+  var _getBCP47Lang;
+  var _getUnits;
+  var _daysToMonths;
   
   var _YEAR_AND_DATE_REGEXP = /(\d{1,4})\D+?(\d{1,4})/g;
   var _YMD_REGEXP = /(\d{1,4})\D+?(\d{1,4})\D+?(\d{1,4})/g;
@@ -6984,6 +7616,15 @@ OraDateTimeConverter = (function () {
     4 : "thu",
     5 : "fri",
     6 : "sat"
+  };
+  
+  var _THRESHOLDS = {
+        s: 46,  // seconds to minute
+        m: 46,  // minutes to hour
+        h: 23,  // hours to day
+        d: 7,   // days to week
+        w: 4,   //weeks to 
+        M: 12   // months to year
   };
 
   var _ZULU = 'zulu';
@@ -8630,28 +9271,108 @@ OraDateTimeConverter = (function () {
     return _isNextDay(d2, d1);
   };
 
-
-  _formatRelativeImpl = function (value, localeElements, options) {
-    if (typeof value === "number") {
-      value = new Date(value);
+  _convertToLocalDate = function(d, localeElements, options) {
+    var srcTimeZone = options['timeZone'];
+    var isoInfo = OraI18nUtils.getISOStrFormatInfo(d);   
+    var isoInfoFormat = isoInfo['format'];
+    //first test id d is local
+    if(isoInfoFormat === _LOCAL && srcTimeZone === undefined) {
+      return d;
     }
-    else if (typeof value === "string") {
-      if (OraI18nUtils.trim(value) === '')
-        return null;
-      value = OraI18nUtils.isoToLocalDate(value);
+    //first, convert to zulu
+    var tzOptions = {isoStrFormat: 'zulu'};
+    if(srcTimeZone !== undefined) {
+      tzOptions['timeZone'] = srcTimeZone;
+      tzOptions['dst'] = true;
+    }
+    var zuluDate = _parseImpl(d, localeElements, tzOptions, "en-US");
+    //second, convert to local date
+    var localOffset = OraI18nUtils.getLocalTimeZoneOffset();
+    tzOptions = {timeZone:localOffset, isoStrFormat: 'local'};
+    var localDate = _parseImpl(zuluDate['value'], localeElements, tzOptions, "en-US");
+    return localDate['value'];
+  };
+  
+  _getTimeDiff = function(d1, d2, isCalendar) {
+    var datetime1 = OraI18nUtils._IsoStrParts(d1);
+    var datetime2 = OraI18nUtils._IsoStrParts(d2);
+ 
+    if(isCalendar) {
+      //for calendar, normalize the times to midnight so that the diff is the same
+      // regardless of time of day.
+      datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], 0, 0, 0, 0);
+      datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], 0, 0, 0, 0);
     }
     else {
-      return null;
+      datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], datetime1[3], datetime1[4], datetime1[5], datetime1[6]);
+      datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3], datetime2[4], datetime2[5], datetime2[6]);      
     }
+    return  (datetime1 - datetime2);
+  };
+  
+  _replaceParams = function(string, replacements) {
+    return string.replace(/\{(\d+)\}/g, function() {
+      return replacements[arguments[1]];
+    });
+  };
+
+  _formatRelativeCalendar = function (now, relativeDate, localeElements, dateOnly) {        
+    var datePart;
+    var timePart;
+    var relativeDay;
+    var dayIndex;
+    var timePartOptions = {hour:'numeric', minute: 'numeric'};
+    var elseOptions = {year:'numeric', month:'numeric', day:'numeric'};
+    var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
+    var pattern = mainNode['dates']['calendars']['gregorian']['dateTimeFormats']['long'];
+    var days = mainNode['dates']['calendars']['gregorian']['days']['format']['wide'];
+    var fields = mainNode['dates']['fields'];
+    
+    var value = OraI18nUtils.isoToLocalDate(relativeDate);
+    var localNow = OraI18nUtils.isoToLocalDate(now);
+    var isoStrInfo = OraI18nUtils.getISOStrFormatInfo(relativeDate);
+
+    if(_isSameDay(localNow, value))
+      datePart = fields['day']['relative-type-0'];
+    else if(_isNextDay(localNow, value))
+      datePart = fields['day']['relative-type-1'];
+    else if(_isPrevDay(localNow, value))
+      datePart = fields['day']['relative-type--1'];
+    else {
+      relativeDay = value.getDay();
+      dayIndex = _DAYS_INDEXES[relativeDay];
+      var diff = _getTimeDiff(relativeDate, now, true);
+      diff = diff / 864e5; //number of days
+      if(diff < -1 && diff > -7) {
+        datePart = fields[dayIndex]['relative-type--1'];
+      }
+      //next week
+      else if(diff > 1 && diff < 7) {
+          datePart = days[dayIndex];
+      }
+      //everything else
+      else {
+        return _formatImpl(localeElements, elseOptions, isoStrInfo, "en-US");
+      }
+    }
+    if(dateOnly) {
+      return datePart;
+    }
+    timePart = _formatImpl(localeElements, timePartOptions, isoStrInfo, "en-US");   
+    pattern = pattern.replace(/'/g, "");
+    pattern = _replaceParams(pattern, [timePart, datePart]);
+    return pattern;
+  };
+  
+  _formatRelativeDisplayName = function (isoNow, isoValue, options, localeElements) {
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var fields = mainNode['dates']['fields'];
     var getOption = OraI18nUtils.getGetOption(options,
-      "OraDateTimeConverter.formatRelative");
-    var formatUsing = getOption('formatUsing', 'string',
-      ['displayName']);
+        "OraDateTimeConverter.formatRelative");
     var option = getOption('dateField', 'string',
-      ['day', 'week', 'month', 'year']);
-    var now = new Date();
+      ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+    var now = OraI18nUtils.isoToLocalDate(isoNow);
+    var value = OraI18nUtils.isoToLocalDate(isoValue);
     switch (option) {
       case "day" :
         if (_isSameDay(now, value))
@@ -8660,7 +9381,7 @@ OraDateTimeConverter = (function () {
           return fields['day']['relative-type-1'];
         if (_isPrevDay(now, value))
           return fields['day']['relative-type--1'];
-        break;
+        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'day');
       case "week" :
         if (_isSameWeek(localeElements, now, value))
           return fields['week']['relative-type-0'];
@@ -8668,7 +9389,7 @@ OraDateTimeConverter = (function () {
           return fields['week']['relative-type-1'];
         if (_isPrevWeek(localeElements, now, value))
           return fields['week']['relative-type--1'];
-        break;
+        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'week');
       case "month" :
         if (_isSameMonth(now, value))
           return fields['month']['relative-type-0'];
@@ -8676,7 +9397,7 @@ OraDateTimeConverter = (function () {
           return fields['month']['relative-type-1'];
         if (_isPrevMonth(now, value))
           return fields['month']['relative-type--1'];
-        break;
+        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'month');
       case "year" :
         if (_isSameYear(now, value))
           return fields['year']['relative-type-0'];
@@ -8684,11 +9405,125 @@ OraDateTimeConverter = (function () {
           return fields['year']['relative-type-1'];
         if (_isPrevYear(now, value))
           return fields['year']['relative-type--1'];
-        break;
+        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'year');
+      case "hour" :
+          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'hour');
+      case "minute" :
+          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'minute');
+      case "second" :
+          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'second');
       default :
         break;
     }
-    return null;
+    return null;    
+  };
+  
+  _daysToMonths = function(days) {
+    // 400 years have 146097 days (taking into account leap year rules)
+    return days * 4800 / 146097;
+  };
+  
+  _getUnits = function(milliseconds) {   
+    var days = milliseconds / 864e5;
+    var months = _daysToMonths(days);
+    var years = months / 12;
+    var obj = {
+      'year'  : Math.round(years),
+      'month' : Math.round(months),
+      'week'  : Math.round(milliseconds / 6048e5),
+      'day'  : Math.round(milliseconds / 864e5),
+      'hour'  : Math.round(milliseconds /  36e5),
+      'minute'  : Math.round(milliseconds /  6e4),
+      'second'  : Math.round(milliseconds /  1000),
+      'millisecond'  :milliseconds
+    };
+    return obj;  
+  };
+  
+  //return the language part
+  _getBCP47Lang = function (tag) {
+    var arr = tag.split("-");
+    return arr[0];
+  };
+
+  _formatRelativeImplicit = function (now, relativeDate, localeElements, field) {
+    var future = "relativeTime-type-future";
+    var past = "relativeTime-type-past";
+    var nowNodeKey = "relative-type-0";
+    var mainNodeKey = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
+    var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
+    var lang = _getBCP47Lang(mainNodeKey);
+    var plurals = localeElements['supplemental']['plurals'];
+    var fields = mainNode['dates']['fields'];
+    var pluralKey = "relativeTimePattern-count-";
+ 
+    var diff = _getTimeDiff(relativeDate, now, false);
+    var absdiff = Math.abs(diff);
+    var units = _getUnits(absdiff);
+    if(field === null) {
+      field = units['second'] < _THRESHOLDS.s && 'second' ||
+              units['minute'] < _THRESHOLDS.m && 'minute' ||
+              units['hour']   < _THRESHOLDS.h && 'hour' ||
+              units['day']    < _THRESHOLDS.d && 'day' ||
+              units['week']   < _THRESHOLDS.w && 'week' ||
+              units['month']  < _THRESHOLDS.M && 'month' ||
+              'year' ;
+    }
+    //when seconds <= 45 display 'now' instead of number of seconds
+    if(field === 'second' && units['second'] < _THRESHOLDS.s) {
+      return fields[field][nowNodeKey];
+    }
+    var plural = plurals[lang](units[field]);
+    var pluralEntry = pluralKey + plural;
+    var x = diff < 0 ? past : future;
+    var format = fields[field][x][pluralEntry];
+    //some locales only have other plural entry
+    if(format === undefined) {
+      pluralEntry = pluralKey + 'other';
+      format = fields[field][x][pluralEntry];
+     }
+    format = _replaceParams(format, [units[field]]);
+    return format;
+  };
+  
+  _formatRelativeImpl = function (value, localeElements, options) {
+    var now = OraI18nUtils.dateToLocalIso(new Date());
+    if (typeof value === "number") {
+      value = OraI18nUtils.dateToLocalIso(new Date(value));
+    }
+    else if (typeof value === "string") {
+      if (OraI18nUtils.trim(value) === '')
+        return null;
+    }
+    else {
+      return null;
+    }
+    if(options === undefined) {
+      options = {'formatUsing' : 'displayName'};
+    }
+    var getOption = OraI18nUtils.getGetOption(options,
+        "OraDateTimeConverter.formatRelative");
+    var relativeTime = getOption('relativeTime', 'string',
+        ['fromNow', 'toNow'], 'fromNow');
+    var fieldOption = getOption('dateField', 'string',
+      ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+
+    value = _convertToLocalDate(value, localeElements, options);
+    var toNow = (relativeTime === 'toNow');
+    if(toNow) {
+      var tmp = now;
+      now = value;
+      value = tmp;
+    }    
+    var formatUsing = getOption('formatUsing', 'string',
+      ['displayName', 'calendar'], 'displayName');
+    if(formatUsing === 'calendar') {
+      var dateOnly = getOption('dateOnly', 'boolean', [true, false], false); 
+      return _formatRelativeCalendar(now, value, localeElements, dateOnly);
+    }
+    if(fieldOption !== undefined)
+      return _formatRelativeDisplayName(now, value, options, localeElements);
+    return _formatRelativeImplicit(now, value, localeElements, null);
   };
 
 
@@ -10005,6 +10840,27 @@ OraDateTimeConverter = (function () {
     result['patternFromOptions'] = format;
   };
   
+   _getRelativeTimeResolvedOptions = function (getOption, result) {    
+     var option = getOption('formatUsing', 'string', ['displayName', 'calendar']);
+     if (option !== undefined) {
+       result['formatUsing'] = option;
+     }
+     option = getOption('dateField', 'string',
+               ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+     if (option !== undefined) {
+       result['dateField'] = option;
+     }
+     option = getOption('relativeTime', 'string',
+              ['fromNow', 'toNow']);
+     if (option !== undefined) {
+       result['relativeTime'] = option;
+     }
+     option = getOption('dateOnly', 'boolean', [true, false]);
+     if (option !== undefined) {
+       result['dateOnly'] = option;
+     }
+   };
+   
   _getResolvedOptions = function(options, getOption, tz, dst, isoFormat,
                         localeElements, numberingSystemKey, locale) {
     var result = {
@@ -10028,6 +10884,9 @@ OraDateTimeConverter = (function () {
       if (isoFormat !== undefined)
         result['isoStrFormat'] = isoFormat;
     }
+    
+    _getRelativeTimeResolvedOptions(getOption, result);
+    
     var ecma = _getECMAResolvedOptions(getOption, result, dst, localeElements);
     result['two-digit-year-start'] = _get2DigitYearStart(options);
     if (!ecma) {
@@ -10035,7 +10894,7 @@ OraDateTimeConverter = (function () {
       return result;
     }
     if (tz !== undefined) {
-      option = getOption('timeZoneName', 'string', ['short', 'long'], 'short');
+      option = getOption('timeZoneName', 'string', ['short', 'long']);
       if (option !== undefined) {
         result['timeZoneName'] = option;
       }
@@ -10539,7 +11398,7 @@ OraDateTimeConverter = (function () {
         var datetime2 = OraI18nUtils._IsoStrParts(str2);
         datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3], datetime2[4], datetime2[5], datetime2[6]);
         return  (datetime1 - datetime2);
-      }     
+      }
      };    
   }
 
@@ -10555,7 +11414,7 @@ OraDateTimeConverter = (function () {
         instance = _init();
       }
       return instance;
-    }
+    } 
   };
 }());
 

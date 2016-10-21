@@ -1312,12 +1312,10 @@ ko.bindingHandlers['ojContextMenu'] =
 {
   'update': function (element, valueAccessor, allBindings, viewModel, bindingContext) 
   {
+    // 1) declare vars including functions: ---
+
     var eventNamespace = ".ojContextMenu";
     var $element = $(element);
-    
-    // lazily inited.  Always use the 2 getter methods, not these ivars directly.  These 2 ivars should be set and cleared in lockstep.
-    var $menu; // JQ obj containing the menu element
-    var _menu; // the menu component 
     
     var pressHoldTimer;
     var pressHoldThreshold = 750; // per UX spec.  Point of reference: JQ Mobile uses 750ms by default.
@@ -1329,65 +1327,16 @@ ko.bindingHandlers['ojContextMenu'] =
     var doubleOpenThreshold = 300; // made up this number.  TBD: Tweak as needed to make all platforms happy.
     var doubleOpenType = null; // "touchstart" or "contextmenu"
     
-    var clickListener;
-
-    $element
-      .off( eventNamespace )
-      .removeClass("oj-menu-context-menu-launcher")
-      [0].removeEventListener("click", clickListener, true);
-      
-    $menu && $menu.off( eventNamespace );
-    
-    clearTimeout(pressHoldTimer);
-    
-    // set/unset these ivars in lockstep
-    _menu = undefined;
-    $menu = undefined;
-
-    // Accepts anything $() accepts, i.e. same things component CM option accepts,
-    // including selector like "#myMenuId", element, JQ object, etc. Also accepts 
-    // {}, meaning "use the HTML contextmenu attribute.  Else malformed.
-    var menuSelector = ko.utils.unwrapObservable(valueAccessor());
-
-    if ($.isPlainObject(menuSelector))
-    {
-      menuSelector = element.getAttribute("contextmenu");
-      if (menuSelector)
-        menuSelector = document.getElementById(menuSelector);
-    }
-
-    // : lazily init the menu variables in case the Menu component is inited after the ojContextMenu binding is applied to launcher.
-    // This method should be called only by getContextMenu() and getContextMenuNode().
-    var setContextMenuIvars = function()
-    {
-      // JQ obj containing the menu element.  Empty if no element found.
-      $menu = $(menuSelector).first();
-
-      // Menu component.  undefined if $menu empty, or if its one node has no JET Menu.
-      _menu = $menu.data( "oj-ojMenu" );
-
-      if (!_menu) 
-        throw new Error('"contextMenu" set to "' + menuSelector + '", which does not reference a valid JET Menu.');
-
-      $menu.on( "ojclose" + eventNamespace , function( event, ui ) {
-        document.removeEventListener("keyup", preventKeyUpEventIfMenuOpen);
-      });
-    };
-  
-    var getContextMenu = function()
-    {
-      if (!_menu)
-        setContextMenuIvars();
-
-      return _menu;
-    };
-  
-    var getContextMenuNode = function()
-    {
-      if (!$menu)
-        setContextMenuIvars();
-      
-      return $menu;
+    // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
+    var clickListener = function( event ) {
+        if (isPressHold) {
+            // For Mobile Safari capture phase at least, returning false doesn't work; must use pD() and sP() explicitly.
+            // Since it's wonky, do both for good measure.
+            event.preventDefault();
+            event.stopPropagation();
+            isPressHold = false;
+            return false;
+        }
     };
 
     //, on Chrome preventDefault on "keyup" will avoid triggering contextmenu event 
@@ -1398,6 +1347,45 @@ ko.bindingHandlers['ojContextMenu'] =
         if (getContextMenuNode().is(":visible"))
           event.preventDefault();
       }
+    };
+
+    // lazily get the Menu component in case it is inited after the ojContextMenu binding is applied to launcher.
+    var getContextMenu = function()
+    {
+      var constructor = oj.Components.getWidgetConstructor(getContextMenuNode()[0], "ojMenu");
+
+      // The JET Menu of the first element found.
+      // Per architect discussion, get it every time rather than caching the menu.
+      var contextMenu = constructor && constructor("instance");
+
+      // if no element found, or if element has no JET Menu
+      if (!contextMenu)
+        throw new Error('ojContextMenu binding bound to "' + (menuId ? menuId : menuSelector) + '", which does not reference a valid JET Menu.');
+
+      if (!contextMenuListenerSet) {
+        // must use "on" syntax rather than clobbering whatever "close" handler the app may have set via the menu's "option" syntax
+        contextMenu.widget().on( "ojclose" + eventNamespace , function( event, ui ) {
+          document.removeEventListener("keyup", preventKeyUpEventIfMenuOpen);
+        });
+
+        contextMenuListenerSet = true;
+      }
+
+      return contextMenu;
+    };
+    
+    // All gets of the menu element must use this function, rather than calling $(menuSelector) directly, 
+    // in case menuId was provided instead.
+    var getContextMenuNode = function()
+    {
+      return _getContextMenuNode(menuSelector, menuId);
+    };
+
+    var _getContextMenuNode = function(selector, id)
+    {
+      return (id)
+        ? $(document.getElementById(id)) // Do NOT use $('#' + id), due to escaping issues
+        : $(selector).first();
     };
 
     var launch = function(event, eventType, pressHold) {
@@ -1475,7 +1463,7 @@ ko.bindingHandlers['ojContextMenu'] =
         menu.__openingContextMenu = false;
         
         // if the launch wasn't cancelled by a beforeOpen listener
-        if (getContextMenuNode().is(":visible"))
+        if (menu.widget().is(":visible"))
         {  
           event.preventDefault(); // don't show native context menu
           document.addEventListener("keyup", preventKeyUpEventIfMenuOpen);
@@ -1490,18 +1478,44 @@ ko.bindingHandlers['ojContextMenu'] =
           }
         }
     };
+
+
+    // 2) Clean up from previously bound value, if any: ---
     
-    // At least some of the time, the pressHold gesture also fires a click event same as a short tap.  Prevent that here.
-    clickListener = function( event ) {
-        if (isPressHold) {
-            // For Mobile Safari capture phase at least, returning false doesn't work; must use pD() and sP() explicitly.
-            // Since it's wonky, do both for good measure.
-            event.preventDefault();
-            event.stopPropagation();
-            isPressHold = false;
-            return false;
-        }
-    };
+    $element
+      .off( eventNamespace )
+      .removeClass("oj-menu-context-menu-launcher")
+      [0].removeEventListener("click", clickListener, true);
+    
+    clearTimeout(pressHoldTimer);
+    
+    var oldMenuData = $element.data("_ojLastContextMenu");
+
+    // If binding's bound value is changing at RT, remove listener from old menu.
+    // To avoid memory leak (capture of old menu node), don't assign the node to a var.
+    if (oldMenuData) 
+      _getContextMenuNode(oldMenuData.selector, oldMenuData.id).off( eventNamespace );
+    
+    var contextMenuListenerSet = false;
+
+
+    // 3) Get menu selector/id: ---
+
+    // Accepts anything $() accepts, i.e. same things component CM option accepts,
+    // including selector like "#myMenuId", element, JQ object, etc. Also accepts 
+    // {}, meaning "use the HTML contextmenu attribute.  Else malformed.
+    var menuSelector = ko.utils.unwrapObservable(valueAccessor());
+
+    // if menuSelector is {}, use the id from the contextmenu attr instead. See getContextMenuNode comments.
+    var menuId = $.isPlainObject(menuSelector) ? element.getAttribute("contextmenu") : null;
+
+    // Remember how to find menu, without caching menu itself, so that if binding's bound observable is later 
+    // changed to point to some other menu, we can clean up the old menu.
+    // If/when KO binding is disposed, .data data is discarded, so no leak.
+    $element.data("_ojLastContextMenu", {selector: menuSelector, id: menuId});
+
+
+    // 4) Add listeners to element having context menu (not menu element) : ---
 
     // Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
     element.addEventListener("click", clickListener, true);
@@ -1553,10 +1567,6 @@ ko.bindingHandlers['ojContextMenu'] =
         // is a no-op for non-touch, we can accomplish this by omitting the entire style class, which does 1 and 2, for non-touch.
         // Per comments in scss file, the suppression of 1 and 2 has issues in old versions of Mobile Safari.
         .addClass(oj.DomUtils.isTouchSupported() ? "oj-menu-context-menu-launcher" : "");
-        
-//  if (!menu)
-      // TODO: Max suggested logging a warning if menu is null.  Since setting null is the way you would turn off the ContextMenu functionality, 
-      // should we really log?  If so, warning or just info?
   }
 };
 
@@ -2273,7 +2283,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
   }
   
   
-  this.teardown = function(element)
+  this.teardown = function()
   {
     var names = Object.keys(expressionListeners);
     for (var i=0; i<names.length; i++)

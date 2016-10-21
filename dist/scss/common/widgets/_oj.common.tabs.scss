@@ -183,7 +183,13 @@
 
     /*
      * applied to the horizontal tab
+     * need to set overflow-x to hidden to avoid the scrollbar from showing up
+     * temporarily while adding a new tab.
      */
+    .oj-tabs-horizontal.oj-tabs {
+      overflow-x: hidden;
+    }
+
     .oj-tabs-horizontal > .oj-tabs-nav-root .oj-tabs-tab {
       display: inline-block;
       position: relative;

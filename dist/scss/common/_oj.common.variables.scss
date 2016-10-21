@@ -27,7 +27,6 @@
 //-----------------------------------------------------------------------------
 
 
-
 //-----------------------------------------------------------------------------
 // The variables in the file are (imperfectly) organized in some categories
 // - LOGISTICAL: 
@@ -116,8 +115,6 @@ $allowTagSelectors: true !default;
 // when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
 // component is initialized. This reduces the unstyled dom seen by the user during page load.
 $initialVisibility: hidden !default;
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -1523,7 +1520,15 @@ $sliderThumbBorderColorDisabled: $sliderThumbBgColorDisabled !default;
 $sliderBarBgColorDisabled:       $interaction5Color !default;
 $sliderBarValueBgColorDisabled:  $textColorDisabled !default;
 
+// Color picker variables
 
+$sliderColorPickerBarThickness:         8px !default;
+$sliderColorPickerThumbBorderWidth:     2px !default;
+$sliderColorPickerThumbBorderRadius:    50% !default;
+$sliderColorPickerThumbWidth:           28px !default;
+$sliderColorPickerThumbHeight:          $sliderColorPickerThumbWidth !default;
+$sliderColorPickerThumbWidthActive:     $sliderColorPickerThumbWidth !default;
+$sliderColorPickerThumbHeightActive:    $sliderColorPickerThumbWidthActive !default;
 
 //SWITCH
 //-----------------------------------------------------------------------------
@@ -1657,8 +1662,8 @@ $listboxIndentWidth: 15px !default;
 // DATEPICKER
 //-----------------------------------------------------------------------------
 
-$datepickerWidth:            300px                      !default;
-$datepickerPadding:          10px                       !default;
+$datepickerWidth:            275px                      !default;
+$datepickerPadding:          15px                       !default;
 
 $datepickerBgColorSelected:   $buttonHalfChromeBgColorSelected   !default;
 $datepickerTextColorSelected: $buttonHalfChromeTextColorSelected !default;
@@ -1682,6 +1687,21 @@ $inputDateTimeRenderModeOptionDefault: native !default;
 $inputDateTimeDatePickerOptionDefault: (footerLayout: 'today') !default;
 
 $inputDateTimeKeyboardEditOptionDefault: disabled !default;
+$inputDateTimeTimePickerOptionDefault:   null     !default;
+
+
+// TIMEPICKER
+//-----------------------------------------------------------------------------
+
+$dateTimePickerWidth:        275px                          !default;
+$dateTimePickerPadding:      15px                           !default;
+
+$timepickerItemBgColorFocus: $interaction3Color             !default;
+
+$timepickerTextColor:        $interaction1Color             !default; // #0572ce
+$timepickerTextColorHover:   $iconColorHover                !default; // #85bbe7
+$timepickerTextColorActive:  $timepickerTextColor           !default; // #0572ce
+
 
 // COLLAPSIBLE
 //-----------------------------------------------------------------------------
@@ -1967,7 +1987,7 @@ $indexerTextColorDisabled:   null !default;
 // text decoration of the prefix in the indexer
 $indexerTextDecoration:      none !default;
 // text decoration of the prefix in the indexer when hover
-$indexerTextDecorationHover: underline !default;
+$indexerTextDecorationHover: none !default;
 // font weight of the prefix in the indexer
 $indexerFontWeight:          bold !default;
 
@@ -2140,7 +2160,6 @@ $navigationBarItemIconColorSelected:    $navigationListItemIconColorSelected !de
 //Sizing
 $navigationBarFontSize: 0.812rem !default;// 10px when root font is 16px
 $navigationBarMinHeight: 2.375rem !default;//38 px height when root font 16px
-$navigationBarStackedIconMinHeight: 3.375rem !default; //54 px height when root font 16px
 
 // the right and left borders will be flipped in rtl languanges
 $navigationBarItemBorderWidth:   0 0 $navigationListItemAccentBorderWidth 0 !default;
@@ -2148,6 +2167,10 @@ $navigationBarItemBorderWidth:   0 0 $navigationListItemAccentBorderWidth 0 !def
 $navigationBarItemPadding: 4px $navigationListItemStartEndPadding 4px !default;
 $navigationBarIconMargin: 4px !default;
 $navigationBarIconToTextPadding: 2px !default;
+
+//Stacked nav bar 
+$navigationBarStackedIconMinHeight: 3.375rem !default; //54 px height when root font 16px
+$navigationBarStackedItemPadding: $navigationBarItemPadding !default;
 
 //----------Start of Navigation bar icon only variables
 // values could be "circle"(alta default) or "none"(for android/windows/ios)

@@ -147,6 +147,8 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
     // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
     minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
 
+    // the panning triggers a click event at the end (since we are doing translation on move, the relative position has not changed)
+    // this is to prevent the click event from bubbling (to list item for example, see )
     drawerShown = false;
     outerWrapper.on("click.swipetoreveal", function(event)
     {
@@ -155,6 +157,13 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
             event.stopImmediatePropagation();   
             drawerShown = false;
         }
+    });
+
+    // However, this does not get trigger in hybrid app, see .  
+    // this change ensures that it always get reset
+    outerWrapper.on("touchstart.swipetoreveal", function(event)
+    {
+        drawerShown = false;
     });
 
     drawer
@@ -243,7 +252,7 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function(elem)
     outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
     if (outerWrapper != null)
     {
-        outerWrapper.off("click.swipetoreveal");
+        outerWrapper.off(".swipetoreveal");
     }
 
     oj.OffcanvasUtils.tearDownPanToReveal(offcanvas);

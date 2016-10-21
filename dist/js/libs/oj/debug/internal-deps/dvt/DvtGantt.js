@@ -571,6 +571,13 @@ DvtGanttStyleUtils._DEFAULT_AXIS_HEIGHT = 23;
 DvtGanttStyleUtils._SCROLLBAR_HITAREA_SIZE = dvt.Agent.isTouchDevice() ? 8 : 4;
 
 /**
+ * The gap between the row labels axis (when outside) and the chart.
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._ROW_LABELS_AXIS_GAP = 10;
+
+/**
  * Gets the horizontal scrollbar style string.
  * @return {string} The scrollbar style string.
  */
@@ -625,6 +632,15 @@ DvtGanttStyleUtils.getScrollbarHitAreaSize = function()
 };
 
 /**
+ * Gets the gap between the row axis (when outside the char) and the chart.
+ * @return {number} The gap between the row axis and the chart.
+ */
+DvtGanttStyleUtils.getRowAxisGap = function()
+{
+  return DvtGanttStyleUtils._ROW_LABELS_AXIS_GAP;
+};
+
+/**
  * Gets the task label style.
  * @param {object} options The object containing data and specifications for the component.
  * @return {string} The CSS label style string.
@@ -634,6 +650,19 @@ DvtGanttStyleUtils.getTaskLabelStyle = function(options)
   var resources = options['_resources'];
   if (resources)
     return resources['taskLabelFontProp'];
+  return '';
+};
+
+/**
+ * Gets the row label style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {string} The CSS label style string.
+ */
+DvtGanttStyleUtils.getRowLabelStyle = function(options)
+{
+  var resources = options['_resources'];
+  if (resources)
+    return resources['rowLabelFontProp'];
   return '';
 };
 
@@ -875,6 +904,32 @@ DvtGanttStyleUtils.getZoomOutButtonDisabledBorderColor = function(options)
   else
     return DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_BORDER_COLOR;
 };
+
+/**
+ * Computes the size of a subcomponent in pixels by parsing the user input. Same method as that of DvtChartStyleUtils.
+ * @param {object} size The size input given by the user. It can be in percent, pixels, or number.
+ * @param {number} totalSize The total size of the component in pixels.
+ * @return {number} The size of the subcomponent in pixels.
+ */
+DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
+  if (typeof(size) == 'string') {
+    if (size.slice(-1) == '%')
+      return totalSize * Number(size.slice(0, -1)) / 100;
+    else if (size.slice(-2) == 'px')
+      return Number(size.slice(0, -2));
+    else
+      size = Number(size);
+  }
+
+  if (typeof(size) == 'number') {
+    if (size <= 1) // assume to be ratio
+      return totalSize * size;
+    else // assume to be absolute size in pixels
+      return size;
+  }
+  else
+    return 0;
+};
 /**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
@@ -1000,6 +1055,11 @@ dvt.Gantt.prototype._applyParsedProperties = function(props)
   this._isIRAnimationEnabled = props.isIRAnimationEnabled;
   this._isDCAnimationEnabled = props.isDCAnimationEnabled;
 
+  this._rowAxisRendered = props.rowAxisRendered;
+  this._rowAxisWidth = props.rowAxisWidth;
+  this._rowAxisMaxWidth = props.rowAxisMaxWidth;
+  this._rowAxisLabelsOverflowBehavior = props.rowAxisLabelsOverflowBehavior;
+
   dvt.Gantt.superclass._applyParsedProperties.call(this, props);
 };
 
@@ -1070,6 +1130,11 @@ dvt.Gantt.prototype.render = function(options, width, height)
   }
 
   dvt.Gantt.superclass.render.call(this, options, width, height);
+
+  if (this.isRowAxisEnabled())
+    DvtGanttRenderer._prepareRowAxis(this);
+  else // potentially rerender with rowAxis.rendered off when on before.
+    this.getParent().removeChild(this.getRowAxis());
 
   var axisPosition = this.getAxisPosition();
 
@@ -1435,6 +1500,8 @@ dvt.Gantt.prototype._processScrollbarEvent = function(event, component)
   if (component == this.yScrollbar)
   {
     this._databody.setTranslateY(newMax);
+    if (this.isRowAxisEnabled())
+      this.getRowAxis().setTranslateY(newMax);
   }
 };
 
@@ -1460,6 +1527,8 @@ dvt.Gantt.prototype._handleResize = function(width, height)
   this.Height = height;
 
   this.applyStyleValues();
+  if (this.isRowAxisEnabled())
+    DvtGanttRenderer._updateRowAxisSpace(this);
 
   this.prepareViewportLength();
 
@@ -1470,6 +1539,8 @@ dvt.Gantt.prototype._handleResize = function(width, height)
   {
     this.renderTimeZoomCanvas(this._canvas);
 
+    if (this.isRowAxisEnabled())
+      DvtGanttRenderer._prerenderRowAxis(this);
     this.updateRows();
 
     var timeZoomCanvas = this.getTimeZoomCanvas();
@@ -1499,9 +1570,6 @@ dvt.Gantt.prototype.applyStyleValues = function()
   var doubleBorderWidth = this._borderWidth * 2;
   this._widthOffset = 0;
 
-  this.setStartXOffset(this._borderWidth);
-  this.setStartYOffset(this._borderWidth);
-
   // we are going to hide the scrollbar
   this.xScrollbarStyles = new dvt.CSSStyle(DvtGanttStyleUtils.getHorizontalScrollbarStyle());
   this.yScrollbarStyles = new dvt.CSSStyle(DvtGanttStyleUtils.getVerticalScrollbarStyle());
@@ -1516,11 +1584,11 @@ dvt.Gantt.prototype.applyStyleValues = function()
     var widthOffset = 3 * scrollbarHitAreaSize;
     this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.yScrollbarStyles.getWidth()) - widthOffset;
     if (isRTL)
-    {
       this._widthOffset = widthOffset - this._borderWidth;
-      this.setStartXOffset(this._widthOffset + this._borderWidth);
-    }
   }
+
+  this.setStartXOffset(this._widthOffset + this._borderWidth);
+  this.setStartYOffset(this._borderWidth);
 
   // The size of the canvas viewport
   this._canvasLength = this._backgroundWidth - doubleBorderWidth;
@@ -1532,17 +1600,21 @@ dvt.Gantt.prototype.applyStyleValues = function()
  */
 dvt.Gantt.prototype.updateRows = function()
 {
+  var labelContainer;
   var rows = this._rows;
   if (rows != null)
   {
     // update databody clip path
     DvtGanttRenderer._updateDatabody(this, this.getDatabody());
 
+    if (this.isRowAxisEnabled())
+      labelContainer = this.getRowAxis();
+
     // update the taskbars on each row
     for (var i = 0; i < rows.length; i++)
     {
       // rows[i].reRender(width, height);
-      rows[i].render(this.getDatabody());
+      rows[i].render(this.getDatabody(), labelContainer);
     }
   }
 };
@@ -1981,6 +2053,60 @@ dvt.Gantt.prototype.getAxesHeight = function()
 };
 
 /**
+ * Gets whether the row axis should be rendered/visible.
+ * @return {boolean} true if should be rendered, false otherwise
+ */
+dvt.Gantt.prototype.isRowAxisEnabled = function()
+{
+  return this._rowAxisRendered == 'on';
+};
+
+/**
+ * Gets the row axis width.
+ * @return {string} the width of the axis in pixels (e.g. '50px') or percent (e.g. '15%'')
+ */
+dvt.Gantt.prototype.getRowAxisWidth = function()
+{
+  return this._rowAxisWidth;
+};
+
+/**
+ * Gets the row axis max width.
+ * @return {string} the maximum width of the axis in pixels (e.g. '50px') or percent (e.g. '15%'')
+ */
+dvt.Gantt.prototype.getRowAxisMaxWidth = function()
+{
+  return this._rowAxisMaxWidth;
+};
+
+/**
+ * Gets whether the row labels should wrap.
+ * @return {boolean} true if should wrap, false otherwise
+ */
+dvt.Gantt.prototype.isRowAxisLabelsWrap = function()
+{
+  return this._rowAxisLabelsOverflowBehavior == 'normal';
+};
+
+/**
+ * Gets the row axis object.
+ * @return {DvtGanttRowAxis} The row axis object.
+ */
+dvt.Gantt.prototype.getRowAxis = function()
+{
+  return this._rowAxis;
+};
+
+/**
+ * Sets the row axis object.
+ * @param {DvtGanttRowAxis} rowAxis The row axis object.
+ */
+dvt.Gantt.prototype.setRowAxis = function(rowAxis)
+{
+  this._rowAxis = rowAxis;
+};
+
+/**
  * Scroll task into view
  * @param {DvtGanttTaskNode} task
  */
@@ -2045,6 +2171,8 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
       newTranslateY = maxTranslateY;
 
     this._databody.setTranslateY(newTranslateY);
+    if (this.isRowAxisEnabled())
+      this.getRowAxis().setTranslateY(newTranslateY);
 
     if (this.isVerticalScrollbarOn())
       this.yScrollbar.setViewportRange(newTranslateY - (this._canvasSize - this._databodyStart - bottomOffset), newTranslateY);
@@ -2224,6 +2352,7 @@ dvt.Obj.createSubclass(DvtGanttAutomation, dvt.Automation);
  * Valid subIds inlcude:
  * <ul>
  * <li>taskbar[rowIndex][index]</li>
+ * <li>rowLabel[index]</li>
  * </ul>
  * @override
  */
@@ -2237,6 +2366,11 @@ DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
     var taskIndex = row.getTasks().indexOf(logicalObj);
     return 'taskbar[' + rowIndex + '][' + taskIndex + ']';
   }
+  else if (logicalObj && (logicalObj instanceof DvtGanttRowLabelText || logicalObj instanceof DvtGanttRowLabelMultilineText))
+  {
+    var rowIndex = logicalObj.getRowIndex();
+    return 'rowLabel[' + rowIndex + ']';
+  }
 
   return null;
 };
@@ -2245,43 +2379,54 @@ DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
  * Valid subIds inlcude:
  * <ul>
  * <li>taskbar[rowIndex][index]</li>
+ * <li>rowLabel[index]</li>
  * </ul>
  * @override
  */
 DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
 {
-  var index = subId.indexOf('[');
-  if (index > -1)
+  var openParen1 = subId.indexOf('[');
+  var closeParen1 = subId.indexOf(']');
+  var component = subId.substring(0, openParen1);
+
+  if (openParen1 > -1 && closeParen1 > -1)
   {
-    var component = subId.substring(0, index);
-    if (component != 'taskbar')
-      return null;
-
-    var rowIndex = parseInt(subId.substring(index + 1, subId.indexOf(']')));
-    if (isNaN(rowIndex))
-      return null;
-
-    index = subId.indexOf('[', index + 1);
-    if (index > -1)
+    if (component == 'taskbar')
     {
-      var taskIndex = parseInt(subId.substring(index + 1, subId.indexOf(']', index + 1)));
-      if (isNaN(taskIndex))
-        return null;
-
-      var rows = this._gantt.getRows();
-      if (rows != null && rows.length > rowIndex)
+      var openParen2 = subId.indexOf('[', openParen1 + 1);
+      var closeParen2 = subId.indexOf(']', openParen2 + 1);
+      if (openParen2 > -1 && closeParen2 > -1)
       {
-        var tasks = rows[rowIndex].getTasks();
-        if (tasks != null && tasks.length > taskIndex)
+        var rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+        var taskIndex = parseInt(subId.substring(openParen2 + 1, closeParen2));
+        if (isNaN(rowIndex) || isNaN(taskIndex))
+          return null;
+
+        var rows = this._gantt.getRows();
+        if (rows != null && rows.length > rowIndex)
         {
-          var bar = tasks[taskIndex].getBar();
-          if (bar != null)
-            return bar.getElem();
+          var tasks = rows[rowIndex].getTasks();
+          if (tasks != null && tasks.length > taskIndex)
+          {
+            var bar = tasks[taskIndex].getBar();
+            if (bar != null)
+              return bar.getElem();
+          }
         }
       }
     }
+    else if (component == 'rowLabel')
+    {
+      rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+      var rows = this._gantt.getRows();
+      if (rows != null && rows.length > rowIndex)
+      {
+        var rowLabelText = rows[rowIndex].getRowLabelText();
+        if (rowLabelText != null)
+          return rowLabelText.getElem();
+      }
+    }
   }
-
   return null;
 };
 /**
@@ -2318,6 +2463,12 @@ DvtGanttDefaults.VERSION_1 = {
     'labelPosition': 'end',
     'borderRadius': 2,
     'height': 22
+  },
+  'rowAxis': {
+    'rendered': 'off',
+    'width': 'auto', // not publicly supported as of 2.2.0
+    'maxWidth': 'none',
+    'whiteSpace': 'nowrap' // not publicly supported as of 2.2.0
   }
 };
 /**
@@ -2596,6 +2747,15 @@ DvtGanttParser.prototype.parse = function(options)
 
   ret.isIRAnimationEnabled = options['animationOnDisplay'] == 'auto';
   ret.isDCAnimationEnabled = options['animationOnDataChange'] == 'auto';
+
+  if (options['rowAxis'] != null)
+  {
+    ret.rowAxisRendered = options['rowAxis']['rendered'];
+    ret.rowAxisWidth = options['rowAxis']['width'];
+    ret.rowAxisMaxWidth = options['rowAxis']['maxWidth'];
+    ret.rowAxisLabelsOverflowBehavior = options['rowAxis']['whiteSpace'];
+  }
+
   ret.styleClass = options['className'];
   ret.inlineStyle = options['style'];
 
@@ -2659,7 +2819,9 @@ DvtGanttRenderer.renderGantt = function(gantt)
     var timeZoomCanvas = gantt.getTimeZoomCanvas();
     DvtGanttRenderer._renderAxes(gantt, timeZoomCanvas);
     DvtGanttRenderer._renderVerticalGridline(gantt, timeZoomCanvas);
-    DvtGanttRenderer._renderRows(gantt, timeZoomCanvas);
+    if (gantt.isRowAxisEnabled())
+      DvtGanttRenderer._prerenderRowAxis(gantt);
+    DvtGanttRenderer._renderRows(gantt, timeZoomCanvas, gantt.getRowAxis());
 
     DvtGanttRenderer._renderZoomControls(gantt);
 
@@ -2784,6 +2946,77 @@ DvtGanttRenderer._renderScrollbars = function(gantt)
 };
 
 /**
+ * Prepares row axis by creating the object and asking it for its preferred width.
+ * @param {dvt.Gantt} gantt The gantt being rendered.
+ * @private
+ */
+DvtGanttRenderer._prepareRowAxis = function(gantt)
+{
+  var rowAxis = gantt.getRowAxis();
+  if (!rowAxis)
+  {
+    rowAxis = new DvtGanttRowAxis(gantt);
+    gantt.setRowAxis(rowAxis);
+  }
+
+  DvtGanttRenderer._updateRowAxisSpace(gantt);
+};
+
+/**
+ * Updates the space allocated for the row axis.
+ * @param {dvt.Gantt} gantt The gantt being rendered.
+ * @private
+ */
+DvtGanttRenderer._updateRowAxisSpace = function(gantt)
+{
+  var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
+  var rowAxis = gantt.getRowAxis();
+
+  // Make sure allocated width is integer pixels to avoid svg rendering issues
+  gantt._rowAxisPreferredWidth = Math.ceil(rowAxis.getPreferredWidth(gantt.Width - DvtGanttStyleUtils.getRowAxisGap()));
+
+  // readjust gantt dimensions and offset to make room for row labels
+  var rowAxisSpace = gantt._rowAxisPreferredWidth + DvtGanttStyleUtils.getRowAxisGap();
+  gantt._backgroundWidth = gantt._backgroundWidth - rowAxisSpace;
+  if (!isRTL)
+  {
+    gantt._widthOffset = gantt._widthOffset + rowAxisSpace;
+    gantt.setStartXOffset(gantt.getStartXOffset() + rowAxisSpace);
+  }
+  gantt._canvasLength = gantt._canvasLength - rowAxisSpace;
+};
+
+/**
+ * Renders the row axis container.
+ * @param {dvt.Gantt} gantt The gantt being rendered.
+ * @private
+ */
+DvtGanttRenderer._prerenderRowAxis = function(gantt)
+{
+  var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
+  var rowAxis = gantt.getRowAxis();
+  if (rowAxis != null)
+  {
+    rowAxis.setPixelHinting(true);
+    var width = gantt._rowAxisPreferredWidth;
+    var height = gantt.getCanvasSize() - gantt.getAxesHeight();
+    if (isRTL)
+      rowAxis.setTranslateX(gantt.getStartXOffset() + gantt.getCanvasLength() + gantt._borderWidth + DvtGanttStyleUtils.getRowAxisGap());
+    else
+      rowAxis.setTranslateX(0);
+
+    var databodyStart = gantt.getDatabodyStart();
+
+    var cp = new dvt.ClipPath();
+    cp.addRect(rowAxis.getTranslateX(), databodyStart + gantt.getStartYOffset(), width, height);
+    rowAxis.setClipPath(cp);
+
+    if (rowAxis.getParent() != gantt.getParent())
+      gantt.getParent().addChild(rowAxis);
+  }
+};
+
+/**
  * Renders the background of Gantt.
  * @param {dvt.Gantt} gantt The Gantt being rendered.
  * @private
@@ -2797,6 +3030,7 @@ DvtGanttRenderer._renderBackground = function(gantt)
     gantt._background.setClipPath(null);
     gantt._background.setWidth(width);
     gantt._background.setHeight(height);
+    gantt._background.setX(gantt._widthOffset);
   }
   else
     gantt._background = new dvt.Rect(gantt.getCtx(), gantt._widthOffset, 0, width, height, 'bg');
@@ -2837,6 +3071,8 @@ DvtGanttRenderer._renderRowBackground = function(gantt)
   else
   {
     gantt._rowBackground.setWidth(width);
+    gantt._rowBackground.setX(gantt.getStartXOffset());
+    gantt._rowBackground.setY(gantt.getStartYOffset());
   }
 
   dvt.ToolkitUtils.setAttrNullNS(gantt._rowBackground.getElem(), 'class', gantt.GetStyleClass('row'));
@@ -3020,11 +3256,10 @@ DvtGanttRenderer._renderZoomControls = function(gantt)
     }
   };
 
-  var xOffset = gantt._startX + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
   if (isRTL)
-    var transX = xOffset;
+    var transX = gantt.getStartXOffset() + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
   else
-    transX = gantt._backgroundWidth - xOffset - DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
+    transX = (gantt.getCanvasLength() + gantt.getStartXOffset()) - (DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING + DvtGanttStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER);
 
   zoomControlProperties['zoomInProps']['posX'] = transX;
   zoomControlProperties['zoomOutProps']['posX'] = transX;
@@ -3086,6 +3321,8 @@ DvtGanttRenderer._renderDatabody = function(gantt, container)
 
   // Initial state: show from the top
   databody.setTranslateY(gantt.getDatabodyStart());
+  if (gantt.isRowAxisEnabled())
+    gantt.getRowAxis().setTranslateY(gantt.getDatabodyStart() + gantt.getStartYOffset());
 
   DvtGanttRenderer._updateDatabody(gantt, databody);
 };
@@ -3160,13 +3397,16 @@ DvtGanttRenderer._renderVerticalGridline = function(gantt, container)
  * Render rows
  * @param {dvt.Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into
+ * @param {dvt.Container=} labelContainer The container to render row labels into.
  * @private
  */
-DvtGanttRenderer._renderRows = function(gantt, container)
+DvtGanttRenderer._renderRows = function(gantt, container, labelContainer)
 {
   var options = gantt.getOptions();
   var rows = options['rows'];
   var isRowsCleanable = DvtGanttRenderer._prerenderRows(rows);
+  if (gantt.isRowAxisEnabled())
+    var rowLabelTexts = gantt.getRowAxis().getRowLabelTexts();
 
   if (rows.length == 0 || !isRowsCleanable)
   {
@@ -3190,7 +3430,15 @@ DvtGanttRenderer._renderRows = function(gantt, container)
     for (var i = 0; i < rows.length; i++)
     {
       var rowNode = new DvtGanttRowNode(gantt, rows[i], i, top);
-      rowNode.render(databody);
+      if (rowLabelTexts)
+      {
+        var rowLabelText = rowLabelTexts[i];
+        if (labelContainer && rowNode.getRowLabelText() != null)
+          labelContainer.removeChild(rowNode.getRowLabelText());
+        rowNode.setRowLabelText(rowLabelText);
+      }
+
+      rowNode.render(databody, labelContainer);
       rowNodes.push(rowNode);
 
       oldRowIdRowNodeMap[rowNode.getId()] = rowNode;
@@ -3205,6 +3453,13 @@ DvtGanttRenderer._renderRows = function(gantt, container)
     {
       rowNode = rowNodes[i];
       rowNode.setTop(top);
+      if (rowLabelTexts)
+      {
+        var rowLabelText = rowLabelTexts[i];
+        if (labelContainer && rowNode.getRowLabelText() != null)
+          labelContainer.removeChild(rowNode.getRowLabelText());
+        rowNode.setRowLabelText(rowLabelText);
+      }
 
       // for data change animations, row elements need to be in the correct order
       // in the DOM tree to get desired layering. E.g. if row A is above row B, and if
@@ -3212,9 +3467,9 @@ DvtGanttRenderer._renderRows = function(gantt, container)
       // of row A when they cross path. There is a slight performance hit by ensuring this layering
       // so we avoid this in the non-animation case.
       if (gantt._isDCAnimationEnabled) // data change animation
-        rowNode.render(databody, i);
+        rowNode.render(databody, labelContainer, i);
       else
-        rowNode.render(databody);
+        rowNode.render(databody, labelContainer);
 
       oldRowIdRowNodeMap[rowNode.getId()] = rowNode;
       top = top + rowNode.getRowHeight() + horizontalLineHeightOffset;
@@ -3425,6 +3680,246 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
   return newRowNodes;
 };
 /**
+ * Class representing a Gantt row axis
+ * @param {dvt.Gantt} gantt the Gantt component
+ * @class
+ * @constructor
+ */
+var DvtGanttRowAxis = function(gantt)
+{
+  this.Init(gantt);
+};
+
+dvt.Obj.createSubclass(DvtGanttRowAxis, dvt.Container);
+
+/**
+ * Initialize the row axis
+ * @param {dvt.Gantt} gantt the Gantt component
+ * @protected
+ */
+DvtGanttRowAxis.prototype.Init = function(gantt)
+{
+  DvtGanttRowAxis.superclass.Init.call(this, gantt.getCtx());
+  this._gantt = gantt;
+};
+
+/**
+ * Gets the preferred width.
+ * @param {number} totalAvailWidth The total available width.
+ * @return {number} The preferred width of the axis in px
+ */
+DvtGanttRowAxis.prototype.getPreferredWidth = function(totalAvailWidth)
+{
+  this._generateRowLabels();
+  var maxWidthOption = this._gantt.getRowAxisMaxWidth();
+  var widthOption = this._gantt.getRowAxisWidth();
+  var maxWidth, widthDemanded;
+
+  if (maxWidthOption != null && maxWidthOption !== 'none')
+    maxWidth = Math.min(DvtGanttStyleUtils.getSizeInPixels(maxWidthOption, totalAvailWidth), totalAvailWidth);
+  maxWidth = maxWidth != null && !isNaN(maxWidth) ? maxWidth : totalAvailWidth;
+
+  if (widthOption != null && widthOption !== 'auto')
+    widthDemanded = DvtGanttStyleUtils.getSizeInPixels(this._gantt.getRowAxisWidth(), totalAvailWidth);
+  widthDemanded = widthDemanded != null && !isNaN(widthDemanded) ? widthDemanded : dvt.TextUtils.getMaxTextDimensions(this._rowLabelTexts).w;
+
+  return Math.min(widthDemanded, maxWidth);
+};
+
+/**
+ * Generates an array of row labels text objects.
+ * @private
+ */
+DvtGanttRowAxis.prototype._generateRowLabels = function()
+{
+  var rowData = this._gantt.getRowsData();
+  this._rowLabelTexts = [];
+  for (var i = 0; i < rowData.length; i++)
+  {
+    var row = rowData[i];
+    var rowLabel = row['label'] != null ? row['label'] : '';
+
+    // UNCOMMENT BELOW IF WANT ROWLABELS TO AUTOMATICALLY GRAB
+    // THE TASK LABEL WHEN ROWLABEL IS NOT SPECIFIED AND THERE'S
+    // ONLY ONE TASK IN THE ROW
+    // var tasks = row['tasks'];
+    // var rowLabel = row['label'];
+    // if (rowLabel == null)
+    // {
+    //   if (tasks.length == 1 && tasks[0]['label'] != null)
+    //     rowLabel = tasks[0]['label'];
+    //   else
+    //     rowLabel = '';
+    // }
+
+    if (this._gantt.isRowAxisLabelsWrap())
+      var labelText = new DvtGanttRowLabelMultilineText(this._gantt.getCtx(), rowLabel, 0, 0);
+    else
+      labelText = new DvtGanttRowLabelText(this._gantt.getCtx(), rowLabel, 0, 0);
+    labelText.setRowIndex(i);
+    dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'class', this._gantt.GetStyleClass('rowLabel'));
+
+    // create dvt.CSSStyle from from style sheet
+    var labelCSSStyle = new dvt.CSSStyle(DvtGanttStyleUtils.getRowLabelStyle(this._gantt.getOptions()));
+
+    // sets the style if specified in options
+    var labelStyle = row['labelStyle'];
+    if (labelStyle != null)
+    {
+      labelCSSStyle.parseInlineStyle(labelStyle);
+      if (typeof labelStyle === 'string')
+        labelText.getElem().style.cssText = labelStyle;
+      else
+        dvt.ToolkitUtils.setAttrNullNS(labelText, 'style', labelStyle);
+    }
+
+    labelText.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
+
+    this._rowLabelTexts.push(labelText);
+  }
+};
+
+/**
+ * Gets the row labels text objects array.
+ * @return {Array} the array of dvt.OutputText objects
+ */
+DvtGanttRowAxis.prototype.getRowLabelTexts = function()
+{
+  return this._rowLabelTexts;
+};
+/**
+ * Class representing a Gantt row label single line text.
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {number} x
+ * @param {number} y
+ * @param {string=} id
+ * @extends {dvt.OutputText}
+ * @class
+ * @constructor
+ */
+var DvtGanttRowLabelText = function(context, textStr, x, y, id)
+{
+  this.Init(context, textStr, x, y, id);
+};
+
+dvt.Obj.createSubclass(DvtGanttRowLabelText, dvt.OutputText);
+
+/**
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {number} x
+ * @param {number} y
+ * @param {string=} id
+ * @protected
+ */
+DvtGanttRowLabelText.prototype.Init = function(context, textStr, x, y, id)
+{
+  DvtGanttRowLabelText.superclass.Init.call(this, context, textStr, x, y, id);
+};
+
+/**
+ * Gets the associated row node.
+ * @return {DvtGanttRowNode} the associated row node.
+ */
+DvtGanttRowLabelText.prototype.getRow = function()
+{
+  return this._rowNode;
+};
+
+/**
+ * Sets the associated row node.
+ * @param {DvtGanttRowNode} rowNode the associated row node.
+ */
+DvtGanttRowLabelText.prototype.setRow = function(rowNode)
+{
+  this._rowNode = rowNode;
+};
+
+/**
+ * Gets the row index
+ * @return {number} the row index
+ */
+DvtGanttRowLabelText.prototype.getRowIndex = function()
+{
+  return this._rowIndex;
+};
+
+/**
+ * Sets the row index
+ * @param {number} index The row index
+ */
+DvtGanttRowLabelText.prototype.setRowIndex = function(index)
+{
+  this._rowIndex = index;
+};
+/**
+ * Class representing a Gantt row label multiline text.
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {number} x
+ * @param {number} y
+ * @param {string=} id
+ * @extends {dvt.MultilineText}
+ * @class
+ * @constructor
+ */
+var DvtGanttRowLabelMultilineText = function(context, textStr, x, y, id)
+{
+  this.Init(context, textStr, x, y, id);
+};
+
+dvt.Obj.createSubclass(DvtGanttRowLabelMultilineText, dvt.MultilineText);
+
+/**
+ * @param {dvt.Context} context
+ * @param {string} textStr
+ * @param {number} x
+ * @param {number} y
+ * @param {string=} id
+ * @protected
+ */
+DvtGanttRowLabelMultilineText.prototype.Init = function(context, textStr, x, y, id)
+{
+  DvtGanttRowLabelMultilineText.superclass.Init.call(this, context, textStr, x, y, id);
+};
+
+/**
+ * Gets the associated row node.
+ * @return {DvtGanttRowNode} the associated row node.
+ */
+DvtGanttRowLabelMultilineText.prototype.getRow = function()
+{
+  return this._rowNode;
+};
+
+/**
+ * Sets the associated row node.
+ * @param {DvtGanttRowNode} rowNode the associated row node.
+ */
+DvtGanttRowLabelMultilineText.prototype.setRow = function(rowNode)
+{
+  this._rowNode = rowNode;
+};
+
+/**
+ * Gets the row index
+ * @return {number} the row index
+ */
+DvtGanttRowLabelMultilineText.prototype.getRowIndex = function()
+{
+  return this._rowIndex;
+};
+
+/**
+ * Sets the row index
+ * @param {number} index The row index
+ */
+DvtGanttRowLabelMultilineText.prototype.setRowIndex = function(index)
+{
+  this._rowIndex = index;
+};
+/**
  * Class representing a GanttRow node.
  * @param {dvt.Gantt} gantt the Gantt component
  * @param {object} props the properties for the node.
@@ -3525,6 +4020,24 @@ DvtGanttRowNode.prototype.getLabelPosition = function()
 };
 
 /**
+ * Sets the row label text
+ * @param {dvt.OutputText} rowLabelText The row label text object
+ */
+DvtGanttRowNode.prototype.setRowLabelText = function(rowLabelText)
+{
+  this._rowLabelText = rowLabelText;
+};
+
+/**
+ * Gets the row label text
+ * @return {dvt.OutputText} The row label text object
+ */
+DvtGanttRowNode.prototype.getRowLabelText = function()
+{
+  return this._rowLabelText;
+};
+
+/**
  * Adds task to reusable task node list
  * @param {DvtGanttTaskNode} taskNode
  */
@@ -3565,24 +4078,6 @@ DvtGanttRowNode.prototype.isTaskVisible = function(taskProps)
       return false;
   }
   return true;
-};
-
-/**
- * Retrieve the label of the row
- * @return {string} the label of the row
- */
-DvtGanttRowNode.prototype.getLabel = function()
-{
-  return this._props['label'];
-};
-
-/**
- * Retrieve the label position of the row
- * @return {string} the label position of the row.  Valid values are 'start' and 'end'.
- */
-DvtGanttRowNode.prototype.getLabelPosition = function()
-{
-  return this._props['labelPosition'];
 };
 
 /**
@@ -3666,10 +4161,11 @@ DvtGanttRowNode.prototype.sortTasks = function()
 /**
  * Renders the row to specified container. The row node is added to the container child list
  * at the specified index. If not specified, row node is simply appened to the end of the child list.
- * @param {dvt.Container} container the container to host artifacts of the row including task bars
+ * @param {dvt.Container} container the container to host artifacts of the row including task bars.
+ * @param {dvt.Container=} labelContainer The container to render row labels into.
  * @param {number=} index The index of the container child list to add to.
  */
-DvtGanttRowNode.prototype.render = function(container, index)
+DvtGanttRowNode.prototype.render = function(container, labelContainer, index)
 {
   this.sortTasks();
   var tasks = this.getTasks();
@@ -3711,6 +4207,8 @@ DvtGanttRowNode.prototype.render = function(container, index)
     }
   }
 
+  this._renderRowLabel(this._gantt, this.getRowLabelText(), labelContainer);
+
   if (this.getParent() != container)
   {
     if (index != null)
@@ -3720,6 +4218,83 @@ DvtGanttRowNode.prototype.render = function(container, index)
   }
 
   this._renderHorizontalGridline(this._gantt, this, this);
+};
+
+/**
+ * Renders the row label.
+ * @param {dvt.Gantt} gantt The gantt component
+ * @param {dvt.OutputText} labelText The label text object
+ * @param {dvt.Container} labelContainer The container to render into.
+ * @private
+ */
+DvtGanttRowNode.prototype._renderRowLabel = function(gantt, labelText, labelContainer)
+{
+  if (gantt.isRowAxisEnabled() && labelContainer)
+  {
+    var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
+    // right aligned in LTR. left aligned in RTL:
+    if (!isRTL)
+      labelText.alignRight();
+
+    if (labelText.isTruncated())
+      labelText.setTextString(labelText.getUntruncatedTextString());
+    var isTextVisible = dvt.TextUtils.fitText(labelText, gantt._rowAxisPreferredWidth, this.getRowHeight(), labelContainer, 1);
+
+    var labelGuessedDimensions = dvt.TextUtils.guessTextDimensions(labelText);
+    var y = ((this.getTop() + (this.getTop() + this.getRowHeight())) - labelGuessedDimensions.h) / 2;
+    if (!isRTL)
+      var x = gantt._rowAxisPreferredWidth;
+    else
+      x = 0;
+
+    var labelStateObj = {
+      'textString': labelText.getTextString(),
+      'x': x,
+      'y': y
+    };
+
+    if (labelText.getTextString().length > 0 && isTextVisible) // don't bother with empty string labels or labels that can't fit in the axis space
+    {
+      gantt.getEventManager().associate(labelText, labelText);
+      labelText.setRow(this);
+      labelContainer.addChild(labelText);
+
+      if (gantt.getAnimationMode() === 'dataChange')
+      {
+        if (this.getAnimationState() === 'new' || this.getAnimationState() === 'refurbished')
+        {
+          // fade in labels
+          gantt.addRowsFrAnimElems.push(labelText);
+          labelText.setY(y);
+          labelText.setX(x);
+        }
+        else if (this.getAnimationState() === 'same')
+        {
+          // set labels according to row position (current implementation, labels are new and have no knowledge of previous positions)
+          var previousLabelState = this.getLabelState();
+          labelText.setY(previousLabelState['y']);
+          labelText.setX(previousLabelState['x']);
+
+          // translate labels to new positions
+          var shiftAnimator = gantt.mvGeneralMvPlayable.getAnimator();
+          shiftAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
+          shiftAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getY, labelText.setY, y);
+        }
+        else
+        {
+          labelText.setY(y);
+          labelText.setX(x);
+        }
+      }
+      else
+      {
+        labelText.setY(y);
+        labelText.setX(x);
+      }
+    }
+
+    this.recordLabelState(labelStateObj);
+  }
 };
 
 /**
@@ -3809,6 +4384,24 @@ DvtGanttRowNode.prototype.getAnimationState = function()
 };
 
 /**
+ * Records the row label state.
+ * @param {object} stateObj The object containing label state information
+ */
+DvtGanttRowNode.prototype.recordLabelState = function(stateObj)
+{
+  this._rowLabelState = stateObj;
+};
+
+/**
+ * Gets the row label state.
+ * @return {object} The object containing label state information
+ */
+DvtGanttRowNode.prototype.getLabelState = function()
+{
+  return this._rowLabelState;
+};
+
+/**
  * Removes itself.
  */
 DvtGanttRowNode.prototype.remove = function()
@@ -3827,6 +4420,37 @@ DvtGanttRowNode.prototype.remove = function()
   }
   else
     this.getParent().removeChild(this);
+
+  this._removeRowLabel();
+};
+
+/**
+ * Removes the row label.
+ * @private
+ */
+DvtGanttRowNode.prototype._removeRowLabel = function()
+{
+  var rowLabelText = this.getRowLabelText();
+  if (rowLabelText)
+  {
+    if (this._gantt.getAnimationMode() === 'dataChange')
+    {
+      if (this._animationState === 'refurbished')
+        this._gantt.removeRowsFakeRmAnimElems.push(rowLabelText); // fade out (DONT REMOVE ON ANIMATION END)
+      else if (this._animationState === 'delete')
+        this._gantt.removeRowsRmAnimElems.push(rowLabelText); // fade out (remove on animation end)
+      else
+      {
+        if (rowLabelText.getParent())
+          rowLabelText.getParent().removeChild(rowLabelText);
+      }
+    }
+    else
+    {
+      if (rowLabelText.getParent())
+        rowLabelText.getParent().removeChild(rowLabelText);
+    }
+  }
 };
 
 /**
@@ -4299,8 +4923,11 @@ DvtGanttTaskNode.prototype.render = function(container, previousAdjacentTask)
       interRowMvAnimator.addProp(dvt.Animator.TYPE_NUMBER, this, this.getTranslateY, this.setTranslateY, this._currentVisualState['task']['translateY']);
 
       var labelText = this.getLabelText();
-      moveTaskDurationAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, this._currentVisualState['label']['x']);
-      moveTaskDurationAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getY, labelText.setY, this._currentVisualState['label']['y']);
+      if (labelText != null)
+      {
+        moveTaskDurationAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, this._currentVisualState['label']['x']);
+        moveTaskDurationAnimator.addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getY, labelText.setY, this._currentVisualState['label']['y']);
+      }
 
       dvt.Playable.appendOnEnd(moveTaskDurationAnimator, function() {
         this.applyCurrentState();
@@ -4317,7 +4944,7 @@ DvtGanttTaskNode.prototype.getVisualState = function()
 {
   var bar = this.getBar();
   var labelText = this.getLabelText();
-  return {
+  var stateObj = {
     'task': {
       'width': this.getWidth(),
       'top': this.getTop(),
@@ -4327,13 +4954,17 @@ DvtGanttTaskNode.prototype.getVisualState = function()
     'bar': {
       'width': bar.getWidth(),
       'height': bar.getHeight()
-    },
-    'label': {
+    }
+  };
+  if (labelText != null)
+  {
+    stateObj['label'] = {
       'textString': labelText.getTextString(),
       'x': labelText.getX(),
       'y': labelText.getY()
-    }
-  };
+    };
+  }
+  return stateObj;
 };
 
 /**
@@ -4358,10 +4989,13 @@ DvtGanttTaskNode.prototype.applyVisualState = function(stateObj)
   bar.setHeight(barState['height']);
 
   // label
-  var labelState = stateObj['label'];
-  labelText.setTextString(labelState['textString']);
-  labelText.setX(labelState['x']);
-  labelText.setY(labelState['y']);
+  if (labelText != null)
+  {
+    var labelState = stateObj['label'];
+    labelText.setTextString(labelState['textString']);
+    labelText.setX(labelState['x']);
+    labelText.setY(labelState['y']);
+  }
 };
 
 /**
@@ -4583,124 +5217,133 @@ DvtGanttTaskNode._renderBar = function(gantt, task)
  */
 DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
 {
+  var label = task.getLabel();
   var labelText = task.getLabelText();
   var pos = task.getLabelPosition();
   var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
-  if (labelText == null)
+  if (label != null)
   {
-    var label = task.getLabel();
-    if (label != null)
+    if (labelText == null)
     {
       // labelText = new dvt.OutputText(gantt.getCtx(), label, 0, 0);
       labelText = new DvtGanttOutputText(gantt.getCtx(), label, 0, 0, gantt.htmlCanvas);
       dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'class', gantt.GetStyleClass('taskLabel'));
 
-      // Make reference point top right instead of top left in RTL mode:
-      if (isRTL)
-        labelText.alignRight();
-
-      task.setLabelText(labelText);
       task.addChild(labelText);
     }
-  }
-
-  // create dvt.CSSStyle from from style sheet
-  var labelCSSStyle = new dvt.CSSStyle(DvtGanttStyleUtils.getTaskLabelStyle(gantt.getOptions()));
-
-  // sets the style if specified in options
-  var labelStyle = task.getLabelStyle();
-  if (labelStyle != null)
-  {
-    labelCSSStyle.parseInlineStyle(labelStyle);
-    if (typeof labelStyle === 'string')
-      labelText.getElem().style.cssText = labelStyle;
     else
-      dvt.ToolkitUtils.setAttrNullNS(labelText, 'style', labelStyle);
-  }
+      labelText.setTextString(label);
 
-  labelText.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
+    // Make reference point top right instead of top left in RTL mode:
+    if (isRTL)
+      labelText.alignRight();
 
-  // truncate labels if necessary
-  DvtGanttTaskNode._truncateLabel(task, previousAdjacentTask);
+    task.setLabelText(labelText);
 
-  var labelGuessedDimensions = dvt.TextUtils.guessTextDimensions(labelText);
-  labelText.setY((task.getHeightWithPadding() - labelGuessedDimensions.h) / 2);
+    // create dvt.CSSStyle from from style sheet
+    var labelCSSStyle = new dvt.CSSStyle(DvtGanttStyleUtils.getTaskLabelStyle(gantt.getOptions()));
 
-  // now figure out the x position. Minimize getDimension calls for better performance
-  // by anchoring the text element right or left based on label position option value and reading direction
-  var padding = DvtGanttStyleUtils.getTaskbarLabelPadding();
-  var x;
-  switch (pos)
-  {
-    case 'start':
-      (!isRTL) ? labelText.alignRight() : labelText.alignLeft();
-      x = -padding;
-      break;
-    case 'end':
-      (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
-      x = task.getWidth() + padding;
-      break;
-    case 'innerStart':
-      (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
-      x = padding;
-      break;
-    case 'innerEnd':
-      var taskWidth = task.getWidth();
-      if (labelGuessedDimensions.w < taskWidth)
-      {
+    // sets the style if specified in options
+    var labelStyle = task.getLabelStyle();
+    if (labelStyle != null)
+    {
+      labelCSSStyle.parseInlineStyle(labelStyle);
+      if (typeof labelStyle === 'string')
+        labelText.getElem().style.cssText = labelStyle;
+      else
+        dvt.ToolkitUtils.setAttrNullNS(labelText, 'style', labelStyle);
+    }
+
+    labelText.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
+
+    // truncate labels if necessary
+    DvtGanttTaskNode._truncateLabel(task, previousAdjacentTask);
+
+    var labelGuessedDimensions = dvt.TextUtils.guessTextDimensions(labelText);
+    labelText.setY((task.getHeightWithPadding() - labelGuessedDimensions.h) / 2);
+
+    // now figure out the x position. Minimize getDimension calls for better performance
+    // by anchoring the text element right or left based on label position option value and reading direction
+    var padding = DvtGanttStyleUtils.getTaskbarLabelPadding();
+    var x;
+    switch (pos)
+    {
+      case 'start':
         (!isRTL) ? labelText.alignRight() : labelText.alignLeft();
-        x = task.getWidth() - padding;
-      }
-      else
-      {
+        x = -padding;
+        break;
+      case 'end':
         (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
-        var labelDim = labelText.getDimensions();
-        x = Math.max(padding, taskWidth - labelDim.w - padding);
-      }
-      break;
-    case 'innerCenter':
-      var taskWidth = task.getWidth();
-      if (labelGuessedDimensions.w < taskWidth)
-      {
-        labelText.alignCenter();
-        x = task.getWidth() / 2;
-      }
-      else
-      {
+        x = task.getWidth() + padding;
+        break;
+      case 'innerStart':
         (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
-        labelDim = labelText.getDimensions();
-        x = Math.max(padding, (taskWidth - labelDim.w) / 2);
-      }
-      break;
-    default:
-      (!isRTL) ? labelText.alignRight() : labelText.alignLeft();
-      x = -padding;
-      break;
-  }
+        x = padding;
+        break;
+      case 'innerEnd':
+        var taskWidth = task.getWidth();
+        if (labelGuessedDimensions.w < taskWidth)
+        {
+          (!isRTL) ? labelText.alignRight() : labelText.alignLeft();
+          x = task.getWidth() - padding;
+        }
+        else
+        {
+          (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
+          var labelDim = labelText.getDimensions();
+          x = Math.max(padding, taskWidth - labelDim.w - padding);
+        }
+        break;
+      case 'innerCenter':
+        var taskWidth = task.getWidth();
+        if (labelGuessedDimensions.w < taskWidth)
+        {
+          labelText.alignCenter();
+          x = task.getWidth() / 2;
+        }
+        else
+        {
+          (!isRTL) ? labelText.alignLeft() : labelText.alignRight();
+          labelDim = labelText.getDimensions();
+          x = Math.max(padding, (taskWidth - labelDim.w) / 2);
+        }
+        break;
+      default:
+        (!isRTL) ? labelText.alignRight() : labelText.alignLeft();
+        x = -padding;
+        break;
+    }
 
-  if (isRTL)
-    x = -x;
+    if (isRTL)
+      x = -x;
 
-  if (gantt.getAnimationMode() === 'onDisplay')
-  {
-    labelText.setX(0);
-    gantt.IRPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
-  }
-  else if (gantt.getAnimationMode() === 'dataChange')
-  {
-    if (task._animationState === 'same')
-      gantt.sameTaskDurationPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
-    else if (task._animationState === 'new' || task._animationState === 'refurbished')
+    if (gantt.getAnimationMode() === 'onDisplay')
     {
       labelText.setX(0);
-      gantt.newTaskDurationPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
+      gantt.IRPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
+    }
+    else if (gantt.getAnimationMode() === 'dataChange')
+    {
+      if (task._animationState === 'same')
+        gantt.sameTaskDurationPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
+      else if (task._animationState === 'new' || task._animationState === 'refurbished')
+      {
+        labelText.setX(0);
+        gantt.newTaskDurationPlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, labelText, labelText.getX, labelText.setX, x);
+      }
+      else
+        labelText.setX(x);
     }
     else
+    {
       labelText.setX(x);
+    }
   }
-  else
+  else // if label not specified, don't render anything. If something there before, remove it.
   {
-    labelText.setX(x);
+    if (labelText != null)
+      task.removeChild(labelText);
+    task.setLabelText(null);
   }
 };
 
@@ -4923,6 +5566,12 @@ DvtGanttTaskNode.prototype.getAriaLabel = function(rowIndex)
       }
     }
     var rowDesc = dvt.Bundle.getTranslation(options, 'accessibleRowInfo', dvt.Bundle.UTIL_PREFIX, 'ROW_INFO', [rowIndex + 1]);
+    if (this._gantt.isRowAxisEnabled())
+    {
+      var rowLabel = this.getRow().getRowLabelText().getTextString();
+      if (rowLabel != null)
+        rowDesc = rowDesc + ', ' + rowLabel;
+    }
     taskDesc = rowDesc + ', ' + taskDesc;
   }
 
@@ -4992,6 +5641,9 @@ DvtGanttTaskNode.prototype._processDefaultSelectionEffect = function(selected)
       this.addChildAt(bar, 0);
       // save it to remove later
       this._select = bar;
+
+      // Layer this task in front of all other tasks in the row (see )
+      this.getParent().addChild(this);
     }
   }
   else
@@ -5025,28 +5677,42 @@ DvtGanttTaskNode.prototype._createEffectArtifact = function(effect)
 };
 
 /**
+ * Show hover ring effect on task bar
+ * @param {string} effectType the type of ring effect ('hover' for mouse hover, 'focus' for keyboard focus)
+ * @private
+ */
+DvtGanttTaskNode.prototype._showHoverEffect = function(effectType)
+{
+  // checks if hover/focus effect is already applied
+  if (this._ring != null)
+    return;
+
+  // must be inserted before the bar and after selected effect (if any)
+  // easiest way to gaurantee this would be to insert immediately before bar
+  var ring = this._createEffectArtifact(effectType);
+  this.addChildAt(ring, this.getChildIndex(this._bar));
+  // save it to remove later
+  this._ring = ring;
+
+  var color = this.getFillColor();
+  if (color != null)
+    ring.setStroke(dvt.SelectionEffectUtils.createSelectingStroke(color));
+
+  // Layer this task in front of all other tasks in the row (see )
+  this.getParent().addChild(this);
+
+  // dim all other task bars
+  if (this._gantt.getHoverBehavior() == 'dim')
+    this._gantt.setTaskbarBrightness(this, true);
+};
+
+/**
  * Show hover effect on task bar
  * @override
  */
 DvtGanttTaskNode.prototype.showHoverEffect = function() 
 {
-  // checks if hover effect is already applied
-  if (this._hover != null)
-    return;
-
-  // must be inserted before the bar
-  var bar = this._createEffectArtifact('hover');
-  this.addChildAt(bar, 0);
-  // save it to remove later
-  this._hover = bar;
-
-  var color = this.getFillColor();
-  if (color != null)
-    bar.setStroke(dvt.SelectionEffectUtils.createSelectingStroke(color));
-
-  // dim all other task bars
-  if (this._gantt.getHoverBehavior() == 'dim')
-    this._gantt.setTaskbarBrightness(this, true);
+  this._showHoverEffect('hover');
 };
 
 /**
@@ -5055,10 +5721,15 @@ DvtGanttTaskNode.prototype.showHoverEffect = function()
  */
 DvtGanttTaskNode.prototype.hideHoverEffect = function() 
 {
-  if (this._hover != null)
+  if (this._ring != null)
   {
-    this.removeChild(this._hover);
-    this._hover = null;
+    this.removeChild(this._ring);
+    this._ring = null;
+
+    // Layer this task behind all other tasks in the row
+    // to ensure selected tasks are in front (see )
+    if (!this.isSelected())
+      this.getParent().addChildAt(this, 0);
   }
 
   // undo dim behavior
@@ -5129,7 +5800,7 @@ DvtGanttTaskNode.prototype.getTargetElem = function()
 DvtGanttTaskNode.prototype.showKeyboardFocusEffect = function() 
 {
   this._isShowingKeyboardFocusEffect = true;
-  this.showHoverEffect();
+  this._showHoverEffect('focus');
 };
 
 /**

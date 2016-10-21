@@ -2247,8 +2247,7 @@ DvtTimelineEventManager.prototype.PreOnMouseOver = function(event)
   if (!dvt.Agent.isPlatformIE() && !this.isMouseOver)
   {
     this.isMouseOver = true;
-    if (!this._comp.isAnimating())
-      this._comp.showThenHideHotspots(0);
+    this._comp.showThenHideHotspots(0);
   }
 };
 
@@ -2264,8 +2263,7 @@ DvtTimelineEventManager.prototype.OnMouseEnter = function(event)
   if (!this.isMouseOver)
   {
     this.isMouseOver = true;
-    if (!this._comp.isAnimating())
-      this._comp.showThenHideHotspots(0);
+    this._comp.showThenHideHotspots(0);
   }
 };
 
@@ -2547,6 +2545,9 @@ dvt.Timeline.prototype.render = function(options, width, height)
     this._handleResize(width, height);
     return;
   }
+  // Animation Support
+  // Stop any animation in progress
+  this.StopAnimation();
 
   if (this.Options)
   {
@@ -2580,11 +2581,15 @@ dvt.Timeline.prototype.render = function(options, width, height)
     this.applyAxisStyleValues();
 
     if (!this._timeAxis)
-    {
       this._timeAxis = new dvt.TimeAxis(this.getCtx(), null, null);
-      this._timeAxis.setBorderVisibility(true, true, true, true);
-    }
-    this._timeAxis.setCanvasSize(null); // TimeComponent's TimeAxis._canvasSize should always be null on initial render
+    // Axis border visibility needs to be reset in case of orientation changes.
+    if (this._isVertical)
+      this._timeAxis.setBorderVisibility(false, true, false, true);
+    else
+      this._timeAxis.setBorderVisibility(true, false, true, false);
+    // TimeComponent's TimeAxis._canvasSize should always be null on initial render,
+    this._timeAxis.setCanvasSize(null);
+
     var preferredLength = this._timeAxis.getPreferredLength(this._timeAxisOptions, this._canvasLength);
     this.setContentLength(preferredLength);
     this.prepareViewportLength();
@@ -2598,6 +2603,10 @@ dvt.Timeline.prototype.render = function(options, width, height)
   // Prevents overview from receiving keyboard events
   if (!dvt.TimeAxis.supportsTouch())
     this.getCtx().setKeyboardFocusArray([this]);
+
+  if (!this.Animation)
+    // If not animating, that means we're done rendering, so fire the ready event.
+    this.RenderComplete();
 };
 
 /**
@@ -2660,20 +2669,6 @@ dvt.Timeline.prototype.GetComponentDescription = function()
     return this._shortDesc;
   else
     return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'TIMELINE');
-};
-
-/**
- * Returns whether the Timeline is currently animating.
- * @return {Boolean} Whether the Timeline is currently animating.
- */
-dvt.Timeline.prototype.isAnimating = function()
-{
-  for (var i = 0; i < this._series.length; i++)
-  {
-    if (this._series[i]._isAnimating)
-      return true;
-  }
-  return false;
 };
 
 dvt.Timeline.prototype.showThenHideHotspots = function(delay, series) 
@@ -2884,8 +2879,20 @@ dvt.Timeline.prototype._populateSeries = function()
  */
 dvt.Timeline.prototype.onAnimationEnd = function()
 {
-  if (dvt.Agent.isEnvironmentBrowser())
-    this.showThenHideHotspots(0);
+  // Fire ready event saying animation is finished.
+  if (!this.AnimationStopped)
+  {
+    if (dvt.Agent.isEnvironmentBrowser())
+      this.showThenHideHotspots(0);
+    this.RenderComplete();
+  }
+
+  // Restore event listeners
+  this.EventManager.addListeners(this);
+
+  // Reset animation flags
+  this.Animation = null;
+  this.AnimationStopped = false;
 };
 
 dvt.Timeline.prototype._getOverviewObject = function()
@@ -3975,7 +3982,7 @@ DvtTimelineRenderer.renderTimeline = function(timeline)
       var series = timeline._series[i];
       series.triggerAnimations();
     }
-    if (dvt.Agent.isEnvironmentBrowser() && !timeline.isAnimating())
+    if (dvt.Agent.isEnvironmentBrowser() && !timeline.Animation)
       timeline.showThenHideHotspots(0);
   }
   else
@@ -4430,10 +4437,24 @@ DvtTimelineRenderer._renderScrollHotspots = function(timeline)
       else
       {
         if (isRTL)
-          var key = Math.abs(i - 1);
+        {
+          if (seriesCount == 1)
+          {
+            var seriesKey = 0;
+            var axisKey = 1;
+          }
+          else
+          {
+            seriesKey = Math.abs(i - 1);
+            axisKey = seriesKey;
+          }
+        }
         else
-          key = i;
-        backX = timeline._startX + (key * (timeline._seriesSize + axisSize)) + (timeline._seriesSize - hotspotWidth) / 2;
+        {
+          seriesKey = i;
+          axisKey = seriesKey;
+        }
+        backX = timeline._startX + (seriesKey * timeline._seriesSize) + (axisKey * axisSize) + (timeline._seriesSize - hotspotWidth) / 2;
         forwardX = backX;
         backY = timeline._startY + hotspotPadding;
         forwardY = timeline._startY + timeline._canvasLength - hotspotHeight - hotspotPadding;
@@ -4485,11 +4506,25 @@ DvtTimelineRenderer._renderScrollHotspots = function(timeline)
       else
       {
         if (isRTL)
-          var key = Math.abs(i - 1);
+        {
+          if (seriesCount == 1)
+          {
+            seriesKey = 0;
+            axisKey = 1;
+          }
+          else
+          {
+            seriesKey = Math.abs(i - 1);
+            axisKey = seriesKey;
+          }
+        }
         else
-          key = i;
-        topX = timeline._startX + (key * (timeline._seriesSize + axisSize)) + hotspotPadding;
-        bottomX = timeline._startX + ((key + 1) * timeline._seriesSize) + (key * axisSize) - hotspotWidth - hotspotPadding;
+        {
+          seriesKey = i;
+          axisKey = seriesKey;
+        }
+        topX = timeline._startX + (seriesKey * timeline._seriesSize) + (axisKey * axisSize) + hotspotPadding;
+        bottomX = timeline._startX + ((seriesKey + 1) * timeline._seriesSize) + (axisKey * axisSize) - hotspotWidth - hotspotPadding;
         topY = timeline._startY + (timeline._canvasLength - hotspotHeight) / 2;
         bottomY = topY;
         arrowTopX = topX + hotspotArrowWidth / 2;
@@ -4575,7 +4610,12 @@ DvtTimelineRenderer._renderZoomControls = function(timeline)
   if (!isRTL)
     var transX = xOffset;
   else
+  {
+    // timeline._startX includes the overview size when vertical, but we only want the border width
+    if (timeline._isVertical && timeline._hasOverview)
+      xOffset = xOffset - timeline._overviewSize;
     transX = timeline._backgroundWidth - xOffset - DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
+  }
 
   zoomControlProperties['zoomInProps']['posX'] = transX;
   zoomControlProperties['zoomOutProps']['posX'] = transX;
@@ -5692,23 +5732,29 @@ DvtTimelineSeries.prototype.triggerAnimations = function()
   var context = this.getCtx();
   if (this._rmAnimationElems && this._rmAnimationElems.length != 0)
   {
-    this._isAnimating = true;
+    // Disable event listeners temporarily
+    this._callbackObj.EventManager.removeListeners(this._callbackObj);
     var fadeOutAnimator = new dvt.ParallelPlayable(context, new dvt.AnimFadeOut(context, this._rmAnimationElems, DvtTimelineStyleUtils.getAnimationDuration(this.Options)));
-    fadeOutAnimator.play();
     dvt.Playable.appendOnEnd(fadeOutAnimator, this._onRmAnimationEnd, this);
+    this._callbackObj.Animation = fadeOutAnimator;
+    fadeOutAnimator.play();
   }
-  else if (this._mvAnimator)
+  else if (this._mvAnimator && this._hasMvAnimations)
   {
-    this._isAnimating = true;
-    this._mvAnimator.play();
+    // Disable event listeners temporarily
+    this._callbackObj.EventManager.removeListeners(this._callbackObj);
     dvt.Playable.appendOnEnd(this._mvAnimator, this._onMvAnimationEnd, this);
+    this._callbackObj.Animation = this._mvAnimator;
+    this._mvAnimator.play();
   }
   else if (this._frAnimationElems && this._frAnimationElems.length != 0)
   {
-    this._isAnimating = true;
+    // Disable event listeners temporarily
+    this._callbackObj.EventManager.removeListeners(this._callbackObj);
     var fadeInAnimator = new dvt.ParallelPlayable(context, new dvt.AnimFadeIn(context, this._frAnimationElems, DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
-    fadeInAnimator.play();
     dvt.Playable.appendOnEnd(fadeInAnimator, this._onAnimationEnd, this);
+    this._callbackObj.Animation = fadeInAnimator;
+    fadeInAnimator.play();
   }
 };
 
@@ -5727,8 +5773,9 @@ DvtTimelineSeries.prototype._onRmAnimationEnd = function()
   }
   if (this._mvAnimator && this._hasMvAnimations)
   {
-    this._mvAnimator.play();
+    this._callbackObj.Animation = this._mvAnimator;
     dvt.Playable.appendOnEnd(this._mvAnimator, this._onMvAnimationEnd, this);
+    this._mvAnimator.play();
   }
   else
     this._onMvAnimationEnd();
@@ -5743,8 +5790,9 @@ DvtTimelineSeries.prototype._onMvAnimationEnd = function()
   if (this._frAnimationElems && this._frAnimationElems.length != 0)
   {
     var fadeInAnimator = new dvt.ParallelPlayable(this.getCtx(), new dvt.AnimFadeIn(this.getCtx(), this._frAnimationElems, DvtTimelineStyleUtils.getAnimationDuration(this.Options), this._isInitialRender ? 0 : 0));//0.8 : 0));
-    fadeInAnimator.play();
     dvt.Playable.appendOnEnd(fadeInAnimator, this._onAnimationEnd, this);
+    this._callbackObj.Animation = fadeInAnimator;
+    fadeInAnimator.play();
   }
   else
     this._onAnimationEnd();
@@ -5756,7 +5804,6 @@ DvtTimelineSeries.prototype._onMvAnimationEnd = function()
  */
 DvtTimelineSeries.prototype._onAnimationEnd = function()
 {
-  this._isAnimating = false;
   this._callbackObj.onAnimationEnd();
 };
 

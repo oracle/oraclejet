@@ -263,7 +263,13 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
     this._fetchType = 'loadMore';
   }
   this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
-  var pageSize = options['pageSize'] != null ? options['pageSize'] : this._pageSize;
+  var pageSize = options['pageSize'] == null ? this._pageSize : options['pageSize'];
+  
+  if (this._pageSize == null)
+  {
+    this._pageSize = pageSize;
+  }
+  
   options['pageSize'] = pageSize;
   options['startIndex'] = this._startIndex;
   

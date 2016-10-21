@@ -39,12 +39,13 @@ oj.DefaultNavListHandler.prototype.Expand = function (groupItem, animate, event)
 /**
  * Collapse group Item
  * @param {jQuery} item  Group Item
+ * @param {Object} key key of Group item
  * @param {boolean} animate true if animate the collapse operation, false otherwise
  * @param {Event} event the event that triggers collapse.  Note that event could be null in the case where this is programmatically done by the widget
  * @return {Promise} A Promise that resolves when collapse animation completes
  * @private
  */
-oj.DefaultNavListHandler.prototype.Collapse = function (item, animate, event) {
+oj.DefaultNavListHandler.prototype.Collapse = function (item, key, animate, event) {
   return Promise.resolve(null);
 };
 
@@ -77,7 +78,12 @@ oj.DefaultNavListHandler.prototype.UpdateAriaPropertiesOnSelectedItem = function
  * @private
  */
 oj.DefaultNavListHandler.prototype.BeforeRenderComplete = function () {
-
+  var role = this.m_widget.element.attr("role"),
+      roleOnRootNode = this.m_root.attr("role");
+  if( role && role != "presentaion" && !roleOnRootNode ) {
+    this.m_widget.element.attr('role','presentation');
+    this.m_root.attr("role", role);
+  }
 };
 /**
  * Called by content handler once the content of an item is rendered triggered by an insert event
@@ -179,6 +185,26 @@ oj.DefaultNavListHandler.prototype.setOptions = function (options) {
 };
 
 /**
+ * Handler for blur event
+ * @param {Event} event the blur event
+ * @protected
+ */
+oj.DefaultNavListHandler.prototype.HandleBlur = function(event)
+{
+  return _ojNavigationListView.superclass.HandleBlur.apply(this.m_widget, arguments);
+};
+
+/**
+ * Handler for focus event
+ * @param {Event} event the focus event
+ * @protected
+ */
+oj.DefaultNavListHandler.prototype.HandleFocus = function(event)
+{
+  return _ojNavigationListView.superclass.HandleFocus.apply(this.m_widget, arguments);
+};
+
+/**
  * Handler for Horizontal Navigation List
  * @constructor
  * @extends oj.DefaultNavListHandler
@@ -245,7 +271,8 @@ oj.HorizontalNavListHandler.prototype.ModifyListItem = function ($item, itemCont
 
 oj.HorizontalNavListHandler.prototype.BeforeRenderComplete = function () {
   var self = this;
-  this.m_widget.element.attr('role', 'toolbar');
+  this.m_root.attr('role', 'toolbar');
+  this.m_widget.element.attr('role','presentation');
   this.m_widget.element.find('.' + this.m_widget.getItemElementStyleClass() + ':visible').each(function (index) {
     if (index > 0) {
       self._addSeparator(this, index);
@@ -318,7 +345,7 @@ oj.CollapsibleNavListHandler.prototype.Expand = function (groupItem, animate, ev
   return _ojNavigationListView.superclass.AnimateExpand.apply(this.m_widget, arguments);
 };
 
-oj.CollapsibleNavListHandler.prototype.Collapse = function (item, animate, event) {
+oj.CollapsibleNavListHandler.prototype.Collapse = function (item, key, animate, event) {
   return _ojNavigationListView.superclass.AnimateCollapse.apply(this.m_widget, arguments);
 };
 
@@ -526,12 +553,13 @@ oj.SlidingNavListHandler.prototype.Expand = function (groupItem, animate, event)
 /**
  * Collapse item in sliding navigation list
  * @param {Object} target target list root
+ * @param {Object} key the key of the group item
  * @param {boolean} animate flag to trigger animation or not
  * @param {Event} event the event that triggers collapse.  Note that event could be null in the case where this is programmatically done by the widget
  * @return {Promise} A Promise that resolves when collapse animation completes
  * @private
  */
-oj.SlidingNavListHandler.prototype.Collapse = function (target, animate, event) {
+oj.SlidingNavListHandler.prototype.Collapse = function (target, key, animate, event) {
   var animationResolve;
   var animationPromise = new Promise(function (resolve, reject) {
     animationResolve = resolve;
@@ -634,7 +662,8 @@ oj.SlidingNavListHandler.prototype.ModifyListItem = function ($item, itemContent
 };
 
 oj.SlidingNavListHandler.prototype.BeforeRenderComplete = function () {
-  this.m_widget.element.attr('role', 'menu');
+  this.m_root.attr('role', 'menu');
+  this.m_widget.element.attr('role','presentation');
 };
 
 oj.SlidingNavListHandler.prototype.Init = function (opts) {
@@ -653,31 +682,31 @@ oj.SlidingNavListHandler.prototype._buildSlidingNavListHeader = function (opts) 
   this._toolbar = $(document.createElement('div'));
   this._toolbar.addClass('oj-navigationlist-toolbar');
   this._previousLink = $(document.createElement('a'));
-  this._prevIcon = $(document.createElement('span'));
-  this._prevIcon.addClass('oj-navigationlist-previous-icon oj-component-icon oj-clickable-icon-nocontext')
-    .attr('role', 'img')
-    .attr('alt', this.m_component.getTranslatedString('previousIcon'));
-  this._prevIcon.css('visibility', 'hidden');
+  this._prevButton = $(document.createElement('a'));
+  this._prevButton.addClass('oj-navigationlist-previous-button');
+  this._prevButton.css('visibility', 'hidden')
+                  .attr('tabindex', '-1'); // @HTMLUpdateOK
   this._previousLink.addClass('oj-navigationlist-previous-link')
-    .attr('tabindex', '-1')
-    .append(this._prevIcon); // @HTMLUpdateOK
+    .attr('tabindex', '-1'); // @HTMLUpdateOK
   this._headerLabel = $(document.createElement('label'));
   this._headerLabel.addClass('oj-navigationlist-current-header')
     .text(this.m_widget.getRootLabel());
   this._vSeparator = $(document.createElement('span'));
-  this._vSeparator.attr('role', 'separator')
-    .attr('aria-orientation', 'vertical')
+  this._vSeparator.attr('role', 'separator')// @HTMLUpdateOK
+    .attr('aria-orientation', 'vertical')// @HTMLUpdateOK
     .addClass('oj-navigationlist-toolbar-separator');
   this._hviewBtn = $(document.createElement('button'));
-  this._hviewBtn.addClass('oj-navigationlist-hierarchical-button');
+  this._hviewBtn.addClass('oj-navigationlist-hierarchical-button')
+                .attr('tabindex', '-1');// @HTMLUpdateOK
   this._hviewMenu = $(document.createElement('ul'));
   this._hviewMenu.addClass('oj-navigationlist-hierarchical-menu').hide();
   selectedLabel = $(document.createElement('label'));
   selectedLabel.addClass('oj-helper-hidden-accessible')
-    .attr('aria-hidden', 'true')
-    .attr('id', 'selectedLabel');
+    .attr('aria-hidden', 'true')// @HTMLUpdateOK
+    .attr('id', 'selectedLabel');// @HTMLUpdateOK
   selectedLabel.text(this.m_component.getTranslatedString('selectedLabel'));
   this._previousLink.append(this._headerLabel); // @HTMLUpdateOK
+  this._toolbar.append(this._prevButton); // @HTMLUpdateOK
   this._toolbar.append(this._previousLink) // @HTMLUpdateOK
     .append(this._vSeparator) // @HTMLUpdateOK
     .append(this._hviewBtn) // @HTMLUpdateOK
@@ -746,6 +775,15 @@ oj.SlidingNavListHandler.prototype._initializeHierarchicalView = function () {
     'disabled': true,
     'chroming': 'half'
   });
+
+  this._prevButton.ojButton({
+    'label': this.m_component.getTranslatedString('previousIcon'),
+    'display': 'icons',
+    'icons': {
+      start: 'oj-navigationlist-previous-icon oj-component-icon oj-clickable-icon-nocontext'
+    },
+    'chroming': 'half'
+  });
 };
 
 /**
@@ -761,7 +799,7 @@ oj.SlidingNavListHandler.prototype._addItemToHviewMenu = function (itemKey, labe
     var itemsinTree = this._hviewMenu.find('li').length;
     var menuListItem = $(document.createElement('li'));
     var menuItem = $(document.createElement('a'));
-    menuItem.attr('href', '#');
+    menuItem.attr('href', '#');// @HTMLUpdateOK
     menuListItem.append(menuItem); // @HTMLUpdateOK
     if (itemsinTree > 0) {
       for (i = 0; i < itemsinTree; i++) {
@@ -785,8 +823,10 @@ oj.SlidingNavListHandler.prototype._addItemToHviewMenu = function (itemKey, labe
     this._hviewMenu.ojMenu('refresh');
     this._showOrHideHierarchyMenu(this.m_widget.GetOption('hierarchyMenuDisplayThresholdLevel'));
     this._hviewBtn.ojButton("option", "disabled", false);
-    this._prevIcon.css('visibility', 'visible');
-    this._previousLink.attr('tabindex', '0');
+    this._prevButton.css('visibility', 'visible');
+    if (this.m_widget.getRootElement().hasClass('oj-focus-ancestor')) {
+       this._prevButton.attr('tabindex', '0');// @HTMLUpdateOK
+    }
     this._headerLabel.text(label);
   }
 };
@@ -802,7 +842,7 @@ oj.SlidingNavListHandler.prototype._showOrHideHierarchyMenu = function (hierarch
     this._vSeparator.css('visibility', 'hidden');
     if(this._hviewBtn[0] === document.activeElement) { // is(:focus) failing during test cases so using document.activeElement.
       //tried by moving focus to <ul> using  this.m_widget.focus() but listview listen for focusin event.
-      this.m_widget.element.focusin();
+      this.m_root.focusin();
     }
     this._hviewBtn.css('visibility', 'hidden');
   } else if (itemsinTree >= hierarchyMenuDisplayThresholdLevel) {
@@ -822,8 +862,8 @@ oj.SlidingNavListHandler.prototype._removeItemFromHviewMenu = function () {
     this._showOrHideHierarchyMenu(this.m_widget.GetOption('hierarchyMenuDisplayThresholdLevel'));
     if (this._hviewMenu.children('li').length === 0) {
       this._hviewBtn.ojButton("option", "disabled", true);
-      this._prevIcon.css('visibility', 'hidden');
-      this._previousLink.attr('tabindex', '-1');
+      this._prevButton.css('visibility', 'hidden');
+      this._prevButton.attr('tabindex', '-1');// @HTMLUpdateOK
       this._headerLabel.text(this.m_widget.getRootLabel());
     } else {
       this._headerLabel.text(removed.children('a').text());
@@ -837,6 +877,57 @@ oj.SlidingNavListHandler.prototype.RestoreItem = function (item, itemContent, su
     .removeAttr('aria-expanded')
     .removeAttr('aria-describedby')
     .removeAttr('aria-hidden');
+};
+
+oj.SlidingNavListHandler.prototype._makeToolbarItemsFocusable = function (enable) {
+  var itemsinTree;
+  if (enable) {
+    itemsinTree = this._hviewMenu.find('li').length;
+    if (itemsinTree) {
+      this._prevButton.attr('tabindex', '0');// @HTMLUpdateOK
+    }
+    this._hviewBtn.attr('tabindex', '0');// @HTMLUpdateOK
+  } else {
+    this._prevButton.attr('tabindex', '-1');// @HTMLUpdateOK
+    this._hviewBtn.attr('tabindex', '-1');// @HTMLUpdateOK
+  }
+};
+/**
+ * Handler for focus event
+ * @param {Event} event the focus event
+ * @protected
+ * @override
+ */
+oj.SlidingNavListHandler.prototype.HandleFocus = function (event) {
+  //If focus is on navlist or items but not on toolbar
+  if (!($.contains(this._toolbar.get(0), /** @type {Element} */ (event.target)) ||
+      this._hviewMenu.get(0) === /** @type {Element} */ (event.relatedTarget))) {
+    //make toolbar items focusable
+    this._makeToolbarItemsFocusable(true);
+    _ojNavigationListView.superclass.HandleFocus.apply(this.m_widget, arguments);
+  }
+
+};
+
+/**
+ * Handler for blur event
+ * @param {Event} event the blur event
+ * @protected
+ * @override
+ */
+oj.SlidingNavListHandler.prototype.HandleBlur = function (event) {
+  //If focus going to toolbar remove focus ancestor and unhighlight the active one
+  if ($.contains(this._toolbar.get(0), /** @type {Element} */ (event.relatedTarget)) ||
+    this._hviewMenu.get(0) === /** @type {Element} */ (event.relatedTarget)) {
+    this.m_widget.UnhighlightActive();
+  } else {
+    // if focus moves out side navlist make toolbar items not focusable
+    if (event.relatedTarget == null || !$.contains(this.m_root.get(0), /** @type {Element} */ (event.relatedTarget))) {
+      this._makeToolbarItemsFocusable(false);
+    }
+    _ojNavigationListView.superclass.HandleBlur.apply(this.m_widget, arguments);
+
+  }
 };
 
 /**
@@ -1056,34 +1147,61 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @override
      * @protected
      */
-    SetAriaProperties: function () {
-      //Set aria-labelledby or aria-label
-      var ariaLabelId = this.ojContext.element.attr('aria-labelledby');
-      if (ariaLabelId) {
-        this.element.attr('aria-labelledby', ariaLabelId);
-        this.ojContext.element.removeAttr('aria-labelledby');
-      } else {
-        this.element.attr('aria-label', this.getRootLabel());
-      }
-      _ojNavigationListView.superclass.SetAriaProperties.apply(this, arguments);
-    },
+     SetAriaProperties: function () {
+        this.ojContext.element.attr("aria-multiselectable", false);
+     },
+
+    /**
+    * Handler for focus event
+    * @param {Event} event the focus event
+    * @protected
+    * @override
+    */
+   HandleFocus: function(event)
+   {
+     return this.m_listHandler.HandleFocus(event);
+   },
+
+   /**
+    * Handler for blur event
+    * @param {Event} event the blur event
+    * @protected
+    * @override
+    */
+   HandleBlur: function(event)
+   {
+     return this.m_listHandler.HandleBlur(event);
+   },
+
+   /**
+    * Sets the tab index attribute of the root element
+    * @override
+    */
+   SetRootElementTabIndex: function()
+   {
+       this.ojContext.element.attr("tabIndex", 0);
+   },
+
+   /**
+    * Removes the tab index attribute of the root element
+    * @override
+    */
+   RemoveRootElementTabIndex: function()
+   {
+       this.ojContext.element.removeAttr("tabIndex");
+
+   },
+
     /**
      * Removes wai-aria properties on root element
      * @override
      * @protected
      */
-    UnsetAriaProperties: function () {
-      //restore aria-labelledby on root element
-      if (this.element.attr('aria-labelledby')) {
-        this.ojContext.element.attr('aria-labelledby', this.element.attr('aria-labelledby'));
-        this.element.removeAttr('aria-labelledby');
-      }
+     UnsetAriaProperties: function () {
+       this.ojContext.element.removeAttr("aria-activedescendant")
+                   .removeAttr("aria-multiselectable");
+     },
 
-      if (this.element.attr('aria-label')) {
-        this.element.removeAttr('aria-label');
-      }
-      _ojNavigationListView.superclass.UnsetAriaProperties.apply(this, arguments);
-    },
     /**
      * Overriding init to initialize list with respective List handler.
      * @override
@@ -1118,6 +1236,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
           self._collapseCurrentList(event);
         },
         "keydown .oj-navigationlist-previous-link": function (event) {
+          if (event.keyCode === $.ui.keyCode.ENTER) {
+            self._collapseCurrentList(event);
+          }
+        },
+        "click .oj-navigationlist-previous-button": function (event) {
+          self._collapseCurrentList(event);
+        },
+        "keydown .oj-navigationlist-previous-button": function (event) {
           if (event.keyCode === $.ui.keyCode.ENTER) {
             self._collapseCurrentList(event);
           }
@@ -1312,8 +1438,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @override
      * @protected
      */
-    AnimateCollapse: function (item, animate, event) {
-      return this.m_listHandler.Collapse(item, animate, event);
+    AnimateCollapse: function (item, key, animate, event) {
+      return this.m_listHandler.Collapse(item, key, animate, event);
     },
     /**
      * Handles arrow keys navigation on item
@@ -1837,7 +1963,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       }
 
       if (subId === 'oj-navigationlist-previous-link') {
-        return this.m_listHandler._previousLink ? this.m_listHandler._previousLink[0] : null;
+        return this.m_listHandler._prevButton ? this.m_listHandler._prevButton[0] : null;
       }
 
       if (subId === 'oj-navigationlist-hierarchical-button') {
@@ -1859,7 +1985,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     getSubIdByNode: function (node) {
       var item, key;
-      if (this.m_listHandler._previousLink && this.m_listHandler._previousLink[0] === node) {
+      if (this.m_listHandler._prevButton && this.m_listHandler._prevButton[0] === node) {
         return {
           'subId': 'oj-navigationlist-previous-link'
         };

@@ -372,6 +372,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        * If removable is false, all tabs are not removable.
        * If removable is true, all tabs are removable.<p>
        * If an array is specified, the array contains ids of the tabs that are removable. 
+       * <p>Please note that this option is only supported if the orientation option is horizontal.
        *
        * @expose 
        * @memberof! oj.ojTabs
@@ -1876,25 +1877,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           event.preventDefault();
 
         //if tab to be removed is selected, select the next enabled tab
+        var newSelectedContentId;
         if (tab.hasClass("oj-selected"))
         {
-          //fire select event   
           var nextIndex = this._getNextEnabledTab(this.tabs.index(tab));
 
           // no enabled tabs left
           if (nextIndex === undefined) {
             this.active = undefined;
-            //fire option change event
-            this.option("selected", undefined,
-                        {'_context': {originalEvent: oEvent, internalSet: true}});
+            newSelectedContentId = -1;
           }
           else {
-            //fire selected event
-            this._fireSelectEvents(nextIndex, oEvent);
-
-            //fire option change event
-            this.option("selected", this._getTabIdOrIndex($(this.tabs[nextIndex])),
-                        {'_context': {originalEvent: oEvent, internalSet: true}});
+            newSelectedContentId = $(this.tabs[nextIndex]).attr("data-content");            
           }
         }
 
@@ -1909,6 +1903,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         this._updateDisabledTabs();
 
         this.refresh();
+
+        //if the deleted tab was selected, fire option change event
+        if (newSelectedContentId === -1) {
+          // no enabled tabs left
+          this.option("selected", undefined,
+                      {'_context': {originalEvent: oEvent, internalSet: true}});
+        }
+        else if (newSelectedContentId) {
+          var ntab = this._getTab(newSelectedContentId);
+          if (ntab) {
+            //fire selected event
+            this._fireSelectEvents(this.tabs.index(ntab), oEvent);
+
+            this.option("selected", this._getTabIdOrIndex(ntab),
+                        {'_context': {originalEvent: oEvent, internalSet: true}});
+          }
+        }
 
         // - tab area grabs focus when tabs are closed
         //set focus on the active
@@ -1926,6 +1937,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
 
     /**
      * Remove a tab from the tab bar.
+     * <p>Please note that the tab must be <a href="#removable">removable</a>
      * 
      * @expose 
      * @memberof! oj.ojTabs
@@ -2076,13 +2088,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         this._fireSelectEvents(0);
 
       // - overflow icons do not appear correctly
-      var self = this;
-
-      window.setTimeout(function () {
         // - new tabs don't get focus
-        if (self.tabs)
+      // - tabs flash when adding
           tab[0].scrollIntoView(false);
-      }, 0);
 
     },
 
@@ -2110,6 +2118,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         this.tablist.sortable(
         {
           axis: (self._isHorizontal()) ? "x" : "y",
+          distance: 10,
           stop: function(event, ui)
           {
             //find the element that was moved

@@ -45,9 +45,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.1.0",
-  'build' : "19",
-  'revision': "28112",
+  'version': "2.2.0",
+  'build' : "10",
+  'revision': "29506",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -3244,7 +3244,7 @@ oj.BusyState = function (description)
    * @private
    * @type {number}
    */
-  this._addedWaitTs = window["performance"].now(); // closure compiler doesn't know this new global
+  this._addedWaitTs = oj.BusyState._getTs();
 
   /**
    * @ignore
@@ -3307,7 +3307,7 @@ oj.BusyState.prototype.toString = function ()
   if (this["description"])
     buff += ", description=" + this["description"];
 
-  var elapsed = window["performance"].now() - this._addedWaitTs;
+  var elapsed = oj.BusyState._getTs() - this._addedWaitTs;
   buff += ", elapsed=" + elapsed + "]";
 
   return buff;
@@ -3323,6 +3323,16 @@ oj.BusyState.prototype.equals = function (target)
 {
   // using this syntax to make the closure compiler happy.
   return this["id"] === target["id"] && this["description"] === target["description"];
+};
+
+/**
+ * @private
+ * @returns {number} current date represented by a number
+ */
+oj.BusyState._getTs = function ()
+{
+  // Safari V9.1.1 doesn't yet support performance.now
+  return window["performance"] ? window["performance"].now() : new Date().getTime();
 };
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -3368,7 +3378,7 @@ oj.BusyContext.prototype.Init = function ()
    * @ignore
    * @private
    */
-  this._statesMap = new window["Map"]();  // closure compiler doesn't know of the Map type yet
+  this._statesMap = new Map();
 
   /**
    * Coordinates resolution of the master when ready promise with one or more slave
@@ -3803,8 +3813,11 @@ oj.Context.prototype.getBusyContext = function ()
 };
 
 // If the app has opt'd in on the strategy, add a busy state for the purpose of blocking
-// until the app bootstrap has compoeted.
-oj.Context.getPageContext().getBusyContext().__bootstrapAddBusyState();
+// until the app bootstrap has completed.
+//
+// ignore if running in a JS context that doesn't have the global window object defined
+if (typeof window !== 'undefined')
+  oj.Context.getPageContext().getBusyContext().__bootstrapAddBusyState();
 /*
 ** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 **

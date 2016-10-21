@@ -717,6 +717,22 @@ oj.TableDataSourceContentHandler.prototype._removeDataSourceEventListeners = fun
 };
 
 /**
+ * Checks whether loading indicator should be appended to the end of the list
+ * @param {Object} results fetch result set
+ * @return {boolean} whether loading indicator should be appended to the end of list
+ * @private
+ */
+oj.TableDataSourceContentHandler.prototype._shouldAppendLoadingIndicator = function(results)
+{
+    // checks if it's highwatermark scroling and there are results and the total size is either unknown or
+    // more than the size of the result set
+    return this._isLoadMoreOnScroll() && 
+           results != null && 
+           results['keys'] && results['keys'].length > 0 &&
+           (this.m_dataSource.totalSize() == -1 || this.m_dataSource.totalSize() > results['keys'].length);
+};
+
+/**
  * @param {boolean} forceFetch
  * @override
  */
@@ -775,10 +791,13 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
                                  $(self.m_root).empty();
 
                                  self._handleFetchedData(value); 
-                                 // initial fetch we'll append the loading indicator at the end (for highwatermark scrolling)
-                                 if (self._isLoadMoreOnScroll() && value != null && value['keys'] && value['keys'].length > 0)
+                                 // append loading indicator at the end as needed
+                                 if (self._shouldAppendLoadingIndicator(value))
                                  {
                                      self._appendLoadingIndicator();
+
+                                     // check scroll position again since loading indicator added space to scroll
+                                     self.m_widget.syncScrollPosition();
                                  }
                              }}, 
                          function(reason){ 
@@ -1935,36 +1954,33 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             {
                 self.HandleKeyDown(event);
             },
-            "focus": function(event)
-            {
-                self.HandleFocus(event);
-            },
-            "blur": function(event)
-            {
-                self.HandleBlur(event);
-            },
             "ojpanmove": function(event)
             {
                 self._handleMouseUpOrPanMove(event);
             }
         });
-
-        // in Firefox, first tab will focus on the list container
+        this.ojContext._on(this.ojContext.element, {
+          "focus": function(event)
+          {
+              self.HandleFocus(event);
+          },
+          "blur": function(event)
+          {
+              self.HandleBlur(event);
+          },
+        });
+        
+        // in Firefox, need to explicitly make list container not focusable otherwise first tab will focus on the list container
         if (oj.AgentUtils.getAgentInfo()['browser'] === oj.AgentUtils.BROWSER.FIREFOX)
         {
-            this.ojContext._on(this._getListContainer(), {
-                "focus": function(event) 
-                {
-                    self.element.focus();
-                }
-            });
+            this._getListContainer().attr("tabIndex", -1);
         }
 
         // for item focus mode (aka roving focus), we'll need to use focusout handler instead
         // of blur because blur doesn't bubble
         if (this.GetFocusMode() === this.FOCUS_MODE_ITEM)
         {
-            this.ojContext._on(this.element, {
+            this.ojContext._on(this.ojContext.element, {
                 "focusin": function(event)
                 {
                     self.HandleFocus(event);
@@ -2091,6 +2107,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         this.m_active = null;
         this.m_isExpandAll = null;
+        this.m_disclosing = null;
 
         this.readinessStack = [];
         this.readyPromise = new Promise(function(resolve, reject)
@@ -2099,6 +2116,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         });
 
         this.ClearCache();
+    },
+
+    /**
+     * Called when listview root element is re-attached to DOM tree.
+     * Invoke by widget
+     */
+    notifyAttached: function()
+    {
+        // restore scroll position as needed since some browsers reset scroll position 
+        this.syncScrollPosition();
     },
 
     /**
@@ -2128,6 +2155,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     notifyShown: function()
     {
+        // restore scroll position as needed since some browsers reset scroll position 
+        this.syncScrollPosition();
+
         // call ContentHandler in case action is neccessarily
         if (this.m_contentHandler != null)
         {
@@ -2375,7 +2405,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     ShouldApplyHighlight: function()
     {
-        return false;
+        return true;
     },
     /**
      * check Whether recent pointer acivity happened or not. 
@@ -2412,7 +2442,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     setOptions: function(options, flags)
     { 
-        var self, elem, expanded, selection, i;
+        var self, elem, expanded, selection, i, scroller, pos;
 
         if (this.ShouldRefresh(options))
         {
@@ -2441,6 +2471,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // q: could expanded be change if drillMode is 'expanded'?
             if (this.m_contentHandler.IsHierarchical())
             {
+                // clear collapsed items var
+                this._collapsedKeys = undefined;
+
                 expanded = options['expanded'];
 
                 if (Array.isArray(expanded))
@@ -2514,6 +2547,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (options['contextMenu'] != null)
         {
             this._addContextMenu(options['contextMenu']);
+        }
+
+        if (options['scrollTop'] != null)
+        {
+            scroller = this._getScroller();
+            pos = options['scrollTop'];
+            if (pos != null && !isNaN(pos))
+            {
+                scroller.scrollTop = pos;
+            }
         }
 
         return false;
@@ -3114,8 +3157,11 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                 // checks if expand all
                 if (this._isExpandAll())
                 {
-                    // don't animate
-                    this.ExpandItem($(elem), null, false, null, false, false, false);
+                    if (this._collapsedKeys == undefined)
+                    {
+                        // don't animate
+                        this.ExpandItem($(elem), null, false, null, false, false, false);
+                    }
                 }
                 else if (Array.isArray(expanded))
                 {
@@ -3123,7 +3169,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
                     self = this;
                     $.each(expanded, function(index, value)
                     {
-                        if (value == context['key'])
+                        // if it was explicitly collapsed
+                        if (value == context['key'] && (self._collapsedKeys == undefined || self._collapsedKeys.indexOf(value) == -1))
                         {
                             // don't animate
                             self.ExpandItem($(elem), null, false, null, false, false, false);
@@ -3194,8 +3241,39 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             this._initFocus();
         }
 
+        // update scroll position if it's not in sync
+        this.syncScrollPosition();
+
         // fire ready event
         this.Trigger("ready", null, {});
+    },
+
+    /**
+     * Synchronize the scroll position
+     * @protected
+     */
+    syncScrollPosition: function()
+    {
+        var top, scroller;
+
+        top = this.GetOption("scrollTop");
+        if (!isNaN(top))
+        {
+            scroller = this._getScroller();
+            if (top != scroller.scrollTop)
+            {
+                scroller.scrollTop = top;
+
+                // checks if further scrolling is needed
+                if (scroller.scrollTop != top)
+                {
+                    this._skipScrollUpdate = true;
+                    return;
+                }
+            }
+        }
+
+        this._skipScrollUpdate = false;
     },
 
     /**
@@ -3261,12 +3339,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (eventType === "keyboard")
         {
             openOptions["position"] = {"my": "start top", "at": "start bottom", "of": this.m_active['elem']};
-        }
-
-        // if drag and drag is enabled, add default context menu
-        if (this.m_dndContext != null)
-        {
-            this.m_dndContext._handleContextMenuBeforeOpen($(menu.element), event);
         }
 
         this.ojContext._OpenContextMenu(event, eventType, openOptions);
@@ -3441,10 +3513,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             }
 
             // remove tab index from root and restore tab index on focus item
-/*
             this.RemoveRootElementTabIndex();
             this._setTabIndex(this.m_active['elem']);
-*/
         }
     },
 
@@ -3486,27 +3556,48 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Checks whether the browser supports relatedTarget field for blur event
+     * @return {boolean} true if supported, false otherwise
+     * @private
+     */
+    _supportRelatedTargetOnBlur: function()
+    {
+        var agent = oj.AgentUtils.getAgentInfo();
+        if (agent['browser'] == oj.AgentUtils.BROWSER.FIREFOX && parseInt(agent['browserVersion'], 10) < 48)
+        {
+            return false;
+        }
+
+        return true;
+    },
+
+    /**
      * Handler for blur event
      * @param {Event} event the blur event
      * @protected
      */
     HandleBlur: function(event)
     {
+        // NOTE that prior to a fix in Firefox 48, relatedTarget is always null
+        // just bail in case if it wasn't supported
+        if (!this._supportRelatedTargetOnBlur())
+        {
+            return;
+        }
+
         // event.relatedTarget would be null if focus out of page
         // the other check is to make sure the blur is not caused by shifting focus within listview
-        if (event.relatedTarget == null || !$.contains(this.element.get(0), /** @type {Element} */ (event.relatedTarget)))
+        if (event.relatedTarget == null || !$.contains(this.ojContext.element.get(0), /** @type {Element} */ (event.relatedTarget)))
         {
             this._getListContainer().removeClass("oj-focus-ancestor");
             this.UnhighlightActive();
 
             // remove tab index from focus item and restore tab index on list
-/*
             if (this.m_active != null)
             {
                 this._resetTabIndex(this.m_active['elem']);
             }
             this.SetRootElementTabIndex();
-*/
         }
     },
 
@@ -3627,8 +3718,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         var item, target;
 
-        this.m_preActive = true;
-
         // click on item
         target = $(event.target);
 
@@ -3650,6 +3739,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             // 5) target is the drag handle
             return;
         }
+
+        this.m_preActive = true;
 
         // make sure listview has focus
         if (!this._getListContainer().hasClass("oj-focus-ancestor"))
@@ -5005,6 +5096,58 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
     /********************************** Disclosure **********************************************/
     /**
+     * Whether the group item is currently in the middle of expanding/collapsing
+     * @param {Object} key the key of the group item
+     * @return {boolean} true if it's expanding/collapsing, false otherwise
+     * @private
+     */
+    _isDisclosing: function(key)
+    {
+        if (key && this.m_disclosing)
+        {
+            return (this.m_disclosing.indexOf(key) > -1);
+        }
+
+        return false;
+    },
+
+    /**
+     * Marks a group item as currently in the middle of expanding/collapsing
+     * @param {Object} key the key of the group item
+     * @param {boolean} flag true or false
+     * @private
+     */
+    _setDisclosing: function(key, flag)
+    {
+        var index;
+
+        if (key == null)
+        {
+            return;
+        }
+
+        if (this.m_disclosing == null)
+        {
+            this.m_disclosing = [];
+        }
+
+        if (flag)
+        {
+            this.m_disclosing.push(key);
+        }
+        else
+        {
+            // there should be at most one entry, but just in case remove all occurrences
+            index = this.m_disclosing.indexOf(key);
+            while (index > -1)
+            {
+                this.m_disclosing.splice(index, 1);
+                index = this.m_disclosing.indexOf(key);
+            }
+        }
+    },         
+
+    /**
      * Gets the animation effect for the specific action
      * @param {string} action the action to retrieve the effect
      * @return {Object} the animation effect for the action
@@ -5061,13 +5204,14 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * @param {boolean} beforeVetoable true if beforeExpand event can be veto, false otherwise
      * @param {boolean} fireBefore true if this should trigger a beforeExpand event
      * @param {boolean} fireAfter true if this should trigger an expand event
+     * @param {boolean} animate true if animate the expand operation, false otherwise
      */
-    expandKey: function(key, beforeVetoable, fireBefore, fireAfter)
+    expandKey: function(key, beforeVetoable, fireBefore, fireAfter, animate)
     {
         var item = this.FindElementByKey(key);
         if (item != null)
         {
-            this.ExpandItem($(item), null, false, key, beforeVetoable, fireAfter, fireBefore);    
+            this.ExpandItem($(item), null, animate, key, beforeVetoable, fireAfter, fireBefore);    
         }
     },
 
@@ -5098,7 +5242,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     ExpandItem: function(item, event, animate, key, beforeVetoable, fireEvent, fireBeforeEvent)
     {
-        var ui, cancelled;
+        var ui, cancelled, index;
 
         // checks if it's already collapsed or not collapsible at all
         if (this.GetState(item) != this.STATE_COLLAPSED)
@@ -5111,6 +5255,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         {
             key = this.GetKey(item[0]);
         }
+
+        // bail if it's in the middle of expanding/collapsing
+        if (animate && this._isDisclosing(key))
+        {
+            return;
+        }
+
         ui = {"item": item, "key": key};
 
         if (fireBeforeEvent)
@@ -5123,6 +5274,11 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         }
 
         this.signalTaskStart(); // signal method task start
+
+        if (animate)
+        {
+            this._setDisclosing(key, true);
+        }
         this.m_contentHandler.Expand(item, function(groupItem){this._expandSuccess(groupItem, animate, event, ui, fireEvent)}.bind(this));
 
         // clear items cache
@@ -5132,6 +5288,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         if (event != null)
         {
             event.stopPropagation();
+        }
+
+        // update var that keeps track of collapsed items
+        if (this._collapsedKeys != null)
+        {
+            index = this._collapsedKeys.indexOf(key);
+            if (index != -1)
+            {
+                this._collapsedKeys.splice(index, 1);
+            }
         }
 
         this.signalTaskEnd(); // signal method task end
@@ -5150,6 +5316,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         var item, collapseClass, expandClass, groupItemStyleClass, key, expanded, clone, animationPromise, self = this;
 
         this.signalTaskStart(); // signal method task start
+
+        // save the key for use when expand complete
+        groupItem.key = ui['key'];
 
         animationPromise = this.AnimateExpand($(groupItem), animate, event);
 
@@ -5291,6 +5460,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     AnimateExpandComplete: function(groupItem)
     {
         groupItem.removeClass(this.getGroupCollapseStyleClass()).addClass(this.getGroupExpandStyleClass());
+        this._setDisclosing(groupItem[0].key, false);
     },
 
     /**
@@ -5299,13 +5469,14 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * @param {Object} key the key of the group item to collapse
      * @param {boolean} fireBefore true if this should trigger a beforeCollapse event
      * @param {boolean} fireAfter true if this should trigger a collapse event
+     * @param {boolean} animate true if animate the collapse operation, false otherwise
      */
-    collapseKey: function(key, fireBefore, fireAfter)
+    collapseKey: function(key, fireBefore, fireAfter, animate)
     {
         var item = this.FindElementByKey(key);
         if (item != null)
         {
-            this.CollapseItem($(item), null, false, key, fireBefore, fireAfter);    
+            this.CollapseItem($(item), null, animate, key, fireBefore, fireAfter);    
         }
     },
 
@@ -5343,6 +5514,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         {
             key = this.GetKey(item[0]);
         }
+
+        // bail if it is in the middle of expanding/collapsing
+        if (animate && this._isDisclosing(key))
+        {
+            return;
+        }
+
         ui = {"item": item, "key": key};
 
         cancelled = !this.Trigger("beforeCollapse", event, ui);
@@ -5353,8 +5531,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         this.signalTaskStart(); // signal method task start
 
+        if (animate)
+        {
+            this._setDisclosing(key, true);
+        }
+
         // animate collapse
-        animationPromise = this.AnimateCollapse(item, animate, event);
+        animationPromise = this.AnimateCollapse(item, key, animate, event);
 
         // update aria expanded
         this.SetState(item, this.STATE_COLLAPSED);
@@ -5381,6 +5564,17 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             })
         }
 
+        // keep track of collapsed item
+        if (this._collapsedKeys == undefined)
+        {
+             this._collapsedKeys = [];
+        }
+            
+        if (this._collapsedKeys.indexOf(key) == -1)
+        {
+            this._collapsedKeys.push(key);
+        }
+
         this.signalTaskEnd(); // signal method task end
     },
 
@@ -5388,12 +5582,13 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * Animate collapse operation
      * To be change by NavList
      * @param {jQuery} item the item to collapse
+     * @param {Object} key the key of the group item
      * @param {boolean} animate true if animate the collapse operation, false otherwise
      * @param {Event} event the event that triggers collapse.  Note that event could be null in the case where this is programmatically done by the widget
      * @return {Promise} A Promise that resolves when collapse animation completes
      * @protected
      */
-    AnimateCollapse: function(item, animate, event)
+    AnimateCollapse: function(item, key, animate, event)
     {
         var totalHeight = 0, groupItem, animationPromise, animationResolve, self = this, effect, elem, action = "collapse", promise;
         
@@ -5403,6 +5598,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         });
 
         groupItem = item.children("ul").first();
+        // save the key for collapse animation complete
+        groupItem[0].key = key;
 
         if (animate)
         {
@@ -5468,6 +5665,8 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         {
             this.m_contentHandler.Collapse(groupItem);
         }
+
+        this._setDisclosing(groupItem[0].key, false);
     },
 
     /**
@@ -5670,19 +5869,29 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _registerScrollHandler: function()
     {
-        var self = this;
+        var self = this, scroller;
 
-        this.ojContext._off(this._getListContainer(), "scroll");
+        scroller = $(this._getScroller());
 
-        if (this._isPinGroupHeader())
-        {
-            this.ojContext._on(this._getListContainer(), {
-                "scroll": function(event)
+        this.ojContext._off(scroller, "scroll");
+
+        this.ojContext._on(scroller, {
+            "scroll": function(event)
+            {
+                // update scrollPosition, don't if scroll isn't complete
+                if (!self._skipScrollUpdate)
+                {
+                    self.SetOption('scrollTop', scroller.get(0).scrollTop, {'_context': {originalEvent: event, internalSet: true}});
+                }
+                self._skipScrollUpdate = false;
+
+                // handle pinning group header 
+                if (self._isPinGroupHeader())
                 {
                     self._handlePinGroupHeader();
                 }
-            });
-        }
+            }
+        });
     },
 
     /**
@@ -5731,7 +5940,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _unpinGroupItem: function(groupItem)
     {
-        groupItem.style.position = "static";
+        $(groupItem).removeClass("oj-pinned");
         groupItem.style.top = "auto";
         groupItem.style.width = "auto";
     },
@@ -5776,7 +5985,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             scrollTop = scrollTop - height;
         }
 
-        groupItem.style.position = "absolute";
+        $(groupItem).addClass("oj-pinned");
         groupItem.style.top = scrollTop + 'px';
         groupItem.style.width = width + 'px';
     },
@@ -5787,10 +5996,10 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     _handlePinGroupHeader: function()
     {
-        var container, scrollTop, groupItemToPin, groupItems, pinHeaderHeight, i, groupItem, top, bottom, next;
+        var scroller, scrollTop, groupItemToPin, groupItems, pinHeaderHeight, i, groupItem, top, bottom, next;
 
-        container = this._getListContainer().get(0);
-        scrollTop = container.scrollTop;
+        scroller = this._getScroller();
+        scrollTop = scroller.scrollTop;
 
         // see if we are at the top
         if (this.m_groupItemToPin != null && scrollTop == 0)
@@ -6539,6 +6748,19 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  */
                 scrollPolicyOptions: {'fetchSize': 25, 'maxCount': 500},
                 /**
+                 * The vertical scroll position of ListView.
+                 *
+                 * @expose
+                 * @memberof! oj.ojListView
+                 * @instance
+                 * @type {number}
+                 * @default <code class="prettyprint">0</code>
+                 *
+                 * @example <caption>Initialize the list view to a specific scroll position:</caption>
+                 * $( ".selector" ).ojListView({ "scrollTop": 100 });
+                 */
+                scrollTop: 0,
+                /**
                  * The current selections in the ListView. An empty array indicates nothing is selected.
                  *
                  * @expose
@@ -6573,7 +6795,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6599,7 +6821,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6623,7 +6845,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6652,7 +6874,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6679,7 +6901,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6706,7 +6928,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6730,7 +6952,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6754,7 +6976,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6779,7 +7001,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6804,7 +7026,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6839,7 +7061,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6865,7 +7087,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @expose
                  * @event
                  * @deprecated Use the <a href="#whenReady">whenReady</a> method instead. 
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -6887,7 +7109,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  *
                  * @expose
                  * @event
-                 * @memberof! oj.ojListView
+                 * @memberof oj.ojListView
                  * @instance
                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
                  * @property {Object} ui Parameters
@@ -7043,6 +7265,16 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     },
 
    /**
+    * Invoked when application calls oj.Components.subtreeAttached.
+    * @override
+    * @private
+    */
+    _NotifyAttached: function()
+    {
+        this.listview.notifyAttached();
+    },
+
+   /**
     * In browsers [Chrome v35, Firefox v24.5, IE9, Safari v6.1.4], blur and mouseleave events are generated for hidden content but not detached content,
     * so for detached content only, we must use this hook to remove the focus and hover classes.
     * @override
@@ -7086,7 +7318,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * <p>This method does not accept any arguments.
      *
      * @expose
-     * @memberof! oj.ojListView
+     * @memberof oj.ojListView
      * @instance
      *
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
@@ -7125,7 +7357,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * </ul>
      *
      * @expose
-     * @memberof! oj.ojListView
+     * @memberof oj.ojListView
      * @instance
      * @override
      * @param {Object} locator An Object containing at minimum a subId property
@@ -7149,7 +7381,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * <a href="#getNodeBySubId">getNodeBySubId</a>.
      *
      * @expose
-     * @memberof! oj.ojListView
+     * @memberof oj.ojListView
      * @instance
      * @override
      * @param {!Element} node - child DOM node
@@ -7184,9 +7416,9 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
      * @returns {Object | null} item data<p>
      * @export
      * @expose
-     * @memberof! oj.ojListView
+     * @memberof oj.ojListView
      * @instance
-     * @example <caption>Invoke the <code class="prettyprint"getDataForVisibleItem</code> method:</caption>
+     * @example <caption>Invoke the <code class="prettyprint">getDataForVisibleItem</code> method:</caption>
      * $( ".selector" ).ojListView( "getDataForVisibleItem", {'index': 2} );
      */
     getDataForVisibleItem: function(context)
@@ -7458,6 +7690,9 @@ var ojListViewMeta = {
     },
     "scrollPolicyOptions": {
       "type": "Object<string, number>"
+    },
+    "scrollTop": {
+      "type": "number"
     },
     "selection": {
       "type": "Array<Object>"

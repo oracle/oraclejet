@@ -171,10 +171,12 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     map["minorAxisTicks"] = "oj-gantt-minor-axis-separator";
     map["minorAxisLabels"] = "oj-gantt-minor-axis-label";
     map['row'] = "oj-gantt-row";
+    map['rowLabel'] = "oj-gantt-row-label";
     map['task'] = "oj-gantt-task";
     map['taskLabel'] = "oj-gantt-task-label";
     map['selected'] = "oj-selected";
     map['hover'] = "oj-hover";
+    map['focus'] = "oj-focus";
 
     return map;
   },
@@ -195,6 +197,11 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
       // taskbar[rowIndex][index]
       subId = 'taskbar[' + locator['rowIndex'] + '][' + locator['index'] + ']';
     }
+    else if (subId == 'oj-gantt-row-label')
+    {
+      // rowLabel[rowIndex]
+      subId = 'rowLabel[' + locator['index'] + ']';
+    }
 
     // Return the converted result or the original subId if a supported locator wasn't recognized.
     return subId;
@@ -210,7 +217,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   {
     var locator = {};
 
-    if(subId.indexOf('taskbar') == 0) 
+    if (subId.indexOf('taskbar') == 0) 
     {
       // taskbar[rowIndex][index]
       var indexPath = this._GetIndexPath(subId);
@@ -218,6 +225,14 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
       locator['subId'] = 'oj-gantt-taskbar';
       locator['rowIndex'] = indexPath[0];
       locator['index'] = indexPath[1];
+    }
+    else if (subId.indexOf('rowLabel') == 0)
+    {
+      // rowLabel[rowIndex]
+      var indexPath = this._GetIndexPath(subId);
+
+      locator['subId'] = 'oj-gantt-row-label';
+      locator['index'] = indexPath[0];
     }
 
     return locator;
@@ -281,6 +296,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
 
     // task label properties
     styleClasses['oj-gantt-task-label'] = {'path': '_resources/taskLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+
+    // row label properties
+    styleClasses['oj-gantt-row-label'] = {'path': '_resources/rowLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
 
     return styleClasses;
   },
@@ -347,18 +365,6 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['rows']};
-  },
-
-  /**
-   * Returns a promise that is resolved when the component is finished rendering.
-   * This can be used to determine when it is okay to call automation and other APIs on the component.
-   * @returns {Promise}
-   * @expose
-   * @instance
-   * @memberof oj.ojGantt
-   */
-  whenReady : function() {
-    return this._super();
   }
 });
 
@@ -506,6 +512,18 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * var nodes = $( ".selector" ).ojGantt( "getNodeBySubId", {'subId': 'oj-gantt-taskbar', 'rowIndex': 0, 'index': 1} );
  */
 
+ /**
+ * <p>Sub-ID for Gantt row label at a specified index.</p>
+ *
+ * @property {number} index
+ *
+ * @ojsubid oj-gantt-row-label
+ * @memberof oj.ojGantt
+ *
+ * @example <caption>Get the label of the first row:</caption>
+ * var nodes = $( ".selector" ).ojGantt( "getNodeBySubId", {'subId': 'oj-gantt-row-label', 'index': 0} );
+ */
+
 // Node Context Objects ********************************************************
 
 /**
@@ -518,6 +536,14 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @memberof oj.ojGantt
  */
 
+/**
+ * <p>Context for Gantt row label at a specified index.</p>
+ *
+ * @property {number} index
+ *
+ * @ojnodecontext oj-gantt-row-label
+ * @memberof oj.ojGantt
+ */
 (function() {
 var ojGanttMeta = {
   "properties": {

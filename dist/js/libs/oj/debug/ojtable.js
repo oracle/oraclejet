@@ -3529,7 +3529,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (data instanceof oj.TableDataSource ||
               data instanceof oj.PagingTableDataSource)
           {
-            this._data = data;
+            if (this._isLoadMoreOnScroll() && 
+                !(data instanceof oj.PagingTableDataSource))
+            {
+              // if loadMoreOnScroll then we need to use a PagingTableDataSource
+              this._data = new oj.PagingTableDataSource(data, null);
+            }
+            else
+            {
+              this._data = data;
+            }
           }
           else
           {
@@ -4160,8 +4169,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           var self = this;
           this._queueTask(function()
           {
-            var offset = 0;
             var data = self._getData();
+            
+            if (data['sortCriteria'] != null)
+            {
+              var sortCriteriaKey = data['sortCriteria']['key'];
+              var sortCriteriaDirection = data['sortCriteria']['direction'];
+             
+              if (sortCriteriaKey != null &&
+                  sortCriteriaDirection != null)
+              {
+                // update the sort direction if the data is sorted
+                self._refreshSortTableHeaderColumn(sortCriteriaKey, sortCriteriaDirection == self._COLUMN_SORT_ORDER._ASCENDING);
+              }
+            }
+            
+            var offset = 0;
 
             if (data instanceof oj.PagingTableDataSource)
             {
@@ -4416,28 +4439,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         try
         {
-          var columnIdx;
+          var columnIdx = null;
+          var columns = this._getColumnDefs();
+          var i, column, sortField, columnsCount = columns.length;
 
+          for (i = 0; i < columnsCount; i++)
+          {
+            column = columns[i];
+            sortField = column['sortProperty'] == null ? column['field'] : column['sortProperty'];
+
+            if (event['header'] == sortField)
+            {
+              columnIdx = i;
+              break;
+            }
+          }
+          
           if (event != null)
           {
-            var columns = this._getColumnDefs();
-            var i, column, sortField, columnsCount = columns.length;
-
-            for (i = 0; i < columnsCount; i++)
-            {
-              column = columns[i];
-              sortField = column['sortProperty'] == null ? column['field'] : column['sortProperty'];
-
-              if (event['header'] == sortField)
-              {
-                columnIdx = i;
-                break;
-              }
-            }
-            if (columnIdx != null)
-            {
-              this._refreshSortTableHeaderColumn(columnIdx, event['direction'] == this._COLUMN_SORT_ORDER._ASCENDING);
-            }
+            this._refreshSortTableHeaderColumn(event['header'], event['direction'] == this._COLUMN_SORT_ORDER._ASCENDING);
           }
 
           // clear selection if not single selection
@@ -4695,7 +4715,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var focusedRowIdx = this._getFocusedRowIdx();
         var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
 
-        if (focusedRowIdx != null)
+        if (focusedRowIdx != null && !this._hasEditableRow())
         {
           // if row is focused then up/down navigates the rows
           var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
@@ -4773,7 +4793,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._setHeaderColumnFocus(this._getColumnDefs().length - 1, true, false, null);
         }
-        else
+        else if (!this._hasEditableRow())
         {
           var focusedRowIdx = this._getFocusedRowIdx();
           var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
@@ -4890,7 +4910,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._setHeaderColumnFocus(0, true, false, null);
         }
-        else
+        else if (!this._hasEditableRow())
         {
           var focusedRowIdx = this._getFocusedRowIdx();
 
@@ -4914,7 +4934,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._setRowSelection(focusedRowIdx, !this._getRowSelection(focusedRowIdx), null, event, true);
         }
-        else
+        else if (!this._hasEditableRow())
         {
           var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
           if (focusedHeaderColumnIdx != null)
@@ -5067,7 +5087,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // invoke sort on the data
         this._invokeDataSort(sortField, ascending, event);
         this._sortColumn = column;
-        this._refreshSortTableHeaderColumn(columnIdx, ascending);
+        this._refreshSortTableHeaderColumn(sortField, ascending);
       },
       /**
        * Return whether the table currently has an editable row
@@ -5076,9 +5096,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _hasEditableRow: function()
       {
-        var editMode = this.options['editMode'];
-        
-        if (editMode == null || editMode == this._OPTION_EDIT_MODE._NONE)
+        if (!this._isTableEditMode())
         {
           return false;
         }
@@ -5216,7 +5234,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         var data = this._getData();
         // do an initial fetch if a TableDataSource
         // paging control should do the fetches for PagingTableDataSource
-        if (data != null && (data instanceof oj.TableDataSource) && !(data instanceof oj.PagingTableDataSource))
+        if (data != null && 
+            ((data instanceof oj.TableDataSource && !(data instanceof oj.PagingTableDataSource)) || 
+            ((data instanceof oj.PagingTableDataSource) && this._isLoadMoreOnScroll())))
         {
           // reset the scrollTop when we do an initial fetch
           this._getTableDomUtils().getScroller()[0].scrollTop = 0;
@@ -5267,6 +5287,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               {
                 if (result[self._CONST_DATA] != null)
                 {
+                  if (data['sortCriteria'] != null)
+                  {
+                    var sortCriteriaKey = data['sortCriteria']['key'];
+                    var sortCriteriaDirection = data['sortCriteria']['direction'];
+
+                    if (sortCriteriaKey != null &&
+                        sortCriteriaDirection != null)
+                    {
+                      // update the sort direction if the data is sorted
+                      self._refreshSortTableHeaderColumn(sortCriteriaKey, sortCriteriaDirection == self._COLUMN_SORT_ORDER._ASCENDING);
+                    }
+                  }
+            
                   var offset = 0;
 
                   if (data instanceof oj.PagingTableDataSource)
@@ -5466,6 +5499,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         return false;
       },
       /**
+       * Returns whether the table is editabe mode
+       * @return {boolean} true or false
+       * @private
+       */
+      _isTableEditMode: function()
+      { 
+        var editMode = this['options']['editMode'];
+        
+        if (editMode == this._OPTION_EDIT_MODE._ROW_EDIT)
+        {
+          return true;
+        }
+        return true;
+      },
+      /**
        * Returns whether the table is footerless
        * @return {boolean} true or false
        * @private
@@ -5637,12 +5685,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       },
       /**
        * Handler for column sort
-       * @param {number} columnIdx  column index
+       * @param {string} key sort key
        * @param {boolean} ascending  sort order ascending
        * @private
        */
-      _refreshSortTableHeaderColumn: function(columnIdx, ascending)
+      _refreshSortTableHeaderColumn: function(key, ascending)
       {
+        var columns = this._getColumnDefs();
+        var i, column, columnIdx = null, columnsCount = columns.length, sortField;
+
+        for (i = 0; i < columnsCount; i++)
+        {
+          column = columns[i];
+          sortField = column['sortProperty'] == null ? column['field'] : column['sortProperty'];
+
+          if (key == sortField)
+          {
+            columnIdx = i;
+            break;
+          }
+        }
+        if (columnIdx == null)
+        {
+          return;
+        }
+                  
         // clear the sorted indicator on any other column
         this._clearSortedHeaderColumn(columnIdx);
         // get the column header DOM element
@@ -6960,7 +7027,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
 
         // we need to set the selection
-        var i, j, rangeObj, startRowKey, endRowKey, startRowIndex, endRowIndex, startRowIdx, endRowIdx, startColumnIdx, endColumnIdx, selectionCount = selection.length;
+        var i, j, rangeObj, startRowKey, endRowKey, startRowIndex, endRowIndex, startRowIdx, endRowIdx, startColumnIdx, endColumnIdx, updateSelection, selectionCount = selection.length;
         for (i = 0; i < selectionCount; i++)
         {
           rangeObj = selection[i];
@@ -6980,23 +7047,52 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           endRowIdx = null;
           startColumnIdx = null;
           endColumnIdx = null;
+          updateSelection = false;
 
           // if keys are specified, we get the index from the key
           if (rangeObj['startKey'] != null && rangeObj['startKey'][this._CONST_ROW] != null)
           {
             startRowIndex = this._getDataSourceRowIndexForRowKey(rangeObj['startKey'][this._CONST_ROW]);
+            
+            if (rangeObj[this._CONST_STARTINDEX] != null && 
+                rangeObj[this._CONST_STARTINDEX][this._CONST_ROW] != null &&
+                startRowIndex != rangeObj[this._CONST_STARTINDEX][this._CONST_ROW])
+            {
+              updateSelection = true;
+            }
           }
           if (rangeObj['endKey'] != null && rangeObj['endKey'][this._CONST_ROW] != null)
           {
             endRowIndex = this._getDataSourceRowIndexForRowKey(rangeObj['endKey'][this._CONST_ROW]);
+            
+            if (rangeObj[this._CONST_ENDINDEX] != null && 
+                rangeObj[this._CONST_ENDINDEX][this._CONST_ROW] != null &&
+                endRowIndex != rangeObj[this._CONST_ENDINDEX][this._CONST_ROW])
+            {
+              updateSelection = true;
+            }
           }
           if (rangeObj['startKey'] != null && rangeObj['startKey'][this._CONST_COLUMN] != null)
           {
             startColumnIdx = this._getColumnIdxForColumnKey(rangeObj['startKey'][this._CONST_COLUMN]);
+            
+            if (rangeObj[this._CONST_STARTINDEX] != null && 
+                rangeObj[this._CONST_STARTINDEX][this._CONST_COLUMN] != null &&
+                startColumnIdx != rangeObj[this._CONST_STARTINDEX][this._CONST_COLUMN])
+            {
+              updateSelection = true;
+            }
           }
           if (rangeObj['endKey'] != null && rangeObj['endKey'][this._CONST_COLUMN] != null)
           {
             endColumnIdx = this._getColumnIdxForColumnKey(rangeObj['endKey'][this._CONST_COLUMN]);
+            
+            if (rangeObj[this._CONST_ENDINDEX] != null && 
+                rangeObj[this._CONST_ENDINDEX][this._CONST_COLUMN] != null &&
+                endColumnIdx != rangeObj[this._CONST_ENDINDEX][this._CONST_COLUMN])
+            {
+              updateSelection = true;
+            }
           }
 
           if (startRowIndex == null && rangeObj[this._CONST_STARTINDEX] != null)
@@ -7032,7 +7128,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               try
               {
-                this._setRowSelection(j, true, null, null, false);
+                this._setRowSelection(j, true, null, null, updateSelection);
               }
               catch (e)
               {
@@ -7047,7 +7143,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               try
               {
-                this._setHeaderColumnSelection(j, true, null, null, false);
+                this._setHeaderColumnSelection(j, true, null, null, updateSelection);
               }
               catch (e)
               {
@@ -7073,9 +7169,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _setTableEditable: function(editable, cancelled, columnIdx, forwardSearch, event)
       { 
-        var editMode = this['options']['editMode'];
-        
-        if (editMode == null || editMode == this._OPTION_EDIT_MODE._NONE)
+        if (!this._isTableEditMode())
         {
           return;
         }
@@ -10319,6 +10413,10 @@ oj.TableDomUtils.prototype._isWebkit = function()
    
   if (this._tableHeightConstrained || this._tableWidthConstrained)
   {
+    // Add the oj-table-scroll class because some styling only applies
+    // to scrollable table.
+    tableContainer.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_SCROLL_CLASS);
+    
     if (!this._tableDimensions)
     {
       this._tableDimensions = {};
@@ -10946,6 +11044,7 @@ oj.TableDomUtils.CSS_CLASSES =
     _TABLE_CLASS: 'oj-table',
     _TABLE_COMPACT_CLASS: 'oj-table-grid-display',
     _TABLE_EDIT_CLASS: 'oj-table-editable',
+    _TABLE_SCROLL_CLASS: 'oj-table-scroll',
     _TABLE_ELEMENT_CLASS: 'oj-table-element',
     _TABLE_FOOTER_CLASS: 'oj-table-footer',
     _TABLE_FOOTER_ROW_CLASS: 'oj-table-footer-row',

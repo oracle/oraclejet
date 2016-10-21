@@ -1743,7 +1743,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         {
           rowIdx = event['index'];
           
-          if (rowIdx >= startIndex && rowIdx < endIndex)
+          if (rowIdx >= startIndex && rowIdx <= endIndex)
           {
             return true;
           }
@@ -1755,7 +1755,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           {
             rowIdx = event['indexes'][i];
 
-            if (rowIdx >= startIndex && rowIdx < endIndex)
+            if (rowIdx >= startIndex && rowIdx <= endIndex)
             {
               return true;
             }
@@ -2084,6 +2084,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         if (pagingControlNavPagesSection != null && pagingControlNavPagesSection.length > 0)
         {
           pagingControlNavPagesSection = $(pagingControlNavPagesSection.get(0));
+          this._unregisterChildStateListeners(pagingControlNavPagesSection);
           pagingControlNavPagesSection.empty();
           this._createPagingControlNavPages(pagingControlNavPagesSection, this._getMaxPageLinks(), size, startIndex);
         }

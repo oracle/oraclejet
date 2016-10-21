@@ -4678,7 +4678,7 @@ dvt.TimeAxisInfo.prototype.Init = function(context, options, availSpace) {
   var converter = options['tickLabel'] != null ? options['tickLabel']['converter'] : null;
   this._label1Converter = (converter && converter[0]) ? converter[0] : converter;
   this._label2Converter = (converter && converter[1]) ? converter[1] : null;
-  this._dateToIsoConverter = context.getLocaleHelpers()['dateToIsoConverter'];
+  this._dateToIsoWithTimeZoneConverter = context.getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
   this._groups = options['groups'];
 
@@ -4909,8 +4909,8 @@ dvt.TimeAxisInfo.prototype._formatAxisLabelWithConverter = function(date, prevDa
       prevLabel = converter['getAsString'](prevDate);
     }
     else if (converter['format']) {
-      label = converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(date) : date);
-      prevLabel = converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(prevDate) : prevDate);
+      label = converter['format'](this._dateToIsoWithTimeZoneConverter && date ? this._dateToIsoWithTimeZoneConverter(date) : date);
+      prevLabel = converter['format'](this._dateToIsoWithTimeZoneConverter && prevDate ? this._dateToIsoWithTimeZoneConverter(prevDate) : prevDate);
     }
     if (prevLabel != label)
       return label;

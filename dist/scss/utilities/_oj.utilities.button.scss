@@ -12,19 +12,33 @@
 //
 // Example usage:
 // 
-// $demoPurpleColor: #800080;
-// 
+// $demoPurple: #800080;
+// $demoPurpleLighter:  lighten($demoPurple, 10%);
+// $demoPurpleLightest: lighten($demoPurple, 15%);
+//
 // .demo-button-purple {
 //   @include oj-button-state-overrides (
-//     $altButtonTextColorHover:      lighten($demoPurpleColor, 10%),
-//     $altButtonIconColorHover:      lighten($demoPurpleColor, 15%),
-//     $altButtonBgColorActive:       $demoPurpleColor,
-//     $altButtonBorderColorActive:   $demoPurpleColor,
-//     $altButtonBgColorSelected:     $demoPurpleColor,
-//     $altButtonBorderColorSelected: $demoPurpleColor);
+//     $altButtonTextColorHover:      $demoPurpleLighter,
+//     $altButtonIconColorHover:      $demoPurpleLightest,
+//     $altButtonBgColorActive:       $demoPurple,
+//     $altButtonBorderColorActive:   $demoPurple,
+//     $altButtonBgColorSelected:     $demoPurple,
+//     $altButtonBorderColorSelected: $demoPurple,
+//     $altButtonHalfChromeTextColorHover:      $demoPurpleLighter,
+//     $altButtonHalfChromeIconColorHover:      $demoPurpleLightest,
+//     $altButtonHalfChromeBgColorActive:       $demoPurple,
+//     $altButtonHalfChromeBorderColorActive:   $demoPurple,
+//     $altButtonHalfChromeBgColorSelected:     $demoPurple,
+//     $altButtonHalfChromeBorderColorSelected: $demoPurple,
+//     $altButtonOutlinedChromeTextColorHover:      $demoPurpleLighter,
+//     $altButtonOutlinedChromeIconColorHover:      $demoPurpleLightest,
+//     $altButtonOutlinedChromeBgColorActive:       $demoPurple,
+//     $altButtonOutlinedChromeBorderColorActive:   $demoPurple,
+//     $altButtonOutlinedChromeBgColorSelected:     $demoPurple,
+//     $altButtonOutlinedChromeBorderColorSelected: $demoPurple);
 // }
 //
-// Note: This mixin does not support buttonsets or outline buttons
+// Note: This mixin does not support buttonsets
 //*****************************************************************************
 @mixin oj-button-state-overrides (
 
@@ -123,7 +137,47 @@
     $altButtonHalfChromeTextColorSelectedDisabled:   null,
     $altButtonHalfChromeIconColorSelectedDisabled:   null,
     $altButtonHalfChromeBgColorSelectedDisabled:     null,
-    $altButtonHalfChromeBorderColorSelectedDisabled: null
+    $altButtonHalfChromeBorderColorSelectedDisabled: null,
+
+    // outlined chrome default
+    $altButtonOutlinedChromeTextColor:              null,
+    $altButtonOutlinedChromeIconColor:              null,
+    $altButtonOutlinedChromeBorderColor:            null,
+
+    // outlined chrome hover
+    $altButtonOutlinedChromeTextColorHover:         null,
+    $altButtonOutlinedChromeIconColorHover:         null,
+    $altButtonOutlinedChromeBgColorHover:           null,
+    $altButtonOutlinedChromeBorderColorHover:       null,
+
+    // outlined chrome active
+    $altButtonOutlinedChromeTextColorActive:        null,
+    $altButtonOutlinedChromeIconColorActive:        null,
+    $altButtonOutlinedChromeBgColorActive:          null,
+    $altButtonOutlinedChromeBorderColorActive:      null,
+    $altButtonOutlinedChromeOpacityActive:          null,
+
+    // outlined chrome selected
+    $altButtonOutlinedChromeTextColorSelected:      null,
+    $altButtonOutlinedChromeIconColorSelected:      null,
+    $altButtonOutlinedChromeBgColorSelected:        null,
+    $altButtonOutlinedChromeBorderColorSelected:    null,
+
+    // outlined chrome selected and hovered
+    $altButtonOutlinedChromeTextColorSelectedHover: null,
+    $altButtonOutlinedChromeIconColorSelectedHover: null,
+
+    // outlined chrome disabled
+    $altButtonOutlinedChromeTextColorDisabled:      null,
+    $altButtonOutlinedChromeIconColorDisabled:      null,
+    $altButtonOutlinedChromeOpacityDisabled:        null,
+    $altButtonOutlinedChromeBorderColorDisabled:    null,
+
+    // outlined chrome disabled and selected
+    $altButtonOutlinedChromeTextColorSelectedDisabled:   null,
+    $altButtonOutlinedChromeIconColorSelectedDisabled:   null,
+    $altButtonOutlinedChromeBgColorSelectedDisabled:     null,
+    $altButtonOutlinedChromeBorderColorSelectedDisabled: null
 
  )
 {
@@ -299,7 +353,85 @@
     }
 
 
-  
+
+
+
+
+
+    // Outlined-chrome buttons
+    //----------------------------------
+
+
+
+    &.oj-button.oj-default.oj-button-outlined-chrome,
+    &.oj-button.oj-focus-only.oj-button-outlined-chrome {
+        color: $altButtonOutlinedChromeTextColor;
+        border-color: $altButtonOutlinedChromeBorderColor;
+    }
+
+    &.oj-button.oj-hover.oj-button-outlined-chrome:not(.oj-active) {
+        color: $altButtonOutlinedChromeTextColorHover;
+        background-color: $altButtonOutlinedChromeBgColorHover;
+        border-color: $altButtonOutlinedChromeBorderColorHover;
+    }
+
+    &.oj-button.oj-active.oj-button-outlined-chrome {
+        color: $altButtonOutlinedChromeTextColorActive;
+        background-color: $altButtonOutlinedChromeBgColorActive;
+        border-color: $altButtonOutlinedChromeBorderColorActive;
+        opacity: $altButtonOutlinedChromeOpacityActive;
+    }
+
+    &.oj-button.oj-selected.oj-button-outlined-chrome:not(.oj-disabled) {
+        color: $altButtonOutlinedChromeTextColorSelected;
+        background-color: $altButtonOutlinedChromeBgColorSelected;
+        border-color: $altButtonOutlinedChromeBorderColorSelected;
+    }
+
+    &.oj-button.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled) {
+        color: $altButtonOutlinedChromeTextColorSelectedHover;
+    }
+
+    &.oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) {
+        color: $altButtonOutlinedChromeTextColorDisabled;
+        opacity: $altButtonOutlinedChromeOpacityDisabled;
+        border-color: $altButtonOutlinedChromeBorderColorDisabled;
+    }
+
+    &.oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome { 
+        color: $altButtonOutlinedChromeTextColorSelectedDisabled;
+        background-color: $altButtonOutlinedChromeBgColorSelectedDisabled;
+        border-color: $altButtonOutlinedChromeBorderColorSelectedDisabled;
+    }
+
+    &.oj-button.oj-default.oj-button-outlined-chrome .oj-button-icon,
+    &.oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColor; 
+    }
+
+    &.oj-button.oj-hover.oj-button-outlined-chrome:not(.oj-active) .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColorHover; 
+    }
+
+    &.oj-button.oj-active.oj-button-outlined-chrome .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColorActive; 
+    }
+
+    &.oj-button.oj-selected.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColorSelected; 
+    }
+
+    &.oj-button.oj-selected.oj-hover.oj-button-outlined-chrome:not(.oj-disabled) .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColorSelectedHover; 
+    }
+
+    &.oj-button.oj-disabled.oj-button-outlined-chrome:not(.oj-selected) .oj-button-icon {
+        color: $altButtonOutlinedChromeIconColorDisabled;
+    }
+    
+    &.oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-icon { 
+        color: $altButtonOutlinedChromeIconColorSelectedDisabled;
+    }
 }
 
 

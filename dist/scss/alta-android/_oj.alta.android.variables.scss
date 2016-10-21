@@ -535,10 +535,11 @@ $selectPickerBgColor: $background1Color !default;
 $sliderThumbWidth:               12px !default;
 
 // Active Android slider thumbs are larger than normal (enabled) sliders.
-$sliderThumbWidthActive:         18px !default;
+$sliderThumbWidthActive:             18px !default;
+$sliderColorPickerThumbWidthActive:  34px !default;
 
 // colors for enabled state
-$sliderThumbBgColor: 	         $interaction1Color !default;
+$sliderThumbBgColor:             $interaction1Color !default;
 $sliderBarBgColor:               #bebebe !default;
 
 // colors for disabled state
@@ -685,8 +686,10 @@ $navigationListPageLevelItemFontSize: 0.875rem !default; //14px when root font s
 $navigationBarItemPadding: 2px $navigationListItemStartEndPadding 6px !default;
 $navigationBarFontSize: 0.75rem !default;// 12px when root font is 16px
 $navigationBarMinHeight: 3.5rem !default;//56 px height when root font 16px
-$navigationBarStackedIconMinHeight: 3.5rem !default; //56 px height when root font 16px
 $navigationBarItemBorderWidth: 0 !default;
+
+$navigationBarStackedIconMinHeight: 3.5rem !default; //56 px height when root font 16px
+$navigationBarStackedItemPadding: 1px $navigationListItemStartEndPadding 0 !default;
 
 $navigationBarPageLevelItemBorderWidth: 0 0 2px 0 !default;
 $navigationBarPageLevelItemFontSize: 0.875rem !default; //14 px when root font is 16px

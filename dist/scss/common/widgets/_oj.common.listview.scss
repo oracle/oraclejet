@@ -138,27 +138,17 @@
         }
 
         /* Styling on focused list or group item */
-        .oj-listview-item.oj-focus,
-        .oj-listview-group-item.oj-focus {
-            outline-width: 1px;
-            outline-style: dotted;
+        .oj-listview-item.oj-focus-highlight,
+        .oj-listview-group-item.oj-focus-highlight {
+            @include oj-browser-focus-outline-approximation($primaryTextColor);
             outline-offset: -1px;
         }
 
         /* Styling on focused list item */
-        .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus {
-            background-color: $dataGridCellBgColorFocus;
-        }
-
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
         .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item {
             border-top: 1px solid $dataGridCellBorderColorFocus;
             background-size: 0;
-        }
-
-        /* Styling on focused group item */
-        .oj-listview.oj-focus-ancestor .oj-listview-group-item.oj-focus {
-            background-color: $headerBgColor;
         }
 
         /* Styling for the list item elements in selected state when listview is in high contrast mode. */
@@ -170,8 +160,8 @@
         }
 
         /* Styling for the list item elements in focus state when listview is in high contrast mode. */
-        .oj-hicontrast .oj-listview-item.oj-focus,
-        .oj-hicontrast .oj-listview-group-item.oj-focus {
+        .oj-hicontrast .oj-listview-item.oj-focus-highlight,
+        .oj-hicontrast .oj-listview-group-item.oj-focus-highlight {
             outline-width: 2px;
             outline-style: dotted;
             border-width: 0 1px 1px 0;
@@ -212,6 +202,12 @@
             background-image: none;
         }
 
+        /* Styling for group item element that is pinned when scrolled */
+        .oj-listview-group-item.oj-pinned {
+            position: absolute;
+            z-index: 1;
+        }
+
         /* expand and collapse animation */
         .oj-listview-collapsible-transition {
             overflow: hidden;
@@ -231,6 +227,7 @@
         .oj-listview-no-data-message {
             padding: $panelPadding;
             background-color: $dataGridCellBgColor;
+            min-height: $fontSize;
         }
 
         /* Alignment for the expand and collapse icons */
@@ -338,10 +335,15 @@
             border-bottom: 1px solid $dataGridCellDragImageBorderColor;
         }
         
-        /* Styling all drop targets in the datagrid when dragging rows*/											 			
+        /* Styling all drop targets in the list */											 			
         .oj-listview-item.oj-drop {
             box-sizing: border-box;
             border: 1px solid $dropTarget2Color;
+            background-color: $dropTarget1Color;    
+        }            
+
+        /* Styling on empty list as drop targets in the list */											 			
+        .oj-listview-empty-text.oj-drop {
             background-color: $dropTarget1Color;    
         }            
 

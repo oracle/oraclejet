@@ -21,7 +21,7 @@ define(['ojs/ojcore', 'jquery', 'promise'], function(oj, $)
  * @classdesc Supports event system for the common model ([oj.Collection]{@link oj.Collection} and 
  * [oj.Model]{@link oj.Model})
  */
-oj.Events = window['oj']['Events'] =
+oj.Events = oj['Events'] =
 /** @lends oj.Events */
 {       
     /**
@@ -2238,6 +2238,7 @@ oj.Model.prototype.previousAttributes = function() {
 };
 
 /**
+ * @export
  * Performs communications with the server.  Can be overridden/replaced by clients
  * 
  * @param {string} method "create", "read", "update", or "delete"
@@ -2260,8 +2261,8 @@ oj.Model.prototype.previousAttributes = function() {
  * @instance
  * @alias sync
  */
-oj.Model.prototype['sync'] = function(method, model, options) {    
-    return window['oj']['sync'](method, model, options);
+oj.Model.prototype.sync = function(method, model, options) {    
+    return oj['sync'](method, model, options);
 };
 
 // Internal processing before sync-- we want this stuff to happen even if user replaces sync
@@ -2398,17 +2399,18 @@ oj.Model._urlError = function(ajaxOptions) {
  * @desc Master Ajax entry point for all oj.Model and oj.Collection server interactions, when they are using the 
  * default sync implementations.  oj.ajax passes through to jQuery ajax by default.  
  * See {@link http://api.jquery.com/jquery.ajax/} for expected parameters and return value.
+ * @param {Object=} settings optional ajax settings
  * 
  * @return {Object} xhr object
  * @memberOf oj
  * @global
  * @alias oj.ajax
  */
-oj.ajax = function() {
+oj.ajax = function(settings) {
     if (arguments && arguments.length > 0) {
         oj.Model._urlError(arguments[0]);
     }
-    return $.ajax.apply(window['oj'], arguments);
+    return $.ajax.apply(oj, arguments);
 };
 /**
  * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
@@ -2715,7 +2717,7 @@ oj.RestImpl.prototype.ajax = function(settings, collection) {
         throw new oj.URLError();
     }
 
-    var xhr = window['oj']['ajax'](settings);
+    var xhr = oj['ajax'](settings);
     if (collection._addxhr) {
         collection._addxhr(xhr);        
     }
@@ -4981,12 +4983,13 @@ oj.Collection.prototype._addxhr = function(xhr) {
             this._xhrs = [];
         }
         // Listen to this xhr to know when to remove it
+        var self = this;
         xhr.done(function() {
             // Find the xhr
-            var loc = this._xhrs ? this._xhrs.indexOf(xhr) : -1;
+            var loc = self._xhrs ? self._xhrs.indexOf(xhr) : -1;
             if (loc > -1) {
                 // Remove it from the list
-                this._xhrs.splice(loc, 1);
+                self._xhrs.splice(loc, 1);
             }   
         });
         this._xhrs.push(xhr);
@@ -7307,6 +7310,7 @@ oj.Collection.prototype._getSortDirStr = function() {
 };
 
 /**
+ * @export
  * Called to perfrom server interactions, such as reading the collection.  Designed to be overridden by users
  * 
  * @param {string} method "read"
@@ -7318,8 +7322,8 @@ oj.Collection.prototype._getSortDirStr = function() {
  * @return {Object} xhr response from ajax by default
  * @alias oj.Collection.prototype.sync
  */
-oj.Collection.prototype['sync'] = function(method, collection, options) {
-    return window['oj']['sync'](method, collection, options);
+oj.Collection.prototype.sync = function(method, collection, options) {
+    return oj['sync'](method, collection, options);
 };
 
 // Constants

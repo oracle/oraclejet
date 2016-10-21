@@ -1196,7 +1196,7 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     // namespace facilitates removing contextMenu handlers separately, if app clears the "contextMenu" option
     this.contextMenuEventNamespace = this.eventNamespace + "contextMenu";
-    this._setupContextMenu(true);
+    this._setupContextMenu(true, null);
   },
 
   /**
@@ -1651,7 +1651,7 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     this._super();
 
-    this._removeContextMenuBehavior();
+    this._removeContextMenuBehavior(this.options.contextMenu);
 
     //remove hover and active listeners
 //    this.widget().off(this.eventNamespace);
@@ -1867,7 +1867,6 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     var originalValue = this.options[key];
 
-
     if (key === "disabled" )
     {
       // The JQUI superclass method has hard-coded style classes in the 'if key === "disabled"' block, so unfortunately
@@ -1908,7 +1907,7 @@ $.widget('oj.' + _BASE_COMPONENT,
       }
 
       if ( key === "contextMenu" )
-        this._setupContextMenu(false);
+        this._setupContextMenu(false, originalValue);
     }
 
     this._optionChanged(key, value, originalValue, flags);
@@ -2073,9 +2072,9 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @instance
    * @private
    */
-  _setupContextMenu: function(isCreateTime)
+  _setupContextMenu: function(isCreateTime, oldContextMenuOption)
   {
-    this._removeContextMenuBehavior();
+    this._removeContextMenuBehavior(oldContextMenuOption);
 
     if ( this.options.contextMenu )
     {
@@ -2207,7 +2206,7 @@ $.widget('oj.' + _BASE_COMPONENT,
 
             // if _NotifyContextMenuGesture() (or subclass override of it) actually opened the CM, and if that launch wasn't
             // cancelled by a beforeOpen listener...
-            if (self._getContextMenuNode().is(":visible"))
+            if (menu.widget().is(":visible"))
             {
                 event.preventDefault(); // don't show native context menu
                 document.addEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
@@ -2305,32 +2304,6 @@ $.widget('oj.' + _BASE_COMPONENT,
     }
   },
 
-  /**
-   * <p>Sets the ivars used by _getContextMenu() and _getContextMenuNode().  These 2 _ivars should be set/cleared in lockstep.
-   *
-   * <p>This method should be called only by those 2 methods.
-   *
-   * @memberof oj.baseComponent
-   * @instance
-   * @throws if no Menu found, which is app error since Menu should be inited by the time this is called
-   * @private
-   */
-  _setContextMenuIvars: function()
-  {
-    // JQ obj containing the menu element.  Empty if no element found.
-    this._contextMenuNode = $(this.options.contextMenu).first();
-
-    // Menu component.  undefined if _contextMenuNode empty, or if its one node has no JET Menu.
-    this._contextMenu = this._contextMenuNode.data( "oj-ojMenu" );
-
-    if (!this._contextMenu)
-        throw new Error('"contextMenu" option set to "' + this.options.contextMenu + '", which does not reference a valid JET Menu.');
-
-    var self = this;
-    this._contextMenuNode.on( "ojclose" + this.contextMenuEventNamespace , function( event, ui ) {
-        document.removeEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
-    });
-  },
 
   /**
    * <p>Lazy getter for the context menu.
@@ -2350,18 +2323,32 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _getContextMenu: function()
   {
-    if (!this._contextMenu)
-        this._setContextMenuIvars();
+    var constructor = oj.Components.getWidgetConstructor(this._getContextMenuNode()[0], "ojMenu");
 
-    return this._contextMenu;
+    // The JET Menu of the first element found.
+    // Per architect discussion, get it every time rather than caching the menu.
+    var contextMenu = constructor && constructor("instance");
+
+    // if no element found, or if element has no JET Menu
+    if (!contextMenu)
+      throw new Error('"contextMenu" option set to "' + this.options.contextMenu + '", which does not reference a valid JET Menu.');
+
+    if (!this._contextMenuListenerSet) {
+      var self = this;
+
+      // must use "on" syntax rather than clobbering whatever "close" handler the app may have set via the menu's "option" syntax
+      contextMenu.widget().on( "ojclose" + this.contextMenuEventNamespace , function( event, ui ) {
+        document.removeEventListener("keyup", self._preventKeyUpEventIfMenuOpen);
+      });
+
+      this._contextMenuListenerSet = true;
+    }
+
+    return contextMenu;
   },
 
   /**
-   * <p>All _getContextMenu doc applies to this method too, except this method returns
-   * the menu node, not the menu itself.
-   *
-   * @return the root DOM node of the JET Menu
-   * @throws if no Menu found, which is app error since Menu should be inited by the time this is called
+   * @return JQ obj containing the DOM node referenced by the contextMenu option.  Empty if no element found.
    *
    * @memberof oj.baseComponent
    * @instance
@@ -2369,20 +2356,17 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _getContextMenuNode: function()
   {
-    if (!this._contextMenuNode)
-        this._setContextMenuIvars();
-
-    return this._contextMenuNode;
+    return $(this.options.contextMenu).first();
   },
 
   /**
-   * <p>This method removes contextMenu functionality from the component.
+   * <p>This method removes contextMenu functionality from the component and specified menu.
    *
    * @memberof oj.baseComponent
    * @instance
    * @private
    */
-  _removeContextMenuBehavior: function()
+  _removeContextMenuBehavior: function(contextMenuOption)
   {
     this.widget()
         .removeAttr( "contextmenu" )
@@ -2390,14 +2374,13 @@ $.widget('oj.' + _BASE_COMPONENT,
         .removeClass("oj-menu-context-menu-launcher")
         [0].removeEventListener("click", this._clickListener, true);
 
-    this._contextMenuNode && this._contextMenuNode.off( this.contextMenuEventNamespace );
-
     // the other 2 contextMenu timeouts don't need to be cleared here
     clearTimeout(this._contextMenuPressHoldTimer);
 
-    // set/unset these ivars in lockstep
-    this._contextMenu = undefined;
-    this._contextMenuNode = undefined;
+    // access menu elem directly, rather than using the widget() of the Menu component, so listener is cleared even if component no longer exists.
+    $(contextMenuOption).off( this.contextMenuEventNamespace );
+    this._contextMenuListenerSet = false;
+
   },
 
   /**

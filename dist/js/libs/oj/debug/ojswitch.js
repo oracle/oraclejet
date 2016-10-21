@@ -591,7 +591,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           $(event.currentTarget).addClass('oj-active');
         }
       },
-      touchstart: function (event) {
+      "touchstart": function (event) {
         this._SetValue(!this.option('value'), event);
         event.preventDefault();
       }

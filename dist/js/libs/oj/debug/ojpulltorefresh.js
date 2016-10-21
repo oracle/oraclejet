@@ -60,7 +60,8 @@ oj.PullToRefreshUtils = {};
  * ojcomplete is fired when the refresh is done and the panel is completely closed.  The event contains the content element.
  *
  * @export
- * @param {Element} element the DOM element that hosts the content to refresh
+ * @param {Element} element the DOM element that hosts the content to refresh.  When the content is scrollable, the value of this parameter must be the scrollable element.  
+ *                  Specifically, when using this with ListView, the ListView element might not necessarily be the scrollable element, but is one of its ancestors instead.
  * @param {function()} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
  * @param {Object=} options optional values that controls aspects of pull to refresh
  * @param {number} options.threshold the number of pixel to pull until refresh is triggered
@@ -71,9 +72,12 @@ oj.PullToRefreshUtils = {};
  */
 oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, options)
 {
-    var outer, content, panel, threshold, start, height, icon, iconOffset, lastIconClass, title, ratio, iconClass;
+    var outer, content, panel, checkTolerance, threshold, start, height, movex, icon, iconOffset, lastIconClass, title, ratio, iconClass;
 
-    outer = $(document.createElement("div"));
+    // make sure we are clean
+    oj.PullToRefreshUtils.tearDownPullToRefresh(element);
+
+    outer = $(document.createElement("div")).addClass("oj-pulltorefresh-outer");
     oj.PullToRefreshUtils._renderAccessibleLink(outer, refreshFunc, options);
 
     // create the element containing the content
@@ -123,6 +127,9 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
             content.css("height", 0);
             content.removeClass("oj-pulltorefresh-transition");
             $.data(content[0], "data-pullstart", event.originalEvent.touches[0].clientY);
+            $.data(content[0], "data-pullstart-horiz", event.originalEvent.touches[0].clientX);
+
+            checkTolerance = true;
         }
     })
     .on("touchmove.pulltorefresh", function(event) 
@@ -152,6 +159,18 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
             content.css("height", Math.max(height, threshold));
             return;
         }
+
+        if (checkTolerance)
+        {
+            // we only want to check this once per pull
+            checkTolerance = false;
+            movex = event.originalEvent.touches[0].clientX - parseInt($.data(content[0], "data-pullstart-horiz"), 10);
+            // check if the intention is swipe left, if it is don't show the panel yet
+            if (Math.abs(movex) > height)
+            {
+                return;
+            }
+        }    
 
         content.css("height", height);
 
@@ -307,7 +326,7 @@ oj.PullToRefreshUtils._handleRelease = function(event, content, refreshFunc)
 oj.PullToRefreshUtils.tearDownPullToRefresh = function(element)
 {
     // remove the content panel
-    $(element).children().first().remove();
+    $(element).children(".oj-pulltorefresh-outer").remove();
 
     // remove all listeners
     $(element).off(".pulltorefresh");
@@ -453,6 +472,7 @@ oj.PullToRefreshUtils._cleanup = function(content)
     var icon;
 
     $.removeData(content[0], "data-pullstart");
+    $.removeData(content[0], "data-pullstart-horiz");
     $.removeData(content[0], "data-loading");
 
     // only clear if it's the default panel, give app full control on custom content

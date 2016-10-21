@@ -358,7 +358,7 @@ oj.ModuleBinding.defaults =
               
               if (saveInCache)
               {
-                _propagateSubtreeVisibilityToComponents(cachedNodeArray, false);
+                _invokeOnSubtree(cachedNodeArray, oj.Components? oj.Components.subtreeHidden: null);
                 cache[currentCacheKey] = {model: currentViewModel, view: cachedNodeArray};
               }
               else
@@ -381,7 +381,7 @@ oj.ModuleBinding.defaults =
               
               if (fromCache)
               {
-                _propagateSubtreeVisibilityToComponents(nodes, true);
+                _invokeOnSubtree(nodes, oj.Components? oj.Components.subtreeShown: null);
               }
               
               _invokeLifecycleListener(lifecycleListener, 'attached', [targetElement, valueAccessor, model, fromCache]);
@@ -532,6 +532,14 @@ oj.ModuleBinding.defaults =
       if (element !== targetElement)
       {
         _insertNodes(element, newDomNodes);
+        
+        if (oj.Components)
+        {
+           // The subtree just got moved to a new parent, so notify components
+           // of the 'detach' imeddiately followed by the 'attach'
+           _invokeOnSubtree(newDomNodes, oj.Components.subtreeDetached);
+           _invokeOnSubtree(newDomNodes, oj.Components.subtreeAttached);  
+        }
       }
     }
     
@@ -747,20 +755,13 @@ oj.ModuleBinding.defaults =
   /**
    * @ignore
    */
-  function _propagateSubtreeVisibilityToComponents(nodeArray, visible)
-  {
-    if (oj.Components != null)
+  function _invokeOnSubtree(nodeArray, method)
+  { 
+    if (method)
     {
       for (var i = 0; i<nodeArray.length; i++)
       {
-        if (visible)
-        {
-          oj.Components.subtreeShown(nodeArray[i]);
-        }
-        else
-        {
-          oj.Components.subtreeHidden(nodeArray[i]);
-        }
+        method(nodeArray[i]);
       }
     }
   }

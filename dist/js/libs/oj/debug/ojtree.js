@@ -2057,19 +2057,23 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
        /** @const */   DS_ERROR       = -1;
 
   // Context Menu item id's
-  var  /** @const */  _arMenuCmdMap = { "cut"    : "ojtreecut",
-                                        "copy"   : "ojtreecopy",
-                                        "paste"  : "ojtreepaste",
-                                        "remove" : "ojtreeremove",
-                                        "rename" : "ojtreerename"
+  var  /** @const */  _arMenuCmdMap = { "cut"          : "ojtreecut",
+                                        "copy"         : "ojtreecopy",
+                                        "paste"        : "ojtreepaste",
+                                        "paste-after"  : "ojtreepasteafter",
+                                        "paste-before" : "ojtreepastebefore",
+                                        "remove"       : "ojtreeremove",
+                                        "rename"       : "ojtreerename"
                                       } ;
 
   // Context Menu translation keys
-  var  /** @const */  _arMenuKeyMap = { "cut"    : "labelCut",
-                                        "copy"   : "labelCopy",
-                                        "paste"  : "labelPaste",
-                                        "remove" : "labelRemove",
-                                        "rename" : "labelRename"
+  var  /** @const */  _arMenuKeyMap = { "cut"          : "labelCut",
+                                        "copy"         : "labelCopy",
+                                        "paste"        : "labelPaste",
+                                        "paste-after"  : "labelPasteAfter",
+                                        "paste-before" : "labelPasteBefore",
+                                        "remove"       : "labelRemove",
+                                        "rename"       : "labelRename"
                                       } ;
 
   // Misc translation keys
@@ -2550,6 +2554,8 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * <ul><li> &lt;li data-oj-command="oj-tree-cut" /&gt;</li>
                   *     <li> &lt;li data-oj-command="oj-tree-copy" /&gt;</li>
                   *     <li> &lt;li data-oj-command="oj-tree-paste" /&gt;</li>
+                  *     <li> &lt;li data-oj-command="oj-tree-paste-after" /&gt;</li>
+                  *     <li> &lt;li data-oj-command="oj-tree-paste-before" /&gt;</li>
                   *     <li> &lt;li data-oj-command="oj-tree-remove" /&gt;</li>
                   *     <li> &lt;li data-oj-command="oj-tree-rename" /&gt;</li>
                   * </ul>
@@ -3766,7 +3772,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                  optionChange: null,
 
                 /**
-                  * Triggered when a tree node has been pasted into the tree via the context menu.
+                  * Triggered when one or more tree nodes have been pasted into the tree via the context menu.
                   *
                   * @expose
                   * @event
@@ -3774,7 +3780,10 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                   * @instance
                   * @property {Event} event <code class="prettyprint">jQuery</code> event object
                   * @property {Object} ui Parameters
-                  * @property {Object} ui.item the node that was pasted
+                  * @property {Array} ui.item the node(s) pasted
+                  * @property {string} ui.position the placement of the nodes relative to the reference
+                  *                     node. May be "inside", "before", or "after".
+                  * @property {Object} ui.reference the reference node
                   *
                   * @example <caption>Initialize the Tree with the <code class="prettyprint">paste</code> callback specified:</caption>
                   * $( ".selector" ).ojTree({
@@ -4264,7 +4273,7 @@ $ul.css('max-height', '') ;   //JRM
           return false ;
         }
 
-        if (this["isSelected"](node))  {
+        if (this._isSelected(node))  {
           this["deselect"](node);
         }
         else  {
@@ -4332,13 +4341,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      isSelected : function(node)
      {
-       var n = this._getNode(node) ;
-       var r = false ;
-
-       if (n && n.length && this._data.ui.selected) {
-         r = (this._data.ui.selected.index(n) >= 0);
-       }
-       return  r ;
+       return this._isSelected(node) ;
      },
 
 
@@ -4498,32 +4501,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      hover : function(node)
      {
-       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
-         return ;                            // near the bottom. A bogus mousenter for a node
-       }                                     // near the middle is received
-
-       node = this._getNode(node);
-       if ((! node.length) || node.hasClass(TreeUtils._OJ_DISABLED) || this._data.core.locked) {
-         return ;
-       }
-       if (node.hasClass(TreeUtils._OJ_HOVER))  {
-         return ;
-       }
-
-       var rslt = this._emitEvent({"obj" : node, "func" : "hover"}, "before") ;
-       if (typeof rslt == "boolean" && (!rslt)) {
-         return ;
-       }
-
-       //if(this.data.ui.hovered && node.get(0) === this.data.ui.hovered.get(0)) { return; }
-       if (! node.hasClass(TreeUtils._OJ_HOVER))  {
-          this["dehover"]();
-       }
-
-       this._data.ui.hovered = node.children("a").addClass(TreeUtils._OJ_HOVER).parent();
-       this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr("id")) ;
-       this._fix_scroll(node);
-       this._emitEvent({ "obj" : node }, "hover");
+       this._hover(node) ;
      },
 
 
@@ -4536,37 +4514,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      dehover : function()
      {
-       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
-         return ;                            // near the bottom. A bogus mousenter for a node
-       }                                     // near the middle is received
-
-       var obj = this._data.ui.hovered,
-           p;
-
-       if (!obj || !obj.length) {
-         return;
-       }
-       if (obj.hasClass(TreeUtils._OJ_DISABLED) || this._data.core.locked) {
-         return ;
-       }
-
-       p = obj.find("a.oj-hover") ;
-       if (! p.length) {
-         p = this._$container_ul.find("a.oj-hover") ;    // final check in case we get out of sync?
-         if (! p.length) {
-           return ;                                      // no hover, ignore.
-         }
-       }
-       p = p.removeClass(TreeUtils._OJ_HOVER).parent();
-       this._$container_ul.removeAttr(WA_ACTIVEDESCENDANT) ;
-
-//       if (this._data.ui.hovered[0] === p[0]) {
-         this._data.ui.hovered = null;
-//       }
-
-       if (obj.attr("id") != undefined) {
-         this._emitEvent({ "obj" : obj }, "dehover");
-       }
+       this._dehover() ;
      },
 
      /** Returns the full path to a node, either as an array of ID's or node names, depending on
@@ -5291,7 +5239,7 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-          Returns the jQuery wrapped <li> element for a node spcification
+       *  Returns the jQuery wrapped <li> element for a node spcification
        *  @private
        */
      _getNodeElem : function(node)
@@ -5306,6 +5254,21 @@ $ul.css('max-height', '') ;   //JRM
         }
 
         return ret ;
+     },
+
+     /**
+       *  Returns true if the node is selected, else false.
+       *  @private
+       */
+     _isSelected : function(node)
+     {
+       var n = this._getNode(node) ;
+       var r = false ;
+
+       if (n && n.length && this._data.ui.selected) {
+         r = (this._data.ui.selected.index(n) >= 0);
+       }
+       return  r ;
      },
 
      /**
@@ -6247,7 +6210,7 @@ $ul.css('max-height', '') ;   //JRM
          ui.touchEvent = false ;
        }
 
-       var isSelected  = this["isSelected"](node) ;
+       var isSelected  = this._isSelected(node) ;
 
        if (! isSelected) {
          var rslt = this._emitEvent({"obj" : node, "func": "select"}, "before") ;
@@ -6392,7 +6355,7 @@ $ul.css('max-height', '') ;   //JRM
          return ;
        }
 
-       if (this["isSelected"](node))  {
+       if (this._isSelected(node))  {
          node.children("a").removeClass(TreeUtils._OJ_SELECTED);
          node.removeAttr(WA_SELECTED);
 
@@ -6510,6 +6473,81 @@ $ul.css('max-height', '') ;   //JRM
        }
      },
 
+
+     /**
+       *  Handle hover
+       *  @private
+       */
+     _hover : function(node)
+     {
+       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
+         return ;                            // near the bottom. A bogus mousenter for a node
+       }                                     // near the middle is received
+
+       node = this._getNode(node);
+       if ((! node.length) || node.hasClass(TreeUtils._OJ_DISABLED) || this._data.core.locked) {
+         return ;
+       }
+       if (node.hasClass(TreeUtils._OJ_HOVER))  {
+         return ;
+       }
+
+       var rslt = this._emitEvent({"obj" : node, "func" : "hover"}, "before") ;
+       if (typeof rslt == "boolean" && (!rslt)) {
+         return ;
+       }
+
+       //if(this.data.ui.hovered && node.get(0) === this.data.ui.hovered.get(0)) { return; }
+       if (! node.hasClass(TreeUtils._OJ_HOVER))  {
+          this._dehover();
+       }
+
+       this._data.ui.hovered = node.children("a").addClass(TreeUtils._OJ_HOVER).parent();
+       this._$container_ul.attr(WA_ACTIVEDESCENDANT, this._data.ui.hovered.attr("id")) ;
+       this._fix_scroll(node);
+       this._emitEvent({ "obj" : node }, "hover");
+     },
+
+     /**
+       *  Handle dehover
+       *  @private
+       */
+     _dehover : function()
+     {
+       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
+         return ;                            // near the bottom. A bogus mousenter for a node
+       }                                     // near the middle is received
+
+       var obj = this._data.ui.hovered,
+           p;
+
+       if (!obj || !obj.length) {
+         return;
+       }
+       if (obj.hasClass(TreeUtils._OJ_DISABLED) || this._data.core.locked) {
+         return ;
+       }
+
+       p = obj.find("a.oj-hover") ;
+       if (! p.length) {
+         p = this._$container_ul.find("a.oj-hover") ;    // final check in case we get out of sync?
+         if (! p.length) {
+           return ;                                      // no hover, ignore.
+         }
+       }
+       p = p.removeClass(TreeUtils._OJ_HOVER).parent();
+       this._$container_ul.removeAttr(WA_ACTIVEDESCENDANT) ;
+
+//       if (this._data.ui.hovered[0] === p[0]) {
+         this._data.ui.hovered = null;
+//       }
+
+       if (obj.attr("id") != undefined) {
+         this._emitEvent({ "obj" : obj }, "dehover");
+       }
+     },
+
+
      /**
        *  Placeholder for a more specific refresh action. It is replaced
        *  by _refresh_json() for json_data, or _refresh_ui() for html_data.
@@ -6555,6 +6593,7 @@ $ul.css('max-height', '') ;   //JRM
                            {
                              _this._emitEvent({ "obj" : origTarg}, "refresh");
                              _this._reload_nodes();
+                             _this._rehover() ;
                             }
                       );
      },
@@ -6608,6 +6647,24 @@ $ul.css('max-height', '') ;   //JRM
                                           });
        }
        this._emitEvent({}, "reopen", true);     // this event will also cause selections to be tried.
+     },
+
+
+    /**
+      *  If a node was hovered, refind it in the DOM (after refresh).
+      *  @private
+      */
+     _rehover : function()
+     {
+       var id ;
+       var $hovered = this._data.ui.lastHovered ;
+       if ($hovered) {
+         id = $hovered.attr("id") ;
+         if (id) {
+           $hovered = this._getNode("#" + id) ;
+         }
+       }
+       this._data.ui.hovered = this._data.ui.lastHovered = $hovered;
      },
 
 
@@ -7493,7 +7550,7 @@ $ul.css('max-height', '') ;   //JRM
 //             if (li.hasClass(OJ_EXPANDED))  {
 //               tmp1["state"] = "e";
 //             }
-               if (_this["isSelected"](li)) {
+               if (_this._isSelected(li)) {
                  tmp1["state"] = "s";
                }
              }
@@ -8543,6 +8600,10 @@ $ul.css('max-height', '') ;   //JRM
           else if (evname === "loaded") {
             eventdata["item"] = -1 ;
           }
+          else if (evname == "paste") {
+            eventdata["position"]  = data.p ;      // position relative to the reference node
+            eventdata["reference"] = data.r ;      // the reference node
+          }
         }
 
         if (isPublic) {
@@ -9062,6 +9123,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      _initThemes : function()
      {
+/*
         // autodetect themes path
         if (this._data.themes._themes === false)  {
            $("script").each(function ()
@@ -9072,6 +9134,7 @@ $ul.css('max-height', '') ;   //JRM
               }
             });
         }
+*/
         if (this._data.themes._themes === false)    {
           this._data.themes._themes = "themes/";
         }
@@ -9360,11 +9423,12 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         else if (id === "ojtreecut") {
           this._crrm_cut(this._data.menu.node);
         }
-        else if (id === "ojtreepaste") {
-          this._crrm_paste(this._data.menu.node);
+        else if ((id === "ojtreepaste") || (id === "ojtreepastebefore") || (id === "ojtreepasteafter")) {
+          this._crrm_paste(this._data.menu.node, id);
         }
         else if (id === "ojtreeremove") {
-          if (this["isSelected"](this._data.menu.node)) {
+//        if (this["isSelected"](this._data.menu.node)) {
+          if (this._isSelected(this._data.menu.node)) {
             this._crrm_remove();
           }
           else {
@@ -9424,17 +9488,30 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
         // Set submenu "Paste" disable state, depending on whether there's been a
         // previous "cut" or "copy"
-        if (this._data.menu.usermenu && this._data.menu.$elemPaste) {
-          var state         = !! this._data.menu.$elemPaste.hasClass(TreeUtils._OJ_DISABLED) ;
+        if (this._data.menu.usermenu && (this._data.menu.$elemPaste || this._data.menu.$elemPasteBefore ||
+                                                                       this._data.menu.$elemPasteAfter)) {
           var disabledState = (!this._data.crrm.ct_nodes && !this._data.crrm.cp_nodes) ;
+          var state ;
+          var items = [this._data.menu.$elemPaste, this._data.menu.$elemPasteBefore, this._data.menu.$elemPasteAfter] ;
+          var $item, i, refresh = false ;
 
-          if (state != disabledState) {
-            if (disabledState) {
-              this._data.menu.$elemPaste.addClass(TreeUtils._OJ_DISABLED) ;
-            }
-            else {
-              this._data.menu.$elemPaste.removeClass(TreeUtils._OJ_DISABLED) ;
-            }
+          for (i = 0; i < items.length; i++) {
+             $item = items[i] ;
+             if ($item) {
+               state  = !! $item.hasClass(TreeUtils._OJ_DISABLED) ;
+               if (state != disabledState) {
+                 if (disabledState) {
+                   $item.addClass(TreeUtils._OJ_DISABLED) ;
+                 }
+                 else {
+                   $item.removeClass(TreeUtils._OJ_DISABLED) ;
+                 }
+//                 this._data.menu.$container.ojMenu("refresh") ;
+                 refresh = true ;
+               }
+             }
+          }
+          if (refresh) {
             this._data.menu.$container.ojMenu("refresh") ;
           }
         }
@@ -9796,6 +9873,8 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         data.menu.usermenu     = false ;   // user has supplied an ojMenu id if true
         data.menu.$container   = false ;   // the menu <ul>
         data.menu.$elemPaste   = false ;   // the menu "Paste" element
+        data.menu.$elemPasteAfter  = false ;   // the menu "Paste" element
+        data.menu.$elemPasteBefore = false ;   // the menu "Paste" element
         data.menu.node         = false ;   // the tree node the menu was activated on
         data.menu.activenode   = false ;   // active node for shift-F10
 
@@ -10185,7 +10264,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
                 if (! bFound) {                        // select to bottom from
                   bFound = (node == hover) ;           // last selected node
                 }
-                if (bFound && (! _this["isSelected"](node))) {
+                if (bFound && (! _this._isSelected(node))) {
                   _this._select(node, true) ;
                 }
                 return true ;
@@ -10250,8 +10329,9 @@ if ((! newVal) && (! this.options["contextMenu"])) {
        }
 
        //  Note "paste" element for disabling if no prev cut/copy
-       this._data.menu.$elemPaste = $menuContainer.find("#ojtreepaste") ;
-
+       this._data.menu.$elemPaste       = $menuContainer.find("#ojtreepaste") ;
+       this._data.menu.$elemPasteAfter  = $menuContainer.find("#ojtreepasteafter") ;
+       this._data.menu.$elemPasteBefore = $menuContainer.find("#ojtreepastebefore") ;
      },
 
      /**
@@ -10300,7 +10380,16 @@ if ((! newVal) && (! this.options["contextMenu"])) {
      _buildContextMenuLabel: function(cmd)
      {
          var key = _arMenuKeyMap[cmd] ;
-         return '<a href="#">' + this._getString(key) + '</a>';
+         //return '<a href="#">' + this._getString(key) + '</a>';
+
+         // Temp fix for 'Paste Before" and "Paste After" strings not in
+         // the nls resources for ojTree (required as part of ).
+         if (key === "labelPasteAfter" || key === "labelPasteBefore") {
+           return '<a href="#">' + oj.Translations.getTranslatedString("oj-ojTabs." + key)  + '</a>' ;
+         }
+         else {
+           return '<a href="#">' + this._getString(key) + '</a>';
+         }
      },
 
 
@@ -10310,6 +10399,12 @@ if ((! newVal) && (! this.options["contextMenu"])) {
        */
      _crrm_cut : function (obj)
      {
+        // If node is selected, then will cut all selected nodes, else just the one node.
+        obj = obj.closest("li") ;
+        if (this._isSelected(obj)) {
+          obj = null ;        // _getNode() will now return all selected nodes
+        }
+
         obj = this._getNode(obj, true);
         if (!obj || !obj.length)  {
           return false;
@@ -10317,7 +10412,6 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
         this._data.crrm.cp_nodes = false;
         this._data.crrm.ct_nodes = obj;
-
         this._emitEvent({ "obj" : obj }, "cut");
      },
 
@@ -10327,20 +10421,25 @@ if ((! newVal) && (! this.options["contextMenu"])) {
        */
      _crrm_copy : function (obj)
      {
-        obj = this._getNode(obj, true);
-        if (!obj || !obj.length)  {
-          return false;
-        }
-        this._data.crrm.ct_nodes = false;
-        this._data.crrm.cp_nodes = obj;
-        this._emitEvent({ "obj" : obj }, "copy");
+       // If node is selected, then will copy all selected nodes, else just the one node.
+       obj = obj.closest("li") ;
+       if (this._isSelected(obj)) {
+         obj = null ;        // _getNode() will now return all selected nodes
+       }
+       obj = this._getNode(obj, true);
+       if (!obj || !obj.length)  {
+         return false;
+       }
+       this._data.crrm.ct_nodes = false;
+       this._data.crrm.cp_nodes = obj;
+       this._emitEvent({ "obj" : obj }, "copy");
      },
 
      /**
        *  Menu "paste" functionality
        *  @private
        */
-     _crrm_paste : function (obj)
+     _crrm_paste : function (obj, menuId)
      {
         obj = this._getNode(obj);
         if (!obj || !obj.length) {
@@ -10350,23 +10449,25 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
         if (! this._data.crrm.ct_nodes && !this._data.crrm.cp_nodes)  {
            return false;
-         }
-         if (this._data.crrm.ct_nodes)  {
-//         this.move_node(this._data.crrm.ct_nodes, obj);
-           this._crrm_move_node(this._data.crrm.ct_nodes, obj);
-           this._data.crrm.ct_nodes = false;
-         }
-         if (this._data.crrm.ct_nodes)
-         {
-//         this.move_node(this._data.crrm.ct_nodes, obj);
-           this._crrm_move_node(this._data.crrm.ct_nodes, obj);
-           this._data.crrm.ct_nodes = false;
-         }
-         if (this._data.crrm.cp_nodes)  {
-//         this.move_node(this._data.crrm.cp_nodes, obj, false, true);
-           this._crrm_move_node(this._data.crrm.cp_nodes, obj, false, true);
-         }
-         this._emitEvent({ "obj" : obj, "nodes" : nodes}, "paste");
+        }
+
+        var position = "inside" ;
+        if (menuId === "ojtreepasteafter") position = "after"
+        else if (menuId === "ojtreepastebefore") position = "before" ; 
+
+        // Handle cut nodes
+        if (this._data.crrm.ct_nodes)  {
+          this._crrm_move_node(this._data.crrm.ct_nodes, obj, position, false, false, true);
+          this._data.crrm.ct_nodes = false;
+        }
+        // Handle copied nodes
+        if (this._data.crrm.cp_nodes)  {
+          this._crrm_move_node(this._data.crrm.cp_nodes, obj, position, true, false, true);
+        }
+        this._emitEvent({ "obj" : nodes,
+                          p : position,
+                          r : obj
+                        }, "paste");
      },
 
      /**

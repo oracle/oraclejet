@@ -101,6 +101,19 @@
     .oj-table-editable .oj-table-header-row {
       height: calc(#{$dataGridRowHeight} + 4px);
     }
+    
+    /* Styling for the header row element when table is scrollable. */
+    .oj-table-scroll .oj-table-header-row {
+      min-height: $tableRowHeight;
+      height: auto;
+    }
+    
+    /* Grid display or editable table styling for the header row element when table is scrollable. */
+    .oj-table-scroll .oj-table-grid-display .oj-table-header-row,
+    .oj-table-scroll .oj-table-editable .oj-table-header-row {
+      min-height: calc(#{$dataGridRowHeight} + 4px);
+      height: auto;
+    }
 
     /* Styling for the column header elements. */
     .oj-table-column-header-cell {
@@ -571,6 +584,19 @@
     .oj-table-grid-display .oj-table-footer-row,
     .oj-table-editable .oj-table-footer-row {
        height: calc(#{$dataGridRowHeight} + 4px);
+    }
+    
+    /* Styling for the footer row when table is scrollable. */
+    .oj-table-scroll .oj-table-footer-row {
+       min-height: $tableRowHeight;
+       height: auto;
+    }
+    
+    /* Grid display or editable table styling for the footer row when table is scrollable. */
+    .oj-table-scroll .oj-table-grid-display .oj-table-footer-row,
+    .oj-table-scroll .oj-table-editable .oj-table-footer-row {
+       min-height: calc(#{$dataGridRowHeight} + 4px);
+       height: auto;
     }
     
     /* Styling for the footer cells. */

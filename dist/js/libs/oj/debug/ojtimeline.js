@@ -352,17 +352,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['series']};
-  },
-  /**
-   * Returns a promise that is resolved when the component is finished rendering.
-   * This can be used to determine when it is okay to call automation and other APIs on the component.
-   * TODO: Remove from jsDoc when method implemented
-   * @override
-   * @private
-   * @instance
-   * @memberof oj.ojTimeline
-   */
-  whenReady : function() {
   }
 
 /**

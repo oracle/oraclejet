@@ -787,16 +787,15 @@ dvt.Context.prototype.getStage = function() {
 dvt.Context.prototype.isReadyToRender = function() {
   // Check if the parent div is connected to the DOM and not hidden via display:none. This indicates that
   // we can perform measurement, which is a pre-requisite for us to render.
-  var ancestor = this._parentDiv;
-  while (ancestor && ancestor != document) {
-    if (ancestor.style && ancestor.style.display == 'none')
+  if (this._parentDiv.offsetParent != null)
+    return true;
+  else {
+    var computedStyle = window.getComputedStyle(this._parentDiv);
+    if (computedStyle && computedStyle.position == 'fixed')
+      return computedStyle.display != 'none';
+    else
       return false;
-
-    ancestor = ancestor.parentNode;
   }
-
-  // The ancestor will be the document if all parents are connected.
-  return ancestor == document;
 };
 
 /**

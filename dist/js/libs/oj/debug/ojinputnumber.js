@@ -913,12 +913,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     },
     "touchend .oj-inputnumber-button": function(event)
     {
-      _ojInputNumberLastTouch = Date.now();
       this._stop(event);
     },
     "touchcancel .oj-inputnumber-button": function(event)
     {
-      _ojInputNumberLastTouch = Date.now();
       this._stop(event);
     },
     "mousedown .oj-inputnumber-button": function(event)
@@ -1335,11 +1333,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _isRealMouseEvent: function(event)
   {
-    // must be at least 300 for the "300ms" delay
-    if (oj.DomUtils.isTouchSupported())
-      return (Date.now() - _ojInputNumberLastTouch) > 500;
-
-    return true;
+    return ! oj.DomUtils.recentTouchEnd();
   },
   /**
    * disables or enables both the up and down buttons depending upon what the value
@@ -1718,8 +1712,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 // -----------------------------------------------------------------------------
 // "private static members" shared by all inputNumbers
 // -----------------------------------------------------------------------------
-
-var _ojInputNumberLastTouch;
 
 //////////////////     SUB-IDS     //////////////////
 

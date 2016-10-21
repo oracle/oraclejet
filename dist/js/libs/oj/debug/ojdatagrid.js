@@ -89,6 +89,7 @@ oj.DataGridResources = function(rtlMode, translationFunction)
     this.styles['borderVerticalNone'] = "oj-datagrid-border-vertical-none";
     this.styles['borderBottomSmall'] = "oj-datagrid-small-content-border-bottom";
     this.styles['borderVerticalSmall'] = "oj-datagrid-small-content-border-vertical";
+    this.styles['offsetOutline'] = "oj-datagrid-focus-offset";
     
     this.commands = {};
     this.commands['sortCol'] = "oj-datagrid-sortCol";
@@ -275,9 +276,13 @@ DvtDataGrid.MAX_OVERSCROLL_PIXEL = 50;
 DvtDataGrid.BOUNCE_ANIMATION_DURATION = 500;
 DvtDataGrid.DECELERATION_FACTOR = 0.0006;
 DvtDataGrid.TAP_AND_SCROLL_RESET = 300;
+// related to timing and x/y position of events       
 DvtDataGrid.MIN_SWIPE_DURATION = 200;
 DvtDataGrid.MAX_SWIPE_DURATION = 400;
 DvtDataGrid.MIN_SWIPE_DISTANCE = 10;
+// for the actual transition animation
+DvtDataGrid.MIN_SWIPE_TRANSITION_DURATION = 100;
+DvtDataGrid.MAX_SWIPE_TRANSITION_DURATION = 500;
 
 // constants for touch gestures
 DvtDataGrid.CONTEXT_MENU_TAP_HOLD_DURATION = 750;
@@ -969,6 +974,18 @@ DvtDataGrid.prototype.SetCreateContextCallback = function(callback)
 };
 
 /**
+ * Register the focusable callbacks for handling focus classNames
+ * @param {function()} focusInHandler
+ * @param {function()} focusOutHandler
+ * @export
+ */
+DvtDataGrid.prototype.SetFocusableCallback =  function(focusInHandler, focusOutHandler) 
+{
+    this.m_focusInHandler = focusInHandler;
+    this.m_focusOutHandler = focusOutHandler;
+};
+
+/**
  * Whether high watermark scrolling is used
  * @return {boolean} true if high watermark scrolling is used, false otherwise
  * @private
@@ -1575,7 +1592,9 @@ DvtDataGrid.prototype.resetInternal = function()
     this.m_hasVerticalScroller = null;
     this.m_currentScrollLeft = null;
     this.m_currentScrollTop = null;
-
+    this.m_prevScrollLeft = null;
+    this.m_prevScrollTop = null;
+    
     //resizing
     this.m_resizing = false;
     this.m_resizingElement = null;
@@ -1729,7 +1748,9 @@ DvtDataGrid.prototype.render = function(root)
 
     this.m_currentScrollLeft = 0;
     this.m_currentScrollTop = 0;
-
+    this.m_prevScrollLeft = 0;
+    this.m_prevScrollTop = 0;       
+    
     this.m_rowHeaderLevelWidths = [];
     this.m_rowEndHeaderLevelWidths = [];
     this.m_columnHeaderLevelHeights = [];
@@ -1972,8 +1993,8 @@ DvtDataGrid.prototype.resizeGrid = function()
     var width, height, colHeader, rowHeader, databody, columnHeaderWidth,
             colHeaderHeight, rowHeaderWidth, rowHeaderHeight, databodyContentWidth, databodyWidth, databodyContentHeight, databodyHeight,
             isTouchDevice, isDatabodyHorizontalScrollbarRequired, isDatabodyVerticalScrollbarRequired, scrollbarSize,
-            dir, empty, endTime, colEndHeader, rowEndHeader, colEndHeaderHeight, rowEndHeaderWidth,
-            availableHeight, availableWidth, rowEndHeaderDir, columnEndHeaderDir, isEmpty;
+            dir, empty, endTime, colEndHeader, rowEndHeader, colEndHeaderHeight, rowEndHeaderWidth, emptyHeight, emptyWidth,
+            availableHeight, availableWidth, rowEndHeaderDir, columnEndHeaderDir, isEmpty, databodyScroller;
 
 
     width = this.getWidth();
@@ -1983,7 +2004,8 @@ DvtDataGrid.prototype.resizeGrid = function()
     rowHeader = this.m_rowHeader;
     rowEndHeader = this.m_rowEndHeader;
     databody = this.m_databody;
-
+    databodyScroller = databody['firstChild'];
+    
     // cache these since they will be used in multiple places and we want to minimize reflow
     colHeaderHeight = this.getColumnHeaderHeight();
     colEndHeaderHeight = this.getColumnEndHeaderHeight();
@@ -2009,37 +2031,46 @@ DvtDataGrid.prototype.resizeGrid = function()
             empty = this._buildEmptyText();
             this.m_root.appendChild(empty); //@HTMLUpdateOK
         }
-        databodyContentWidth = this.getElementWidth(this.m_empty);
-        databodyContentHeight = this.getElementHeight(this.m_empty);
-        isDatabodyHorizontalScrollbarRequired = false;
-        isDatabodyVerticalScrollbarRequired = false;
-    }
-    else 
-    {
-        databodyContentWidth = this.getElementWidth(databody['firstChild']);
-        databodyContentHeight = this.getElementHeight(databody['firstChild']);
-        //determine which scrollbars are required, if needing one forces need of the other, allows rendering within the root div
-        isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth);
-        if (isDatabodyHorizontalScrollbarRequired)
+        else
         {
-            isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight - scrollbarSize);
+            empty = this.m_empty;
+        }
+        emptyHeight = this.getElementHeight(empty);
+        emptyWidth = this.getElementWidth(empty);
+        
+        if (emptyHeight > this.getElementHeight(databodyScroller))
+        {
+            this.setElementHeight(databodyScroller, emptyHeight);
+        }
+        if (emptyWidth > this.getElementWidth(databodyScroller))
+        {
+            this.setElementWidth(databodyScroller, emptyWidth);
+        }     
+    }
+    
+    databodyContentWidth = this.getElementWidth(databody['firstChild']);
+    databodyContentHeight = this.getElementHeight(databody['firstChild']);
+    //determine which scrollbars are required, if needing one forces need of the other, allows rendering within the root div
+    isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth);
+    if (isDatabodyHorizontalScrollbarRequired)
+    {
+        isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight - scrollbarSize);
+        databody['style']['overflow'] = "auto";
+    }
+    else
+    {
+        isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight);
+        if (isDatabodyVerticalScrollbarRequired)
+        {
+            isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth - scrollbarSize);
             databody['style']['overflow'] = "auto";
         }
         else
         {
-            isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight);
-            if (isDatabodyVerticalScrollbarRequired)
-            {
-                isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth - scrollbarSize);
-                databody['style']['overflow'] = "auto";
-            }
-            else
-            {
-                // for an issue where same size child causes scrollbars (similar code used in resizing already)
-                databody['style']['overflow'] = "hidden";
-            }        
-        }  
-    }
+            // for an issue where same size child causes scrollbars (similar code used in resizing already)
+            databody['style']['overflow'] = "hidden";
+        }        
+    }  
     
     this.m_hasHorizontalScroller = isDatabodyHorizontalScrollbarRequired;
     this.m_hasVerticalScroller = isDatabodyVerticalScrollbarRequired;          
@@ -2052,7 +2083,7 @@ DvtDataGrid.prototype.resizeGrid = function()
     else
     {
         databodyHeight = availableHeight;
-        rowHeaderHeight = isEmpty ? Math.min(databodyHeight, this.m_endRowHeaderPixel) : Math.min(databodyContentHeight, isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight);
+        rowHeaderHeight = Math.min(databodyContentHeight, isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight);
     }
 
     if (this.m_endRowEndHeader != -1)
@@ -2063,7 +2094,7 @@ DvtDataGrid.prototype.resizeGrid = function()
     else
     {
         databodyWidth = availableWidth;
-        columnHeaderWidth = isEmpty ? Math.min(databodyWidth, this.m_endColHeaderPixel) : Math.min(databodyContentWidth, isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth);
+        columnHeaderWidth = Math.min(databodyContentWidth, isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth);
     }
 
     rowEndHeaderDir = rowHeaderWidth + columnHeaderWidth + (isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0);
@@ -2104,6 +2135,52 @@ DvtDataGrid.prototype.resizeGrid = function()
     this.m_resizeRequired = false;
 
     endTime = new Date();
+};
+
+/**
+ * Size the databody scroller based on whatever dimensions are available.
+ * @private
+ */
+DvtDataGrid.prototype._sizeDatabodyScroller = function()
+{
+    var databody, scroller, isEmpty, isHWS, maxHeight, maxWidth, rowCount, colCount, totalHeight, totalWidth,
+            endRowPixel, endColPixel;
+    databody = this.m_databody;
+    scroller = databody.firstChild;
+    isEmpty = this._databodyEmpty();   
+    isHWS = this._isHighWatermarkScrolling();
+    maxHeight = this.m_utils._getMaxDivHeightForScrolling();
+    maxWidth = this.m_utils._getMaxDivWidthForScrolling();
+    rowCount = this.getDataSource().getCount('row');
+    colCount = this.getDataSource().getCount('column');
+    totalHeight = 0;
+    totalWidth = 0;
+    endRowPixel = 0;
+    endColPixel = 0;
+    
+    if (isEmpty)
+    {
+        // min is 1 so that the scrollbars show up
+        endRowPixel = Math.max(Math.max(this.m_endRowHeaderPixel, this.m_endRowEndHeaderPixel), 1);
+        endColPixel = Math.max(Math.max(this.m_endColHeaderPixel, this.m_endColEndHeaderPixel), 1);     
+    }
+    else
+    {
+        endRowPixel = this.m_endRowPixel;
+        endColPixel = this.m_endColPixel;
+    }
+
+    totalHeight = (rowCount != -1 && !isHWS) ? rowCount * this.m_avgRowHeight : endRowPixel;
+    totalWidth = (colCount != -1 && !isHWS) ? colCount * this.m_avgColWidth : endColPixel;
+
+    this.setElementHeight(scroller, Math.min(maxHeight, totalHeight));
+    this.setElementWidth(scroller, Math.min(maxWidth, totalWidth));
+    
+    if (this.m_initialized)
+    {
+        this.m_scrollWidth = this.getElementWidth(scroller) - this.getElementWidth(databody) + (this.m_hasVerticalScroller ?  this.m_utils.getScrollbarSize() : 0);
+        this.m_scrollHeight = this.getElementHeight(scroller) - this.getElementHeight(databody) + (this.m_hasHorizontalScroller ?  this.m_utils.getScrollbarSize() : 0);
+    }
 };
 
 /**
@@ -3142,8 +3219,12 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess = function(startResults, headerR
 
     if (this.m_initialized)
     {
+        //if there are no cells and we are initialized then size the scroller
+        this._sizeDatabodyScroller();
+        
+        // we cannot syncScroller here. On touch this will trigger a refetch before the fetchCells has been called and will
+        // cause an infinite loop. We always call fetchCells after fetchHeaders which calls syncScroller
         // check if we need to sync header scroll position
-        this._syncScroller();
     }
 
     // end fetch
@@ -3267,7 +3348,14 @@ DvtDataGrid.prototype.buildColumnHeaders = function(headerRoot, headerSet, start
 
     totalColumnWidth = returnObj.totalHeaderDimension;
     totalColumnHeight = returnObj.totalLevelDimension;
-
+    
+    if (totalColumnWidth != 0 && (this.m_avgColWidth == 0 || this.m_avgColWidth == undefined))
+    {
+        // the average column width should only be set once, it will only change when the column width varies between columns, but
+        // in such case the new average column width would not be any more precise than previous one.
+        this.m_avgColWidth = totalColumnWidth / count;
+    }
+    
     if (!this.m_colHeaderHeight)
     {
         this.m_colHeaderHeight = totalColumnHeight;
@@ -3348,6 +3436,13 @@ DvtDataGrid.prototype.buildColumnEndHeaders = function(headerRoot, headerSet, st
     totalColumnWidth = returnObj.totalHeaderDimension;
     totalColumnHeight = returnObj.totalLevelDimension;
 
+    if (totalColumnWidth != 0 && (this.m_avgColWidth == 0 || this.m_avgColWidth == undefined))
+    {
+        // the average column width should only be set once, it will only change when the column width varies between columns, but
+        // in such case the new average column width would not be any more precise than previous one.
+        this.m_avgColWidth = totalColumnWidth / count;
+    }
+    
     if (!this.m_colEndHeaderHeight)
     {
         this.m_colEndHeaderHeight = totalColumnHeight;
@@ -3432,6 +3527,13 @@ DvtDataGrid.prototype.buildRowHeaders = function(headerRoot, headerSet, start, t
     if (returnAsFragment)
     {
         return returnObj;
+    }
+
+    if (totalRowHeight != 0 && (this.m_avgRowHeight == 0 || this.m_avgRowHeight == undefined))
+    {
+        // the average row height should only be set once, it will only change when the row height varies between rows, but
+        // in such case the new average row height would not be any more precise than previous one.
+        this.m_avgRowHeight = totalRowHeight / count;
     }
 
     if (!this.m_rowHeaderWidth)
@@ -3545,7 +3647,14 @@ DvtDataGrid.prototype.buildRowEndHeaders = function(headerRoot, headerSet, start
     {
         return returnObj;
     }
-
+    
+    if (totalRowHeight != 0 && (this.m_avgRowHeight == 0 || this.m_avgRowHeight == undefined))
+    {
+        // the average row height should only be set once, it will only change when the row height varies between rows, but
+        // in such case the new average row height would not be any more precise than previous one.
+        this.m_avgRowHeight = totalRowHeight / count;
+    }
+    
     if (!this.m_rowEndHeaderWidth)
     {
         this.m_rowEndHeaderWidth = totalRowWidth;
@@ -4317,7 +4426,8 @@ DvtDataGrid.prototype._setAttribute = function(element, attributeKey, value)
  */
 DvtDataGrid.prototype.buildDatabody = function()
 {
-    var root = document.createElement("div");
+    var root, scroller;
+    root = document.createElement("div");
     root['id'] = this.createSubId("databody");
     root['className'] = this.getMappedStyle("databody");
     // workaround for mozilla bug 616594, where overflow div would make it focusable    
@@ -4331,6 +4441,10 @@ DvtDataGrid.prototype.buildDatabody = function()
     {
         root.addEventListener("scroll", this.handleScroll.bind(this), false);
     }
+
+    scroller = document.createElement("div");
+    scroller['className'] = this.getMappedStyle("scroller") + (this.m_utils.isTouchDevice() ? " " + this.getMappedStyle("scroller-mobile") : "");
+    root.appendChild(scroller); //@HTMLUpdateOK          
     
     this.fetchCells(root, 0, 0);
 
@@ -4432,54 +4546,29 @@ DvtDataGrid.prototype.isLongScroll = function()
  */
 DvtDataGrid.prototype.isCellFetchResponseInViewport = function(cellSet, cellRange)
 {
-    var rowRange, rowStart, rowEnd, columnRange, columnStart, columnEnd, rowStartPixel, rowEndPixel,
-            columnStartPixel, columnEndPixel, viewportTop, viewportBottom, viewportLeft, viewportRight, rowCount, columnCount;
+    var rowRange, rowStart, columnRange, columnStart,  rowReturnVal, columnReturnVal;
 
-    if (isNaN(this.m_avgRowHeight) || isNaN(this.m_avgColWidth))
+    if (isNaN(this.m_avgRowHeight) || isNaN(this.m_avgColWidth) || this.m_empty != null || !this.m_initialized)
     {
-        // initial scroll these are not defined so just return true
+        // initial scroll these are not defined so just return true, or if not inited or if no databody
         return true;
     }
 
+    // the goal of this method is to make sure we haven't scrolled further since the last fetch
+    // so our request is still valid, we run a massive risk of running loops if our logic is wrong otherwise
+    // as in we continue to request the same thing but it is never valid.
+
     rowRange = cellRange[0];
     rowStart = rowRange['start'];
-    rowCount = cellSet.getCount("row");
-    rowEnd = rowStart + rowCount;
 
     columnRange = cellRange[1];
     columnStart = columnRange['start'];
-    columnCount = cellSet.getCount("column");
-    columnEnd = columnStart + columnCount;
 
-    // calculate the bound covered by the cellset
-    rowStartPixel = this.m_avgRowHeight * rowStart;
-    rowEndPixel = this.m_avgRowHeight * rowEnd;
-    columnStartPixel = this.m_avgColWidth * columnStart;
-    columnEndPixel = this.m_avgColWidth * columnEnd;
-
-    // the viewport bounds, take databody width/height to account for scrollbar, header, border
-    viewportTop = this._getViewportTop();
-    viewportBottom = this._getViewportBottom();
-    viewportLeft = this._getViewportLeft();
-    viewportRight = this._getViewportRight();
-
-    // if the all the rows and all the columns are fetched then obviously it
-    // will be within the viewport
-    if (!this._isCountUnknown('row') && this.getDataSource().getCount('row') == rowCount && rowEndPixel < viewportBottom)
-    {
-        // adjust the rowEndPixel so that it will pass the condition
-        rowEndPixel = viewportBottom;
-    }
-
-    if (!this._isCountUnknown('column') && this.getDataSource().getCount('column') == columnCount && columnEndPixel < viewportRight)
-    {
-        // adjust the columnEndPixel so that it will pass the condition
-        columnEndPixel = viewportRight;
-    }
+    rowReturnVal = this._getLongScrollStart(this.m_currentScrollTop, this.m_prevScrollTop, 'row');
+    columnReturnVal = this._getLongScrollStart(this.m_currentScrollLeft, this.m_prevScrollLeft, 'column');
 
     // return true if the viewport fits inside the fetched range
-    return ((rowStartPixel <= viewportTop && rowEndPixel >= viewportTop) || (rowStartPixel <= viewportBottom && rowEndPixel >= viewportBottom)) && 
-            ((columnStartPixel <= viewportLeft && columnEndPixel >= viewportLeft) || (columnStartPixel <= viewportRight && columnEndPixel >= viewportRight));
+    return (rowReturnVal['start'] == rowStart && columnReturnVal['start'] == columnStart);
 };
 
 /**
@@ -4494,7 +4583,7 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
 {
     var totalRowCount, totalColumnCount, defaultHeight, rowRange, rowStart, rowCount,
             rowRangeNeedsUpdate, columnRange, columnStart, columnCount, columnRangeNeedsUpdate,
-            databody, top, referenceRow, databodyContent,
+            databody, top, referenceRow, databodyContent, max,
             isAppend, fragment, totalRowHeight, i, avgHeight, avgWidth, duration, self,
             rows, totalColumnWidth, prev, addResult;
     totalRowCount = this.getDataSource().getCount("row");
@@ -4574,17 +4663,7 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
         databody = columnRange['databody'];
     }
 
-    if (!databody.hasChildNodes())
-    {
-        // first time databody is constructed
-        databodyContent = document.createElement("div");
-        databodyContent['className'] = this.getMappedStyle("scroller") + (this.m_utils.isTouchDevice() ? " " + this.getMappedStyle("scroller-mobile") : "");
-        databody.appendChild(databodyContent); //@HTMLUpdateOK        
-    }
-    else
-    {
-        databodyContent = databody['firstChild'];
-    }
+    databodyContent = databody['firstChild'];
 
     // if these are new rows (append or insert in the middle)
     if (rowRangeNeedsUpdate || rowInsert)
@@ -4674,15 +4753,6 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
         }
     }
             
-    // if the total row count is unknown, then calculate it based on the current height and the added row height
-    if (totalColumnCount != -1 && !this._isHighWatermarkScrolling())
-    {
-        totalColumnWidth = totalColumnCount * avgWidth;
-    }
-    else
-    {
-        totalColumnWidth = this.m_endColPixel;
-    }
     // added to only do this on initialization
     // check to see if the average width and height has change and update the canvas and the scroller accordingly
     if (avgWidth != undefined && (this.m_avgColWidth == 0 || this.m_avgColWidth == undefined))
@@ -4690,22 +4760,6 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
         // the average column width should only be set once, it will only change when the column width varies between columns, but
         // in such case the new average column width would not be any more precise than previous one.
         this.m_avgColWidth = avgWidth;
-        this.setElementWidth(databodyContent, totalColumnWidth);
-    }
-    // if count is unknown, we'll need to update canvas if content is added
-    else if ((totalColumnCount == -1 || this._isHighWatermarkScrolling()) && totalColumnWidth > this.getElementWidth(databodyContent))
-    {
-        this.setElementWidth(databodyContent, totalColumnWidth);
-    }
-
-    // if the total row count is unknown, then calculate it based on the current height and the added row height
-    if (totalRowCount != -1 && !this._isHighWatermarkScrolling())
-    {
-        totalRowHeight = totalRowCount * avgHeight;
-    }
-    else
-    {
-        totalRowHeight = this.m_endRowPixel;
     }
 
     if (avgHeight != undefined && (this.m_avgRowHeight == 0 || this.m_avgRowHeight == undefined))
@@ -4713,13 +4767,9 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
         // the average row height should only be set once, it will only change when the row height varies between rows, but
         // in such case the new average row height would not be any more precise than previous one.
         this.m_avgRowHeight = avgHeight;
-        this.setElementHeight(databodyContent, totalRowHeight);
     }
-    else if (((totalRowCount == -1 || this._isHighWatermarkScrolling()) && totalRowHeight > this.getElementHeight(databodyContent)) || (totalRowCount * avgHeight != this.getElementHeight(databodyContent)))
-    {
-        // in the insert case or unknown row count case
-        this.setElementHeight(databodyContent, totalRowHeight);
-    }
+
+    this._sizeDatabodyScroller();
 
     // update column range info if neccessary
     if (columnRangeNeedsUpdate)
@@ -4816,11 +4866,7 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function(cellSet, cellRange, row
             {
                 this.resizeGrid();
             }
-            else
-            {
-                this.m_scrollWidth = this.getElementWidth(databodyContent) - this.getElementWidth(databody) + (this.m_hasVerticalScroller ?  this.m_utils.getScrollbarSize() : 0);
-                this.m_scrollHeight = this.getElementHeight(databodyContent) - this.getElementHeight(databody) + (this.m_hasHorizontalScroller ?  this.m_utils.getScrollbarSize() : 0);
-            }
+            
             this.fillViewport(this.m_currentScrollLeft, this.m_currentScrollTop);
             if (this.isFetchComplete())
             {
@@ -5957,7 +6003,7 @@ DvtDataGrid.prototype.scrollDelta = function(deltaX, deltaY)
  */
 DvtDataGrid.prototype._initiateScroll = function(scrollLeft, scrollTop)
 {
-    if (!this.m_utils.isTouchDevice() && (this.m_utils.getElementScrollLeft(this.m_databody) != scrollLeft || this.m_databody['scrollTop'] != scrollTop))
+    if (!this.m_utils.isTouchDevice())
     {
         this.m_utils.setElementScrollLeft(this.m_databody, scrollLeft);
         this.m_databody['scrollTop'] = scrollTop;
@@ -5983,25 +6029,58 @@ DvtDataGrid.prototype._disableTouchScrollAnimation = function()
 };
 
 /**
+ * Should the datagrid long scroll using appropriate params if no databody but headers.
+ * @param {number} scrollLeft - the position the scroller left should be
+ * @param {number} scrollTop - the position the scroller top should be
+ * @returns {boolean} true if long scroll should init
+ */
+DvtDataGrid.prototype._shouldLongScroll = function(scrollLeft, scrollTop)
+{
+    // only long scroll if virtual scrolling    
+    if (this._isHighWatermarkScrolling())
+    {
+        return false;        
+    }
+    
+    if (!this._databodyEmpty())
+    {
+        return ((scrollLeft + this.getViewportWidth()) < this.m_startColPixel ||
+                (scrollTop + this.getViewportHeight()) < this.m_startRowPixel ||
+                scrollLeft > this.m_endColPixel ||
+                scrollTop > this.m_endRowPixel);
+    }
+    
+    return ((scrollLeft + this.getViewportWidth()) < Math.max(this.m_startColHeaderPixel, this.m_startColEndHeaderPixel) ||
+            (scrollTop + this.getViewportHeight()) < Math.max(this.m_startRowHeaderPixel, this.m_startRowEndHeaderPixel) ||
+            scrollLeft > Math.max(this.m_endColHeaderPixel, this.m_endColEndHeaderPixel) ||
+            scrollTop > Math.max(this.m_endRowHeaderPixel, this.m_endRowEndHeaderPixel));        
+};
+
+
+/**
  * Set the scroller position, using translate3d when permitted
  * @param {number} scrollLeft - the position the scroller left should be
  * @param {number} scrollTop - the position the scroller top should be
  */
 DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
-{
-    this.m_currentScrollLeft = scrollLeft;
-    this.m_currentScrollTop = scrollTop;
+{  
+    if (scrollLeft != this.m_currentScrollLeft)
+    {
+        this.m_prevScrollLeft = this.m_currentScrollLeft;
+        this.m_currentScrollLeft = scrollLeft;
+    }
+    if (scrollTop != this.m_currentScrollTop)
+    {
+        this.m_prevScrollTop = this.m_currentScrollTop;
+        this.m_currentScrollTop = scrollTop;
+    }
 
     // check if this is a long scroll
     // don't do this for touch, the check must be done AFTER transition ends otherwise
     // animation will become sluggish, see _syncScroller
     if (!this.m_utils.isTouchDevice())
     {
-		// only long scroll if virtual scrolling
-        if (!this._isHighWatermarkScrolling() && ((scrollLeft + this.getViewportWidth()) < this.m_startColPixel ||
-                scrollLeft > this.m_endColPixel ||
-                (scrollTop + this.getViewportHeight()) < this.m_startRowPixel ||
-                scrollTop > this.m_endRowPixel))
+        if (this._shouldLongScroll(scrollLeft, scrollTop))
         {
             this.handleLongScroll(scrollLeft, scrollTop);
         }
@@ -6014,13 +6093,22 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
     // update header and databody scroll position
     this._syncScroller();
 
+    if (!this.m_utils.isTouchDevice())
+    {
+        // If detect an actual scroll, fire scroll event
+        if (this.m_prevScrollTop !== scrollTop || this.m_prevScrollLeft !== scrollLeft)
+        {
+            this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': scrollLeft, 'scrollY': scrollTop}});
+        }
+    }
+    
     // check if we need to adjust scroller dimension
     this._adjustScrollerSize();
 
     // check if there's a cell to focus
     if (this.m_cellToFocus != null)
     {
-        this.m_cellToFocus.focus();
+        this._setActive(this.m_cellToFocus, null, false);
         this.m_cellToFocus = null;
     }
 
@@ -6039,6 +6127,20 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
             this.m_scrollIndexAfterFetch = null;
         }
     }
+    
+    // do the same for headers
+    if (this.m_scrollHeaderAfterFetch != null)
+    {
+        if (!this._isDatabodyCellActive() &&
+                this.m_scrollIndexAfterFetch['axis'] == this.m_active['axis'] &&
+                this.m_scrollIndexAfterFetch['index'] == this.m_active['index'] &&
+                this.m_scrollIndexAfterFetch['level'] == this.m_active['level'])
+        {
+            this._highlightActive();
+        }
+        //should be able to scroll to index without highlighting it
+        this.m_scrollHeaderAfterFetch = null;
+    }       
 };
 
 /**
@@ -6063,16 +6165,12 @@ DvtDataGrid.prototype._scrollTransitionEnd = function()
         this._scrollTouchSelectionAffordance();
     }
 
-    // Fire scroll event after physical scrolling finishes
+    // Fire scroll event after physical scrolling finishes     
     this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': this.m_currentScrollLeft, 'scrollY': this.m_currentScrollTop}});
 
     // check how the viewport needs to be filled, through long scroll or HWS fillViewport.
     // This should be replaced once we optimize sort going to the newly sorted location.
-	// only long scroll if high watermark 
-    if (!this._isHighWatermarkScrolling() && ((this.m_currentScrollLeft + this.getViewportWidth()) < this.m_startColPixel ||
-            this.m_currentScrollLeft > this.m_endColPixel ||
-            (this.m_currentScrollTop + this.getViewportHeight()) < this.m_startRowPixel ||
-            this.m_currentScrollTop > this.m_endRowPixel))
+    if (this._shouldLongScroll(this.m_currentScrollLeft, this.m_currentScrollTop))
     {
         this.handleLongScroll(this.m_currentScrollLeft, this.m_currentScrollTop);
     }
@@ -6143,7 +6241,7 @@ DvtDataGrid.prototype._bounceBack = function()
  */
 DvtDataGrid.prototype._syncScroller = function()
 {
-    var scrollLeft, scrollTop, databody, colHeader, rowHeader, dir, prevScrollLeft, prevScrollTop, colEndHeader, rowEndHeader;
+    var scrollLeft, scrollTop, databody, colHeader, rowHeader, dir, colEndHeader, rowEndHeader;
 
     scrollLeft = this.m_currentScrollLeft;
     scrollTop = this.m_currentScrollTop;
@@ -6215,17 +6313,10 @@ DvtDataGrid.prototype._syncScroller = function()
     else
     {
         dir = this.getResources().isRTLMode() ? "right" : "left";
-        prevScrollLeft = this.getElementDir(colHeader, dir);
-        prevScrollTop = this.getElementDir(rowHeader, 'top');
         this.setElementDir(colHeader, -scrollLeft, dir);
         this.setElementDir(colEndHeader, -scrollLeft, dir);
         this.setElementDir(rowHeader, -scrollTop, 'top');
         this.setElementDir(rowEndHeader, -scrollTop, 'top');
-        // If detect an actual scroll, fire scroll event
-        if (prevScrollTop !== -scrollTop || prevScrollLeft !== -scrollLeft)
-        {
-            this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': scrollLeft, 'scrollY': scrollTop}});
-        }
     }
 };
 
@@ -6260,6 +6351,66 @@ DvtDataGrid.prototype._adjustScrollerSize = function()
 };
 
 /**
+ * Get the starting position based on scroll
+ * @param {number} scrollDir
+ * @param {number} prevScrollDir
+ * @param {string} axis
+ * @returns {Object} contains start and startPixel
+ */
+DvtDataGrid.prototype._getLongScrollStart = function(scrollDir, prevScrollDir, axis)
+{
+    var start, startPixel, oversizeRatio, fetchSize, total, scrollerDimension, maxDimension, maxScroll, avgDimension, scrollbarSize;
+        
+    // totals must be 0 or higher for long scroll
+    if (prevScrollDir != scrollDir)
+    {
+        if (axis == 'row')
+        {
+            scrollerDimension = this.getElementHeight(this.m_databody.firstChild);
+            maxDimension = this.m_utils._getMaxDivHeightForScrolling();
+            maxScroll = this._getMaxScrollHeight();
+            avgDimension = this.m_avgRowHeight;
+            scrollbarSize = this.m_hasHorizontalScroller ?  this.m_utils.getScrollbarSize() : 0;
+        }
+        else if (axis == 'column')
+        {
+            scrollerDimension = this.getElementWidth(this.m_databody.firstChild);
+            maxDimension = this.m_utils._getMaxDivWidthForScrolling();
+            maxScroll = this._getMaxScrollWidth();
+            avgDimension = this.m_avgColWidth;
+            scrollbarSize = this.m_hasVerticalScroller ?  this.m_utils.getScrollbarSize() : 0;
+        }
+
+        oversizeRatio =  Math.max(Math.min(scrollDir / scrollerDimension, 1), 0);
+        total = this.getDataSource().getCount(axis);
+        fetchSize = this.getFetchSize(axis);
+        start = Math.floor(total * oversizeRatio);
+        startPixel = maxDimension <= scrollerDimension ? Math.min(scrollDir, maxScroll) : start * avgDimension;
+        
+        if (oversizeRatio == 1 || (scrollDir + (fetchSize * avgDimension)) > (scrollerDimension - scrollbarSize))
+        {
+            start = Math.max(total - fetchSize, 0);
+            startPixel = Math.max(scrollerDimension - (fetchSize * avgDimension), 0);
+        }
+    }
+    else
+    {
+        if (axis == 'row')
+        {
+            start = this.m_startRow;
+            startPixel = this.m_startRowPixel;
+        }    
+        else if (axis == 'column')
+        {
+            start = this.m_startCol;
+            startPixel = this.m_startColPixel;
+        }
+    }
+
+    return {'start': start, 'startPixel': startPixel};
+};
+
+/**
  * Handle scroll to position that is completely outside of the current row/column range
  * For example, in Chrome it is possible to cause a "jump" back to the start position
  * This might also be needed if we decide to use delay scroll (to detect long scroll) to avoid
@@ -6269,13 +6420,15 @@ DvtDataGrid.prototype._adjustScrollerSize = function()
  */
 DvtDataGrid.prototype.handleLongScroll = function(scrollLeft, scrollTop)
 {
-    var startRow, startCol, startRowPixel, startColPixel;
+    var startRow, startCol, startRowPixel, startColPixel, rowReturnVal, columnReturnVal;
 
-    // do a fetch based on current scroll position
-    startRow = Math.round(Math.max(0, scrollTop - this.getHeight() / 2) / this.m_avgRowHeight);
-    startCol = Math.round(Math.max(0, scrollLeft - this.getWidth() / 2) / this.m_avgColWidth);
-    startRowPixel = startRow * this.m_avgRowHeight;
-    startColPixel = startCol * this.m_avgColWidth;
+    rowReturnVal = this._getLongScrollStart(scrollTop, this.m_prevScrollTop, 'row');
+    startRow = rowReturnVal['start'];
+    startRowPixel = rowReturnVal['startPixel'];
+
+    columnReturnVal = this._getLongScrollStart(scrollLeft, this.m_prevScrollLeft, 'column');
+    startCol = columnReturnVal['start'];
+    startColPixel = columnReturnVal['startPixel'];
 
     // reset ranges, just cleaned up to only set if the header is present
     this.m_startRow = startRow;
@@ -6718,7 +6871,7 @@ DvtDataGrid.prototype.removeHeadersFromStartOfContainer = function(headersContai
         this._setAttribute(element, 'start', this._getAttribute(element, 'start', true) + returnVal.extentChange);
         this._setAttribute(element, 'extent', this._getAttribute(element, 'extent', true) - returnVal.extentChange);
         this.setElementDir(header, this.getElementDir(header, dir) + returnVal.dimensionChange, dir);
-        this.setElementDir(header, this.getElementDir(header, dimension) - returnVal.dimensionChange, 'dimension');
+        this.setElementDir(header, this.getElementDir(header, dimension) - returnVal.dimensionChange, dimension);
 
         removedHeaders += returnVal.extentChange;
         removedDimensionValue += returnVal.dimensionChange;
@@ -6954,14 +7107,14 @@ DvtDataGrid.prototype.removeRowHeadersFromTop = function()
     if ((this.m_endRowHeader - this.m_startRowHeader) > this.MAX_ROW_THRESHOLD)
     {
         rowHeaderContent = this.m_rowHeader['firstChild'];
-    rowThreshold = this.getRowThreshold();
+        rowThreshold = this.getRowThreshold();
         if (!(this.m_startRowHeaderPixel >= this.m_currentScrollTop - rowThreshold))
-    {
+        {
             returnVal = this.removeHeadersFromStartOfContainer(rowHeaderContent, null, this.m_startRowHeaderPixel, rowThreshold, this.getMappedStyle('rowheadercell'), 'height', 'top', this.m_currentScrollTop);
 
             this.m_startRowHeaderPixel += returnVal.dimensionChange;
             this.m_startRowHeader += returnVal.extentChange;
-    }
+        }
     }
 
     if ((this.m_endRowEndHeader - this.m_startRowEndHeader) > this.MAX_ROW_THRESHOLD)
@@ -6969,7 +7122,7 @@ DvtDataGrid.prototype.removeRowHeadersFromTop = function()
         rowEndHeaderContent = this.m_rowEndHeader['firstChild'];
         rowThreshold = this.getRowThreshold();
         if (!(this.m_startRowEndHeaderPixel >= this.m_currentScrollTop - rowThreshold))
-    {
+        {
             returnVal = this.removeHeadersFromStartOfContainer(rowEndHeaderContent, null, this.m_startRowEndHeaderPixel, rowThreshold, this.getMappedStyle('rowendheadercell'), 'height', 'top', this.m_currentScrollTop);
 
             this.m_startRowEndHeaderPixel += returnVal.dimensionChange;
@@ -7036,7 +7189,7 @@ DvtDataGrid.prototype.removeRowHeadersFromBottom = function()
 
             this.m_endRowHeaderPixel -= returnVal.dimensionChange;
             this.m_endRowHeader -= returnVal.extentChange;
-    }
+        }
     }
 
     // clean up bottom row headers
@@ -7451,6 +7604,10 @@ DvtDataGrid.prototype._isSortEnabled = function(axis, headerContext)
  */
 DvtDataGrid.prototype._isDOMElementSortable = function(element)
 {
+    if (element == null)
+    {
+        return false;
+    }    
     var header = this.findHeader(element);
     if (header == null)
     {
@@ -8132,9 +8289,12 @@ DvtDataGrid.prototype.handleTouchEnd = function(event)
         this.m_lastTapTime = null;
         this.m_lastTapTarget = null;   
         cell = this.findCell(target);
-        this._handleEditable(event, cell);
-        this._handleEdit(event, cell);
-        event.preventDefault();
+        if (cell != null)
+        {
+            this._handleEditable(event, cell);
+            this._handleEdit(event, cell);
+            event.preventDefault();
+        }
     }       
     else
     {
@@ -8236,7 +8396,8 @@ DvtDataGrid.prototype._calculateMomentum = function(current, start, time, curren
 
     return {
         destination: Math.round(destination),
-        duration: Math.max(100, duration),
+        // durations can be up to 4s currently let's cap them at 500ms
+        duration: Math.min(Math.max(DvtDataGrid.MIN_SWIPE_TRANSITION_DURATION, duration), DvtDataGrid.MAX_SWIPE_TRANSITION_DURATION),
         overScroll: overScroll
     };
 };
@@ -8653,22 +8814,24 @@ DvtDataGrid.prototype.setElementDir = function(elem, pix, dir)
 DvtDataGrid.prototype.getElementDir = function(elem, dir)
 {
     var value;
-    if (elem['style'][dir].indexOf('px') > -1)
+    if (elem['style'][dir].indexOf('px') > -1 && elem['style'][dir].indexOf('e') == -1)
     {
-        return parseInt(elem['style'][dir], 10);
+        // parseFloat does better with big numbers
+        return parseFloat(elem['style'][dir]);
     }
+    
     if (!document.body.contains(elem))
     {
         elem['style']['visibility'] = "hidden";
         document.body.appendChild(elem); //@HTMLUpdateOK
-        // Not using offsetWidth due to
-        value = Math.round(elem.getBoundingClientRect()[dir]);
-        document.body.removeChild(elem);
+        // Started using offset again because of how it handles large numbers and limits on BoundingClient
+        value = Math.round(elem['offset' + dir.charAt(0).toUpperCase() + dir.slice(1)]);
+        document.body.removeChild(elem);        
         elem['style']['visibility'] = "";
     }
     else
     {
-        value = Math.round(elem.getBoundingClientRect()[dir]);
+        value = Math.round(elem['offset' + dir.charAt(0).toUpperCase() + dir.slice(1)]);
     }
     return value;
 };
@@ -11096,17 +11259,21 @@ DvtDataGrid.prototype._unhighlightActive = function(classNames)
  */
 DvtDataGrid.prototype._highlightActiveObject = function(activeObject, prevActiveObject, classNames)
 {
-    if (classNames == null)
+    if (classNames == null && this.m_utils.shouldOffsetOutline())
     {
-        classNames = ['focus'];
-    }
+        classNames = ['offsetOutline'];
+    }    
     if (activeObject != null)
     {
         var element = this._getElementFromActiveObject(activeObject);
         //possible in the virtual case
         if (element != null)
         {
-            this._highlightElement(element, classNames);
+            this.m_focusInHandler(element);
+            if (classNames != null)
+            {            
+                this._highlightElement(element, classNames);
+            }
             this._setAriaProperties(activeObject, prevActiveObject, element);
         }
     }
@@ -11120,15 +11287,22 @@ DvtDataGrid.prototype._highlightActiveObject = function(activeObject, prevActive
  */
 DvtDataGrid.prototype._unhighlightActiveObject = function(activeObject, classNames)
 {
-    if (classNames == null)
+    if (classNames == null && this.m_utils.shouldOffsetOutline())
     {
-        classNames = ['focus'];
-    }
+        classNames = ['offsetOutline'];
+    }    
     if (activeObject != null)
     {
         var element = this._getElementFromActiveObject(activeObject);
-        this._unhighlightElement(element, classNames);
-        this._unsetAriaProperties(element);
+        if (element != null)
+        {        
+            this.m_focusOutHandler(element);      
+            if (classNames != null)
+            {
+                this._unhighlightElement(element, classNames);
+            }
+            this._unsetAriaProperties(element);
+        }
     }
 };
 
@@ -11760,6 +11934,7 @@ DvtDataGrid.prototype._enterActionableMode = function(element)
     // focus on first focusable item in the cell
     if (this._setFocusToFirstFocusableElement(element))
     {
+        this.m_focusOutHandler(element);        
         this.setActionableMode(true);
     }
     return false;
@@ -11776,6 +11951,7 @@ DvtDataGrid.prototype._exitActionableMode = function()
         elem = this._getActiveElement();
         this.setActionableMode(false);
         this._disableAllFocusableElements(elem);
+        this.m_focusInHandler(elem);                
     }
 };
 
@@ -12105,7 +12281,7 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     // no need to scroll since it will be in the viewport
                     if (axis == 'column')
                     {
-                    newCellIndex = this.createIndex(0, index);
+                        newCellIndex = this.createIndex(0, index);
                     }
                     else if (this._isHighWatermarkScrolling())
                     {
@@ -12113,7 +12289,7 @@ DvtDataGrid.prototype.handleHeaderFocusChange = function(keyCode, event, jumpToH
                     }
                     else
                     {
-                        newCellIndex = this.createIndex(index, this.getDataSource().getCount("row") - 1);
+                        newCellIndex = this.createIndex(this.getDataSource().getCount("row") - 1, index);
                     }
 
                     this.scrollToIndex(newCellIndex);
@@ -12817,11 +12993,10 @@ DvtDataGrid.prototype.scrollToHeader = function(headerInfo)
         }
         (axis === 'row' || axis === 'rowEnd') ? this.scrollDelta(0, delta) : this.scrollDelta(delta, 0);
     }
-
     //if there's an index we wanted to sctoll to after fetch it has now been scrolled to by scrollToIndex, so highlight it
-    if (this.m_scrollHeaderAfterFetch != null && header != null)
+    else if (this.m_scrollHeaderAfterFetch != null)
     {
-        this._setActive(header);
+        this._updateActive(headerInfo, true);
         this.m_scrollHeaderAfterFetch = null;
     }
 };
@@ -14060,9 +14235,6 @@ DvtDataGrid.prototype.handleDatabodyClickSelection = function(event)
             //if right click and inside multiple selection do not change anything
             return;
         }
-
-        // make sure the cell is visible
-        this.scrollToIndex(index);
 
         ctrlKey = this.m_utils.ctrlEquivalent(event);
         shiftKey = event.shiftKey;
@@ -16507,7 +16679,8 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
     var width, height, colHeader, rowHeader, databody, colHeaderHeight, columnHeaderWidth, rowHeaderWidth, rowHeaderHeight, 
             databodyContentWidth, databodyWidth, databodyContentHeight, databodyHeight, isDatabodyHorizontalScrollbarRequired,
             isDatabodyVerticalScrollbarRequired, scrollbarSize, dir, rowEndHeaderDir, columnEndHeaderDir, isEmpty,
-            deltaX = 0, deltaY = 0, colEndHeader, rowEndHeader, availableHeight, availableWidth, colEndHeaderHeight, rowEndHeaderWidth;
+            deltaX = 0, deltaY = 0, colEndHeader, rowEndHeader, availableHeight, availableWidth, colEndHeaderHeight, rowEndHeaderWidth,
+            databodyScroller, empty, emptyWidth, emptyHeight;
 
 
     width = this.getWidth();
@@ -16517,7 +16690,8 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
     rowHeader = this.m_rowHeader;
     rowEndHeader = this.m_rowEndHeader;
     databody = this.m_databody;
-
+    databodyScroller = databody['firstChild'];
+    
     // cache these since they will be used in multiple places and we want to minimize reflow
     colHeaderHeight = this.getColumnHeaderHeight();
     colEndHeaderHeight = this.getColumnEndHeaderHeight();
@@ -16537,41 +16711,50 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
     if (isEmpty)
     {
         //could be getting here in the handle resize of an empty grid
-        if (this.m_empty != null)
+        if (this.m_empty == null)
         {
-            this.setElementDir(this.m_empty, colHeaderHeight, 'top');
-            this.setElementDir(this.m_empty, rowHeaderWidth, dir);
+            empty = this._buildEmptyText();
+            this.m_root.appendChild(empty); //@HTMLUpdateOK
         }
-        databodyContentWidth = this.getElementWidth(this.m_empty);
-        databodyContentHeight = this.getElementHeight(this.m_empty);
-        isDatabodyHorizontalScrollbarRequired = false;
-        isDatabodyVerticalScrollbarRequired = false;
-    }
-    else 
-    {
-        databodyContentWidth = this.getElementWidth(databody['firstChild']);
-        databodyContentHeight = this.getElementHeight(databody['firstChild']);
-        //determine which scrollbars are required, if needing one forces need of the other, allows rendering within the root div
-        isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth);
-        if (isDatabodyHorizontalScrollbarRequired)
+        else
         {
-            isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight - scrollbarSize);
+            empty = this.m_empty;
+        }
+        emptyHeight = this.getElementHeight(empty);
+        emptyWidth = this.getElementWidth(empty);
+        
+        if (emptyHeight > this.getElementHeight(databodyScroller))
+        {
+            this.setElementHeight(databodyScroller, emptyHeight);
+        }
+        if (emptyWidth > this.getElementWidth(databodyScroller))
+        {
+            this.setElementWidth(databodyScroller, emptyWidth);
+        }     
+    }
+
+    databodyContentWidth = this.getElementWidth(databody['firstChild']);
+    databodyContentHeight = this.getElementHeight(databody['firstChild']);
+    //determine which scrollbars are required, if needing one forces need of the other, allows rendering within the root div
+    isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth);
+    if (isDatabodyHorizontalScrollbarRequired)
+    {
+        isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight - scrollbarSize);
+        databody['style']['overflow'] = "auto";
+    }
+    else
+    {
+        isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight);
+        if (isDatabodyVerticalScrollbarRequired)
+        {
+            isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth - scrollbarSize);
             databody['style']['overflow'] = "auto";
         }
         else
         {
-            isDatabodyVerticalScrollbarRequired = this.isDatabodyVerticalScrollbarRequired(availableHeight);
-            if (isDatabodyVerticalScrollbarRequired)
-            {
-                isDatabodyHorizontalScrollbarRequired = this.isDatabodyHorizontalScrollbarRequired(availableWidth - scrollbarSize);
-                databody['style']['overflow'] = "auto";
-            }
-            else
-            {
-                // for an issue where same size child causes scrollbars (similar code used in resizing already)
-                databody['style']['overflow'] = "hidden";
-            }        
-        }  
+            // for an issue where same size child causes scrollbars (similar code used in resizing already)
+            databody['style']['overflow'] = "hidden";
+        }        
     }
     
     this.m_hasHorizontalScroller = isDatabodyHorizontalScrollbarRequired;
@@ -16585,7 +16768,7 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
     else
     {
         databodyHeight = availableHeight;
-        rowHeaderHeight = isEmpty ? Math.min(databodyHeight, this.m_endRowHeaderPixel) : Math.min(databodyContentHeight, isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight);
+        rowHeaderHeight = Math.min(databodyContentHeight, isDatabodyHorizontalScrollbarRequired ? databodyHeight - scrollbarSize : databodyHeight);
     }
 
     if (this.m_endRowEndHeader != -1)
@@ -16596,7 +16779,7 @@ DvtDataGrid.prototype.manageResizeScrollbars = function()
     else
     {
         databodyWidth = availableWidth;
-        columnHeaderWidth = isEmpty ? Math.min(databodyWidth, this.m_endColHeaderPixel) : Math.min(databodyContentWidth, isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth);
+        columnHeaderWidth = Math.min(databodyContentWidth, isDatabodyVerticalScrollbarRequired ? databodyWidth - scrollbarSize : databodyWidth);
     }
 
     rowEndHeaderDir = rowHeaderWidth + columnHeaderWidth + (isDatabodyVerticalScrollbarRequired ? scrollbarSize : 0);
@@ -16755,14 +16938,17 @@ DvtDataGrid.prototype.resizeRowHeightAndShift = function(heightChange)
     {
         databodyRows = this.m_databody['firstChild']['childNodes'];
         row = databodyRows[index - this.m_startRow];
-        newHeight = this.getElementHeight(row) + heightChange;
-        this.setElementHeight(row, newHeight);
-        // +1 for the header we just did
-        for (i = index - this.m_startRow + 1; i < databodyRows.length; i++)
+        if (row != null)
         {
-            row = databodyRows[i];
-            newStart = this.getElementDir(row, 'top') + heightChange;
-            this.setElementDir(row, newStart, 'top');
+            newHeight = this.getElementHeight(row) + heightChange;
+            this.setElementHeight(row, newHeight);
+            // +1 for the header we just did
+            for (i = index - this.m_startRow + 1; i < databodyRows.length; i++)
+            {
+                row = databodyRows[i];
+                newStart = this.getElementDir(row, 'top') + heightChange;
+                this.setElementDir(row, newStart, 'top');
+            }
         }
     }
 
@@ -17206,7 +17392,56 @@ DvtDataGridUtils.SOLARIS_OS = "Solaris";
 DvtDataGridUtils.MAC_OS = "Mac";
 DvtDataGridUtils.UNKNOWN_OS = "Unknown";
 
-// @internal
+/**
+ * Get the maximum scrollable browser height
+ * @returns {Number}
+ */
+DvtDataGridUtils.prototype._getMaxDivHeightForScrolling = function()
+{
+    if (this.m_maxDivHeightForScrolling == null)
+    {        
+        this._setMaxValuesForScrolling();
+    }
+    return this.m_maxDivHeightForScrolling;
+};
+
+/**
+ * Get the maximum scrollable browser width
+ * @returns {Number}
+ */
+DvtDataGridUtils.prototype._getMaxDivWidthForScrolling = function() 
+{
+    if (this.m_maxDivWidthForScrolling == null)
+    {        
+        this._setMaxValuesForScrolling();
+    }
+    return this.m_maxDivWidthForScrolling;
+};
+
+/**
+ * Set the maximum scrollable browser height
+ */
+DvtDataGridUtils.prototype._setMaxValuesForScrolling = function() 
+{
+    var div;
+    // ie lets the value go forever without actual support, so we hard cap it at 1 million pixels
+    if (this.platform === DvtDataGridUtils.IE_PLATFORM || this.platform === DvtDataGridUtils.EDGE_PLATFORM)
+    {
+        this.m_maxDivHeightForScrolling = 1000000;
+        this.m_maxDivWidthForScrolling = 1000000;        
+        return;
+    }
+    
+    div = document.createElement("div");    
+    div.style.cssText = "width:1000000000px;height:1000000000px;display:none;"; 
+    document.body.appendChild(div); //@HTMLUpdateOK
+    // for some reason chrome stops rendering absolutely positioned content at half the value on osx
+    this.m_maxDivHeightForScrolling = parseInt(parseFloat(window.getComputedStyle(div)['height'])/2, 10);
+    this.m_maxDivWidthForScrolling =  parseInt(parseFloat(window.getComputedStyle(div)['width'])/2, 10);
+    document.body.removeChild(div); //@HTMLUpdateOK
+    return;
+};
+
 DvtDataGridUtils.prototype.calculateScrollbarSize = function()
 {
     // Create the measurement node
@@ -17729,6 +17964,20 @@ DvtDataGridUtils.prototype._isNodeEditableOrClickable = function(node, databody)
             }
         }
         node = node.parentNode;
+    }
+    return false;
+};
+
+/**
+ * On certain browser the outline is postioned differently and requires offset. Chrome/Safari on Mac.
+ * @return {boolean} true if the outline needs to be offset
+ * @private
+ */
+DvtDataGridUtils.prototype.shouldOffsetOutline = function()
+{
+    if (this.os == DvtDataGridUtils.MAC_OS && this.platform == DvtDataGridUtils.WEBKIT_PLATFORM)
+    {
+        return true;
     }
     return false;
 };
@@ -19630,6 +19879,21 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this.grid.SetResolveReadyPromiseCallback(this._resolveReadyPromise.bind(self));
         this.grid.SetOptionCallback(this.option.bind(self));
         
+        this._focusable({
+            'applyHighlight': true,
+            'setupHandlers': function(focusInHandler, focusOutHandler) {
+                var noJQFocusInHandler = function(element) {
+                    return focusInHandler($(element))
+                };
+                
+                var noJQFocusOutHandler = function(element) {
+                    return focusOutHandler($(element))
+                };                
+                
+                self.grid.SetFocusableCallback.call(self.grid, noJQFocusInHandler, noJQFocusOutHandler);
+            }
+        });            
+        
         this._registerEventListeners();
        
         //attempt to render the grid if visible and atatched
@@ -20719,6 +20983,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
             return {
                 'subId': 'oj-datagrid-cell',
                 'component': context['component'],
+                'cell': context['cell'],
                 'data': context['data'],
                 'datasource': context['datasource'],                        
                 'indexes': {
@@ -21518,7 +21783,7 @@ DvtDataGrid.prototype._getActionFromKeyDown = function(event, cellOrHeader)
         'currentMode': this._getCurrentMode(),
         'activeMove': (this.m_cutRow != null),
         'rowMove': this._isMoveEnabled('row'),
-        'columnSort': this._isSortEnabled('column', null),
+        'columnSort': cellOrHeader == 'column' ? this._isDOMElementSortable(this._getActiveElement()) : false,
         'selection': this._isSelectionEnabled(),
         'selectionMode': this.m_options.getSelectionMode(),
         'multipleSelection': this.isMultipleSelection()
@@ -22298,7 +22563,8 @@ DvtDataGridKeyboardHandler.prototype.getAction = function(event, capabilities)
             {
                 return 'SORT';
             }
-            else if (!altKey && readOnly && currentMode === 'navigation')
+            // enter actionable mode on headers since they cannot be edited
+            else if ((!altKey && readOnly && currentMode === 'navigation') || cellOrHeader != 'cell')
             {
                 return 'ACTIONABLE';
             }

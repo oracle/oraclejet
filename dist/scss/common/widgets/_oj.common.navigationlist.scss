@@ -924,6 +924,10 @@
             @include oj-justify-content-property(center);
             padding: $navigationBarItemPadding;
         }
+        
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+           padding: $navigationBarStackedItemPadding;
+        }
 
             //Add Space between icon and text
         .oj-navigationlist-horizontal:not(.oj-navigationlist-stack-icon-label):not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
@@ -1158,27 +1162,9 @@
             text-overflow: ellipsis;
         }
 
-        .oj-navigationlist-previous-icon {
+        .oj-navigationlist-previous-button {
             @include oj-align-self-property(center);
-            padding: 0 7px;
-            border: 1px solid;
-            line-height: $buttonHeight;
-            border-color: transparent;
-            @include oj-border-radius( $buttonBorderRadius );
-            color: $buttonHalfChromeIconColor;
-        }
-        /*Override default/hover colors for previous icon*/
-        a.oj-navigationlist-previous-link:hover .oj-navigationlist-previous-icon,
-        a.oj-navigationlist-previous-link:focus .oj-navigationlist-previous-icon {
-            color: $buttonHalfChromeIconColorHover;
-            border-color: $buttonHalfChromeBorderColorHover;
-            background-color: $buttonHalfChromeBgColorHover
-        }
-
-        a.oj-navigationlist-previous-link:active .oj-navigationlist-previous-icon {
-            color: $buttonHalfChromeIconColorActive;
-            border-color: $buttonHalfChromeBorderColorActive;
-            background-color: $buttonHalfChromeBgColorActive;
+            margin-bottom: 0;
         }
 
         a.oj-navigationlist-previous-link:active{

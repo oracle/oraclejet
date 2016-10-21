@@ -584,7 +584,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         {
             this.keepDomLabel = true;
             this.option('label',
-                        this.type === "inputPush" ? this.buttonElement.val() : this.buttonElement.html(),
+                        this.type === "inputPush" ? this.buttonElement.val() : this.buttonElement.html(), // @HTMLUpdateOK getter not setter
                         {'_context': {internalSet: true}}); // writeback not needed since "not in constructorOptions" means "not bound"
         }
 
@@ -650,7 +650,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             self.rootElement.removeClass( activeClass );
             self.rootElement.removeClass( "oj-hover" ); // TODO: needed here, or just in mouse handlers?
             self._toggleDefaultClasses();
-        }
+        };
 
         this.document.bind( "touchend" + this.eventNamespace + " " + "touchcancel" + this.eventNamespace, endHandler);
         
@@ -683,14 +683,20 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                     return;
                 self.rootElement.removeClass( activeClass );
                 self._toggleDefaultClasses();
-            })
-            .bind( "click" + this.eventNamespace, function( event ) {
-                if ( self._IsEffectivelyDisabled() )
-                {
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                }
             });
+
+        this._disabledClickHandler = function( event ) {
+            if ( self._IsEffectivelyDisabled() )
+            {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+        };
+
+        // Must do this in capture phase to avoid race condition where app's click 
+        // handlers on anchor buttons can be called if their listeners get registered 
+        // before ours, e.g. if their KO click binding is before the ojComponent binding.
+        this.buttonElement[0].addEventListener("click", this._disabledClickHandler, true);
 
         this._focusable({
             'element': this.rootElement, 
@@ -707,7 +713,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
                 // if in a buttonset that tracks checked state (i.e. checkbox set or single
                 // radio group), then set that option and fire optionChange event
-                var buttonset = $( this ).closest( ":oj-buttonset" ).data( "oj-ojButtonset" );
+                var buttonset = self._getEnclosingContainerComponent("buttonset");
                 var checkedState = buttonset && buttonset._getCheckedFromDom(buttonset.$buttons);
                 if (buttonset && checkedState!==undefined)
                 {
@@ -834,9 +840,6 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         //   tab-back-in will go to an enabled button of the Buttonset/Toolbar, or skip Buttonset/Toolbar if all buttons disabled.
                         // - Must eat Enter/Space/DownArrow to prevent that functionality from occurring. (For non-anchor buttons, the native 
                         //   disabled status prevents some of those on at least some platforms.)
-                        // Since anchor buttons don't have a native disabled status, they remain tabbable when disabled (when not in a 
-                        // Buttonset/Toolbar, which set tabindex -1 on disabled buttons), thus are most susceptible to having key events
-                        // while disabled.
                         return event.keyCode === $.ui.keyCode.TAB || event.keyCode === $.ui.keyCode.LEFT || event.keyCode === $.ui.keyCode.RIGHT;
 
                     var isSpace = event.keyCode === $.ui.keyCode.SPACE;
@@ -870,9 +873,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             }
         } // end of: if (checkbox) {} else if (radio) {} else {}
 
+        // at create time, we want only the "if disabled" part of callee, not the "if enabled" part, so only call if disabled
+        if (this.options.disabled) 
+            this._manageAnchorTabIndex(false, true);
+
         this._updateEffectivelyDisabled();
         this._handleLabelAndIconsAtCreateTime();
-        this._setupMenuButton();
+        this._setupMenuButton(null);
 
         // call this at the *end* of _ComponentCreate, since it needs to know whether any state classes like oj-active, oj-disabled, oj-selected, oj-hover, .oj-focus
         // have been applied.
@@ -974,14 +981,20 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _destroy: function() // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
     {
-        this._removeMenuBehavior();
+        this._removeMenuBehavior(this.options.menu);
         this.document.off( this.eventNamespace );
+        this.buttonElement[0].removeEventListener("click", this._disabledClickHandler, true);
 
         // TBD: won't need this after the restore-attrs feature is in place.
         this.element
             .removeClass( "oj-helper-hidden-accessible" )
             .removeAttr("aria-labelledby")
             .removeUniqueId();
+
+        // If disabled, we want to run the "changing from disabled to enabled" part of callee, to restore original tabindex.
+        // If enabled, don't want to run any part of callee.
+        if (this.options.disabled) 
+            this._manageAnchorTabIndex(true, false);
 
         var isToggle = this._isToggle;
 
@@ -1007,8 +1020,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             //
             //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
             oj.DomUtils.unwrap(this.element);
-
-                }
+        }
 
         if( _lastToggleActive === this.buttonElement[0] )
         {
@@ -1073,7 +1085,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             _lastActive = null; // avoid (very slight) possibility that first mouseIn after button is subsequently re-enabled will set oj-active
 
             // when disabling a menu button, dismiss the menu if open
-            this._dismissMenu();
+            this._dismissMenu(this.options.menu);
         }
         else
         {
@@ -1083,6 +1095,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
     _setOption: function( key, value, flags ) // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
     {
+        var oldValue = this.options[key];
         this._super( key, value, flags );
         // TBD: Currently the below code relies on super already having been called.  Consider removing that dependency
         // and calling super at end instead, so that optionChange (fired at end of super) is fired at very end.
@@ -1093,7 +1106,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 _setChromingClass(this.rootElement, value);
                 break;
             case "disabled":
-                // must call this *after* _super() so it can fix the wrong things that _super() does, as discussed in callee
+                // call this from _setOption, not _updateEffectivelyDisabled, as discussed in callee
+                this._manageAnchorTabIndex(oldValue, value);
+
+                // must call this *after* _super(), as discussed in callee
                 this._updateEffectivelyDisabled();
                 break;
             case "label":
@@ -1107,7 +1123,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 this._setIconsOption(true);
                 break;
             case "menu": // setting/clearing the menu sets whether this is a menuButton
-                this._setupMenuButton();
+                this._setupMenuButton(oldValue);
                 break;
         }
     },
@@ -1140,8 +1156,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // - The reason the jsdoc doesn't mention the "moved into Buttonset (possibly from another buttonset)" case is that in that case
         //   Bset.refresh() must be called.  However, not sure that it's doing all the necessary things for the "from another Bset" case.
 
-        // Handle the case where we just got reparented out of a disabled Buttonset
-        if ( this._ancestorDisabled && !$( this ).closest( ":oj-buttonset" ).length )
+        // Handle the rare case where we just got reparented out of a disabled Buttonset
+        if ( this._ancestorDisabled && !this._getEnclosingContainerElement("buttonset").length )
             this.__setAncestorComponentDisabled(false);
         
         // re-fetch the chroming option, so that if it's still set to the default dynamic getter, which takes its value from the containing 
@@ -1405,6 +1421,101 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         .addClass( buttonClass );
     },
 
+    // Anchors are the only Button type lacking a native disabled API, so this tabindex logic is needed to prevent 
+    // them from being tabbable when disabled.  We only set the tabindex for anchors, and only when the Button is 
+    // standalone (not in a Buttonset or Toolbar), since those components already manage the tabindex.
+    // 
+    // Each time a standalone anchor Button is set to disabled, including create time, we set its tabindex to -1, and 
+    // stash its old tabindex in an ivar, so that we can restore it when it is later enabled, and at destroy time.
+    // This handles the common case where the button's "is standalone" status never changes.
+    // 
+    // For the rare case that a Button is reparented into one of those components, those components will take 
+    // over the tabIndex, so Button needn't do anything special at that time.
+    // 
+    // For the rare case that a Button is reparented out of one of those components, so as to become standalone, we 
+    // take no action, and in fact should NOT call this method, for the following reasons:
+    // - Already, for all button types (not just anchor), the app must fix up the tabindex of a button reparented out of 
+    //   these containers, since it might be -1. There's little reason to handle anchors specially.
+    // - We prefer not to introduce special handling just for this rare edge case.
+    // - We don't want to guess whether the tabindex was set by the former container (which we try to fix up), vs. being 
+    //   set a moment ago by the app (which we hope not to clobber).
+    // - If the button is disabled, we don't want to call the regular "set tabindex and stash old tabindex" logic, since 
+    //   the old tabindex is often -1 set by the old container.  Stashing -1 would mean that the next enable or destroy 
+    //   incorrectly sets -1 on the tabindex. And we don't want to special-case that logic for this rare reparenting case.
+    //   Also, disabled buttons from those containers already have the desired -1 value (unless app changed it, which is 
+    //   their decision), so no action needed anyway.
+    // 
+    // Since this logic never runs when in a Buttonset, callers don't need to worry about "effectively disabled", and can 
+    // just pass the old/new values of this.options.disabled.
+    // 
+    // This method should NOT be called by refresh(), since there's no need, and since refresh() is called when reparented 
+    // out of a buttonset/toolbar.  Per above, this method should NOT be called at that time.
+    // 
+    // This method should be called by _setOption("disabled") and at create time, NOT by _updateEffectivelyDisabled() 
+    // (which is called in both of those cases), since _updateEffectivelyDisabled() can be called 
+    // indirectly by refresh() when the button was just reparented out of a disabled Buttonset.  Since this logic never 
+    // runs when in a Buttonset, calling from _updateEffectivelyDisabled() is not needed.
+    _manageAnchorTabIndex: function( oldDisabled, disabled )
+    {
+        // bail if:
+        // - truthiness of disabled option is same as before, e.g. changed from "a" to "b"
+        // - not a standalone anchor button
+        if (!oldDisabled == !disabled || this.type !== "anchor" 
+                || this._getEnclosingContainerElement("buttonset").length 
+                || this._getEnclosingContainerElement("toolbar").length)
+            return;
+
+        if (disabled) { // enabled button becoming disabled, at create time or later. (Not destroy time, since that logic only passes disabled=false.)
+            // If the existing tabindex is unset (attr() returns undefined) or invalid (not a (stringified) integer), set the 
+            // ivar to null, in which case when we later restore the old value, we just clear the attr.  Obviously correct 
+            // in unset case. For invalid case, we prefer not to set anything invalid on the dom, and per MDN 
+            // unset and invalid tabindexes are handled the same.
+            var attr = this.element.attr("tabindex");
+            this._oldAnchorTabIndex = this._isInteger(Number(attr)) ? attr: null;
+            
+            this.element.attr("tabindex", -1);
+        } else { // disabled button becoming enabled after create time, incl. destroy time.  (Not create time, since that logic only passes disabled=true.)
+            this._oldAnchorTabIndex == null 
+                ? this.element.removeAttr("tabindex")
+                : this.element.attr("tabindex", this._oldAnchorTabIndex);
+            // no need to clear ivar
+        };
+    },
+
+    // IE11 and several modern platforms don't support Number.isInteger(), so use MDN's polyfill:
+    _isInteger: function( value )
+    {
+        return typeof value === "number" && 
+            isFinite(value) && 
+            Math.floor(value) === value;
+    },
+
+    _selectorMap: {
+        "buttonset": ".oj-buttonset", 
+        "toolbar":   ".oj-toolbar" 
+    },
+
+    _constructorMap: {
+        "buttonset": "ojButtonset", 
+        "toolbar":   "ojToolbar" 
+    },
+
+    // component param is "buttonset" or "toolbar".
+    // Returns non-null JQ object that's length 1 iff this button is contained in a container of the specified type
+    _getEnclosingContainerElement: function(component)
+    {
+        return this.rootElement.closest(this._selectorMap[component]);
+    },
+
+    // component param is "buttonset" or "toolbar"
+    // Returns buttonset/toolbar component, or null if none.
+    _getEnclosingContainerComponent: function(component)
+    {
+        var elem = this._getEnclosingContainerElement(component)[0];
+        var constructor = oj.Components.getWidgetConstructor(elem, this._constructorMap[component]);
+        return constructor && constructor("instance");
+    },
+
     /*
      * Call this method at create time and whenever the "menu" option is set by the app.
      *
@@ -1414,12 +1525,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * We don't set listeners on the menu until _getMenu() is called on the first launch,
      * so that the menu needn't be inited before the button.
      */
-    _setupMenuButton: function() // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _setupMenuButton: function(oldMenuOption) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
         if ( this.options.menu && this.element.is("input")) // both push and toggle buttons based on <input>
             throw new Error("Menu Button functionality is not supported on input elements.");
 
-        this._removeMenuBehavior();
+        this._removeMenuBehavior(oldMenuOption);
 
         if ( this.options.menu )
         {
@@ -1435,7 +1546,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                     } else if (event.which === $.ui.keyCode.ESCAPE)
                     {
                         var bubbleEscUp = self._checkMenuParent(self.rootElement);
-						self._dismissMenu(event);
+						self._dismissMenu(self.options.menu, event);
                         return bubbleEscUp;
 //						return false;
                     }
@@ -1484,16 +1595,20 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 	},
 
     /*
-     * This method removes menuButton functionality from the element
+     * This method removes menuButton functionality from the button and specified menu
+     *
+     * param menuOption - a current or previous value of the "menu" option
      */
-    _removeMenuBehavior: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _removeMenuBehavior: function(menuOption) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         this.element
             .removeAttr( "aria-haspopup" )
             .off( this.menuEventNamespace );
 
-        this._dismissMenu();
-        this._menu && this._menu.widget().off( this.menuEventNamespace );
-        this._menu = undefined;
+        this._dismissMenu(menuOption);
+
+        // access menu elem directly, rather than using _getMenuOnly(menuOption).widget(), so listener is cleared even if component no longer exists.
+        $(menuOption).off( this.menuEventNamespace );
+        this._menuListenerSet = false;
     },
 
     /*
@@ -1503,27 +1618,50 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      *
      * We wait until menu-launch time to lazily get and configure the menu, to avoid an init-order dependency.  It should be OK to init the button before the menu.
      *
-     * This method throws if no Menu found, which is app error since Menu should be inited by the time this is called.
+     * This method throws if no Menu found, which is app error since Menu should be inited by the time a user launches the menu.
      *
      * (Do NOT return null just because button is disabled, since that would mean disabled menuButtons lose their dropdown arrow, and possibly other problems.)
      */
     _getMenu: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        if (!this._menu) {
-            // Sets ivar to the JET Menu of the first element found.
-            // Sets it to undefined if no element found, or if element has no JET Menu.
-            this._menu = $(this.options.menu).data( "oj-ojMenu" );
+        // The JET Menu of the first element found.
+        // Per architect discussion, get it every time rather than caching the menu.
+        var menu = this._getMenuOnly(this.options.menu); 
 
-            if (!this._menu)
-                throw new Error('JET Button: "menu" option specified, but does not reference a valid JET Menu.');
+        // if no element found, or if element has no JET Menu
+        if (!menu)
+            throw new Error('JET Button: "menu" option specified, but does not reference a valid JET Menu.');
 
+        if (!this._menuListenerSet) {        
             var self = this;
-            this._menu.widget()
-                .on( "ojclose" + this.menuEventNamespace, function( event, ui ) {
-                    self._menuDismissHandler(event);
-                });
+
+            // must use "on" syntax rather than clobbering whatever "close" handler the app may have set via the menu's "option" syntax
+            menu.widget().on( "ojclose" + this.menuEventNamespace, function( event, ui ) {
+                self._menuDismissHandler(event);
+            });
+            this._menuListenerSet = true;
         }
 
-        return this._menu;
+        return menu;
+    },
+
+    /*
+     * Returns the JET Menu of the (first) element specified by the menuOption param, which should be a (current or old) 
+     * value of the menu option.  Returns null if no element found, or if element has no JET Menu.
+     * 
+     * Most callers should call _getMenu instead, as _getMenuOnly() performs no init, and doesn't throw if no menu found.
+     * This method is suitable as a helper for _getMenu, or (say) to close an open menu (which isn't needed if menu is already gone).
+     * 
+     * If you need the menu's *element* (not component), then it's better to call $(foo) than 
+     * menu=this._getMenuOnly(foo); elem=menu && menu.widget(),
+     * since $(foo) works when the element is found but its component is not (and is more efficient).
+     * 
+     * If you need the menu's element *and* component, and should throw if they're missing, then just call 
+     * menu=this._getMenu(); elem=menu.widget(),
+     */
+    _getMenuOnly: function(menuOption) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        // Call instance() since need to access non-public Menu api's like __dismiss()
+        var constructor = oj.Components.getWidgetConstructor($(menuOption)[0], "ojMenu");
+        return constructor && constructor("instance");
     },
 
     /*
@@ -1561,6 +1699,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         var menu = this._getMenu();
         var menuElem = menu.widget();
         menu.open(event, {"launcher": this.element, "initialFocus": focus});
+
+        // bail if launch was cancelled by a beforeOpen listener
+        if (!menuElem.is(":visible")) 
+            return;
+
         this._menuVisible = true;
 
         // If menu has neither aria-label nor aria-labelledby after menu.open() calls the beforeOpen listeners, then set aria-labelledby
@@ -1587,20 +1730,24 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     },
 
     /*
-     * Dismisses the menuButton menu if there is one, and if either we're not disabled or force is true
+     * Dismisses the menuButton menu if *we* launched it
      *
-     * param event optional
-     * param menu optional. pass it if already have it
+     * param menuOption required.  An old or current value of the menu option, indicating which menu to close.
+     * param event optional.  Pass iff dismissing due to UI event.
      */
-    _dismissMenu: function(event) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+    _dismissMenu: function(menuOption, event) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
         // this._menuVisible is set iff *we* launched the menu.  If *something else* launched it, don't dismiss it.
-        if (this._menuVisible) // then this._menu is non-null
+        if (this._menuVisible)
         {
-            // TODO: this should be called by __dismiss(), rather than the caller having to call this too.
-            this._menu.__collapseAll( event, true ); //Close open menus before hiding the popup so that submenus will not be shown on reopen.
-            
-            this._menu.__dismiss(event); // causes _menuDismissHandler to be called
+            // Doesn't throw if menu not found. Something is likely wrong in that case, but don't sweat it unless they try to *launch* an MIA menu.
+            var menu = this._getMenuOnly(menuOption); 
+            if (menu) {
+                // TODO: this should be called by __dismiss(), rather than the caller having to call this too.
+                menu.__collapseAll( event, true ); // close open submenus before hiding the popup so that submenus will not be shown on reopen
+                
+                menu.__dismiss(event); // causes _menuDismissHandler(event) to be called
+            }
         }
     },
 
@@ -1609,14 +1756,14 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      * See comments on similar code in _showMenu().
      *
      * Also called by the beforeOpen listener we put on the menu, *if* the launch was by something else,
-     * including our own context menu.  So if something steals our menu, we uncheck the button.
+     * including our own context menu.  So if something steals our menu, we deselect the button.
      *
      * param event must remain optional, since some callers of _dismissMenu have no event
      */
     _menuDismissHandler: function(event) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
         if (this._setAriaLabelledBy) {
-            this._getMenu().widget().removeAttr("aria-labelledby");
+            $(this.options.menu).removeAttr("aria-labelledby");
             this._setAriaLabelledBy = false;
         }
 

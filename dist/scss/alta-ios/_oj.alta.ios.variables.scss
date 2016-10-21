@@ -552,7 +552,8 @@ $selectPickerBgColor: $background1Color !default;
 $sliderThumbWidth:      26px !default;
 
 // Active iOS slider thumbs are larger than normal (enabled) sliders.
-$sliderThumbWidthActive:        34px !default;
+$sliderThumbWidthActive:              34px !default;
+$sliderColorPickerThumbWidthActive:   34px !default;
 
 $sliderThumbBorderWidth:        1px !default;
 $sliderThumbBoxShadow:          0 3px 1px transparentize($boxShadowColor, .95), 0 0 8px transparentize($boxShadowColor, .95) !default;

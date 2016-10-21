@@ -2821,10 +2821,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
           that._trigger("drag", event, filteredUi(ui));
         },
         stop: function(event, ui) {
-          options.position = [
-            ui.position.left - that.document.scrollLeft(),
-            ui.position.top - that.document.scrollTop()
-          ];
+          var left = ui.offset.left - that.document.scrollLeft();
+          var top = ui.offset.top - that.document.scrollTop();
+
+          options.position = {
+            "my": "left top",
+            "at": "left" + ( left >= 0 ? "+" : "" ) + left + " " +
+              "top" + ( top >= 0 ? "+" : "" ) + top,
+            "of": window
+          };
+
           $(this).removeClass("oj-dialog-dragging");
           that._positionDescendents();
           that._trigger("dragStop", event, filteredUi(ui));

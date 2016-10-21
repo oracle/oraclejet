@@ -27,7 +27,6 @@
 //-----------------------------------------------------------------------------
 
 
-
 //-----------------------------------------------------------------------------
 // The variables in the file are (imperfectly) organized in some categories
 // - LOGISTICAL: 
@@ -116,8 +115,6 @@
 // when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
 // component is initialized. This reduces the unstyled dom seen by the user during page load.
 // $initialVisibility: hidden !default;
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -1523,7 +1520,15 @@
 // $sliderBarBgColorDisabled:       $interaction5Color !default;
 // $sliderBarValueBgColorDisabled:  $textColorDisabled !default;
 
+// Color picker variables
 
+// $sliderColorPickerBarThickness:         8px !default;
+// $sliderColorPickerThumbBorderWidth:     2px !default;
+// $sliderColorPickerThumbBorderRadius:    50% !default;
+// $sliderColorPickerThumbWidth:           28px !default;
+// $sliderColorPickerThumbHeight:          $sliderColorPickerThumbWidth !default;
+// $sliderColorPickerThumbWidthActive:     $sliderColorPickerThumbWidth !default;
+// $sliderColorPickerThumbHeightActive:    $sliderColorPickerThumbWidthActive !default;
 
 //SWITCH
 //-----------------------------------------------------------------------------
@@ -1657,8 +1662,8 @@
 // DATEPICKER
 //-----------------------------------------------------------------------------
 
-// $datepickerWidth:            300px                      !default;
-// $datepickerPadding:          10px                       !default;
+// $datepickerWidth:            275px                      !default;
+// $datepickerPadding:          15px                       !default;
 
 // $datepickerBgColorSelected:   $buttonHalfChromeBgColorSelected   !default;
 // $datepickerTextColorSelected: $buttonHalfChromeTextColorSelected !default;
@@ -1682,6 +1687,21 @@
 // $inputDateTimeDatePickerOptionDefault: (footerLayout: 'today') !default;
 
 // $inputDateTimeKeyboardEditOptionDefault: enabled !default;
+// $inputDateTimeTimePickerOptionDefault:   null     !default;
+
+
+// TIMEPICKER
+//-----------------------------------------------------------------------------
+
+// $dateTimePickerWidth:        275px                          !default;
+// $dateTimePickerPadding:      15px                           !default;
+
+// $timepickerItemBgColorFocus: $interaction3Color             !default;
+
+// $timepickerTextColor:        $interaction1Color             !default; // #0572ce
+// $timepickerTextColorHover:   $iconColorHover                !default; // #85bbe7
+// $timepickerTextColorActive:  $timepickerTextColor           !default; // #0572ce
+
 
 // COLLAPSIBLE
 //-----------------------------------------------------------------------------
@@ -2140,7 +2160,6 @@
 //Sizing
 // $navigationBarFontSize: 1rem !default;
 // $navigationBarMinHeight: 2.714rem !default;//38 px height when root font 14px
-// $navigationBarStackedIconMinHeight: 4.285rem !default; //60 px height when root font 14px
 
 // the right and left borders will be flipped in rtl languanges
 // $navigationBarItemBorderWidth:   0 0 $navigationListItemAccentBorderWidth 0 !default;
@@ -2148,6 +2167,10 @@
 // $navigationBarItemPadding: 0.5rem $navigationListItemStartEndPadding 4px !default;
 // $navigationBarIconMargin: 0 !default;
 // $navigationBarIconToTextPadding: $navigationListIconToTextPadding !default;
+
+//Stacked nav bar 
+// $navigationBarStackedIconMinHeight: 4.285rem !default; //60 px height when root font 14px
+// $navigationBarStackedItemPadding: $navigationBarItemPadding !default;
 
 //----------Start of Navigation bar icon only variables
 // values could be "circle"(alta default) or "none"(for android/windows/ios)
@@ -2379,7 +2402,6 @@
 // $borderRadiusGeneration: on !default;
 // $boxShadowGeneration: on !default;
 // $gradientGeneration: on !default;
-
 // $includeDeprecatedGridClasses:        false !default;
 // $includeDeprecatedFormLayoutClasses:  false !default;
 // $trainIconBoxShadowActive:               none !default;

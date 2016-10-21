@@ -26,6 +26,7 @@
     }
     
     .oj-conveyorbelt,
+    .oj-conveyorbelt-overflow-container,
     .oj-conveyorbelt-content-container {
         @include oj-display-flex-property();
         @include oj-align-items-property(center);
@@ -38,14 +39,26 @@
     }
     
     .oj-conveyorbelt.oj-conveyorbelt-vertical,
-    .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-content-container {
+    .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-overflow-container,
+    .oj-conveyorbelt.oj-conveyorbelt-vertical > .oj-conveyorbelt-overflow-container > .oj-conveyorbelt-content-container {
         @include oj-flex-direction-property(column);
+    }
+    
+    //applied to the container around the content container in the conveyor
+    .oj-conveyorbelt-overflow-container {
+        overflow: hidden;
+        @include oj-flex-property(1 1 auto);
     }
     
     //applied to the container around the items in the conveyor
     .oj-conveyorbelt-content-container {
-        overflow: hidden;
-        @include oj-flex-property(1 1 auto);
+        //need to specify position:relative so that we can add a resize listener to this element
+        //(which adds its own absolutely positioned child elements)
+        position: relative;
+        //when a navList is wrapped by a conveyorBelt, allow the navList to
+        //grow so that its items can grow, like a navList not wrapped by a 
+        //conveyorBelt
+        @include oj-flex-property(1 0 auto);
     }
     
     //applied to each item in the conveyor

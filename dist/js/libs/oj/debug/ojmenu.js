@@ -1383,11 +1383,21 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         // reevaluate open menu positions
         var position = element.data(_POSITION_DATA);
-        if (position)
-          element.position(position);
 
-        var openMenus = element.find(".oj-menu");
-        openMenus.each(function()
+        // Avoid repositioning it if the position.of element has gone missing, e.g. due to 
+        // a responsive layout change.  (Per architects, we don't want to do anything fancier 
+        // for this case.)  Per JQUI doc, position.of accepts Selector, Element, jQuery, or Event.
+        // If it's window or event, we're happy.  Else, is Selector, Element, or jQuery, all of 
+        // which are accepted by $().
+        if (!(position && (position.of instanceof $.Event || position.of instanceof Window || $(position.of).is(":visible"))))
+          return;
+
+        element.position(position);
+
+        // Do the same for open submenus.  Don't bother with the position.of check this time, since 
+        // their position.of is essentially always the parent menu, not some other thing on the page.
+        var subMenus = element.find(".oj-menu");
+        subMenus.each(function()
         {
             var menu = $(this);
             if (menu.is(":visible"))
@@ -1662,7 +1672,11 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * param {Object} selectUi - Payload for select event.  Non-null iff close caused by a menu item selection.
      */
     _focusLauncherAndDismiss: function( event, selectUi ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+        // if the focus fails because the launcher has disappeared, e.g. due to a responsive layout change, 
+        // no warnings are logged, and the document body winds up focused during the subsequent reparenting, 
+        // which per the architects is the right thing (i.e. don't introduce any fancy handling for this case).  
         this._launcher.focus();
+
         this.__dismiss( event, selectUi );
     },
 

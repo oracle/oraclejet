@@ -2451,7 +2451,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
         // listen for active key change event from host component
         this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);        
     },
     /**
      * Refresh the row expander having made external modifications
@@ -2507,7 +2507,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     {
         this._super(key, value, flags);
         // refresh if context is updated
-        if (key == 'context')
+        if (key == 'context' && flags['_context'] != null && flags['_context']['internalSet'] != true)
         {
             this.refresh();
         }
@@ -2554,10 +2554,17 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */
     _addIcon: function()
     {
-        var iconSpacer = $(document.createElement('div')).addClass(this.classNames['iconspacer']);
+        var self, iconSpacer;
+        iconSpacer = $(document.createElement('div')).addClass(this.classNames['iconspacer']);
         this.toucharea = $(document.createElement('div')).addClass(this.classNames['toucharea']);
         this.icon = $(document.createElement('a')).attr('href', '#').attr('aria-labelledby', this._getLabelledBy()).addClass(this.classNames['icon']).addClass(this.classNames['clickable']);
         this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); //@HTMLUpdateOK
+
+        self = this;        
+        this._focusable({
+            'element': self.icon, 
+            'applyHighlight': true
+        });
     },
     /**
      * Add a class name on the icon
@@ -2759,6 +2766,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this._setIconStateClass();
             this._ariaExpanded(true);
             this._trigger('expand', null, {'rowKey': rowKey});
+            this._updateContextState('expanded');
         }
     },
     /**
@@ -2777,7 +2785,21 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this._setIconStateClass();
             this._ariaExpanded(false);
             this._trigger('collapse', null, {'rowKey': rowKey});
+            this._updateContextState('collapsed');            
         }
+    },
+    /**
+     * Update context state
+     * @param {string} newState
+     * @private
+     */
+    _updateContextState: function(newState)
+    {
+        var context = this.options['context'];
+        context['state'] = newState;
+        // need to reuse the same object so mark it as changed ourselves
+        this._setOption('context', context, {'changed':true, '_context': {'internalSet': true}});
+        
     },
     /**
      * Fire the expand or collapse on the datasource and the oj event on the widget

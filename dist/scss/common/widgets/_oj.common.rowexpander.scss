@@ -53,7 +53,16 @@
         .oj-rowexpander-expand-icon,
         .oj-rowexpander-collapse-icon,
         .oj-rowexpander-lazyload-icon {
-            font-size:1em;
+            font-size: 1em; 
+            outline:none;
+        }
+
+        /* Focus border for highlighted icons */
+        .oj-rowexpander-leaf-icon.oj-focus-highlight,
+        .oj-rowexpander-expand-icon.oj-focus-highlight,
+        .oj-rowexpander-collapse-icon.oj-focus-highlight,
+        .oj-rowexpander-lazyload-icon.oj-focus-highlight {
+            @include oj-browser-focus-outline-approximation($primaryTextColor);
         }
 
         /* Data grid specific absolute icon positioning */

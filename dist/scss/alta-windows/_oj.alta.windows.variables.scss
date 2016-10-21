@@ -657,9 +657,13 @@ $navigationBarPageLevelIconOnlyItemBorderWidth: 0 !default;
 
 $navigationBarFontSize: 0.8rem !default;// 12px when root font is 15px
 $navigationBarMinHeight: 3.2rem !default;//48 px height when root font 15px
-$navigationBarStackedIconMinHeight: 4rem !default; //60 px height when root font 15px
+
 $navigationBarItemPadding: 4px $navigationListItemStartEndPadding 2px !default;
 $navigationBarItemBorderWidth: 0 !default;
+
+$navigationBarStackedIconMinHeight: 4rem !default; //60 px height when root font 15px
+$navigationBarStackedItemPadding: 3px $navigationListItemStartEndPadding 2px !default;
+
 $navigationBarPageLevelItemFontSize: 1.067rem !default; // 16px when root font size is 15px;
 
 // END of NavigationList variables

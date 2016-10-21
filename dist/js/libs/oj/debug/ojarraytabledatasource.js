@@ -37,7 +37,7 @@ oj.ArrayTableDataSource = function(data, options)
   this.data = data || {};   // This was put in to keep closure happy...
   if (!(data instanceof Array) &&
       (typeof (data) != 'function' &&
-       typeof (data.subscribe) != 'function'))
+       typeof (data['subscribe']) != 'function'))
   {
     // we only support Array or ko.observableArray. To
     // check for observableArray, we can't do instanceof check because it's
@@ -259,7 +259,7 @@ oj.ArrayTableDataSource.prototype.change = function(m, options)
     {
       key = this._getId(row);
       changedRow = this._getInternal(key, null);
-      rowArray['data'].push(row);
+      rowArray['data'].push(this._wrapWritableValue(row));
       rowArray['keys'].push(key);
       rowArray['indexes'].push(changedRow['index']);
       this._rows['data'][changedRow['index']] = row;
@@ -481,7 +481,7 @@ oj.ArrayTableDataSource.prototype._addToRowSet = function(m, index, options)
     {
       key = this._getId(row);
 
-      rowArray['data'].push(row);
+      rowArray['data'].push(this._wrapWritableValue(row));
       rowArray['keys'].push(key);
 
       if (this._sorted == true && this._rows['data'].length > 0)
@@ -535,7 +535,7 @@ oj.ArrayTableDataSource.prototype._checkDataLoaded = function()
   {
     if (!(this.data instanceof Array) &&
         typeof (this.data) == 'function' &&
-        typeof (this.data.subscribe) == 'function')
+        typeof (this.data['subscribe']) == 'function')
     {
       // if we have an observableArray, reload just in case it was changed
       this._data = (/** @type {Function} */(this.data))();
@@ -573,12 +573,13 @@ oj.ArrayTableDataSource.prototype._fetchInternal = function(options)
     var endIndex = oj.ArrayTableDataSource._getEndIndex(this._rows, this._startIndex, pageSize);
     var rowArray = [];
     var keyArray = [];
-    var i, wrappedRow;
+    var i, key, wrappedRow;
     for (i = this._startIndex; i <= endIndex; i++)
     {
-      wrappedRow = this._wrapWritableValue(i, this._rows['data'][i]);
+      key = this._getId(this._rows['data'][i]);
+      wrappedRow = this._wrapWritableValue(this._rows['data'][i]);
       rowArray[i - this._startIndex] = wrappedRow;
-      keyArray[i - this._startIndex] = this._getId(this._rows['data'][i]);
+      keyArray[i - this._startIndex] = key;
     }
   }
   catch (err)
@@ -628,14 +629,14 @@ oj.ArrayTableDataSource.prototype._getInternal = function(id, options)
           }
           if (equal)
           {
-            wrappedRow = this._wrapWritableValue(i, row);
+            wrappedRow = this._wrapWritableValue(row);
             result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
           }
         }
       }
       else if (key == id)
       {
-        wrappedRow = this._wrapWritableValue(i, row);
+        wrappedRow = this._wrapWritableValue(row);
         result = {'data': wrappedRow, 'key': key, 'index': this._rows['indexes'][i]};
       }
     }
@@ -1005,37 +1006,33 @@ oj.ArrayTableDataSource._sortFunc = function(a, b, comparator, self)
   return 0;
 };
 
-oj.ArrayTableDataSource.prototype._wrapWritableValue = function(index, m)
+oj.ArrayTableDataSource.prototype._wrapWritableValue = function(m)
 {
   var returnObj = {};
-  var self = this;
-  var prop;
+  var i, props = Object.keys(m);
   
-  for (prop in m)
+  for (i = 0; i < props.length; i++)
   {
-    if (m.hasOwnProperty(prop))
-    {
-      (function()
-      {
-        var localIndex = index;
-        var localProp = prop;
-        Object.defineProperty(returnObj, prop,
-          {
-            get: function()
-            {
-              return self._rows['data'][localIndex][localProp];
-            },
-            set: function(newValue)
-            {
-              self._rows['data'][localIndex][localProp] = newValue;
-            },
-            enumerable: true
-          });
-      })();
-    }
+    oj.ArrayTableDataSource._defineProperty(returnObj, m, props[i]);
   }
   
   return returnObj;
+};
+
+oj.ArrayTableDataSource._defineProperty = function(row, m, prop)
+{
+  Object.defineProperty(row, prop,
+    {
+      get: function()
+      {
+        return m[prop];
+      },
+      set: function(newValue)
+      {
+        m[prop] = newValue;
+      },
+      enumerable: true
+    });
 };
 
 oj.ArrayTableDataSource._LOGGER_MSG =
