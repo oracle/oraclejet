@@ -48,7 +48,7 @@ var oj = _scope['oj'] =
   'version': "2.2.0",
   'build' : "10",
   'revision': "29506",
-          
+
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
   'noConflict': function()
@@ -1092,7 +1092,7 @@ oj.Assert.assert = function(
   {
     var myMessage = message || "", i;
     if (arguments.length > 2)
-    {      
+    {
       myMessage += "(";
       for(i=2; i<arguments.length; i=i+1)
       {
@@ -1133,14 +1133,14 @@ oj.Assert.assertPrototype = function(
   )
 {
   var thePrototype;
-  
+
   if (oj.Assert[_DEBUG])
   {
     if (target != null)
     {
       oj.Assert.assertType(theConstructor, "function", null, 1, false);
       thePrototype = theConstructor.prototype;
-    
+
       if (!thePrototype.isPrototypeOf(target))
       {
         oj.Assert.assertionFailed("object '" + target + "' doesn't match prototype "
@@ -1168,14 +1168,14 @@ oj.Assert.assertPrototypeOrNull = function(
   )
 {
   var thePrototype;
-  
+
   if (oj.Assert[_DEBUG] && (target != null))
   {
     if (target != null)
     {
       oj.Assert.assertType(theConstructor, "function", null, 1, false);
       thePrototype = theConstructor.prototype;
-    
+
       if (!thePrototype.isPrototypeOf(target))
       {
         oj.Assert.assertionFailed("object '" + target + "' doesn't match prototype "
@@ -1206,7 +1206,7 @@ oj.Assert.assertPrototypes = function(
   if (oj.Assert[_DEBUG])
   {
     var thePrototype = instanceOne.prototype, thePrototypeTwo = instanceTwo.prototype;
-    
+
     if (!(thePrototype.isPrototypeOf(target) ||
           thePrototypeTwo.isPrototypeOf(target)))
     {
@@ -1267,7 +1267,7 @@ oj.Assert.assertDomElement = function(target, nodeName)
       oj.Assert.assertionFailed(target + " is not a DOM Element", 1);
     }
     else if (nodeName && (target.nodeName !== nodeName))
-    {      
+    {
       oj.Assert.assertionFailed(target + " is not a " + nodeName + " Element", 1);
     }
   }
@@ -1298,8 +1298,8 @@ oj.Assert.assertDomElementOrNull = function(target, nodeName)
 
 /**
  * Asserts that the target object has the typeof specified
- * 
- * @param {Object|null|string|undefined} target 
+ *
+ * @param {Object|null|string|undefined} target
  * @param {string} type typeof type that statisfies this condition
  * @param {string|undefined|null} prefix
  * @param {number} depth stack depth to skip when printing stack traces
@@ -1316,15 +1316,15 @@ oj.Assert.assertType = function(target,type,prefix,depth, nullOK)
     if (!(((target == null) && nullOK) || (targetType === type)))
     {
       message = target + " is not of type " + type;
-      
+
       if (prefix) {
         message = prefix + message;
       }
-        
+
       if (!depth) {
         depth = 0;
       }
-        
+
       oj.Assert.assertionFailed(message, depth + 1);
     }
   }
@@ -1367,7 +1367,7 @@ oj.Assert.assertNonEmptyString = function(target, prefix)
   if (oj.Assert[_DEBUG])
   {
     oj.Assert.assertType(target, "string", prefix, 1, false);
-    oj.Assert.assert(target.length > 0, "empty string"); 
+    oj.Assert.assert(target.length > 0, "empty string");
   }
 };
 
@@ -1428,7 +1428,7 @@ oj.Assert.assertFunctionOrNull = function(target, prefix)
 };
 
 /**
- * Asserts that the target is a boolean 
+ * Asserts that the target is a boolean
  * @param {Object} target description
  * @param {string=} prefix
  * @export
@@ -1484,7 +1484,7 @@ oj.Assert.assertArray = function(
       if (message === undefined) {
         message = target + " is not an array";
       }
-        
+
       oj.Assert.assertionFailed(message, 1);
     }
   }
@@ -1507,7 +1507,7 @@ oj.Assert.assertArrayOrNull = function(
       if (message === undefined) {
         message = target + " is not an array";
       }
-        
+
       oj.Assert.assertionFailed(message, 1);
     }
   }
@@ -1526,13 +1526,13 @@ oj.Assert.assertNonNumeric = function(
   )
 {
   if (oj.Assert[_DEBUG])
-  { 
+  {
     if (!isNaN(target))
     {
       if (message === undefined) {
         message = target + " is convertible to a number";
       }
-        
+
       oj.Assert.assertionFailed(message, 1);
     }
   }
@@ -1556,7 +1556,7 @@ oj.Assert.assertNumeric = function(
       if (message === undefined) {
         message = target + " is not convertible to a number";
       }
-        
+
       oj.Assert.assertionFailed(message, 1);
     }
   }
@@ -1580,7 +1580,7 @@ oj.Assert.assertInSet = function(
     if (message === undefined)
     {
       keyString = " is not in set: {";
-      
+
       for (k in set)
       {
         if (set.hasOwnProperty(k)) {
@@ -1588,12 +1588,12 @@ oj.Assert.assertInSet = function(
             keyString += ",";
         }
       }
-      
+
       keyString += "}";
-      
+
       message = value + keyString;
     }
-      
+
     oj.Assert.assertionFailed(message, 1);
   }
 };
@@ -1610,27 +1610,27 @@ oj.Assert.assertionFailed = function(
   message,
   skipLevel,
   reason)
-{  
+{
   if (!skipLevel) {
     skipLevel = 0;
   }
 
   var errorMessage = "Assertion", stackTrace, stackTraceString, error;
-  
+
   if (reason)
   {
     errorMessage += " (" + reason + ")";
   }
-  
+
   errorMessage += " failed: ";
-  
+
   if (message !== undefined)
   {
     errorMessage += message;
   }
-    
+
   error = new Error(errorMessage);
-  
+
 
   throw error;
 };
@@ -1669,7 +1669,7 @@ oj.EventSource = function()
     this.Init();
 };
 
-// Subclass from oj.Object 
+// Subclass from oj.Object
 oj.Object.createSubclass(oj.EventSource, oj.Object, "oj.EventSource");
 
 /**
@@ -1693,7 +1693,7 @@ oj.EventSource.prototype.on = function(eventType, eventHandler)
     var foundEventHandler = false, i;
     for (i = 0; i < this._eventHandlers.length; i++)
     {
-        if (this._eventHandlers[i]['eventType'] == eventType && 
+        if (this._eventHandlers[i]['eventType'] == eventType &&
             this._eventHandlers[i]['eventHandlerFunc'] == eventHandler)
         {
             foundEventHandler = true;
@@ -1716,7 +1716,7 @@ oj.EventSource.prototype.off = function(eventType, eventHandler)
     var i;
     for (i = this._eventHandlers.length-1; i >= 0; i--)
     {
-        if (this._eventHandlers[i]['eventType'] == eventType && 
+        if (this._eventHandlers[i]['eventType'] == eventType &&
             this._eventHandlers[i]['eventHandlerFunc'] == eventHandler)
         {
             this._eventHandlers.splice(i, 1);
@@ -1741,7 +1741,7 @@ oj.EventSource.prototype.handleEvent = function(eventType, event)
         if (eventHandler['eventType'] == eventType)
         {
             returnValue = eventHandler['eventHandlerFunc'].apply(this, Array.prototype.slice.call(arguments).slice(1));
-            
+
             if (returnValue === false)
             {
                 // event cancelled
@@ -1749,7 +1749,7 @@ oj.EventSource.prototype.handleEvent = function(eventType, event)
             }
         }
     }
-    
+
     return true;
 };
 /*
@@ -1769,7 +1769,7 @@ oj.Config = {};
 /**
  * Retrieves the current locale
  * @return {string} current locale
- * @export 
+ * @export
  */
 oj.Config.getLocale = function()
 {
@@ -1778,7 +1778,7 @@ oj.Config.getLocale = function()
   {
     oj.Assert.assert(ojt !== undefined, "ojtranslations module must be defined");
     rl = ojt['_ojLocale_'];
-    
+
     // If Require.js internationalziation plugin resolved the locale to "root" (presumably because "lang" attribute was not
     // set, and neither navigator.language or navigator.userLanguage were not available), return "en"
     return (rl == "root") ? "en" : rl;
@@ -1801,60 +1801,60 @@ oj.Config.getLocale = function()
 /**
  * Changes the current locale
  * @param {string} locale (language code and subtags separated by dash)
- * @param {Function} callback - for applications running with an AMD Loader (such as Require.js), this optional callback 
- * will be invoked when the framework is done loading its translated resources and Locale Elements for the newly specified locale. 
+ * @param {Function} callback - for applications running with an AMD Loader (such as Require.js), this optional callback
+ * will be invoked when the framework is done loading its translated resources and Locale Elements for the newly specified locale.
  * For applications running without an AMD loader, this optional callback will be invoked immediately
  * @export
  */
 oj.Config.setLocale = function(locale, callback)
 {
-  if (oj.__isAmdLoaderPresent())
-  {
-    var prefix = "ojL10n!ojtranslations/nls/",
-        requestedBundles = [prefix + locale + "/ojtranslations"];
-    
-    var timezoneBundleCount = 0;
-    
-    // Request LocaleElements only if ojlocaledata module is loaded
-    if (oj.LocaleData) 
-    {
-      requestedBundles.push(prefix + locale + "/localeElements");
-      
-      if (oj.TimezoneData)
-      {
-        var tzBundles = oj.TimezoneData.__getBundleNames();
-        timezoneBundleCount = tzBundles.length;
-        tzBundles.forEach(
-          function(bundle)
-          {
-            requestedBundles.push(prefix + locale + bundle)
-          }
-        );
-      }
+
+  var cb = function() {
+    if (callback) {
+      callback();
     }
-    
-    require(requestedBundles,
-      function(translations, localeElements)
-      {
-        ojt = translations;
-        
-        if (localeElements)
-        {
-          oj.LocaleData.__updateBundle(localeElements);
-        }
-        
-        for (var i=0; i<timezoneBundleCount; i++)
-        {
-          var tzBundle = arguments[i+2];
-          oj.TimezoneData.__mergeIntoLocaleElements(tzBundle);
-        }
-        
-        if (callback)
-        {
-          callback();
-        }
-      }
-    );
+  }
+
+  if (oj.__isAmdLoaderPresent())
+     {
+       var prefix = "ojtranslations/nls/"
+       require([prefix + locale + "/ojtranslations"], function(translations) {
+         ojt = translations;
+         if (!oj.LocaleData) {
+           cb();
+           return
+         }
+         require([prefix + locale + "/localeElements"], function(localeElements) {
+           if (localeElements) {
+             oj.LocaleData.__updateBundle(localeElements);
+           }
+
+           if (!oj.TimezoneData) {
+             cb();
+             return
+           }
+
+           var wait = 0;
+           var doCB = function() {
+             if (processed == 0) {
+               cb()
+             }
+           }
+
+           var tzBundles = oj.TimezoneData.__getBundleNames();
+           tzBundles.forEach(function(bundle) {
+             wait++
+             // having all expressions in a require results in webpack
+             // including **/* files from this point downward
+             require(["ojtranslations/nls/" + locale + bundle], function(tzBundle) {
+               oj.TimezoneData.__mergeIntoLocaleElements(tzBundle);
+               wait--
+               // slowest one fires the callback
+               doCB()
+             })
+           })
+         })
+       })
   }
   else
   {
@@ -1871,10 +1871,10 @@ oj.Config.setLocale = function(locale, callback)
  * The URL is resolved as follows:
  * 1. If the application has specified a base URL with setResourceBaseUrl(), the return values will be
  * a relative path appended to the base URL.
- * 2. Otherwise, if the application running with an AMD Loader (such as Require.js), the parent folder of a 
+ * 2. Otherwise, if the application running with an AMD Loader (such as Require.js), the parent folder of a
  * module with ojs/ mapping will be used as a base URL.
  * 3. Otherwise, the original relative path will be returned.
- * 
+ *
  * @param {string} relativePath resource path
  * @return {string} resource URL
  * @see oj.Config.setResourceBaseUrl
@@ -1888,14 +1888,14 @@ oj.Config.getResourceUrl = function(relativePath)
   {
     return relativePath;
   }
-  
+
   base = oj.Config._resourceBaseUrl;
-  
+
   if (base)
   {
     return base + (base.charAt(base.length-1) == '/' ? "" : '/') + relativePath;
   }
-  
+
   if (oj.__isAmdLoaderPresent())
   {
     // : use ojs/_foo_ instead of ojs/ojcore to handle the case when ojs.core ends up in a partition bundle
@@ -1903,7 +1903,7 @@ oj.Config.getResourceUrl = function(relativePath)
     modulePath = require.toUrl("ojs/_foo_");
     return modulePath.replace(/[^\/]*$/, "../" + relativePath);
   }
-  
+
   return relativePath;
 };
 
@@ -1915,7 +1915,7 @@ oj.Config.getResourceUrl = function(relativePath)
  */
 oj.Config.setResourceBaseUrl = function(baseUrl)
 {
-  oj.Config._resourceBaseUrl = baseUrl;  
+  oj.Config._resourceBaseUrl = baseUrl;
 };
 
 /**
@@ -1938,12 +1938,12 @@ oj.Config.setAutomationMode = function(mode)
 oj.Config.getAutomationMode = function()
 {
   return oj.Config._automationMode;
-}; 
+};
 
 /**
  * Return a string containing important version information about JET and the libraries
  * it has loaded
- * 
+ *
  * @return {string}
  * @export
  */
@@ -1952,15 +1952,15 @@ oj.Config.getVersionInfo = function()
     // JET information
     var info = "Oracle JET Version: " + oj['version'] + '\n';
     info += "Oracle JET Revision: " + oj['revision'] + '\n';
-    
+
     var windowDefined = (typeof window !== 'undefined');
-    
+
     // Browser information
     if (windowDefined && window.navigator) {
         info += "Browser: " + window.navigator.userAgent +'\n';
         info += "Browser Platform: " + window.navigator.platform +'\n';
     }
-    
+
     // 3rd party libraries
     if ($) {
         if ($.fn) {
@@ -1973,12 +1973,12 @@ oj.Config.getVersionInfo = function()
     if (oj.ComponentBinding) {
         info += "Knockout Version: " + oj.ComponentBinding.__getKnockoutVersion() + '\n';
     }
-    
+
     // Local require doesn't have version #
     if (windowDefined && window.require) {
         info += "Require Version: " + window.require['version'] + '\n';
     }
-    
+
     return info;
 };
 
@@ -2198,7 +2198,7 @@ oj.AgentUtils._parseFloatVersion = function (userAgent, versionNumberPattern)
 /*jslint browser: true*/
 
 /**
- * 
+ *
  * @class Services for getting information from the theme
  * @since 1.2.0
  * @export
@@ -2214,7 +2214,7 @@ oj.ThemeUtils = function(){};
  */
 oj.ThemeUtils.getThemeName = function()
 {
-  
+
   // get the map of theme info
   var themeMap = oj.ThemeUtils.parseJSONFromFontFamily("oj-theme-json") || {};
 
@@ -2227,12 +2227,12 @@ oj.ThemeUtils.getThemeName = function()
  * @export
  * @static
  *
- * @return {String|null} the target platform can be any string the theme 
+ * @return {String|null} the target platform can be any string the theme
  * wants to send down, but the usual values are 'web', 'ios', 'android', 'windows'
  */
 oj.ThemeUtils.getThemeTargetPlatform = function()
 {
-  
+
   // get the map of theme info
   var themeMap = oj.ThemeUtils.parseJSONFromFontFamily("oj-theme-json") || {};
 
@@ -2255,9 +2255,9 @@ oj.ThemeUtils.clearCache = function()
 
 /**
  *
- * <p>json can be sent down as the font family in classes 
- * that look something like this 
- * (on the sass side of things see the file 
+ * <p>json can be sent down as the font family in classes
+ * that look something like this
+ * (on the sass side of things see the file
  * scss/utilities/_oj.utilities.json.scss
  * for information on jet mixins available to generate json):<p>
  *
@@ -2279,48 +2279,48 @@ oj.ThemeUtils.clearCache = function()
  * var myarray = oj.ThemeUtils.parseJSONFromFontFamily("demo-list-json");
  * </code></pre>
  *
- * This function 
+ * This function
  * <ul>
- *   <li>Gets the font family string by creating a dom element, 
- *      applying the selector passed in, calling getcomputedstyle, 
+ *   <li>Gets the font family string by creating a dom element,
+ *      applying the selector passed in, calling getcomputedstyle,
  *      and then reading the value for font-family.
  *   </li>
  *   <li>Parses the font family value by calling JSON.pars.</li>
- *   <li>Caches the parsed value because calling getComputedStyle is a perf hit. 
- *       Subsequent requests for the same selector will return the cached value. 
+ *   <li>Caches the parsed value because calling getComputedStyle is a perf hit.
+ *       Subsequent requests for the same selector will return the cached value.
  *       Call [oj.ThemeUtils.clearCache]{@link oj.ThemeUtils.clearCache} if new css is loaded.</li>
  *   <li>Return the parsed value.</li>
  * </ul>
- * 
+ *
  * <p>
  * If new css is loaded call oj.ThemeUtils.clearCache to clear the cache</p>
  *
  *
  * @param {string} selector a class selector name, for example 'demo-map-json';
- * @return {*} the result of parsing the font family with JSON.parse. 
- *      The returned value is cached, so if you modify the returned 
+ * @return {*} the result of parsing the font family with JSON.parse.
+ *      The returned value is cached, so if you modify the returned
  *      value it will be reflected in the cache.
- * @throws {SyntaxError} If JSON.parse throws a SyntaxError exception we will log an error and rethrow 
+ * @throws {SyntaxError} If JSON.parse throws a SyntaxError exception we will log an error and rethrow
  * @export
  * @static
  */
 oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
 {
 
- 
- // NOTE: I first tried code inspired by 
+
+ // NOTE: I first tried code inspired by
  // https://css-tricks.com/making-sass-talk-to-javascript-with-json/
  // so I was using :before and content, for example
  //   .oj-button-option-defaults:before {
  //     content: '{"foo":"bar", "binky": 4}';
  //    }
- // 
- //  however IE 11 has a bug where the computed style doesn't actually 
+ //
+ //  however IE 11 has a bug where the computed style doesn't actually
  //  seem to be computed when it comes to :before,
- //  so if you set a class that affects :before after the page loads 
+ //  so if you set a class that affects :before after the page loads
  //  on IE getComputedStyle doesn't work.
  //  See the pen below, the yellow box has the class applied in js,
- //  computedstyle works on chrome, doesn't work on IE11 for 
+ //  computedstyle works on chrome, doesn't work on IE11 for
  //  class applied after page load.
  //     http://codepen.io/gabrielle/pen/OVOwev
 
@@ -2332,11 +2332,11 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
     // magic value that means null in the cache
     this._null_cache_value = {};
 
-    // font family is inherited, so even if no selector/json 
-    // is sent down we will get a string like 
-    // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element. 
-    // So save off the font family from the head 
-    // element to compare to what we read off our generated element. 
+    // font family is inherited, so even if no selector/json
+    // is sent down we will get a string like
+    // 'HelveticaNeue',Helvetica,Arial,sans-serif' off of our generated element.
+    // So save off the font family from the head
+    // element to compare to what we read off our generated element.
     this._headfontstring = window.getComputedStyle(document.head).getPropertyValue('font-family');
   }
 
@@ -2352,30 +2352,30 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
   {
     return jsonval;
   }
-    
 
-  // there's nothing cached, so we need to create a dom element to apply the class to. 
-  // We're creating a meta element, 
-  // the hope is that the browser is smart enough to realize the 
-  // meta element isn't visible and therefore we avoid perf issues of calling 
+
+  // there's nothing cached, so we need to create a dom element to apply the class to.
+  // We're creating a meta element,
+  // the hope is that the browser is smart enough to realize the
+  // meta element isn't visible and therefore we avoid perf issues of calling
   // getcomputedstyle
   var elem = document.createElement("meta");
   elem.className = selector;
-  document.head.appendChild(elem); // @HTMLUpdateOK 
+  document.head.appendChild(elem); // @HTMLUpdateOK
   var rawfontstring = window.getComputedStyle(elem).getPropertyValue('font-family');
 
   if (rawfontstring != null)
   {
 
-    // if the raw font string is the same value as the saved header 
+    // if the raw font string is the same value as the saved header
     // font value then log a warning that no value was sent down.
 
     if (rawfontstring == this._headfontstring)
     {
-      oj.Logger.warn("parseJSONFromFontFamily: When the selector ", selector, 
-        " is applied the font-family read off the dom element is ", rawfontstring, 
+      oj.Logger.warn("parseJSONFromFontFamily: When the selector ", selector,
+        " is applied the font-family read off the dom element is ", rawfontstring,
         ". The parent dom elment has the same font-family value.",
-        " This is interpreted to mean that no value was sent down for selector ", 
+        " This is interpreted to mean that no value was sent down for selector ",
         selector, ". Null will be returned.");
     }
     else
@@ -2394,11 +2394,11 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
         }
         catch(e)
         {
-          oj.Logger.error("Error parsing json for selector " + selector + 
+          oj.Logger.error("Error parsing json for selector " + selector +
                           ".\nString being parsed is " + fontstring + ". Error is:\n", e);
-          
+
           // remove the meta tag
-          document.head.removeChild(elem); // @HTMLUpdateOK 
+          document.head.removeChild(elem); // @HTMLUpdateOK
           throw e;
 
         }
@@ -2407,9 +2407,9 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
   }
 
   // remove the meta tag
-  document.head.removeChild(elem); // @HTMLUpdateOK 
+  document.head.removeChild(elem); // @HTMLUpdateOK
 
-  // cache the result 
+  // cache the result
   if (jsonval == null)
   {
     this._cache[selector] = this._null_cache_value;
@@ -2418,7 +2418,7 @@ oj.ThemeUtils.parseJSONFromFontFamily = function(selector)
   {
     this._cache[selector] = jsonval;
   }
-  
+
   //console.log(this._cache);
 
   return jsonval;
@@ -2797,7 +2797,7 @@ oj.CollectionUtils = {};
 
 /**
  * Copies all of the properties of source into the target and returns the target
- * 
+ *
  * @param {Object} target - target collection
  * @param {Object} source - source collection
  * @param {function(string)=} keyConverter a callback for converting the key
@@ -2826,7 +2826,7 @@ oj.CollectionUtils.copyInto = function(
 /**
  * Checks whether the object is a direct instance of Object
  * @param {Object} obj - object to test
- * 
+ *
  * @return {boolean} true if the object is a direct instance of Object, false otherwise
  * @export
  */
@@ -2843,7 +2843,7 @@ oj.CollectionUtils.isPlainObject = function(obj)
     }
     catch(e){}
   }
-  
+
   return false;
 };
 
@@ -2860,17 +2860,17 @@ oj.CollectionUtils._copyIntoImpl = function(
   currentLevel)
 {
   var k, targetKey, keys;
-  
+
   if (maxRecursionDepth === undefined || maxRecursionDepth === null)
   {
     maxRecursionDepth = Number.MAX_VALUE;
   }
-  
+
   if (target && source && (target !== source))
-  {    
+  {
     keys = Object.keys(source);
     for (var i=0; i<keys.length; i++)
-    {      
+    {
       k = keys[i];
       // allow the key mapping to be overridden
       if (keyConverter)
@@ -2881,16 +2881,16 @@ oj.CollectionUtils._copyIntoImpl = function(
       {
         targetKey = k;
       }
-      
+
       var sourceVal = source[k];
-      
+
       var recursed = false;
-      
+
       if (recurse && currentLevel < maxRecursionDepth)
       {
         var targetVal = target[targetKey];
-        if (oj.CollectionUtils.isPlainObject(sourceVal) && 
-           (targetVal == null || oj.CollectionUtils.isPlainObject(targetVal))) 
+        if (oj.CollectionUtils.isPlainObject(sourceVal) &&
+           (targetVal == null || oj.CollectionUtils.isPlainObject(targetVal)))
         {
           recursed = true;
           target[targetKey] = targetVal || {};
@@ -2910,7 +2910,7 @@ oj.CollectionUtils._copyIntoImpl = function(
 
     }
   }
-  
+
   return target;
 };
 
@@ -2957,16 +2957,16 @@ oj.Translations.getResource = function(key)
  * Applies parameters to a format pattern
  * @param {string} pattern pattern that may contain tokens like {0}, {1}, {name}. These tokens
  * will be used to define string keys for retrieving values from the parameters
- * object. Token strings should not contain comma (,) 
- * or space characters, since they are reserved for future format type enhancements. 
+ * object. Token strings should not contain comma (,)
+ * or space characters, since they are reserved for future format type enhancements.
  * The reserved characters within a pattern are:
- * $ { } [ ]  
+ * $ { } [ ]
  * These characters will not appear in the formatted output unless they are escaped
  * with a dollar character ('$').
- * 
+ *
  * @param {Object|Array} parameters parameters to be inserted into the string. Both arrays and
  * Javascript objects with string keys are accepted.
- * 
+ *
  * @return formatted message or null if the pattern argument was null
  * @export
  */
@@ -2980,39 +2980,39 @@ oj.Translations.applyParameters = function(pattern, parameters)
  * @param {string} key  translations resource key
  * The key is used to retrieve a format pattern from the resource bundle.
  * Tokens like {0}, {1}, {name} within the pattern will be used to define placement
- * for the optional parameters.  Token strings should not contain comma (,) 
+ * for the optional parameters.  Token strings should not contain comma (,)
  * or space characters, since they are reserved for future format type enhancements.
  * The reserved characters within a pattern are:
- * $ { } [ ]  
+ * $ { } [ ]
  * These characters will not appear in the formatted output unless they are escaped
  * with a dollar character ('$').
- * 
- * @param {...string|Object|Array} var_args  - optional parameters to be inserted into the 
+ *
+ * @param {...string|Object|Array} var_args  - optional parameters to be inserted into the
  * translated pattern.
- * 
- * If more than one var_args arguments are passed, they will be treated as an array 
+ *
+ * If more than one var_args arguments are passed, they will be treated as an array
  * for replacing positional tokens like {0}, {1}, etc.
  * If a single argument is passed, it will be treated as a Javascript Object whose
  * keys will be matched to tokens within the pattern. Note that an Array is just
  * a special kind of such an Object.
- * 
- * For backward compatibility, a var_args argument whose type is neither 
+ *
+ * For backward compatibility, a var_args argument whose type is neither
  * Object or Array will be used to replace {0} in the pattern.
- * 
+ *
  * @return formatted translated string
  * @export
  */
 oj.Translations.getTranslatedString = function(key, var_args)
-{  
+{
   var val = oj.Translations._getResourceString(key);
-  
+
   if (val == null)
   {
     return key;
   }
-  
+
   var params = {};
-  
+
   if (arguments.length > 2)
   {
     params = Array.prototype.slice.call(arguments, 1);
@@ -3024,9 +3024,9 @@ oj.Translations.getTranslatedString = function(key, var_args)
     {
       params = [params];
     }
-      
+
   }
-  
+
   return oj.Translations.applyParameters(val, params);
 };
 
@@ -3040,12 +3040,12 @@ oj.Translations.getTranslatedString = function(key, var_args)
 oj.Translations.getComponentTranslations = function(componentName)
 {
   var bundle = oj.Translations._getBundle()[componentName], translations, k;
-  
+
   if (bundle == null)
   {
     return {};
   }
-  
+
   // Assume that the set of keys remains constant regardless of the current locale
   translations = {};
   for(k in bundle)
@@ -3066,48 +3066,48 @@ oj.Translations.getComponentTranslations = function(componentName)
 oj.Translations._getResourceString = function(key)
 {
   // Account for dot separated nested keys
-  var keys = key ? key.split(".") : [], bundle = oj.Translations._getBundle(), 
+  var keys = key ? key.split(".") : [], bundle = oj.Translations._getBundle(),
           iteration = keys.length, index = 0, subkey = keys[index];
   oj.Assert.assertObject(bundle);
-  
-  // even though we start with a valid bundle it's possible that part or all of the key is invalid, 
+
+  // even though we start with a valid bundle it's possible that part or all of the key is invalid,
   // so check we have a valid bundle in the while loop
-  while (--iteration > 0 && bundle) 
+  while (--iteration > 0 && bundle)
   {
     // if we have a key like a.b.c
     bundle = bundle[subkey];
     index++;
     subkey = keys[index];
   }
-    
+
   return bundle ? (bundle[subkey] || null) : null;
 };
 
 oj.Translations._format = function(formatString, parameters)
 {
   var formatLength = formatString.length;
-  
+
   // Use the javascript StringBuffer technique.
   var buffer = [];
-  
+
   var token = null;
-  
-  
+
+
   var escaped = false;
   var isToken = false;
   var isGroup = false;
   var isExcluded = false;
-  
-  var tokenTerminated; // this will be set to true when a comma or space is 
+
+  var tokenTerminated; // this will be set to true when a comma or space is
                        // encountered in teh token
   var i;
-  
+
   for (i = 0; i < formatLength; i++)
   {
     var ch = formatString.charAt(i);
-    
+
     var accumulate = false;
-    
+
     if (!escaped)
     {
       switch(ch)
@@ -3115,7 +3115,7 @@ oj.Translations._format = function(formatString, parameters)
         case '$':
           escaped = true;
           break;
-          
+
         case '{':
           if (!isExcluded)
           {
@@ -3127,7 +3127,7 @@ oj.Translations._format = function(formatString, parameters)
             isToken = true;
           }
           break;
-          
+
         case '}':
           if (isToken && token.length > 0)
           {
@@ -3136,7 +3136,7 @@ oj.Translations._format = function(formatString, parameters)
           }
           isToken = false;
           break;
-          
+
         case '[':
           if (!isToken)
           {
@@ -3150,7 +3150,7 @@ oj.Translations._format = function(formatString, parameters)
             }
           }
           break;
-          
+
         case ']':
           if (isExcluded)
           {
@@ -3161,7 +3161,7 @@ oj.Translations._format = function(formatString, parameters)
             isGroup = false;
           }
           break;
-        
+
         default:
           accumulate = true;
       }
@@ -3169,9 +3169,9 @@ oj.Translations._format = function(formatString, parameters)
     else
     {
       accumulate = true;
-      escaped = false;  
+      escaped = false;
     }
-    
+
     if (accumulate)
     {
       if (isToken)
@@ -3189,7 +3189,7 @@ oj.Translations._format = function(formatString, parameters)
       {
         buffer.push(ch);
       }
-    } 
+    }
   }
 
   // Use the javascript StringBuffer technique for toString()
@@ -3204,7 +3204,7 @@ oj.Translations._getBundle = function()
   {
     return b;
   }
-  
+
   if (oj.__isAmdLoaderPresent()) {
     oj.Assert.assert(ojt !== undefined, "ojtranslations module must be defined");
     return ojt;
@@ -3825,16 +3825,16 @@ if (typeof window !== 'undefined')
 */
 
 // CustomEvent()
-(function () {  
+(function () {
   if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
     return;
   }
-  
+
   function CustomEvent (event, params) {
     params = params || {bubbles: false, cancelable: false, detail: undefined};
-    
+
     var evt = document.createEvent('CustomEvent');
-    
+
     evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
     return evt;
    }
@@ -3855,10 +3855,10 @@ if (typeof window !== 'undefined')
    * @ignore
    */
   oj.__AttributeUtils = {};
-  
+
   /**
    * @ignore
-   * @return {{expr: (null|string), downstreamOnly: boolean}} 
+   * @return {{expr: (null|string), downstreamOnly: boolean}}
    */
   oj.__AttributeUtils.getExpressionInfo = function(attrValue)
   {
@@ -3878,7 +3878,7 @@ if (typeof window !== 'undefined')
 
     return info;
   }
-  
+
   /**
    * @ignore
    * @param {string} attr attribute name
@@ -3893,7 +3893,7 @@ if (typeof window !== 'undefined')
       }
     );
   }
-  
+
   /**
    * @ignore
    * @param {string} name property name
@@ -3908,7 +3908,7 @@ if (typeof window !== 'undefined')
       }
     );
   }
-  
+
   /**
    * @ignore
    * @param {string} propName property name
@@ -3952,25 +3952,25 @@ if (typeof window !== 'undefined')
         try
         {
           coercedType = JSON.parse(val);
-        } 
-        catch (ex) 
+        }
+        catch (ex)
         {
           // Error will be logged at the end
         }
     }
 
-    if (coercedType == null) 
+    if (coercedType == null)
     {
       oj.Logger.error("Unable to parse value %s for property %s with type %s.", val, propName, type);
     }
     return coercedType;
   }
-  
-  
-  
+
+
+
   var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
   var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
-  
+
 })();
 
 
