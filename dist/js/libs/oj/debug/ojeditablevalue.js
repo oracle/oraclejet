@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -6780,11 +6780,11 @@ oj.Components.setDefaultOptions(
 /*jslint browser: true*/
 
 /**
- * A messaging strategy that places the messaging content inline (underneath) the editableValue 
+ * A messaging strategy that places the messaging content inline (underneath) the editableValue
  * component. The messages aren't shown conditionally based on disabled or readonly state.
  * The app should not be allowing the input field to become read-only when it is invalid.
  * And if it is disabled, they should be able to enable it to fix the errors.
- * 
+ *
  * @param {Array} displayOptions an array of messaging artifacts displayed inline. e.g,
  * 'messages' (for now only 'messages' are supported inline, not converterHints, and others)
  * @constructor
@@ -6797,26 +6797,26 @@ oj.InlineMessagingStrategy = function (displayOptions)
 };
 
 /**
- * Registers the InlineMessagingStrategy constructor function with oj.ComponentMessaging. 
- * 
+ * Registers the InlineMessagingStrategy constructor function with oj.ComponentMessaging.
+ *
  * @private
  */
-oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.INLINE, 
+oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.INLINE,
                                oj.InlineMessagingStrategy);
-                               
-// Subclass from oj.MessagingStrategy 
-oj.Object.createSubclass(oj.InlineMessagingStrategy, 
+
+// Subclass from oj.MessagingStrategy
+oj.Object.createSubclass(oj.InlineMessagingStrategy,
   oj.MessagingStrategy, "oj.InlineMessagingStrategy");
 
 /**
- * Reinitializes with the new display options and updates component messaging using the new content. 
- * 
+ * Reinitializes with the new display options and updates component messaging using the new content.
+ *
  * @param {Array} newDisplayOptions
  * @private
  * @memberof oj.InlineMessagingStrategy
  * @instance
  * @override
- * 
+ *
  */
 oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
 {
@@ -6825,13 +6825,13 @@ oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
 };
 
 /**
- * Returns true if the content being updated includes 'messages' prop. This method is an 
- * optimization because the update() method is called too often and any time any content changes. 
- * The only time InlineMessagingStrategy#update needs to execute is when the 'messages' 
+ * Returns true if the content being updated includes 'messages' prop. This method is an
+ * optimization because the update() method is called too often and any time any content changes.
+ * The only time InlineMessagingStrategy#update needs to execute is when the 'messages'
  * changes.
- * 
- * @param {Object=} content the messaging content that is being updated 
- * @return {boolean} 
+ *
+ * @param {Object=} content the messaging content that is being updated
+ * @return {boolean}
  * @memberof oj.InlineMessagingStrategy
  * @instance
  * @private
@@ -6859,7 +6859,7 @@ oj.InlineMessagingStrategy.prototype.update = function ()
 
 /**
  * Cleans up messages on the component and destroys any widgets it created.
- * 
+ *
  * @memberof oj.InlineMessagingStrategy
  * @instance
  * @private
@@ -6872,9 +6872,9 @@ oj.InlineMessagingStrategy.prototype.deactivate = function ()
 };
 
 /**
- * If the inline message is already open its contents need to updated when update() or 
+ * If the inline message is already open its contents need to updated when update() or
  * reactivate() is called.
- * 
+ *
  * @return {void}
  * @private
  * @memberof oj.InlineMessagingStrategy
@@ -6885,9 +6885,9 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
   var contentToShow;
   var domNode;
   var widget = this.GetComponent().widget();
-  
+
   contentToShow = this._buildInlineHtml();
-  
+
   // create the inline messaging dom if there is content to show and the dom hasn't been created.
   if (contentToShow && this.$messagingContentRoot == null)
   {
@@ -6904,10 +6904,10 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
   {
     if (contentToShow)
     {
-      // push new content into inline message dom 
+      // push new content into inline message dom
       domNode = this.$messagingContentRoot[0];
 
-      // contentToShow includes content that may come from app. It is scrubbed for illegal tags 
+      // contentToShow includes content that may come from app. It is scrubbed for illegal tags
       // before setting to innerHTML
       domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
 
@@ -6915,7 +6915,7 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
     else
     {
       // if there is no content to show and inline message dom is currently there, remove the dom.
-        // NOTE: If you see that a button seems to be losing its click event 
+        // NOTE: If you see that a button seems to be losing its click event
         // after inline messaging validation or after a reset
         // it may be because the button is moving as a result of the inline messaging appearing
         // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
@@ -6929,7 +6929,7 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
 
 /**
  * Returns the dom for the messaging-inline-container.
- * 
+ *
  * @return {string}
  * @private
  * @memberof oj.InlineMessagingStrategy
@@ -6937,13 +6937,13 @@ oj.InlineMessagingStrategy.prototype._refreshInlineMessage = function()
  */
 oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function ()
 {
-  return "" + "<div class='oj-messaging-inline-container'></div>"; 
+  return "" + "<div class='oj-messaging-inline-container'></div>";
 };
 
 /**
- * removes the messaging content root dom and anything else that was adding during the 
+ * removes the messaging content root dom and anything else that was adding during the
  * creation of the messaging content root dom.
- * 
+ *
  * @return {void}
  * @private
  * @memberof oj.InlineMessagingStrategy
@@ -6962,7 +6962,7 @@ oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function (
 
 /**
  * create an id to put on the root dom element that holds the inline messaging content,
- * then add aria-describedby on the launcher (this is what PopupMessaging does as well). 
+ * then add aria-describedby on the launcher (this is what PopupMessaging does as well).
  * This makes it so the screen reader user knows the messaging content is connected to the launcher.
  * @return {void}
  * @memberof oj.InlineMessagingStrategy
@@ -6975,13 +6975,13 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
   var launcher;
   var messagingRootId;
   var tokens;
-  
+
   // create an id on the div holding the inline messaging.
   // add aria-describedby to the div, just like it is if the message is a popup note window.
   launcher = this.GetLauncher();
 
-  oj.Assert.assertPrototype(launcher, jQuery);
-  oj.Assert.assertPrototype(messagingRoot, jQuery);
+  oj.Assert.assertPrototype(launcher, $);
+  oj.Assert.assertPrototype(messagingRoot, $);
 
   messagingRootId = messagingRoot.uniqueId().attr("id");
   describedby = launcher.attr("aria-describedby");
@@ -7002,7 +7002,7 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
  */
 oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
 {
-  oj.Assert.assertPrototype(messagingRoot, jQuery);
+  oj.Assert.assertPrototype(messagingRoot, $);
   messagingRoot.attr("aria-live", "polite");
 };
 
@@ -7013,17 +7013,17 @@ oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
  * @instance
  * @private
  */
-oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messagingRoot) 
+oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messagingRoot)
 {
   var describedby;
   var index;
   var launcher;
   var messagingRootId;
   var tokens;
-  
-  launcher = this.GetLauncher();  
-  oj.Assert.assertPrototype(launcher, jQuery);
-  oj.Assert.assertPrototype(messagingRoot, jQuery);
+
+  launcher = this.GetLauncher();
+  oj.Assert.assertPrototype(launcher, $);
+  oj.Assert.assertPrototype(messagingRoot, $);
 
   messagingRootId = messagingRoot.attr("id");
   describedby = launcher.attr("aria-describedby");
@@ -7032,7 +7032,7 @@ oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messaging
   if (index !== -1)
     tokens.splice(index, 1);
   describedby = $.trim(tokens.join(" "));
-  
+
   if (describedby)
     launcher.attr("aria-describedby", describedby);
   else
@@ -7046,9 +7046,9 @@ oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messaging
 * @instance
 * @private
 */
-oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot) 
+oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot)
 {
-  oj.Assert.assertPrototype(messagingRoot, jQuery);
+  oj.Assert.assertPrototype(messagingRoot, $);
   messagingRoot.removeAttr("aria-live");
 };
 
@@ -7061,11 +7061,11 @@ oj.InlineMessagingStrategy.prototype._removeAriaLive = function(messagingRoot)
  */
 oj.InlineMessagingStrategy.prototype._buildInlineHtml = function ()
 {
-  var document; 
-  
-  if (this.ShowMessages()) 
+  var document;
+
+  if (this.ShowMessages())
   {
-    document = this.GetComponent().document[0]; 
+    document = this.GetComponent().document[0];
     return this._buildMessagesHtml(document);
   }
   else
@@ -7089,8 +7089,8 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
 
   if (this.HasMessages())
   {
-    messages = this.GetMessages();   
-    content = 
+    messages = this.GetMessages();
+    content =
       oj.PopupMessagingStrategyUtils.buildMessagesHtml(
         document, messages, maxSeverity, renderSeveritySelectors);
   }

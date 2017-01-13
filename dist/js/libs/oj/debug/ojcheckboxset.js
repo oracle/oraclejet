@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -478,9 +478,11 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     {
       throw new Error("ojCheckboxset cannot be bound to a fieldset. Use a div instead.");
     }
-    // turn each checkbox into ojCheckbox. Do this first, since we need it
-    // in calls from 'create'.
-    this.$checkboxes._ojRadioCheckbox();
+    // Turn each checkbox into ojCheckbox. Do this first, since we need it
+    // in calls from 'create'. Also, since ojCheckboxSet delegates to the _ojRadioCheckbox
+    // component, and we need to mark this as an internal node so that oj.Components.getComponentElementByNode
+    // knows it is an internal component in this case, not a stand-alone component
+    this.$checkboxes._ojRadioCheckbox().attr('data-oj-internal', true);
  
     // keep the root dom element as is, and add a wrapper dom underneath it. This way we can
     // have one div around all the inputs and labels, and for inline messaging we can have another
@@ -585,14 +587,14 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     // find all input checkboxes with matching name
     if (name === undefined)
     {
-    	// search for all checkboxes with no name
+      // search for all checkboxes with no name
       allcheckboxes = this.element.find("input[type=checkbox]");
       // now loop and find the ones without 'name' attribute
       return allcheckboxes.not("[name]");
     }
     else
     {
-    	// search for all checkboxes with the name
+      // search for all checkboxes with the name
       selector = "input[type=checkbox][name=" + name + "]";
       return this.element.find(selector);
 
@@ -918,40 +920,40 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
 
    // Fragments:
 
-	/**
-	 * <table class="keyboard-table">
-	 *   <thead>
-	 *     <tr>
-	 *       <th>Target</th>
-	 *       <th>Gesture</th>
-	 *       <th>Action</th>
-	 *     </tr>
-	 *   </thead>
-	 *   <tbody>
-	 *    <tr>
-	 *       <td>Checkbox</td>
-	 *       <td><kbd>Tap</kbd></td>
-	 *       <td> Select/unselect the input</td>
-	 *     </tr>
-	 *     <tr>
-	 *       <td>Input's Label</td>
-	 *       <td><kbd>Tap</kbd></td>
-	 *       <td> Select/unselect the corresponding input</td>
-	 *    </tr>
-	 *     <tr>
-	 *       <td>Input or Label</td>
-	 *       <td><kbd>Press & Hold</kbd></td>
-	 *       <td>If hints, title or messages exist in a notewindow, 
+  /**
+   * <table class="keyboard-table">
+   *   <thead>
+   *     <tr>
+   *       <th>Target</th>
+   *       <th>Gesture</th>
+   *       <th>Action</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *    <tr>
+   *       <td>Checkbox</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td> Select/unselect the input</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Input's Label</td>
+   *       <td><kbd>Tap</kbd></td>
+   *       <td> Select/unselect the corresponding input</td>
+   *    </tr>
+   *     <tr>
+   *       <td>Input or Label</td>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>If hints, title or messages exist in a notewindow, 
    *        pop up the notewindow.</td>
-	 *    </tr>
-	 *    {@ojinclude "name":"labelTouchDoc"}
-	 *   </tbody>
-	 *  </table>
-	 *
-	 *
-	 * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-	 * @memberof oj.ojCheckboxset
-	 */
+   *    </tr>
+   *    {@ojinclude "name":"labelTouchDoc"}
+   *   </tbody>
+   *  </table>
+   *
+   *
+   * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+   * @memberof oj.ojCheckboxset
+   */
 
    /**
    * <table class="keyboard-table">
@@ -1003,16 +1005,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
  */
 var _sValueChangeCheckFalse = {doValueChangeCheck: false};
 
-/**
- * String used to determine how we are rendering the input.
- * @const
- * @private
- * @type {string}
- */
-var _HTML = "html";
-
 }());
-
 (function() {
 var ojCheckboxsetMeta = {
   "properties": {

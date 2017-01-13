@@ -20545,6 +20545,10 @@ dvt.Image.XLINK_NS = 'http://www.w3.org/1999/xlink';
  */
 dvt.Image.prototype.Init = function(context, src, x, y, w, h, id) {
   dvt.Image.superclass.Init.call(this, context, 'image', id);
+
+  // If we're in JET where the src may be a CSS class name, then obtain the URL from the background-image property.
+  src = dvt.ToolkitUtils.getImageUrl(context, src);
+
   // IE doesn't allow interactivity unless there's a fill
   if (dvt.Agent.isPlatformIE()) {
     dvt.ToolkitUtils.setAttrNullNS(this._elem, 'fill', '#FFFFFF');
@@ -27840,8 +27844,15 @@ dvt.SimpleScrollbar.prototype.render = function(options, width, height) {
  * Sets the range of the scrollbar thumb.
  * @param {number} min The min value of the range.
  * @param {number} max The max value of the range.
+ * @param {number=} globalMin The global min value of the scrollbar.
+ * @param {number=} globalMax The global max value of the scrollbar.
  */
-dvt.SimpleScrollbar.prototype.setViewportRange = function(min, max) {
+dvt.SimpleScrollbar.prototype.setViewportRange = function(min, max, globalMin, globalMax) {
+  if (globalMin != null)
+    this._globalMin = globalMin;
+  if (globalMax != null)
+    this._globalMax = globalMax;
+
   // Get the coords and modify the thumb
   var minCoord = this._getCoord(min);
   var maxCoord = this._getCoord(max);
@@ -35931,6 +35942,17 @@ dvt.EventManager.prototype.ShowDropEffect = function(event) {
 };
 
 /**
+ * Shows the hover effect of the current rejected drop target.
+ * @param {dvt.BaseEvent} event
+ * @protected
+ */
+dvt.EventManager.prototype.ShowRejectedDropEffect = function(event) {
+  // subclasses should override
+  // implemented temporary for  - theming is not implemented for charts dnd
+  this.ClearDropEffect();
+};
+
+/**
  * Clears all hover effects from drop targets.
  * @protected
  */
@@ -35965,6 +35987,8 @@ dvt.EventManager.prototype._handleDropTargetEvent = function(event, eventType, s
 
   if (!dropRejected && showEffect)
     this.ShowDropEffect(event);
+  else if (dropRejected && showEffect)
+    this.ShowRejectedDropEffect(event);
   else
     this.ClearDropEffect();
 };
@@ -38004,6 +38028,9 @@ dvt.ToolkitUtils.SVG_NS = 'http://www.w3.org/2000/svg';
 /** @const **/
 dvt.ToolkitUtils.XLINK_NS = 'http://www.w3.org/1999/xlink';
 
+/** @private **/
+dvt.ToolkitUtils._IMAGE_URL_CACHE = {};
+
 
 /**
  * Creates and returns a new SVG document with the specified id.
@@ -38062,6 +38089,7 @@ dvt.ToolkitUtils._getDragFeedbackSVG = function(displayables, bounds) {
   // : A new svg document must be created programmatically and appended to the wrapping div later on.
   //  This is necessary for Safari 5.0 and earlier, as well as iOS.  innerHTML should not be used.
   var svgElem = dvt.ToolkitUtils.createSvgDocument('dnd');
+  dvt.ToolkitUtils.setAttrNullNS(svgElem, 'class', 'oj-drag');
 
   // Create a group element to apply the top level translate to show the drag feedback at (0, 0)
   var tx = dvt.DragSource.DRAG_FEEDBACK_MARGIN - bounds.x;
@@ -38344,7 +38372,7 @@ dvt.ToolkitUtils.getOuterDivSize = function(context) {
  */
 dvt.ToolkitUtils.getJQueryEvent = function(event) {
   var nativeEvent = event.getNativeEvent();
-  if ($) {
+  if (typeof $ != 'undefined') {
     // Use $.event.fix instead of $.Event so that the $event properties are populated
     // The dataTransfer property has to be copied manually
     var $event = $.event.fix(nativeEvent);
@@ -38352,6 +38380,40 @@ dvt.ToolkitUtils.getJQueryEvent = function(event) {
     return $event;
   }
   return nativeEvent;
+};
+
+/**
+ * Returns the image URL for the specified CSS class name.
+ * @param {dvt.Context} context
+ * @param {string} className
+ * @return {string} The image URL.
+ */
+dvt.ToolkitUtils.getImageUrl = function(context, className) {
+  // If the className contains a dot, then it is actually a URL, so return immediately.
+  if (typeof $ == 'undefined' || className.indexOf('.') != -1)
+    return className;
+
+  var url = dvt.ToolkitUtils._IMAGE_URL_CACHE[className];
+  if (url != null)
+    return url;
+
+  // Create a dummy CSS div, apply the class name, extract the background-image CSS, and then remove the dummy div.
+  var cssDiv = $(document.createElement('div'));
+  cssDiv.attr('style', 'display:none;');
+  cssDiv.addClass(className);
+
+  var outerDiv = $(context.getContainer());
+  outerDiv.append(cssDiv);
+
+  url = cssDiv.css('background-image');
+  if (url && url.indexOf('url(') !== -1)
+    url = url.slice(url.indexOf('url(') + 4, url.length - 1).replace(/["']/g, '');
+  else
+    url = className;
+
+  cssDiv.remove();
+  dvt.ToolkitUtils._IMAGE_URL_CACHE[className] = url;
+  return url;
 };
 
 

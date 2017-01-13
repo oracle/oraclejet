@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -413,33 +413,16 @@ oj.SlidingNavListHandler.prototype.Destroy = function () {
 oj.SlidingNavListHandler.prototype._slideAnimation = function (item, isMovingNext, focusableElement, event, animationResolve) {
   var self = this;
   var list_root = this.m_widget.getRootElement();
-  var contentWidth = list_root.outerWidth() / 2;
   var isRtl = this.m_widget.isRtl();
-  if (!isMovingNext) {
-    contentWidth = contentWidth * -1;
-  }
   var hasFocusAncestor = this.m_widget.getRootElement().hasClass("oj-focus-ancestor");
-  if (isRtl) {
-    list_root.css({
-      "margin-right": contentWidth
-    });
-    list_root.animate({
-      "margin-right": "0px"
-    }, 400, 'swing', function () {
-      self._slideAnimationComplete(item, isMovingNext, focusableElement, event, hasFocusAncestor);
-      animationResolve(null);
-    });
-  } else {
-    list_root.css({
-      "margin-left": contentWidth
-    });
-    list_root.animate({
-      "margin-left": "0px"
-    }, 400, 'swing', function () {
-      self._slideAnimationComplete(item, isMovingNext, focusableElement, event, hasFocusAncestor);
-      animationResolve(null);
-    });
-  }
+  var action, promise;
+
+  action = isMovingNext ? "sliderExpand" : "sliderCollapse";
+  promise = oj.AnimationUtils.startAnimation(list_root, action, this.m_widget.getAnimationEffect(action));
+  promise.then(function () {
+    self._slideAnimationComplete(item, isMovingNext, focusableElement, event, hasFocusAncestor);
+    animationResolve(null);
+  });
 };
 
 /**
@@ -1694,16 +1677,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         options['display'] != null ||
         options['edge'] != null);
     },
+
     /**
-     * Gets the animation effect for the specific action
-     * @param {string} action the action to retrieve the effect
-     * @return {Object} the animation effect for the action
+     * Override options default style class
+     * @return {string} the option defaults style class
      */
-    getAnimationEffect: function (action) {
-      if (action === "pointerUp") {
-        return {"effect": "none"};
-      }
-      return _ojNavigationListView.superclass.getAnimationEffect.call(this, action);
+    getOptionDefaultsStyleClass: function()
+    {
+        return "oj-navigationlist-option-defaults";
     },
     /**
      * Sets multiple options
@@ -1836,10 +1817,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
 
       var itemContent = this.getItemContentElement(item);
       var url = itemContent.attr('href');
+      var target = itemContent.attr('target');;
       if (url && url !== "#") {
         //In case of javascript uri, javascript will get executed on assigning it to href.
         //Ideally user can use beforeSelect/optionChange events to do this,Will there be any issue in supporting this?
-        window.location.href = url;
+         if(!target || target === '_self') {
+            window.location.href = url;
+         } else {
+            window.open(url, target);
+         }
+         
         return true;
       }
       return false;

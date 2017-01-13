@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -962,6 +962,17 @@ oj.DiagramUtils = function() {
  *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
  *                      </ul>
  *                      The return value of the function is a label object with the following properties {@link oj.DiagramUtils~LabelLayout}
+ * @property {Object|Function} obj.viewport An object with the following properties that defines diagram viewport.
+ *                         <p>Alternatively a viewport can be defined with a function. The function will receive the following parameters:
+ *                           <ul>
+ *                             <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
+ *                           </ul>
+ *                           The return value of the function is a viewport object with the properties defined below. 
+ *                          </p>
+ * @property {number} obj.viewport.x x-coordinate
+ * @property {number} obj.viewport.y y-coordinate 
+ * @property {number} obj.viewport.w width
+ * @property {number} obj.viewport.h height
  * @returns {Function} layout callback function
  * @export
  */
@@ -1004,6 +1015,15 @@ oj.DiagramUtils.getLayout = function(obj) {
         else if (defaultLabelLayout && defaultLabelLayout instanceof Function ) {
           oj.DiagramUtils._setLabelPosition(link, defaultLabelLayout(layoutContext, link));
         }
+      }
+    }
+    if (obj['viewport']){
+      var viewport = obj['viewport'];
+      if (viewport instanceof Function) {
+        layoutContext.setViewport(viewport(layoutContext));
+      }
+      else {
+        layoutContext.setViewport(viewport);
       }
     }
   };

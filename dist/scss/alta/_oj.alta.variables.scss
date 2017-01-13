@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 
@@ -52,6 +52,9 @@ $interaction4Color: #cfe8fc !default;
 $interaction5Color: #d6d7d8 !default;
 $interaction6Color: #dae9f5 !default;
 
+// $interaction7Color is often used to indicate state 
+// in a "collection", for example inactive selected
+$interaction7Color: #fafaeb !default;
 
 
 // background colors
@@ -180,8 +183,6 @@ $header3FontSize: $largestFontSize !default; // 20px when root 14px
 $header4FontSize: $largeFontSize   !default; // 18px when root 14px
 $header5FontSize: $mediumFontSize  !default; // 16px when root 14px
 
-
-
 // $header[1|2|3|4|5]FontWeight vars can be used 
 // to override the default font weight, they are  
 // applied to h[1|2|3|4|5] tags
@@ -248,6 +249,21 @@ $radioCheckboxItemBgColorActive: transparent !default;
 $inputDateTimeRenderModeOptionDefault: jet !default;
 
 $inputDateTimeKeyboardEditOptionDefault: enabled !default;
+
+// DIALOG
+//----------------------------------------------------------------
+
+// Resize and cancel behavior defaults 
+$dialogResizeBehaviorOptionDefault: resizable !default;
+$dialogCancelBehaviorOptionDefault: icon !default;
+$dialogDragAffordanceOptionDefault: title-bar !default;
+
+$dialogBoxShadow:           $largeBoxShadow !default;
+$dialogBorderRadius:        1px !default;
+$dialogHeaderTextAlign:     startSingleRow !default;
+$dialogHeaderBorderColor:   $windowBorderColor !default;
+// Vertically center the close icon.
+$dialogCloseIconPosition:   center !default;
 
 // SLIDER
 //----------------------------------------------------------------

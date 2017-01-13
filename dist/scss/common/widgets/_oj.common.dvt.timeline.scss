@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your theme's directory, 
@@ -125,22 +125,6 @@
       white-space:nowrap;
       font-size:$smallFontSize;
       font-family:$fontFamily;
-    }
-    
-    .oj-timeline-scroll-indicator-back {
-      background-image:oj-common-image-url("dvt/timeline/scroll_l.png");
-    }
-    
-    .oj-timeline-scroll-indicator-forward {
-      background-image:oj-common-image-url("dvt/timeline/scroll_r.png");
-    }
-    
-    .oj-timeline-scroll-indicator-up {
-      background-image:oj-common-image-url("dvt/timeline/scroll_t.png");
-    }
-    
-    .oj-timeline-scroll-indicator-down {
-      background-image:oj-common-image-url("dvt/timeline/scroll_b.png");
     }
     
     .oj-timeline-zoomin-icon {

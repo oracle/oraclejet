@@ -1,14 +1,10 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojknockout', 'promise'], function(oj, ko)
 {
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
-
 /**
  * @ignore
  * @constructor
@@ -173,10 +169,6 @@ function PropertyUpdater(element, props, bindingContext, parseFunction)
   var _defaulting;
 }
 
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
-
 ko['bindingHandlers']['_ojNodeStorage_'] =
 {
   'init': function()
@@ -184,10 +176,6 @@ ko['bindingHandlers']['_ojNodeStorage_'] =
     return {'controlsDescendantBindings' : true};
   }
 }
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 
 ko['bindingHandlers']['_ojSlot_'] =
 {
@@ -240,10 +228,6 @@ ko['bindingHandlers']['_ojSlot_'] =
 
 // Allow _ojSlot_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
 ko.virtualElements.allowedBindings['_ojSlot_'] = true;
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 
 (function()
 {
@@ -353,10 +337,6 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
 
 }
 )();
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 
 /**
  * <p>
@@ -1314,10 +1294,6 @@ oj.Composite.getMetadata = function(name)
  * @ignore
  */
 oj.Composite._registry = {};
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 
 ko['bindingHandlers']['ojComposite'] =
 {

@@ -102,6 +102,10 @@ dvt.TimeComponent.prototype._applyParsedProperties = function(props)
   this._end = props.end;
   this._inlineStyle = props.inlineStyle;
 
+  // not used yet but may be needed to control visibility in the future
+  this._timeDirScrollbar = props.timeDirScrollbar;
+  this._contentDirScrollbar = props.contentDirScrollbar;
+
   this.applyStyleValues();
 };
 
@@ -131,7 +135,6 @@ dvt.TimeComponent.prototype.getAdjustedEndTime = function()
   return this._end;
 };
 
-
 /**
  * Returns the overall (virtualized) length of the content
  * @return {number} the content length
@@ -153,6 +156,24 @@ dvt.TimeComponent.prototype.setContentLength = function(length)
     this._fetchStartPos = 0;
     this._fetchEndPos = this._contentLength;
   }
+};
+
+/**
+ * Gets the canvas size.
+ * @return {number} the canvas size.
+ */
+dvt.TimeComponent.prototype.getCanvasSize = function()
+{
+  return this._canvasSize;
+};
+
+/**
+ * Gets the canvas length.
+ * @return {number} the canvas length.
+ */
+dvt.TimeComponent.prototype.getCanvasLength = function()
+{
+  return this._canvasLength;
 };
 
 dvt.TimeComponent.prototype.isRTL = function()
@@ -698,6 +719,152 @@ dvt.TimeComponent.prototype.setStartYOffset = function(startY)
   this._startY = startY;
 };
 
+/**
+ * Gets the chart/graphical area bounds (i.e. excluding scrollbars etc).
+ * @return {dvt.Rectangle} The bounds
+ */
+dvt.TimeComponent.prototype.getGraphicalAreaBounds = function()
+{
+  if (this.isVertical())
+    return new dvt.Rectangle(this._startX, this._startY, this._canvasSize, this._canvasLength);
+  return new dvt.Rectangle(this._startX, this._startY, this._canvasLength, this._canvasSize);
+};
+
+/**
+ * Gets whether time direction scrollbar should be visible.
+ * @return {boolean} true if time direction scrollbar is visible, false otherwise.
+ */
+dvt.TimeComponent.prototype.isTimeDirScrollbarOn = function()
+{
+  // return this._timeDirScrollbar == 'on';
+  return true; // always on for now
+};
+
+/**
+ * Gets whether content direction scrollbar should be visible.
+ * @return {boolean} true if content direction scrollbar is visible, false otherwise.
+ */
+dvt.TimeComponent.prototype.isContentDirScrollbarOn = function()
+{
+  // return this._contentDirScrollbar == 'on';
+  return true; // always on for now
+};
+
+/**
+ * Gets the scrollbar in the time direction.
+ * @return {dvt.SimpleScrollbar} The scrollbar in the time direction.
+ */
+dvt.TimeComponent.prototype.getTimeDirScrollbar = function()
+{
+  return this.timeDirScrollbar;
+};
+
+/**
+ * Gets the scrollbar in the content direction.
+ * @param {number=} index The content index.
+ * @return {dvt.SimpleScrollbar} The scrollbar in the content direction.
+ */
+dvt.TimeComponent.prototype.getContentDirScrollbar = function(index)
+{
+  if (index)
+    return this.contentDirScrollbar[index];
+  else
+    return this.contentDirScrollbar;
+};
+
+/**
+ * Sets the scrollbar in the time direction.
+ * @param {dvt.SimpleScrollbar} timeDirScrollbar The scrollbar in the time direction.
+ */
+dvt.TimeComponent.prototype.setTimeDirScrollbar = function(timeDirScrollbar)
+{
+  this.timeDirScrollbar = timeDirScrollbar;
+};
+
+/**
+ * Sets the scrollbar in the content direction.
+ * @param {dvt.SimpleScrollbar} contentDirScrollbar The scrollbar in the content direction.
+ * @param {number=} index The content index.
+ */
+dvt.TimeComponent.prototype.setContentDirScrollbar = function(contentDirScrollbar, index)
+{
+  if (index != null)
+  {
+    if (this.contentDirScrollbar == null)
+      this.contentDirScrollbar = [];
+
+    this.contentDirScrollbar[index] = contentDirScrollbar;
+  }
+  else
+    this.contentDirScrollbar = contentDirScrollbar;
+};
+
+/**
+ * Gets the scrollbar padding size.
+ * @return {number} The scrollbar padding size.
+ */
+dvt.TimeComponent.prototype.getScrollbarPadding = function()
+{
+  return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
+};
+
+/**
+ * Gets the time direction scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+dvt.TimeComponent.prototype.getTimeDirScrollbarStyle = function()
+{
+  return DvtTimeComponentStyleUtils.getTimeDirScrollbarStyle();
+};
+
+/**
+ * Gets the content direction scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+dvt.TimeComponent.prototype.getContentDirScrollbarStyle = function()
+{
+  return DvtTimeComponentStyleUtils.getContentDirScrollbarStyle();
+};
+
+/**
+ * Event callback method.
+ * @param {object} event
+ * @param {object} component The component that is the source of the event, if available.
+ */
+dvt.TimeComponent.prototype.HandleEvent = function(event, component)
+{
+  var type = event['type'];
+  if (type == dvt.SimpleScrollbarEvent.TYPE)
+  {
+    event = this.processScrollbarEvent(event, component);
+  }
+
+  if (event)
+    this.dispatchEvent(event);
+};
+
+/**
+ * Adjusts viewport based on scrollbar event.
+ * @param {object} event
+ * @param {object} component The component that is the source of the event, if available.
+ */
+dvt.TimeComponent.prototype.processScrollbarEvent = function(event, component)
+{
+  if (component == this.timeDirScrollbar)
+  {
+    var newMin = event.getNewMin();
+    var newMax = event.getNewMax();
+    this._viewStartTime = newMin;
+    this._viewEndTime = newMax;
+    var widthFactor = this.getContentLength() / (this._end - this._start);
+    this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
+    this.applyTimeZoomCanvasPosition();
+
+    var evt = this.createViewportChangeEvent();
+    this.dispatchEvent(evt);
+  }
+};
+
 dvt.TimeComponent.prototype.processEvent = function(event)
 {
   if (event)
@@ -720,6 +887,31 @@ dvt.TimeComponent.prototype.HandleKeyDown = function(event)
 
 dvt.TimeComponent.prototype.HandleMouseDown = function(event)
 {
+};
+
+
+/**
+ * Handles component focus events.
+ * @param {object} event The focus event.
+ */
+dvt.TimeComponent.prototype.HandleFocus = function(event)
+{
+  if (this.zoomin != null)
+    this.zoomin._onFocus(event);
+  if (this.zoomout != null)
+    this.zoomout._onFocus(event);
+};
+
+/**
+ * Handles component blur events.
+ * @param {object} event The blur event.
+ */
+dvt.TimeComponent.prototype.HandleBlur = function(event)
+{
+  if (this.zoomin != null)
+    this.zoomin._onBlur(event);
+  if (this.zoomout != null)
+    this.zoomout._onBlur(event);
 };
 
 dvt.TimeComponent.prototype.beginDragPan = function(compX, compY)
@@ -780,7 +972,7 @@ dvt.TimeComponent.prototype.contDragPan = function(compX, compY)
 };
 
 /**
- * Pans the Timeline by the specified amount.
+ * Pans the component by the specified amount.
  * @param {number} deltaX The number of pixels to pan in the x direction.
  * @param {number} deltaY The number of pixels to pan in the y direction.
  * @protected
@@ -841,6 +1033,24 @@ dvt.TimeComponentEventManager.prototype.removeListeners = function(displayable)
     else
       displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
   }
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnFocus = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnFocus.call(this, event);
+  this._comp.HandleFocus(event);
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnBlur = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnBlur.call(this, event);
+  this._comp.HandleBlur(event);
 };
 
 /**
@@ -959,6 +1169,15 @@ dvt.TimeComponentEventManager.prototype._onDragEnd = function(event)
  * @private
  */
 dvt.TimeComponentEventManager.prototype._getRelativePosition = function(pageX, pageY) {
+  // TODO: Consider removing this method, and use context.pageToStageCoords(pageX, pageY) instead
+  // Looks like this method is only necessary to cache the stage absolute position, but
+  // at the time of writing, there is already a cache in the context for this purpose.
+  // The base dvt.EventManager handles clearing this cache on mouseout, so I think
+  // we only need to take care of calling context.clearStageAbsolutePosition() in _onTouchDragEnd.
+  //
+  // Summary: remove this method, replace all instance with context.pageToStageCoords(pageX, pageY),
+  // remove all instances of this._stageAbsolutePosition, and just call
+  // context.clearStageAbsolutePosition() in _onTouchDragEnd
   if (!this._stageAbsolutePosition)
     this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
 
@@ -976,8 +1195,12 @@ dvt.TimeComponentEventManager.prototype._onMouseDragStart = function(event)
   if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON)
   {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
-    this._comp.beginDragPan(relPos.x, relPos.y);
-    return true;
+    // only drag pan if inside chart/graphical area
+    if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+    {
+      this._comp.beginDragPan(relPos.x, relPos.y);
+      return true;
+    }
   }
   return false;
 };
@@ -1015,11 +1238,16 @@ dvt.TimeComponentEventManager.prototype._onMouseDragEnd = function(event)
 dvt.TimeComponentEventManager.prototype._onTouchDragStart = function(event)
 {
   var touches = event.touches;
+  var bounds = this._comp.getGraphicalAreaBounds();
   if (touches.length == 1)
   {
     var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    this._comp.beginDragPan(relPos.x, relPos.y);
-    return true;
+    // only pan if inside chart/graphical area
+    if (bounds.containsPoint(relPos.x, relPos.y))
+    {
+      this._comp.beginDragPan(relPos.x, relPos.y);
+      return true;
+    }
   }
   else if (touches.length == 2)
   {
@@ -1027,9 +1255,14 @@ dvt.TimeComponentEventManager.prototype._onTouchDragStart = function(event)
     this._isPinchZoom = true;
     var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
     var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
-    this._comp.beginPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
-    dvt.EventManager.consumeEvent(event);
-    return true;
+
+    // only pinch zoom if inside chart/graphical area
+    if (bounds.containsPoint(relPos1.x, relPos1.y) && bounds.containsPoint(relPos2.x, relPos2.y))
+    {
+      this._comp.beginPinchZoom(relPos1.x, relPos1.y, relPos2.x, relPos2.y);
+      dvt.EventManager.consumeEvent(event);
+      return true;
+    }
   }
   return false;
 };
@@ -1166,11 +1399,11 @@ dvt.TimeComponentKeyboardHandler.prototype.isMultiSelectEvent = function(event)
  */
 dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event) 
 {
-  if (dvt.KeyboardEvent.isPlus(event))
+  if (dvt.KeyboardEvent.isPlus(event) || dvt.KeyboardEvent.isEquals(event))
   {
     this._eventManager.HandleZoomInClick();
   }
-  else if (dvt.KeyboardEvent.isMinus(event))
+  else if (dvt.KeyboardEvent.isMinus(event) || dvt.KeyboardEvent.isUnderscore(event))
   {
     this._eventManager.HandleZoomOutClick();
   }
@@ -1198,6 +1431,61 @@ dvt.TimeComponentKeyboardHandler.prototype.processKeyDown = function(event)
   }
 
   return dvt.TimeComponentKeyboardHandler.superclass.processKeyDown.call(this, event);
+};
+/**
+ * Style related utility functions for dvt.TimeComponent.
+ * @class
+ */
+var DvtTimeComponentStyleUtils = new Object();
+
+dvt.Obj.createSubclass(DvtTimeComponentStyleUtils, dvt.Obj);
+
+/**
+ * The default time direction scrollbar style.
+ * @const
+ * @private
+ */
+DvtTimeComponentStyleUtils._DEFAULT_TIME_DIR_SCROLLBAR_STYLE = 'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0';
+
+/**
+ * The default content direction scrollbar style.
+ * @const
+ * @private
+ */
+DvtTimeComponentStyleUtils._DEFAULT_CONTENT_DIR_SCROLLBAR_STYLE = 'height: 3px; width: 3px; color: #9E9E9E; background-color: #F0F0F0';
+
+/**
+ * The scrollbar padding size.
+ * @const
+ * @private
+ */
+DvtTimeComponentStyleUtils._SCROLLBAR_PADDING = 4;
+
+/**
+ * Gets the horizontal scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+DvtTimeComponentStyleUtils.getTimeDirScrollbarStyle = function()
+{
+  return new dvt.CSSStyle(DvtTimeComponentStyleUtils._DEFAULT_TIME_DIR_SCROLLBAR_STYLE);
+};
+
+/**
+ * Gets the vertical scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+DvtTimeComponentStyleUtils.getContentDirScrollbarStyle = function()
+{
+  return new dvt.CSSStyle(DvtTimeComponentStyleUtils._DEFAULT_CONTENT_DIR_SCROLLBAR_STYLE);
+};
+
+/**
+ * Gets the default scrollbar padding size.
+ * @return {number} The default scrollbar padding size.
+ */
+DvtTimeComponentStyleUtils.getScrollbarPadding = function()
+{
+  return DvtTimeComponentStyleUtils._SCROLLBAR_PADDING;
 };
 })(dvt);
 

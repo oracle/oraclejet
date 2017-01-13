@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your theme's directory, 
@@ -68,6 +68,29 @@
     .oj-diagram-link-label {
       font-size: $fontSize;
       color: $textColor;      
+    }
+    .oj-diagram-node.oj-draggable {
+    }
+    .oj-diagram .oj-active-drop {
+      fill: $dropTarget1Color;
+      fill-opacity: .75;
+    }
+    .oj-diagram .oj-invalid-drop {
+      cursor: no-drop;
+    }
+    .oj-diagram-node.oj-active-drop {
+      fill: $dropTarget1Color;
+      fill-opacity: .75;
+    }
+    .oj-diagram-node.oj-invalid-drop {
+      cursor: no-drop;
+    }
+    .oj-diagram-link.oj-active-drop {
+      stroke: $dropTarget1Color;
+      stroke-opacity: .75;
+    }
+    .oj-diagram-link.oj-invalid-drop {
+      cursor: no-drop;
     }
   }
 }

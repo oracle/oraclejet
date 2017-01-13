@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -177,14 +177,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
     //** @inheritdoc */
     _GetChildStyleClasses: function() {
       var styleClasses = this._super();
-      styleClasses['oj-treemap-isolate-icon'] = {'path': '_resources/isolate', 'property': 'CSS_URL'};
-      styleClasses['oj-treemap-isolate-icon oj-hover'] = {'path': '_resources/isolateOver', 'property': 'CSS_URL'};
-      styleClasses['oj-treemap-isolate-icon oj-active'] = {'path': '_resources/isolateDown', 'property': 'CSS_URL'};
-
-      styleClasses['oj-treemap-restore-icon'] = {'path': '_resources/restore', 'property': 'CSS_URL'};
-      styleClasses['oj-treemap-restore-icon oj-hover'] = {'path': '_resources/restoreOver', 'property': 'CSS_URL'};
-      styleClasses['oj-treemap-restore-icon oj-active'] = {'path': '_resources/restoreDown', 'property': 'CSS_URL'};
-
       styleClasses['oj-treemap-attribute-type-text'] = {'path': 'styleDefaults/_attributeTypeTextStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-treemap-attribute-value-text'] = {'path': 'styleDefaults/_attributeValueTextStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       // TODO  add this once drilling is supported
@@ -263,6 +255,24 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       else {
         this._super(event);
       }
+    },
+
+    //** @inheritdoc */
+    _LoadResources : function() {
+      // Ensure the resources object exists
+      if(this.options['_resources'] == null)
+        this.options['_resources'] = {};
+  
+      var resources = this.options['_resources'];
+
+      // Add isolate and restore icons
+      resources['isolate'] = 'oj-treemap-isolate-icon';
+      resources['isolateOver'] = 'oj-treemap-isolate-icon oj-hover';
+      resources['isolateDown'] = 'oj-treemap-isolate-icon oj-active';
+
+      resources['restore'] = 'oj-treemap-restore-icon';
+      resources['restoreOver'] = 'oj-treemap-restore-icon oj-hover';
+      resources['restoreDown'] = 'oj-treemap-restore-icon oj-active';
     },
 
     /**

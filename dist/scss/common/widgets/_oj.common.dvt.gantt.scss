@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your theme's directory, 
@@ -99,7 +99,6 @@
       fill: $dvtGanttMajorAxisLabelColor;
       font-size: $fontSize;
       font-weight: 500;
-      font-family:$fontFamily;
     }
     
     /* Styling for the major time axis separators */
@@ -118,12 +117,52 @@
       fill: $dvtGanttMinorAxisLabelColor;
       font-size: $smallFontSize;
       font-weight: normal;
-      font-family:$fontFamily;
     }
     
     /* Styling for the minor time axis separators */
     .oj-gantt-minor-axis-separator {
       stroke: $dvtGanttMinorAxisSeparatorColor;
+    }
+
+    /* Styling for reference object */
+    .oj-gantt-reference-object {
+      stroke: $dvtTimelineReferenceObjectColor;
+    }
+                
+    /* Styling for the tooltip label */
+    .oj-gantt-tooltip-label {
+      font-size: $smallFontSize;
+      color: $formControlLabelColor;
+      padding: 0 2px; 
+      white-space: nowrap;
+
+      @include oj-ltr() {
+        text-align: right;
+      }
+      @include oj-rtl() {
+        text-align: left;
+      }
+    }
+
+    /* Styling for the tooltip value */
+    .oj-gantt-tooltip-value {
+      color: $textColor;
+      padding: 0 2px;
+
+      @include oj-ltr() {
+        text-align: left;
+      }
+      @include oj-rtl() {
+        text-align: right;
+      }
+    }
+
+    /* Styling for the default tabular tooltip */
+    .oj-gantt-tooltip-content {
+      display: block;
+      border-collapse: separate;
+      border-spacing: 2px;
+      overflow: hidden;
     }
                 
     /* Styling for the zoom in icon */
@@ -164,6 +203,24 @@
     
     .oj-gantt-zoomout-icon.oj-disabled {
       background-image:oj-common-image-url("dvt/common/func_minus_16_dis.png");
+    }
+
+    /* Styling for all dependency lines */
+    .oj-gantt-dependency-line {
+      fill:none;
+      stroke:$dvtGanttDependencyLineColor;
+      stroke-width:1;
+    }
+
+    /* Styling for all dependency lines when focus */
+    .oj-gantt-dependency-line.oj-focus {
+      stroke-width:3;
+    }
+
+    /* Styling for all dependency line connectors */
+    .oj-gantt-dependency-line-connector {
+      fill:$dvtGanttDependencyLineColor;
+      stroke:$dvtGanttDependencyLineColor;
     }
   }
 }

@@ -1926,7 +1926,7 @@ dvt.Overview.prototype.resetCursors = function()
  */
 dvt.Overview.prototype.endDragPan = function()
 {
-  if (this._moveDrawable != null)
+  if (this._moveDrawable != null && this._isDragPanning == true)
   {
     if (this._moveDrawable.getId() == 'window')
       this.finishWindowDrag(0, 0);
@@ -1953,6 +1953,7 @@ dvt.Overview.prototype.endDragPan = function()
       this.resetCursors();
     }
 
+    this._isDragPanning = false;
     this._moveDrawable = null;
     this._initX = -1;
   }
@@ -1968,6 +1969,7 @@ dvt.Overview.prototype.contDragPan = function(event, compX, compY)
 {
   if (this._moveDrawable != null && this._initX != -1)
   {
+    this._isDragPanning = true;
     var diffX = compX - this._initX;
     var diffY = compY - this._initY;
     this._initX = compX;
@@ -2076,7 +2078,6 @@ dvt.Overview.prototype.stopDragAction = function()
 {
   this.endDragPan();
 };
-
 
 /**
  * Handles keyboard event on the overview.

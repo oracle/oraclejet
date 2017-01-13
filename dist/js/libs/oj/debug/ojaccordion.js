@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -430,7 +430,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
             })
             .addClass("oj-accordion-created")
           .end()
-          .addClass("oj-accordion-collapsible");
+          .addClass("oj-accordion-collapsible")
+          .attr('data-oj-internal', true); // mark internal component, used in oj.Components.getComponentElementByNode
     },
 
     _setupEvents : function ()

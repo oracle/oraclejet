@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -747,6 +747,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _setup: function(isInit) // Private, not an override (not in base class).  
   {
+    var self = this;
+    
     //FIX : always create paging model, even if filmstrip is
     //detached or hidden, so that it's available for an assocated paging
     //control
@@ -756,6 +758,16 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     //want to create a different instance of the paging model.)
     if (isInit && !this._pagingModel)
       this._pagingModel = new oj.FilmStripPagingModel();
+    
+    //FIX : when using jquery find() in the filmStrip, filter out any results from
+    //nested filmStrips
+    if (isInit && !this._filterNestedFilmStripsFunc)
+    {
+      this._filterNestedFilmStripsFunc = function(index, elem)
+      {
+        return $(elem).closest(".oj-filmstrip")[0] === self.element[0];
+      };
+    }
     
     //if filmStrip is detached or hidden, we can't layout correctly, so 
     //defer layout until filmStrip is attached or shown
@@ -775,7 +787,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     this._bRTL = (this._GetReadingDirection() === "rtl");
     this._bTouchSupported = oj.DomUtils.isTouchSupported();
     var elem = this.element;
-    var self = this;
     if (isInit)
     {
       this._itemsPerPage = 0;
@@ -866,6 +877,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     this._pagingModel = null;
     this._handleResizeFunc = null;
     this._handleTransitionEndFunc = null;
+    this._filterNestedFilmStripsFunc = null;
     
     var elem = this.element;
     elem
@@ -1463,7 +1475,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   _getItemContainers: function()
   {
     var pagesWrapper = this._pagesWrapper;
-    var items = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM_CONTAINER);
+    var items = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM_CONTAINER)
+      .filter(this._filterNestedFilmStripsFunc);
     return items;
   },
   
@@ -1477,7 +1490,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   _getItems: function()
   {
     var pagesWrapper = this._pagesWrapper;
-    var originalItems = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM);
+    var originalItems = pagesWrapper.find(_PERIOD + _OJ_FILMSTRIP_ITEM)
+      .filter(this._filterNestedFilmStripsFunc);
     return originalItems;
   },
   
@@ -1995,7 +2009,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       .attr(_ARIA_HIDDEN, "true");
     
     //hide the items explicitly; unhiding will unhide them explicitly
-    var items = page.find(_PERIOD + _OJ_FILMSTRIP_ITEM);
+    var items = page.find(_PERIOD + _OJ_FILMSTRIP_ITEM).filter(this._filterNestedFilmStripsFunc);
     items.css(_DISPLAY, _NONE);
   },
   
@@ -2013,7 +2027,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       .removeAttr(_ARIA_HIDDEN);
     
     //unhide the items explicitly because the app may have initially hidden them  
-    var items = page.find(_PERIOD + _OJ_FILMSTRIP_ITEM);
+    var items = page.find(_PERIOD + _OJ_FILMSTRIP_ITEM).filter(this._filterNestedFilmStripsFunc);
     items.css(_DISPLAY, _EMPTY_STRING);
     
     //notify the page that it was shown
@@ -2451,16 +2465,20 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     
     var subId = locator['subId'];
     if (subId === "oj-filmstrip-start-arrow") {
-      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_START)[0];
+      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_START)
+        .filter(this._filterNestedFilmStripsFunc)[0];
     }
     if (subId === "oj-filmstrip-end-arrow") {
-      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_END)[0];
+      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_END)
+        .filter(this._filterNestedFilmStripsFunc)[0];
     }
     if (subId === "oj-filmstrip-top-arrow") {
-      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_TOP)[0];
+      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_TOP)
+        .filter(this._filterNestedFilmStripsFunc)[0];
     }
     if (subId === "oj-filmstrip-bottom-arrow") {
-      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_BOTTOM)[0];
+      return this.widget().find(_PERIOD + _OJ_FILMSTRIP_ARROW + _PERIOD + _OJ_BOTTOM)
+        .filter(this._filterNestedFilmStripsFunc)[0];
     }
     
     // Non-null locators have to be handled by the component subclasses

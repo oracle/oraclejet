@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1038,25 +1038,9 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       styleClasses['oj-chart-y2axis-tick-label'] = {'path': 'y2Axis/tickLabel/style', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-chart-y2axis-title'] = {'path': 'y2Axis/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
 
-      // Images
-      styleClasses['oj-chart-pan-icon'] = {'path': '_resources/panUp', 'property': 'CSS_URL'};
-      styleClasses['oj-chart-pan-icon oj-active'] = {'path': '_resources/panDown', 'property': 'CSS_URL'};
-      styleClasses['oj-chart-select-icon'] = {'path': '_resources/selectUp', 'property': 'CSS_URL'};
-      styleClasses['oj-chart-select-icon oj-active'] = {'path': '_resources/selectDown', 'property': 'CSS_URL'};
-      styleClasses['oj-chart-zoom-icon'] = {'path': '_resources/zoomUp', 'property': 'CSS_URL'};
-      styleClasses['oj-chart-zoom-icon oj-active'] = {'path': '_resources/zoomDown', 'property': 'CSS_URL'};
-
       // Legend
       styleClasses['oj-legend'] = {'path': 'legend/textStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-legend-title'] = {'path': 'legend/titleStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-
-      styleClasses['oj-legend-section-close-icon'] = {'path': 'legend/_resources/closedEnabled', 'property': 'CSS_URL'};
-      styleClasses['oj-legend-section-close-icon oj-hover'] = {'path': 'legend/_resources/closedOver', 'property': 'CSS_URL'};
-      styleClasses['oj-legend-section-close-icon oj-active'] = {'path': 'legend/_resources/closedDown', 'property': 'CSS_URL'};
-
-      styleClasses['oj-legend-section-open-icon'] = {'path': 'legend/_resources/openEnabled', 'property': 'CSS_URL'};
-      styleClasses['oj-legend-section-open-icon oj-hover'] = {'path': 'legend/_resources/openOver', 'property': 'CSS_URL'};
-      styleClasses['oj-legend-section-open-icon oj-active'] = {'path': 'legend/_resources/openDown', 'property': 'CSS_URL'};
 
       return styleClasses;
     },
@@ -1203,6 +1187,20 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       // Add cursors
       resources['panCursorDown'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
       resources['panCursorUp'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
+
+      // Drag button images
+      resources['panUp'] = 'oj-chart-pan-icon';
+      resources['panUpHover'] = 'oj-chart-pan-icon oj-hover';
+      resources['panDown'] = 'oj-chart-pan-icon oj-active';
+      resources['panDownHover'] = 'oj-chart-pan-icon oj-hover oj-active';
+      resources['selectUp'] = 'oj-chart-select-icon';
+      resources['selectUpHover'] = 'oj-chart-select-icon oj-hover';
+      resources['selectDown'] = 'oj-chart-select-icon oj-active';
+      resources['selectDownHover'] = 'oj-chart-select-icon oj-hover oj-active';
+      resources['zoomUp'] = 'oj-chart-zoom-icon';
+      resources['zoomUpHover'] = 'oj-chart-zoom-icon oj-hover';
+      resources['zoomDown'] = 'oj-chart-zoom-icon oj-active';
+      resources['zoomDownHover'] = 'oj-chart-zoom-icon oj-hover oj-active';
     },
 
     /**

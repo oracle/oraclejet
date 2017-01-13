@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -519,7 +519,7 @@
     .oj-datepicker-calendar.oj-datepicker-monthview td, 
     .oj-datepicker-calendar.oj-datepicker-yearview td
     {
-      padding: 10px 5px 5px 25px;
+      padding: 8px 3px 3px 23px;
     }
 
     .oj-datepicker-calendar.oj-datepicker-monthview td span, 
@@ -527,9 +527,10 @@
     .oj-datepicker-calendar.oj-datepicker-yearview td span, 
     .oj-datepicker-calendar.oj-datepicker-yearview td a
     {
-      width: 45px;
-      height: 45px;
-      line-height: 41px;
+      width: 49px;
+      height: 49px;
+      line-height: 45px;
+      white-space: nowrap;
     }
     
     .oj-datepicker-calendar td a:focus

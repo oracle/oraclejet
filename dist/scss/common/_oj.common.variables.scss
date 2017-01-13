@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
 
@@ -262,6 +262,9 @@ $interaction4Color: null !default;
 $interaction5Color: null !default;
 $interaction6Color: null !default;
 
+// $interaction7Color is often used to indicate state 
+// in a "collection", for example inactive selected
+$interaction7Color: null !default;
 
 
 // background colors
@@ -820,7 +823,7 @@ $popupBoxShadow:    $smallBoxShadow !default;
 // Placeholder for theme specific popup modality option override.
 $popupModalityOptionDefault: null !default;
 
-
+ 
 
 
 // APPLICATION LAYOUT - SHARED
@@ -1250,9 +1253,51 @@ $buttonsetEqualWidthOverallWidth: 100% !default; // default width of equal width
 
 // DIALOG
 //-----------------------------------------------------------------------------
-$dialogBorderColor:         $windowBorderColor !default;
+
+// ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
+// default to the programmatic settings.
+$dialogResizeBehaviorOptionDefault: none !default;
+$dialogCancelBehaviorOptionDefault: none !default;
+$dialogDragAffordanceOptionDefault: none !default;
+
+$dialogBoxShadow:           $smallBoxShadow !default;
+$dialogBorderRadius:        null !default;
 $dialogBorderWidth:         $windowBorderWidth !default;
+$dialogBorderColor:         $windowBorderColor !default;
 $dialogBgColor:             $windowBgColor !default;
+
+$dialogHeaderPadding:       $panelPadding !default;
+$dialogBodyPadding:         $panelPadding !default;
+$dialogFooterPadding:       $panelPadding !default;
+
+$dialogHeaderFontSize:      $header3FontSize !default;
+$dialogHeaderBorderColor:   transparent !default;
+$dialogHeaderBgColor:       $headerBgColor !default;
+$dialogHeaderTextColor:     $headerTextColor !default;
+$dialogHeaderBgImage:       $headerBgImage !default;
+
+// Alignment of the dialog header text.
+// Possible values are and 'center' and 'start'
+$dialogHeaderTextAlign:     start !default;
+// Vertical position of the close icon.
+// Possible values are 'top' and 'center'
+// (the close icon is always on the right in ltr)
+$dialogCloseIconPosition:  top !default;
+$dialogCloseIconButtonMargin:  null !default;
+
+$dialogBodyTextAlign:       start !default;
+
+$dialogFooterButtonHeight:  $buttonHeight !default; 
+$dialogFooterButtonFontWeight: null !default; 
+
+// Integrated layout for footer buttons.
+// Possible values are 'true' or 'false'.
+// When 'false', buttons are positioned on the right side of the footer.
+// When 'true', buttons are integrated (spread) across the entire footer,
+// evenly spacing the buttons, render dividers, and round the outside
+// corners of the first and last buttons.
+$dialogFooterIntegrateButtons:  false !default;
+$dialogFooterDividerColor:      $dialogBorderColor !default;
 
 // TOOLBAR
 //-----------------------------------------------------------------------------
@@ -1841,15 +1886,15 @@ $treeDndMarkerLineColor:      $interaction1Color !default;
 //-----------------------------------------------------------------------------
 // Default
 $dataGridBorderColor:                       $border1Color !default;
-$dataGridBgColor:                           #f7f9fc !default;
+$dataGridBgColor:                           darken($background3Color, 1%) !default;
 
 // Headers
-$dataGridCellPadding:                     0.375em !default;
+$dataGridCellPadding:                       0.375em !default;
 $dataGridHeaderFontWeight:                  $headerFontWeight !default;
 $dataGridHeaderTextColor:                   $primaryTextColor !default;
 $dataGridHeaderFontSize:                    $fontSize !default;
 // Headers - Default
-$dataGridHeaderBgColor:                     #f2f4f7 !default;
+$dataGridHeaderBgColor:                     adjust-color($background6Color , $lightness: 5%, $saturation: 12%, $hue: 16) !default;
 $dataGridHeaderBorderColor:                 $dataGridBorderColor !default;
 // Headers - Hover
 $dataGridHeaderBgColorHover:                $interaction5Color !default;
@@ -1858,10 +1903,10 @@ $dataGridHeaderBgColorFocus:                adjust-color($interaction4Color, $li
 // Headers - Selected
 $dataGridHeaderBgColorSelected:             $interaction6Color !default;
 // Headers - Selected Inactive (selected but focus outside the component)
-$dataGridHeaderBgColorSelectedInactive:     #f6f6e0 !default;
+$dataGridHeaderBgColorSelectedInactive:     adjust-color($interaction7Color, $lightness: -3%, $saturation: -5%) !default;
 // Headers - Dragged
-$dataGridHeaderBgColorDrag:                 #d3e0ea !default;
-$dataGridHeaderDragImageBorderColor:        #bcc7d2 !default;
+$dataGridHeaderBgColorDrag:                 adjust-color($interaction6Color, $lightness: -3%, $saturation: -20%) !default;
+$dataGridHeaderDragImageBorderColor:        darken($border3Color, 3%) !default;
 
 // Cells
 $dataGridCellTextColor:                     $textColor !default;
@@ -1879,7 +1924,7 @@ $dataGridCellBorderColorFocus:              $dataGridCellBorderColor !default;
 $dataGridCellBgColorSelected:               $interaction3Color !default;
 $dataGridCellBorderColorSelected:           $dataGridCellBorderColor !default;
 // Cells - Selected Inactive (selected but focus outside the component)
-$dataGridCellBgColorSelectedInactive:       #fafaeb !default;
+$dataGridCellBgColorSelectedInactive:       $interaction7Color !default;
 $dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColor !default;
 // Cells - Dragged
 $dataGridCellBgColorDrag:                   $dataGridHeaderBgColor;
@@ -1893,7 +1938,7 @@ $dataGridEditableCellBgColorReadOnly:       $background2Color !default;
 $dataGridRowHeight:                         max($formControlInputHeight, $formControlTriggerHeight) !default;
 
 // Status Text
-$dataGridStatusBgColor:                     #fbfcc5 !default;
+$dataGridStatusBgColor:                     adjust-color($interaction7Color, $lightness: -7%, $saturation: 30%, $hue:1) !default;
 
 // Touch Selection Affordances
 $dataGridSelectionAffordanceBorder:         $interaction1Color !default;
@@ -2194,6 +2239,17 @@ $navigationBarPageLevelItemIconColorSelected:   $navigationListPageLevelItemIcon
 $navigationBarPageLevelItemBgColorSelected:     $navigationListPageLevelItemBgColorSelected !default;
 
 //------End of Horizontal list variables----
+
+// Animations
+$navigationListAddAnimation:         ((effect: "expand"), "fadeIn") !default;
+$navigationListRemoveAnimation:      ((effect: "collapse"), "fadeOut") !default;
+$navigationListUpdateAnimation:      (effect: "fadeIn") !default;
+$navigationListExpandAnimation:      (effect: "expand") !default;
+$navigationListCollapseAnimation:    (effect: "collapse") !default;
+$navigationListSliderExpandAnimation:      (effect: "slideIn", direction:"start", duration:"400ms") !default;
+$navigationListSliderCollapseAnimation:    (effect: "slideIn", direction:"end", duration:"400ms") !default;
+$navigationListPointerUpAnimation:   (effect: "none") !default;
+
 // END of NavigationList variables
 
 
@@ -2340,6 +2396,7 @@ $dvtGanttMinorAxisBorderColor:    $dvtGanttMajorAxisBorderColor !default;
 $dvtGanttMinorAxisLabelColor:     $dataGridCellTextColor !default;
 $dvtGanttMinorAxisSeparatorColor: $dvtGanttMajorAxisSeparatorColor !default;
 
+$dvtGanttDependencyLineColor:     #4f4f4f !default;
 
 //-----------------------------------------------------------------------------
 // OPTIMIZATION VARIABLES

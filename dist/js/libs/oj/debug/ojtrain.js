@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -71,7 +71,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *
  *
  *
- * @desc Creates a JET Train. 
+ * @desc Creates a JET Train.
  * @example <caption>Initialize component using widget API</caption>
  * &lt;div id="train"/&gt;<br/>
  * $("#train").ojTrain({'selected': "stp1", 'steps': [{label:'Step One', id:'stp1'},
@@ -90,7 +90,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     options: {
 
       /**
-       * The array of step objects. Each step must have an 'id' and 'label' variable. 
+       * The array of step objects. Each step must have an 'id' and 'label' variable.
        * <ul>
        *   <li><code class="prettyprint">id</code> - The id for the step</li>
        *   <li><code class="prettyprint">label</code> - The label for the step </li>
@@ -143,18 +143,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered immediately before a step is deselected.
        * The beforeDeselect can be cancelled by calling <code class="prettyprint">event.
-       
+
        Default()</code>.
        *
-       * @expose 
-       * @event 
+       * @expose
+       * @event
        * @memberof! oj.ojTrain
        * @instance
        * @property {Event} event <code class="prettyprint">jQuery</code> event object
        * @property {Object} ui Parameters
        * @property {jQuery} ui.toStep The step that is about to be deselected.
        * @property {jQuery} ui.fromStep The step that is about to be selected.
-       * 
+       *
        * @example <caption>Initialize the train with the <code class="prettyprint">beforeDeselect</code> callback specified:</caption>
        * $( ".deselector" ).ojTrain({
        *     "beforeDeselect": function( event, ui ) {}
@@ -164,20 +164,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * $( ".deselector" ).on( "ojbeforedeselect", function( event, ui ) {} );
        */
       beforeDeselect: null,
-      
+
       /**
        * Triggered after a step has been deselected.
        * The deselect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
        *
-       * @expose 
-       * @event 
+       * @expose
+       * @event
        * @memberof! oj.ojTrain
        * @instance
        * @property {Event} event <code class="prettyprint">jQuery</code> event object
        * @property {Object} ui Parameters
        * @property {jQuery} ui.toStep The step that is about to be deselected.
        * @property {jQuery} ui.fromStep The step that is about to be selected.
-       * 
+       *
        * @example <caption>Initialize the train with the <code class="prettyprint">deselect</code> callback specified:</caption>
        * $( ".deselector" ).ojTrain({
        *     "deselect": function( event, ui ) {}
@@ -187,20 +187,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * $( ".deselector" ).on( "ojdeselect", function( event, ui ) {} );
        */
       deselect: null,
-      
+
       /**
        * Triggered immediately before a Step is selected.
        * The beforeSelect can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
        *
-       * @expose 
-       * @event 
+       * @expose
+       * @event
        * @memberof! oj.ojTrain
        * @instance
        * @property {Event} event <code class="prettyprint">jQuery</code> event object
        * @property {Object} ui Parameters
        * @property {jQuery} ui.toStep The step that is about to be deselected.
        * @property {jQuery} ui.fromStep The step that is about to be selected.
-       * 
+       *
        * @example <caption>Initialize the train with the <code class="prettyprint">beforeSelect</code> callback specified:</caption>
        * $( ".selector" ).ojTrain({
        *     "beforeSelect": function( event, ui ) {}
@@ -214,15 +214,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       /**
        * Triggered after a step has been selected.
        *
-       * @expose 
-       * @event 
+       * @expose
+       * @event
        * @memberof! oj.ojTrain
        * @instance
        * @property {Event} event <code class="prettyprint">jQuery</code> event object
        * @property {Object} ui Parameters
        * @property {jQuery} ui.toStep The step that is about to be deselected.
        * @property {jQuery} ui.fromStep The step that is about to be selected.
-       * 
+       *
        * @example <caption>Initialize the train with the <code class="prettyprint">select</code> callback specified:</caption>
        * $( ".selector" ).ojTrain({
        *     "select": function( event, ui ) {}
@@ -248,12 +248,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      */
     _stepArray: null,
 
-    _ComponentCreate: function() 
+    _ComponentCreate: function()
     {
       this._super();
       this._setupTrain();
     },
-    
+
     /**
      * Set up the train component.
      *
@@ -311,25 +311,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       {
         // Create a list item to store each step.
         var stepTag = $("<li>").addClass("oj-train-step-list-item").attr({'id': this._stepArray[i][1]})
-        
+
         // Add message information
         var messageType = this._stepArray[i][4];
         if (messageType === "confirmation")
           stepTag.addClass("oj-confirmation");
-        else if (messageType === "info") 
-          stepTag.addClass("oj-info");       
-        else if (messageType === "error" || messageType === "fatal") 
+        else if (messageType === "info")
+          stepTag.addClass("oj-info");
+        else if (messageType === "error" || messageType === "fatal")
           stepTag.addClass("oj-invalid");
-        else if (messageType === "warning") 
+        else if (messageType === "warning")
           stepTag.addClass("oj-warning");
-        
-        // @HTMLUpdateOK			  
+
+        // @HTMLUpdateOK
         stepTag.appendTo(this._stepList);
 
         this._drawLabel(i);
         this._drawStepFill(i);
         this._drawConnectorLine(i);
-        this._drawButton(i); 
+        this._drawButton(i);
         this._drawStepNumberLabel(i);
         this._drawMessageType(i);
         if (this._stretch)
@@ -449,7 +449,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         var desc = "";
         var self = this;
         var messageType = this._stepArray[index][4];
-         
+
         if (messageType === "confirmation") {
           icon.addClass("oj-confirmation");
           desc = " Confirmation ";
@@ -500,11 +500,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * Fire optionChange event 
+     * Fire optionChange event
      * @param {String} key - 'selected'
-     * @param {String} previousValue 
+     * @param {String} previousValue
      * @param {String} value
-     * @param {Object} originalEvent  
+     * @param {Object} originalEvent
      *
      * @private
      */
@@ -534,7 +534,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       this._trigger("select", originalEvent, eventData);
 
     },
-    
+
     /**
      * Draw the number label that is displayed on the button of each step without a message type. This is only used for native mobile themes.
      * @param {number} index - The index of the step for which the number label is being drawn.
@@ -543,12 +543,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      */
     _drawStepNumberLabel: function(index) {
       var stepNumberLabel = $("<div/>")
-               .addClass("oj-train-button-text"); 
+               .addClass("oj-train-button-text");
       stepNumberLabel.append((index + 1).toString());
       var stepBackground = this._stepList.children().eq(index).find('.oj-train-button');
       stepBackground.append(stepNumberLabel);
     },
-    
+
     /**
      * Draw the connector line inbetween each step. This is only used for native mobile themes.
      * @param {number} index - The index of the step for which the icon is being drawn.
@@ -558,11 +558,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     _drawConnectorLine: function(index) {
       if(index != this._stepNum - 1) {
         var stepConnector = $("<div/>")
-                 .addClass("oj-train-step-individual-connector"); 
+                 .addClass("oj-train-step-individual-connector");
         this._stepList.children().eq(index).prepend(stepConnector);
       }
     },
-    
+
     /**
      * Draw the background circle for the step which is either light or dark base on if the step is before or after the selected step.
      * @param {number} index - The index of the step for which the icon is being drawn.
@@ -662,7 +662,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     {
       for (var i = 0; i < this._stepNum; i++) {
         if (this._stepArray[i] && this._stepArray[i][1] === id)
-          return jQuery.extend({}, this.options.steps[i]);
+          return $.extend({}, this.options.steps[i]);
       }
       return null;
     },
@@ -754,7 +754,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       this._super(options);
       this.refresh();
     },
-    
+
     _setOption: function(key, value, flags)
     {
       if (key === "selected")
@@ -771,8 +771,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * Refreshes the train.
      *
      * <p>This method does not accept any arguments.</p>
-     * 
-     * @expose 
+     *
+     * @expose
      * @memberof! oj.ojTrain
      * @instance
      */
@@ -840,11 +840,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       {
         case 'oj-train-step':
           return this._stepList.children().eq(index)[0];
-      
+
           // Deprecated sub-id
         case 'oj-train-button':
           return this._stepList.children().eq(index).find('.oj-train-button')[0];
-      
+
           // Deprecated sub-id
         case 'oj-train-button-connector':
           return this._stepList.children().eq(index).find('.oj-train-button-connector')[0];
@@ -852,7 +852,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           // Deprecated sub-id
         case 'oj-train-connector':
           return this._connector;
-      
+
           // Deprecated sub-id
         case 'oj-train-connector-fill':
           return this._connectorFill;
@@ -872,7 +872,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Non-null locators have to be handled by the component subclasses
       return null;
     },
-    
+
     //** @inheritdoc */
     getSubIdByNode: function(node)
     {
@@ -915,12 +915,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojTrain
      */
-      
+
     /**
      * <p>
      * <h5>  When the focus is on the train</h5>
      * </p>
-     * 
+     *
      * <table class="keyboard-table">
      *   <thead>
      *     <tr>
@@ -945,9 +945,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojTrain
      */
-      
+
     // Sub_IDs:
-      
+
     /**
      * <p>Sub-ID for the specified train step.</p>
      *
@@ -957,9 +957,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * @memberof oj.ojTrain
      *
      * @example <caption>Get the second step:</caption>
-     * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-step', 'index': 1} );	 
+     * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-step', 'index': 1} );
      */
-      
+
     /**
      * <p>Sub-ID for the specified train step button.</p>
      *
@@ -972,7 +972,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-button', 'index': 1} );
      * @deprecated This sub-id was deprecated please use oj-train-step instead.
      */
-      
+
     /**
      * <p>Sub-ID for the train step button connector background.</p>
      *
@@ -985,7 +985,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-button-connector', 'index': 1} );
      * @deprecated This sub-id was deprecated because the returned node is not interactive.
      */
-      
+
     /**
      * <p>Sub-ID for the train background connector bar.</p>
      *
@@ -996,7 +996,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-connector'} );
      * @deprecated This sub-id was deprecated because the returned node is not interactive.
      */
-      
+
     /**
      * <p>Sub-ID for the train background connector bar fill inidcating the train progress.</p>
      *
@@ -1007,7 +1007,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-connector-fill'} );
      * @deprecated This sub-id was deprecated because the returned node is not interactive.
      */
-      
+
     /**
      * <p>Sub-ID for the specified train step icon.</p>
      *
@@ -1020,7 +1020,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * var node = $( ".selector" ).ojTrain( "getNodeBySubId", {'subId': 'oj-train-icon', 'index': 1} );
      * @deprecated This sub-id was deprecated please use oj-train-step instead.
      */
-      
+
     /**
      * <p>Sub-ID for the specified train step label.</p>
      *

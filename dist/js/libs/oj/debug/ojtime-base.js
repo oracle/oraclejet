@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -7,10 +7,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 {
 
 /**This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
- */
 
 /**
  * @ojcomponent oj.dvtTimeComponent

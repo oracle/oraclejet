@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
 // WARNING:
 // iOS theme UNDER DEVELOPMENT!
@@ -56,6 +56,7 @@ $interaction3Color: #dcdcde !default;
 $interaction4Color: #c2ddf7 !default;
 $interaction5Color: #d4d4d6 !default;
 $interaction6Color: #dae9f5 !default;
+$interaction7Color: #fafaeb !default;
 
 //----------------------------------------------------------------
 // GENERAL STYLING
@@ -424,6 +425,24 @@ $buttonsetEqualWidthChromingList: full outlined !default; // default should be e
 // DIALOG
 //----------------------------------------------------------------
 
+$dialogBorderRadius:        12px !default;
+
+$dialogHeaderPadding:       1.438rem .875rem .1875rem !default;
+$dialogBodyPadding:         .1875rem .875rem .875rem !default;
+$dialogFooterPadding:       0 !default; 
+
+$dialogHeaderFontSize:      1.125rem !default;
+$dialogHeaderTextAlign:     center !default;
+$dialogHeaderBgColor:       transparent !default;
+
+$dialogBodyTextAlign:       center !default;
+
+// Rounded button corners are specific to iOS
+$dialogFooterButtonHeight:       42px !default; 
+$dialogFooterButtonFontWeight:   500 !default; 
+$dialogFooterDividerColor:      $border2Color !default;
+$dialogFooterIntegrateButtons:  true !default;
+  
 // TOOLBAR
 //----------------------------------------------------------------
 

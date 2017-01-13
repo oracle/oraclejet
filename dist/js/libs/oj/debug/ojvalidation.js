@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2037,9 +2037,9 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
 var OraI18nUtils = {};
 //supported numbering systems
 OraI18nUtils.numeringSystems = {
-  'latn' : "\u0030\u0031\u0032\u0033\u0034\u0035\u0036\u0037\u0038\u0039",
-  'arab' : "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669",
-  'thai' : "\u0e50\u0e51\u0e52\u0e53\u0e54\u0e55\u0e56\u0e57\u0e58\u0e59"
+  'latn': "\u0030\u0031\u0032\u0033\u0034\u0035\u0036\u0037\u0038\u0039",
+  'arab': "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669",
+  'thai': "\u0e50\u0e51\u0e52\u0e53\u0e54\u0e55\u0e56\u0e57\u0e58\u0e59"
 };
 
 OraI18nUtils.regexTrim = /^\s+|\s+$|\u200f|\u200e/g;
@@ -2097,8 +2097,8 @@ OraI18nUtils._getTimeZone = function (isoString)
 OraI18nUtils.dateToLocalIso = function (date)
 {
   var isoStr = OraI18nUtils.padZeros(date.getFullYear(), 4) + "-" + OraI18nUtils.padZeros((date.getMonth() + 1), 2) + "-" + OraI18nUtils.padZeros(date.getDate(), 2) + "T" +
-    OraI18nUtils.padZeros((date.getHours()), 2) + ":" + OraI18nUtils.padZeros((date.getMinutes()), 2) + ":" +
-    OraI18nUtils.padZeros((date.getSeconds()), 2);
+      OraI18nUtils.padZeros((date.getHours()), 2) + ":" + OraI18nUtils.padZeros((date.getMinutes()), 2) + ":" +
+      OraI18nUtils.padZeros((date.getSeconds()), 2);
   if (date.getMilliseconds() > 0) {
     isoStr += "." + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(date.getMilliseconds(), 3));
   }
@@ -2108,8 +2108,8 @@ OraI18nUtils.dateToLocalIso = function (date)
 OraI18nUtils.partsToIsoString = function (parts)
 {
   var isoStr = OraI18nUtils.padZeros(parts[0], 4) + "-" + OraI18nUtils.padZeros(parts[1], 2) + "-" + OraI18nUtils.padZeros(parts[2], 2) + "T" +
-    OraI18nUtils.padZeros(parts[3], 2) + ":" + OraI18nUtils.padZeros(parts[4], 2) + ":" + OraI18nUtils.padZeros(parts[5], 2);
-    if (parts[6] > 0) {
+      OraI18nUtils.padZeros(parts[3], 2) + ":" + OraI18nUtils.padZeros(parts[4], 2) + ":" + OraI18nUtils.padZeros(parts[5], 2);
+  if (parts[6] > 0) {
     isoStr += "." + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(parts[6], 3));
   }
   return isoStr;
@@ -2131,9 +2131,9 @@ OraI18nUtils._isoToLocalDateIgnoreTimezone = function (isoString) {
 
 OraI18nUtils._IsoStrParts = function (isoString) {
   var splitted = isoString.split("T"),
-    tIndex = isoString.indexOf("T"),
-    today = new Date(), i,
-    datetime = [today.getFullYear(), today.getMonth() + 1, today.getDate(), 0, 0, 0, 0];
+      tIndex = isoString.indexOf("T"),
+      today = new Date(), i,
+      datetime = [today.getFullYear(), today.getMonth() + 1, today.getDate(), 0, 0, 0, 0];
 
   if (splitted[0] !== "")
   {
@@ -2146,7 +2146,7 @@ OraI18nUtils._IsoStrParts = function (isoString) {
 
   if (tIndex !== -1) {
     var milliSecSplitted = splitted[1].split("."), //contain millseconds
-      timeSplitted = milliSecSplitted[0].split(":"); //contain hours, minutes, seconds
+        timeSplitted = milliSecSplitted[0].split(":"); //contain hours, minutes, seconds
 
     for (i = 0; i < timeSplitted.length; i++)
     {
@@ -2163,10 +2163,10 @@ OraI18nUtils._IsoStrParts = function (isoString) {
 
 OraI18nUtils.getISOStrFormatInfo = function (isoStr) {
   var res = {
-    'format' : null,
-    'dateTime' : null,
-    'timeZone' : "",
-    'isoStrParts' : null
+    'format': null,
+    'dateTime': null,
+    'timeZone': "",
+    'isoStrParts': null
   };
   var exe = OraI18nUtils._ISO_DATE_REGEXP.exec(isoStr);
   if (exe === null) {
@@ -2193,7 +2193,7 @@ OraI18nUtils._throwTimeZoneNotSupported = function () {
   msg = "time zone is not supported";
   error = new Error(msg);
   errorInfo = {
-    'errorCode' : 'timeZoneNotSupported'
+    'errorCode': 'timeZoneNotSupported'
   };
   error['errorInfo'] = errorInfo;
   throw error;
@@ -2204,9 +2204,9 @@ OraI18nUtils._throwInvalidISOString = function (str) {
   msg = "The string " + str + " is not a valid ISO 8601 string.";
   error = new Error(msg);
   errorInfo = {
-    'errorCode' : 'invalidISOString',
-    'parameterMap' : {
-      'isoStr' : str
+    'errorCode': 'invalidISOString',
+    'parameterMap': {
+      'isoStr': str
     }
   };
   error['errorInfo'] = errorInfo;
@@ -2263,8 +2263,8 @@ OraI18nUtils.getTimeStringFromOffset = function (prefix, offset, reverseSign, al
   var hours = (offset / 60) << 0;
   var minutes = offset % 60;
   var sign = isNegative ? "-" : "+";
-  if(alwaysMinutes) {
-   hours = OraI18nUtils.zeroPad(hours, 2, true); 
+  if (alwaysMinutes) {
+    hours = OraI18nUtils.zeroPad(hours, 2, true);
   }
   var str = prefix + sign + hours;
   if (minutes > 0 || alwaysMinutes) {
@@ -2350,18 +2350,18 @@ OraI18nUtils.getLocaleElementsMainNodeKey = function (bundle) {
   return subnode;
 };
 
-OraI18nUtils._toBoolean = function(value) {
+OraI18nUtils._toBoolean = function (value) {
   if (typeof value === "string") {
     var s = value.toLowerCase().trim();
-    switch(s){
-     case "true":
-     case "1":
-       return true;
-     case "false":
-     case "0":
-       return false;
-     default:
-       return value;
+    switch (s) {
+      case "true":
+      case "1":
+        return true;
+      case "false":
+      case "0":
+        return false;
+      default:
+        return value;
     }
   }
   return value;
@@ -2374,10 +2374,10 @@ OraI18nUtils._toBoolean = function(value) {
 OraI18nUtils.getGetOption = function (options, getOptionCaller) {
   if (options === undefined) {
     throw new Error('Internal ' + getOptionCaller +
-      ' error. Default options missing.');
+        ' error. Default options missing.');
   }
 
-  var getOption = function getOption (property, type, values, defaultValue) {
+  var getOption = function getOption(property, type, values, defaultValue) {
     if (options[property] !== undefined) {
       var value = options[property];
       switch (type) {
@@ -2399,17 +2399,17 @@ OraI18nUtils.getGetOption = function (options, getOptionCaller) {
           expectedValues.push(values[i]);
         }
         var msg = "The value '" + options[property] +
-          "' is out of range for '" + getOptionCaller +
-          "' options property '" + property + "'. Valid values: " +
-          expectedValues;
+            "' is out of range for '" + getOptionCaller +
+            "' options property '" + property + "'. Valid values: " +
+            expectedValues;
         var rangeError = new RangeError(msg);
         var errorInfo = {
-          'errorCode' : 'optionOutOfRange',
-          'parameterMap' : {
-            'propertyName' : property,
-            'propertyValue' : options[property],
-            'propertyValueValid' : expectedValues,
-            'caller' : getOptionCaller
+          'errorCode': 'optionOutOfRange',
+          'parameterMap': {
+            'propertyName': property,
+            'propertyValue': options[property],
+            'propertyValueValid': expectedValues,
+            'caller': getOptionCaller
           }
         };
         rangeError['errorInfo'] = errorInfo;
@@ -2424,10 +2424,55 @@ OraI18nUtils.getGetOption = function (options, getOptionCaller) {
   return getOption;
 };
 
+/**
+ * matches a string to a reference string and returns the start and end indexes
+ * of the match in the referensed string. The locale and options arguments let 
+ * applications specify the language whose sort order should be used and customize 
+ * the behavior of the function.
+ * 
+ * @param {string} str the reference string 
+ * @param {string} pat The string against which the reference string is compared
+ * @param {string} locale a BCP 47 language tag
+ * @param {Object=} options Optional. An object with the following property:
+ * sensitivity: 
+ *   Which differences in the strings should lead to non-zero result values. Possible values are:
+ *   "base": Only strings that differ in base letters compare as unequal. Examples: a ? b,  a = A.
+ *   "accent": Only strings that differ in base letters or accents and other diacritic marks compare as unequal. Examples: a ? b, , a = A.
+ *   "case": Only strings that differ in base letters or case compare as unequal. Examples: a ? b, a ? A.
+ *   "variant": Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal. 
+ *   The default is base.
+ * @return {Array|null} an array containing the start and end indexes of the match or null if there is no match.
+ */
+OraI18nUtils.matchString = function (str, pat, locale, options) {
+  if (options === undefined) {
+    options = {sensitivity: 'base', usage: 'sort'};
+  }
+  var getOption = OraI18nUtils.getGetOption(options, "OraI18nUtils.matchString");
+  options['usage'] = getOption('usage', 'string', ['sort', 'search'], 'sort');
+  options['sensitivity'] = getOption('sensitivity', 'string', ['base', 'accent', 'case', 'variant'], 'base');
+  var i, j;
+  var len = str.length;
+  var patLen = pat.length - 1;
+  for (i = 0; i < len; i++) {
+    for (j = 0; j < 3; j++) {
+      var len2 = len - i;
+      len2 = Math.min(len2, patLen + j);
+      var str2 = str.substr(i, len2);
+      var res = str2.localeCompare(pat, locale, options);
+      if (res === 0) {
+        var end = i + len2 - 1;
+        var ret = [i, end];
+        return ret;
+      }
+    }
+  }
+  return null;
+};
+
 var _DEFAULT_TIME_PORTION = "T00:00:00.000";
-var _DATE_TIME_KEYS = {"fullYear" : {pos : 0, pad : 4}, "month" : {pos : 1, pad : 2}, "date" : {pos : 2, pad : 2},
-  "hours" : {pos : 3, pad : 2}, "minutes" : {pos : 4, pad : 2}, "seconds" : {pos : 5, pad : 2},
-  "milliseconds" : {pos : 6, pad : 3}, "timeZone" : {pos: 7}};
+var _DATE_TIME_KEYS = {"fullYear": {pos: 0, pad: 4}, "month": {pos: 1, pad: 2}, "date": {pos: 2, pad: 2},
+  "hours": {pos: 3, pad: 2}, "minutes": {pos: 4, pad: 2}, "seconds": {pos: 5, pad: 2},
+  "milliseconds": {pos: 6, pad: 3}, "timeZone": {pos: 7}};
 
 /**
  * Parses the isoString and returns a JavaScript Date object
@@ -2440,7 +2485,7 @@ OraI18nUtils.isoToDate = function (isoString)
 {
   //note new Date w/ isoString in IE fails so need to use parsing from momentjs support
   return new Date(this._normalizeIsoString(isoString));
-}
+};
 
 /**
  * Will return an updated toIsoString using the timePortion from the fromIsoString or from the default 
@@ -2464,12 +2509,12 @@ OraI18nUtils._copyTimeOver = function (fromIsoString, toIsoString)
   toIsoString = this._normalizeIsoString(toIsoString);
 
   var fromTimeIndex = fromIsoString.indexOf("T"),
-    toTimeIndex = toIsoString.indexOf("T"),
-    toDatePortion = toIsoString.substring(0, toTimeIndex),
-    fromTimePortion = fromTimeIndex !== -1 ? fromIsoString.substring(fromTimeIndex) : _DEFAULT_TIME_PORTION;
+      toTimeIndex = toIsoString.indexOf("T"),
+      toDatePortion = toIsoString.substring(0, toTimeIndex),
+      fromTimePortion = fromTimeIndex !== -1 ? fromIsoString.substring(fromTimeIndex) : _DEFAULT_TIME_PORTION;
 
   return toDatePortion + fromTimePortion;
-}
+};
 
 /**
  * Clears the time portion of the isoString
@@ -2482,8 +2527,8 @@ OraI18nUtils._copyTimeOver = function (fromIsoString, toIsoString)
  */
 OraI18nUtils._clearTime = function (isoString)
 {
-  return this._dateTime(isoString, {"hours" : 0, "minutes" : 0, "seconds" : 0, "milliseconds" : 0});
-}
+  return this._dateTime(isoString, {"hours": 0, "minutes": 0, "seconds": 0, "milliseconds": 0});
+};
 
 /**
  * Will accept an isoString and perform a get operation or a set operation depending on whether param is an Array 
@@ -2512,12 +2557,12 @@ OraI18nUtils._dateTime = function (isoString, actionParam, doParseValue)
   }
 
   var pos, value, dtKey,
-    retVal = null,
-    key = null,
-    dateTimeKeys = _DATE_TIME_KEYS,
-    oraUtilsPadZero = this.padZeros,
-    isoStringNormalized = this._normalizeIsoString(isoString), //note intentionally normalizing 
-    captured = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?\.?(\d{3})?(.*)?/.exec(isoStringNormalized);
+      retVal = null,
+      key = null,
+      dateTimeKeys = _DATE_TIME_KEYS,
+      oraUtilsPadZero = this.padZeros,
+      isoStringNormalized = this._normalizeIsoString(isoString), //note intentionally normalizing 
+      captured = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):?(\d{2})?\.?(\d{3})?(.*)?/.exec(isoStringNormalized);
 
   if (!captured)
   {
@@ -2576,11 +2621,11 @@ OraI18nUtils._dateTime = function (isoString, actionParam, doParseValue)
     }
     //"2015-02-02T21:12:30.255Z"
     retVal = captured[0] + "-" + captured[1] + "-" + captured[2] + "T" + captured[3] + ":" + captured[4] + ":" + captured[5] +
-      (captured.length > 6 && captured[6] ? ("." + captured[6] + (captured.length === 8 && captured[7] ? captured[7] : "")) : "");
+        (captured.length > 6 && captured[6] ? ("." + captured[6] + (captured.length === 8 && captured[7] ? captured[7] : "")) : "");
   }
 
   return retVal;
-}
+};
 
 /**
  * So the problem is Jet uses incomplete isoString which causes issues in different browsers. 
@@ -2618,16 +2663,239 @@ OraI18nUtils._normalizeIsoString = function (isoString)
     //need at least hour + minute for proper parsing on browser except IE
     return timeValue + ":00";
   },
-    todayIsoString = new Date().toISOString(),
-    todayDatePortion = todayIsoString.substring(0, todayIsoString.indexOf("T")),
-    timeIndex = isoString.indexOf("T"),
-    datePortion = timeIndex === -1 ? isoString : isoString.substring(0, timeIndex),
-    timePortion = timeIndex !== -1 ? checkTime(isoString.substring(timeIndex)) : _DEFAULT_TIME_PORTION;
+      todayIsoString = new Date().toISOString(),
+      todayDatePortion = todayIsoString.substring(0, todayIsoString.indexOf("T")),
+      timeIndex = isoString.indexOf("T"),
+      datePortion = timeIndex === -1 ? isoString : isoString.substring(0, timeIndex),
+      timePortion = timeIndex !== -1 ? checkTime(isoString.substring(timeIndex)) : _DEFAULT_TIME_PORTION;
 
   datePortion = datePortion || todayDatePortion;
 
   return datePortion + timePortion;
-}
+};
+
+
+////-----------------Utility functions for HOUR, MINUTE, AND PERIOD AS SEPARATE INPUTS --------- //////
+
+/**
+ * Determine the order of the time picker wheels
+ * 
+ * @expose
+ * @param {string} format a format string
+ * @returns {string} one of the following values: hm, hma, ahm 
+ * @since 2.2
+ */
+OraI18nUtils.formatHM = function (format) {
+  // remove stuff between quotes.
+  // remove anything that is not h, H, m or a
+  format = format.replace(/\'[^']*\'/g, "").replace(/[^hHma]*/g, "");
+  // Normalize multiple h or H to a single h, same for mulpiple m's
+  format = format.replace(/(h|H)+/, "h").replace(/m+/, "m");
+  return format;
+};
+
+/**
+ * Extract actual hour and minute codes
+ * 
+ * @expose
+ * @param {string} fieldId can be 'h' for hours or 'm' for minutes
+ * @param {string} format a format string
+ * @returns {string|undefined} hours or minutes codes: h, hh, H, HH, m, mm 
+ * @since 2.2
+ */
+OraI18nUtils.extractHourCode = function (fieldId, format) {
+  var matches;
+  var code;
+  if (fieldId === 'h') {
+    matches = format.match(/([hH]+)/);
+    code = matches[1];
+  }
+  else if (fieldId === 'm') {
+    matches = format.match(/(m+)/);
+    code = matches[1];
+  }
+  return code;
+};
+
+//Formatters that take a numeric values (0-*) and convert it to a string for the current converter's code.
+
+/**
+ * Converts a numeric hour value into a string in 12 hour format as 1 or 2 digits
+ * 
+ * @expose
+ * @param {number} value an hour 
+ * @returns {string} hour in 12 hour format as 1 or 2 digits 
+ * @since 2.2
+ */
+OraI18nUtils.hFormat = function (value) {
+  if (value === 0)
+    return "12";
+  return "" + value;
+};
+
+/**
+ * Converts a numeric hour value into a string in 12 hour format as 2 digits
+ * 
+ * @expose
+ * @param {number} value an hour 
+ * @returns {string} hour in 12 hour format as 2 digits 
+ * @since 2.2
+ */
+OraI18nUtils.hhFormat = function (value) {
+  if (value === 0)
+    return "12";
+  var val = "0" + value;
+  return val.slice(-2);
+};
+
+/**
+ * Converts a numeric hour value into a string as 1 or 2 digits
+ * 
+ * @expose
+ * @param {number} value an hour 
+ * @returns {string} hour in 24 hour format as 1 or 2 digits 
+ * @since 2.2
+ */
+OraI18nUtils.HFormat = function (value) {
+  return "" + value;
+};
+
+/**
+ * Converts a numeric hour value into a string as 2 digits
+ * 
+ * @expose
+ * @param {number} value an hour 
+ * @returns {string} hour in 24 hour format as  2 digits 
+ * @since 2.2
+ */
+OraI18nUtils.HHFormat = function (value) {
+  var val = "0" + value;
+  return val.slice(-2);
+};
+
+/**
+ * Converts a numeric minute value into a string as 2 digits
+ * 
+ * @expose
+ * @param {number} value  minutes 
+ * @returns {string} minutes as  2 digits 
+ * @since 2.2
+ */
+OraI18nUtils.mmFormat = function (value) {
+  var val = "0" + value;
+  return val.slice(-2);
+};
+
+OraI18nUtils.ampmFormat = function (value) {
+  return ["AM", "PM"][value];  // TODO - lookup translations
+};
+
+OraI18nUtils.FORMAT_MAP = {
+  'h': OraI18nUtils.hFormat,
+  'hh': OraI18nUtils.hhFormat,
+  'H': OraI18nUtils.HFormat,
+  'HH': OraI18nUtils.HHFormat,
+  'mm': OraI18nUtils.mmFormat
+};
+
+
+//Parsers that convert strings into numeric values based on the converter's format.
+// Note that the are just good enough but could use more validation.
+
+/**
+ * Converts a string into a number
+ * 
+ * @expose
+ * @param {string} value a string
+ * @returns {number} a parsed number from the string if the string is only disgits, -1 otherwise 
+ * @since 2.2
+ */
+OraI18nUtils.numberParser = function (value) {
+  if (value.match(/^\d+$/)) {
+    return parseInt(value, 10);
+  }
+  return -1;
+};
+
+/**
+ * Converts a string hour into a number
+ * 
+ * @expose
+ * @param {string} value a string
+ * @returns {number} a numeric value of the hour 
+ * @since 2.2
+ */
+OraI18nUtils.hour12Parser = function (value) {
+  if (value.match(/^\d+$/)) {
+    var hour = parseInt(value, 10);
+    if (hour === 0) {
+      hour = -1;
+    }
+    if (hour === 12) {
+      hour = 0;
+    }
+    return hour;
+  }
+  return -1;
+};
+
+/**
+ * Converts am pm symbols into disgits
+ * 
+ * @expose
+ * @param {string} value am pm symbols as string
+ * @returns {number} a numeric value 0 for 'a', '1' for p 
+ * @since 2.2
+ */
+OraI18nUtils.ampmParser = function (value) {
+  value = value.toLowerCase().charAt(0);
+  if (value === "a")
+    return 0;
+  else if (value === "p")
+    return 1;
+  else
+    return -1;
+};
+
+OraI18nUtils.PARSER_MAP = {
+  'h': OraI18nUtils.hour12Parser,
+  'hh': OraI18nUtils.hour12Parser,
+  'H': OraI18nUtils.numberParser,
+  'HH': OraI18nUtils.numberParser,
+  'mm': OraI18nUtils.numberParser
+};
+
+//Methods to convert between ISO time strings and numeric minute values.  (Only minutes are required but perhaps seconds)
+/**
+ * Converts an iso string into minutes
+ * 
+ * @expose
+ * @param {string} isoString an ISO 8601 string
+ * @returns {number} the ISO string converted into minutes 
+ * @since 2.2
+ */
+OraI18nUtils.isoToMinutes = function (isoString) {
+  var date = OraI18nUtils.isoToLocalDate(isoString);
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  return hours * 60 + minutes;
+};
+
+/**
+ * Converts minutes in ISO 8601 string that consist of hours and minutes
+ * 
+ * @expose
+ * @param {number} minutes 
+ * @returns {string} minutes converted into ISO 8601 string that consist of hours and minutes
+ * @since 2.2
+ */
+OraI18nUtils.minutesToIso = function (minutes) {
+  minutes = Math.floor(minutes);
+  var hours = Math.floor(minutes / 60);
+  minutes = minutes % 60;
+  return "T" + OraI18nUtils.HHFormat(hours) + ":" + OraI18nUtils.mmFormat(minutes);
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -4799,7 +5067,9 @@ oj.IntlNumberConverter.prototype._getHintValue = function()
 
 
 
-
+/**
+ * @ignore
+ */
 var OraTimeZone;
 
 OraTimeZone = (function () {
@@ -5010,6 +5280,7 @@ OraTimeZone = (function () {
    ************************************/
 
   /**
+   * @ignore
    * @constructor
    */
   function Zone (name, tzData) {
@@ -5113,14 +5384,14 @@ OraTimeZone = (function () {
     abbr : function (idx) {
       return this.abbrs[idx];
     },
-    offset : function (idx) {
+    ofset : function (idx) {
       var len = this.offsets.length;
       if(idx >= 0 && idx < len) {
         return parseInt(this.offsets[idx], 10);
       }  
       return parseInt(this.offsets[len -1], 10);
     },
-    length : function () {
+    len : function () {
       return this.offsets.length;
     }
   };
@@ -5173,7 +5444,8 @@ OraTimeZone = (function () {
   return {
     /**
      * getInstance.
-     * Returns the singleton instance of OraTimeZone class.  
+     * Returns the singleton instance of OraTimeZone class. 
+     * @ignore
      * @memberOf OraTimeZone
      * @return {Object} The singleton OraTimeZone instance.
      */
@@ -5186,11 +5458,6 @@ OraTimeZone = (function () {
   };
 }());
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
  * This is a forked version of globalize.js
  */
 /*
@@ -5198,95 +5465,230 @@ OraTimeZone = (function () {
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  */
-
-/*
- DESCRIPTION
- OraNumberConverter object implements number parsing and formatting for
- decimal, currency, percent and perMill types. It supports ECMA-402 options 
- and user defined pattern. The user defined pattern is parsed in order to 
- derive the options that can be specified as ECMA options.
- 
- PRIVATE CLASSES
- <list of private classes defined - with one-line descriptions>
- 
- NOTES
- <other useful comments, qualifications, etc.>
- 
- MODIFIED    (MM/DD/YY)
-        05/13/14 - Creation
- */
-
-/** 
- * OraNumberConverter object implements number parsing and formatting for
+/**
+ * @constructor
+ * 
+ * @classdesc OraNumberConverter object implements number parsing and formatting for
  * decimal, currency, percent and perMill types. It supports ECMA-402 options 
  * and user defined pattern. The user defined pattern is parsed in order to 
  * derive the options that can be specified as ECMA options.
- *<p>The format and parse functions can throw the following exceptions:
- * <li> RangeError can be thrown during the validation of the options:
- * Example: The value 'currencies' is out of range for 'OraNumberConverter.parse'
- * options property 'style'. 
- * Expected: ['currency', 'decimal', 'percent', 'perMill']<br>
- * var errorInfo = {<br>
- *   'errorCode' : "optionOutOfRange",<br>
- *   'parameterMap' : {<br>
- *   'propertyName': $property$,<br>
- *   'propertyValue': $options.property$,<br>
- *   'propertyValueValid': $expectedValues$,<br>
- *   'caller': $_getOptionCaller$<br>
- * }<br>
- * };<br>
- * <br>
- * <br>
- * <li> TypeError can be thrown when currency is missing for currency style. It 
- * can be generic when an options requires a corresponding  option value.<br>
- * Example: A value for the property currency is required when the property
- * style is set to the value currency. An accepted value is a three-letter
- * ISO 4217 currency code.<br>
- * var errorInfo = {<br>
- * 'errorCode' : "optionTypesMismatch",<br>  
- * 'parameterMap' : {<br>
- * 'propertyName': 'style', // the driving property<br>
- * 'propertyValue': 'currency', // the driving property's value<br>
- * 'requiredPropertyName': 'currency', // the required property name<br>
- * 'requiredPropertyValueValid': 'a three-letter ISO 4217 currency code'<br>
- * }<br>
- * };<br> 
- * <br>
- * <br>
- * <li>SyntaxError can be thrown when the number format is invalid. it can 
- * happen during the calls to parse and format number.<br>
- * Example: Unexpected character(s) encountered in the pattern "#00#.00".<br>
- * An example of a valid pattern is "#,##0.0".<br>
- * var errorInfo = {<br>
- * 'errorCode' : "optionValueInvalid",<br> 
- * parameterMap : {'propertyName' : 'pattern',<br>
- *                 'propertyValue': $options.pattern$,<br>
- *                 'propertyValueHint': $format$}<br>
- * };<br>
- * <br>
- * <br>
- * <br>
- * <li>RangeError can be thrown if one of the number options is out of range.
- * It can happen during the calls to format number.<br>
- * Example: 30  is out of range. Enter a value between 0 and 20 for 
- * minimumFractionDigits. 
- * var errorInfo = {<br>
- * 'errorCode' : "numberOptionOutOfRange",<br>
- * 'parameterMap' : {'value': $value$, 'minValue': $mainValue$,
- * 'maxVlaue': $maxValue$, 'propertyName': $name$}<br>
- * };<br>
- * <br>
- * <br>
- * <li>Error can be thrown when there is mismatch between number pattern and
- * number string. it can happen during the calls to parse number.<br>
- * Example: The value "-$125" does not match the expected currency 
- * pattern "&#xa4;#,##0.00;(&#xa4;#,##0.00)"<br>
- * var errorInfo = {'errorCode' : "decimalFormatMismatch", 
- * 'parameterMap' : { 'value': $value$,  'format': $format$}};<br>
- * var errorInfo = {'errorCode' : "currencyFormatMismatch", 
- * 'parameterMap' : { 'value': $value$,   'format': $format$}};<br>
- * var errorInfo = {'errorCode' : "percentFormatMismatch", 
- * 'parameterMap' : { 'value': $value$,   'format': $format$}};<br>
+ * There are several ways to use the converter.
+ * <p>
+ * <ul>
+ * <li>Using options defined by the ECMA 402 Specification, these would be the properties style, 
+ * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits, 
+ * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
+ * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
+ * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
+ * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
+ * </ul>
+ * <p>
+ * 
+ * The converter provides leniency when parsing user input value to a number in the following ways:<br/>
+ * 
+ * <ul>
+ * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is 
+ * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to 
+ * -123.45</li>
+ * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are 
+ * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as 
+ * -123.</li>
+ * </ul>
+ * <p>
+ * @property {Object=} options - an object literal used to provide optional information to 
+ * initialize the converter.
+ * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal" 
+ * (the default), "currency" or "percent". When a number is formatted as a decimal, the decimal 
+ * character is replaced with the most appropriate symbol for the locale. In English this is a 
+ * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
+ * locale dependent grouping separator is also used. These symbols are also used for numbers 
+ * formatted as currency or a percentage, where appropriate.
+ * @property {string=} options.currency - specifies the currency that will be used when formatting the 
+ * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency, 
+ * it's required that the currency property also be specified. This is because there is no default 
+ * currency associated with the current locale. The user must always specify the currency code 
+ * to be shown, otherwise an error will be thrown. The current page locale 
+ * (returned by oj.Config.getLocale()) determines the formatting elements of the number 
+ * like grouping separator and decimal separator. The currency code tells us which currency to 
+ * display in current page locale. JET has translations for currency names.
+ * <p>
+ * As an example if we want to format 1000.35 EURO and the page locale is "en-US", 
+ * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
+ * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
+ * </p>
+ * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies 
+ * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
+ * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
+ * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name". 
+ * The default is "symbol".
+ * @property {string=} options.decimalFormat -
+ * specifies the decimal format length to use when style is set to "decimal". 
+ * Allowed values are : "standard"(default), "short" and "long". "standard" is equivalent to not 
+ * specifying the 'decimalFormat' attribute, in that case the locale's default decimal pattern 
+ * is used for formatting.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
+ * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for 
+ * short and long formats respectively. The pattern for the short and long number is locale dependent 
+ * and uses plural rules for the particular locale.
+ * </p>
+ * <p>
+ * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value 
+ * (e.g., 2K -> 2000), so it can only be used
+ * in a readOnly EditableValue because readOnly EditableValue components do not call
+ * the converter's parse function.
+ * </p>
+ * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the 
+ * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
+ * otherwise have enough digits. The value must be an integer between 1 and 21.
+ * @property {number=} options.minimumFractionDigits - similar to 'minimumIntegerDigits', except it 
+ * deals with the digits after the decimal place (fractional digits). It must be an integer between 
+ * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
+ * @property {number=} options.maximumFractionDigits - follows the same rules as 'minimumFractionDigits', 
+ * but sets the maximum number of fractional digits that are allowed. The value will be rounded if 
+ * there are more digits than the maximum specified.
+ * @property {boolean=} options.useGrouping - when the value is truthy, the locale dependent grouping 
+ * separator is used when formatting the number. This is often known as the thousands separator, 
+ * although it is up to the locale where it is placed. The 'useGrouping' is set to true by default.
+ * @property {string=} options.pattern an optional localized pattern, where the characters used in 
+ * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present 
+ * this will override the other "options". <p>
+ * 
+ * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to 
+ * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example: 
+ * {pattern: '¤#,##0', currency: 'USD'}. <p>
+ * 
+ * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign) 
+ * be present. When not present, values are treated as a currency value, but are not formatted to 
+ * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
+ * 
+ * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be 
+ * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain 
+ * the percent character it's treated as a decimal pattern, unless the style is set to percent, 
+ * in which case the value is treated as a percent value, but not formatted to show the percent symbol. 
+ * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
+ * 
+ * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR 
+ * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
+ * 
+ * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
+ * convenience of specifying an explicit format mask. Setting a pattern will override the default 
+ * locale specific format. <br/>
+ * 
+ * @property {string=} options.roundingMode - specifies the rounding behavior. 
+ * This follows the Java.Math.RoundingMode behavior.
+ * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN 
+ * 
+ * @property {boolean=} options.roundDuringParse - Specifies whether or not to round during
+ * parse. Defaults to false; the number converter rounds during format but not during parse.
+ * 
+ * @example <caption>Create a number converter for currencies</caption>
+ * var converter = OraNumberConveter.getInstance();
+ * var options = {style: "currency", currency: "USD", minimumIntegerDigits: 2};
+ * var localeElements;
+ * var nb = 9;
+ * converter.format(nb, localeElements, options); --> "$09.00" if page locale is 'en-US'
+ * converter.format(nb, localeElements, options); --> "09,00 $US" if page locale is 'fr-FR'<br/>
+ * 
+ * @example <caption>Options for percent values using a custom (CLDR) pattern</caption>
+ * var options = {pattern: '#,##0%'};
+ *converter = converterFactory.createConverter(options);<br/>
+ * 
+ * @example <caption>To parse a value as percent but format it without displaying the percent character</caption>
+ * var options = {style: 'percent', pattern: '#,##0'};<br/>
+ * 
+ * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
+ * var options = {pattern: '¤#,##0', currency: 'USD'};
+ * 
+ * @example <caption>The following decimalFormat examples are in en locale.
+ * To format a value as short (default for fraction digits is based on the locale)</caption>
+ * var options = {style:'decimal', decimalFormat:'short'};
+ * var nb = 12345
+ * converter.format(nb, localeElements, options);--> 12.354K<br/>
+ * 
+ * @example <caption>To format a value as long (default for fraction digits is based on the locale):</caption>
+ * var options = {style:'decimal', decimalFormat:'long'};
+ * var nb = 12345;
+ * converter.format(nb, localeElements, options);--> 12.345 thousand<br/>
+ * 
+ * @example <caption>To format a value as short with minimum fraction digits:</caption>
+ * options = { style:'decimal', decimalFormat:'short', minimumFractionDigits:4};
+ * var nb = 1234;
+ * converter.format(nb, localeElements, options);--> 1.2340K<br/>
+ * 
+ * @example <caption>To format a value as short with maximum fraction digits:</caption>
+ * options = { style:'decimal', decimalFormat:'short', maximumFractionDigits:0};
+ *  var nb = 1234;
+ * converter.format(nb, localeElements, options);--> 12K<br/>
+ * 
+ * @example <caption>To format a value as long with minimum and maximum fraction digits:</caption>
+ * options = { style:'decimal', decimalFormat:'long', 
+ * minimumFractionDigits:2, maximumFractionDigits:4};
+ * var nb = 12000;
+ * converter.format(nb, localeElements, options);--> 12.00 thousand<br/>
+ * 
+ * @example <caption>To format a value as short with minimum and maximum fraction digits:</caption>
+ * options = { style:'decimal', decimalFormat:'long', 
+ * minimumFractionDigits:2, maximumFractionDigits:4};
+ * var nb = 12345678;
+ * converter.format(nb, localeElements, options);--> 12.345 million<br/>
+ * 
+ * @example <caption>decimal style default is standard:</caption>
+ * options = { style:'decimal', decimalFormat:'standard'}; 
+ * var nb = 12345;
+ * converter.format(nb, localeElements, options);--> 12,345<br/>
+ * 
+ * @example <caption>decimal round HALF_DOWN:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_DOWN'}; 
+ * var nb = 0.225;
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.225";
+ * converter.parse(str, localeElements, options);-->0.225 //doesn't round during parse by default<br/>
+ * 
+ * @example <caption>decimal round HALF_UP:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_UP'}; 
+ * var nb = 0.225;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.225";
+ * converter.parse(str, localeElements, options);--> 0.225 //doesn't round during parse by default<br/>
+ * 
+ * @example <caption>decimal round HALF_EVEN:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_EVEN'}; 
+ * converter.format(0.225, localeElements, options);--> 0.22
+ * converter.format(0.235, localeElements, options);--> 0.24
+ * converter.parse("0.225", localeElements, options);--> 0.225 //doesn't round during parse by default
+ * converter.parse("0.235", localeElements, options);--> 0.235 //doesn't round during parse by default<br/>
+ * 
+ * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
+ * options = { style:'decimal', maximumFractionDigits:2, 
+ *             roundingMode:'HALF_DOWN', roundDuringParse: true};
+ * var nb = 0.225; 
+ * converter.format(nb, localeElements, options);--> 0.22
+ * var str = "0.225";
+ * converter.parse(str, localeElements, options);-->0.22<br/>
+ * 
+ * @example <caption>decimal round HALF_UP and roundDuringParse:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, 
+ *             roundingMode:'HALF_UP', roundDuringParse: true}; 
+ * var nb = 0.225;
+ * converter.format(nb, localeElements, options);--> 0.23
+ * var str = "0.225";
+ * converter.parse(str, localeElements, options);--> 0.23<br/>
+ * 
+ * @example <caption>decimal round HALF_EVEN and roundDuringParse:</caption>
+ * options = { style:'decimal',  maximumFractionDigits:2, 
+ *             roundingMode:'HALF_EVEN', roundDuringParse: true}; 
+ * converter.format(0.225, localeElements, options);--> 0.22
+ * converter.format(0.235, localeElements, options);--> 0.24
+ * converter.parse("0.225", localeElements, options);--> 0.22
+ * converter.parse("0.235", localeElements, options);--> 0.24<br/>
+ * 
+ * @name OraNumberConverter
  */
 
 /**
@@ -5350,14 +5752,14 @@ OraNumberConverter = (function () {
     'million': 1000000,
     'thousand': 1000
   };
-  
+
   //maps roundingMode attributes to Math rounding modes. 
   var _roundingModeMap = {
     'HALF_UP': 'ceil',
     'HALF_DOWN': 'floor',
     'DEFAULT': 'round'
   };
-  
+
   //prepend or append count zeros to a string.
   _zeroPad = function (str, count, left) {
     var l;
@@ -5369,8 +5771,8 @@ OraNumberConverter = (function () {
 
   _throwNumberOutOfRange = function (value, minimum, maximum, property) {
     var msg = value +
-      " is out of range.  Enter a value between " + minimum +
-      " and " + maximum + " for " + property;
+        " is out of range.  Enter a value between " + minimum +
+        " and " + maximum + " for " + property;
     var rangeError = new RangeError(msg);
     var errorInfo = {
       'errorCode': "numberOptionOutOfRange",
@@ -5398,7 +5800,7 @@ OraNumberConverter = (function () {
       return fallback;
     }
   };
-  
+
   //get the numbering system key from the locale's unicode extension.
   //Verify that the locale data has a numbers entry for it, if not return latn as default.
   _getNumberingSystemKey = function (localeElements, locale) {
@@ -5427,7 +5829,7 @@ OraNumberConverter = (function () {
     }
     return numbering;
   };
-  
+
   /*return the properties for a number such as minimum and maximum fraction 
    *digits, decimal separator, grouping separator.
    *-If no user defined pattern is provided, get the pattern from the locale
@@ -5438,13 +5840,13 @@ OraNumberConverter = (function () {
    */
 
   _getNumberSettings = function (localeElements, numberSettings,
-    options, locale) {
+      options, locale) {
     var pat;
     var localeElementsMainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberingSystemKey = _getNumberingSystemKey(localeElementsMainNode, locale);
     numberSettings['numberingSystemKey'] = numberingSystemKey;
     numberSettings['numberingSystem'] = "symbols-numberSystem-" +
-      numberingSystemKey;
+        numberingSystemKey;
 
     //pattern passed in options
     if (options['pattern'] !== undefined && options['pattern'].length > 0) {
@@ -5481,13 +5883,13 @@ OraNumberConverter = (function () {
     numberSettings['lang'] = lang;
     numberSettings['pat'] = pat;
     numberSettings['minusSign'] = localeElementsMainNode['numbers']
-      [numberSettings['numberingSystem']]['minusSign'];
+    [numberSettings['numberingSystem']]['minusSign'];
     numberSettings['decimalSeparator'] = localeElementsMainNode['numbers']
-      [numberSettings['numberingSystem']]['decimal'];
+    [numberSettings['numberingSystem']]['decimal'];
     numberSettings['exponential'] = localeElementsMainNode['numbers']
-      [numberSettings['numberingSystem']]['exponential'];
+    [numberSettings['numberingSystem']]['exponential'];
     numberSettings['groupingSeparator'] = localeElementsMainNode['numbers']
-      [numberSettings['numberingSystem']]['group'];
+    [numberSettings['numberingSystem']]['group'];
     numberSettings['currencyDisplay'] = options['currencyDisplay'];
     if (options['currency'] !== undefined)
       numberSettings['currencyCode'] = options['currency'].toUpperCase();
@@ -5495,19 +5897,19 @@ OraNumberConverter = (function () {
     _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
     if (options['pattern'] === undefined) {
       numberSettings['minimumIntegerDigits'] = _getNumberOption(options,
-        'minimumIntegerDigits', 1, 21,
-        numberSettings['minimumIntegerDigits']);
+          'minimumIntegerDigits', 1, 21,
+          numberSettings['minimumIntegerDigits']);
       if (options['maximumFractionDigits'] !== undefined) {
         numberSettings['maximumFractionDigits'] = _getNumberOption(options,
-          'maximumFractionDigits', 0, 20, numberSettings['maximumFractionDigits']);
+            'maximumFractionDigits', 0, 20, numberSettings['maximumFractionDigits']);
         if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
           numberSettings['minimumFractionDigits'] = numberSettings['maximumFractionDigits'];
         }
       }
       if (options['minimumFractionDigits'] !== undefined) {
         numberSettings['minimumFractionDigits'] = _getNumberOption(options,
-          'minimumFractionDigits', 0, 20,
-          numberSettings['minimumFractionDigits']);
+            'minimumFractionDigits', 0, 20,
+            numberSettings['minimumFractionDigits']);
       }
       if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
         numberSettings['maximumFractionDigits'] = numberSettings['minimumFractionDigits'];
@@ -5517,8 +5919,8 @@ OraNumberConverter = (function () {
 
   _throwMissingCurrency = function (prop) {
     var typeError = new TypeError('The property "currency" is required when' +
-      'the property "' + prop + '" is "currency". An accepted value is a ' +
-      'three-letter ISO 4217 currency code.');
+        'the property "' + prop + '" is "currency". An accepted value is a ' +
+        'three-letter ISO 4217 currency code.');
     var errorInfo = {
       'errorCode': 'optionTypesMismatch',
       'parameterMap': {
@@ -5534,8 +5936,8 @@ OraNumberConverter = (function () {
 
   _throwUnsupportedParseOption = function () {
     var error, errorInfo,
-      code = "unsupportedParseFormat",
-      msg = "long and short decimalFormats are not supported for parsing";
+        code = "unsupportedParseFormat",
+        msg = "long and short decimalFormats are not supported for parsing";
     error = new Error(msg);
     errorInfo = {
       'errorCode': code,
@@ -5552,7 +5954,7 @@ OraNumberConverter = (function () {
   _validateNumberOptions = function (options, caller) {
     var getOption = OraI18nUtils.getGetOption(options, caller);
     var s = getOption('style', 'string', ['currency', 'decimal', 'percent', 'perMill'],
-      'decimal');
+        'decimal');
     if (s === 'decimal') {
       s = getOption('decimalFormat', 'string', ['standard', 'short', 'long']);
       if (caller === 'OraNumberConverter.parse' && s !== undefined && s !== 'standard') {
@@ -5564,7 +5966,7 @@ OraNumberConverter = (function () {
       _throwMissingCurrency("style");
     }
     var roundingMode = getOption('roundingMode', 'string', ['HALF_UP', 'HALF_DOWN', 'HALF_EVEN'],
-      'DEFAULT');
+        'DEFAULT');
   };
 
   //_toCompactNumber does compact formatting like 3000->3K for short
@@ -5641,7 +6043,7 @@ OraNumberConverter = (function () {
     s = prefix + fmt + s;
     return s;
   };
-  
+
   //_toExponentialPrecision does the formatting when the pattern contain E,
   //for example #.#E0  
   _toExponentialPrecision = function (number, numberSettings) {
@@ -5683,7 +6085,7 @@ OraNumberConverter = (function () {
     var str2 = numStr1.slice(numberSettings['minimumIntegerDigits']);
     if (str2.length > 0) {
       str1 += numberSettings['decimalSeparator'] + numStr1.slice(numberSettings['minimumIntegerDigits']) +
-        numberSettings['exponential'] + posExp;
+          numberSettings['exponential'] + posExp;
     }
     else {
       str1 += numberSettings['exponential'] + posExp;
@@ -5707,8 +6109,8 @@ OraNumberConverter = (function () {
     if (split.length > 1 && right.length > exponent)
     {
       var precision = Math.min(numberSettings['maximumFractionDigits'],
-        right.length - exponent);
-      var mode = options['roundingMode'] || 'DEFAULT';  
+          right.length - exponent);
+      var mode = options['roundingMode'] || 'DEFAULT';
       number = _roundNumber(number, precision, mode);
     }
     //split the number into integer, fraction and exponent parts.
@@ -5733,8 +6135,8 @@ OraNumberConverter = (function () {
     }
     if (precision > 0) {
       right = numberSettings['decimalSeparator'] +
-        ((right.length > precision) ? right.slice(0, precision) :
-          _zeroPad(right, precision, false));
+          ((right.length > precision) ? right.slice(0, precision) :
+              _zeroPad(right, precision, false));
     }
     else {
       if (numberSettings['minimumFractionDigits'] > 0) {
@@ -5746,85 +6148,85 @@ OraNumberConverter = (function () {
     }
     //insert grouping separator in the integer part based on groupingSize
     var padLen = numberSettings['decimalSeparator'].length +
-      numberSettings['minimumFractionDigits'];
+        numberSettings['minimumFractionDigits'];
     right = _zeroPad(right, padLen, false);
     var sep = numberSettings['groupingSeparator'],
-      ret = "";
+        ret = "";
     if (options['useGrouping'] === false && options['pattern'] === undefined)
       sep = '';
     numberString = _zeroPad(numberString,
-      numberSettings['minimumIntegerDigits'], true);
+        numberSettings['minimumIntegerDigits'], true);
     var stringIndex = numberString.length - 1;
     right = right.length > 1 ? right : "";
     var rets;
     while (stringIndex >= 0) {
       if (curSize === 0 || curSize > stringIndex) {
         rets = numberString.slice(0, stringIndex + 1) +
-          (ret.length ? (sep + ret + right) : right);
+            (ret.length ? (sep + ret + right) : right);
         return rets;
       }
       ret = numberString.slice(stringIndex - curSize + 1, stringIndex + 1) +
-        (ret.length ? (sep + ret) : "");
+          (ret.length ? (sep + ret) : "");
       stringIndex -= curSize;
-      if ( curSize0 > 0 ) {
+      if (curSize0 > 0) {
         curSize = curSize0;
       }
     }
     rets = numberString.slice(0, stringIndex + 1) + sep + ret + right;
     return rets;
   };
- 
+
   //HALF_DOWN behaves as HALF_UP if the discarded fraction is > 0.5
-  _adjustRoundingMode = function(value, maxDigits, mode) {
-    if(mode === 'HALF_DOWN' || mode === 'HALF_EVEN') {
+  _adjustRoundingMode = function (value, maxDigits, mode) {
+    if (mode === 'HALF_DOWN' || mode === 'HALF_EVEN') {
       var n = value.substr(maxDigits);
       n = parseInt(n, 10);
-      if(n > 5)
+      if (n > 5)
         mode = 'HALF_UP';
     }
     return mode;
   };
-  
-  _roundNumber = function(value, scale, mode) {
+
+  _roundNumber = function (value, scale, mode) {
     var parts = value.toString().split('.');
-    if(parts[1] === undefined)
+    if (parts[1] === undefined)
       return value;
-    if(parts[1][scale] === '5' && mode !== 'DEFAULT') {
+    if (parts[1][scale] === '5' && mode !== 'DEFAULT') {
       var adjustedMode = _adjustRoundingMode(parts[1], scale, mode);
       adjustedMode = _getRoundingMode(parts, adjustedMode, scale);
       return _decimalAdjust(value, -scale, adjustedMode, parts);
     }
     else {
       var factor = Math.pow(10, scale),
-      rounded = Math.round(value * factor) / factor;
+          rounded = Math.round(value * factor) / factor;
       if (!isFinite(rounded)) {
         return value;
       }
       return rounded;
     }
   };
-  
-  _getRoundingMode = function(parts, rMode, scale) {
-    var mode  = _roundingModeMap[rMode];
-    if(rMode === 'HALF_EVEN') {
+
+  _getRoundingMode = function (parts, rMode, scale) {
+    var mode = _roundingModeMap[rMode];
+    if (rMode === 'HALF_EVEN') {
       var c;
-      if(scale === 0) {
+      if (scale === 0) {
         var len = parts[0].length;
-        c = parseInt(parts[0][len-1], 10);
+        c = parseInt(parts[0][len - 1], 10);
       }
       else {
-        c = parseInt(parts[1][scale-1], 10);
+        c = parseInt(parts[1][scale - 1], 10);
       }
-      if(c %2 == 0) {
-        mode  = _roundingModeMap['HALF_DOWN'];
+      if (c % 2 == 0) {
+        mode = _roundingModeMap['HALF_DOWN'];
       }
       else {
-        mode  = _roundingModeMap['HALF_UP']
+        mode = _roundingModeMap['HALF_UP']
       }
     }
     return mode;
   };
-  
+
   /**
    * This function does the actual rounding of the number based on the rounding
    * mode:
@@ -5833,12 +6235,12 @@ OraNumberConverter = (function () {
    * mode is the rounding mode: ceil, floor, round. 
    * parts is the integer and fraction parts of the value.
    */
-  _decimalAdjust = function(value, scale, mode, parts) {
+  _decimalAdjust = function (value, scale, mode, parts) {
     if (scale === 0) {
-      if(parts[1][0] === '5') {
+      if (parts[1][0] === '5') {
         return Math[mode](value);
       }
-      return Math['round'](value);      
+      return Math['round'](value);
     }
     var strValue = value.toString().split('e');
     var v0 = strValue[0];
@@ -5857,11 +6259,11 @@ OraNumberConverter = (function () {
     num = parseFloat(s);
     return num;
   };
-  
+
   //first call _toRawFixed then add prefixes and suffixes. Display the 
   //number using native digits based on the numbering system
   _formatNumberImpl = function (value, options, localeElements,
-    numberSettings, locale) {
+      numberSettings, locale) {
     var localeElementsMainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     if (!isFinite(value)) {
       if (value === Infinity) {
@@ -5874,15 +6276,15 @@ OraNumberConverter = (function () {
     }
     var number = Math.abs(value);
     if (numberSettings['isPercent'] === true ||
-      options['style'] === 'percent')
+        options['style'] === 'percent')
       number *= 100;
     else if (numberSettings['isPerMill'] === true)
       number *= 1000;
 
     //expand the number
-    if ((options['style'] === 'decimal') 
-      && options['decimalFormat'] !== undefined
-      && options['decimalFormat'] !== 'standard')
+    if ((options['style'] === 'decimal')
+        && options['decimalFormat'] !== undefined
+        && options['decimalFormat'] !== 'standard')
       number = _toCompactNumber(number, options, numberSettings);
     else if (numberSettings['useExponentialNotation'] === true)
       number = _toExponentialPrecision(number, numberSettings);
@@ -5892,12 +6294,12 @@ OraNumberConverter = (function () {
     //add negative prefix and suffix if number is negative
     if (value < 0) {
       ret += numberSettings['negativePrefix'] + number +
-        numberSettings['negativeSuffix'];
+          numberSettings['negativeSuffix'];
     }
     //add positive prefix and suffix if number is positive
     else {
       ret += numberSettings['positivePrefix'] + number +
-        numberSettings['positiveSuffix'];
+          numberSettings['positiveSuffix'];
     }
     //display the digits based on the numbering system
     var numberingSystemKey = _getNumberingExtension(locale);
@@ -5922,7 +6324,7 @@ OraNumberConverter = (function () {
   //remove prefix and suffix, return a sign and value. First try to extract
   //a number using exact match. If it fails try lenient parsing.
   _parseNegativePattern = function (value, options, numberSettings,
-    localeElements) {
+      localeElements) {
     var ret, num = OraI18nUtils.trimNumber(value);
     var sign = "";
     var exactMatch = false;
@@ -5930,18 +6332,18 @@ OraNumberConverter = (function () {
     var posSignRegExp = new RegExp("^" + posSign.replace(_ESCAPE_REGEXP, "\\$1"));
     num = num.replace(posSignRegExp, "");
     var nbSettingPosPrefix = OraI18nUtils.trimNumber(numberSettings['positivePrefix']),
-      nbSettingPosSuffix = OraI18nUtils.trimNumber(numberSettings['positiveSuffix']),
-      nbSettingNegPrefix = OraI18nUtils.trimNumber(numberSettings['negativePrefix']),
-      nbSettingNegSuffix = OraI18nUtils.trimNumber(numberSettings['negativeSuffix']);
+        nbSettingPosSuffix = OraI18nUtils.trimNumber(numberSettings['positiveSuffix']),
+        nbSettingNegPrefix = OraI18nUtils.trimNumber(numberSettings['negativePrefix']),
+        nbSettingNegSuffix = OraI18nUtils.trimNumber(numberSettings['negativeSuffix']);
     //try exact match of negative prefix and suffix
     var posPrefRegexp = new RegExp("^" + (nbSettingPosPrefix ||
-      "").replace(_ESCAPE_REGEXP, "\\$1"));
+        "").replace(_ESCAPE_REGEXP, "\\$1"));
     var posSuffRegexp = new RegExp((nbSettingPosSuffix || "").
-      replace(_ESCAPE_REGEXP, "\\$1") + "$");
+        replace(_ESCAPE_REGEXP, "\\$1") + "$");
     var negPrefRegexp = new RegExp("^" + (nbSettingNegPrefix ||
-      "").replace(_ESCAPE_REGEXP, "\\$1"));
+        "").replace(_ESCAPE_REGEXP, "\\$1"));
     var negSuffRegexp = new RegExp((nbSettingNegSuffix ||
-      "").replace(_ESCAPE_REGEXP, "\\$1") + "$");
+        "").replace(_ESCAPE_REGEXP, "\\$1") + "$");
 
     if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
       num = num.replace(negPrefRegexp, "");
@@ -5965,7 +6367,7 @@ OraNumberConverter = (function () {
         symbol = localeElements['numbers']['currencies'][code]['symbol'];
       }
       if (numberSettings['currencyDisplay'] === undefined ||
-        numberSettings['currencyDisplay'] === "symbol") {
+          numberSettings['currencyDisplay'] === "symbol") {
         repStr = symbol;
       }
       else if (numberSettings['currencyDisplay'] === "code") {
@@ -5973,21 +6375,21 @@ OraNumberConverter = (function () {
       }
       if (repStr !== undefined) {
         posPrefix = (nbSettingPosPrefix || "").replace(
-          repStr, "");
+            repStr, "");
         posSuffix = (nbSettingPosSuffix || "").replace(
-          repStr, "");
+            repStr, "");
         negPrefix = (nbSettingNegPrefix || "").replace(
-          repStr, "");
+            repStr, "");
         negSuffix = (nbSettingNegSuffix || "").replace(
-          repStr, "");
+            repStr, "");
         posPrefRegexp = new RegExp(("^" + posPrefix).replace(
-          _ESCAPE_REGEXP, "\\$1"));
+            _ESCAPE_REGEXP, "\\$1"));
         posSuffRegexp = new RegExp(posSuffix.replace(
-          _ESCAPE_REGEXP, "\\$1") + "$");
+            _ESCAPE_REGEXP, "\\$1") + "$");
         negPrefRegexp = new RegExp(("^" + negPrefix).replace(
-          _ESCAPE_REGEXP, "\\$1"));
+            _ESCAPE_REGEXP, "\\$1"));
         negSuffRegexp = new RegExp(negSuffix.replace(
-          _ESCAPE_REGEXP, "\\$1") + "$");
+            _ESCAPE_REGEXP, "\\$1") + "$");
 
         //try  match of positive prefix and suffix
         if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
@@ -6022,17 +6424,17 @@ OraNumberConverter = (function () {
     // [+-]?\d+(?:\.\d+)?(?:E[+-]?\d+)?/;
     //remove grouping deparator from string
     var groupingSeparator =
-      localeElements['numbers'][numberSettings['numberingSystem']]['group'];
+        localeElements['numbers'][numberSettings['numberingSystem']]['group'];
     var decimalSeparator =
-      localeElements['numbers'][numberSettings['numberingSystem']]['decimal'];
+        localeElements['numbers'][numberSettings['numberingSystem']]['decimal'];
     var localeMinusSign =
-      localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'];
+        localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'];
     var plusSign = "+";
     var minusSign = "-";
     var sign = "";
     var dot = "";
     var exponential =
-      OraI18nUtils.toUpper(localeElements['numbers'][numberSettings['numberingSystem']]['exponential']);
+        OraI18nUtils.toUpper(localeElements['numbers'][numberSettings['numberingSystem']]['exponential']);
     num = OraI18nUtils.toUpper(num);
     num = num.split(exponential).join("E");
     //remove grouping separator from string
@@ -6065,8 +6467,8 @@ OraNumberConverter = (function () {
   //parse the exponent part of a number
   _parseNegativeExponent = function (value, localeElements, numberSettings) {
     var neg = localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'],
-      pos = localeElements['numbers'][numberSettings['numberingSystem']]['plusSign'],
-      ret;
+        pos = localeElements['numbers'][numberSettings['numberingSystem']]['plusSign'],
+        ret;
     value = OraI18nUtils.trimNumber(value);
     neg = OraI18nUtils.trimNumber(neg);
     pos = OraI18nUtils.trimNumber(pos);
@@ -6078,8 +6480,8 @@ OraNumberConverter = (function () {
     }
     return ret || ["", value];
   };
-  
-  _getLatnDigits = function(str, locale) {
+
+  _getLatnDigits = function (str, locale) {
     var numberingSystemKey = _getNumberingExtension(locale);
     if (OraI18nUtils.numeringSystems[numberingSystemKey] === undefined)
       return str;
@@ -6095,14 +6497,14 @@ OraNumberConverter = (function () {
     var ret = latnStr.join("");
     return ret;
   };
-  
+
   //split the number into integer, fraction and exponential parts
-  _getNumberParts = function(num, numberSettings, localeElementsMainNode) {
+  _getNumberParts = function (num, numberSettings, localeElementsMainNode) {
     var parts = {};
     var decimalSeparator = localeElementsMainNode['numbers']
-        [numberSettings['numberingSystem']]['decimal'];
+    [numberSettings['numberingSystem']]['decimal'];
     var groupSep = localeElementsMainNode['numbers']
-          [numberSettings['numberingSystem']]['group'];
+    [numberSettings['numberingSystem']]['group'];
     num = num.replace(/ /g, "");
     // determine exponent and number
     var exponentSymbol = numberSettings['exponential'];
@@ -6123,8 +6525,8 @@ OraNumberConverter = (function () {
     var decSep = decimalSeparator;
     var decimalPos = intAndFraction.indexOf(decSep);
     if (decimalPos < 0) {
-       integer = intAndFraction;
-       parts['fraction'] = null;
+      integer = intAndFraction;
+      parts['fraction'] = null;
     }
     else {
       integer = intAndFraction.substr(0, decimalPos);
@@ -6139,53 +6541,53 @@ OraNumberConverter = (function () {
     parts['integer'] = integer;
     return parts;
   };
-  
+
   _getParsedValue = function (ret, options, numberSettings, errStr) {
     if (isNaN(ret)) {
-      _throwNaNException(options['style'], numberSettings, errStr) 
+      _throwNaNException(options['style'], numberSettings, errStr)
     }
     if (numberSettings['isPercent'] === true || options['style'] ===
-      'percent')
+        'percent')
       ret /= 100;
     else if (numberSettings['isPerMill'] === true)
       ret /= 1000;
     var getOption = OraI18nUtils.getGetOption(options, "OraNumberConverter.parse");
     var roundDuringParse = getOption('roundDuringParse', 'boolean', [true, false], false);
-    if(roundDuringParse) {
+    if (roundDuringParse) {
       ret = _getRoundedNumber(ret, numberSettings, options);
     }
     return ret;
   };
-  
+
   _throwNaNException = function (style, numberSettings, errStr) {
     var msg, error, errorInfo, code;
-      msg = "Unparsable number " + errStr + " The expected number " +
+    msg = "Unparsable number " + errStr + " The expected number " +
         "pattern is " + numberSettings['pat'];
-      switch (style)
-      {
-        case "decimal" :
-          code = "decimalFormatMismatch";
-          break;
-        case "currency" :
-          code = "currencyFormatMismatch";
-          break;
-        case "percent" :
-          code = "percentFormatMismatch";
-          break;
+    switch (style)
+    {
+      case "decimal" :
+        code = "decimalFormatMismatch";
+        break;
+      case "currency" :
+        code = "currencyFormatMismatch";
+        break;
+      case "percent" :
+        code = "percentFormatMismatch";
+        break;
+    }
+    error = new Error(msg);
+    errorInfo = {
+      'errorCode': code,
+      'parameterMap': {
+        'value': errStr,
+        'format': numberSettings['pat']
       }
-      error = new Error(msg);
-      errorInfo = {
-        'errorCode': code,
-        'parameterMap': {
-          'value': errStr,
-          'format': numberSettings['pat']
-        }
-      };
-      error['errorInfo'] = errorInfo;
-      throw error;
+    };
+    error['errorInfo'] = errorInfo;
+    throw error;
   };
-  
-  _parseNumberImpl = function (str, localeElements, options, locale) {  
+
+  _parseNumberImpl = function (str, localeElements, options, locale) {
     var localeElementsMainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberSettings = {};
     var numStr = _getLatnDigits(str, locale);
@@ -6198,7 +6600,7 @@ OraNumberConverter = (function () {
       return ret;
     }
     var signInfo = _parseNegativePattern(numStr, options, numberSettings,
-          localeElementsMainNode);
+        localeElementsMainNode);
     var sign = signInfo[ 0 ];
     var num = signInfo[ 1 ];
     sign = sign || "+";
@@ -6206,7 +6608,7 @@ OraNumberConverter = (function () {
       ret = parseFloat(sign + num);
       return  _getParsedValue(ret, options, numberSettings, str);
     }
- 
+
     var parts = _getNumberParts(num, numberSettings, localeElementsMainNode);
     var integer = parts['integer'];
     var fraction = parts['fraction'];
@@ -6239,21 +6641,21 @@ OraNumberConverter = (function () {
    */
 
   var _ZERO_DIGIT = '0',
-    _GROUPING_SEPARATOR = ',',
-    _DECIMAL_SEPARATOR = '.',
-    _PERCENT = '%',
-    _PER_MILL = '\u2030',
-    _DIGIT = '#',
-    _SEPARATOR = ';',
-    _EXPONENT = "E",
-    _MINUS = '-',
-    _QUOT = '\'',
-    _CURRENCY = '\u00A4';
+      _GROUPING_SEPARATOR = ',',
+      _DECIMAL_SEPARATOR = '.',
+      _PERCENT = '%',
+      _PER_MILL = '\u2030',
+      _DIGIT = '#',
+      _SEPARATOR = ';',
+      _EXPONENT = "E",
+      _MINUS = '-',
+      _QUOT = '\'',
+      _CURRENCY = '\u00A4';
 
   var posPrefixPattern,
-    posSuffixPattern,
-    negPrefixPattern,
-    negSuffixPattern;
+      posSuffixPattern,
+      negPrefixPattern,
+      negSuffixPattern;
 
   var _MAXIMUM_INTEGER_DIGITS = 0x7fffffff;
   var _MAXIMUM_FRACTION_DIGITS = 0x7fffffff;
@@ -6261,8 +6663,8 @@ OraNumberConverter = (function () {
   _throwSyntaxError = function (pattern) {
     var msg, syntaxError, errorInfo, samplePattern = "#,##0.###";
     msg = "Unexpected character(s) encountered in the pattern \"" +
-      pattern + " An example of a valid pattern is \"" + samplePattern +
-      '".';
+        pattern + " An example of a valid pattern is \"" + samplePattern +
+        '".';
     syntaxError = new SyntaxError(msg);
     errorInfo = {
       'errorCode': 'optionValueInvalid',
@@ -6286,19 +6688,19 @@ OraNumberConverter = (function () {
     var curDisplay = {};
     if (posPrefixPattern !== null) {
       numberSettings['positivePrefix'] = _expandAffix(posPrefixPattern,
-        localeElements, numberSettings, curDisplay);
+          localeElements, numberSettings, curDisplay);
     }
     if (posSuffixPattern !== null) {
       numberSettings['positiveSuffix'] = _expandAffix(posSuffixPattern,
-        localeElements, numberSettings, curDisplay);
+          localeElements, numberSettings, curDisplay);
     }
     if (negPrefixPattern !== null) {
       numberSettings['negativePrefix'] = _expandAffix(negPrefixPattern,
-        localeElements, numberSettings, curDisplay);
+          localeElements, numberSettings, curDisplay);
     }
     if (negSuffixPattern !== null) {
       numberSettings['negativeSuffix'] = _expandAffix(negSuffixPattern,
-        localeElements, numberSettings, curDisplay);
+          localeElements, numberSettings, curDisplay);
     }
     if (curDisplay['name'] !== undefined) {
       numberSettings['positiveSuffix'] = "\u00a0" + curDisplay['name'];
@@ -6315,7 +6717,7 @@ OraNumberConverter = (function () {
   };
 
   _expandAffix = function (pattern, localeElements, numberSettings,
-    currencyDisplay) {
+      currencyDisplay) {
     var buffer = "";
     for (var i = 0; i < pattern.length; ) {
       var c = pattern.charAt(i++);
@@ -6331,7 +6733,7 @@ OraNumberConverter = (function () {
             symbol = localeElements['numbers']['currencies'][code]['symbol'];
           }
           if (numberSettings['currencyDisplay'] === undefined ||
-            numberSettings['currencyDisplay'] === "symbol")
+              numberSettings['currencyDisplay'] === "symbol")
             c = symbol;
           else if (numberSettings['currencyDisplay'] === "code") {
             c = code;
@@ -6358,10 +6760,10 @@ OraNumberConverter = (function () {
   };
 
   _applyPatternImpl = function (options, pattern, localeElements,
-    numberSettings) {
+      numberSettings) {
 
     var gotNegative = false,
-      useExponentialNotation = false;
+        useExponentialNotation = false;
     var phaseOneLength = 0;
     var start = 0;
     var isPrefix = true;
@@ -6373,7 +6775,7 @@ OraNumberConverter = (function () {
       var decimalPos = -1;
       var multiplier = 1;
       var digitLeftCount = 0, zeroDigitCount = 0, digitRightCount = 0,
-        groupingCount = -1, groupingCount0= -1;
+          groupingCount = -1, groupingCount0 = -1;
       var minExponentDigits;
       var phase = 0;
 
@@ -6387,13 +6789,14 @@ OraNumberConverter = (function () {
             if (inQuote) {
               if (ch === _QUOT) {
                 if ((pos + 1) < pattern.length && pattern.charAt(pos + 1) ===
-                  _QUOT) {
+                    _QUOT) {
                   ++pos;
                   if (isPrefix)
                     prefix = prefix.concat("''");
                   else
                     suffix = suffix.concat("''");
-                } else {
+                }
+                else {
                   inQuote = false; // 'do'
                 }
                 continue;
@@ -6402,45 +6805,49 @@ OraNumberConverter = (function () {
             else {
               // Process unquoted characters seen in prefix or suffix phase.
               if (ch === _DIGIT ||
-                ch === _ZERO_DIGIT ||
-                ch === _GROUPING_SEPARATOR ||
-                ch === _DECIMAL_SEPARATOR) {
+                  ch === _ZERO_DIGIT ||
+                  ch === _GROUPING_SEPARATOR ||
+                  ch === _DECIMAL_SEPARATOR) {
                 phase = 1;
                 --pos; // Reprocess this character
                 continue;
-              } else if (ch === _CURRENCY) {
+              }
+              else if (ch === _CURRENCY) {
                 if (options['currency'] === undefined)
                   _throwMissingCurrency("pattern");
                 // Use lookahead to determine if the currency sign
                 // is doubled or not.
                 options['style'] = 'currency';
                 var doubled = (pos + 1) < pattern.length &&
-                  pattern.charAt(pos + 1) === _CURRENCY;
+                    pattern.charAt(pos + 1) === _CURRENCY;
                 if (doubled) { // Skip over the doubled character
                   ++pos;
                 }
                 if (isPrefix)
                   prefix = prefix.concat(doubled ? "'\u00A4\u00A4" :
-                    "'\u00A4");
+                      "'\u00A4");
                 else
                   suffix = suffix.concat(doubled ? "'\u00A4\u00A4" :
-                    "'\u00A4");
+                      "'\u00A4");
                 continue;
-              } else if (ch === _QUOT) {
+              }
+              else if (ch === _QUOT) {
                 if (ch === _QUOT) {
                   if ((pos + 1) < pattern.length &&
-                    pattern.charAt(pos + 1) === _QUOT) {
+                      pattern.charAt(pos + 1) === _QUOT) {
                     ++pos;
                     if (isPrefix)
                       prefix = prefix.concat("''");// o''clock
                     else
                       suffix = suffix.concat("''");
-                  } else {
+                  }
+                  else {
                     inQuote = true; // 'do'
                   }
                   continue;
                 }
-              } else if (ch === _SEPARATOR) {
+              }
+              else if (ch === _SEPARATOR) {
                 if (phase === 0 || j === 0) {
                   _throwSyntaxError(pattern);
                 }
@@ -6462,7 +6869,8 @@ OraNumberConverter = (function () {
                 else
                   suffix = suffix.concat("'%");
                 continue;
-              } else if (ch === _PER_MILL) {
+              }
+              else if (ch === _PER_MILL) {
                 if (multiplier !== 1) {
                   _throwSyntaxError(pattern);
                 }
@@ -6492,7 +6900,8 @@ OraNumberConverter = (function () {
           case 1:
             if (j === 1) {
               ++phaseOneLength;
-            } else {
+            }
+            else {
               if (--phaseOneLength === 0) {
                 phase = 2;
                 isPrefix = false;
@@ -6503,13 +6912,15 @@ OraNumberConverter = (function () {
             if (ch === _DIGIT) {
               if (zeroDigitCount > 0) {
                 ++digitRightCount;
-              } else {
+              }
+              else {
                 ++digitLeftCount;
               }
               if (groupingCount >= 0 && decimalPos < 0) {
                 ++groupingCount;
               }
-            } else if (ch === _ZERO_DIGIT) {
+            }
+            else if (ch === _ZERO_DIGIT) {
               if (digitRightCount > 0) {
                 _throwSyntaxError(pattern);
               }
@@ -6517,16 +6928,19 @@ OraNumberConverter = (function () {
               if (groupingCount >= 0 && decimalPos < 0) {
                 ++groupingCount;
               }
-            } else if (ch === _GROUPING_SEPARATOR) {
+            }
+            else if (ch === _GROUPING_SEPARATOR) {
               groupingCount0 = groupingCount;
               groupingCount = 0;
-            } else if (ch === _DECIMAL_SEPARATOR) {
+            }
+            else if (ch === _DECIMAL_SEPARATOR) {
               if (decimalPos >= 0) {
                 _throwSyntaxError(pattern);
               }
               decimalPos = digitLeftCount + zeroDigitCount +
-                digitRightCount;
-            } else if (_regionMatches(pattern, pos, _EXPONENT)) {
+                  digitRightCount;
+            }
+            else if (_regionMatches(pattern, pos, _EXPONENT)) {
               if (useExponentialNotation) {
                 _throwSyntaxError(pattern);
               }
@@ -6534,21 +6948,22 @@ OraNumberConverter = (function () {
               minExponentDigits = 0;
               pos = pos + _EXPONENT.length;
               while (pos < pattern.length && pattern.charAt(pos) ===
-                _ZERO_DIGIT) {
+                  _ZERO_DIGIT) {
                 ++minExponentDigits;
                 ++phaseOneLength;
                 ++pos;
               }
 
               if ((digitLeftCount + zeroDigitCount) < 1 ||
-                minExponentDigits < 1) {
+                  minExponentDigits < 1) {
                 _throwSyntaxError(pattern);
               }
               phase = 2;
               isPrefix = false;
               --pos;
               continue;
-            } else {
+            }
+            else {
               phase = 2;
               isPrefix = false;
               --pos;
@@ -6573,9 +6988,9 @@ OraNumberConverter = (function () {
 
       // Do syntax checking on the digits.
       if ((decimalPos < 0 && digitRightCount > 0) ||
-        (decimalPos >= 0 && (decimalPos < digitLeftCount ||
-          decimalPos > (digitLeftCount + zeroDigitCount))) ||
-        groupingCount === 0 || inQuote) {
+          (decimalPos >= 0 && (decimalPos < digitLeftCount ||
+              decimalPos > (digitLeftCount + zeroDigitCount))) ||
+          groupingCount === 0 || inQuote) {
         _throwSyntaxError(pattern);
       }
 
@@ -6585,25 +7000,26 @@ OraNumberConverter = (function () {
         negPrefixPattern = posPrefixPattern;
         negSuffixPattern = posSuffixPattern;
         var digitTotalCount = digitLeftCount + zeroDigitCount +
-          digitRightCount;
+            digitRightCount;
         // The effectiveDecimalPos is the position the decimal is at or
         //would be at if there is no decimal. Note that if decimalPos<0,
         // then digitTotalCount == digitLeftCount + zeroDigitCount.
         var effectiveDecimalPos = decimalPos >= 0 ?
-          decimalPos : digitTotalCount;
+            decimalPos : digitTotalCount;
         numberSettings['minimumIntegerDigits'] = (effectiveDecimalPos -
-          digitLeftCount);
+            digitLeftCount);
         numberSettings['maximumIntegerDigits'] = (useExponentialNotation ?
-          digitLeftCount + numberSettings['minimumIntegerDigits'] :
-          _MAXIMUM_INTEGER_DIGITS);
+            digitLeftCount + numberSettings['minimumIntegerDigits'] :
+            _MAXIMUM_INTEGER_DIGITS);
         numberSettings['maximumFractionDigits'] = (decimalPos >= 0 ?
-          (digitTotalCount - decimalPos) : 0);
+            (digitTotalCount - decimalPos) : 0);
         numberSettings['minimumFractionDigits'] = (decimalPos >= 0 ?
-          (digitLeftCount + zeroDigitCount - decimalPos) : 0);
+            (digitLeftCount + zeroDigitCount - decimalPos) : 0);
         numberSettings['groupingSize'] = (groupingCount > 0) ?
-          groupingCount : 0;
+            groupingCount : 0;
         numberSettings['groupingSize0'] = groupingCount0;
-      } else {
+      }
+      else {
         negPrefixPattern = prefix;
         negSuffixPattern = suffix;
         gotNegative = true;
@@ -6623,8 +7039,8 @@ OraNumberConverter = (function () {
     // identical to the positive pattern, then prepend the minus sign to
     // the positive pattern to form the negative pattern.
     if (!gotNegative ||
-      ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
-        && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
+        ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
+            && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
       if (options['style'] === 'currency' && numberSettings['lang'] === 'ar') {
         negSuffixPattern = posSuffixPattern + "'\u200f-";
         negPrefixPattern = posPrefixPattern;
@@ -6645,19 +7061,19 @@ OraNumberConverter = (function () {
     var roundedNumber = _roundNumber(Math.abs(ret), precision, mode);
     return isNegative ? -roundedNumber : roundedNumber;
   };
-  
-  _resolveNumberSettings = function(localeElements, options, locale) {
+
+  _resolveNumberSettings = function (localeElements, options, locale) {
     var numberSettings = {};
     _validateNumberOptions(options, "OraNumberConverter.resolvedOptions");
     _getNumberSettings(localeElements, numberSettings, options, locale);
     numberSettings['numberingSystemKey'] = _getNumberingExtension(locale);
     if (OraI18nUtils.numeringSystems[numberSettings['numberingSystemKey']] ===
-      undefined)
+        undefined)
       numberSettings['numberingSystemKey'] = 'latn';
     return numberSettings;
   };
-  
-  _resolveOptions = function(numberSettings, options, locale) {
+
+  _resolveOptions = function (numberSettings, options, locale) {
     var resOptions = {
       'locale': locale,
       'style': (options['style'] === undefined) ? 'decimal' : options['style'],
@@ -6666,14 +7082,14 @@ OraNumberConverter = (function () {
     };
     resOptions['minimumIntegerDigits'] = numberSettings['minimumIntegerDigits'];
     resOptions['minimumFractionDigits'] = numberSettings['minimumFractionDigits'];
-    resOptions['maximumFractionDigits'] = numberSettings['maximumFractionDigits'];  
+    resOptions['maximumFractionDigits'] = numberSettings['maximumFractionDigits'];
     if (options['style'] === 'decimal' && options['decimalFormat'] !== undefined) {
       resOptions['decimalFormat'] = options['decimalFormat'];
     }
     if (options['style'] === 'currency') {
       resOptions['currency'] = options['currency'];
       resOptions['currencyDisplay'] = (options['currencyDisplay'] ===
-        undefined) ? 'symbol' : options['currencyDisplay'];
+          undefined) ? 'symbol' : options['currencyDisplay'];
     }
     if (options['pattern'] !== undefined)
       resOptions['pattern'] = options['pattern'];
@@ -6685,7 +7101,7 @@ OraNumberConverter = (function () {
       resOptions['roundDuringParse'] = roundDuringParse;
     return resOptions;
   };
-      
+
   function _init()
   {
 
@@ -6721,6 +7137,9 @@ OraNumberConverter = (function () {
        * - <b>maximumFractionDigits.</b> a non-negative integer Number value 
        * indicating the maximum fraction digits to be used. Numbers will be 
        * rounded if necessary.<br>
+       * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
+       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
        * - <b>useGrouping.</b> is a Boolean value indicating whether a 
        * grouping separator should be used. The default is true.<br>
        * - <b>pattern.</b> custom pattern. Will override above options 
@@ -6746,7 +7165,7 @@ OraNumberConverter = (function () {
         var numberSettings = {};
         _getNumberSettings(localeElements, numberSettings, options, locale);
         return _formatNumberImpl(value, options, localeElements,
-          numberSettings, locale);
+            numberSettings, locale);
       },
       /**
        * Parse a number.
@@ -6765,10 +7184,13 @@ OraNumberConverter = (function () {
        *  a localized currency symbol, or a localized currency name if 
        *  formatting with the "currency" style. It is only considered when 
        *  style has the value "currency". The default is "symbol".<br>
-       * - <b>useGrouping.</b> is a Boolean value indicating whether a 
-       * grouping separator should be used. The default is true.<br>
        * - <b>pattern.</b> custom pattern. Will override above options when 
        * present.<br>
+       * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
+       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
+       *  - <b>roundDuringParse.</b> Boolean value. Specifies whether or not to round during parse.
+       *  by default the number converter rounds during format but not during parse.
        * @param {string=} locale - A BCP47 compliant language tag. it is only 
        * used to extract the unicode extension keys. 
        * @return {number} a number object parsed from the string. In case of 
@@ -6808,6 +7230,10 @@ OraNumberConverter = (function () {
        * @param {Object=} options containing the following properties:<br>
        * - <b>style.</b> "decimal", "currency" or "percent". The default is 
        * "decimal".<br>
+       * - <b>decimalFormat.</b> It can have one of the string values "short", "long".
+       *  It is used for compact number formatting. For example 3000 is displayed
+       *  as 3K for "short" and 3 thousand for "long". We take into consideration
+       *  the locale's plural rules for the compact pattern.<br> 
        * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
        * when when style is "currency".<br>
        * - <b>currencyDisplay.</b> is one of the String values "code", 
@@ -6830,6 +7256,11 @@ OraNumberConverter = (function () {
        * grouping separator should be used. The default is true.<br>
        * - <b>pattern.</b> custom pattern. Will override above options when 
        * present.<br>
+       * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
+       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
+       *  - <b>roundDuringParse.</b> Boolean value. Specifies whether or not to round during parse.
+       *  by default the number converter rounds during format but not during parse.
        * @param {string=} locale - A BCP47 compliant language tag. it is only 
        * used to extract the unicode extension keys. 
        * @return {Object} Resolved options object.
@@ -6847,7 +7278,7 @@ OraNumberConverter = (function () {
             'useGrouping': true,
             'style': 'decimal'
           };
-        }        
+        }
         var numberSettings = _resolveNumberSettings(localeElements, options, locale);
         return _resolveOptions(numberSettings, options, locale);
       }
@@ -7396,11 +7827,6 @@ oj.IntlConverterUtils._normalizeIsoString = function(isoString)
   return OraI18nUtils._normalizeIsoString(isoString);
 }
 /**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
-/**
  * This is a forked version of globalize.js
  */
 /*
@@ -7408,97 +7834,739 @@ oj.IntlConverterUtils._normalizeIsoString = function(isoString)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  */
-
-/*
- DESCRIPTION
- OraDateTimeConverter object implements date-time parsing and formatting and 
- relative date formatting. It supports ECMA-402 options, predefined and user 
- defined pattern.
- 
- PRIVATE CLASSES
- <list of private classes defined - with one-line descriptions>
- 
- NOTES
- <other useful comments, qualifications, etc.>
- 
- MODIFIED    (MM/DD/YY)
-        05/13/14 - Creation
- */
-
-/*
- *OraDateTimeConverter object implements date-time parsing and formatting and 
- *relative date formatting.It supports ECMA-402 options, predefined and user 
- *defined pattern.
- * <p>The format and parse functions can throw the following exceptions:
- * <li> RangeError can be thrown during the validation of the options:
- * Example: The value 'longs' is out of range for 'OraDateTimeConverter.parse'
- * options property 'year'. Expected: ['2-digit', 'numeric']<br>
- * var errorInfo = {<br>
- *   'errorCode' : "datetimeOutOfRange",<br>
- *   'parameterMap' : {<br>
- *   'propertyName': $property$,<br>
- *   'propertyValue': $options.property$,<br>
- *   'propertyValueValid': $expectedValues$,<br>
- *   'caller': $_getOptionCaller$<br>
- * }<br>
- * };<br>
- * <br>
- * <li>SyntaxError can be thrown when the date format is invalid. it can happen
- * during the calls to parse and format date.<br>
- * Example: Unexpected character(s) encountered in the pattern "MM/dd/cc".<br>
- * An example of a valid pattern is "MM/dd/y".<br>
- * var errorInfo = {<br>
- * 'errorCode' : "optionValueInvalid",<br> 
- * parameterMap : {'propertyName' : 'pattern',<br>
- *                 'propertyValue': $options.pattern$,<br>
- *                 'propertyValueHint': $format$}<br>
- * };<br>
- * <br>
- * <br>
- * <li>Error can be thrown when there is mismatch between date format and
- * date string. it can happen during the calls to parse date.<br>
- * Example: The value "03,05,12" does not match the expected date format
- * "MM/dd/yy"<br>
- * var errorInfo = {'errorCode' : "datetimeFormatMismatch", 'parameterMap' : 
- * { 'value': $value$,  'format': $format$}};<br>
- * errorInfo = {'errorCode' : "timeFormatMismatch", 'parameterMap' : 
- * { 'value': $value$,  'format': $format$}};<br>
- * verrorInfo = {'errorCode' : "dateFormatMismatch", 'parameterMap' : 
- * { 'value': $value$,  'format': $format$}};<br>
- * <br>
- * <br>
- * <li>RangeError can be thrown if one of the date fields is out of range.
- * It can happen during the calls to parse date.<br>
- * Example: 64  is out of range.  Enter a value between 0 and 59 for minute 
- * var errorInfo = {<br>
- * 'errorCode' : "datetimeOutOfRange",<br>
- * 'parameterMap' : {'value': $value$, 'minValue': $mainValue$,
- * 'maxVlaue': $maxValue$, 'propertyName': $name$}<br>
- * };<br>
- * <br>
- * <br>
- * <li>Error can be thrown the weekday does not match the date.
- * It can happen during the calls to parse date.<br>
- * Example: The weekday Tuesday does not match the date 27.
- * var errorInfo = {<br>
- * 'errorCode' : "dateToWeekdayMismatch",<br>
- * 'parameterMap' : {'weekday' : $weekday$, 'date':$date$}<br>
- * };<br>
- * <br>
- * <br>
- * <li>Error can be thrown if an invalid ISO string is provided.<br>
- * Example: "The string 2014.01T1 is not a valid ISO 8601 string."
- * var errorInfo = {<br>
- * 'errorCode' : "invalidISOString",<br>
- * 'parameterMap' : {'isoStr' : str}<br>
- * };<br>
- * <br>
- * <br>
- * <li>Error can be thrown if the ISO string contain a time zone.<br>
- * Example: "time zone is not supported."
- * var errorInfo = {<br>
- * 'errorCode' : "timeZoneNotSupported"<br>
- * };<br>
+/**
+ * @constructor
+ * 
+ * @classdesc OraDateTimeConverter object implements date-time parsing and formatting and 
+ * relative date formatting. 
+ * <p>
+ * There are several ways to use the converter.
+ * <ul>
+ * <li>Using options defined by the ECMA 402 Specification, these would be the properties year, 
+ * month, day, hour, minute, second, weekday, era, timeZone, hour12</li>
+ * <li>Using a custom date and/or time format pattern using the 'pattern' property</li>
+ * <li>Using the standard date, datetime and time format lengths defined by Unicode CLDR, these 
+ * would include the properties formaType, dateFormat, timeFormat.</li>
+ * </ul>
+ * 
+ * <p>
+ * The options when specified take precendence in the following order:<br>
+ * 1. pattern.<br>
+ * 2. ECMA options.<br>
+ * 3. formatType/dateFormat/timeFormat.
+ * <p>
+ * The converter provides great leniency when parsing a user input value to a date in the following 
+ * ways: <br/>
+ * <ul>
+ * <li>Allows use of any character for separators irrespective of the separator specified in the 
+ * associated pattern. E.g., if pattern is set to 'y-M-d', the following values are all valid - 
+ * 2013-11-16, 2013/11-16 and 2013aaa11xxx16.</li>
+ * <li>Allows specifying 4 digit year in any position in relation to day and month. E.g., 11-2013-16 
+ * or 16-11-2013</li>
+ * <li>Supports auto-correction of value, when month and day positions are swapped as long as the 
+ * date is > 12 when working with the Gregorian calendar. E.g., if the pattern is 'y-M-d', 
+ * 2013-16-11 will be auto-corrected to 2013-11-16. However if both date and month are less or equal 
+ * to 12, no assumptions are made about the day or month and the value parsed against the exact pattern.</li>
+ * <li>Supports auto-correction of value, for the short and long types of weekday and month names. 
+ * So they can are used anywhere in the value. E.g., if the expected pattern is E, MMM, d, y, all 
+ * these values are acceptable - Tue, Nov 26 2013 or Nov, Tue 2013 26 or 2013 Tue 26 Nov. <br/>
+ * NOTE: Lenient parsing of narrow era, weekday or month name is not supported because of ambiguity in 
+ * choosing the right value. So we expect for narrow era, weekday or month option that values be 
+ * provided either in their short or long forms. E.g., Sat, March 02, 2013.
+ * </li>
+ * <li>Specifying the weekday is optional. E.g., if the expected pattern is E, MMM, d, y; then 
+ * entering Nov 26, 2013, is automatically turned to Tuesday Nov 26, 2013. But entering an invalid 
+ * weekday, i.e., if the weekday does not match the date, an exception is thrown.</li>
+ * <li>Leniency rules apply equally no matter which option is used - pattern, ECMA options or formatType</li>
+ * </ul>
+ * 
+ * @property {Object=} options - an object literal used to provide  optional information to 
+ * the converter.<p>
+ * @property {string=} options.year - allowed values are "2-digit", "numeric". When no options are 
+ * set the default value of "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the year, padded: 00-99.</td>
+ *       <td>2001 => 01, 2016 => 16</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the year depending on the value.</td>
+ *       <td>2010, 199</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {number=} options.two-digit-year-start - the 100-year period 2-digit year. 
+ * During parsing, two digit years will be placed in the range two-digit-year-start to two-digit-year-start + 100 years. 
+ * The default is 1950.
+ * <p style='padding-left: 5px;'>
+ * Example: if two-digit-year-start is 1950, 10 is parsed as 2010<br/><br/>
+ * Example: if two-digit-year-start is 1900, 10 is parsed as 1910
+ * </p>
+ *
+ * @property {string=} options.month - specifies how the month is formatted. Allowed values are 
+ * "2-digit", "numeric", "narrow", "short", "long". The last 3 values behave in the same way as for 
+ * weekday, indicating the length of the string used. When no options are set the default value of 
+ * "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the month, padded: 01-12.</td>
+ *       <td>1 => 01, 12 => 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the month depending on the value.</td>
+ *       <td>1, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>narrow</td>
+ *       <td>narrow name of the month.</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>abbreviated name of the month.</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>wide name of the month.</td>
+ *       <td>January</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.day - specifies how the day is formatted. Allowed values are "2-digit",
+ *  "numeric". When no options are set the default value of "numeric" is used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the day in month, padded: 01-31.</td>
+ *       <td>1 => 01, 27 => 27</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the day in month depending on the value.</td>
+ *       <td>1, 31</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.hour - specifies how the hour is formatted. Allowed values are 
+ * "2-digit" or "numeric". The hour is displayed using the 12 or 24 hour clock, depending on the 
+ * locale. See 'hour12' for details.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>2-digit</td>
+ *       <td>2 digit representation of the hour, padded: 01-24 depending on the locale.</td>
+ *       <td>1 => 01, 24 => 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>numeric</td>
+ *       <td>variable digit representation of the day in month depending on the value.</td>
+ *       <td>1, 24</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.minute - specifies how the minute is formatted. Allowed values are 
+ * "2-digit", "numeric". Although allowed values for minute are numeric and 2-digit, minute is always 
+ * displayed as 2 digits: 00-59.
+ *
+ * @property {string=} options.second - specifies whether the second should be displayed as "2-digit" 
+ * or "numeric". Although allowed values for second are numeric and 2-digit, second is always displayed 
+ * as 2 digits: 00-59.
+ *
+ * @property {string=} options.millisecond - specifies whether the millisecond should be displayed.
+ * Allowed value is "numeric".
+ *
+ * @property {string=} options.weekday - specifies how the day of the week is formatted. If absent, it 
+ * is not included in the date formatting. Allowed values are "narrow", "short", "long" indicating the 
+ * length of the string used.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>narrow</td>
+ *       <td>narrow name of the day of week.</td>
+ *       <td>M</td>
+ *     </tr>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>abbreviated name of the day of week.</td>
+ *       <td>Mon</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>wide name of the day of week.</td>
+ *       <td>Monday</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.era - specifies how the era is included in the formatted date. If 
+ * absent, it is not included in the date formatting. Allowed values are "narrow", "short", "long".
+ * Although allowed values are narrow, short, long, we only display era in abbreviated format: BC, AD.
+ *
+ * @property {string=} options.timeZoneName - allowed values are "short", "long".
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>short name of the time zone.</td>
+ *       <td>short: short name of the time zone: PDT, PST, EST, EDT. Note: Not all locales have 
+ *           translations for short time zone names, in this case we display the English short name</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>short name of the time zone.</td>
+ *       <td>Pacific Standard Time, Pacific Daylight Time.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.timeZone - The possible values of the timeZone property are valid IANA 
+ * timezone IDs. If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>IANA ID</td>
+ *       <td>America/Los_Angeles, Europe/Paris</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Offset</td>
+ *       <td>Etc/GMT-8. The offset is positive if the local time zone is behind UTC and negative if it is ahead. 
+ *           The offset range is between Etc/GMT-14 and Etc/GMT+12 (UTC-12 and UTC+14). Which means that Etc/GMT-8 
+ *           is equivalent to UTC+08.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.isoStrFormat - specifies in which format the ISO string is returned. 
+ * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto". 
+ * The default format is auto.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>offset</td>
+ *       <td>time zone offset from UTC.</td>
+ *       <td>2016-01-05T11:30:00-08:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>zulu</td>
+ *       <td>zulu time or UTC time.</td>
+ *       <td>2016-01-05T19:30:00Z</td>
+ *     </tr>
+ *     <tr>
+ *       <td>local</td>
+ *       <td>local time, does not contain time zone offset.</td>
+ *       <td>2016-01-05T19:30:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>auto</td>
+ *       <td>auto means the returned ISO string depends on the input string and options</td>
+ *       <td></td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.dst - The dst option can be used for time only values in conjunction with offset. 
+ * Setting dst to true indicates the time is in DST. By default the time is interpreted as standard time. 
+ * The possible values of dst are: "true" or "false". Default is "false".
+ * <p style='padding-left: 5px;'>
+ * Due to Daylight Saving Time, there is a possibility that a time exists twice If the time falls in the duplicate window 
+ * (switching from daylight saving time to standard time). The application can disambiguate the time in the overlapping 
+ * period using the dst option. Setting dst to true indicates the time is in DST. By default the time is interpreted as 
+ * standard time.<br/><br/>
+ * Example: On November 1st, 2105 in US the time between 1 and 2 AM will be repeated. The dst option can indicate the 
+ * distinction as follows. Initially the time is in DST, so dst:'true' is specified.<br/>
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset', dst : true};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:59:59 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-07:00
+ * <br/><br/>
+ * If the user does not pass the dst option, the time will be interpreted as standard time. 
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles'};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:59:59 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:59:59-08:00
+ * <br/><br/>
+ * At 2AM, DST will be over and the clock brings back to 1AM. Then the dst option should be false or not specified.
+ * var options = {formatType:'datetime', dateFormat:'short', timeFormat:'medium', timeZone:'America/Los_Angeles', isoStrFormat: 'offset'};<br/>
+ * var localeElements = oj.getLocaleElemnts();<br/>
+ * var str= "11/1/15 1:00:00 AM";<br/>
+ * cnv.parse(str, localeElements, options);-->2015-11-01T01:00:00-08:00
+ * </p>
+ *
+ * @property {boolean=} options.hour12 - specifies what time notation is used for formatting the time. 
+ * A true value uses the 12-hour clock and false uses the 24-hour clock (often called military time 
+ * in the US). This property is undefined if the hour property is not used when formatting the date.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>true</td>
+ *       <td>T13:10  is formatted as 1:10 PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>false</td>
+ *       <td>T13:10 is formatted as 13:10</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ * 
+ * @property {string=} options.pattern - a localized string pattern, where the the characters used in 
+ * pattern conform to Unicode CLDR for date time formats. This will override all other options 
+ * when present. <br/>
+ * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
+ * convenience of specifying an explicit format mask. Setting a 'pattern' will override the default 
+ * locale specific format.
+ * NOTE: The supported tokens for timezone are of 'Z', 'VV', and 'X'.<br/><br/>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Letter</th>
+ *       <th>Date or Time Component</th>
+ *       <th>Examples</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>G, GG, GGG</td>
+ *       <td>Era designator</td>
+ *       <td>AD</td>
+ *     </tr>
+ *     <tr>
+ *       <td>y</td>
+ *       <td>numeric representation of year</td>
+ *       <td>1, 2014</td>
+ *     </tr>
+ *     <tr>
+ *       <td>yy</td>
+ *       <td>2-digit representation of year</td>
+ *       <td>01, 14</td>
+ *     </tr>
+ *     <tr>
+ *       <td>yyyy</td>
+ *       <td>4-digit representation of year</td>
+ *       <td>0001, 2014</td>
+ *     </tr>
+ *     <tr>
+ *       <td>M</td>
+ *       <td>Numeric representation of month in year: (1-12)</td>
+ *       <td>1, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MM</td>
+ *       <td>2-digit representation of month in year: (01-12)</td>
+ *       <td>01, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMM</td>
+ *       <td>Formatted  name of the month, abbreviated</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMMM</td>
+ *       <td>Formatted  name of the month, wide</td>
+ *       <td>January</td>
+ *     </tr>
+ *     <tr>
+ *       <td>MMMMM</td>
+ *       <td>Formatted  name of the month, narrow</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLL</td>
+ *       <td>Stand-alone name of the month, abbreviated</td>
+ *       <td>Jan</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLLL</td>
+ *       <td>Stand-alone name of the month, wide</td>
+ *       <td>January</td>
+ *     </tr>
+ *     <tr>
+ *       <td>LLLLL</td>
+ *       <td>Stand-alone name of the month, narrow</td>
+ *       <td>J</td>
+ *     </tr>
+ *     <tr>
+ *       <td>d</td>
+ *       <td>Numeric representation of  day in month (1-31)</td>
+ *       <td>1, 21</td>
+ *     </tr>
+ *     <tr>
+ *       <td>dd</td>
+ *       <td>2-digit representation of  day in month (01-31)</td>
+ *       <td>01, 21</td>
+ *     </tr>
+ *     <tr>
+ *       <td>E, EE, EEE</td>
+ *       <td>Formatted name of day in week, abbreviated</td>
+ *       <td>Tue</td>
+ *     </tr>
+ *     <tr>
+ *       <td>EEEE</td>
+ *       <td>Formatted name of day in week, wide</td>
+ *       <td>Tuesday</td>
+ *     </tr>
+ *     <tr>
+ *       <td>EEEEE</td>
+ *       <td>Formatted name of day in week, narrow</td>
+ *       <td>T</td>
+ *     </tr>
+ *     <tr>
+ *       <td>c, cc, ccc</td>
+ *       <td>Stand-alone name of day in week, abbreviated</td>
+ *       <td>Tue</td>
+ *     </tr>
+ *     <tr>
+ *       <td>cccc</td>
+ *       <td>Stand-alone name of day in week, wide</td>
+ *       <td>Tuesday</td>
+ *     </tr>
+ *     <tr>
+ *       <td>ccccc</td>
+ *       <td>Stand-alone name of day in week, narrow</td>
+ *       <td>T</td>
+ *     </tr>
+ *     <tr>
+ *       <td>a</td>
+ *       <td>am/pm marker</td>
+ *       <td>PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>H</td>
+ *       <td>Numeric hour in day (0-23)</td>
+ *       <td>1, 23</td>
+ *     </tr>
+ *     <tr>
+ *       <td>HH</td>
+ *       <td>2-digit hour in day (00-23)</td>
+ *       <td>01, 23</td>
+ *     </tr>
+ *     <tr>
+ *       <td>h</td>
+ *       <td>Numeric  hour in am/pm (1-12)</td>
+ *       <td>1, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>hh</td>
+ *       <td>2-digit hour in day (01-12)</td>
+ *       <td>01, 12</td>
+ *     </tr>
+ *     <tr>
+ *       <td>k</td>
+ *       <td>Numeric  hour in day (1-24)</td>
+ *       <td>1, 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>kk</td>
+ *       <td>2-digit hour in day (1-24)</td>
+ *       <td>01, 24</td>
+ *     </tr>
+ *     <tr>
+ *       <td>K</td>
+ *       <td>Numeric  hour in am/pm (0-11)</td>
+ *       <td>1, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>KK</td>
+ *       <td>2-digit hour in am/pm (0-11)</td>
+ *       <td>01, 11</td>
+ *     </tr>
+ *     <tr>
+ *       <td>m, mm</td>
+ *       <td>2-digit  minute in hour (00-59)</td>
+ *       <td>05, 59</td>
+ *     </tr>
+ *     <tr>
+ *       <td>s, ss</td>
+ *       <td>2-digit second in minute (00-59)</td>
+ *       <td>01, 59</td>
+ *     </tr>
+ *     <tr>
+ *       <td>S</td>
+ *       <td>Numeric  Millisecond (0-999)</td>
+ *       <td>1, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>SS</td>
+ *       <td>2-digit Millisecond (00-999)</td>
+ *       <td>01, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>SSS</td>
+ *       <td>3-digit Millisecond (000-999)</td>
+ *       <td>001, 999</td>
+ *     </tr>
+ *     <tr>
+ *       <td>z, zz, zzz</td>
+ *       <td>Abbreviated time zone name</td>
+ *       <td>PDT, PST</td>
+ *     </tr>
+ *     <tr>
+ *       <td>zzzz</td>
+ *       <td>Full time zone name</td>
+ *       <td>Pacific Standard Time, Pacific Daylight Time</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Z, ZZ, ZZZ</td>
+ *       <td>Sign hours minutes</td>
+ *       <td>-0800</td>
+ *     </tr>
+ *     <tr>
+ *       <td>X</td>
+ *       <td>Sign hours</td>
+ *       <td>-08</td>
+ *     </tr>
+ *     <tr>
+ *       <td>XX</td>
+ *       <td>Sign hours minutes</td>
+ *       <td>-0800</td>
+ *     </tr>
+ *     <tr>
+ *       <td>XXX</td>
+ *       <td>Sign hours:minutes</td>
+ *       <td>-08:00</td>
+ *     </tr>
+ *     <tr>
+ *       <td>VV</td>
+ *       <td>Time zone ID</td>
+ *       <td>Americs/Los_Angeles</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * 
+ * @property {string=} options.formatType - determines the 'standard' date and/or time format lengths 
+ * to use. Allowed values: "date", "time", "datetime". See 'dateFormat' and 'timeFormat' options. 
+ * When set a value must be specified.
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Description</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>datetime</td>
+ *       <td>date and time portions are displayed.</td>
+ *       <td>September 20, 2015 12:04 PM September 20, 2015 12:05:35 PM Pacific Daylight Time</td>
+ *     </tr>
+ *     <tr>
+ *       <td>date</td>
+ *       <td>date portion only is displayed.</td>
+ *       <td>September 20, 2015</td>
+ *     </tr>
+ *     <tr>
+ *       <td>time</td>
+ *       <td>time portion only is displayed.</td>
+ *       <td>12:05:35</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.dateFormat - specifies the standard date format length to use when 
+ * formatType is set to "date" or "datetime". Allowed values are : "short" (default), "medium", "long", 
+ * "full". 
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>9/20/15</td>
+ *     </tr>
+ *     <tr>
+ *       <td>medium</td>
+ *       <td>Sep 20, 2015</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>September 20, 2015</td>
+ *     </tr>
+ *     <tr>
+ *       <td>full</td>
+ *       <td>Sunday, September 20, 2015</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ *
+ * @property {string=} options.timeFormat - specifies the standard time format length to use when 
+ * 'formatType' is set to "time" or "datetime". Allowed values: "short" (default), "medium", "long", 
+ * "full". 
+ * <p style='padding-left: 5px;'>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Option</th>
+ *       <th>Example</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>short</td>
+ *       <td>12:11 PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>medium</td>
+ *       <td>12:11:23 PM</td>
+ *     </tr>
+ *     <tr>
+ *       <td>long</td>
+ *       <td>12:12:19 PM PDT</td>
+ *     </tr>
+ *     <tr>
+ *       <td>full</td>
+ *       <td>12:12:37 PM Pacific Daylight Time</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * </p>
+ * 
+ * @example <caption>Create a date time converter using no options. This uses the default value for 
+ * year, month, day properties</caption>
+ * var converter = OraDateTimeConverter.getInstance();
+ * var localeElements;
+ * var resolved = converter.resolvedOptions(localeElements);
+ * // logs "day=numeric, month=numeric, year=numeric"
+ * console.log("day=" + resolved.day + ", month=" + resolved.month + ", year=" + resolved.year);
+ * <br/>
+ * 
+ * @example <caption>Use a converter using the ECMA options to represent date</caption>
+ * var options = { year:'2-digit', month: '2-digit', day: '2-digit'};
+ * var localeElements;
+ * var converter = OraDateTimeConverter.getInstance();
+ * var date = "2016-04-17";
+ * var str = converter.format(date, localeElements, options);<br/>
+ * 
+ * 
+ * @example <caption>Converter using the 'pattern' option</caption>
+ * var options = {pattern: 'MM-dd-yyyy'}; 
+ * var localeElements;
+ * var converter = OraDateTimeConverter.getInstance();
+ * var date = "2016-04-17";
+ * var str = converter.format(date, localeElements, options);<br/>
+ * 
+ * @example <caption>Converter using predefined style</caption>
+ * var options = {formatType: 'date', dateFormat: 'medium'}; 
+ * var localeElements;
+ * var converter = OraDateTimeConverter.getInstance();
+ * var date = "2016-04-17";
+ * var str = converter.format(date, localeElements, options);<br/>
+ *
+ * @example <caption>Create a date time converter using specific pattern with IANA timezone ID with 
+ * isoStrFormat of offset.</caption>
+ * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'America/Los_Angeles', isoStrFormat: 'offset'};
+ * var localeElements;
+ * var converter = OraDateTimeConverter.getInstance();
+ * var date = "2016-04-17T13:05:30";
+ * var str = converter.format(date, localeElements, options);<br/>
+ *
+ * @example <caption>Create a date time converter using specific pattern with Etc/GMT timezone ID with 
+ * isoStrFormat of zulu.</caption>
+ * var options = {pattern: 'MM/dd/yy hh:mm:ss a Z', timeZone: 'Etc/GMT-08:00', isoStrFormat: 'zulu'};  
+ * var localeElements;
+ * var converter = OraDateTimeConverter.getInstance();
+ * var str = "01/05/16 01:01:01 AM +0800";
+ * var obj = converter.parse(str, localeElements, options);<br/>
+ * 
+ * @name OraDateTimeConverter
  */
 
 /**
@@ -7526,7 +8594,7 @@ OraDateTimeConverter = (function () {
   var _localeDataCache = {};
   var _timeZoneDataCache = {};
   var _isLeapYear;
-  var _getDaysInMonth; 
+  var _getDaysInMonth;
   var _toAvailableFormatsKeys;
   var _expandAvailableDateFormatsPattern;
   var _expandAvailableTimeFormatsPattern;
@@ -7561,7 +8629,7 @@ OraDateTimeConverter = (function () {
   var _getPatternResolvedOptions;
   var _getECMAResolvedOptions;
   var _getRelativeTimeResolvedOptions;
-  var _validateRange; 
+  var _validateRange;
   var _getCompareISODatesOptions;
   var _arrayIndexOfDay;
   var _getLocaleDecimalSeparator;
@@ -7593,7 +8661,7 @@ OraDateTimeConverter = (function () {
   var _getBCP47Lang;
   var _getUnits;
   var _daysToMonths;
-  
+
   var _YEAR_AND_DATE_REGEXP = /(\d{1,4})\D+?(\d{1,4})/g;
   var _YMD_REGEXP = /(\d{1,4})\D+?(\d{1,4})\D+?(\d{1,4})/g;
   var _MONTH_REGEXP_FMT = /^[M][^M]|[^M]M[^M]|[^M]M$|^M$/g;
@@ -7609,503 +8677,503 @@ OraDateTimeConverter = (function () {
   var _TIME_FORMATS_Z_TOKENS = /\s?(?:\(|\[)?z{1,4}(?:\)|\])?/g;
   var tzNotSupported = false;
   var _DAYS_INDEXES = {
-    0 : "sun",
-    1 : "mon",
-    2 : "tue",
-    3 : "wed",
-    4 : "thu",
-    5 : "fri",
-    6 : "sat"
+    0: "sun",
+    1: "mon",
+    2: "tue",
+    3: "wed",
+    4: "thu",
+    5: "fri",
+    6: "sat"
   };
-  
+
   var _THRESHOLDS = {
-        s: 46,  // seconds to minute
-        m: 46,  // minutes to hour
-        h: 23,  // hours to day
-        d: 7,   // days to week
-        w: 4,   //weeks to 
-        M: 12   // months to year
+    s: 46, // seconds to minute
+    m: 46, // minutes to hour
+    h: 23, // hours to day
+    d: 7, // days to week
+    w: 4, //weeks to 
+    M: 12   // months to year
   };
 
   var _ZULU = 'zulu';
   var _LOCAL = 'local';
   var _AUTO = 'auto';
-  var _INVARIANT= 'invariant';
+  var _INVARIANT = 'invariant';
   var _OFFSET = 'offset';
   var _UTC = 'UTC';
-  
+
   var _ALNUM_REGEXP = '(\\D+|\\d\\d?\\D|\\d\\d?|\\D+\\d\\d?)',
-    _NON_DIGIT_REGEXP = '(\\D+|\\D+\\d\\d?)',
-    _NON_DIGIT_OPT_REGEXP = '(\\D*)',
-    _STR_REGEXP = '(.+?)',
-    _TWO_DIGITS_REGEXP = '(\\d\\d?)',
-    _THREE_DIGITS_REGEXP = '(\\d{1,3})',
-    _FOUR_DIGITS_REGEXP = '(\\d{1,4})',
-    _TZ_HM_REGEXP = '([+-]?\\d{1,4})',
-    _TZ_H_REGEXP = '([+-]?\\d{1,2})',
-    _TZ_H_SEP_M_REGEXP = '([+-]?\\d{1,2}:\\d{1,2})',
-    _SLASH_REGEXP = '(\\/)';
+      _NON_DIGIT_REGEXP = '(\\D+|\\D+\\d\\d?)',
+      _NON_DIGIT_OPT_REGEXP = '(\\D*)',
+      _STR_REGEXP = '(.+?)',
+      _TWO_DIGITS_REGEXP = '(\\d\\d?)',
+      _THREE_DIGITS_REGEXP = '(\\d{1,3})',
+      _FOUR_DIGITS_REGEXP = '(\\d{1,4})',
+      _TZ_HM_REGEXP = '([+-]?\\d{1,4})',
+      _TZ_H_REGEXP = '([+-]?\\d{1,2})',
+      _TZ_H_SEP_M_REGEXP = '([+-]?\\d{1,2}:\\d{1,2})',
+      _SLASH_REGEXP = '(\\/)';
 
   var _PROPERTIES_MAP = {
-    'MMM' : {
-      'token' : 'months',
-      'style' : 'format',
-      'mLen' : 'abbreviated',
-      'matchIndex' : 0,
-      'key' : 'month',
-      'value' : 'short',
-      'regExp' : _ALNUM_REGEXP
+    'MMM': {
+      'token': 'months',
+      'style': 'format',
+      'mLen': 'abbreviated',
+      'matchIndex': 0,
+      'key': 'month',
+      'value': 'short',
+      'regExp': _ALNUM_REGEXP
     },
-    'MMMM' : {
-      'token' : 'months',
-      'style' : 'format',
-      'mLen' : 'wide',
-      'matchIndex' : 0,
-      'key' : 'month',
-      'value' : 'long',
-      'regExp' : _ALNUM_REGEXP
+    'MMMM': {
+      'token': 'months',
+      'style': 'format',
+      'mLen': 'wide',
+      'matchIndex': 0,
+      'key': 'month',
+      'value': 'long',
+      'regExp': _ALNUM_REGEXP
     },
-    'MMMMM' : {
-      'token' : 'months',
-      'style' : 'format',
-      'mLen' : 'narrow',
-      'matchIndex' : 0,
-      'key' : 'month',
-      'value' : 'narrow',
-      'regExp' : _ALNUM_REGEXP
+    'MMMMM': {
+      'token': 'months',
+      'style': 'format',
+      'mLen': 'narrow',
+      'matchIndex': 0,
+      'key': 'month',
+      'value': 'narrow',
+      'regExp': _ALNUM_REGEXP
     },
-    'LLL' : {
-      'token' : 'months',
-      'style' : 'stand-alone',
-      'mLen' : 'abbreviated',
-      'matchIndex' : 1,
-      'key' : 'month',
-      'value' : 'short',
-      'regExp' : _ALNUM_REGEXP
+    'LLL': {
+      'token': 'months',
+      'style': 'stand-alone',
+      'mLen': 'abbreviated',
+      'matchIndex': 1,
+      'key': 'month',
+      'value': 'short',
+      'regExp': _ALNUM_REGEXP
     },
-    'LLLL' : {
-      'token' : 'months',
-      'style' : 'stand-alone',
-      'mLen' : 'wide',
-      'matchIndex' : 1,
-      'key' : 'month',
-      'value' : 'long',
-      'regExp' : _ALNUM_REGEXP
+    'LLLL': {
+      'token': 'months',
+      'style': 'stand-alone',
+      'mLen': 'wide',
+      'matchIndex': 1,
+      'key': 'month',
+      'value': 'long',
+      'regExp': _ALNUM_REGEXP
     },
-    'LLLLL' : {
-      'token' : 'months',
-      'style' : 'stand-alone',
-      'mLen' : 'narrow',
-      'matchIndex' : 1,
-      'key' : 'month',
-      'value' : 'narrow',
-      'regExp' : _ALNUM_REGEXP
+    'LLLLL': {
+      'token': 'months',
+      'style': 'stand-alone',
+      'mLen': 'narrow',
+      'matchIndex': 1,
+      'key': 'month',
+      'value': 'narrow',
+      'regExp': _ALNUM_REGEXP
     },
-    'E' : {
-      'token' : 'days',
-      'style' : 'format',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 0,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'E': {
+      'token': 'days',
+      'style': 'format',
+      'dLen': 'abbreviated',
+      'matchIndex': 0,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'EE' : {
-      'token' : 'days',
-      'style' : 'format',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 0,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'EE': {
+      'token': 'days',
+      'style': 'format',
+      'dLen': 'abbreviated',
+      'matchIndex': 0,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'EEE' : {
-      'token' : 'days',
-      'style' : 'format',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 0,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'EEE': {
+      'token': 'days',
+      'style': 'format',
+      'dLen': 'abbreviated',
+      'matchIndex': 0,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'EEEE' : {
-      'token' : 'days',
-      'style' : 'format',
-      'dLen' : 'wide',
-      'matchIndex' : 0,
-      'key' : 'weekday',
-      'value' : 'long',
-      'regExp' : _NON_DIGIT_REGEXP
+    'EEEE': {
+      'token': 'days',
+      'style': 'format',
+      'dLen': 'wide',
+      'matchIndex': 0,
+      'key': 'weekday',
+      'value': 'long',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'EEEEE' : {
-      'token' : 'days',
-      'style' : 'format',
-      'dLen' : 'narrow',
-      'matchIndex' : 0,
-      'key' : 'weekday',
-      'value' : 'narrow',
-      'regExp' : _NON_DIGIT_REGEXP
+    'EEEEE': {
+      'token': 'days',
+      'style': 'format',
+      'dLen': 'narrow',
+      'matchIndex': 0,
+      'key': 'weekday',
+      'value': 'narrow',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'c' : {
-      'token' : 'days',
-      'style' : 'stand-alone',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 1,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'c': {
+      'token': 'days',
+      'style': 'stand-alone',
+      'dLen': 'abbreviated',
+      'matchIndex': 1,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'cc' : {
-      'token' : 'days',
-      'style' : 'stand-alone',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 1,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'cc': {
+      'token': 'days',
+      'style': 'stand-alone',
+      'dLen': 'abbreviated',
+      'matchIndex': 1,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'ccc' : {
-      'token' : 'days',
-      'style' : 'stand-alone',
-      'dLen' : 'abbreviated',
-      'matchIndex' : 1,
-      'key' : 'weekday',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'ccc': {
+      'token': 'days',
+      'style': 'stand-alone',
+      'dLen': 'abbreviated',
+      'matchIndex': 1,
+      'key': 'weekday',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'cccc' : {
-      'token' : 'days',
-      'style' : 'stand-alone',
-      'dLen' : 'wide',
-      'matchIndex' : 1,
-      'key' : 'weekday',
-      'value' : 'long',
-      'regExp' : _NON_DIGIT_REGEXP
+    'cccc': {
+      'token': 'days',
+      'style': 'stand-alone',
+      'dLen': 'wide',
+      'matchIndex': 1,
+      'key': 'weekday',
+      'value': 'long',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'ccccc' : {
-      'token' : 'days',
-      'style' : 'stand-alone',
-      'dLen' : 'narrow',
-      'matchIndex' : 1,
-      'key' : 'weekday',
-      'value' : 'narrow',
-      'regExp' : _NON_DIGIT_REGEXP
+    'ccccc': {
+      'token': 'days',
+      'style': 'stand-alone',
+      'dLen': 'narrow',
+      'matchIndex': 1,
+      'key': 'weekday',
+      'value': 'narrow',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'h' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 11,
-      'start2' : 1,
-      'end2' : 12,
-      'key' : 'hour',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'h': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 11,
+      'start2': 1,
+      'end2': 12,
+      'key': 'hour',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'hh' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 11,
-      'start2' : 1,
-      'end2' : 12,
-      'key' : 'hour',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'hh': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 11,
+      'start2': 1,
+      'end2': 12,
+      'key': 'hour',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'K' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 11,
-      'start2' : 0,
-      'end2' : 11,
-      'key' : 'hour',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'K': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 11,
+      'start2': 0,
+      'end2': 11,
+      'key': 'hour',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'KK' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 11,
-      'start2' : 0,
-      'end2' : 11,
-      'key' : 'hour',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'KK': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 11,
+      'start2': 0,
+      'end2': 11,
+      'key': 'hour',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'H' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 23,
-      'start2' : 0,
-      'end2' : 23,
-      'key' : 'hour',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'H': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 23,
+      'start2': 0,
+      'end2': 23,
+      'key': 'hour',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'HH' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 23,
-      'start2' : 0,
-      'end2' : 23,
-      'key' : 'hour',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'HH': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 23,
+      'start2': 0,
+      'end2': 23,
+      'key': 'hour',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'k' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 23,
-      'start2' : 1,
-      'end2' : 24,
-      'key' : 'hour',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'k': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 23,
+      'start2': 1,
+      'end2': 24,
+      'key': 'hour',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'kk' : {
-      'token' : 'time',
-      'timePart' : 'hour',
-      'start1' : 0,
-      'end1' : 23,
-      'start2' : 1,
-      'end2' : 24,
-      'key' : 'hour',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'kk': {
+      'token': 'time',
+      'timePart': 'hour',
+      'start1': 0,
+      'end1': 23,
+      'start2': 1,
+      'end2': 24,
+      'key': 'hour',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'm' : {
-      'token' : 'time',
-      'timePart' : 'minute',
-      'start1' : 0,
-      'end1' : 59,
-      'start2' : 0,
-      'end2' : 59,
-      'key' : 'minute',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'm': {
+      'token': 'time',
+      'timePart': 'minute',
+      'start1': 0,
+      'end1': 59,
+      'start2': 0,
+      'end2': 59,
+      'key': 'minute',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'mm' : {
-      'token' : 'time',
-      'timePart' : 'minute',
-      'start1' : 0,
-      'end1' : 59,
-      'start2' : 0,
-      'end2' : 59,
-      'key' : 'minute',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'mm': {
+      'token': 'time',
+      'timePart': 'minute',
+      'start1': 0,
+      'end1': 59,
+      'start2': 0,
+      'end2': 59,
+      'key': 'minute',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    's' : {
-      'token' : 'time',
-      'timePart' : 'second',
-      'start1' : 0,
-      'end1' : 59,
-      'start2' : 0,
-      'end2' : 59,
-      'key' : 'second',
-      'value' : 'numeric',
-      'regExp' : _TWO_DIGITS_REGEXP
+    's': {
+      'token': 'time',
+      'timePart': 'second',
+      'start1': 0,
+      'end1': 59,
+      'start2': 0,
+      'end2': 59,
+      'key': 'second',
+      'value': 'numeric',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'ss' : {
-      'token' : 'time',
-      'timePart' : 'second',
-      'start1' : 0,
-      'end1' : 59,
-      'start2' : 0,
-      'end2' : 59,
-      'key' : 'second',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'ss': {
+      'token': 'time',
+      'timePart': 'second',
+      'start1': 0,
+      'end1': 59,
+      'start2': 0,
+      'end2': 59,
+      'key': 'second',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'S' : {
-      'token' : 'time',
-      'timePart' : 'millisec',
-      'start1' : 0,
-      'end1' : 999,
-      'start2' : 0,
-      'end2' : 999,
-      'key' : 'millisecond',
-      'value' : 'numeric',
-      'regExp' : _THREE_DIGITS_REGEXP
+    'S': {
+      'token': 'time',
+      'timePart': 'millisec',
+      'start1': 0,
+      'end1': 999,
+      'start2': 0,
+      'end2': 999,
+      'key': 'millisecond',
+      'value': 'numeric',
+      'regExp': _THREE_DIGITS_REGEXP
     },
-    'SS' : {
-      'token' : 'time',
-      'timePart' : 'millisec',
-      'start1' : 0,
-      'end1' : 999,
-      'start2' : 0,
-      'end2' : 999,
-      'key' : 'millisecond',
-      'value' : 'numeric',
-      'regExp' : _THREE_DIGITS_REGEXP
+    'SS': {
+      'token': 'time',
+      'timePart': 'millisec',
+      'start1': 0,
+      'end1': 999,
+      'start2': 0,
+      'end2': 999,
+      'key': 'millisecond',
+      'value': 'numeric',
+      'regExp': _THREE_DIGITS_REGEXP
     },
-    'SSS' : {
-      'token' : 'time',
-      'timePart' : 'millisec',
-      'start1' : 0,
-      'end1' : 999,
-      'start2' : 0,
-      'end2' : 999,
-      'key' : 'millisecond',
-      'value' : 'numeric',
-      'regExp' : _THREE_DIGITS_REGEXP
+    'SSS': {
+      'token': 'time',
+      'timePart': 'millisec',
+      'start1': 0,
+      'end1': 999,
+      'start2': 0,
+      'end2': 999,
+      'key': 'millisecond',
+      'value': 'numeric',
+      'regExp': _THREE_DIGITS_REGEXP
     },
-    'd' : {
-      'token' : 'dayOfMonth',
-      'key' : 'day',
-      'value' : 'numeric',
-      'getPartIdx' : 2,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'd': {
+      'token': 'dayOfMonth',
+      'key': 'day',
+      'value': 'numeric',
+      'getPartIdx': 2,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'dd' : {
-      'token' : 'dayOfMonth',
-      'key' : 'day',
-      'value' : '2-digit',
-      'getPartIdx' : 2,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'dd': {
+      'token': 'dayOfMonth',
+      'key': 'day',
+      'value': '2-digit',
+      'getPartIdx': 2,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'M' : {
-      'token' : 'monthIndex',
-      'key' : 'month',
-      'value' : 'numeric',
-      'getPartIdx' : 1,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'M': {
+      'token': 'monthIndex',
+      'key': 'month',
+      'value': 'numeric',
+      'getPartIdx': 1,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'MM' : {
-      'token' : 'monthIndex',
-      'key' : 'month',
-      'value' : '2-digit',
-      'getPartIdx' : 1,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'MM': {
+      'token': 'monthIndex',
+      'key': 'month',
+      'value': '2-digit',
+      'getPartIdx': 1,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'L' : {
-      'token' : 'monthIndex',
-      'key' : 'month',
-      'value' : 'numeric',
-      'getPartIdx' : 1,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'L': {
+      'token': 'monthIndex',
+      'key': 'month',
+      'value': 'numeric',
+      'getPartIdx': 1,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'LL' : {
-      'token' : 'monthIndex',
-      'key' : 'month',
-      'value' : '2-digit',
-      'getPartIdx' : 1,
-      'regExp' : _TWO_DIGITS_REGEXP
+    'LL': {
+      'token': 'monthIndex',
+      'key': 'month',
+      'value': '2-digit',
+      'getPartIdx': 1,
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'y' : {
-      'token' : 'year',
-      'key' : 'year',
-      'value' : 'numeric',
-      'regExp' : _FOUR_DIGITS_REGEXP
+    'y': {
+      'token': 'year',
+      'key': 'year',
+      'value': 'numeric',
+      'regExp': _FOUR_DIGITS_REGEXP
     },
-    'yy' : {
-      'token' : 'year',
-      'key' : 'year',
-      'value' : '2-digit',
-      'regExp' : _TWO_DIGITS_REGEXP
+    'yy': {
+      'token': 'year',
+      'key': 'year',
+      'value': '2-digit',
+      'regExp': _TWO_DIGITS_REGEXP
     },
-    'yyyy' : {
-      'token' : 'year',
-      'key' : 'year',
-      'value' : 'numeric',
-      'regExp' : _FOUR_DIGITS_REGEXP
+    'yyyy': {
+      'token': 'year',
+      'key': 'year',
+      'value': 'numeric',
+      'regExp': _FOUR_DIGITS_REGEXP
     },
-    'a' : {
-      'token' : 'ampm',
-      'key' : 'hour12',
-      'value' : true,
-      'regExp' : _NON_DIGIT_OPT_REGEXP
+    'a': {
+      'token': 'ampm',
+      'key': 'hour12',
+      'value': true,
+      'regExp': _NON_DIGIT_OPT_REGEXP
     },
-    'z' : {
-      'token' : 'tzAbbrev',
-      'regExp' : _STR_REGEXP
+    'z': {
+      'token': 'tzAbbrev',
+      'regExp': _STR_REGEXP
     },
-    'v' : {
-      'token'  : 'tzAbbrev',
-      'key'    : 'timeZoneName',
-      'value'  : 'short',
-      'regExp' : _STR_REGEXP
+    'v': {
+      'token': 'tzAbbrev',
+      'key': 'timeZoneName',
+      'value': 'short',
+      'regExp': _STR_REGEXP
     },
-    'zz' : {
-      'token' : 'tzAbbrev',
-      'regExp' : _STR_REGEXP
+    'zz': {
+      'token': 'tzAbbrev',
+      'regExp': _STR_REGEXP
     },
-    'zzz' : {
-      'token' : 'tzAbbrev',
-      'regExp' : _STR_REGEXP
+    'zzz': {
+      'token': 'tzAbbrev',
+      'regExp': _STR_REGEXP
     },
-    'zzzz' : {
-      'token' : 'tzFull',
-      'regExp' : _STR_REGEXP
+    'zzzz': {
+      'token': 'tzFull',
+      'regExp': _STR_REGEXP
     },
-    'Z' : {
-      'token' : 'tzhm',
-      'regExp' : _TZ_HM_REGEXP
+    'Z': {
+      'token': 'tzhm',
+      'regExp': _TZ_HM_REGEXP
     },
-    'ZZ' : {
-      'token' : 'tzhm',
-      'regExp' : _TZ_HM_REGEXP
+    'ZZ': {
+      'token': 'tzhm',
+      'regExp': _TZ_HM_REGEXP
     },
-    'ZZZ' : {
-      'token' : 'tzhm',
-      'regExp' : _TZ_HM_REGEXP
+    'ZZZ': {
+      'token': 'tzhm',
+      'regExp': _TZ_HM_REGEXP
     },
-    'X' : {
-      'token' : 'tzh',
-      'regExp' : _TZ_H_REGEXP
+    'X': {
+      'token': 'tzh',
+      'regExp': _TZ_H_REGEXP
     },
-    'XX' : {
-      'token' : 'tzhm',
-      'key' : 'XX',
-      'regExp' : _TZ_HM_REGEXP
+    'XX': {
+      'token': 'tzhm',
+      'key': 'XX',
+      'regExp': _TZ_HM_REGEXP
     },
-    'XXX' : {
-      'token' : 'tzhsepm',
-      'regExp' : _TZ_H_SEP_M_REGEXP
+    'XXX': {
+      'token': 'tzhsepm',
+      'regExp': _TZ_H_SEP_M_REGEXP
     },
-    'VV' : {
-      'token' : 'tzid',
-      'regExp' : _STR_REGEXP
+    'VV': {
+      'token': 'tzid',
+      'regExp': _STR_REGEXP
     },
-    'G' : {
-      'token' : 'era',
-      'key' : 'era',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'G': {
+      'token': 'era',
+      'key': 'era',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'GG' : {
-      'token' : 'era',
-      'key' : 'era',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'GG': {
+      'token': 'era',
+      'key': 'era',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'GGG' : {
-      'token' : 'era',
-      'key' : 'era',
-      'value' : 'short',
-      'regExp' : _NON_DIGIT_REGEXP
+    'GGG': {
+      'token': 'era',
+      'key': 'era',
+      'value': 'short',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'GGGG' : {
-      'token' : 'era',
-      'key' : 'era',
-      'value' : 'long',
-      'regExp' : _NON_DIGIT_REGEXP
+    'GGGG': {
+      'token': 'era',
+      'key': 'era',
+      'value': 'long',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    'GGGGG' : {
-      'token' : 'era',
-      'key' : 'era',
-      'value' : 'narrow',
-      'regExp' : _NON_DIGIT_REGEXP
+    'GGGGG': {
+      'token': 'era',
+      'key': 'era',
+      'value': 'narrow',
+      'regExp': _NON_DIGIT_REGEXP
     },
-    '/' : {
-      'token' : 'slash',
-      'regExp' : _SLASH_REGEXP
+    '/': {
+      'token': 'slash',
+      'regExp': _SLASH_REGEXP
     }
   };
 
@@ -8123,8 +9191,8 @@ OraDateTimeConverter = (function () {
 
   //Each locale has 12 or 24 hour preferred format
   _isHour12 = function (localeElements) {
-    var mainNode = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
-    var territory = OraI18nUtils.getBCP47Region(mainNode);
+    var locale = localeElements['_ojLocale_']
+    var territory = OraI18nUtils.getBCP47Region(locale);
     var prefferedHours = localeElements['supplemental']['prefferedHours'];
     var hour12 = prefferedHours[territory];
     return hour12 === 'h';
@@ -8169,9 +9237,9 @@ OraDateTimeConverter = (function () {
     var fmtType = getOption('formatType', 'string', ['date', 'time',
       'datetime'], 'date');
     var dStyle = getOption('dateFormat', 'string',
-      ['short', 'medium', 'long', 'full'], 'short');
+        ['short', 'medium', 'long', 'full'], 'short');
     var tStyle = getOption('timeFormat', 'string',
-      ['short', 'medium', 'long', 'full'], 'short');
+        ['short', 'medium', 'long', 'full'], 'short');
     var cal = mainNode['dates']['calendars']['gregorian'];
     var dateFormats = cal['dateFormats'];
     var timeFormats = cal['timeFormats'];
@@ -8212,10 +9280,10 @@ OraDateTimeConverter = (function () {
         break;
     }
     if (dStyleFmt !== undefined && (fmtType === "datetime" ||
-      fmtType === "date"))
+        fmtType === "date"))
       format = dStyleFmt;
     if (tStyleFmt !== undefined && (fmtType === "datetime" ||
-      fmtType === "time")) {
+        fmtType === "time")) {
       if (tzNotSupported) {
         tStyleFmt = tStyleFmt.replace(_TIME_FORMATS_Z_TOKENS, '');
 
@@ -8270,11 +9338,11 @@ OraDateTimeConverter = (function () {
     var errorInfo;
     var samplePattern;
     var isDate = options['year'] !== undefined || options['month'] !==
-      undefined ||
-      options['weekday'] !== undefined || options['day'] !== undefined;
+        undefined ||
+        options['weekday'] !== undefined || options['day'] !== undefined;
     var isTime = options['hour'] !== undefined || options['minute'] !==
-      undefined ||
-      options['second'] !== undefined;
+        undefined ||
+        options['second'] !== undefined;
     if (isDate && isTime) {
       samplePattern = "MM/dd/yy hh:mm:ss a";
     }
@@ -8285,14 +9353,14 @@ OraDateTimeConverter = (function () {
       samplePattern = "hh:mm:ss a";
     }
     msg = "Unexpected character(s) " + m + " encountered in the pattern \"" +
-      format + " An example of a valid pattern is \"" + samplePattern + '".';
+        format + " An example of a valid pattern is \"" + samplePattern + '".';
     error = new SyntaxError(msg);
     errorInfo = {
-      'errorCode' : 'optionValueInvalid',
-      'parameterMap' : {
-        'propertyName' : 'pattern',
-        'propertyValue' : format,
-        'propertyValueHint ' : samplePattern
+      'errorCode': 'optionValueInvalid',
+      'parameterMap': {
+        'propertyName': 'pattern',
+        'propertyValue': format,
+        'propertyValueHint ': samplePattern
       }
     };
     error['errorInfo'] = errorInfo;
@@ -8304,19 +9372,19 @@ OraDateTimeConverter = (function () {
   //hour12=true, H entries are removed from availableFormats in order to
   //avoid wrong matching for hour.
   _basicFormatMatcher = function (dateTimeKeys, localeElements, isDate,
-    hour12)
+      hour12)
   {
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var availableFormats = mainNode['dates']['calendars']['gregorian']
-      ['dateTimeFormats']['availableFormats'];
+    ['dateTimeFormats']['availableFormats'];
     var dateTimeFormats = ["weekday", "era", "year", "month", "day",
       "hour", "minute", "second", "timeZoneName"];
     var values = {
-      '2-digit' : 0,
-      'numeric' : 1,
-      'narrow' : 2,
-      'short' : 3,
-      'long' : 4
+      '2-digit': 0,
+      'numeric': 1,
+      'narrow': 2,
+      'short': 3,
+      'long': 4
     };
 
     var removalPenalty = 120;
@@ -8346,7 +9414,7 @@ OraDateTimeConverter = (function () {
         }
         if (_PROPERTIES_MAP[m] !== undefined) {
           format[_PROPERTIES_MAP[m]['key']] =
-            _PROPERTIES_MAP[m]['value'];
+              _PROPERTIES_MAP[m]['value'];
         }
       }
       if (skip)
@@ -8365,7 +9433,7 @@ OraDateTimeConverter = (function () {
           var optionsPropIndex = values[optionsProp];
           var formatPropIndex = values[formatProp];
           var delta = Math.max(Math.min(formatPropIndex -
-            optionsPropIndex, 2), -2);
+              optionsPropIndex, 2), -2);
           if (delta === 2) {
             score -= longMorePenalty;
           }
@@ -8405,44 +9473,44 @@ OraDateTimeConverter = (function () {
     //date key
     var option = getOption('era', 'string', ['narrow', 'short', 'long']);
     dateKey += _appendToKey(dateOptions, 'era',
-      option, {
-        'narrow' : 'GGGGG',
-        'short' : 'GGG',
-        'long' : 'GGGG'
-      });
+        option, {
+          'narrow': 'GGGGG',
+          'short': 'GGG',
+          'long': 'GGGG'
+        });
 
     option = getOption('year', 'string', ['2-digit', 'numeric']);
     dateKey += _appendToKey(dateOptions, 'year',
-      option, {
-        '2-digit' : 'yy',
-        'numeric' : 'y'
-      });
+        option, {
+          '2-digit': 'yy',
+          'numeric': 'y'
+        });
 
     option = getOption('month', 'string', ['2-digit', 'numeric', 'narrow',
       'short', 'long']);
     dateKey += _appendToKey(dateOptions, 'month',
-      option, {
-        '2-digit' : 'MM',
-        'numeric' : 'M',
-        'narrow' : 'MMMMM',
-        'short' : 'MMM',
-        'long' : 'MMMM'
-      });
+        option, {
+          '2-digit': 'MM',
+          'numeric': 'M',
+          'narrow': 'MMMMM',
+          'short': 'MMM',
+          'long': 'MMMM'
+        });
 
     option = getOption('weekday', 'string', ['narrow', 'short', 'long']);
     dateKey += _appendToKey(dateOptions, 'weekday',
-      option, {
-        'narrow' : 'EEEEE',
-        'short' : 'E',
-        'long' : 'EEEE'
-      });
+        option, {
+          'narrow': 'EEEEE',
+          'short': 'E',
+          'long': 'EEEE'
+        });
 
     option = getOption('day', 'string', ['2-digit', 'numeric']);
     dateKey += _appendToKey(dateOptions, 'day',
-      option, {
-        '2-digit' : 'dd',
-        'numeric' : 'd'
-      });
+        option, {
+          '2-digit': 'dd',
+          'numeric': 'd'
+        });
 
     //time key
     var hr12 = getOption('hour12', 'boolean', [true, false]);
@@ -8451,38 +9519,38 @@ OraDateTimeConverter = (function () {
     option = getOption('hour', 'string', ['2-digit', 'numeric']);
     if (hr12 === true) {
       timeKey += _appendToKey(timeOptions, 'hour',
-        option, {
-          '2-digit' : 'hh',
-          'numeric' : 'h'
-        });
+          option, {
+            '2-digit': 'hh',
+            'numeric': 'h'
+          });
     }
     else {
       timeKey += _appendToKey(timeOptions, 'hour',
-        option, {
-          '2-digit' : 'HH',
-          'numeric' : 'H'
-        });
+          option, {
+            '2-digit': 'HH',
+            'numeric': 'H'
+          });
     }
 
     option = getOption('minute', 'string', ['2-digit', 'numeric']);
     timeKey += _appendToKey(timeOptions, 'minute',
-      option, {
-        '2-digit' : 'mm',
-        'numeric' : 'm'
-      });
+        option, {
+          '2-digit': 'mm',
+          'numeric': 'm'
+        });
 
     option = getOption('second', 'string', ['2-digit', 'numeric']);
     timeKey += _appendToKey(timeOptions, 'second',
-      option, {
-        '2-digit' : 'ss',
-        'numeric' : 's'
-      });
+        option, {
+          '2-digit': 'ss',
+          'numeric': 's'
+        });
     option = getOption('timeZoneName', 'string', ['short', 'long']);
     timeKey += _appendToKey(timeOptions, 'timeZoneName',
-      option, {
-        'short' : 'v',
-        'long' : 'v'
-      });
+        option, {
+          'short': 'v',
+          'long': 'v'
+        });
 
     return [dateKey, timeKey, dateOptions, timeOptions];
   };
@@ -8491,7 +9559,8 @@ OraDateTimeConverter = (function () {
     if (option !== undefined) {
       obj[prop] = option;
       return pairs[option];
-    } else {
+    }
+    else {
       return '';
     }
   };
@@ -8511,7 +9580,7 @@ OraDateTimeConverter = (function () {
    *So "E, MMM d, y" will be expanded to "EEEE, MMMM dd y".
    */
   _expandAvailableDateFormatsPattern = function (formatTemplate, options,
-    caller)
+      caller)
   {
     var datePat = formatTemplate;
     var match;
@@ -8519,8 +9588,8 @@ OraDateTimeConverter = (function () {
     //year
     var option = getOption('year', 'string', ['2-digit', 'numeric']);
     var pairs = {
-      '2-digit' : 'yy',
-      'numeric' : 'yyyy'
+      '2-digit': 'yy',
+      'numeric': 'yyyy'
     };
     if (option !== undefined)
       datePat = datePat.replace(/y{1,4}/, pairs[option]);
@@ -8530,18 +9599,18 @@ OraDateTimeConverter = (function () {
       'short', 'long']);
     if (option !== undefined) {
       pairs = {
-        '2-digit' : 'MM',
-        'numeric' : 'M',
-        'narrow' : 'MMMMM',
-        'short' : 'MMM',
-        'long' : 'MMMM'
+        '2-digit': 'MM',
+        'numeric': 'M',
+        'narrow': 'MMMMM',
+        'short': 'MMM',
+        'long': 'MMMM'
       };
       var pairsL = {
-        '2-digit' : 'LL',
-        'numeric' : 'L',
-        'narrow' : 'LLLLL',
-        'short' : 'LLL',
-        'long' : 'LLLL'
+        '2-digit': 'LL',
+        'numeric': 'L',
+        'narrow': 'LLLLL',
+        'short': 'LLL',
+        'long': 'LLLL'
       };
       if (pairs[option] !== undefined && pairs[option].length > 2) {
         datePat = datePat.replace(/M{3,5}/, pairs[option]);
@@ -8564,14 +9633,14 @@ OraDateTimeConverter = (function () {
     option = getOption('weekday', 'string', ['narrow', 'short', 'long']);
     if (option !== undefined) {
       var pairsFormat = {
-        'narrow' : 'EEEEE',
-        'short' : 'EEE',
-        'long' : 'EEEE'
+        'narrow': 'EEEEE',
+        'short': 'EEE',
+        'long': 'EEEE'
       };
       var pairsStandalone = {
-        'narrow' : 'ccccc',
-        'short' : 'ccc',
-        'long' : 'cccc'
+        'narrow': 'ccccc',
+        'short': 'ccc',
+        'long': 'cccc'
       };
       datePat = datePat.replace(/E{1,5}/, pairsFormat[option]);
       datePat = datePat.replace(/c{1,5}/, pairsStandalone[option]);
@@ -8594,7 +9663,7 @@ OraDateTimeConverter = (function () {
 
   //Same as above for time entries
   _expandAvailableTimeFormatsPattern = function (formatTemplate, options,
-    caller) {
+      caller) {
     var timePat = formatTemplate;
     var getOption = OraI18nUtils.getGetOption(options, caller);
     var option = getOption('hour', 'string', ['2-digit', 'numeric']);
@@ -8635,7 +9704,7 @@ OraDateTimeConverter = (function () {
     var format = 'yyyy-MM-ddTHH:mm:ss';
     var getOption = OraI18nUtils.getGetOption(options, "OraDateTimeConverter.format");
     var isoFormat = getOption('isoStrFormat', 'string',
-      [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
+        [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
     switch (isoFormat) {
       case _ZULU:
         options['timeZone'] = 'Etc/GMT+0';
@@ -8649,58 +9718,58 @@ OraDateTimeConverter = (function () {
     }
     return format;
   };
-  
+
   //Returns the localized decimal separator. Used for milliseconds
-  _getLocaleDecimalSeparator = function(localeElements, locale) {
+  _getLocaleDecimalSeparator = function (localeElements, locale) {
     var numberingSystemKey = OraI18nUtils.getNumberingSystemKey(localeElements, locale);
     var numberingSystem = "symbols-numberSystem-" + numberingSystemKey;
     return localeElements['numbers'][numberingSystem]['decimal'];
   }
-  
+
   //Returns a pattern corresponding to user's options.
   //Cache the entries for which we already found a pattern 
   _expandFormat = function (options, localeElements, mlocale, caller) {
     function substituteTokens(cachedVal) {
       if (msOption !== undefined) {
         var sep = _getLocaleDecimalSeparator(mainNode, mlocale);
-        if (hOption === undefined && mOption === undefined && sOption === undefined) {            
+        if (hOption === undefined && mOption === undefined && sOption === undefined) {
           sep = "S";
         }
         else {
           sep = "ss" + sep + "SSS";
         }
         cachedVal = cachedVal.replace("ss", sep);
-        if(sOption === undefined) {
+        if (sOption === undefined) {
           options['second'] = undefined;
         }
       }
       //substitute time zone token v  based on short or long
       var option = getOption('timeZoneName', 'string', ['short', 'long']);
       var pairs = {
-        'short' : 'z',
-        'long' : 'zzzz'
+        'short': 'z',
+        'long': 'zzzz'
       };
       if (option !== undefined) {
         cachedVal = cachedVal.replace(/v/, pairs[option]);
       }
       return cachedVal;
     }
-    
+
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var locale = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
     var getOption = OraI18nUtils.getGetOption(options, caller);
     var pattern;
     var matcher = getOption('formatMatcher', 'string',
-      ['basic', 'munger'], 'munger');
+        ['basic', 'munger'], 'munger');
     var count = 0;
     for (count in options) {
       count++;
     }
     if (count === 0) {
       options = {
-        'year' : 'numeric',
-        'month' : 'numeric',
-        'day' : 'numeric'
+        'year': 'numeric',
+        'month': 'numeric',
+        'day': 'numeric'
       };
     }
     var hOption;
@@ -8709,9 +9778,9 @@ OraDateTimeConverter = (function () {
     var msOption;
     //append millisecnods to pattern
     msOption = getOption('millisecond', 'string', ['numeric', '2-digit']);
-    sOption  = getOption('second', 'string', ['numeric', '2-digit']);
+    sOption = getOption('second', 'string', ['numeric', '2-digit']);
     if (msOption !== undefined) {
-      hOption  = getOption('hour', 'string', ['numeric', '2-digit']);
+      hOption = getOption('hour', 'string', ['numeric', '2-digit']);
       mOption = getOption('minute', 'string', ['numeric', '2-digit']);
       options['second'] = '2-digit';
     }
@@ -8720,7 +9789,7 @@ OraDateTimeConverter = (function () {
     //First try to get the pattern from cache
     if (_localeDataCache[locale] !== undefined) {
       var cachedPattern = _localeDataCache[locale]['dates']['calendars']['gregorian']
-        ['dateTimeFormats'][dateTimeKeys[0] + dateTimeKeys[1]];
+      ['dateTimeFormats'][dateTimeKeys[0] + dateTimeKeys[1]];
       if (cachedPattern !== undefined) {
         cachedPattern = substituteTokens(cachedPattern);
         return cachedPattern;
@@ -8728,24 +9797,24 @@ OraDateTimeConverter = (function () {
     }
     if (dateTimeKeys[0] === '' && dateTimeKeys[1] === '') {
       return _expandPredefinedStylesFormat(options, localeElements,
-        caller);
+          caller);
     }
     var availableFormats = mainNode['dates']['calendars']['gregorian']
-      ['dateTimeFormats']['availableFormats'];
+    ['dateTimeFormats']['availableFormats'];
     var datePattern = availableFormats[dateTimeKeys[0]];
     var hour12 = getOption('hour12', 'boolean', [true, false]);
     if (hour12 === undefined)
       hour12 = _isHour12(localeElements);
     if (datePattern === undefined && dateTimeKeys[0] !== '') {
       datePattern = _getPatternFromSingleToken(dateTimeKeys[0], dateTimeKeys[2],
-        availableFormats);
+          availableFormats);
       if (datePattern === null)
         datePattern = _basicFormatMatcher(dateTimeKeys[2],
-          localeElements, true, hour12);
+            localeElements, true, hour12);
       if (datePattern !== null) {
         if (matcher !== 'basic') {
           datePattern = _expandAvailableDateFormatsPattern(
-            datePattern, options, caller);
+              datePattern, options, caller);
         }
       }
       else
@@ -8754,16 +9823,16 @@ OraDateTimeConverter = (function () {
     var timePattern = availableFormats[dateTimeKeys[1]];
     if (timePattern === undefined && dateTimeKeys[1] !== '') {
       timePattern = _getPatternFromSingleToken(dateTimeKeys[1], dateTimeKeys[3],
-        availableFormats);
+          availableFormats);
       if (timePattern === null)
         timePattern = _basicFormatMatcher(dateTimeKeys[3],
-          localeElements, true, hour12);
+            localeElements, true, hour12);
       if (timePattern !== null) {
         if (matcher !== 'basic') {
           timePattern = _expandAvailableTimeFormatsPattern(
-            timePattern, options, caller);
+              timePattern, options, caller);
         }
-      }  
+      }
       else
         timePattern = dateTimeKeys[1];
     }
@@ -8783,15 +9852,15 @@ OraDateTimeConverter = (function () {
       _localeDataCache[locale]['dates']['calendars'] = {};
       _localeDataCache[locale]['dates']['calendars']['gregorian'] = {};
       _localeDataCache[locale]['dates']['calendars']['gregorian']
-        ['dateTimeFormats'] = {};
+      ['dateTimeFormats'] = {};
     }
     _localeDataCache[locale]['dates']['calendars']['gregorian']
-      ['dateTimeFormats'][dateTimeKeys[0] + dateTimeKeys[1]] = pattern;  
+    ['dateTimeFormats'][dateTimeKeys[0] + dateTimeKeys[1]] = pattern;
     pattern = substituteTokens(pattern);
     return pattern;
   };
 
-  _parseMetaDate = function(str) {
+  _parseMetaDate = function (str) {
     var parts = str.split(' ');
     var dParts = parts[0].split('-');
     var d = new Date(dParts[0], dParts[1] - 1, dParts[2]);
@@ -8803,18 +9872,18 @@ OraDateTimeConverter = (function () {
     return d.getTime();
   };
 
-  _getMetazone = function(value, zoneName, metazones) {
+  _getMetazone = function (value, zoneName, metazones) {
     var now = new Date(value[0], value[1] - 1, value[2],
-                value[3], value[4], value[5]);
+        value[3], value[4], value[5]);
     now = now.getTime();
     var parts = zoneName.split('/');
     var country = parts[0];
     var city = parts[1];
     var zone = metazones[country];
-    if (zone=== undefined)
+    if (zone === undefined)
       return null;
     zone = zone[city];
-    if (zone=== undefined) {
+    if (zone === undefined) {
       return null;
     }
     var i, length = zone.length;
@@ -8835,14 +9904,14 @@ OraDateTimeConverter = (function () {
       //_from undefined. check if  now <= _to
       if (mzoneStart === undefined && mzoneEnd !== undefined) {
         mzoneEndTime = _parseMetaDate(mzoneEnd);
-        if(now <= mzoneEndTime)
-        return mzoneName;
+        if (now <= mzoneEndTime)
+          return mzoneName;
       }
       //_to undefined. check if  now >= _from
       if (mzoneStart !== undefined && mzoneEnd === undefined) {
         mzoneStartTime = _parseMetaDate(mzoneStart);
-        if(now >= mzoneStartTime)
-        return mzoneName;
+        if (now >= mzoneStartTime)
+          return mzoneName;
       }
       // find interval where now falls between _to and _from
       if (mzoneStart !== undefined && mzoneEnd !== undefined) {
@@ -8853,13 +9922,13 @@ OraDateTimeConverter = (function () {
         }
       }
     }
-  };    
-    
+  };
+
   //value is the  utc date. Used to determinse if dst or not
   //options, param passed to the converter
   //len = 0, return short timezone name; 1, return long timezone
   //isTimeOnly is used to determine of we should igonore dst
-  _getTimezoneName = function(localeElements, value, options, len, isTimeOnly) {
+  _getTimezoneName = function (localeElements, value, options, len, isTimeOnly) {
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var zoneName = "";
     var timeZone = options['timeZone'];
@@ -8867,71 +9936,74 @@ OraDateTimeConverter = (function () {
     var dst = getOption('dst', 'boolean', [true, false], false);
     if (timeZone === undefined) {
       return zoneName;
-    } 
+    }
     var metazones = localeElements['supplemental']['metazones'];
     var metaZone = _getMetazone(value, timeZone, metazones);
+    var zoneNameEntry0;
     var tzLong = 'long';
     var tzShort = 'short';
     var during = 'standard';
     var ignoreDst = isTimeOnly ? false : true;
     var zone = _getTimeZone(timeZone, localeElements);
     var index = _parseZone(zone, value, dst, ignoreDst, true);
-    var zoneNameEntry0 = mainNode['dates']['timeZoneNames']['metazone'][metaZone];
-    if(zoneNameEntry0 === undefined) {
-      var offset = zone.offset(index);
+    if (mainNode['dates']['timeZoneNames']['metazone'] !== undefined) {
+      zoneNameEntry0 = mainNode['dates']['timeZoneNames']['metazone'][metaZone];
+    }
+    if (zoneNameEntry0 === undefined) {
+      var offset = zone.ofset(index);
       return OraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
     }
     var zoneNameEntry;
-    if(len === 1) {
-      zoneNameEntry = zoneNameEntry0[tzLong];            
+    if (len === 1) {
+      zoneNameEntry = zoneNameEntry0[tzLong];
     }
     else {
       zoneNameEntry = zoneNameEntry0[tzShort];
     }
-    var offset1 = zone.offset(index);
-    var offset2 = zone.offset(index + 1);
-    if(offset1 < offset2) {
+    var offset1 = zone.ofset(index);
+    var offset2 = zone.ofset(index + 1);
+    if (offset1 < offset2) {
       during = 'daylight';
     }
-    if(zoneNameEntry !== undefined) {
+    if (zoneNameEntry !== undefined) {
       zoneName = zoneNameEntry[during];
-      if(zoneName !== undefined)
+      if (zoneName !== undefined)
         return zoneName;
     }
     //return UTC offset if we can not find a timezone name.
-    return OraI18nUtils.getTimeStringFromOffset(_UTC, offset1, true, true);    
+    return OraI18nUtils.getTimeStringFromOffset(_UTC, offset1, true, true);
   };
 
-  _getTimeZone = function(timeZoneId, localeElements) {
+  _getTimeZone = function (timeZoneId, localeElements) {
     var tz = OraTimeZone.getInstance();
     var zone = tz.getZone(timeZoneId, localeElements);
     return zone;
   };
-  
-  _parseZone = function(zone, parts, dst, ignoreDst, dateTime) {
+
+  _parseZone = function (zone, parts, dst, ignoreDst, dateTime) {
     var utcDate = Date.UTC(parts[0], parts[1] - 1, parts[2],
-                 parts[3], parts[4], parts[5]);
+        parts[3], parts[4], parts[5]);
     var index = zone.parse(utcDate, dst, ignoreDst, dateTime);
     return index;
   };
-  
+
   _formatImpl = function (localeElements, options, isoStrInfo, locale) {
     var ret;
     var format;
     var value = isoStrInfo['isoStrParts'];
     var isTimeOnly = isoStrInfo['dateTime'].indexOf('T') === 0;
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
-    var getOption = OraI18nUtils.getGetOption(options, "OraDateTimeConverter.format");  
+    var getOption = OraI18nUtils.getGetOption(options, "OraDateTimeConverter.format");
     //get the pattern from options
     format = options['pattern'] || _expandFormat(options, localeElements,
-      locale, "OraDateTimeConverter.format");
+        locale, "OraDateTimeConverter.format");
     // Start with an empty string
     ret = [];
     var part,
-      quoteCount = 0,
-      cal = mainNode['dates']['calendars']['gregorian'];
+        quoteCount = 0,
+        cal = mainNode['dates']['calendars']['gregorian'];
 
-    function _getPart (date, part) {
+    function _getPart(date, part) {
       switch (part) {
         case 0:
           return date[0];
@@ -8941,17 +10013,17 @@ OraDateTimeConverter = (function () {
           return date[2];
         case 3:
           var dt = new Date(date[0], date[1] - 1, date[2],
-            date[3], date[4], date[5]);
+              date[3], date[4], date[5]);
           return _DAYS_INDEXES[dt.getDay()];
       }
     }
 
-    function _getPaddedPart (ret, value, idx, len) {
+    function _getPaddedPart(ret, value, idx, len) {
       var val = _getPart(value, idx);
       ret.push(len > 1 ? OraI18nUtils.padZeros(val, len) : val);
     }
 
-    function _getTimeParts (ret, value, len, currentPart, current) {
+    function _getTimeParts(ret, value, len, currentPart, current) {
       var val;
       switch (currentPart['timePart']) {
         case 'hour' :
@@ -8972,39 +10044,39 @@ OraDateTimeConverter = (function () {
           val = value[4];
           break;
         case 'second' :
-          if(options['second'] === undefined && options['millisecond'] !== undefined)
+          if (options['second'] === undefined && options['millisecond'] !== undefined)
             val = 0;
           else
-          val = value[5];
+            val = value[5];
           break;
         case 'millisec' :
           //val = OraI18nUtils.zeroPad("" + value[6], 3, true);          
-          val = value[6];          
+          val = value[6];
           break;
       }
       ret.push(len > 1 ? OraI18nUtils.padZeros(val, len) : val);
     }
-    
-    function _getTimezoneOffset (value, options, isTimeOnly) {
+
+    function _getTimezoneOffset(value, options, isTimeOnly) {
       var offset;
       var zone;
       var index;
       var timeZone = options['timeZone'];
       var dst = getOption('dst', 'boolean', [true, false], false);
       var ignoreDst = isTimeOnly ? false : true;
-      if (timeZone !== undefined) {        
+      if (timeZone !== undefined) {
         zone = _getTimeZone(timeZone, localeElements);
         index = _parseZone(zone, value, dst, ignoreDst, true);
-        offset = -zone.offset(index);
+        offset = -zone.ofset(index);
       }
       else if (isoStrInfo['format'] !== _LOCAL) {
         switch (isoStrInfo['format']) {
           case _OFFSET :
-            offset = isoStrInfo['timeZone'].split(":");            
+            offset = isoStrInfo['timeZone'].split(":");
             var hoursOffset = parseInt(offset[0], 10);
             var minOffset = parseInt(offset[1], 10);
             offset = (hoursOffset * 60) +
-              (OraI18nUtils.startsWith(isoStrInfo['timeZone'], "-") ? -minOffset : minOffset);
+                (OraI18nUtils.startsWith(isoStrInfo['timeZone'], "-") ? -minOffset : minOffset);
             break;
           case _ZULU :
             offset = 0;
@@ -9012,11 +10084,11 @@ OraDateTimeConverter = (function () {
           default:
             offset = 0;
             break;
-        }        
+        }
       }
       return offset;
     }
-        
+
     //adjust the offset based on the offset of input iso str and timeZone attribute
     //EX: if the input iso str is one of the following:
     //2014-06-01T16:00:00-07:00
@@ -9029,8 +10101,8 @@ OraDateTimeConverter = (function () {
     for (; ; ) {
       // Save the current index
       var index = _TOKEN_REGEXP.lastIndex,
-        // Look for the next pattern
-        ar = _TOKEN_REGEXP.exec(format);
+          // Look for the next pattern
+          ar = _TOKEN_REGEXP.exec(format);
 
       // Append the text before the pattern (or the end of the string if 
       // not found)
@@ -9048,8 +10120,8 @@ OraDateTimeConverter = (function () {
       }
 
       var current = ar[ 0 ],
-        clength = current.length,
-        currentPart = _PROPERTIES_MAP[current];
+          clength = current.length,
+          currentPart = _PROPERTIES_MAP[current];
       switch (currentPart['token']) {
         case 'days':
           part = cal[currentPart['token']][currentPart['style']][currentPart['dLen']];
@@ -9077,52 +10149,52 @@ OraDateTimeConverter = (function () {
         case "ampm":
           // Multicharacter am/pm indicator
           part = value[3] < 12 ?
-            cal['dayPeriods']['format']['wide']['am'] :
-            cal['dayPeriods']['format']['wide']['pm'];
+              cal['dayPeriods']['format']['wide']['am'] :
+              cal['dayPeriods']['format']['wide']['pm'];
           ret.push(part);
           break;
         case "tzhm":
           // Time zone hours minutes: -0800 
           part = _getTimezoneOffset(value, options, isTimeOnly);
-          if(part === 0) {
-            if(currentPart['key'] === 'XX')
+          if (part === 0) {
+            if (currentPart['key'] === 'XX')
               ret.push('Z');
             else
               ret.push("+0000");
           }
           else {
             ret.push(
-              (part <= 0 ? "-" : "+") +
-              OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) +
-              OraI18nUtils.padZeros(Math.floor(Math.abs(part % 60)), 2)
-            );
+                (part <= 0 ? "-" : "+") +
+                OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) +
+                OraI18nUtils.padZeros(Math.floor(Math.abs(part % 60)), 2)
+                );
           }
           break;
         case "tzhsepm":
           // Time zone hours minutes: -08:00 
           part = _getTimezoneOffset(value, options, isTimeOnly);
-          if(part === 0) {
+          if (part === 0) {
             ret.push("Z");
           }
           else {
             ret.push(
-              (part <= 0 ? "-" : "+") +
-              OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) +
-              ":" +
-              OraI18nUtils.padZeros(Math.floor(Math.abs(part % 60)), 2)
-            );
+                (part <= 0 ? "-" : "+") +
+                OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2) +
+                ":" +
+                OraI18nUtils.padZeros(Math.floor(Math.abs(part % 60)), 2)
+                );
           }
           break;
         case "tzh":
           // Time zone hours: -08 
           part = _getTimezoneOffset(value, options, isTimeOnly);
-          if(part === 0) {
+          if (part === 0) {
             ret.push("Z");
           }
           else {
             ret.push(
-              (part <= 0 ? "-" : "+") +
-              OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2));
+                (part <= 0 ? "-" : "+") +
+                OraI18nUtils.padZeros(Math.floor(Math.abs(part / 60)), 2));
           }
           break;
         case "tzid":
@@ -9211,11 +10283,11 @@ OraDateTimeConverter = (function () {
   };
 
   _getDayIndex = function (localeElements, idx) {
-    var mainNode = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
-    var territory = OraI18nUtils.getBCP47Region(mainNode);
+    var locale = localeElements['_ojLocale_'];
+    var territory = OraI18nUtils.getBCP47Region(locale);
     var firstDayNode = localeElements['supplemental']['weekData']['firstDay'];
     var firstDayOfweek = firstDayNode[territory];
-    if(firstDayOfweek === undefined)
+    if (firstDayOfweek === undefined)
       firstDayOfweek = firstDayNode['001'];
     var ret = idx - firstDayOfweek;
     if (ret < 0)
@@ -9234,7 +10306,7 @@ OraDateTimeConverter = (function () {
     if ((!_isSameMonth(d1, d2)) && (!_isNextMonth(d1, d2)))
       return false;
     var dif = _getDaysDif(d1, d2) +
-      _getDayIndex(localeElements, d1.getDay());
+        _getDayIndex(localeElements, d1.getDay());
     return dif >= 0 && dif <= 6;
   };
 
@@ -9243,7 +10315,7 @@ OraDateTimeConverter = (function () {
     if ((!_isSameMonth(d1, d2)) && (!_isNextMonth(d1, d2)))
       return false;
     var dif = _getDaysDif(d1, d2) +
-      _getDayIndex(localeElements, d1.getDay());
+        _getDayIndex(localeElements, d1.getDay());
     return dif >= 7 && dif <= 13;
   };
 
@@ -9255,7 +10327,7 @@ OraDateTimeConverter = (function () {
   //d1 and d2 same day
   _isSameDay = function (d1, d2) {
     return _isSameYear(d1, d2) && _isSameMonth(d1, d2) &&
-      (d1.getDate() === d2.getDate());
+        (d1.getDate() === d2.getDate());
   };
 
   //d2 is next day
@@ -9271,33 +10343,33 @@ OraDateTimeConverter = (function () {
     return _isNextDay(d2, d1);
   };
 
-  _convertToLocalDate = function(d, localeElements, options) {
+  _convertToLocalDate = function (d, localeElements, options) {
     var srcTimeZone = options['timeZone'];
-    var isoInfo = OraI18nUtils.getISOStrFormatInfo(d);   
+    var isoInfo = OraI18nUtils.getISOStrFormatInfo(d);
     var isoInfoFormat = isoInfo['format'];
     //first test id d is local
-    if(isoInfoFormat === _LOCAL && srcTimeZone === undefined) {
+    if (isoInfoFormat === _LOCAL && srcTimeZone === undefined) {
       return d;
     }
     //first, convert to zulu
     var tzOptions = {isoStrFormat: 'zulu'};
-    if(srcTimeZone !== undefined) {
+    if (srcTimeZone !== undefined) {
       tzOptions['timeZone'] = srcTimeZone;
       tzOptions['dst'] = true;
     }
     var zuluDate = _parseImpl(d, localeElements, tzOptions, "en-US");
     //second, convert to local date
     var localOffset = OraI18nUtils.getLocalTimeZoneOffset();
-    tzOptions = {timeZone:localOffset, isoStrFormat: 'local'};
+    tzOptions = {timeZone: localOffset, isoStrFormat: 'local'};
     var localDate = _parseImpl(zuluDate['value'], localeElements, tzOptions, "en-US");
     return localDate['value'];
   };
-  
-  _getTimeDiff = function(d1, d2, isCalendar) {
+
+  _getTimeDiff = function (d1, d2, isCalendar) {
     var datetime1 = OraI18nUtils._IsoStrParts(d1);
     var datetime2 = OraI18nUtils._IsoStrParts(d2);
- 
-    if(isCalendar) {
+
+    if (isCalendar) {
       //for calendar, normalize the times to midnight so that the diff is the same
       // regardless of time of day.
       datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], 0, 0, 0, 0);
@@ -9305,72 +10377,72 @@ OraDateTimeConverter = (function () {
     }
     else {
       datetime1 = Date.UTC(datetime1[0], datetime1[1] - 1, datetime1[2], datetime1[3], datetime1[4], datetime1[5], datetime1[6]);
-      datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3], datetime2[4], datetime2[5], datetime2[6]);      
+      datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3], datetime2[4], datetime2[5], datetime2[6]);
     }
     return  (datetime1 - datetime2);
   };
-  
-  _replaceParams = function(string, replacements) {
-    return string.replace(/\{(\d+)\}/g, function() {
+
+  _replaceParams = function (string, replacements) {
+    return string.replace(/\{(\d+)\}/g, function () {
       return replacements[arguments[1]];
     });
   };
 
-  _formatRelativeCalendar = function (now, relativeDate, localeElements, dateOnly) {        
+  _formatRelativeCalendar = function (now, relativeDate, localeElements, dateOnly) {
     var datePart;
     var timePart;
     var relativeDay;
     var dayIndex;
-    var timePartOptions = {hour:'numeric', minute: 'numeric'};
-    var elseOptions = {year:'numeric', month:'numeric', day:'numeric'};
+    var timePartOptions = {hour: 'numeric', minute: 'numeric'};
+    var elseOptions = {year: 'numeric', month: 'numeric', day: 'numeric'};
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var pattern = mainNode['dates']['calendars']['gregorian']['dateTimeFormats']['long'];
     var days = mainNode['dates']['calendars']['gregorian']['days']['format']['wide'];
     var fields = mainNode['dates']['fields'];
-    
+
     var value = OraI18nUtils.isoToLocalDate(relativeDate);
     var localNow = OraI18nUtils.isoToLocalDate(now);
     var isoStrInfo = OraI18nUtils.getISOStrFormatInfo(relativeDate);
 
-    if(_isSameDay(localNow, value))
+    if (_isSameDay(localNow, value))
       datePart = fields['day']['relative-type-0'];
-    else if(_isNextDay(localNow, value))
+    else if (_isNextDay(localNow, value))
       datePart = fields['day']['relative-type-1'];
-    else if(_isPrevDay(localNow, value))
+    else if (_isPrevDay(localNow, value))
       datePart = fields['day']['relative-type--1'];
     else {
       relativeDay = value.getDay();
       dayIndex = _DAYS_INDEXES[relativeDay];
       var diff = _getTimeDiff(relativeDate, now, true);
       diff = diff / 864e5; //number of days
-      if(diff < -1 && diff > -7) {
+      if (diff < -1 && diff > -7) {
         datePart = fields[dayIndex]['relative-type--1'];
       }
       //next week
-      else if(diff > 1 && diff < 7) {
-          datePart = days[dayIndex];
+      else if (diff > 1 && diff < 7) {
+        datePart = days[dayIndex];
       }
       //everything else
       else {
         return _formatImpl(localeElements, elseOptions, isoStrInfo, "en-US");
       }
     }
-    if(dateOnly) {
+    if (dateOnly) {
       return datePart;
     }
-    timePart = _formatImpl(localeElements, timePartOptions, isoStrInfo, "en-US");   
+    timePart = _formatImpl(localeElements, timePartOptions, isoStrInfo, "en-US");
     pattern = pattern.replace(/'/g, "");
     pattern = _replaceParams(pattern, [timePart, datePart]);
     return pattern;
   };
-  
+
   _formatRelativeDisplayName = function (isoNow, isoValue, options, localeElements) {
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var fields = mainNode['dates']['fields'];
     var getOption = OraI18nUtils.getGetOption(options,
         "OraDateTimeConverter.formatRelative");
     var option = getOption('dateField', 'string',
-      ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+        ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
     var now = OraI18nUtils.isoToLocalDate(isoNow);
     var value = OraI18nUtils.isoToLocalDate(isoValue);
     switch (option) {
@@ -9381,7 +10453,7 @@ OraDateTimeConverter = (function () {
           return fields['day']['relative-type-1'];
         if (_isPrevDay(now, value))
           return fields['day']['relative-type--1'];
-        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'day');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'day');
       case "week" :
         if (_isSameWeek(localeElements, now, value))
           return fields['week']['relative-type-0'];
@@ -9389,7 +10461,7 @@ OraDateTimeConverter = (function () {
           return fields['week']['relative-type-1'];
         if (_isPrevWeek(localeElements, now, value))
           return fields['week']['relative-type--1'];
-        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'week');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'week');
       case "month" :
         if (_isSameMonth(now, value))
           return fields['month']['relative-type-0'];
@@ -9397,7 +10469,7 @@ OraDateTimeConverter = (function () {
           return fields['month']['relative-type-1'];
         if (_isPrevMonth(now, value))
           return fields['month']['relative-type--1'];
-        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'month');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'month');
       case "year" :
         if (_isSameYear(now, value))
           return fields['year']['relative-type-0'];
@@ -9405,41 +10477,41 @@ OraDateTimeConverter = (function () {
           return fields['year']['relative-type-1'];
         if (_isPrevYear(now, value))
           return fields['year']['relative-type--1'];
-        return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'year');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'year');
       case "hour" :
-          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'hour');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'hour');
       case "minute" :
-          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'minute');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'minute');
       case "second" :
-          return _formatRelativeImplicit (isoNow, isoValue, localeElements, 'second');
+        return _formatRelativeImplicit(isoNow, isoValue, localeElements, 'second');
       default :
         break;
     }
-    return null;    
+    return null;
   };
-  
-  _daysToMonths = function(days) {
+
+  _daysToMonths = function (days) {
     // 400 years have 146097 days (taking into account leap year rules)
     return days * 4800 / 146097;
   };
-  
-  _getUnits = function(milliseconds) {   
+
+  _getUnits = function (milliseconds) {
     var days = milliseconds / 864e5;
     var months = _daysToMonths(days);
     var years = months / 12;
     var obj = {
-      'year'  : Math.round(years),
-      'month' : Math.round(months),
-      'week'  : Math.round(milliseconds / 6048e5),
-      'day'  : Math.round(milliseconds / 864e5),
-      'hour'  : Math.round(milliseconds /  36e5),
-      'minute'  : Math.round(milliseconds /  6e4),
-      'second'  : Math.round(milliseconds /  1000),
-      'millisecond'  :milliseconds
+      'year': Math.round(years),
+      'month': Math.round(months),
+      'week': Math.round(milliseconds / 6048e5),
+      'day': Math.round(milliseconds / 864e5),
+      'hour': Math.round(milliseconds / 36e5),
+      'minute': Math.round(milliseconds / 6e4),
+      'second': Math.round(milliseconds / 1000),
+      'millisecond': milliseconds
     };
-    return obj;  
+    return obj;
   };
-  
+
   //return the language part
   _getBCP47Lang = function (tag) {
     var arr = tag.split("-");
@@ -9456,21 +10528,21 @@ OraDateTimeConverter = (function () {
     var plurals = localeElements['supplemental']['plurals'];
     var fields = mainNode['dates']['fields'];
     var pluralKey = "relativeTimePattern-count-";
- 
+
     var diff = _getTimeDiff(relativeDate, now, false);
     var absdiff = Math.abs(diff);
     var units = _getUnits(absdiff);
-    if(field === null) {
+    if (field === null) {
       field = units['second'] < _THRESHOLDS.s && 'second' ||
-              units['minute'] < _THRESHOLDS.m && 'minute' ||
-              units['hour']   < _THRESHOLDS.h && 'hour' ||
-              units['day']    < _THRESHOLDS.d && 'day' ||
-              units['week']   < _THRESHOLDS.w && 'week' ||
-              units['month']  < _THRESHOLDS.M && 'month' ||
-              'year' ;
+          units['minute'] < _THRESHOLDS.m && 'minute' ||
+          units['hour'] < _THRESHOLDS.h && 'hour' ||
+          units['day'] < _THRESHOLDS.d && 'day' ||
+          units['week'] < _THRESHOLDS.w && 'week' ||
+          units['month'] < _THRESHOLDS.M && 'month' ||
+          'year';
     }
     //when seconds <= 45 display 'now' instead of number of seconds
-    if(field === 'second' && units['second'] < _THRESHOLDS.s) {
+    if (field === 'second' && units['second'] < _THRESHOLDS.s) {
       return fields[field][nowNodeKey];
     }
     var plural = plurals[lang](units[field]);
@@ -9478,14 +10550,14 @@ OraDateTimeConverter = (function () {
     var x = diff < 0 ? past : future;
     var format = fields[field][x][pluralEntry];
     //some locales only have other plural entry
-    if(format === undefined) {
+    if (format === undefined) {
       pluralEntry = pluralKey + 'other';
       format = fields[field][x][pluralEntry];
-     }
+    }
     format = _replaceParams(format, [units[field]]);
     return format;
   };
-  
+
   _formatRelativeImpl = function (value, localeElements, options) {
     var now = OraI18nUtils.dateToLocalIso(new Date());
     if (typeof value === "number") {
@@ -9498,30 +10570,30 @@ OraDateTimeConverter = (function () {
     else {
       return null;
     }
-    if(options === undefined) {
-      options = {'formatUsing' : 'displayName'};
+    if (options === undefined) {
+      options = {'formatUsing': 'displayName'};
     }
     var getOption = OraI18nUtils.getGetOption(options,
         "OraDateTimeConverter.formatRelative");
     var relativeTime = getOption('relativeTime', 'string',
         ['fromNow', 'toNow'], 'fromNow');
     var fieldOption = getOption('dateField', 'string',
-      ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+        ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
 
     value = _convertToLocalDate(value, localeElements, options);
     var toNow = (relativeTime === 'toNow');
-    if(toNow) {
+    if (toNow) {
       var tmp = now;
       now = value;
       value = tmp;
-    }    
+    }
     var formatUsing = getOption('formatUsing', 'string',
-      ['displayName', 'calendar'], 'displayName');
-    if(formatUsing === 'calendar') {
-      var dateOnly = getOption('dateOnly', 'boolean', [true, false], false); 
+        ['displayName', 'calendar'], 'displayName');
+    if (formatUsing === 'calendar') {
+      var dateOnly = getOption('dateOnly', 'boolean', [true, false], false);
       return _formatRelativeCalendar(now, value, localeElements, dateOnly);
     }
-    if(fieldOption !== undefined)
+    if (fieldOption !== undefined)
       return _formatRelativeDisplayName(now, value, options, localeElements);
     return _formatRelativeImplicit(now, value, localeElements, null);
   };
@@ -9536,10 +10608,10 @@ OraDateTimeConverter = (function () {
     msg = "The weekday " + weekday + " does not match the date " + day;
     error = new Error(msg);
     errorInfo = {
-      'errorCode' : 'dateToWeekdayMismatch',
-      'parameterMap' : {
-        'weekday' : weekday,
-        'date' : day
+      'errorCode': 'dateToWeekdayMismatch',
+      'parameterMap': {
+        'weekday': weekday,
+        'date': day
       }
     };
     error['errorInfo'] = errorInfo;
@@ -9553,27 +10625,27 @@ OraDateTimeConverter = (function () {
     var errorCodeType;
     if (style === 2) {
       msg = "The value \"" + value +
-        "\" does not match the expected date-time format \"" + format + '"';
+          "\" does not match the expected date-time format \"" + format + '"';
       errorCodeType = "datetimeFormatMismatch";
     }
     else if (style === 0) {
       msg = "The value \"" + value +
-        "\" does not match the expected date format \"" + format + '"';
+          "\" does not match the expected date format \"" + format + '"';
       errorCodeType = "dateFormatMismatch";
 
     }
     else {
       msg = "The value \"" + value +
-        "\" does not match the expected time format \"" + format + '"';
+          "\" does not match the expected time format \"" + format + '"';
       errorCodeType = "timeFormatMismatch";
 
     }
     error = new Error(msg);
     errorInfo = {
-      'errorCode' : errorCodeType,
-      'parameterMap' : {
-        'value' : value,
-        'format' : format
+      'errorCode': errorCodeType,
+      'parameterMap': {
+        'value': value,
+        'format': format
       }
     };
     error['errorInfo'] = errorInfo;
@@ -9585,20 +10657,20 @@ OraDateTimeConverter = (function () {
     if (year < 100) {
       var ambiguousTwoDigitYear = start2DigitYear % 100;
       year += Math.floor((start2DigitYear / 100)) * 100 +
-        (year < ambiguousTwoDigitYear ? 100 : 0);
+          (year < ambiguousTwoDigitYear ? 100 : 0);
     }
     return year;
   };
 
   _arrayIndexOfDay = function (daysObj, item) {
     var days = {
-      "sun" : 0,
-      "mon" : 1,
-      "tue" : 2,
-      "wed" : 3,
-      "thu" : 4,
-      "fri" : 5,
-      "sat" : 6
+      "sun": 0,
+      "mon": 1,
+      "tue": 2,
+      "wed": 3,
+      "thu": 4,
+      "fri": 5,
+      "sat": 6
     };
     for (var d in daysObj) {
       if (OraI18nUtils.trim(OraI18nUtils.toUpper(daysObj[d])) === OraI18nUtils.trim(item)) {
@@ -9622,9 +10694,9 @@ OraDateTimeConverter = (function () {
     var ret;
     var days;
     var calDaysFmt =
-      mainNode['dates']['calendars']['gregorian']['days']['format'];
+        mainNode['dates']['calendars']['gregorian']['days']['format'];
     var calDaysStdAlone =
-      mainNode['dates']['calendars']['gregorian']['days']['stand-alone'];
+        mainNode['dates']['calendars']['gregorian']['days']['stand-alone'];
     switch (fmt) {
       case 0:
         days = [
@@ -9655,9 +10727,9 @@ OraDateTimeConverter = (function () {
     var months;
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var calMonthsFmt =
-      mainNode['dates']['calendars']['gregorian']['months']['format'];
+        mainNode['dates']['calendars']['gregorian']['months']['format'];
     var calMonthsStdAlone =
-      mainNode['dates']['calendars']['gregorian']['months']['stand-alone'];
+        mainNode['dates']['calendars']['gregorian']['months']['stand-alone'];
     switch (fmt) {
       case 0:
         months = [
@@ -9722,7 +10794,7 @@ OraDateTimeConverter = (function () {
 
       // add a regex group for the token.
       var m = match[ 0 ];
-      var  add;
+      var add;
       if (_PROPERTIES_MAP[m] !== undefined) {
         add = _PROPERTIES_MAP[m]['regExp'];
       }
@@ -9738,28 +10810,28 @@ OraDateTimeConverter = (function () {
 
     // allow whitespace to differ when matching formats.
     var regexpStr = regexp.join("").replace(/\s+/g, "\\s+");
-    var  parseRegExp = {
-        'regExp' : regexpStr,
-        'groups' : groups
-        };
+    var parseRegExp = {
+      'regExp': regexpStr,
+      'groups': groups
+    };
     // cache the regex for this format.
     return re[ format ] = parseRegExp;
   };
 
   _validateRange = function (name, value, low, high, displayValue,
-    displayLow, displayHigh) {
+      displayLow, displayHigh) {
     if (value < low || value > high) {
       var msg = displayValue +
-        " is out of range.  Enter a value between " + displayLow +
-        " and " + displayHigh + " for " + name;
+          " is out of range.  Enter a value between " + displayLow +
+          " and " + displayHigh + " for " + name;
       var rangeError = new RangeError(msg);
       var errorInfo = {
-        'errorCode' : "datetimeOutOfRange",
-        'parameterMap' : {
-          'value' : displayValue,
-          'minValue' : displayLow,
-          'maxValue' : displayHigh,
-          'propertyName' : name
+        'errorCode': "datetimeOutOfRange",
+        'parameterMap': {
+          'value': displayValue,
+          'minValue': displayLow,
+          'maxValue': displayHigh,
+          'propertyName': name
         }
       };
       rangeError['errorInfo'] = errorInfo;
@@ -9841,9 +10913,9 @@ OraDateTimeConverter = (function () {
   _getWeekdayName = function (value, localeElements) {
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var calDaysFmt =
-      mainNode['dates']['calendars']['gregorian']['days']['format'];
+        mainNode['dates']['calendars']['gregorian']['days']['format'];
     var calDaysStandAlone =
-      mainNode['dates']['calendars']['gregorian']['days']['stand-alone'];
+        mainNode['dates']['calendars']['gregorian']['days']['stand-alone'];
     var days = [
       calDaysFmt['wide'],
       calDaysFmt['abbreviated'],
@@ -9879,7 +10951,7 @@ OraDateTimeConverter = (function () {
   //Otherwise assume its position based on pattern 
   //separators can be any non digit characters
   _parseLenientyMEd = function (value, format, options, localeElements,
-    isDateTime)
+      isDateTime)
   {
     _YMD_REGEXP.lastIndex = 0;
     var match = _YMD_REGEXP.exec(value);
@@ -9888,11 +10960,11 @@ OraDateTimeConverter = (function () {
       _throwDateFormatMismatch(value, format, dtype);
     }
     var tokenIndexes = [{
-        'y' : format.indexOf("y")
+        'y': format.indexOf("y")
       }, {
-        'M' : format.indexOf("M")
+        'M': format.indexOf("M")
       }, {
-        'd' : format.indexOf("d")
+        'd': format.indexOf("d")
       }];
     tokenIndexes.sort(function (a, b) {
       for (var n1 in a)
@@ -9983,11 +11055,11 @@ OraDateTimeConverter = (function () {
       }
     }
     var result =
-      {
-        'value' : parsedDate,
-        'offset' : '',
-        'warning' : 'lenient parsing was used'
-      };
+        {
+          'value': parsedDate,
+          'offset': '',
+          'warning': 'lenient parsing was used'
+        };
     if (isDateTime) {
       var timepart = value.substr(_YMD_REGEXP.lastIndex);
       if (timepart.length === 0)
@@ -10008,15 +11080,15 @@ OraDateTimeConverter = (function () {
   //Otherwise assume its position based on pattern
   //separators can be any non digit characters
   _parseLenientyMMMEd = function (value, format, options, localeElements,
-    isDateTime) {
+      isDateTime) {
     var origValue = value;
     value = OraI18nUtils.toUpper(value);
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     //locate month name
     var calMonthsFmt =
-      mainNode['dates']['calendars']['gregorian']['months']['format'];
+        mainNode['dates']['calendars']['gregorian']['months']['format'];
     var calMonthsStandAlone =
-      mainNode['dates']['calendars']['gregorian']['months']['stand-alone'];
+        mainNode['dates']['calendars']['gregorian']['months']['stand-alone'];
     var months = [
       calMonthsFmt['wide'],
       calMonthsFmt['abbreviated'],
@@ -10031,8 +11103,8 @@ OraDateTimeConverter = (function () {
       for (j in months[i]) {
         mName = OraI18nUtils.toUpper(months[i][j]);
         reverseMonth.push({
-          'idx' : j,
-          'name' : mName
+          'idx': j,
+          'name': mName
         });
       }
       reverseMonth.sort(function (a, b) {
@@ -10053,7 +11125,7 @@ OraDateTimeConverter = (function () {
     //There is no month name. Try yMEd lenient parse.
     if (!foundMatch) {
       return _parseLenientyMEd(origValue, format, options, localeElements,
-        isDateTime);
+          isDateTime);
     }
 
     var month = _getMonthIndex(localeElements, mName, 2);
@@ -10073,9 +11145,9 @@ OraDateTimeConverter = (function () {
       _throwDateFormatMismatch(origValue, format, dtype);
     }
     var tokenIndexes = [{
-        'y' : format.indexOf("y")
+        'y': format.indexOf("y")
       }, {
-        'd' : format.indexOf("d")
+        'd': format.indexOf("d")
       }];
 
     tokenIndexes.sort(function (a, b) {
@@ -10129,11 +11201,11 @@ OraDateTimeConverter = (function () {
     var daysInMonth = _getDaysInMonth(year, month);
     _validateRange("day", day, 1, daysInMonth, day, 1, daysInMonth);
     var result =
-      {
-        'value' : parsedDate,
-        'offset' : '',
-        'warning' : 'lenient parsing was used'
-      };
+        {
+          'value': parsedDate,
+          'offset': '',
+          'warning': 'lenient parsing was used'
+        };
     if (isDateTime) {
       var timepart = value.substr(_YEAR_AND_DATE_REGEXP.lastIndex);
       if (timepart.length === 0)
@@ -10151,7 +11223,7 @@ OraDateTimeConverter = (function () {
       //date style
       case 0 :
         return _parseLenientyMMMEd(value, format, options, localeElements,
-          false);
+            false);
         break
         //time style
       case 1 :
@@ -10159,17 +11231,17 @@ OraDateTimeConverter = (function () {
         _parseLenienthms(d, value, format, localeElements, 1);
         var isoStr = OraI18nUtils.dateToLocalIso(d);
         var result =
-          {
-            'value' : isoStr,
-            'offset' : '',
-            'warning' : 'lenient parsing was used'
-          };
+            {
+              'value': isoStr,
+              'offset': '',
+              'warning': 'lenient parsing was used'
+            };
         return result;
         break;
         //date-time style
       case 2 :
         return _parseLenientyMMMEd(value, format, options, localeElements,
-          true);
+            true);
         break;
       default:
         break;
@@ -10178,11 +11250,11 @@ OraDateTimeConverter = (function () {
   };
 
   _getNameIndex = function (localeElements, datePart, matchGroup, mLength,
-    style, matchIndex, start1, end1, start2, end2, name) {
+      style, matchIndex, start1, end1, start2, end2, name) {
     var index;
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var monthsFormat =
-      mainNode['dates']['calendars']['gregorian'][datePart][style];
+        mainNode['dates']['calendars']['gregorian'][datePart][style];
     var startName;
     var endName;
     if (datePart === 'months') {
@@ -10194,7 +11266,7 @@ OraDateTimeConverter = (function () {
     startName = monthsFormat[mLength][start2];
     endName = monthsFormat[mLength][end2];
     _validateRange(name, index, start1, end1, matchGroup,
-      startName, endName);
+        startName, endName);
     return index;
   };
 
@@ -10209,8 +11281,8 @@ OraDateTimeConverter = (function () {
         timeObj[objMap['timePart']] = 0;
     }
     _validateRange(objMap['timePart'], timeObj[objMap['timePart']],
-      objMap['start1'], objMap['end1'], matchInt,
-      objMap['start2'], objMap['end2']);
+        objMap['start1'], objMap['end1'], matchInt,
+        objMap['start2'], objMap['end2']);
   };
 
   //exact match parsing for date-time. If it fails, try lenient parse.
@@ -10226,41 +11298,41 @@ OraDateTimeConverter = (function () {
     // use the regexp to determine the input format and extract the date
     //  fields.
     var parseInfo = _getParseRegExp(format, options),
-      match = new RegExp(parseInfo['regExp']).exec(value);
+        match = new RegExp(parseInfo['regExp']).exec(value);
     if (match === null) {
       return _parseLenient(value, format, options, localeElements);
     }
     // found a date format that matches the input.
     var groups = parseInfo['groups'],
-      year = null, month = null, date = null, weekDay = null,
-      hourOffset = "", tzID = null,
-      pmHour = false, weekDayName,
-      timeObj = {
-        'hour' : 0,
-        'minute' : 0,
-        'second' : 0,
-        'millisec' : 0
-      },
-    calPM = mainNode['dates']['calendars']['gregorian']['dayPeriods']['format']['wide']['pm'];
+        year = null, month = null, date = null, weekDay = null,
+        hourOffset = "", tzID = null,
+        pmHour = false, weekDayName,
+        timeObj = {
+          'hour': 0,
+          'minute': 0,
+          'second': 0,
+          'millisec': 0
+        },
+        calPM = mainNode['dates']['calendars']['gregorian']['dayPeriods']['format']['wide']['pm'];
     var start2DigitYear = _get2DigitYearStart(options);
     // iterate the format groups to extract and set the date fields.
     for (var j = 0, jl = groups.length; j < jl; j++) {
       var matchGroup = match[ j + 1 ];
       if (matchGroup) {
         var current = groups[ j ],
-          matchInt = parseInt(matchGroup, 10),
-          currentGroup = _PROPERTIES_MAP[current];
+            matchInt = parseInt(matchGroup, 10),
+            currentGroup = _PROPERTIES_MAP[current];
         switch (currentGroup['token']) {
           case 'months':
             month = _getNameIndex(localeElements, currentGroup['token'],
-              matchGroup, currentGroup['mLen'], currentGroup['style'],
-              currentGroup['matchIndex'], 0, 11, '1', '12', 'month name');
+                matchGroup, currentGroup['mLen'], currentGroup['style'],
+                currentGroup['matchIndex'], 0, 11, '1', '12', 'month name');
             break;
           case 'days':
             weekDayName = matchGroup;
             weekDay = _getNameIndex(localeElements, currentGroup['token'],
-              matchGroup, currentGroup['dLen'], currentGroup['style'],
-              currentGroup['matchIndex'], 0, 6, 'sun', 'sat', 'weekday');
+                matchGroup, currentGroup['dLen'], currentGroup['style'],
+                currentGroup['matchIndex'], 0, 6, 'sun', 'sat', 'weekday');
             break;
           case 'time':
             _getTimePart(matchInt, timeObj, currentGroup, current);
@@ -10300,7 +11372,7 @@ OraDateTimeConverter = (function () {
             break;
           case "tzid":
             // Time zone ID: America/Los_Angeles 
-            tzID =  matchGroup;
+            tzID = matchGroup;
             break;
         }
       }
@@ -10334,40 +11406,40 @@ OraDateTimeConverter = (function () {
     if (pmHour && timeObj['hour'] < 12) {
       timeObj['hour'] += 12;
     }
-    var parts = [year, month+1, date, timeObj['hour'], timeObj['minute'],
-                timeObj['second'], timeObj['millisec']];
+    var parts = [year, month + 1, date, timeObj['hour'], timeObj['minute'],
+      timeObj['second'], timeObj['millisec']];
     var isoParsedDate = OraI18nUtils.partsToIsoString(parts);
     if (tzID !== null) {
       var zone = _getTimeZone(tzID, localeElements);
       var index = _parseZone(zone, parts, false, true, true);
-      hourOffset = -zone.offset(index);
+      hourOffset = -zone.ofset(index);
       hourOffset = OraI18nUtils.getTimeStringFromOffset("", hourOffset, false, true)
     }
-    if(hourOffset !== "") {
+    if (hourOffset !== "") {
       isoParsedDate += hourOffset;
     }
     var result =
-    {
-      'value' : isoParsedDate
-    };
+        {
+          'value': isoParsedDate
+        };
     return result;
   };
 
   //given a user defined pattern, derive the ecma options that will
   //be returned by getResolvedOptions method
   _getResolvedOptionsFromPattern = function (locale, numberingSystemKey,
-    pattern) {
+      pattern) {
     // expand single digit formats, then escape regular expression 
     // characters.
     var expFormat = pattern.replace(_ESCAPE_REGEXP, "\\\\$1");
-    var  regexp = ["^"];
+    var regexp = ["^"];
     var quoteCount = 0;
     var index = 0;
     var match;
     var result = {
-      'locale' : locale,
-      'numberingSystem' : numberingSystemKey,
-      'calendar' : 'gregorian'
+      'locale': locale,
+      'numberingSystem': numberingSystemKey,
+      'calendar': 'gregorian'
     };
     // iterate through each date token found.
     while ((match = _TOKEN_REGEXP.exec(expFormat)) !== null) {
@@ -10406,11 +11478,11 @@ OraDateTimeConverter = (function () {
   _dateTimeStyleFromPattern = function (pattern) {
     var result = _getResolvedOptionsFromPattern('', '', pattern);
     var isDate = (result['year'] !== undefined || result['month'] !==
-      undefined ||
-      result['weekday'] !== undefined || result['day'] !== undefined);
+        undefined ||
+        result['weekday'] !== undefined || result['day'] !== undefined);
     var isTime = (result['hour'] !== undefined || result['minute'] !==
-      undefined || result['second'] !== undefined || 
-      result['millisecond'] !== undefined);
+        undefined || result['second'] !== undefined ||
+        result['millisecond'] !== undefined);
     if (isDate && isTime)
       return 2;
     else if (isTime)
@@ -10418,18 +11490,18 @@ OraDateTimeConverter = (function () {
     else
       return 0;
   };
-  
+
   //test if the isoStr is date, time or date-time
   //0: date, 1:time, 2:date-time
-  _isoStrDateTimeStyle = function(isoStr) {
+  _isoStrDateTimeStyle = function (isoStr) {
     var timeIndex = isoStr.indexOf("T");
-    if(timeIndex === -1)
+    if (timeIndex === -1)
       return 0;
-    if(timeIndex > 0)
+    if (timeIndex > 0)
       return 2;
     return 1;
   };
-  
+
   //test if the pattern/options is date, time or date-time
   //0: date, 1:time, 2:date-time
   _dateTimeStyle = function (options, caller) {
@@ -10441,17 +11513,17 @@ OraDateTimeConverter = (function () {
     //try ecma options
     var getOption = OraI18nUtils.getGetOption(options, caller);
     var isTime = (getOption('hour', 'string', ['2-digit', 'numeric']) !==
-      undefined ||
-      getOption('minute', 'string', ['2-digit', 'numeric']) !== undefined ||
-      getOption('second', 'string', ['2-digit', 'numeric']) !== undefined ||
-      getOption('millisecond', 'string', ['numeric']) !== undefined) ;
+        undefined ||
+        getOption('minute', 'string', ['2-digit', 'numeric']) !== undefined ||
+        getOption('second', 'string', ['2-digit', 'numeric']) !== undefined ||
+        getOption('millisecond', 'string', ['numeric']) !== undefined);
     var isDate = (getOption('year', 'string', ['2-digit', 'numeric']) !==
-      undefined ||
-      getOption('month', 'string',
-        ['2-digit', 'numeric', 'narrow', 'short', 'long']) !== undefined ||
-      getOption('day', 'string', ['2-digit', 'numeric']) !== undefined ||
-      getOption('weekday', 'string', ['narrow', 'short', 'long']) !==
-      undefined);
+        undefined ||
+        getOption('month', 'string',
+            ['2-digit', 'numeric', 'narrow', 'short', 'long']) !== undefined ||
+        getOption('day', 'string', ['2-digit', 'numeric']) !== undefined ||
+        getOption('weekday', 'string', ['narrow', 'short', 'long']) !==
+        undefined);
     if (isDate && isTime)
       return 2;
     else if (isTime)
@@ -10461,7 +11533,7 @@ OraDateTimeConverter = (function () {
 
     //try predefined style
     var option = getOption('formatType', 'string',
-      ['date', 'time', 'datetime'], 'date');
+        ['date', 'time', 'datetime'], 'date');
     if (option === 'datetime')
       return 2;
     else if (option === 'time')
@@ -10471,8 +11543,8 @@ OraDateTimeConverter = (function () {
 
   _getStdOffset = function (zone, value) {
     var index = _parseZone(zone, value, false, true, false);
-    var offset0 = zone.offset(index);
-    var offset1 = zone.offset(index + 1);
+    var offset0 = zone.ofset(index);
+    var offset1 = zone.ofset(index + 1);
     return Math.max(offset0, offset1);
   };
 
@@ -10487,7 +11559,7 @@ OraDateTimeConverter = (function () {
     var newOffset;
     var index;
     utcd = Date.UTC(value[0], value[1] - 1, value[2],
-      value[3], value[4], value[5]);
+        value[3], value[4], value[5]);
     switch (isoStrFormat) {
       case _OFFSET :
         var tzPart = isoStrInfo['timeZone'];
@@ -10495,7 +11567,7 @@ OraDateTimeConverter = (function () {
         var hoursOffset = parseInt(origOffset[0], 10);
         var minOffset = parseInt(origOffset[1], 10);
         origOffset = (hoursOffset * 60) +
-          (OraI18nUtils.startsWith(tzPart, "-") ? -minOffset : minOffset);
+            (OraI18nUtils.startsWith(tzPart, "-") ? -minOffset : minOffset);
         break;
       case _ZULU :
         origOffset = 0;
@@ -10510,16 +11582,16 @@ OraDateTimeConverter = (function () {
     utcd -= (newOffset + origOffset) * 60000;
     //3.get target zone offset
     index = zone.parse(utcd, false, true, false);
-    newOffset = -zone.offset(index);
+    newOffset = -zone.ofset(index);
     //adjust the offset
     newOffset -= origOffset;
     //Do the offset math through the Date object.
     var adjustD = new Date(Date.UTC(value[0], value[1] - 1, value[2],
-      value[3], value[4], value[5]));
+        value[3], value[4], value[5]));
 
     var adjustedMin = adjustD.getUTCMinutes() + newOffset;
     adjustD.setUTCHours(adjustD.getUTCHours() + ((adjustedMin / 60) << 0),
-      adjustedMin % 60);
+        adjustedMin % 60);
     value[0] = adjustD.getUTCFullYear();
     value[1] = adjustD.getUTCMonth() + 1;
     value[2] = adjustD.getUTCDate();
@@ -10528,7 +11600,7 @@ OraDateTimeConverter = (function () {
     value[5] = adjustD.getUTCSeconds();
 
   };
-  
+
   //test if isoStrInfo is date, time or date-time
   //0: date, 1:time, 2:date-time
   _getIsoStrStyle = function (isoStrInfo) {
@@ -10553,26 +11625,27 @@ OraDateTimeConverter = (function () {
       //Date only
       case 0 :
         val = OraI18nUtils.padZeros(d[0], 4) + "-" + OraI18nUtils.padZeros(d[1], 2) + "-" +
-          OraI18nUtils.padZeros(d[2], 2);
+            OraI18nUtils.padZeros(d[2], 2);
         break;
         //Time only
       case 1 :
         val = "T" + OraI18nUtils.padZeros(d[3], 2) + ":" +
-          OraI18nUtils.padZeros(d[4], 2) + ":" +
-          OraI18nUtils.padZeros(d[5], 2);
+            OraI18nUtils.padZeros(d[4], 2) + ":" +
+            OraI18nUtils.padZeros(d[5], 2);
         ms = d[6];
         if (ms > 0) {
-          val += "." + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(ms, 3));;
+          val += "." + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(ms, 3));
+          ;
         }
         break;
         //Date-Time  
       default :
         val = OraI18nUtils.padZeros(d[0], 4) + "-" +
-          OraI18nUtils.padZeros(d[1], 2) + "-" +
-          OraI18nUtils.padZeros(d[2], 2) +
-          "T" + OraI18nUtils.padZeros(d[3], 2) + ":" +
-          OraI18nUtils.padZeros(d[4], 2) + ":" +
-          OraI18nUtils.padZeros(d[5], 2);
+            OraI18nUtils.padZeros(d[1], 2) + "-" +
+            OraI18nUtils.padZeros(d[2], 2) +
+            "T" + OraI18nUtils.padZeros(d[3], 2) + ":" +
+            OraI18nUtils.padZeros(d[4], 2) + ":" +
+            OraI18nUtils.padZeros(d[5], 2);
         ms = d[6];
         if (ms > 0) {
           val += "." + OraI18nUtils.trimRightZeros(OraI18nUtils.padZeros(ms, 3));
@@ -10582,21 +11655,21 @@ OraDateTimeConverter = (function () {
     return val;
   };
 
-  _getParseISOStringOffset = function(tzName, parts, dst, ignoreDst, localeElements, thowException) {
+  _getParseISOStringOffset = function (tzName, parts, dst, ignoreDst, localeElements, thowException) {
     var zone = _getTimeZone(tzName, localeElements);
     var index = _parseZone(zone, parts, dst, ignoreDst, thowException);
     //hours
-    var offset = zone.offset(index);
+    var offset = zone.ofset(index);
     return OraI18nUtils.getTimeStringFromOffset('', offset, true, true);
   };
-  
+
   _createParseISOStringFromDate = function (dtStyle, isoStrInfo, options, localeElements) {
     var zone;
     var index;
-    var offset;    
+    var offset;
     var getOption = OraI18nUtils.getGetOption(options, "OraDateTimeConverter.parse");
     var isoFormat = getOption('isoStrFormat', 'string',
-      [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
+        [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
     var dst = getOption('dst', 'boolean', [true, false], false);
     var ignoreDst = true;
     var parts = isoStrInfo['isoStrParts'];
@@ -10606,11 +11679,11 @@ OraDateTimeConverter = (function () {
     var optionsFormat = options['isoStrFormat'];
     var val = _createISOStrParts(dtStyle, parts);
     //do not include timezone if date-only or local
-    if(dtStyle === 0 || optionsFormat === 'local') {
+    if (dtStyle === 0 || optionsFormat === 'local') {
       return val;
     }
     //when iso string is time-only, do not ignore dst outside ambiguous intervals.
-    if(dtStyle === 1) {
+    if (dtStyle === 1) {
       ignoreDst = false;
     }
     switch (isoFormat) {
@@ -10637,33 +11710,33 @@ OraDateTimeConverter = (function () {
             var offsetHours = parseInt(offset[0], 10);
             var offsetMinutes = parseInt(offset[1], 10);
             adjustedMin = (offsetHours * 60) +
-              (OraI18nUtils.startsWith(offset[0], "-") ? -offsetMinutes : offsetMinutes);
+                (OraI18nUtils.startsWith(offset[0], "-") ? -offsetMinutes : offsetMinutes);
             adjustedMin = -adjustedMin;
           }
         }
         else {
           zone = _getTimeZone(tzName, localeElements);
           index = _parseZone(zone, parts, dst, ignoreDst, true);
-          offset = zone.offset(index);
+          offset = zone.ofset(index);
           adjustedMin = offset;
         }
         if (adjustedMin !== 0) {
           //Do the offset math through date object.
           var adjustD = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2],
-            parts[3], parts[4], parts[5], parts[6]));
+              parts[3], parts[4], parts[5], parts[6]));
           adjustedMin = adjustD.getUTCMinutes() + adjustedMin;
           adjustD.setUTCHours(adjustD.getUTCHours() + ((adjustedMin / 60) << 0),
-            adjustedMin % 60);            
+              adjustedMin % 60);
           parts[0] = adjustD.getUTCFullYear();
           parts[1] = adjustD.getUTCMonth() + 1;
           parts[2] = adjustD.getUTCDate();
           parts[3] = adjustD.getUTCHours();
           parts[4] = adjustD.getUTCMinutes();
-          parts[5] = adjustD.getUTCSeconds();                                             
+          parts[5] = adjustD.getUTCSeconds();
           val = _createISOStrParts(dtStyle, parts);
         }
         val += "Z";
-        break;      
+        break;
       case _AUTO :
         if (tzName !== undefined) {
           offset = _getParseISOStringOffset(tzName, parts, dst, ignoreDst, localeElements, true);
@@ -10674,7 +11747,7 @@ OraDateTimeConverter = (function () {
           if (offset)
             val += offset;
         }
-        break;        
+        break;
       default :
         break;
     }
@@ -10701,9 +11774,9 @@ OraDateTimeConverter = (function () {
     if (arguments.length <= 2 || options === undefined) {
       //default is yMd
       options = {
-        'year' : 'numeric',
-        'month' : 'numeric',
-        'day' : 'numeric'
+        'year': 'numeric',
+        'month': 'numeric',
+        'day': 'numeric'
       };
     }
     var dtStyle;
@@ -10719,39 +11792,39 @@ OraDateTimeConverter = (function () {
     }
     else {
       formats = options['pattern'] || _expandFormat(options, localeElements,
-      locale, "OraDateTimeConverter.parse");
+          locale, "OraDateTimeConverter.parse");
       dtStyle = _dateTimeStyle(options, "OraDateTimeConverter.parse");
       res = _parseExact(str, formats, options, localeElements);
       parsedIsoStr = res['value'];
     }
     isoStrInfo = OraI18nUtils.getISOStrFormatInfo(parsedIsoStr);
-    if(options['timeZone'] !== undefined && isoStrInfo['format'] !== _LOCAL) {
+    if (options['timeZone'] !== undefined && isoStrInfo['format'] !== _LOCAL) {
       _adjustHours(isoStrInfo, options, localeElements);
     }
-    parsedIsoStr = _createParseISOStringFromDate(dtStyle, isoStrInfo, options, localeElements);       
+    parsedIsoStr = _createParseISOStringFromDate(dtStyle, isoStrInfo, options, localeElements);
     res['value'] = parsedIsoStr;
     return res;
   };
 
   //If one of the iso strings is local/invariant parse both strings as local.
   //Else, normalize both strings to zulu
-  _getCompareISODatesOptions = function(isoStr1, isoStr2) {
-    var options = {'isoStrFormat' :  _LOCAL};    
+  _getCompareISODatesOptions = function (isoStr1, isoStr2) {
+    var options = {'isoStrFormat': _LOCAL};
     var isoInfo1 = OraI18nUtils.getISOStrFormatInfo(isoStr1);
     var isoInfo2 = OraI18nUtils.getISOStrFormatInfo(isoStr2);
     var isoInfo1Format = isoInfo1['format'];
     var isoInfo2Format = isoInfo2['format'];
-    if(isoInfo1Format === _LOCAL || isoInfo2Format === _LOCAL) {
+    if (isoInfo1Format === _LOCAL || isoInfo2Format === _LOCAL) {
       return options;
     }
-    options['isoStrFormat'] =  _ZULU;
+    options['isoStrFormat'] = _ZULU;
     return options;
   };
-  
-  _getPatternResolvedOptions = function(isoFormat, tz, dst, locale,
-    numberingSystemKey, options) {
+
+  _getPatternResolvedOptions = function (isoFormat, tz, dst, locale,
+      numberingSystemKey, options) {
     var result = _getResolvedOptionsFromPattern(locale, numberingSystemKey,
-            options['pattern']);
+        options['pattern']);
     result['pattern'] = options['pattern'];
     if (isoFormat !== undefined)
       result['isoStrFormat'] = isoFormat;
@@ -10762,8 +11835,8 @@ OraDateTimeConverter = (function () {
     result['two-digit-year-start'] = _get2DigitYearStart(options);
     return result;
   };
-  
-  _getECMAResolvedOptions = function(getOption, result, dst, localeElements) {
+
+  _getECMAResolvedOptions = function (getOption, result, dst, localeElements) {
     var ecma = false;
     var option;
     if (dst !== undefined)
@@ -10818,12 +11891,12 @@ OraDateTimeConverter = (function () {
       result['millisecond'] = option;
       ecma = true;
     }
-    return ecma;      
+    return ecma;
   };
-  
-  _getPredefinedStylesResolvedOptions = function(result, options, localeElements, getOption) {
+
+  _getPredefinedStylesResolvedOptions = function (result, options, localeElements, getOption) {
     var format = _expandPredefinedStylesFormat(options,
-      localeElements, OraDateTimeConverter.resolvedOptions);
+        localeElements, OraDateTimeConverter.resolvedOptions);
     var fmtType = getOption('formatType', 'string',
         ['date', 'time', 'datetime'], 'date');
     var dStyle = getOption('dateFormat', 'string',
@@ -10839,34 +11912,34 @@ OraDateTimeConverter = (function () {
     }
     result['patternFromOptions'] = format;
   };
-  
-   _getRelativeTimeResolvedOptions = function (getOption, result) {    
-     var option = getOption('formatUsing', 'string', ['displayName', 'calendar']);
-     if (option !== undefined) {
-       result['formatUsing'] = option;
-     }
-     option = getOption('dateField', 'string',
-               ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
-     if (option !== undefined) {
-       result['dateField'] = option;
-     }
-     option = getOption('relativeTime', 'string',
-              ['fromNow', 'toNow']);
-     if (option !== undefined) {
-       result['relativeTime'] = option;
-     }
-     option = getOption('dateOnly', 'boolean', [true, false]);
-     if (option !== undefined) {
-       result['dateOnly'] = option;
-     }
-   };
-   
-  _getResolvedOptions = function(options, getOption, tz, dst, isoFormat,
-                        localeElements, numberingSystemKey, locale) {
+
+  _getRelativeTimeResolvedOptions = function (getOption, result) {
+    var option = getOption('formatUsing', 'string', ['displayName', 'calendar']);
+    if (option !== undefined) {
+      result['formatUsing'] = option;
+    }
+    option = getOption('dateField', 'string',
+        ['day', 'week', 'month', 'year', 'hour', 'minute', 'second']);
+    if (option !== undefined) {
+      result['dateField'] = option;
+    }
+    option = getOption('relativeTime', 'string',
+        ['fromNow', 'toNow']);
+    if (option !== undefined) {
+      result['relativeTime'] = option;
+    }
+    option = getOption('dateOnly', 'boolean', [true, false]);
+    if (option !== undefined) {
+      result['dateOnly'] = option;
+    }
+  };
+
+  _getResolvedOptions = function (options, getOption, tz, dst, isoFormat,
+      localeElements, numberingSystemKey, locale) {
     var result = {
-      'locale' : locale,
-      'numberingSystem' : numberingSystemKey,
-      'calendar' : 'gregorian'
+      'locale': locale,
+      'numberingSystem': numberingSystemKey,
+      'calendar': 'gregorian'
     };
     var option;
     var count = 0;
@@ -10884,9 +11957,9 @@ OraDateTimeConverter = (function () {
       if (isoFormat !== undefined)
         result['isoStrFormat'] = isoFormat;
     }
-    
+
     _getRelativeTimeResolvedOptions(getOption, result);
-    
+
     var ecma = _getECMAResolvedOptions(getOption, result, dst, localeElements);
     result['two-digit-year-start'] = _get2DigitYearStart(options);
     if (!ecma) {
@@ -10900,32 +11973,32 @@ OraDateTimeConverter = (function () {
       }
     }
     result['patternFromOptions'] = _expandFormat(result,
-            localeElements, locale, "OraDateTimeConverter.resolvedOptions");
-    return result;        
+        localeElements, locale, "OraDateTimeConverter.resolvedOptions");
+    return result;
   };
-  
+
   _getResolvedDefaultOptions = function (localeElements, locale, numberingSystemKey) {
     var defaultOptions = {
-      'year' : 'numeric',
-      'month' : 'numeric',
-      'day' : 'numeric'
+      'year': 'numeric',
+      'month': 'numeric',
+      'day': 'numeric'
     };
     var patternFromOptions = _expandFormat(defaultOptions,
-          localeElements, locale, "OraDateTimeConverter.resolvedOptions");
+        localeElements, locale, "OraDateTimeConverter.resolvedOptions");
     return {
-      'calendar' : 'gregorian',
-      'locale' : locale,
-      'numberingSystem' : numberingSystemKey,
-      'year' : 'numeric',
-      'month' : 'numeric',
-      'day' : 'numeric',
-      'patternFromOptions' : patternFromOptions
+      'calendar': 'gregorian',
+      'locale': locale,
+      'numberingSystem': numberingSystemKey,
+      'year': 'numeric',
+      'month': 'numeric',
+      'day': 'numeric',
+      'patternFromOptions': patternFromOptions
     };
   };
-    
-  _availableTimeZonesImpl = function(localeElements) {
-    
-    function getLocalizedName (id, offset, metaZones, cities) {
+
+  _availableTimeZonesImpl = function (localeElements) {
+
+    function getLocalizedName(id, offset, metaZones, cities) {
       var parts = id.split('/');
       var region = parts[0];
       var city = parts[1];
@@ -10933,11 +12006,11 @@ OraDateTimeConverter = (function () {
       var locZone = "";
       var nameObject = {};
       var metaRegion = cities[region];
-      if(metaRegion !== undefined) {
+      if (metaRegion !== undefined) {
         locCity = metaRegion[city];
-        if(locCity !== undefined) {
+        if (locCity !== undefined) {
           locCity = locCity['exemplarCity'];
-          if(locCity !== undefined) {
+          if (locCity !== undefined) {
             locCity = " " + locCity;
           }
         }
@@ -10945,58 +12018,59 @@ OraDateTimeConverter = (function () {
       id = region + "/" + city;
       var metazones = localeElements['supplemental']['metazones'];
       var metaZone = _getMetazone(dParts, id, metazones);
-      metaZone = metaZones[metaZone];
-      if(metaZone !== undefined && metaZone['long'] !== undefined) {
+      if(metaZones !== undefined)
+        metaZone = metaZones[metaZone];
+      if (metaZone !== undefined && metaZone !== null && metaZone['long'] !== undefined) {
         locZone = metaZone['long']['generic'];
         //some metazones do not have generic. Use standard 
-        if(locZone === undefined) {
+        if (locZone === undefined) {
           locZone = metaZone['long']['standard'];
         }
-        if(locZone !== undefined) {
+        if (locZone !== undefined) {
           locZone = " - " + locZone;
         }
       }
       var locName = '(' + _UTC + ')';
-      if(offset !== 0) {
+      if (offset !== 0) {
         locName = OraI18nUtils.getTimeStringFromOffset(_UTC, offset, true, true);
-        locName  = "(" + locName + ")";
+        locName = "(" + locName + ")";
       }
-      if(locCity === undefined || locZone === undefined) {
+      if (locCity === undefined || locZone === undefined) {
         return null;
       }
-      nameObject['offsetLocName'] =  locName + locCity +  locZone;
-      nameObject['locName'] =  locCity +  locZone;
+      nameObject['offsetLocName'] = locName + locCity + locZone;
+      nameObject['locName'] = locCity + locZone;
       return nameObject;
     }
-    
+
     function pushZoneNameObject(zones) {
       var i;
       var zone;
       var offset;
       for (i in zones) {
-        zone = tz.getZone(i, localeElements); 
+        zone = tz.getZone(i, localeElements);
         offset = _getStdOffset(zone, dParts);
         var localizedName = getLocalizedName(i, offset, metaZones, cities);
-        if(localizedName === null) {
+        if (localizedName === null) {
           continue;
         }
         sortedZones.push({
-          'id' : i,
-          'displayName' : localizedName
+          'id': i,
+          'displayName': localizedName
         });
         offsets[i] = offset;
-      }    
+      }
     }
     //return cahched array if available
     var locale = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
     if (_timeZoneDataCache[locale] !== undefined) {
       var ret = _timeZoneDataCache[locale]['availableTimeZones'];
-      if(ret !== undefined) {
-        return ret;         
+      if (ret !== undefined) {
+        return ret;
       }
     }
     var tz = OraTimeZone.getInstance();
-    var sortOptions = { sensitivity: 'variant' };
+    var sortOptions = {sensitivity: 'variant'};
     var sortLocale = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
     var mainNode = OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var metaZones = mainNode['dates']['timeZoneNames']['metazone'];
@@ -11004,22 +12078,22 @@ OraDateTimeConverter = (function () {
     var sortedZones = [];
     var offsets = {};
     var d = new Date();
-    var dParts = [d.getFullYear(), d.getMonth()+1, d.getDate(),
-          d.getHours(), d.getMinutes(), d.getSeconds()];
+    var dParts = [d.getFullYear(), d.getMonth() + 1, d.getDate(),
+      d.getHours(), d.getMinutes(), d.getSeconds()];
     var tzData = localeElements['supplemental']['timeZoneData'];
-    
+
     pushZoneNameObject(tzData['zones']);
     //add the links
     pushZoneNameObject(tzData['links']);
     sortedZones.sort(function (a, b) {
-      var res1 = (offsets[b['id']] - offsets[a['id']]);          
+      var res1 = (offsets[b['id']] - offsets[a['id']]);
       var res2 = a['displayName']['locName'].localeCompare(b['displayName']['locName'], sortLocale, sortOptions);
       return (res1 + res2);
     });
     var len = sortedZones.length;
     //return an array with "display name with offset" instead of the
     //object localizedName which was only used for sorting
-    for(var j = 0; j < len; j++) {
+    for (var j = 0; j < len; j++) {
       sortedZones[j]['displayName'] = sortedZones[j]['displayName']['offsetLocName'];
     }
     //cache the sorted zones
@@ -11028,9 +12102,9 @@ OraDateTimeConverter = (function () {
       _timeZoneDataCache[locale]['availableTimeZones'] = sortedZones;
     }
     return sortedZones;
-  };    
-  
-  function _init () {
+  };
+
+  function _init() {
     return {
       /**
        * Format a date.
@@ -11048,17 +12122,19 @@ OraDateTimeConverter = (function () {
        * - <b>hour.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>minute.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>second.</b> Allowed values: "2-digit", "numeric".<br>
-       * - <b>timeZoneName.</b> Will be ignored in phase1. We do not support it 
-       * yet.<br>
+       * - <b>millisecond.</b> Allowed values: "numeric".<br>
+       * - <b>timeZone.</b> The possible values of the timeZone property are valid IANA timezone IDs.
+       * If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs. 
+       *  yet.<br>
+       * - <b>timeZoneName.</b> allowed values are "short", "long". </b> <br>
+       * - <b>dst.</b> is a Boolean value. Setting dst to true indicates the time is in DST. By default the
+       * time is interpreted as standard time. The possible values of dst are: "true" or "false". Default is "false".<br>
        * - <b>hour12.</b> is a Boolean value indicating whether 12-hour format 
        * (true) or 24-hour format (false) should be used. It is only relevant 
        * when hour is also present.<br>
-       * - <b>formatMatcher.</b> optional, specifies the algorithm to be used 
-       * for looking up the date format based on the options. Allowed values: 
-       * "basic", "munger". The default is munger.
        * - <b>pattern.</b> custom String pattern as defined by Unicode CLDR.<br>
        * - <b>formatType.</b> a predefined formatting type. Allowed values: 
-       * "date", "time", "datetime".
+       * "date", "time", "datetime".<br>
        * - <b>dateFormat.</b> optional, specifies the date format field. 
        * Allowed values: "short", "medium", "long", "full". It is only 
        * considered when formatType is present. The default value 
@@ -11078,17 +12154,17 @@ OraDateTimeConverter = (function () {
        * day:"numeric"<br>
        * };
        * @param {string=} locale - A BCP47 compliant language tag. it is only 
-       * used to extract the unicode extension keys. 
+       * used to extract the unicode "nu" extension key. We currently support "arab", "latn" and "thai" 
+       * numbering systems. EX: locale: 'en-US-u-nu-latn' 
        * @return {string|null} formatted date.
        * @throws {RangeError} If a propery value of the options parameter is 
        * out of range.
        * @throws {SyntaxError} If an Unexpected token is encountered in the 
        * pattern.
-       * @throws {timeZoneNotSupported} if the iso string comtain a time zone.
        * @throws {invalidISOString} if the ISO string is not valid.
        
        */
-      format : function (value, localeElements, options, locale) {
+      format: function (value, localeElements, options, locale) {
         var val;
         var isoStrInfo;
         if (typeof value === "number") {
@@ -11096,7 +12172,7 @@ OraDateTimeConverter = (function () {
         }
         else if (typeof value === "string") {
           val = OraI18nUtils.trim(value);
-          if ( val === '')
+          if (val === '')
             return null;
         }
         else {
@@ -11106,9 +12182,9 @@ OraDateTimeConverter = (function () {
         {
           //default is yMd
           options = {
-            'year' : 'numeric',
-            'month' : 'numeric',
-            'day' : 'numeric'
+            'year': 'numeric',
+            'month': 'numeric',
+            'day': 'numeric'
           };
         }
         isoStrInfo = OraI18nUtils.getISOStrFormatInfo(val);
@@ -11132,18 +12208,77 @@ OraDateTimeConverter = (function () {
         return ret;
       },
       /**
-       * Format a relative date/time
+       * Formats an ISO String as a relative date time. 
+       * <p>
+       * 
+       * @param {string} value - iso 8601 string to be formatted. This value is compared with the current date 
+       * on the client to arrive at the relative formatted value.
+       *  @param {Object} localeElements - the instance of LocaleElements bundle.
+       * @param {Object=} options - an Object literal containing the following properties. The 
+       * default options are ignored during relative formatting <br> 
+       * <b>formatUsing:</b> - Specifies the relative formatting convention. 
+       * Allowed values are "displayName" and "calendar". Setting value to "displayName" uses the relative 
+       * display name for the instance of the dateField, and one or two past and future instances. 
+       * When omitted we use the implicit rules.<br>
+       * <b>dateField:</b> - To be used in conjunction of 'displayName'  value 
+       * of formatUsing attribute.  Allowed values are: "day", "week", "month", "year", "hour", "minute", "second".<br>
+       * relativeTime:</b> - Allowed values are: "fromNow", "toNow". "fromNow" means the system's 
+       * current date is the reference and "toNow" means the value attribute is the reference. Default "fromNow".<br>
+       * <b>dateOnly:</b> - A boolean value that can be used in conjunction with 
+       * calendar of formatUsing attribute.  When set to true date only format is used. Example: Sunday 
+       * instead of Sunday at 2:30 PM. Default value is false.<br>
+       * <b>timeZone:</b> - The timeZone attribute can be used to specify the 
+       * time zone of the  value parameter.  The system's time zone is used for the current time. If timeZone 
+       * attribute is not specified, we use the system's time zone  for both. The value parameter, which is an 
+       * iso string, can be Z or contain and offset, in this case  the timeZone attribute is overwritten.
+       *
+       * @return {string} relative date.
+       * 
+       * @example <caption>Relative time in the future using implicit rules</caption>
+       * var localeElements;
+       * var dateInFuture = new Date();
+       * dateInFuture.setMinutes(dateInFuture.getMinutes() + 41);
+       * dateInFuture = OraI18nUtils.dateToLocalIso(dateInFuture);
+       * var formatted = converter.formatRelative(dateInFuture, localeElements); -> in 41 minutes
+       *
+       * @example <caption>Relative time in the past using implicit rules</caption>
+       * var localeElements;
+       * var dateInPast = new Date();
+       * dateInPast.setHours(dateInPast.getHours() - 20);
+       * dateInPast = OraI18nUtils.dateToLocalIso(dateInPast);
+       * var formatted = converter.formatRelative(dateInPast, localeElements); -> 20 hours ago
+       *
+       * @example <caption>Relative time using dateField. Assuming system's current date is 2016-07-28.</caption>
+       * Format relative year:
+       * var localeElements;
+       * var options = {formatUsing: "displayName", dateField: "year"};
+       * var formatted = converter.formatRelative("2015-06-01T00:00:00", localeElements, options); -> last year
+       *
+       * @example <caption>Relative time using relativeTime. Assuming system's current date is 2016-07-28.</caption>
+       * var localeElements;
+       * var options = {formatUsing: "displayName", dateField: "day", relativeTime: "fromNow"};
+       * var formatted = converter.formatRelative("2016-07-28T00:00:00", localeElements, options); -> tomorrow
+       * options = {formatUsing: "displayName", dateField: "day", relativeTime: "toNow"};
+       * formatted = converter.formatRelative("2016-07-28T00:00:00", localeElements, options); -> yesterday
+       *
+       * @example <caption>Relative time using calendar. Assuming system's current date is 2016-07-28.</caption>
+       * var localeElements;
+       * var options = {formatUsing: "calendar"};
+       * var formatted = converter.formatRelative("2016-07-28T14:15:00", localeElements, options); -> tomorrow at 2:30 PM
+       *
+       * 
+       * @example <caption>Relative time using timeZone. Assuming that the system's time zone is America/Los_Angeles.</caption>
+       * var localeElements;
+       * var options = {timeZone:"America/New_York"};
+       * var nyDateInFuture = new Date();
+       * nyDateInFuture.setHours(nyDateInFuture.getHours() + 6);
+       * nyDateInFuture = OraI18nUtils.dateToLocalIso(nyDateInFuture);
+       * var formatted = converter.formatRelative(nyDateInFuture, localeElements, options); -> in 3 hours
+       * 
        * @memberOf OraDateTimeConverter
-       * @param {string} value - iso 8601 string to be formatted. It may be in
-       *  extended or non-extended form. http://en.wikipedia.org/wiki/ISO_8601
-       * @param {Object} localeElements - the instance of LocaleElements bundle.
-       * @param {Object} options - Containing the following properties:
-       * formatUsing. Allowed values: "displayName"
-       * dateField. Allowed values: "day", "week", "month", "year"
-       * @return {string|null} relative date. null if the value falls out side 
-       * the supported relative range.
+       * @export
        */
-      formatRelative : function (value, localeElements, options) {
+      formatRelative: function (value, localeElements, options) {
         return _formatRelativeImpl(value, localeElements, options);
       },
       /**
@@ -11176,21 +12311,24 @@ OraDateTimeConverter = (function () {
        * - <b>minute.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>second.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>millisecond.</b> Allowed values: "numeric".<br>
-       * - <b>timeZoneNmae.</b> Will be ignored in phase1. We do not support it
+       * - <b>timeZone.</b> The possible values of the timeZone property are valid IANA timezone IDs.
+       * If the users want to pass an offset, they can use one of the Etc/GMT timezone IDs. 
        *  yet.<br>
+       * - <b>timeZoneName.</b> allowed values are "short", "long". </b> <br>
+       * - <b>dst</b> is a Boolean value. Setting dst to true indicates the time is in DST. By default the
+       * time is interpreted as standard time. The possible values of dst are: "true" or "false". Default is "false".<br>
+       * -<b>isoStrFormat.</b>specifies in which format the ISO string is returned. 
+       * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto". The default format is auto.<br>
        * - <b>hour12.</b> is a Boolean value indicating whether 12-hour format 
        * (true) or 24-hour format (false) should be used. It is only relevant 
        * when hour is also present.<br>
-       * - <b>formatMatcher.</b> optional, specifies the algorithm to be used 
-       * for looking up the date format based on the options. Allowed values: 
-       * "basic", "munger". The default is munger.
        * - <b>pattern.</b> custom String pattern as defined by Unicode CLDR.<br>
        * - <b>two-digit-year-start.</b> the 100-year period 2-digit year. 
        * During parsing, two digit years will be placed in the range 
        * two-digit-year-start to two-digit-year-start + 100 years. 
        * The default is 1950.<br>
        * - <b>formatType.</b> a predefined formatting type. Allowed values: 
-       * "date", "time", "datetime".
+       * "date", "time", "datetime".<br>
        * - <b>dateFormat.</b> optional, specifies the date format. Allowed 
        * values: "short", "medium", "long", "full". It is only considered when 
        * formatType is present. The default value is "short".<br>
@@ -11208,7 +12346,8 @@ OraDateTimeConverter = (function () {
        * day:"numeric"<br>
        * };
        * @param {string=} locale - A BCP47 compliant language tag. it is only 
-       * used to extract the unicode extension keys. 
+       * used to extract the unicode "nu" extension key. We currently support "arab", "latn" and "thai" 
+       * numbering systems. EX: locale: 'en-US-u-nu-latn' 
        * @return {string} an iso 8601 extended String. http://en.wikipedia.org/wiki/ISO_8601.
        * If the patern is a date only, returns the date part of the iso string.
        * If the pattern is time only, returns the time part of the iso string. 
@@ -11232,10 +12371,9 @@ OraDateTimeConverter = (function () {
        * @throws {Error} If the <i>str</i> parameter does not match the format 
        * pattern.
        * @throws {RangeError} if one of the date fields is out of range.
-       * @throws {timeZoneNotSupported} if the iso string comtain a time zone.
        * @throws {invalidISOString} if the string to be parsed is an invalid ISO string.
        */
-      parse : function (str, localeElements, options, locale) {
+      parse: function (str, localeElements, options, locale) {
         return _parseImpl(str, localeElements, options, locale);
       },
       /**
@@ -11266,14 +12404,14 @@ OraDateTimeConverter = (function () {
        * - <b>minute.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>second.</b> Allowed values: "2-digit", "numeric".<br>
        * - <b>millissecond.</b> Allowed values: "numeric".<br>
-       * - <b>timeZoneName.</b> Will be ignored in phase1. We do not support 
-       * it yet.<br>
+       * - <b>timeZone.</b> The possible values of the timeZone property are valid IANA timezone IDs.<br>
+       * - <b>timeZoneName.</b> allowed values are "short", "long". </b> <br>
+       * - <b>dst.</b> is a Boolean value. The possible values of dst are: "true" or "false". Default is "false".<br>
+       * - <b>isoStrFormat.</b> specifies in which format the ISO string is returned. 
+       * The possible values of isoStrFormat are: "offset", "zulu", "local", "auto". The default format is auto.<br> 
        * - <b>hour12.</b> is a Boolean value indicating whether 12-hour format 
        * (true) or 24-hour format (false) should be used. It is only relevant 
        * when hour is also present.<br>
-       * - <b>formatMatcher.</b> optional, specifies the algorithm to be used 
-       * for looking up the date format based on the options. Allowed values: 
-       * "basic", "munger". The default is munger.
        * - <b>pattern.</b> custom String pattern as defined by Unicode CLDR. 
        * Will override above options when present.<br>
        * - <b>two-digit-year-start.</b> the 100-year period 2-digit year. 
@@ -11296,7 +12434,7 @@ OraDateTimeConverter = (function () {
        * @throws {Error} if weekday does not match the date.
        */
 
-      resolvedOptions : function (localeElements, options, locale) {
+      resolvedOptions: function (localeElements, options, locale) {
         if (arguments.length < 3 || locale === undefined) {
           locale = OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
         }
@@ -11304,9 +12442,9 @@ OraDateTimeConverter = (function () {
         {
           //default is yMd
           options = {
-            'year' : 'numeric',
-            'month' : 'numeric',
-            'day' : 'numeric'
+            'year': 'numeric',
+            'month': 'numeric',
+            'day': 'numeric'
           };
         }
         var tz;
@@ -11315,7 +12453,7 @@ OraDateTimeConverter = (function () {
         var getOption = OraI18nUtils.getGetOption(options, "OraDateTimeConverter.resolvedOptions");
         if (options !== undefined) {
           isoFormat = getOption('isoStrFormat', 'string',
-            [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
+              [_ZULU, _OFFSET, _INVARIANT, _LOCAL, _AUTO], _AUTO);
           dst = getOption('dst', 'boolean', [true, false], false);
           tz = options['timeZone'];
         }
@@ -11324,11 +12462,11 @@ OraDateTimeConverter = (function () {
           numberingSystemKey = 'latn';
         if (options !== undefined && options['pattern'] !== undefined) {
           return _getPatternResolvedOptions(isoFormat, tz, dst, locale,
-                                            numberingSystemKey, options);
+              numberingSystemKey, options);
         }
         if (options !== undefined) {
           return _getResolvedOptions(options, getOption, tz, dst, isoFormat,
-                 localeElements, numberingSystemKey, locale);
+              localeElements, numberingSystemKey, locale);
         }
         return _getResolvedDefaultOptions(localeElements, locale, numberingSystemKey);
       },
@@ -11339,7 +12477,7 @@ OraDateTimeConverter = (function () {
        * non-extended form. http://en.wikipedia.org/wiki/ISO_8601
        * @return {number}. The current week in the year when provided a date.
        */
-      calculateWeek : function (date) {
+      calculateWeek: function (date) {
         var d = OraI18nUtils.isoToLocalDate(date);
         var time;
         var checkDate = new Date(d.getTime());
@@ -11374,7 +12512,7 @@ OraDateTimeConverter = (function () {
        * The array is sorted by offsets in ascending order. Within the same offset,
        * the entries by displayName in ascending order.
        */
-      getAvailableTimeZones : function (localeElements) {
+      getAvailableTimeZones: function (localeElements) {
         return _availableTimeZonesImpl(localeElements)
       },
       /**
@@ -11387,9 +12525,9 @@ OraDateTimeConverter = (function () {
        *  a value less than 0 if isoStr1 is before isoStr2; and a value 
        *  greater than 0 if isoStr1 is after isoStr2.
        */
-      compareISODates : function(isoStr1, isoStr2, localeElements) {
+      compareISODates: function (isoStr1, isoStr2, localeElements) {
         var options = _getCompareISODatesOptions(isoStr1, isoStr2);
-        var iso1 = _parseImpl(isoStr1, localeElements, options, "en-US"); 
+        var iso1 = _parseImpl(isoStr1, localeElements, options, "en-US");
         var iso2 = _parseImpl(isoStr2, localeElements, options, "en-US");
         var str1 = iso1['value'].replace("Z", "");
         var str2 = iso2['value'].replace("Z", "");
@@ -11398,8 +12536,18 @@ OraDateTimeConverter = (function () {
         var datetime2 = OraI18nUtils._IsoStrParts(str2);
         datetime2 = Date.UTC(datetime2[0], datetime2[1] - 1, datetime2[2], datetime2[3], datetime2[4], datetime2[5], datetime2[6]);
         return  (datetime1 - datetime2);
+      },
+      /**
+       * returns if a locale is 12 or 24 hour format.
+       * @memberOf OraDateTimeConverter
+       * @param {Object} localeElements - The instance of LocaleElements bundle 
+       * @returns {boolean} true if the locale's preferred hour format is 12, false for 24 hour format.
+       * @since 2.2
+       */
+      isHour12: function (localeElements) {
+        return _isHour12(localeElements);
       }
-     };    
+    };
   }
 
   return {
@@ -11409,12 +12557,12 @@ OraDateTimeConverter = (function () {
      * @memberOf OraDateTimeConverter
      * @return {Object} The singleton OraDateTimeConverter instance.
      */
-    getInstance : function () {
+    getInstance: function () {
       if (!instance) {
         instance = _init();
       }
       return instance;
-    } 
+    }
   };
 }());
 

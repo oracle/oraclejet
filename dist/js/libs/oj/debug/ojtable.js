@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2054,20 +2054,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       _events:
         {
           /**
-           * Reset the keyboard state on blur and set the inactive
+           * Reset the keyboard state on focusout and set the inactive
            * selected rows
            */
-          'blur': function(event)
+          'focusout': function(event)
           {
-            // make sure the blur isn't for a focus to an element within
+            // make sure the focusout isn't for a focus to an element within
             // the table
             var table = this._getTableDomUtils().getTable();
-            if (table.has(event.relatedTarget).length > 0)
+            var focusElement = null;
+            
+            if (event.relatedTarget != null)
             {
-              return;
+              // In Chrome we can check relatedTarget
+              focusElement = event.relatedTarget;
             }
-            // In FF we check explicitOriginalTarget
-            else if (event.originalEvent != null && event.originalEvent.explicitOriginalTarget == table[0])
+            else if (event.originalEvent != null && 
+                     event.originalEvent.explicitOriginalTarget != null)
+            {
+              // In FF we check explicitOriginalTarget
+              focusElement = event.originalEvent.explicitOriginalTarget;
+            }
+            else if (this._getTableDomUtils()._isIE() && 
+                     document.activeElement != null)
+            {
+              // In IE we check document.activeElement
+              focusElement = document.activeElement;
+            }
+            
+            if (focusElement != null &&
+                (focusElement == table[0] || 
+                table.has(focusElement).length > 0))
             {
               return;
             }
@@ -5511,7 +5528,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           return true;
         }
-        return true;
+        return false;
       },
       /**
        * Returns whether the table is footerless

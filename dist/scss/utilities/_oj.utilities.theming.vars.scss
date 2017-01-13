@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
 //-------------------------------------------------------------
 // private function
@@ -47,6 +47,7 @@
   $colorList: _oj-theming-add-var($colorList, '$interaction4Color', $interaction4Color);
   $colorList: _oj-theming-add-var($colorList, '$interaction5Color', $interaction5Color);
   $colorList: _oj-theming-add-var($colorList, '$interaction6Color', $interaction6Color);
+  $colorList: _oj-theming-add-var($colorList, '$interaction7Color', $interaction7Color);
 
 
   // backgrounds

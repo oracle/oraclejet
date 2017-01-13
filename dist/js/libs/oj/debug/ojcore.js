@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -45,9 +45,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.2.0",
-  'build' : "10",
-  'revision': "29506",
+  'version': "2.3.0",
+  'build' : "3",
+  'revision': "30989",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -3818,12 +3818,6 @@ oj.Context.prototype.getBusyContext = function ()
 // ignore if running in a JS context that doesn't have the global window object defined
 if (typeof window !== 'undefined')
   oj.Context.getPageContext().getBusyContext().__bootstrapAddBusyState();
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-**
-*/
-
 // CustomEvent()
 (function () {  
   if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
@@ -3843,11 +3837,6 @@ if (typeof window !== 'undefined')
 
   window['CustomEvent'] = CustomEvent;
 })();
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-*/
-
 (function()
 {
 

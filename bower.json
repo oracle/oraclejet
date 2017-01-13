@@ -1,6 +1,6 @@
 {
   "name": "oraclejet",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Oracle JET distribution",
   "authors": [
     "Oracle"
@@ -28,6 +28,7 @@
     "requirejs": "2.1.16",
     "text": "2.0.12",
     "proj4": "2.3.14",
-    "require-css": "0.1.8"
+    "require-css": "0.1.8",
+    "webcomponentsjs": "0.7.22" 
   }
 }

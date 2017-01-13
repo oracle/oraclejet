@@ -2245,10 +2245,7 @@ DvtTimelineEventManager.prototype.PreOnMouseOver = function(event)
   DvtTimelineEventManager.superclass.PreOnMouseOver.call(this, event);
 
   if (!dvt.Agent.isPlatformIE() && !this.isMouseOver)
-  {
     this.isMouseOver = true;
-    this._comp.showThenHideHotspots(0);
-  }
 };
 
 /**
@@ -2261,10 +2258,7 @@ DvtTimelineEventManager.prototype.OnMouseEnter = function(event)
     this._mouseOutTimer.stop();
 
   if (!this.isMouseOver)
-  {
     this.isMouseOver = true;
-    this._comp.showThenHideHotspots(0);
-  }
 };
 
 /**
@@ -2671,53 +2665,6 @@ dvt.Timeline.prototype.GetComponentDescription = function()
     return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'TIMELINE');
 };
 
-dvt.Timeline.prototype.showThenHideHotspots = function(delay, series) 
-{
-  if (this.hasValidOptions())
-  {
-    var animator = new dvt.Animator(this.getCtx(), DvtTimelineStyleUtils.getHotspotAnimationDuration(), delay, dvt.Easing.linear);
-    for (var i = 0; i < this._scrollHotspots.length; i++)
-    {
-      var hotspot = this._scrollHotspots[i];
-      var id = hotspot.getId();
-      var show = true;
-      if (this.getContentLength() <= this._canvasLength && (id == 'lhs' || id == 'rhs'))
-        show = false;
-
-      var pId = hotspot.getParent().getId();
-      if (pId)
-      {
-        var parentSeries = pId.substring(pId.length - 1);
-        if (series != null && (series != parentSeries))
-          show = false;
-
-        var seriesObj = this._series[parentSeries];
-        if (seriesObj._maxOverflowValue <= this._seriesSize && (id == 'ths' || id == 'bhs'))
-          show = false;
-      }
-      if (show)
-        animator.addProp(dvt.Animator.TYPE_NUMBER, hotspot, hotspot.getAlpha, hotspot.setAlpha, DvtTimelineStyleUtils.getHotspotOpacity());
-    }
-    dvt.Playable.appendOnEnd(animator, this.hideHotspots, this);
-    animator.play();
-  }
-};
-
-dvt.Timeline.prototype.hideHotspots = function()
-{
-  var hotSpotsLength = this._scrollHotspots.length;
-  if (hotSpotsLength != 0)
-  {
-    var animator = new dvt.Animator(this.getCtx(), DvtTimelineStyleUtils.getHotspotAnimationDuration(), 0, dvt.Easing.linear);
-    for (var i = 0; i < hotSpotsLength; i++)
-    {
-      var hotspot = this._scrollHotspots[i];
-      animator.addProp(dvt.Animator.TYPE_NUMBER, hotspot, hotspot.getAlpha, hotspot.setAlpha, 0);
-    }
-    animator.play();
-  }
-};
-
 /**
  * Combines style defaults with the styles provided
  *
@@ -2767,13 +2714,24 @@ dvt.Timeline.prototype.applyStyleValues = function()
 
   this.setStartXOffset(borderWidth);
   this.setStartYOffset(borderWidth);
+  this.setBackgroundXOffset(0);
+
+  var scrollbarPadding = 3 * this.getScrollbarPadding();
+
+  // we are going to hide the scrollbar
+  this.timeDirScrollbarStyles = this.getTimeDirScrollbarStyle();
+  this.contentDirScrollbarStyles = this.getContentDirScrollbarStyle();
+
   this._backgroundWidth = this.Width;
   this._backgroundHeight = this.Height;
 
   if (this._isVertical)
   {
     // The size of the canvas viewport
+    if (this.isContentDirScrollbarOn())
+      this._backgroundHeight = this._backgroundHeight - dvt.CSSStyle.toNumber(this.contentDirScrollbarStyles.getHeight()) - scrollbarPadding;
     this._canvasLength = this._backgroundHeight - doubleBorderWidth;
+
     if (this._hasOverview)
     {
       this._canvasSize = this._backgroundWidth - this._overviewSize - doubleBorderWidth;
@@ -2781,19 +2739,39 @@ dvt.Timeline.prototype.applyStyleValues = function()
         this.setStartXOffset(borderWidth + this._overviewSize);
     }
     else
+    {
+      if (this.isTimeDirScrollbarOn())
+        this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.timeDirScrollbarStyles.getWidth()) - scrollbarPadding;
       this._canvasSize = this._backgroundWidth - doubleBorderWidth;
+      if (this.isRTL())
+      {
+        this.setBackgroundXOffset(this.Width - this._backgroundWidth);
+        this.setStartXOffset(this.getStartXOffset() + this.getBackgroundXOffset());
+      }
+    }
   }
   else
   {
     // The size of the canvas viewport
+    if (this.isContentDirScrollbarOn())
+      this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth()) - scrollbarPadding;
     this._canvasLength = this._backgroundWidth - doubleBorderWidth;
+    if (this.isRTL())
+    {
+      this.setBackgroundXOffset(this.Width - this._backgroundWidth);
+      this.setStartXOffset(this.getStartXOffset() + this.getBackgroundXOffset());
+    }
+
     if (this._hasOverview)
-      this._canvasSize = this.Height - this._overviewSize - doubleBorderWidth;
+      this._canvasSize = this._backgroundHeight - this._overviewSize - doubleBorderWidth;
     else
-      this._canvasSize = this.Height - doubleBorderWidth;
+    {
+      if (this.isTimeDirScrollbarOn())
+        this._backgroundHeight = this._backgroundHeight - dvt.CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) - scrollbarPadding;
+      this._canvasSize = this._backgroundHeight - doubleBorderWidth;
+    }
   }
 };
-
 
 /**
  * Combines style defaults with the styles provided
@@ -2881,11 +2859,7 @@ dvt.Timeline.prototype.onAnimationEnd = function()
 {
   // Fire ready event saying animation is finished.
   if (!this.AnimationStopped)
-  {
-    if (dvt.Agent.isEnvironmentBrowser())
-      this.showThenHideHotspots(0);
     this.RenderComplete();
-  }
 
   // Restore event listeners
   this.EventManager.addListeners(this);
@@ -3104,17 +3078,7 @@ dvt.Timeline.prototype.HandleTouchStart = function(event)
 {
   var touches = event.touches;
   if (touches.length == 1)
-  {
     this._dragPanSeries = this._findSeries(event.target);
-    if (this._dragPanSeries)
-    {
-      if (this._series[0] == this._dragPanSeries)
-        var series = 0;
-      else
-        series = 1;
-    }
-    this.showThenHideHotspots(0, series);
-  }
 };
 
 /**
@@ -3130,10 +3094,15 @@ dvt.Timeline.prototype.HandleMouseWheel = function(event)
   {
     if (event.zoomWheelDelta)
     {
-      var newLength = this.getContentLength() * event.zoomWheelDelta;
-      var time = event.zoomTime;
-      var compLoc = event.zoomCompLoc;
-      this.handleZoomWheel(newLength, time, compLoc, true);
+      // only zoom if mouse inside chart/graphical area
+      var relPos = this.getCtx().pageToStageCoords(event.pageX, event.pageY);
+      if (this.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+      {
+        var newLength = this.getContentLength() * event.zoomWheelDelta;
+        var time = event.zoomTime;
+        var compLoc = event.zoomCompLoc;
+        this.handleZoomWheel(newLength, time, compLoc, true);
+      }
     }
   }
 };
@@ -3196,11 +3165,20 @@ dvt.Timeline.prototype.handleZoomWheel = function(newLength, time, compLoc, trig
       overviewLength = this._overview.Width;
     this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
   }
+  if (this.isTimeDirScrollbarOn())
+    this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
   this.applyAxisStyleValues();
   DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
   this.updateSeries();
 
+  if (this.isContentDirScrollbarOn())
+  {
+    for (var i = 0; i < this._series.length; i++)
+    {
+      this.contentDirScrollbar[i].setViewportRange(0, this._seriesSize, 0, Math.max(this._series[i]._maxOverflowValue, this._seriesSize));
+    }
+  }
   if (triggerViewportChangeEvent)
     this.dispatchEvent(this.createViewportChangeEvent());
 };
@@ -3276,7 +3254,6 @@ dvt.Timeline.prototype._handleResize = function(width, height)
     this.updateSeries();
     DvtTimelineRenderer._renderAxis(this, this._timeZoomCanvas);
     DvtTimelineRenderer._renderSeriesLabels(this);
-    DvtTimelineRenderer._renderScrollHotspots(this);
     DvtTimelineRenderer._renderZoomControls(this);
 
     if (this._hasOverview)
@@ -3296,6 +3273,8 @@ dvt.Timeline.prototype._handleResize = function(width, height)
         }
       }
     }
+    if (this.isTimeDirScrollbarOn() || this.isContentDirScrollbarOn())
+      DvtTimelineRenderer._renderScrollbars(this);
   }
   else
     DvtTimelineRenderer._renderEmptyText(this);
@@ -3366,6 +3345,33 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
       else if (newTranslateX > maxTranslateX)
         newTranslateX = maxTranslateX;
       this._dragPanSeries.setTranslateX(newTranslateX);
+
+      if (this.isContentDirScrollbarOn())
+      {
+        if (this._series[0] == this._dragPanSeries)
+        {
+          if (this.isRTL())
+          {
+            if (seriesCount == 2)
+              var newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateX;
+            else
+              newMin = this.getTimeAxisVisibleSize() - newTranslateX;
+            this.contentDirScrollbar[0].setViewportRange(newMin, newMin + this._seriesSize);
+          }
+          else
+            this.contentDirScrollbar[0].setViewportRange(newTranslateX, newTranslateX + this._seriesSize);
+        }
+        else
+        {
+          if (this.isRTL())
+            this.contentDirScrollbar[1].setViewportRange(newTranslateX, newTranslateX + this._seriesSize);
+          else
+          {
+            newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateX;
+            this.contentDirScrollbar[1].setViewportRange(newMin, newMin + this._seriesSize);
+          }
+        }
+      }
     }
     this.panZoomCanvasBy(deltaY);
     if (this._hasOverview)
@@ -3373,7 +3379,8 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
       var overviewLength = this._overview.Height;
       this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
     }
-
+    if (this.isTimeDirScrollbarOn())
+      this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
   }
   else
   {
@@ -3383,6 +3390,9 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
       var overviewLength = this._overview.Width;
       this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
     }
+    if (this.isTimeDirScrollbarOn())
+      this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+
     if (this._dragPanSeries)
     {
       var newTranslateY = this._dragPanSeries.getTranslateY() - deltaY;
@@ -3402,6 +3412,17 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
       else if (newTranslateY > maxTranslateY)
         newTranslateY = maxTranslateY;
       this._dragPanSeries.setTranslateY(newTranslateY);
+
+      if (this.isContentDirScrollbarOn())
+      {
+        if (this._series[0] == this._dragPanSeries)
+          this.contentDirScrollbar[0].setViewportRange(newTranslateY, newTranslateY + this._seriesSize);
+        else
+        {
+          var newMin = this.getTimeAxisVisibleSize() + this._seriesSize - newTranslateY;
+          this.contentDirScrollbar[1].setViewportRange(newMin, newMin + this._seriesSize);
+        }
+      }
     }
   }
   //this.dispatchEvent(dvt.EventFactory.newTimelineViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._timeAxis.getScale()));
@@ -3412,9 +3433,14 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
 {
   var type = event['type'];
 
-  // check for selection event, and handle accordingly
-  if (type == 'selection' || type == 'action')
+  var type = event['type'];
+  if (type == dvt.SimpleScrollbarEvent.TYPE)
   {
+    event = this.processScrollbarEvent(event, component);
+  }
+  else if (type == 'selection' || type == 'action')
+  {
+    // check for selection event, and handle accordingly
     dvt.EventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, event);
   }
   else if (type == 'overview')
@@ -3536,6 +3562,37 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
   }
 };
 
+/**
+ * Adjusts viewport based on scrollbar event.
+ * @param {object} event
+ * @param {object} component The component that is the source of the event, if available.
+ */
+dvt.Timeline.prototype.processScrollbarEvent = function(event, component)
+{
+  dvt.Timeline.superclass.processScrollbarEvent.call(this, event, component);
+  if (component == this.contentDirScrollbar[0])
+  {
+    var newMin = event.getNewMin();
+    if (this.isVertical())
+    {
+      if (this._series.length == 2)
+        this._series[0].setTranslateX(this.isRTL() ? this.getTimeAxisVisibleSize() + this._seriesSize - newMin : newMin);
+      else
+        this._series[0].setTranslateX(this.isRTL() ? this.getTimeAxisVisibleSize() - newMin : newMin);
+    }
+    else
+      this._series[0].setTranslateY(newMin);
+  }
+  else if (component == this.contentDirScrollbar[1])
+  {
+    newMin = event.getNewMin();
+    if (this.isVertical())
+      this._series[1].setTranslateX(this.isRTL() ? newMin : this.getTimeAxisVisibleSize() + this._seriesSize - newMin);
+    else
+      this._series[1].setTranslateY(this.getTimeAxisVisibleSize() + this._seriesSize - newMin);
+  }
+};
+
 dvt.Timeline.prototype.updateScrollForItemSelection = function(item)
 {
   var viewSize = this._viewEndTime - this._viewStartTime;
@@ -3595,6 +3652,9 @@ dvt.Timeline.prototype.updateScrollForItemNavigation = function(item)
       overviewLength = this._overview.Width;
     this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
   }
+  if (this.isTimeDirScrollbarOn())
+    this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+
   this.dispatchEvent(this.createViewportChangeEvent());
 };
 
@@ -3713,6 +3773,40 @@ dvt.Timeline.prototype.clearOverview = function()
     this.removeChild(this._overviewCanvas);
     this._overviewCanvas = null;
   }
+};
+
+/**
+ * @override
+ */
+dvt.Timeline.prototype.isTimeDirScrollbarOn = function()
+{
+  return !this._hasOverview;
+};
+
+/**
+ * @override
+ */
+dvt.Timeline.prototype.isContentDirScrollbarOn = function()
+{
+  return true;
+};
+
+/**
+ * Returns the background offset value of this component in the x direction.
+ * @return {number} The background offset value of this component in the x direction.
+ */
+dvt.Timeline.prototype.getBackgroundXOffset = function()
+{
+  return this._backgroundX;
+};
+
+/**
+ * Sets the background offset value of this component in the x direction.
+ * @param {number} backgroundX The background offset value of this component in the x direction.
+ */
+dvt.Timeline.prototype.setBackgroundXOffset = function(backgroundX)
+{
+  this._backgroundX = backgroundX;
 };
 /**
  * Timeline automation service.
@@ -3965,9 +4059,9 @@ DvtTimelineRenderer.renderTimeline = function(timeline)
         }
       }
     }
+    if (timeline.isTimeDirScrollbarOn() || timeline.isContentDirScrollbarOn())
+      DvtTimelineRenderer._renderScrollbars(timeline);
 
-    // render scroll hotspots now so they are on top of everything
-    DvtTimelineRenderer._renderScrollHotspots(timeline);
     DvtTimelineRenderer._renderZoomControls(timeline);
 
     // Initial Selection
@@ -3982,8 +4076,6 @@ DvtTimelineRenderer.renderTimeline = function(timeline)
       var series = timeline._series[i];
       series.triggerAnimations();
     }
-    if (dvt.Agent.isEnvironmentBrowser() && !timeline.Animation)
-      timeline.showThenHideHotspots(0);
   }
   else
     DvtTimelineRenderer._renderEmptyText(timeline);
@@ -4005,11 +4097,13 @@ DvtTimelineRenderer._renderBackground = function(timeline)
   else
     timeline._background = new dvt.Rect(timeline.getCtx(), 0, 0, timeline._backgroundWidth, timeline._backgroundHeight, 'bg');
 
+  var transX = timeline.getBackgroundXOffset();
+  timeline._background.setTranslateX(transX);
   timeline._background.setCSSStyle(timeline._style);
   timeline._background.setPixelHinting(true);
 
   var cp = new dvt.ClipPath();
-  cp.addRect(0, 0, timeline._backgroundWidth, timeline._backgroundHeight);
+  cp.addRect(transX, 0, timeline._backgroundWidth, timeline._backgroundHeight);
   timeline._background.setClipPath(cp);
 
   if (timeline._background.getParent() != timeline)
@@ -4343,27 +4437,37 @@ DvtTimelineRenderer._renderOverview = function(timeline)
     timeline._overviewCanvas = new dvt.Container(context, 'oCanvas');
   }
   else
+  {
     timeline._overviewCanvas.removeChildren();
+    timeline._overviewCanvas.setClipPath(null);
+  }
 
   var borderWidth = timeline._style.getBorderWidth();
   var halfBorderWidth = borderWidth / 2;
+  var width, height, x, y;
   if (timeline.isVertical())
   {
-    var width = timeline._overviewSize;
-    var height = timeline.Height - borderWidth;
+    width = timeline._overviewSize;
+    height = timeline._backgroundHeight - borderWidth;
+    y = halfBorderWidth;
     if (!isRTL)
-      timeline._overviewCanvas.setTranslateX(timeline.Width - timeline._overviewSize - halfBorderWidth);
+      x = timeline._backgroundWidth - timeline._overviewSize - halfBorderWidth;
     else
-      timeline._overviewCanvas.setTranslateX(halfBorderWidth);
-    timeline._overviewCanvas.setTranslateY(halfBorderWidth);
+      x = halfBorderWidth;
   }
   else
   {
-    width = timeline.Width - borderWidth;
+    width = timeline._backgroundWidth - borderWidth;
     height = timeline._overviewSize;
-    timeline._overviewCanvas.setTranslateY(timeline.Height - timeline._overviewSize - halfBorderWidth);
-    timeline._overviewCanvas.setTranslateX(halfBorderWidth);
+    y = timeline._backgroundHeight - timeline._overviewSize - halfBorderWidth;
+    x = halfBorderWidth + timeline.getBackgroundXOffset();
   }
+  timeline._overviewCanvas.setTranslateX(x);
+  timeline._overviewCanvas.setTranslateY(y);
+  var cp = new dvt.ClipPath();
+  cp.addRect(x, y, width, height);
+  timeline._overviewCanvas.setClipPath(cp);
+
   if (addOverviewCanvas)
     timeline.addChild(timeline._overviewCanvas);
 
@@ -4375,191 +4479,204 @@ DvtTimelineRenderer._renderOverview = function(timeline)
 };
 
 /**
- * Renders the scroll indicators of a timeline.
+ * Renders the scrollbars.
  * @param {dvt.Timeline} timeline The timeline being rendered.
  * @private
  */
-DvtTimelineRenderer._renderScrollHotspots = function(timeline)
+DvtTimelineRenderer._renderScrollbars = function(timeline)
 {
-  if (timeline._series)
+  var context = timeline.getCtx();
+  var scrollbarPadding = timeline.getScrollbarPadding();
+  if (timeline._scrollbarsCanvas == null)
   {
-    var context = timeline.getCtx();
-    var isRTL = dvt.Agent.isRightToLeft(context);
+    timeline._scrollbarsCanvas = new dvt.Container(context, 'sbCanvas');
+    timeline.addChild(timeline._scrollbarsCanvas);
+  }
+  else
+    timeline._scrollbarsCanvas.removeChildren();
 
-    var seriesCount = timeline._series.length;
-    var axisSize = timeline.getTimeAxisVisibleSize(seriesCount);
-    if (timeline._scrollHotspotsContainers)
+  if (timeline.isTimeDirScrollbarOn())
+  {
+    if (timeline.isVertical())
     {
-      for (var i = 0; i < timeline._scrollHotspotsContainers.length; i++)
-      {
-        timeline._scrollHotspotsContainers[i].removeChildren();
-      }
+      if (dvt.Agent.isRightToLeft(timeline.getCtx()))
+        var availSpaceWidth = scrollbarPadding * 2 + 1;
+      else
+        availSpaceWidth = timeline.Width - scrollbarPadding * 1.5;
+      var availSpaceHeight = timeline.getCanvasLength();
     }
     else
     {
-      var addHotspotsContainers = true;
-      timeline._scrollHotspotsContainers = [];
+      availSpaceWidth = timeline.getCanvasLength();
+      availSpaceHeight = timeline.Height - scrollbarPadding * 1.5;
+    }
+    var timeDirScrollbarDim = DvtTimelineRenderer._prerenderTimeDirScrollbar(timeline, timeline._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+  }
+  if (timeline.isContentDirScrollbarOn())
+  {
+    if (timeline.isVertical())
+    {
+      availSpaceWidth = timeline._seriesSize;
+      availSpaceHeight = timeline.Height - scrollbarPadding * 1.5;
+    }
+    else
+    {
+      if (dvt.Agent.isRightToLeft(timeline.getCtx()))
+        availSpaceWidth = scrollbarPadding * 2 + 1;
+      else
+        availSpaceWidth = timeline.Width - scrollbarPadding * 1.5;
+      availSpaceHeight = timeline._seriesSize;
     }
 
-    timeline._scrollHotspots = [];
-    var hotspotPadding = DvtTimelineStyleUtils.getHotspotPadding();
-    var hotspotWidth = DvtTimelineStyleUtils.getHotspotWidth();
-    var hotspotHeight = DvtTimelineStyleUtils.getHotspotHeight();
-    var hotspotArrowWidth = DvtTimelineStyleUtils.getHotspotArrowWidth();
-    var hotspotArrowHeight = DvtTimelineStyleUtils.getHotspotArrowHeight();
-    var hotspotBackgroundColor = DvtTimelineStyleUtils.getHotspotBackgroundColor();
-    var hotspotBorderRadius = DvtTimelineStyleUtils.getHotspotBorderRadius();
-
+    var seriesCount = timeline._series.length;
+    var contentDirScrollbarDim = [];
     for (var i = 0; i < seriesCount; i++)
     {
-      if (addHotspotsContainers)
-      {
-        var scrollHotspots = new dvt.Container(context, 'hotspots_s' + i);
-        timeline.addChild(scrollHotspots);
-        timeline._scrollHotspotsContainers.push(scrollHotspots);
-      }
-      else
-        scrollHotspots = timeline._scrollHotspotsContainers[i];
-
-      if (!timeline.isVertical())
-      {
-        var backX = timeline._startX + hotspotPadding;
-        var forwardX = timeline._startX + timeline._canvasLength - hotspotWidth - hotspotPadding;
-        var backY = timeline._startY + (i * (timeline._seriesSize + axisSize)) + (timeline._seriesSize - hotspotHeight) / 2;
-        var forwardY = backY;
-        var arrowBackX = backX + hotspotArrowWidth / 2;
-        var arrowForwardX = forwardX + hotspotArrowWidth / 2;
-        var arrowBackY = backY + hotspotArrowHeight / 2;
-        var arrowForwardY = arrowBackY;
-        var arrowBackResource = timeline._resources['scrollLeft'];
-        var arrowForwardResource = timeline._resources['scrollRight'];
-      }
-      else
-      {
-        if (isRTL)
-        {
-          if (seriesCount == 1)
-          {
-            var seriesKey = 0;
-            var axisKey = 1;
-          }
-          else
-          {
-            seriesKey = Math.abs(i - 1);
-            axisKey = seriesKey;
-          }
-        }
-        else
-        {
-          seriesKey = i;
-          axisKey = seriesKey;
-        }
-        backX = timeline._startX + (seriesKey * timeline._seriesSize) + (axisKey * axisSize) + (timeline._seriesSize - hotspotWidth) / 2;
-        forwardX = backX;
-        backY = timeline._startY + hotspotPadding;
-        forwardY = timeline._startY + timeline._canvasLength - hotspotHeight - hotspotPadding;
-        arrowBackX = backX + hotspotArrowWidth / 2;
-        arrowForwardX = arrowBackX;
-        arrowBackY = backY + hotspotArrowHeight / 2;
-        arrowForwardY = forwardY + hotspotArrowHeight / 2;
-        arrowBackResource = timeline._resources['scrollUp'];
-        arrowForwardResource = timeline._resources['scrollDown'];
-      }
-
-      var leftHotspot = new dvt.Rect(context, backX, backY, hotspotWidth, hotspotHeight, 'lhs');
-      leftHotspot.setSolidFill(hotspotBackgroundColor, 1);
-      leftHotspot.setCornerRadius(hotspotBorderRadius);
-      leftHotspot.hotspot = 'left';
-      leftHotspot.setAlpha(0);
-      leftHotspot.setMouseEnabled(false);
-      var leftArrow = new dvt.Image(context, arrowBackResource, arrowBackX, arrowBackY, hotspotArrowWidth, hotspotArrowHeight, 'lhs_arr');
-      leftArrow.hotspot = 'left';
-      leftHotspot.addChild(leftArrow);
-      var rightHotspot = new dvt.Rect(context, forwardX, forwardY, hotspotWidth, hotspotHeight, 'rhs');
-      rightHotspot.setSolidFill(hotspotBackgroundColor, 1);
-      rightHotspot.setCornerRadius(hotspotBorderRadius);
-      rightHotspot.hotspot = 'right';
-      rightHotspot.setAlpha(0);
-      rightHotspot.setMouseEnabled(false);
-      var rightArrow = new dvt.Image(context, arrowForwardResource, arrowForwardX, arrowForwardY, hotspotArrowWidth, hotspotArrowHeight, 'rhs_arr');
-      rightArrow.hotspot = 'right';
-
-      rightHotspot.addChild(rightArrow);
-      scrollHotspots.addChild(leftHotspot);
-      timeline._scrollHotspots.push(leftHotspot);
-      scrollHotspots.addChild(rightHotspot);
-      timeline._scrollHotspots.push(rightHotspot);
-
-      if (!timeline.isVertical())
-      {
-        var topX = timeline._startX + (timeline._canvasLength - hotspotWidth) / 2;
-        var bottomX = topX;
-        var topY = timeline._startY + (i * (timeline._seriesSize + axisSize)) + hotspotPadding;
-        var bottomY = timeline._startY + ((i + 1) * timeline._seriesSize) + (i * axisSize) - hotspotHeight - hotspotPadding;
-        var arrowTopX = topX + hotspotArrowWidth / 2;
-        var arrowBottomX = arrowTopX;
-        var arrowTopY = topY + hotspotArrowHeight / 2;
-        var arrowBottomY = bottomY + hotspotArrowHeight / 2;
-        var arrowTopResource = timeline._resources['scrollUp'];
-        var arrowBottomResource = timeline._resources['scrollDown'];
-      }
-      else
-      {
-        if (isRTL)
-        {
-          if (seriesCount == 1)
-          {
-            seriesKey = 0;
-            axisKey = 1;
-          }
-          else
-          {
-            seriesKey = Math.abs(i - 1);
-            axisKey = seriesKey;
-          }
-        }
-        else
-        {
-          seriesKey = i;
-          axisKey = seriesKey;
-        }
-        topX = timeline._startX + (seriesKey * timeline._seriesSize) + (axisKey * axisSize) + hotspotPadding;
-        bottomX = timeline._startX + ((seriesKey + 1) * timeline._seriesSize) + (axisKey * axisSize) - hotspotWidth - hotspotPadding;
-        topY = timeline._startY + (timeline._canvasLength - hotspotHeight) / 2;
-        bottomY = topY;
-        arrowTopX = topX + hotspotArrowWidth / 2;
-        arrowBottomX = bottomX + hotspotArrowWidth / 2;
-        arrowTopY = topY + hotspotArrowHeight / 2;
-        arrowBottomY = arrowTopY;
-        arrowTopResource = timeline._resources['scrollLeft'];
-        arrowBottomResource = timeline._resources['scrollRight'];
-      }
-
-      var topHotspot = new dvt.Rect(context, topX, topY, hotspotWidth, hotspotHeight, 'ths');
-      topHotspot.setSolidFill(hotspotBackgroundColor, 1);
-      topHotspot.setCornerRadius(hotspotBorderRadius);
-      topHotspot.hotspot = 'top';
-      topHotspot.setAlpha(0);
-      topHotspot.setMouseEnabled(false);
-      var upArrow = new dvt.Image(context, arrowTopResource, arrowTopX, arrowTopY, hotspotArrowWidth, hotspotArrowHeight, 'ths_arr');
-      upArrow.hotspot = 'top';
-      topHotspot.addChild(upArrow);
-      var bottomHotspot = new dvt.Rect(context, bottomX, bottomY, hotspotWidth, hotspotHeight, 'bhs');
-      bottomHotspot.setSolidFill(hotspotBackgroundColor, 1);
-      bottomHotspot.setCornerRadius(hotspotBorderRadius);
-      bottomHotspot.hotspot = 'bottom';
-      bottomHotspot.setAlpha(0);
-      bottomHotspot.setMouseEnabled(false);
-      var downArrow = new dvt.Image(context, arrowBottomResource, arrowBottomX, arrowBottomY, hotspotArrowWidth, hotspotArrowHeight, 'bhs_arr');
-      downArrow.hotspot = 'bottom';
-
-      bottomHotspot.addChild(downArrow);
-      scrollHotspots.addChild(topHotspot);
-      timeline._scrollHotspots.push(topHotspot);
-      scrollHotspots.addChild(bottomHotspot);
-      timeline._scrollHotspots.push(bottomHotspot);
+      contentDirScrollbarDim[i] = DvtTimelineRenderer._prerenderContentDirScrollbar(timeline, timeline._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight), i);
     }
   }
+
+  if (timeline.timeDirScrollbar)
+  {
+    var sbOptions = {};
+    sbOptions['color'] = timeline.timeDirScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
+    sbOptions['backgroundColor'] = timeline.timeDirScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+    sbOptions['min'] = timeline._start;
+    sbOptions['max'] = timeline._end;
+    if (timeline.isVertical())
+    {
+      sbOptions['isReversed'] = false;
+      sbOptions['isHorizontal'] = false;
+      timeline.timeDirScrollbar.setTranslateY(timeline.getStartYOffset());
+    }
+    else
+    {
+      sbOptions['isReversed'] = dvt.Agent.isRightToLeft(context);
+      sbOptions['isHorizontal'] = true;
+      timeline.timeDirScrollbar.setTranslateX(timeline.getStartXOffset());
+    }
+    timeline.timeDirScrollbar.render(sbOptions, timeDirScrollbarDim.w, timeDirScrollbarDim.h);
+    timeline.timeDirScrollbar.setViewportRange(timeline._viewStartTime, timeline._viewEndTime);
+  }
+  if (timeline.contentDirScrollbar)
+  {
+    for (i = 0; i < seriesCount; i++)
+    {
+      sbOptions = {};
+      sbOptions['color'] = timeline.contentDirScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
+      sbOptions['backgroundColor'] = timeline.contentDirScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+      sbOptions['isHorizontal'] = timeline.isVertical();
+
+      if (i == 0)
+      {
+        sbOptions['min'] = 0;
+        sbOptions['max'] = (Math.max(timeline._series[i]._maxOverflowValue, contentDirScrollbarDim[i].h));
+        if (!timeline.isVertical())
+        {
+          sbOptions['isReversed'] = true;
+          timeline.contentDirScrollbar[i].setTranslateY(timeline.getStartYOffset());
+        }
+        else
+        {
+          if (dvt.Agent.isRightToLeft(context))
+          {
+            sbOptions['isReversed'] = false;
+            if (seriesCount == 2)
+              timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset() + timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount));
+            else
+              timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset() + timeline.getTimeAxisVisibleSize(seriesCount));
+          }
+          else
+          {
+            sbOptions['isReversed'] = true;
+            timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset());
+          }
+        }
+      }
+      else
+      {
+        sbOptions['min'] = 0;
+        sbOptions['max'] = (Math.max(timeline._series[i]._maxOverflowValue, contentDirScrollbarDim[i].h));
+        if (!timeline.isVertical())
+        {
+          sbOptions['isReversed'] = false;
+          timeline.contentDirScrollbar[i].setTranslateY(timeline.getStartYOffset() + timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount));
+        }
+        else
+        {
+          if (dvt.Agent.isRightToLeft(context))
+          {
+            sbOptions['isReversed'] = true;
+            timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset());
+          }
+          else
+          {
+            sbOptions['isReversed'] = false;
+            timeline.contentDirScrollbar[i].setTranslateX(timeline.getStartXOffset() + timeline._seriesSize + timeline.getTimeAxisVisibleSize(seriesCount));
+          }
+        }
+      }
+      timeline.contentDirScrollbar[i].render(sbOptions, contentDirScrollbarDim[i].w, contentDirScrollbarDim[i].h);
+      timeline.contentDirScrollbar[i].setViewportRange(0, timeline._seriesSize);
+    }
+  }
+};
+
+/**
+ * Prepares the time direction scrollbar for rendering.
+ * @param {dvt.Timeline} timeline The timeline being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @return {dvt.Dimension} The dimension of the scrollbar.
+ * @private
+ */
+DvtTimelineRenderer._prerenderTimeDirScrollbar = function(timeline, container, availSpace)
+{
+  timeline.setTimeDirScrollbar(new dvt.SimpleScrollbar(timeline.getCtx(), timeline.HandleEvent, timeline));
+  container.addChild(timeline.timeDirScrollbar);
+  if (timeline.isVertical())
+  {
+    var location = 'right';
+    var width = dvt.CSSStyle.toNumber(timeline.timeDirScrollbarStyles.getWidth());
+    var height = availSpace.h;
+  }
+  else
+  {
+    location = 'bottom';
+    width = availSpace.w;
+    height = dvt.CSSStyle.toNumber(timeline.timeDirScrollbarStyles.getHeight());
+  }
+  dvt.LayoutUtils.position(availSpace, location, timeline.timeDirScrollbar, width, height, 0);
+  return new dvt.Dimension(width, height);
+};
+
+/**
+ * Prepares the content direction scrollbar for rendering.
+ * @param {dvt.Timeline} timeline The timeline being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @param {number} index The series index.
+ * @return {dvt.Dimension} The dimension of the scrollbar.
+ * @private
+ */
+DvtTimelineRenderer._prerenderContentDirScrollbar = function(timeline, container, availSpace, index)
+{
+  timeline.setContentDirScrollbar(new dvt.SimpleScrollbar(timeline.getCtx(), timeline.HandleEvent, timeline), index);
+  container.addChild(timeline.contentDirScrollbar[index]);
+  if (timeline.isVertical())
+  {
+    var location = 'bottom';
+    var width = availSpace.w;
+    var height = dvt.CSSStyle.toNumber(timeline.contentDirScrollbarStyles.getHeight());
+  }
+  else
+  {
+    location = 'right';
+    width = dvt.CSSStyle.toNumber(timeline.contentDirScrollbarStyles.getWidth());
+    height = availSpace.h;
+  }
+  dvt.LayoutUtils.position(availSpace, location, timeline.contentDirScrollbar[index], width, height, 0);
+  return new dvt.Dimension(width, height);
 };
 
 /**
@@ -4606,19 +4723,20 @@ DvtTimelineRenderer._renderZoomControls = function(timeline)
     }
   };
 
-  var xOffset = timeline._startX + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
-  if (!isRTL)
-    var transX = xOffset;
-  else
+  var xOffset = timeline.getStartXOffset() + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
+  if (isRTL)
   {
-    // timeline._startX includes the overview size when vertical, but we only want the border width
+    // startXOffset includes the overview size when vertical, and the scrollbar region when not
     if (timeline._isVertical && timeline._hasOverview)
       xOffset = xOffset - timeline._overviewSize;
-    transX = timeline._backgroundWidth - xOffset - DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
+    else
+      xOffset = xOffset - timeline.getBackgroundXOffset();
+
+    xOffset = timeline._backgroundWidth - xOffset - DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_DIAMETER;
   }
 
-  zoomControlProperties['zoomInProps']['posX'] = transX;
-  zoomControlProperties['zoomOutProps']['posX'] = transX;
+  zoomControlProperties['zoomInProps']['posX'] = xOffset;
+  zoomControlProperties['zoomOutProps']['posX'] = xOffset;
 
   var yOffset = timeline._startY + DvtTimelineStyleUtils._DEFAULT_ZOOM_CONTROL_PADDING;
 
@@ -4782,69 +4900,6 @@ DvtTimelineStyleUtils._DEFAULT_OVERVIEW_HEIGHT = 100;
  * @private
  */
 DvtTimelineStyleUtils._DEFAULT_OVERVIEW_HANDLE_TEXTURE_COLOR = '#B3C6DB';
-
-/**
- * The default hotspot background color.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_BACKGROUND_COLOR = '#000000';
-
-/**
- * The default hotspot border radius.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_BORDER_RADIUS = 2;
-
-/**
- * The default hotspot opacity.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_OPACITY = 0.6;
-
-/**
- * The default hotspot width.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_WIDTH = 28;
-
-/**
- * The default hotspot height.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_HEIGHT = 28;
-
-/**
- * The default hotspot padding.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_PADDING = 3;
-
-/**
- * The default hotspot arrow width.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ARROW_WIDTH = 14;
-
-/**
- * The default hotspot arrow height.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ARROW_HEIGHT = 14;
-
-/**
- * The default hotspot animation duration.
- * @const
- * @private
- */
-DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ANIMATION_DURATION = 0.3;
 
 /**
  * The default Item enabled stroke width.
@@ -5287,24 +5342,6 @@ DvtTimelineStyleUtils.getItemInnerStrokeWidth = function()
 };
 
 /**
- * Gets the hotspot animation duration.
- * @return {number} The hotspot animation duration.
- */
-DvtTimelineStyleUtils.getHotspotAnimationDuration = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ANIMATION_DURATION;
-};
-
-/**
- * Gets the hotspot opacity.
- * @return {number} The hotspot opacity.
- */
-DvtTimelineStyleUtils.getHotspotOpacity = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_OPACITY;
-};
-
-/**
  * Gets the timeline style.
  * @return {string} The timeline style.
  */
@@ -5406,69 +5443,6 @@ DvtTimelineStyleUtils.getAxisSeparatorStyle = function()
 DvtTimelineStyleUtils.getSeriesAxisLabelPadding = function()
 {
   return DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_LABEL_PADDING;
-};
-
-/**
- * Gets the hotspot padding.
- * @return {number} The hotspot padding.
- */
-DvtTimelineStyleUtils.getHotspotPadding = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_PADDING;
-};
-
-/**
- * Gets the hotspot width.
- * @return {number} The hotspot width.
- */
-DvtTimelineStyleUtils.getHotspotWidth = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_WIDTH;
-};
-
-/**
- * Gets the hotspot height.
- * @return {number} The hotspot height.
- */
-DvtTimelineStyleUtils.getHotspotHeight = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_HEIGHT;
-};
-
-/**
- * Gets the hotspot arrow width.
- * @return {number} The hotspot arrow width.
- */
-DvtTimelineStyleUtils.getHotspotArrowWidth = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ARROW_WIDTH;
-};
-
-/**
- * Gets the hotspot arrow height.
- * @return {number} The hotspot arrow height.
- */
-DvtTimelineStyleUtils.getHotspotArrowHeight = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_ARROW_HEIGHT;
-};
-
-/**
- * Gets the hotspot background color.
- * @return {string} The hotspot background color.
- */
-DvtTimelineStyleUtils.getHotspotBackgroundColor = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_BACKGROUND_COLOR;
-};
-
-/**
- * Gets the hotspot border radius.
- * @return {number} The hotspot border radius.
- */
-DvtTimelineStyleUtils.getHotspotBorderRadius = function()
-{
-  return DvtTimelineStyleUtils._DEFAULT_HOTSPOT_BORDER_RADIUS;
 };
 
 /**
@@ -6046,7 +6020,7 @@ DvtTimelineSeries.prototype.calculateSpacing = function(item, index)
       // If not enough room, default to return bottom value
       if (top < 0)
         top = 0;
-      y = Math.round(Math.random() * top) + bottom;
+      y = Math.round(Math.random() * top) + bottom;//@RandomNumberOk
 
       if (this._maxOverflowValue < y + itemHeight)
         this._maxOverflowValue = y + itemHeight + DvtTimelineStyleUtils.getBubbleSpacing();
@@ -8224,6 +8198,29 @@ DvtTimelineSeriesRenderer._renderReferenceObjects = function(series, container)
           ref.date = refObject;
           series._refObjectsContainer.addChild(ref);
           series._renderedReferenceObjects[i] = ref;
+        }
+        else
+        {
+          ref = series._renderedReferenceObjects[i];
+          ref.date = refObject;
+          pos = dvt.TimeAxis.getDatePosition(series._start, series._end, ref.date, series._length);
+          if (series.isVertical())
+          {
+            ref.setX1(0);
+            ref.setY1(pos);
+            ref.setX2(series._maxOverflowValue);
+            ref.setY2(pos);
+          }
+          else
+          {
+            if (isRTL)
+              pos = series._length - pos;
+
+            ref.setX1(pos);
+            ref.setY1(0);
+            ref.setX2(pos);
+            ref.setY2(series._maxOverflowValue);
+          }
         }
       }
     }

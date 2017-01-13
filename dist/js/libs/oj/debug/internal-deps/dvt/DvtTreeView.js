@@ -5070,8 +5070,8 @@ DvtTreemapNode.prototype._getIsolateButton = function() {
   var bRtl = dvt.Agent.isRightToLeft(this._context);
   var resources = this.getView().getOptions()['_resources'];
   var upImage = bRtl && resources['isolateRtl'] ? resources['isolateRtl'] : resources['isolate'];
-  var overImage = bRtl && resources['isolateDownRtl'] ? resources['isolateDownRtl'] : resources['isolateDown'];
-  var downImage = bRtl && resources['isolateOverRtl'] ? resources['isolateOverRtl'] : resources['isolateOver'];
+  var overImage = bRtl && resources['isolateOverRtl'] ? resources['isolateOverRtl'] : resources['isolateOver'];
+  var downImage = bRtl && resources['isolateDownRtl'] ? resources['isolateDownRtl'] : resources['isolateDown'];
 
   // Initialize the button states
   var upState = new dvt.Image(context, upImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);
@@ -5101,8 +5101,8 @@ DvtTreemapNode.prototype._getRestoreButton = function() {
   var bRtl = dvt.Agent.isRightToLeft(this._context);
   var resources = this.getView().getOptions()['_resources'];
   var upImage = bRtl && resources['restoreRtl'] ? resources['restoreRtl'] : resources['restore'];
-  var overImage = bRtl && resources['restoreDownRtl'] ? resources['restoreDownRtl'] : resources['restoreDown'];
-  var downImage = bRtl && resources['restoreOverRtl'] ? resources['restoreOverRtl'] : resources['restoreOver'];
+  var overImage = bRtl && resources['restoreOverRtl'] ? resources['restoreOverRtl'] : resources['restoreOver'];
+  var downImage = bRtl && resources['restoreDownRtl'] ? resources['restoreDownRtl'] : resources['restoreDown'];
 
   // Initialize the button states
   var upState = new dvt.Image(context, upImage, 0, 0, DvtTreemapNode._ISOLATE_ICON_SIZE, DvtTreemapNode._ISOLATE_ICON_SIZE);

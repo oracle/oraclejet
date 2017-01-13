@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
 // WARNING:
 // windows theme UNDER DEVELOPMENT!
@@ -57,6 +57,7 @@ $interaction3Color: #dcdcde !default;
 $interaction4Color: #c2ddf7 !default;
 $interaction5Color: #d4d4d6 !default;
 $interaction6Color: #dae9f5 !default;
+$interaction7Color: #fafaeb !default;
 
 //----------------------------------------------------------------
 // GENERAL STYLING
@@ -368,6 +369,22 @@ $buttonsetEqualWidthChromingList: full outlined !default; // default should be e
 
 // DIALOG
 //----------------------------------------------------------------
+
+$dialogBorderWidth:         1px !default; // (windowBorderWidth is 2px on windows)
+$dialogBorderColor:         $interaction1Color !default;
+
+// $dialogHeaderPadding:       oj-px-to-rem(25px, $baseFontSize: 15px) oj-px-to-rem(25px, $baseFontSize: 15px) oj-px-to-rem(3px, $baseFontSize: 15px) !default;
+$dialogHeaderPadding:       1.667rem 1.667rem .2rem !default;
+$dialogFooterPadding:       .4rem 1.667rem 1.2rem !default;
+$dialogBodyPadding:         1.333rem 1.667rem 1.267rem !default;
+
+$dialogHeaderFontSize:      $mediumFontSize !default;
+$dialogHeaderTextColor:     $primaryTextColor !default;
+$dialogHeaderBgColor:       transparent !default;
+
+// Used to make the close button symmetrical.
+$dialogCloseIconButtonMargin:  0 .625rem 0 .625rem !default;
+
 
 // TOOLBAR
 //----------------------------------------------------------------

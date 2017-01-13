@@ -5197,15 +5197,7 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
  * @override
  */
 dvt.PanZoomCanvasEventManager.prototype.OnMouseUp = function(event) {
-  this._bDown = false;
-  this._bDragging = false;
-
-  if (this._bPanning) {
-    this._handlePanEnd();
-  }
-  if (this._bZooming) {
-    this._handleZoomEnd();
-  }
+  this.PanZoomEnd();
   dvt.PanZoomCanvasEventManager.superclass.OnMouseUp.call(this, event);
 };
 
@@ -5695,7 +5687,15 @@ dvt.PanZoomCanvasEventManager.prototype._handlePanEnd = function() {
  * @protected
  */
 dvt.PanZoomCanvasEventManager.prototype.PanZoomEnd = function() {
-  this.OnMouseUp(null);
+  this._bDown = false;
+  this._bDragging = false;
+
+  if (this._bPanning) {
+    this._handlePanEnd();
+  }
+  if (this._bZooming) {
+    this._handleZoomEnd();
+  }
 };
 
 /**

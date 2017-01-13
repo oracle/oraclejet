@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -213,6 +213,39 @@ oj.ListViewDndContext.prototype.itemRenderComplete = function(elem, context)
     }
 };
 /******************************** Mouse down/up, touch start/end helpers ***********************************************/
+/** 
+ * Sets draggable style class on item
+ * @param {jQuery} item the listview item
+ * @return {boolean} true if no style class has applied, false otherwise
+ * @private
+ */
+oj.ListViewDndContext.prototype._setItemDraggable = function(item)
+{
+    var cls, dragHandle;
+
+    // if the item contains the drag affordance, then bail
+    cls = this._getDragAffordanceClass();
+    dragHandle = item.find("."+cls);
+    if (dragHandle != null && dragHandle.length > 0)
+    {
+        return true;
+    }
+
+    item.addClass("oj-draggable");
+    return false;
+};
+
+/** 
+ * Unsets draggable style class on item
+ * @param {jQuery} item the listview item
+ * @private
+ */
+oj.ListViewDndContext.prototype._unsetItemDraggable = function(item)
+{
+    // would be no-op if there's an affordance
+    item.removeClass("oj-draggable");
+};
+
 /**
  * Sets draggable attribute on either the item or affordance.
  * See HandleMouseDownOrTouchStart method
@@ -221,7 +254,7 @@ oj.ListViewDndContext.prototype.itemRenderComplete = function(elem, context)
  */
 oj.ListViewDndContext.prototype._setDraggable = function(target)
 {
-    var cls, item, dragger, dragHandle, activeItem;
+    var cls, item, dragger, skipped, activeItem;
 
     if (this._getDragOptions() != null || this._isItemReordering())
     {
@@ -235,14 +268,12 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
             item = this._findItem(target);
             if (item != null)
             {
-                // if the item contains the drag affordance, then bail
-                dragHandle = item.find("."+cls);
-                if (dragHandle != null && dragHandle.length > 0)
+                skipped = this._setItemDraggable(item);
+                if (skipped)
                 {
+                    // contains affordance, bail out.
                     return;
                 }
-
-                item.addClass("oj-draggable");
             }
 
             // if dragging an item, it must be already the current item
@@ -250,7 +281,7 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
             if (activeItem != null)
             {
                 // in order to initiate drag the item must be the current active item
-                if (item != null && item.find("."+cls).length == 0 && item[0] == activeItem)
+                if (item != null && item[0] == activeItem)
                 {
                     dragger = item;
                 }
@@ -604,7 +635,7 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
 
         for (i=0; i<this.m_dragItems.length; i++)
         {
-            $(this.m_dragItems[i]).css("display", "block");           
+            $(this.m_dragItems[i]).removeClass("oj-listview-drag-item");           
         }
     }
 
@@ -870,7 +901,7 @@ oj.ListViewDndContext.prototype._handleDragOver = function(event)
 
         for (i=0; i<this.m_dragItems.length; i++)
         {
-            $(this.m_dragItems[i]).css("display", "none");           
+            $(this.m_dragItems[i]).addClass("oj-listview-drag-item");           
         }
 
         dropTarget.insertBefore(item); //@HTMLUpdateOK

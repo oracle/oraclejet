@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1052,7 +1052,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore'],
           launcher = $(launcher);
 
         // if a jquery collection, select the first dom node not in the popups content
-        if (launcher instanceof jQuery && launcher.length > 1)
+        if (launcher instanceof $ && launcher.length > 1)
         {
           var rootElement = this._rootElement;
 
@@ -1067,8 +1067,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore'],
             }
           }
         }
-        else if (!(launcher instanceof jQuery) || //object is not a jq
-          ((launcher instanceof jQuery) && launcher.length === 0))// empty jq collection
+        else if (!(launcher instanceof $) || //object is not a jq
+          ((launcher instanceof $) && launcher.length === 0))// empty jq collection
           launcher = $(document.activeElement);
 
         this._launcher = launcher;

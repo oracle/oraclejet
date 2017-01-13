@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2031,8 +2031,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
         /** @const */   OJT_INACTIVE      = "oj-tree-inactive" ;
 
   // ojTree disclosure class names
-//var  /** @const */   OJ_DISC           = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon oj-default";
-  var  /** @const */   OJ_DISC           = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon-nocontext oj-default";
+  var  /** @const */   OJ_DISC            = "oj-tree-icon oj-tree-disclosure-icon oj-component-icon oj-clickable-icon-nocontext oj-default";
 
   //  WAI-ARIA
   var  /** @const */   WA_ROLE              = "role",
@@ -4376,7 +4375,7 @@ $ul.css('max-height', '') ;   //JRM
        ar = $.isArray(data) ;
        if ((!ar) || (data.length == 1)) {
          node = this._createNode(refnode, position, ar? data[0] : data);   // single node
-         // Check if this node has a selected tag appplied temporarily by dnd dragStart,
+         // Check if this node has a selected tag applied temporarily by dnd dragStart,
          // and if so apply the selection state to the node
          this._getDndContext()._dndFinishSelection(node) ;
          return node ;
@@ -4531,7 +4530,7 @@ $ul.css('max-height', '') ;   //JRM
        * @param {boolean=} idMode - Set to true (or omit) to return ID's from the node attribute
        *                       "id"), or false to return the names (i.e. text titles).  Default is true.
        *
-       * @return {Array | boolean} An array of node ID's or names.
+       * @return {Array | boolean} An array of node ID's or names. If the node is not found, false is returned.
        * @expose
        * @public
        * @instance
@@ -4647,7 +4646,7 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       * Returns the subcomponent node element represented by the locator object subId property.</br>
+       * Returns the subcomponent node element represented by the locator object <span class="code-caption">subId</span> property.</br>
        * (See also <a href="#getSubIdByNode">getSubIdByNode</a>.)
        *
        * @expose
@@ -4656,7 +4655,10 @@ $ul.css('max-height', '') ;   //JRM
        * @override
        * @memberof oj.ojTree
        * @param {Object} locator An Object containing at minimum a "subId" property whose value is a string.<p>
-       * The general format of a subId string is: &nbsp; &nbsp; &nbsp; <span class="code-caption">"oj-tree-node['node id']['request']"</span>
+       * The general format of a subId string is: &nbsp; &nbsp; <span class="code-caption">"oj-tree-node['node id']['request']"</span></br>
+       * The <span class="code-caption">"request"</span> value can be <span class="code-caption">"title</span>, 
+       * <span class="code-caption">"icon"</span>, <span class="code-caption">"link"</span>, 
+       * or <span class="code-caption">"disclosure"</span>.
        * @return {Element|null} the subcomponent element located by the subId string passed in locator, or null if not found.<p>
        */
      getNodeBySubId: function(locator)
@@ -5239,7 +5241,7 @@ $ul.css('max-height', '') ;   //JRM
      },
 
      /**
-       *  Returns the jQuery wrapped <li> element for a node spcification
+       *  Returns the jQuery wrapped <li> element for a node specification
        *  @private
        */
      _getNodeElem : function(node)
@@ -6647,7 +6649,7 @@ $ul.css('max-height', '') ;   //JRM
                                           });
        }
        this._emitEvent({}, "reopen", true);     // this event will also cause selections to be tried.
-     },
+    },
 
 
     /**
@@ -8720,8 +8722,15 @@ $ul.css('max-height', '') ;   //JRM
                        var trgt = $(event.target);
                        trgt.removeClass(TreeUtils._OJ_SELECTED).addClass("oj-default") ;
                     }.bind(this))
-              .bind("mousedown.ojtree", function ()  {
-                      this._setFocus(); // This used to be setTimeout(set_focus,0) - why?
+              .bind("mousedown.ojtree", function (event)  {
+                      this._setFocus();
+                      // . If IE11, need preventDefault() to avoid weird
+                      // shift-click highlighting. Not done if HTML5 drag/drop is supported 
+                      if (event.shiftKey) {
+                        if (! (this._getDndContext() && this._getDndContext().isDragEnabled())) {
+                          event.preventDefault() ;
+                        }
+                      }
                     }.bind(this))
               .bind("dblclick.ojtree", function (event)  {
                      var sel;
@@ -8833,6 +8842,7 @@ $ul.css('max-height', '') ;   //JRM
        this._$container.css("MozUserSelect", "none");
        this._$container.css("WebkitTouchCallout", "none");
        this._$container.css("WebkitUserSelect", "none");
+       this._$container.css("-ms-user-select", "none");
        this._$container.css("WebkitTapHighlightColor", "rgba(0,0,0,0)");
      },
 
@@ -9446,7 +9456,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
     /**
       *  Notification that the user has invoked the context menu via the default
       *  gestures: right-click, pressHold, and Shift-F10.
-      *  we Ensure that focus returns to the tree if the menu is dismissed in
+      *  We ensure that focus returns to the tree if the menu is dismissed in
       *  some way via the keyboard.
       *  @param {Object} menu       The JET Menu to open as a context menu
       *  @param {Event}  event      Triggering event
@@ -9873,8 +9883,8 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         data.menu.usermenu     = false ;   // user has supplied an ojMenu id if true
         data.menu.$container   = false ;   // the menu <ul>
         data.menu.$elemPaste   = false ;   // the menu "Paste" element
-        data.menu.$elemPasteAfter  = false ;   // the menu "Paste" element
-        data.menu.$elemPasteBefore = false ;   // the menu "Paste" element
+        data.menu.$elemPasteAfter  = false ;   // the menu "Paste" After element
+        data.menu.$elemPasteBefore = false ;   // the menu "Paste Before" element
         data.menu.node         = false ;   // the tree node the menu was activated on
         data.menu.activenode   = false ;   // active node for shift-F10
 
@@ -10380,18 +10390,8 @@ if ((! newVal) && (! this.options["contextMenu"])) {
      _buildContextMenuLabel: function(cmd)
      {
          var key = _arMenuKeyMap[cmd] ;
-         //return '<a href="#">' + this._getString(key) + '</a>';
-
-         // Temp fix for 'Paste Before" and "Paste After" strings not in
-         // the nls resources for ojTree (required as part of ).
-         if (key === "labelPasteAfter" || key === "labelPasteBefore") {
-           return '<a href="#">' + oj.Translations.getTranslatedString("oj-ojTabs." + key)  + '</a>' ;
-         }
-         else {
-           return '<a href="#">' + this._getString(key) + '</a>';
-         }
+         return '<a href="#">' + this._getString(key) + '</a>';
      },
-
 
      /**
        *  Menu "cut" functionality
@@ -10472,7 +10472,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
      /**
        *  Menu move node support for paste
-       * @private
+       *  @private
        */
      _crrm_move_node : function (obj, ref, position, is_copy, is_prepared, skip_check)
      {
@@ -10485,7 +10485,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
           if (position === "inside" && !s["defaultPosition"].match(/^(before|after)$/))  {
             position = s["defaultPosition"];
           }
-            return this._moveNode(obj, ref, position, is_copy, false, skip_check);
+          return this._moveNode(obj, ref, position, is_copy, false, skip_check);
         }
 
         // if the move is already prepared

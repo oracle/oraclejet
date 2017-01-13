@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2623,7 +2623,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             pagingControlNavMaxLabel.text(navInputPageMaxLabel);
             pagingControlNavInputSection.append(pagingControlNavMaxLabel); //@HTMLUpdateOK
           }
-          pagingControlNavInput.ojInputText({'displayOptions': {'messages': ['notewindow'], 'converterHint': ['notewindow'],  'validatorHint': ['notewindow']}, 'rootAttributes': {'style':"width: auto; min-width: 0;"}, 'optionChange': this._handlePageChange.bind(this), 'validators': [{'type': 'numberRange', 'options': {'min': 1, max: maxPageVal}}]});
+          pagingControlNavInput.ojInputText({'displayOptions': {'messages': ['notewindow'], 'converterHint': ['notewindow'],  'validatorHint': ['notewindow']}, 'rootAttributes': {'style':"width: auto; min-width: 0;"}, 'optionChange': this._handlePageChange.bind(this), 'validators': [{'type': 'numberRange', 'options': {'min': 1, max: maxPageVal}}]}).attr('data-oj-internal', true);
         }
         
         if (($.inArray(this._PAGE_OPTION_LAYOUT._AUTO, pageOptionLayout) != -1 && !isDot) ||
@@ -3448,7 +3448,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      */
 
 }());
-
 (function() {
 var ojPagingControlMeta = {
   "properties": {

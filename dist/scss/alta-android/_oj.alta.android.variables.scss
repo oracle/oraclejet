@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.property";
 
 // This is the variable file for the Oracle Alta Android look and feel.
@@ -54,6 +54,7 @@ $interaction3Color: #dcdcde !default;
 $interaction4Color: #c2ddf7 !default;
 $interaction5Color: #d4d4d6 !default;
 $interaction6Color: #dae9f5 !default;
+$interaction7Color: #fafaeb !default;
 
 //----------------------------------------------------------------
 // GENERAL STYLING
@@ -395,6 +396,14 @@ $buttonsetEqualWidthChromingList: full outlined !default; // default should be e
 // DIALOG
 //----------------------------------------------------------------
 
+$dialogHeaderPadding:       1.5rem 1.5rem .3125rem !default;
+$dialogBodyPadding:         .3125rem 1.5rem 1.25rem !default;
+$dialogFooterPadding:       .5rem .5rem .25rem !default; 
+
+$dialogHeaderFontSize:      1.188rem !default;   
+$dialogHeaderTextColor:     $textColor !default;
+$dialogHeaderBgColor:       transparent !default;
+
 // TOOLBAR
 //----------------------------------------------------------------
 
@@ -696,6 +705,9 @@ $navigationBarPageLevelItemFontSize: 0.875rem !default; //14 px when root font i
 $navigationBarPageLevelItemStackedIconMinHeight: 3rem !default;//48px when root font is 16px
 $navigationBarPageLevelItemMinHeight: 3rem !default; //48px when root font is 16px;
 $navigationBarPageLevelIconOnlyItemBorderWidth: $navigationBarPageLevelItemBorderWidth !default;
+
+$navigationListPointerUpAnimation:   (effect: "ripple") !default;
+
 // END of NavigationList variables
 
 // PROGRESSBAR

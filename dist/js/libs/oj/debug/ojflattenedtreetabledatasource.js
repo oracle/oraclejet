@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -99,17 +99,16 @@ oj.FlattenedTreeTableDataSource = function(data, options)
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    for (i = 0; i < rowKeys.length; i++)
+    for (i = rowKeys.length - 1; i >= 0; i--)
     {
-      // indices shift down as we remove
-      rowIdx = rowKeys[i].index - i;
+      rowIdx = rowKeys[i]['index'];
       // just create a dummy row for deletion
       rowArray.push('');
       keyArray.push('');
       indexArray.push(rowIdx);
       self._nodeSetList.splice(rowIdx, 1);
       // update the startIndex of the shifted rows
-      for (j = rowIdx + 1; j < self._nodeSetList.length; j++)
+      for (j = rowIdx; j < self._nodeSetList.length; j++)
       {
         self._nodeSetList[j]['startIndex'] = self._nodeSetList[j]['startIndex'] - 1;
       }
@@ -117,6 +116,8 @@ oj.FlattenedTreeTableDataSource = function(data, options)
       self._rows['keys'].splice(rowIdx, 1);
       self._rows['indexes'].splice(rowIdx, 1);
     }
+    // The index array must be sorted ascending
+    indexArray = indexArray.sort();
     self._realignRowIndices();
     self._hasMore = true;
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -34,22 +34,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
- * <table class="keyboard-table">
- *   <thead>
- *     <tr>
- *       <th>Target</th>
- *       <th>Gesture</th>
- *       <th>Action</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>Pull to refresh panel element</td>
- *       <td><kbd>Pan</kbd></td>
- *       <td>Shows the pull to refresh panel as user pan downward.  Refresh action is triggered if the user pan downward over a specified threshold.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
  */
 oj.PullToRefreshUtils = {};
 
@@ -482,4 +474,53 @@ oj.PullToRefreshUtils._cleanup = function(content)
         content.empty();
     }
 };
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Pull to refresh panel element</td>
+ *       <td><kbd>Pan</kbd></td>
+ *       <td>Shows the pull to refresh panel as user pan downward.  Refresh action is triggered if the user pan downward over a specified threshold.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.PullToRefreshUtils
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Pull to refresh panel element</td>
+ *       <td><kbd>Tab</kbd></td>
+ *       <td>Shift focus to refresh action link.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Link</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Invoke refresh action.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.PullToRefreshUtils
+ */
 });

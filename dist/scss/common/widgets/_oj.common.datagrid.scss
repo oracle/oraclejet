@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../../utilities/oj.utilities";
 @import "oj.common.formcontrol.mixins";
 
@@ -24,6 +24,7 @@
             // prevent graying on iOS safari
             -webkit-tap-highlight-color: rgba(0,0,0,0);
             overflow: hidden;
+            cursor: default;
         }
 
         /* Styling to remove focus ring border on focusable elements */
@@ -64,12 +65,18 @@
             box-sizing: border-box;
         }
 
-        /* Style for disabling horizontal gridlines */
-        .oj-datagrid-cell.oj-datagrid-border-bottom-none,
-        .oj-datagrid-header-cell.oj-datagrid-border-bottom-none,
-        .oj-datagrid-end-header-cell.oj-datagrid-border-bottom-none {
+        /* Style for disabling horizontal gridlines on cells */
+        .oj-datagrid-cell.oj-datagrid-border-horizontal-none,
+        .oj-datagrid-header-cell.oj-datagrid-border-horizontal-none,
+        .oj-datagrid-end-header-cell.oj-datagrid-border-horizontal-none {
             border-bottom-color: transparent;
         }
+        
+        /* Style for disabling horizontal gridlines on corners, is the top border for corners */        
+        .oj-datagrid-row-header-spacer.oj-datagrid-border-horizontal-none,
+        .oj-datagrid-bottom-corner.oj-datagrid-border-horizontal-none {
+            border-top-color: transparent;
+        }        
 
         /* Style for disabling vertical gridlines */
         .oj-datagrid-cell.oj-datagrid-border-vertical-none,
@@ -83,11 +90,23 @@
                 border-left-color: transparent;
             }
         }
+        
+        /* Style for disabling vertical gridlines on corners, is the opposite of cell sides */
+        .oj-datagrid-column-header-spacer.oj-datagrid-border-vertical-none,
+        .oj-datagrid-bottom-corner.oj-datagrid-border-vertical-none {
+            @include oj-ltr() {
+                border-left-color: transparent;
+            }
+
+            @include oj-rtl() {
+                border-right-color: transparent;
+            }
+        }        
 
         /* Style for grid border if the grid doesn't fill the container the end headers need a border-bottom */
-        .oj-datagrid .oj-datagrid-row-header-spacer.oj-datagrid-small-content-border-bottom,
-        .oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-bottom,
-        .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-bottom {
+        .oj-datagrid .oj-datagrid-row-header-spacer.oj-datagrid-small-content-border-horizontal,
+        .oj-datagrid .oj-datagrid-bottom-corner.oj-datagrid-small-content-border-horizontal,
+        .oj-datagrid .oj-datagrid-end-header-cell.oj-datagrid-small-content-border-horizontal {
             border-bottom-width: 1px;
         }
 
@@ -229,7 +248,7 @@
         .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-focus::after {
             width: calc(100% - 3px);
             height: calc(100% - 3px);
-            border: 2px solid #000000;
+            border: 2px solid $dataGridEditableCellBorderColorFocus;
         }
 
         /* Styling on databody cells when they are being edited */
@@ -244,7 +263,7 @@
         .oj-hicontrast .oj-datagrid.oj-datagrid-editable.oj-focus .oj-datagrid-row .oj-datagrid-cell.oj-datagrid-cell-edit::after {
             width: calc(100% - 1px);
             height: calc(100% - 1px);
-            border: 1px solid #000000;
+            border: 1px solid $dataGridEditableCellBorderColorFocus;
         }
 
         /* A helper class oj-datagrid-editable-no-padding is a helper to provide the appearance of no padding, it has padding to give the border space when in cellNavigation mode*/

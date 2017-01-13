@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2141,11 +2141,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   },
   'for': 'ojDiagram'
 });
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-*/
-
 (function()
 {
 
@@ -2205,10 +2200,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   var _ASSIGNMENT_TARGET_EXP = /^(?:[$_a-z][$\w]*|(.+)(\.\s*[$_a-z][$\w]*|\[.+\]))$/i;
 })();
 
-
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 
 /**
  * @ignore
@@ -2721,7 +2712,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 // Default declarations for all components supporting tooltips
 (function() {
   var componentsArray = ['ojChart', 'ojDiagram', 'ojNBox', 'ojPictoChart', 'ojSunburst', 'ojTagCloud', 'ojThematicMap', 'ojTreemap',
-                         'ojDialGauge', 'ojLedGauge', 'ojRatingGauge','ojSparkChart', 'ojStatusMeterGauge'];
+                         'ojDialGauge', 'ojLedGauge', 'ojRatingGauge','ojSparkChart', 'ojStatusMeterGauge', 'ojGantt'];
   for(var i = 0; i < componentsArray.length; i++) {
     oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({ 
       "for": componentsArray[i],
@@ -2832,9 +2823,6 @@ oj.koStringTemplateEngine.install = function()
 };
 
 
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-*/
 (function()
 {
   ko['bindingHandlers']['_ojCustomElement'] =

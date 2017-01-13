@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -461,8 +461,10 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     {
       throw new Error("ojRadioset cannot be bound to a fieldset. Use a div instead.");
     }
-    // turn each radio into ojRadioCheckbox.
-    this.$radios._ojRadioCheckbox();
+    // Turn each radio into ojRadioCheckbox. Since ojRadiooxSet delegates to the _ojRadioCheckbox
+    // component, and we need to mark this as an internal node so that oj.Components.getComponentElementByNode
+    // knows it is an internal component in this case, not a stand-alone component
+    this.$radios._ojRadioCheckbox().attr('data-oj-internal', true);
 
     // keep the root dom element as is, and add a wrapper dom underneath it. This way we can
     // have one div around all the inputs and labels, and for inline messaging we can have another
@@ -485,8 +487,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   {
     this._super();
     this._setup();
-    
-
   },
   /**
    * Resets this.$radios. This is called at the beginning of a refresh in EditableValue
@@ -579,17 +579,17 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     // find all input radios with matching name
     if (name === undefined)
     {
-    	// search for all radios with no name
+      // search for all radios with no name
       allradios = element.find("input[type=radio]");
       // now loop and find the ones without 'name' attribute
       return allradios.not("[name]");
     }
     else
     {
-    	// search for all radios with the name
+      // search for all radios with the name
       selector = "input[type=radio][name=" + name + "]";
       return element.find(selector);
-    	
+      
     }
   },
   // Override to set custom launcher
@@ -927,12 +927,12 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *       <td><kbd>Tap</kbd></td>
    *       <td>Select the corresponding input.</td>
    *     </tr> 
-	 *     <tr>
-	 *       <td>Input or Label</td>
-	 *       <td><kbd>Press & Hold</kbd></td>
-	 *       <td>If hints, title or messages exist in a notewindow, 
+   *     <tr>
+   *       <td>Input or Label</td>
+   *       <td><kbd>Press & Hold</kbd></td>
+   *       <td>If hints, title or messages exist in a notewindow, 
    *        pop up the notewindow.</td>
-	 *    </tr> 
+   *    </tr> 
    *     {@ojinclude "name":"labelTouchDoc"}  
    *   </tbody>
    * </table>
@@ -992,7 +992,6 @@ var _sValueChangeCheckFalse = {doValueChangeCheck: false};
 var _HTML = "html";
 
 }());
-
 (function() {
 var ojRadiosetMeta = {
   "properties": {

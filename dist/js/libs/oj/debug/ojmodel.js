@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -804,6 +804,28 @@ oj.Model.prototype.urlRoot = null;
  * @type (function(string,Object):(string|null)|null)
  */
 oj.Model.prototype.customURL = null;
+
+
+/**
+ * @export
+ * @desc A callback to allow optional custom validation of model attributes during save, set, etc.
+ * The callback should accept these parameters:<p>
+ * <b>attributes (Object)</b>: the attributes to validation<br>
+ * <b>options (Object)</b>: the options passed in to the model call making the validation check<br>
+ * 
+ * The validate callback should return nothing if the attributes are valid, or an error string or object if the validation fails<br>
+ * <p>
+ *  
+ * @type {function(Object,Object)|(string|Object|null)}
+ */
+oj.Model.prototype.validate = null;
+
+/**
+ * @export
+ * @desc The last value returned from a validate callback
+ * @type {string|Object|null}}
+ */
+oj.Model.prototype.validationError = null;
 
 oj.Model._idCount = 0;
 
@@ -1789,7 +1811,8 @@ oj.Model.prototype.save = function (attributes, options) {
     options = options || {};
     opts = oj.Model._copyOptions(argResults.options);
 
-    if (!this._checkValid(this.attributes, opts, true)) {
+    var validAttrs = $.extend(true, {}, this.attributes, attrArgs);
+    if (!this._checkValid(validAttrs, opts, true)) {
         return false;
     }
 
@@ -5006,7 +5029,7 @@ oj.Collection.prototype._addxhr = function(xhr) {
 oj.Collection.prototype.abort = function() {
     // Abort all pending XHR requests
     var self = this;
-    if (this._xhrs) {
+    if (this._xhrs && this._xhrs.length > 0) {
         return new Promise(function(resolve, reject) {
             // Count down so we can remove them
             for (var i = self._xhrs.length-1; i >= 0; i--) {

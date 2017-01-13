@@ -1,9 +1,9 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore', 'ojs/ojbutton',
                   'jqueryui-amd/widgets/draggable', 'jqueryui-amd/widgets/mouse'],
        function(oj, $)
 {
@@ -346,6 +346,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
       //
 
       this.mouse['_mouseCapture'] = function(event) {
+        if (this.element) {
+          this.element.focus();
+        }
         return that._mouseCapture(event);
       };
 
@@ -1175,18 +1178,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
    *   <tbody>
    *     <tr>
    *       <td>oj-dialog-header</td>
-   *       <td><p>Optional. If oj-dialog-header is omitted, a header will automatically be created.
+   *       <td><p>Optional markup. If oj-dialog-header is omitted, a header will automatically be created.
    *        <p>For automically created headers (when <code class="prettyprint"> oj-dialog-header </code>
    *        is not part of the user's markup), the title of the header is the dialog title, and a close button is created.
    *       </td>
    *     </tr>
    *     <tr>
+   *       <td>oj-dialog-title</td>
+   *       <td><p> Class used to format the title. Automatically created headers use <code class="prettyprint"> oj-dialog-title </code> to format the title. For user-defined headers, you may want to use <code class="prettyprint"> oj-dialog-title </code> so that the title in your user-defined header is stylistically similar to a default title. </td>
+   *     </tr>
+   *     <tr>
    *       <td>oj-dialog-body</td>
-   *       <td><p> Expected. Formats the body of the dialog.</td>
+   *       <td><p> Expected markup. Formats the body of the dialog.</td>
    *     </tr>
    *     <tr>
    *       <td>oj-dialog-footer</td>
-   *       <td><p> Optional. Formats the footer of the dialog. Omit if the dialog has no footer. </td>
+   *       <td><p> Optional markup. Formats the footer of the dialog. Omit if the dialog has no footer. </td>
    *     </tr>
    *     <tr>
    *       <td>oj-dialog-footer-separator</td>
@@ -1199,7 +1206,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
    *     </tr>
    *     <tr>
    *       <td>oj-progressbar-embedded</td>
-   *       <td><p> Optional. Used to format a progress bar embedded in the dialog header.</td>
+   *       <td><p> Optional markup. Used to format a progress bar embedded in the dialog header.</td>
    *     </tr>
    *     <tr>
    *       <td>oj-focus-highlight</td>
@@ -1296,15 +1303,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
    * This can be changed using the role option. WAI-ARIA recommends that role="dialog" be used if the dialog expects input (such as text input),
    * otherwise, use the role option to assign role="alertdialog".
    *
-   * <h4> labeled-by </h4>
+   * <h4> aria-labelledby </h4>
    *
-   * For default headers, the dialog component takes care of labeled-by for you. User-defined headers require additional work on the user's part:
-   *<ul>
-   *  <li> <b> Default Headers </b> </li>
-   *   For default headers, the labeled-by attribute will be generated automatically (and set to the id of the title).
-   *  <li> <b> User-defined Headers </b> </li>
-   *   For user-defined headers, the the labeled-by attribute should be defined in the user's markup. Please refer to the demos for examples.
-   *</ul>
+   * For both default and user-defined headers, the dialog component takes care of aria-labelledby for you.
+   * The <code class="prettyprint">aria-labelledby</code> attribute is generated automatically (and set to the id of the header's title).
+   * For user-defined headers, the title div is identified by the div that has the <code class="prettyprint">oj-dialog-title</code> class.
+   * Note that user-defined headers must have a title div (in order to meet accesibility requirements).
    *
    * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.</p>
    *
@@ -1568,6 +1572,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
          *
          * // setter
          * $(".selector" ).ojDialog( "option", "cancelBehavior", "none");
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $dialogCancelBehaviorOptionDefault: none !default;
+         *
          */
         cancelBehavior: "icon",
         /**
@@ -1761,6 +1769,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
          *
          * // setter
          * $(".selector" ).ojDialog( "option", "resizeBehavior", "none");
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $dialogResizeBehaviorOptionDefault: none !default;
          */
         resizeBehavior: "resizable",
         /**
@@ -2215,6 +2226,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
         this._createPlaceHolderHeader(this._userDefinedHeader);
         this._userDefinedHeader.prependTo(this.uiDialog);   // @HTMLUpdateOK
 
+        this._userDefinedTitle = this._userDefinedHeader.find(".oj-dialog-title");
+
         if (this.options.cancelBehavior === "icon") {
 
           this._createCloseButton(this._userDefinedHeader);
@@ -2222,14 +2235,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
           //
           // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
           //
-          this._userDefinedTitle = this._userDefinedHeader.find(".oj-dialog-title");
-          if (this._userDefinedTitle.length)
-            this._userDefinedTitle.insertAfter(this.uiDialogTitlebarCloseWrapper); // @HTMLUpdateOK
-
+          if (this._userDefinedTitle.length) {
+            this._userDefinedTitle.insertAfter(this.closeButton); // @HTMLUpdateOK
+          }
         }
 
-      }
-      else {
+        if (this._userDefinedTitle.length) {
+            // create an id for the user-defined title (if it does not aleady have one).
+            this._userDefinedTitle.uniqueId();
+            // to meet accessibility requirements for user-defined headers,
+            // associate the title id with the .oj-dialog aria-labelledby.
+            this.uiDialog.attr({"aria-labelledby": this._userDefinedTitle.attr("id")});
+          }
+      } else {
         this._createTitlebar();
       }
 
@@ -2504,7 +2522,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
       if (!hasFocus) {
         hasFocus = this.element.find("[autofocus]");
       }
-
       if (!hasFocus.length) {
           hasFocus = this.element.find(":tabbable");
       }
@@ -2513,10 +2530,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
               hasFocus = this.uiDialogFooter.find(":tabbable");
       }
       if (!hasFocus.length) {
-          if (this.uiDialogTitlebarClose) {
-              if (this.uiDialogTitlebarCloseWrapper)
-                  hasFocus = this.uiDialogTitlebarCloseWrapper.filter(":focusable");
-          }
+        if (this.closeButton)
+          hasFocus = this.closeButton.filter(":focusable");
       }
       if (!hasFocus.length) {
         hasFocus = this.uiDialog;
@@ -2682,51 +2697,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
 
     _destroyCloseButton: function() {
 
-      if (this.uiDialogTitlebarCloseWrapper) {
-        this.uiDialogTitlebarCloseWrapper.remove();
-        this.uiDialogTitlebarCloseWrapper = null;
-        this.uiDialogTitlebarClose = null;
+      if (this.closeButton) {
+        this.closeButton.remove();
+        this.closeButton = null;
       }
     },
-    //
-    // Create a close button.
-    //
+
     _createCloseButton: function(domDestination) {
 
-      this.uiDialogTitlebarCloseWrapper = $("<div>")
-        .addClass("oj-dialog-header-close-wrapper")
+      this.closeButton = $("<button id='dialogCloseButton'><\button>")
+        .addClass('oj-dialog-header-close-wrapper');
+
+      this.closeButton.ojButton(
+        {display: 'icons',
+         chroming: 'half',
+         label: 'close',
+         icons: {start: 'oj-component-icon oj-fwk-icon-cross'}})
         .attr("tabindex", "1")
-        .attr("aria-label", "close")
-        .attr("role", "button")
-        .appendTo(domDestination);  // @HTMLUpdateOK
+        .appendTo(domDestination);
 
-      this.uiDialogTitlebarClose = $("<span>")
-        .addClass("oj-component-icon oj-clickable-icon oj-dialog-close-icon")
-        .attr("alt", "close icon")
-        .prependTo(this.uiDialogTitlebarCloseWrapper);   // @HTMLUpdateOK
-
-      this._on(this.uiDialogTitlebarCloseWrapper, {
+      this._on(this.closeButton, {
         click: function(event) {
           event.preventDefault();
           event.stopImmediatePropagation();
           this.close(event);
-        },
-        mousedown: function(event) {
-          var currTarget = event.currentTarget;
-          $(currTarget).addClass("oj-active");
-        },
-        mouseup: function(event) {
-          var currTarget = event.currentTarget;
-          $(currTarget).removeClass("oj-active");
-        },
-        mouseenter: function(event) {
-          var currTarget = event.currentTarget;
-          $(currTarget).addClass("oj-hover");
-        },
-        mouseleave: function(event) {
-          var currTarget = event.currentTarget;
-          $(currTarget).removeClass("oj-hover");
-          $(currTarget).removeClass("oj-active");
         },
         //
         // Close dialog when close icon has focus and SPACE is entered.
@@ -2742,8 +2736,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
         }
       });
 
-      var hasFocus = this.uiDialogTitlebarCloseWrapper;
-      this._setupFocus(hasFocus);
+      // no need to do this - buttons handle focus on their own.
+      // var hasFocus = this.closeButton;
+      // this._setupFocus(hasFocus);
+
     },
 
     _createTitlebar: function() {
@@ -2761,16 +2757,23 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
           // Don't prevent click on close button (#8838)
           // Focusing a dialog that is partially scrolled out of view
           // causes the browser to scroll it into view, preventing the click event
-          // if ( !$( event.target ).closest(".oj-fwk-icon-close") ) {
-          if (!$(event.target).closest(".oj-dialog-close-icon")) {
-            // Dialog isn't getting focus when dragging (#8063)
+          var closest = $(event.target).closest(".oj-dialog-header-close-wrapper");
+
+          var grandParent = $(event.target).parent().parent();
+          var isCloseButton = false;
+          if (grandParent) {
+            isCloseButton = grandParent.hasClass('oj-dialog-header-close-wrapper');
+          }
+          if (!isCloseButton) {
+            // Set focus to the dialog if we are dragging by the header
             this.uiDialog.focus();
           }
         }
       });
 
-      if (this.options.cancelBehavior === "icon")
+      if (this.options.cancelBehavior === "icon") {
         this._createCloseButton(this.uiDialogTitlebar);
+      }
 
       uiDialogTitle = $("<span>")
         .uniqueId()
@@ -3003,7 +3006,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
               //
               this._userDefinedTitle = this._userDefinedHeader.find(".oj-dialog-title");
               if (this._userDefinedTitle.length)
-                this._userDefinedTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
+                // this._userDefinedTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
+                this._userDefinedTitle.insertAfter(this.closeButton);  // @HTMLUpdateOK
 
             } else {
               this._destroyCloseButton();
@@ -3011,7 +3015,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
 
               this.standardTitle = this.uiDialogTitlebar.find(".oj-dialog-title");
               if (this.standardTitle.length)
-                this.standardTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
+                // this.standardTitle.insertAfter(this.uiDialogTitlebarCloseWrapper);  // @HTMLUpdateOK
+                this.standardTitle.insertAfter(this.closeButton);  // @HTMLUpdateOK
 
             }
 
@@ -3077,12 +3082,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
 
           // "oj-dialog-close-icon" is deprecated as of 1.2
           // use "oj-dialog-close" instead.
+          // "oj-dialog-close" is deprecated as of 2.1.?
         case "oj-dialog-close-icon":
         case "oj-dialog-close":
-
-          if (!this.widget().find(".oj-dialog-close-icon"))
-            return null;
-          return (this.widget().find(".oj-dialog-close-icon")[0]);
+          return null;
           break;
       }
 
@@ -3105,12 +3108,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
           return {'subId': 'oj-dialog-content'};
         else if (nodeCached.hasClass('oj-dialog-header-close-wrapper'))
           return {'subId': 'oj-dialog-header-close-wrapper'};
-        //
-        // This is the only asymmetrical match - the node with the class
-        // oj-dialog-close-icon returns the subId oj-dialog-close
-        //
-        else if (nodeCached.hasClass('oj-dialog-close-icon'))
-          return {'subId': 'oj-dialog-close'};
         else if (nodeCached.hasClass('oj-resizable-n'))
           return {'subId': 'oj-resizable-n'};
         else if (nodeCached.hasClass('oj-resizable-e'))
@@ -3283,7 +3280,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
      *
      * @ojsubid oj-dialog-close-icon
      * @memberof oj.ojDialog
-     * @deprecated this sub-ID is deprecated, please use oj-dialog-close instead.
+     * @deprecated this sub-ID is deprecated.
      *
      * @example <caption>Get the node for the dialog close-icon:</caption>
      * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-close-icon'} );
@@ -3294,6 +3291,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
      *
      * @ojsubid oj-dialog-close
      * @memberof oj.ojDialog
+     * @deprecated this sub-ID is deprecated.
      *
      * @example <caption>Get the node for the dialog close affordance:</caption>
      * var node = $( ".selector" ).ojDialog( "getNodeBySubId", {'subId': 'oj-dialog-close'} );
@@ -3382,6 +3380,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojpopupcore',
 
 
   });
+
+  oj.Components.setDefaultOptions(
+    {
+      'ojDialog':
+        {
+          'resizeBehavior': oj.Components.createDynamicPropertyGetter(
+            function()
+            {
+                return (oj.ThemeUtils.parseJSONFromFontFamily('oj-dialog-option-defaults') || {})["resizeBehavior"];
+            }),
+          'cancelBehavior': oj.Components.createDynamicPropertyGetter(
+            function()
+            {
+                return (oj.ThemeUtils.parseJSONFromFontFamily('oj-dialog-option-defaults') || {})["cancelBehavior"];
+            }),
+          'dragAffordance': oj.Components.createDynamicPropertyGetter(
+            function()
+            {
+                return (oj.ThemeUtils.parseJSONFromFontFamily('oj-dialog-option-defaults') || {})["dragAffordance"];
+            })
+        }
+    });
 
 }());
 

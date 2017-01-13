@@ -5740,6 +5740,14 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
   this._x1 = x1;
   this._x2 = x2;
 
+  // Bar width has to be at least 1px to prevent disappearing bars
+  var barWidth = this._x2 - this._x1;
+  if (barWidth < 1) {
+    this._x1 = Math.floor(this._x1);
+    this._x2 = this._x1 + 1;
+    barWidth = 1;
+  }
+
   // Store the values before the gaps are applied
   this._origX1 = this._x1;
   this._origX2 = this._x2;
@@ -5751,7 +5759,6 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
     // vertical pixel hinting behavior requires double gaps.
     var gapSize = Math.ceil(DvtChartBar._MAX_GAP_SIZE * this._dataItemGaps);
     var barLength = Math.abs(this._baselineCoord - this._endCoord);
-    var barWidth = this._x2 - this._x1;
     var bStartsAtBaseline = (this._axisCoord == this._baselineCoord);
 
     // Gaps between bars in stack
@@ -5941,7 +5948,8 @@ DvtChartBoxAndWhisker.prototype._render = function(x1, x2, low, q1, q2, q3, high
   // Some browsers draw the stroke to the left of the coord, and some to the right, so we have to take that into
   // account to ensure symmetry.
   var whiskerX, whiskerX1, whiskerX2;
-  if (dvt.Agent.isBrowserSafari() || (dvt.Agent.isPlatformGecko() && dvt.Agent.getOS() != dvt.Agent.MAC_OS)) {
+  var isMacOS = dvt.Agent.getOS() == dvt.Agent.MAC_OS;
+  if (dvt.Agent.isBrowserSafari() || (dvt.Agent.isBrowserChrome() && isMacOS) || (dvt.Agent.isPlatformGecko() && !isMacOS)) {
     whiskerX = Math.ceil((x1 + x2) / 2);
     whiskerX1 = whiskerX - Math.ceil(whiskerEndLength / 2);
     whiskerX2 = whiskerX + Math.floor(whiskerEndLength / 2);

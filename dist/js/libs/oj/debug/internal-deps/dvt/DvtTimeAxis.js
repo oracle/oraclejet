@@ -107,7 +107,7 @@ dvt.TimeAxis.prototype.Init = function(context, callback, callbackObj)
   this._calendar = new DvtTimeAxisCalendar();
   this._borderWidth = DvtTimeAxisStyleUtils.DEFAULT_BORDER_WIDTH;
   this.setBorderVisibility(false, false, false, false);
-  this._dateToIsoConverter = context.getLocaleHelpers()['dateToIsoConverter'];
+  this._dateToIsoWithTimeZoneConverter = context.getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
   // Internationalization strings
   this._dateFormatStrings = {
@@ -310,13 +310,15 @@ dvt.TimeAxis.prototype.getPreferredLength = function(options, minViewPortLength)
   if (this._resources == null)
     this._resources = [];
 
+  this._locale = this.Options['_locale'] ? this.Options['_locale'] : 'en-US';
+
   var firstDayOfWeek = this._resources['firstDayOfWeek'];
   if (firstDayOfWeek == null)
     firstDayOfWeek = 0; // default to sunday
   this._calendar.setFirstDayOfWeek(firstDayOfWeek);
 
-  if (!this._dateToIsoConverter)
-    this._dateToIsoConverter = this.getCtx().getLocaleHelpers()['dateToIsoConverter'];
+  if (!this._dateToIsoWithTimeZoneConverter)
+    this._dateToIsoWithTimeZoneConverter = this.getCtx().getLocaleHelpers()['dateToIsoWithTimeZoneConverter'];
 
   var props = this.Parse(this.Options);
   this._applyParsedProperties(props);
@@ -817,7 +819,7 @@ dvt.TimeAxis.prototype.getSize = function()
 dvt.TimeAxis.prototype.setType = function(type, dateFormatStrings)
 {
   // create a new formatter based on the new type
-  this._formatter = new DvtTimeAxisFormatter(type == 'short' ? DvtTimeAxisFormatter.SHORT : DvtTimeAxisFormatter.LONG, dateFormatStrings);
+  this._formatter = new DvtTimeAxisFormatter(type == 'short' ? DvtTimeAxisFormatter.SHORT : DvtTimeAxisFormatter.LONG, dateFormatStrings, this._locale);
 };
 
 /**
@@ -841,39 +843,80 @@ dvt.TimeAxis.prototype.getNextDate = function(time)
 };
 
 /**
- * Format specified date.
+ * Formats specified date. Two modes are supported: axis date formatting, and general purpose date formatting (controlled using converterType param).
+ * An optional converter can be passed in. Otherwise, a default converter is used.
  * @param {Date} date The query date
+ * @param {object=} converter Optional custom converter.
+ * @param {string=} converterType Optional; 'axis' if for formatting axis labels, 'general' if for general date formatting. Defaults to 'axis'.
  * @return {string} The formatted date string
  */
-dvt.TimeAxis.prototype.formatDate = function(date)
+dvt.TimeAxis.prototype.formatDate = function(date, converter, converterType)
 {
-  if (this._converter)
-  {
-    var converter;
-    if (this._converter[this._scale])
-      converter = this._converter[this._scale];
-    else if (this._converter['default'])
-      converter = this._converter['default'];
-    else
-      converter = this._converter;
+  var factoryOptions, scale = this.getScale();
+  converterType = converterType || 'axis'; // default converterType 'axis'
 
+  if (converterType == 'axis')
+  {
+    converter = converter || this._converter; // if no converter passed in, use try to use axis converter from options
+    if (converter)
+    {
+      if (converter[scale])
+        converter = converter[scale];
+      else if (converter['default'])
+        converter = converter['default'];
+    }
+    else if (this._defaultConverter && this._defaultConverter[scale])
+      converter = this._defaultConverter[scale];
+  }
+  else // general formatting
+  {
+    if (!converter)
+    {
+      // Note: The native javascript Date.toLocaleString() or Date.toLocaleDateString() methods
+      // uses the system locale by default, which may be different from the app specified locale.
+      // Those methods accepts a locale (and option) argument in all major browsers except Safari [OS X/iOS] 9,
+      // which are supported by JET at the time of writing. In lieu of using the native JS methods, below
+      // retrieves a converter factory passed in from the JET side to create a converter for formatting
+      // the date. The converter is automatically app locale aware and works on all supported browsers.
+      if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
+        factoryOptions = {'formatType': 'datetime', 'dateFormat': 'medium', 'timeFormat': 'medium'}; // e.g. Jan 1, 2016, 5:53:39 PM
+      else
+        factoryOptions = {'formatType': 'date', 'dateFormat': 'medium'}; // e.g. Jan 1, 2016
+
+      var converterFactory = this._resources['converterFactory'];
+      if (converterFactory)
+        converter = converterFactory['createConverter'](factoryOptions);
+      else
+      {
+        // If no factory found for some reason, use native JS Date toLocaleDateSTring/toLocaleString() methods
+        // See above Note for caveats:
+        var localeStringMethod = 'toLocaleDateString';
+        var options = {'year': 'numeric', 'month': 'short', 'day': 'numeric'}; // e.g. Jan 1, 2016
+        if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
+        {
+          localeStringMethod = 'toLocaleString';
+          options = {'year': 'numeric', 'month': 'short', 'day': 'numeric', 'hour': 'numeric', 'minute': 'numeric', 'second': 'numeric'}; // e.g. Jan 1, 2016, 5:53:39 PM
+        }
+
+        try {
+          return date[localeStringMethod](this._locale, options); // should work on all supported browsers except iOS 9 Safari
+        } catch (e) {
+          if (e.name === 'RangeError')
+            return date[localeStringMethod](); // fallback to using system locale rather than using app's locale
+        }
+        return date[localeStringMethod]();
+      }
+    }
+  }
+
+  if (converter)
+  {
     if (converter['format'])
-      return converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(date) : date);
+      return converter['format'](this._dateToIsoWithTimeZoneConverter ? this._dateToIsoWithTimeZoneConverter(date) : date);
     else if (converter['getAsString'])
       return converter['getAsString'](date);
   }
-  if (this._defaultConverter)
-  {
-    if (this._defaultConverter[this._scale])
-    {
-      converter = this._defaultConverter[this._scale];
-      if (converter['format'])
-        return converter['format'](this._dateToIsoConverter ? this._dateToIsoConverter(date) : date);
-      else if (converter['getAsString'])
-        return converter['getAsString'](date);
-    }
-  }
-  return this._formatter.format(date, this._scale, this._timeZoneOffsets);
+  return this._formatter.format(date, scale, this._timeZoneOffsets);
 };
 
 /**
@@ -1082,11 +1125,11 @@ DvtTimeAxisDefaults.VERSION_1 = {
   'backgroundColor': 'rgba(255,255,255,0)',
   'borderColor': '#d9dfe3',
   'separatorColor': '#bcc7d2',
-  'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 12px; color: #333333;')
+  'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;')
 };
-var DvtTimeAxisFormatter = function(type, locale) 
+var DvtTimeAxisFormatter = function(type, dateFormatStrings, locale) 
 {
-  this.Init(type, locale);
+  this.Init(type, dateFormatStrings, locale);
 };
 
 dvt.Obj.createSubclass(DvtTimeAxisFormatter, dvt.Obj);
@@ -1094,10 +1137,11 @@ dvt.Obj.createSubclass(DvtTimeAxisFormatter, dvt.Obj);
 DvtTimeAxisFormatter.LONG = 0;
 DvtTimeAxisFormatter.SHORT = 1;
 
-DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings) 
+DvtTimeAxisFormatter.prototype.Init = function(type, dateFormatStrings, locale) 
 {
   this._type = type;
   this._dateFormatStrings = dateFormatStrings;
+  this._locale = locale;
 
   this._formats = [];
   this._formats[0] = new Object();
@@ -1173,7 +1217,17 @@ DvtTimeAxisFormatter.prototype.format = function(date, scale, timeZoneOffsets)
       return this.getDateFormatValue(date, mask, isUTC);
   }
   else
+  {
+    // Locales argument supported in all major browsers except iOS 9 safari
+    // at the time of writing:
+    try {
+      return date.toLocaleString(this._locale);
+    } catch (e) {
+      if (e.name === 'RangeError')
+        return date.toLocaleString();
+    }
     return date.toLocaleString();
+  }
 };
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -38,75 +38,117 @@
       height: auto;
       // note: min-height overrides height auto, so do not 
       //       specify min-height in combination with height:auto
-      // display: block;
       box-sizing: border-box;
       @include oj-display-flex-property();
+      // use flex direction column to achieve a sticky footer
       @include oj-flex-direction-property(column);
+      @include oj-box-shadow($dialogBoxShadow);
+      background: $dialogBgColor;
+      border: $dialogBorderWidth solid $dialogBorderColor;
+      @include oj-border-radius($dialogBorderRadius);
     }
 
     .oj-dialog-header {     
+      // the height of any bottom padding put on here plus the height of the close icon
+      // would make the header too tall. Therefore the bottom padding is put on the title,
+      // see the bottom margin in .oj-dialog-title
+      padding: $dialogHeaderPadding;
+      background-color: $dialogHeaderBgColor;
+      @include oj-background-image($dialogHeaderBgImage);
+      border-width: 0 0 1px 0;
+      border-style: solid;
+      border-bottom-color: $dialogHeaderBorderColor;
+      font-size: $dialogHeaderFontSize;
+      color: $dialogHeaderTextColor;
+      font-weight: $headerFontWeight;
       position: relative;
     }
 
-    .oj-draggable .oj-dialog-header { 
-      cursor: move; 
-    }
-
-    /* Creates a larger touch area for the close icon */
-    .oj-dialog-header-close-wrapper { 
-      @include oj-ltr() {
-         float: right;
-      }
-      @include oj-rtl() {    
-         float: left;
-      }
-      text-align: center;
-      cursor: default;
-    }
-
-    .oj-dialog-title {
-      overflow: hidden;
-      cursor: default;
-    }
-
+    .oj-draggable .oj-dialog-header,
     .oj-draggable .oj-dialog-title { 
       cursor: move; 
     }
 
-   .oj-dialog-close-icon { 
-     @include oj-border-radius( $buttonBorderRadius );
-     cursor: $buttonCursor;
-     border-width: 1px; 
-     border-style: solid;
-     color: $buttonIconColor;
-     // We have a 1px border for active/hover, so make it transparent when inactive. 
-     border-color: transparent;
-    }
-    
-    .oj-dialog-header-close-wrapper.oj-hover .oj-dialog-close-icon {
-      background-color: $buttonBgColorHover;
-      @include oj-background-image($buttonBgImageHover);
-      border-color: $buttonBorderColorHover; 
-      color: $buttonIconColorHover;
-      @include oj-box-shadow($buttonBoxShadowHover); 
-    }
-
-    .oj-dialog-header-close-wrapper.oj-default .oj-dialog-close-icon,
-    .oj-dialog-header-close-wrapper.oj-focus-only .oj-dialog-close-icon {
-        color: $buttonIconColor; 
+    // Vertically align the body with the close icon. 
+    // Adjust horizontal padding so that a centered title does not collide with the close icon.
+    @if $dialogCloseIconPosition == top or $dialogCloseIconPosition == center {
+      // adjust margins so the the close button is positioned
+      // at the end of the dialog
+     .oj-dialog-header-close-wrapper { 
+        $dialogPaddingSide: oj-shorthand-property-value-left($dialogHeaderPadding);
+        @include oj-ltr() {
+          margin-right: (-$dialogPaddingSide);
+          float: right;
+        }
+        @include oj-rtl() {    
+          margin-left: (-$dialogPaddingSide);
+          float: left;
+        }
+      }
     }
 
-    .oj-dialog-header-close-wrapper.oj-focus .oj-dialog-close-icon {
-        @include oj-browser-focus-outline-approximation($buttonTextColor);
+    @if $dialogCloseIconPosition == top {
+      // adjust margins so the the close button is vertically positioned
+      // in the top of the dialog header.
+      .oj-dialog-header-close-wrapper + .oj-dialog-title {
+        padding-top: $buttonHeight - oj-shorthand-property-value-top($dialogHeaderPadding);
+      }   
+     .oj-dialog-header-close-wrapper { 
+        margin-top: (- oj-shorthand-property-value-top($dialogHeaderPadding));
+      }
+    } @else if $dialogCloseIconPosition == center {
+      // adjust margins so the the close button is vertically positioned
+      // in the center of the dialog header.
+     .oj-dialog-header-close-wrapper { 
+        margin-bottom: (- oj-shorthand-property-value-top($dialogHeaderPadding));
+      }
+    }
+
+    // 
+    // Use to control margin adjustments on close buttons' icon.
+    // 
+    .oj-dialog-header-close-wrapper.oj-button-icon-only .oj-button-icon  {
+        margin: $dialogCloseIconButtonMargin;
      }
 
-    .oj-dialog-header-close-wrapper.oj-active .oj-dialog-close-icon {
-      background-color: $buttonBgColorActive;
-      @include oj-background-image($buttonBgImageActive);
-      border-color: $buttonBorderColorActive;
-      color: $buttonIconColorActive;  
-      @include oj-box-shadow($buttonBoxShadowActive); 
+    .oj-dialog-title {
+      display: block;
+      overflow: hidden;
+      cursor: default;
+      @include oj-user-select-property (none);
+    }
+
+    @if $dialogHeaderTextAlign == center {
+      // 
+      // The 'center' setting will center the dialog header text.
+      // To achieve a centered title for dialogs that have
+      // a close icon, we pad the side that does not have a close icon.
+      // 
+      .oj-dialog-title {
+          text-align: center;
+       }   
+       // Adjust margin between the close button and the title so that
+       // the title remains centered.
+      .oj-dialog-header-close-wrapper + .oj-dialog-title {
+           $dialogPaddingSide: oj-shorthand-property-value-left($dialogBodyPadding);
+           @include oj-ltr() {    
+           padding-left: $buttonHeight - $dialogPaddingSide;
+          } 
+         @include oj-rtl() {    
+           padding-right: $buttonHeight - $dialogPaddingSide;
+        }
+      }
      }
+
+    // Padding between the dialog title and the close icon
+    .oj-dialog-header-close-wrapper + .oj-dialog-title {
+      @include oj-ltr() {
+         padding-right: .2rem;
+      }
+      @include oj-rtl() {    
+         padding-left: .2rem;
+      }
+    }
 
     .oj-dialog-content > p:last-child {
        margin-bottom: 0;
@@ -115,118 +157,137 @@
     .oj-dialog-content {
        overflow: auto;
        position: relative;
-       // enable scrolled content within the dialog (for IOS)
+       // enable momentum based scrolling for touch devices
        -webkit-overflow-scrolling: touch;
-      @include oj-flex-property(1 1 auto);
+       // configure the dialog content to grow and shrink on resize
+       @include oj-flex-property(1 1 auto);
      }
 
     .oj-dialog-body { 
       position: relative; 
       overflow: auto;   
       box-sizing: border-box;
+      padding: $dialogBodyPadding;
+      text-align: $dialogBodyTextAlign;
     }
 
    // optional footer separator
    //------------------------------------------
     .oj-dialog-footer-separator {
-      border-width: 1px 0 0;
-      border-style: solid;
-      border-color: $dialogBorderColor;
+      border-top: 1px solid $dialogFooterDividerColor;
     }   
 
     .oj-dialog-footer {
-      padding-top: 10px;
-      // Buttons include $wrappableMarginBottom of bottom padding.
-      padding-bottom: 10px - $wrappableMarginBottom;
-      padding-right: 10px;
-      padding-left: 10px;
+      display: flex;
+      justify-content: flex-end;
+      // Configure the footer content to be fixed height on resize.
+      @include oj-flex-property(0 0 auto);
+      padding: $dialogFooterPadding;
       @include oj-ltr() {
          text-align: right;
       }
       @include oj-rtl() {    
          text-align: left;
       }
-      @include oj-flex-property(0 0 auto);
     }
 
-    // todo: moved from alta version of file
-     
-    .oj-dialog { 
-      top: 0;
-      left: 0;
-      padding: 0; 
-      @include oj-box-shadow($largeBoxShadow);
-      background: $dialogBgColor;
-      border: $dialogBorderWidth solid $dialogBorderColor;
-      @include oj-border-radius($smallBorderRadius);
-    }
+    .oj-dialog-footer .oj-button {
+      height: $dialogFooterButtonHeight;
+      font-weight: $dialogFooterButtonFontWeight;
+      margin-left: $spacingSmall; // creates horizontal space between footer buttons
+    }                           
 
-    .oj-dialog-header {     
-      // the height of any bottom padding put on here plus the height of the close icon
-      // would make the header too tall. Therefore the bottom padding is put on the title,
-      // see the bottom margin in .oj-dialog-title
-      padding: $panelPadding $panelPadding 0 $panelPadding;
-      background-color: $headerBgColor;
-      @include oj-background-image($headerBgImage);
-      border-width: 0 0 1px 0;
-      border-style: solid;
-      border-color: $dialogBorderColor;        
-      font-size: $header3FontSize;
-      color: $headerTextColor;
-      font-weight: $headerFontWeight;
-      @include oj-border-radius($smallBorderRadius $smallBorderRadius 0 0);
-      @include oj-flex-property(0 0 auto);
-    }
-
-    .oj-dialog-header-close-wrapper { 
-      padding: 5px;
-      margin: -5px; 
-    }
-
-    .oj-dialog-title { 
-      display: block;
-      // see the explanation in .oj-dialog-header as to why we are setting the bottom padding here
-      padding-bottom: $panelPadding;
-      @include oj-ltr() {
-         padding-right: 10px;
-      }
-      @include oj-rtl() {    
-         padding-left: 10px;
+    @if $dialogFooterIntegrateButtons == true {
+      //
+      // With this setting, buttons are integrated (spread) across the entire footer.
+      // In addition:
+      //   - there is a dividing line above the footer
+      //   - there are dividing lines between the buttons
+      //   - the first and last buttons have rounded corners
+      // 
+      .oj-dialog-footer {
+        border-top: 1px solid $dialogFooterDividerColor;
       }
 
-      @include oj-user-select-property (none);
-    }
+      .oj-dialog-footer > .oj-button,
+      .oj-dialog-footer > .oj-button.oj-active,
+      .oj-dialog-footer > .oj-button.oj-active.oj-focus {
+        margin: 0;
+        flex:1;
+        @include oj-ltr() {
+          border-color: transparent transparent transparent $dialogFooterDividerColor;
+        }
+        @include oj-rtl() { 
+          border-color: transparent $dialogFooterDividerColor transparent transparent;
+        }
+      }
 
-    .oj-dialog-body { 
-      border: 0; 
-      padding: $panelPadding;
-      background: $dialogBgColor;
-      color: $textColor;
-    }
+      // Define radius of the first button
+      .oj-dialog-footer > .oj-button:first-child {
+        @include oj-ltr() {
+          border-left-color: transparent;
+          @include oj-border-radius(0 0 0 $dialogBorderRadius);
+        }
+        @include oj-rtl() {
+          border-right-color: transparent;
+          @include oj-border-radius(0 0 $dialogBorderRadius 0);
+        }
+      }
 
-  // Disable Chrome's automatic blue outline on the dialog container,
-  // the close wrapper, and the close icon.
-  .oj-dialog:focus, .oj-dialog-header-close-wrapper:focus,
-  .oj-dialog-header-close-wrapper:focus .oj-dialog-close-icon {
-    outline:none;
-  }
+      // Define radius of the last button
+      .oj-dialog-footer > .oj-button:last-child {
+        @include oj-ltr() {
+          @include oj-border-radius(0 0 $dialogBorderRadius 0);
+        }
+        @include oj-rtl() {
+          @include oj-border-radius(0 0 0 $dialogBorderRadius);
+        }     
+      }
+    } 
 
-  // The oj-focus-highlight class applies focus styling that may not be desirable
-  // when the focus results from pointer interaction (touch or mouse), but which is
-  // needed for accessibility when the focus occurs by a non-pointer mechanism, for
-  // example keyboard or initial page load. See also the $focusHighlightPolicy variable,
-  // which controls when this class is set.
-  // Apply this to the dialog container and the close wrapper.
- .oj-dialog.oj-focus-highlight,
- .oj-dialog-header-close-wrapper.oj-focus-highlight {
+   // Disable Chrome's automatic blue outline on the dialog container,
+   // the close wrapper, and the close icon.
+   .oj-dialog:focus, .oj-dialog-header-close-wrapper:focus {
+     outline:none;
+   }
+
+   // The oj-focus-highlight class applies focus styling that may not be desirable
+   // when the focus results from pointer interaction (touch or mouse), but which is
+   // needed for accessibility when the focus occurs by a non-pointer mechanism, for
+   // example keyboard or initial page load. See also the $focusHighlightPolicy variable,
+   // which controls when this class is set.
+   // Apply this to the dialog container and the close wrapper.
+  .oj-dialog.oj-focus-highlight,
+  .oj-dialog-header-close-wrapper.oj-focus-highlight {
       @include oj-browser-focus-outline-approximation($primaryTextColor);
-  }
+   }
 
   // icons
   //------------------------------------------
 
     .oj-dialog-close-icon { 
        @extend .oj-fwk-icon-cross;
+    }
+
+    // option defaults
+    //----------------------------------
+    $dialogDefaultOptions: ();
+ 
+    @if ($dialogResizeBehaviorOptionDefault) {
+      $dialogDefaultOptions: map-merge($dialogDefaultOptions, (resizeBehavior: $dialogResizeBehaviorOptionDefault));
+    }
+ 
+    @if ($dialogCancelBehaviorOptionDefault) {
+      $dialogDefaultOptions: map-merge($dialogDefaultOptions, (cancelBehavior: $dialogCancelBehaviorOptionDefault));
+    }
+    
+    @if ($dialogDragAffordanceOptionDefault) {
+      $dialogDefaultOptions: map-merge($dialogDefaultOptions, (dragAffordance: $dialogDragAffordanceOptionDefault));
+    }
+
+    // component default options selector 
+    .oj-dialog-option-defaults {
+      font-family: oj-json-from-map($dialogDefaultOptions);
     }
 
   }

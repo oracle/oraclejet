@@ -414,6 +414,17 @@ DvtGanttOutputText.prototype.Init = function(context, textStr, x, y, canvas, id)
  */
 DvtGanttOutputText.prototype.measureDimensions = function(targetCoordinateSpace)
 {
+  //  - Gantt doesn't render in RTL in IE11 and Edge. The underlying issue is
+  // that the superclass's (dvt.OutputText) Init method calls measureDimensions() only
+  // in IE RTL mode to fix alignment issues. The _htmlCanvas is not defined at that point
+  // (see Init method of this class; _htmlCanvas is defined only after the superclass's Init
+  // finishes) so an error is thrown. Most robust fix would be to default to the superclass's
+  // measureDimensions for that case.
+  // Note that this method override is present only for performance reasons. The plan is to
+  // eliminate this method and use the original measureDimensions anyway once we optimize Gantt rendering.
+  if (this._htmlCanvas == null)
+    return DvtGanttOutputText.superclass.measureDimensions.call(this, targetCoordinateSpace);
+
   var textString = this.getTextString() != null ? this.getTextString() : '';
   var hAlign = this.getHorizAlignment();
   var vAlign = this.getVertAlignment();
@@ -457,6 +468,15 @@ DvtGanttOutputText.prototype.measureDimensions = function(targetCoordinateSpace)
         fontWeight = customFontWeight;
     }
 
+    // IE11 and Edge's html CanvasRenderingContext2D (context variable below) seems to be having issues
+    // accepting -apple-system fonts. At the time of writing, -apple-system font is part of the default
+    // font-family list, and it's causing IE/Edge only bugs 24717768 and 24717845. Since -apple-system is
+    // iOS and OSX specific, it'll never be the computed font in IE/Edge, so a straightforward fix is to
+    // not pass them as options to CanvasRenderingContext2D; the lines below use regular expression to
+    // remove any prefixed -apple-system font families from the list before passing the font to the canvas context.
+    if (dvt.Agent.isPlatformIE())
+      fontFamily = fontFamily.replace(/-apple-system(-\w+)*,?/g, '');
+
     var font = fontStyle + ' ' + fontVariant + ' ' + fontWeight + ' ' + fontSize + ' / ' + lineHeight + ' ' + fontFamily;
     var context = this._htmlCanvas.getContext('2d');
     context.font = font;
@@ -494,18 +514,11 @@ var DvtGanttStyleUtils = new Object();
 dvt.Obj.createSubclass(DvtGanttStyleUtils, dvt.Obj);
 
 /**
- * The default horizontal scrollbar style.
+ * The default time axes label style.
  * @const
  * @private
  */
-DvtGanttStyleUtils._DEFAULT_HORIZONTAL_SCROLLBAR_STYLE = 'height: 3px; color: #9E9E9E; background-color: #F0F0F0';
-
-/**
- * The default vertical scrollbar style.
- * @const
- * @private
- */
-DvtGanttStyleUtils._DEFAULT_VERTICAL_SCROLLBAR_STYLE = 'width: 3px; color: #9E9E9E; background-color: #F0F0F0';
+DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE = dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_12 + 'color: #333333;';
 
 /**
  * The default zoom control background color.
@@ -564,13 +577,6 @@ DvtGanttStyleUtils._DEFAULT_TASK_PADDING = 5;
 DvtGanttStyleUtils._DEFAULT_AXIS_HEIGHT = 23;
 
 /**
- * The scrollbar hitarea size.
- * @const
- * @private
- */
-DvtGanttStyleUtils._SCROLLBAR_HITAREA_SIZE = dvt.Agent.isTouchDevice() ? 8 : 4;
-
-/**
  * The gap between the row labels axis (when outside) and the chart.
  * @const
  * @private
@@ -578,22 +584,32 @@ DvtGanttStyleUtils._SCROLLBAR_HITAREA_SIZE = dvt.Agent.isTouchDevice() ? 8 : 4;
 DvtGanttStyleUtils._ROW_LABELS_AXIS_GAP = 10;
 
 /**
- * Gets the horizontal scrollbar style string.
- * @return {string} The scrollbar style string.
+ * The default stroke color for the inner path used to render focused dependency line.
+ * @const
+ * @private
  */
-DvtGanttStyleUtils.getHorizontalScrollbarStyle = function()
-{
-  return DvtGanttStyleUtils._DEFAULT_HORIZONTAL_SCROLLBAR_STYLE;
-};
+DvtGanttStyleUtils._DEFAULT_DEPENDENCY_LINE_INNER_COLOR = '#ffffff';
 
 /**
- * Gets the vertical scrollbar style string.
- * @return {string} The scrollbar style string.
+ * The default stroke width for the inner path used to render focused dependency line.
+ * @const
+ * @private
  */
-DvtGanttStyleUtils.getVerticalScrollbarStyle = function()
-{
-  return DvtGanttStyleUtils._DEFAULT_VERTICAL_SCROLLBAR_STYLE;
-};
+DvtGanttStyleUtils._DEFAULT_DEPENDENCY_LINE_INNER_WIDTH = 2;
+
+/**
+ * The radius for the arc used in dependency line
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 5;
+
+/**
+ * The gap between the task label and the dependency line
+ * @const
+ * @private
+ */
+DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_LABEL_GAP = 2;
 
 /**
  * Gets the padding around taskbar.
@@ -623,12 +639,31 @@ DvtGanttStyleUtils.getTimeAxisHeight = function()
 };
 
 /**
- * Gets the default scrollbar hitarea size.
- * @return {number} The default scrollbar hitarea size.
+ * Gets the major axis label style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {dvt.CSSStyle} The label style.
  */
-DvtGanttStyleUtils.getScrollbarHitAreaSize = function()
+DvtGanttStyleUtils.getMajorAxisLabelStyle = function(options)
 {
-  return DvtGanttStyleUtils._SCROLLBAR_HITAREA_SIZE;
+  var resources = options['_resources'];
+  var labelStyleString = DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE;
+  if (resources)
+    labelStyleString = resources['majorAxisLabelFontProp'];
+  return new dvt.CSSStyle(labelStyleString);
+};
+
+/**
+ * Gets the minor axis label style.
+ * @param {object} options The object containing data and specifications for the component.
+ * @return {dvt.CSSStyle} The label style.
+ */
+DvtGanttStyleUtils.getMinorAxisLabelStyle = function(options)
+{
+  var resources = options['_resources'];
+  var labelStyleString = DvtGanttStyleUtils._DEFAULT_TIMEAXES_LABEL_STYLE;
+  if (resources)
+    labelStyleString = resources['minorAxisLabelFontProp'];
+  return new dvt.CSSStyle(labelStyleString);
 };
 
 /**
@@ -641,29 +676,49 @@ DvtGanttStyleUtils.getRowAxisGap = function()
 };
 
 /**
+ * Gets the gap between the dependency line and the task label.
+ * @return {number} The gap between the dependency line and the task label.
+ */
+DvtGanttStyleUtils.getDependencyLineLabelGap = function()
+{
+  return DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_LABEL_GAP;
+};
+
+/**
+ * Gets the radius for the arc used in the dependency line.
+ * @return {number} The radius for the arc used in the dependency line.
+ */
+DvtGanttStyleUtils.getDependencyLineArcRadius = function()
+{
+  return DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS;
+};
+
+/**
  * Gets the task label style.
  * @param {object} options The object containing data and specifications for the component.
- * @return {string} The CSS label style string.
+ * @return {dvt.CSSStyle} The label style.
  */
 DvtGanttStyleUtils.getTaskLabelStyle = function(options)
 {
   var resources = options['_resources'];
+  var labelStyleString = '';
   if (resources)
-    return resources['taskLabelFontProp'];
-  return '';
+    labelStyleString = resources['taskLabelFontProp'];
+  return new dvt.CSSStyle(labelStyleString);
 };
 
 /**
  * Gets the row label style.
  * @param {object} options The object containing data and specifications for the component.
- * @return {string} The CSS label style string.
+ * @return {dvt.CSSStyle} The label style.
  */
 DvtGanttStyleUtils.getRowLabelStyle = function(options)
 {
   var resources = options['_resources'];
+  var labelStyleString = '';
   if (resources)
-    return resources['rowLabelFontProp'];
-  return '';
+    labelStyleString = resources['rowLabelFontProp'];
+  return new dvt.CSSStyle(labelStyleString);
 };
 
 /**
@@ -906,6 +961,26 @@ DvtGanttStyleUtils.getZoomOutButtonDisabledBorderColor = function(options)
 };
 
 /**
+ * Returns the stroke color of the inner dependency line when it has focus.
+ * @param {object} options The object containing data and specification for the component.
+ * @return {string} The stroke color of the inner dependency line when it has focus.
+ */
+DvtGanttStyleUtils.getFocusedDependencyLineInnerColor = function(options)
+{
+  return DvtGanttStyleUtils._DEFAULT_DEPENDENCY_LINE_INNER_COLOR;
+};
+
+/**
+ * Returns the stroke width of the inner dependency line when it has focus.
+ * @param {object} options The object containing data and specification for the component.
+ * @return {number} The stroke width of the inner dependency line when it has focus.
+ */
+DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth = function(options)
+{
+  return DvtGanttStyleUtils._DEFAULT_DEPENDENCY_LINE_INNER_WIDTH;
+};
+
+/**
  * Computes the size of a subcomponent in pixels by parsing the user input. Same method as that of DvtChartStyleUtils.
  * @param {object} size The size input given by the user. It can be in percent, pixels, or number.
  * @param {number} totalSize The total size of the component in pixels.
@@ -929,6 +1004,277 @@ DvtGanttStyleUtils.getSizeInPixels = function(size, totalSize) {
   }
   else
     return 0;
+};
+/**
+ * Utility functions for dvt.Gantt tooltips.
+ * @class
+ */
+var DvtGanttTooltipUtils = new Object();
+
+dvt.Obj.createSubclass(DvtGanttTooltipUtils, dvt.Obj);
+
+/**
+ * Returns the datatip color for the tooltip of the target task.
+ * @param {DvtGanttTaskNode} task
+ * @return {string} The datatip color.
+ */
+DvtGanttTooltipUtils.getDatatipColor = function(task) {
+  return task.getFillColor();
+};
+
+/**
+ * Returns the datatip string for the target task.
+ * @param {DvtGanttTaskNode} task
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @param {boolean=} isAria whether the datatip is used for accessibility.
+ * @return {string} The datatip string.
+ */
+DvtGanttTooltipUtils.getDatatip = function(task, isTabular, isAria) {
+  var gantt = task.getGantt();
+  var row = task.getRow();
+
+  // Custom Tooltip via Function
+  var customTooltip = gantt.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
+
+  if (isTabular && tooltipFunc) {
+    var tooltipManager = gantt.getCtx().getTooltipManager();
+    var dataContext = {
+      'data': task.getProps(),
+      'rowData': row.getProps(),
+      'color': task.getFillColor(),
+      'component': gantt.getOptions()['_widgetConstructor']
+    };
+
+    return tooltipManager.getCustomTooltip(tooltipFunc, dataContext);
+  }
+
+  // Custom Tooltip via Short Desc
+  var shortDesc = task.getShortDesc();
+  if (shortDesc != null)
+    return shortDesc;
+
+  // TODO: Remove this block and the isAria param when we can remove the translation strings that were supported
+  // before the shortDesc/valueFormats/tooltip API (before 2.3.0). At the time of writing, we plan to deprecate
+  // them, and remove in 4.0.0.
+  // Behavior: If someone upgrades from 2.2.0 to 2.3.0 with no code changes (ie, no shortDesc, valueFormat set),
+  // old aria-label format with the translation options will work as before. If shortDesc or valueFormat is set,
+  // then new behavior will override the old aria-label format and any translation settings.
+  if (isAria) {
+    var valueFormats = gantt.getOptions()['valueFormats'];
+    if (!valueFormats || valueFormats.length == 0) {
+      var start = task.getStartTime();
+      var end = task.getEndTime();
+      var options = gantt.getOptions();
+      if (start == null || end == null || start == end) {
+        var time = gantt.getTimeAxis().formatDate(new Date(((start != null) ? start : end)), null, 'general');
+        var taskDesc = dvt.Bundle.getTranslation(options, 'accessibleMilestoneInfo', dvt.Bundle.UTIL_PREFIX, 'MILESTONE_INFO', [time]);
+      }
+      else {
+        var startTime = gantt.getTimeAxis().formatDate(new Date(start), null, 'general');
+        var endTime = gantt.getTimeAxis().formatDate(new Date(end), null, 'general');
+        var duration = task.getDuration(start, end);
+        taskDesc = dvt.Bundle.getTranslation(options, 'accessibleTaskInfo', dvt.Bundle.UTIL_PREFIX, 'TASK_INFO', [startTime, endTime, duration]);
+      }
+      var label = task.getLabel();
+      if (label != null)
+        taskDesc = label + ', ' + taskDesc;
+
+      var row = task.getRow();
+      var rowDesc = dvt.Bundle.getTranslation(options, 'accessibleRowInfo', dvt.Bundle.UTIL_PREFIX, 'ROW_INFO', [row.getIndex() + 1]);
+      if (gantt.isRowAxisEnabled()) {
+        var rowLabel = row.getLabel();
+        if (rowLabel != null)
+          rowDesc = rowDesc + ', ' + rowLabel;
+      }
+      taskDesc = rowDesc + ', ' + taskDesc;
+
+      return taskDesc;
+    }
+  }
+
+  // Default Tooltip Support
+  var datatip = '';
+  datatip = DvtGanttTooltipUtils._addRowDatatip(datatip, row, isTabular);
+  datatip = DvtGanttTooltipUtils._addTaskDatatip(datatip, task, isTabular);
+
+  return DvtGanttTooltipUtils._processDatatip(datatip, gantt, isTabular);
+};
+
+/**
+ * Final processing for the datatip.
+ * @param {string} datatip The current datatip.
+ * @param {dvt.Gantt} gantt The owning gantt instance.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtGanttTooltipUtils._processDatatip = function(datatip, gantt, isTabular) {
+  // Don't render tooltip if empty
+  if (datatip == '')
+    return null;
+
+  // Add outer table tags
+  // Note: Unlike Charts, we're not going to create a table start tag with
+  // dvt.HtmlTooltipManager.createStartTag(). That method applies parsed styles
+  // to the element, but for gantt we want to directly apply the class to the element:
+  //
+  // Security note: gantt.GetStyleClass('tooltipTable') returns an internally generated class string
+  // defined in ojgantt.js (in this case, returns the string 'oj-gantt-tooltip-table')
+  //
+  // datatip contains externally provided strings, but this entire value is eventually passed to
+  // dvt.HtmlTooltipManager._showTextAtPosition(),
+  // and that method makes sure all parsable HTML tags are disabled/handled
+  if (isTabular)
+    return '<table class=\"' + gantt.GetStyleClass('tooltipTable') + '\">' + datatip + '<\/table>';// @HTMLUpdateOK
+
+  return datatip;
+};
+
+/**
+ * Adds the row string to the datatip.
+ * @param {string} datatip The current datatip.
+ * @param {DvtGanttRowNode} row The row.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtGanttTooltipUtils._addRowDatatip = function(datatip, row, isTabular) {
+  var gantt = row.getGantt();
+  var rowLabel = row.getLabel();
+  if (rowLabel == null)
+    rowLabel = row.getIndex() + 1;
+  return DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'row', 'Row', rowLabel, isTabular);
+};
+
+/**
+ * Adds the task strings to the datatip.
+ * @param {string} datatip The current datatip.
+ * @param {DvtGanttTaskNode} task The task.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtGanttTooltipUtils._addTaskDatatip = function(datatip, task, isTabular) {
+  var gantt = task.getGantt();
+  var start = task.getStartTime();
+  var end = task.getEndTime();
+  var label = task.getLabel();
+
+  // TODO: Consider whether to automatically show only one Time label when start == end e.g. milestone case
+  datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'start', 'Start', start, isTabular);
+  datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'end', 'End', end, isTabular);
+  datatip = DvtGanttTooltipUtils._addDatatipRow(datatip, gantt, 'label', 'Label', label, isTabular);
+
+  return datatip;
+};
+
+/**
+ * Adds a row of item to the datatip string.
+ * @param {string} datatip The current datatip.
+ * @param {dvt.Gantt} gantt The gantt instance.
+ * @param {string} type The item type, e.g. row, start, end, label
+ * @param {string} defaultLabel The bundle resource string for the default label.
+ * @param {string|number} value The item value.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @param {number} index (optional) The index of the tooltipLabel string to be used
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtGanttTooltipUtils._addDatatipRow = function(datatip, gantt, type, defaultLabel, value, isTabular, index) {
+  if (value == null || value === '')
+    return datatip;
+
+  var valueFormat = DvtGanttTooltipUtils.getValueFormat(gantt, type);
+  var tooltipDisplay = valueFormat['tooltipDisplay'];
+
+  if (tooltipDisplay == 'off')
+    return datatip;
+
+  // Create tooltip label
+  var tooltipLabel;
+  if (typeof valueFormat['tooltipLabel'] === 'string')
+    tooltipLabel = valueFormat['tooltipLabel'];
+
+  if (tooltipLabel == null)
+  {
+    if (defaultLabel == null)
+      tooltipLabel = '';
+    else
+      tooltipLabel = dvt.Bundle.getTranslation(gantt.getOptions(), 'label' + defaultLabel);
+  }
+
+  // Create tooltip value
+  value = DvtGanttTooltipUtils.formatValue(gantt, type, valueFormat, value);
+
+  if (isTabular)
+  {
+    // Note: Unlike Charts, we're not going to create a td start tag with
+    // dvt.HtmlTooltipManager.createStartTag(). That method applies parsed styles
+    // to the element, but for gantt we want to directly apply the class to the element:
+    //
+    // Security note: gantt.GetStyleClass returns an internally generated class string
+    // defined in ojgantt.js (in this case, returns the strings 'oj-gantt-tooltip-label'
+    // and 'oj-gantt-tooltip-value' respectively in the two calls below).
+    //
+    // tooltipLabel and value contains externally provided strings, but these values are eventually passed to
+    // DvtGanttTooltipUtils._processDatatip(), which concatenates more strings to it, and the entire value is passed to
+    // dvt.HtmlTooltipManager._showTextAtPosition(),
+    // and that last method makes sure all parsable HTML tags are disabled/handled
+    var tooltipLabelClass = gantt.GetStyleClass('tooltipLabel');
+    var tooltipValueClass = gantt.GetStyleClass('tooltipValue');
+    return datatip +
+        '<tr>' +
+        '<td class=\"' + tooltipLabelClass + '\">' + tooltipLabel + '<\/td>' +
+        '<td class=\"' + tooltipValueClass + '\">' + value + '<\/td>' +
+        '<\/tr>';// @HTMLUpdateOK
+  }
+  else
+  {
+    if (datatip.length > 0)
+      datatip += '<br>';
+
+    return datatip + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [tooltipLabel, value]);
+  }
+};
+
+/**
+ * Returns the valueFormat of the specified type.
+ * @param {dvt.Gantt} gantt
+ * @param {string} type The valueFormat type, e.g. row, start, end, label.
+ * @return {object} The valueFormat.
+ */
+DvtGanttTooltipUtils.getValueFormat = function(gantt, type) {
+  var valueFormats = gantt.getOptions()['valueFormats'];
+  if (!valueFormats)
+    return {};
+
+  for (var i = 0; i < valueFormats.length; i++) {
+    if (valueFormats[i]['type'] == type)
+      return valueFormats[i];
+  }
+  return {};
+};
+
+/**
+ * Formats value with the converter from the valueFormat.
+ * @param {dvt.Gantt} gantt
+ * @param {string} type The item type, e.g. row, start, end, label
+ * @param {object} valueFormat
+ * @param {number} value The value to format.
+ * @return {string} The formatted value string.
+ */
+DvtGanttTooltipUtils.formatValue = function(gantt, type, valueFormat, value) {
+  var converter = valueFormat['converter'];
+
+  if (type == 'start' || type == 'end')
+    return gantt.getTimeAxis().formatDate(new Date(value), converter, 'general');
+
+  var converter = valueFormat['converter'];
+  if (converter && converter['format'])
+    return converter['format'](value);
+
+  return value;
 };
 /**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
@@ -1049,9 +1395,6 @@ dvt.Gantt.prototype._applyParsedProperties = function(props)
 
   this._rowsData = props.rows;
 
-  this._xScrollbar = props.xScrollbar;
-  this._yScrollbar = props.yScrollbar;
-
   this._isIRAnimationEnabled = props.isIRAnimationEnabled;
   this._isDCAnimationEnabled = props.isDCAnimationEnabled;
 
@@ -1059,6 +1402,8 @@ dvt.Gantt.prototype._applyParsedProperties = function(props)
   this._rowAxisWidth = props.rowAxisWidth;
   this._rowAxisMaxWidth = props.rowAxisMaxWidth;
   this._rowAxisLabelsOverflowBehavior = props.rowAxisLabelsOverflowBehavior;
+
+  this._referenceObjects = props.referenceObjects;
 
   dvt.Gantt.superclass._applyParsedProperties.call(this, props);
 };
@@ -1095,6 +1440,13 @@ dvt.Gantt.prototype._bundleTimeAxisOptions = function(options, axis)
     if (axisOptions['zoomOrder'])
       retOptions['zoomOrder'] = axisOptions['zoomOrder'];
   }
+
+  var labelStyle;
+  if (axis == 'majorAxis')
+    labelStyle = DvtGanttStyleUtils.getMajorAxisLabelStyle(options);
+  else if (axis == 'minorAxis')
+    labelStyle = DvtGanttStyleUtils.getMinorAxisLabelStyle(options);
+  retOptions['labelStyle'] = labelStyle;
 
   return retOptions;
 };
@@ -1364,6 +1716,10 @@ dvt.Gantt.prototype.triggerAnimations = function()
   // If an animation was created, play it
   if (this.Animation)
   {
+    // Instead of animating dep lines, hide them, animate, then show them again.
+    this._hideDepLines();
+    dvt.Playable.appendOnEnd(this.Animation, this._showDepLines, this);
+
     // Disable event listeners temporarily
     this.EventManager.removeListeners(this);
 
@@ -1439,6 +1795,28 @@ dvt.Gantt.prototype._prepFrAnimation = function(animElems, playable)
 };
 
 /**
+ * Hides dependency lines (called before animation)
+ * @private
+ */
+dvt.Gantt.prototype._hideDepLines = function()
+{
+  var deplines = this.getDependencyLines();
+  if (deplines != null)
+    dvt.ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
+};
+
+/**
+ * Shows dependency lines (called after animation)
+ * @private
+ */
+dvt.Gantt.prototype._showDepLines = function()
+{
+  var deplines = this.getDependencyLines();
+  if (deplines != null)
+    dvt.ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
+};
+
+/**
  * Hook for cleaning animation behavior at the end of the animation.
  * @private
  */
@@ -1456,52 +1834,22 @@ dvt.Gantt.prototype._onAnimationEnd = function()
   this.AnimationStopped = false;
 };
 
-
-/**
- * Event callback method.
- * @param {object} event
- * @param {object} component The component that is the source of the event, if available.
- */
-dvt.Gantt.prototype.HandleEvent = function(event, component)
-{
-  var type = event['type'];
-  if (type == dvt.SimpleScrollbarEvent.TYPE)
-  {
-    event = this._processScrollbarEvent(event, component);
-  }
-
-  if (event)
-    this.dispatchEvent(event);
-};
-
 /**
  * Adjusts viewport based on scrollbar event.
  * @param {object} event
  * @param {object} component The component that is the source of the event, if available.
- * @private
  */
-dvt.Gantt.prototype._processScrollbarEvent = function(event, component)
+dvt.Gantt.prototype.processScrollbarEvent = function(event, component)
 {
-  var newMin = event.getNewMin();
-  var newMax = event.getNewMax();
-
-  if (component == this.xScrollbar)
+  dvt.Gantt.superclass.processScrollbarEvent.call(this, event, component);
+  if (component == this.contentDirScrollbar)
   {
-    this._viewStartTime = newMin;
-    this._viewEndTime = newMax;
-    var widthFactor = this.getContentLength() / (this._end - this._start);
-    this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
-    this.applyTimeZoomCanvasPosition();
-
-    var evt = this.createViewportChangeEvent();
-    this.dispatchEvent(evt);
-  }
-
-  if (component == this.yScrollbar)
-  {
+    var newMax = event.getNewMax();
     this._databody.setTranslateY(newMax);
     if (this.isRowAxisEnabled())
       this.getRowAxis().setTranslateY(newMax);
+    if (this._deplines != null)
+      this._deplines.setTranslateY(newMax);
   }
 };
 
@@ -1543,16 +1891,19 @@ dvt.Gantt.prototype._handleResize = function(width, height)
       DvtGanttRenderer._prerenderRowAxis(this);
     this.updateRows();
 
+    DvtGanttRenderer._renderDependencies(this);
+
     var timeZoomCanvas = this.getTimeZoomCanvas();
     DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
     DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
+    DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas);
 
     DvtGanttRenderer._renderZoomControls(this);
 
     DvtGanttRenderer._updateRowBackground(this);
 
-    if (this.isHorizontalScrollbarOn() || this.isVerticalScrollbarOn())
-      DvtGanttRenderer._renderScrollbars(this);
+    if (this.isTimeDirScrollbarOn() || this.isContentDirScrollbarOn())
+      DvtGanttRenderer._renderScrollbars(this, this);
   }
   else
     DvtGanttRenderer._renderEmptyText(this);
@@ -1564,25 +1915,25 @@ dvt.Gantt.prototype._handleResize = function(width, height)
 dvt.Gantt.prototype.applyStyleValues = function()
 {
   var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
-  var scrollbarHitAreaSize = DvtGanttStyleUtils.getScrollbarHitAreaSize();
+  var scrollbarPadding = this.getScrollbarPadding();
   this._borderWidth = DvtGanttStyleUtils.getChartStrokeWidth(this.Options);
 
   var doubleBorderWidth = this._borderWidth * 2;
   this._widthOffset = 0;
 
   // we are going to hide the scrollbar
-  this.xScrollbarStyles = new dvt.CSSStyle(DvtGanttStyleUtils.getHorizontalScrollbarStyle());
-  this.yScrollbarStyles = new dvt.CSSStyle(DvtGanttStyleUtils.getVerticalScrollbarStyle());
+  this.timeDirScrollbarStyles = this.getTimeDirScrollbarStyle();
+  this.contentDirScrollbarStyles = this.getContentDirScrollbarStyle();
 
   this._backgroundWidth = this.Width;
   this._backgroundHeight = this.Height;
 
-  if (this.isHorizontalScrollbarOn())
-    this._backgroundHeight = this._backgroundHeight - dvt.CSSStyle.toNumber(this.xScrollbarStyles.getHeight()) - 3 * scrollbarHitAreaSize;
-  if (this.isVerticalScrollbarOn())
+  if (this.isTimeDirScrollbarOn())
+    this._backgroundHeight = this._backgroundHeight - dvt.CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) - 3 * scrollbarPadding;
+  if (this.isContentDirScrollbarOn())
   {
-    var widthOffset = 3 * scrollbarHitAreaSize;
-    this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.yScrollbarStyles.getWidth()) - widthOffset;
+    var widthOffset = 3 * scrollbarPadding;
+    this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth()) - widthOffset;
     if (isRTL)
       this._widthOffset = widthOffset - this._borderWidth;
   }
@@ -1650,10 +2001,15 @@ dvt.Gantt.prototype.HandleMouseWheel = function(event)
     {
       if (event.zoomWheelDelta)
       {
-        var newLength = this.getContentLength() * event.zoomWheelDelta;
-        var time = event.zoomTime;
-        var compLoc = event.zoomCompLoc;
-        this.handleZoomWheel(newLength, time, compLoc, true);
+        // only zoom if mouse inside chart/graphical area
+        var relPos = this.getCtx().pageToStageCoords(event.pageX, event.pageY);
+        if (this.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+        {
+          var newLength = this.getContentLength() * event.zoomWheelDelta;
+          var time = event.zoomTime;
+          var compLoc = event.zoomCompLoc;
+          this.handleZoomWheel(newLength, time, compLoc, true);
+        }
       }
     }
   }
@@ -1728,12 +2084,16 @@ dvt.Gantt.prototype.handleZoomWheel = function(newLength, time, compLoc, trigger
     }
   }
 
-  if (this.isHorizontalScrollbarOn())
-    this.xScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+  if (this.isTimeDirScrollbarOn())
+    this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
-  DvtGanttRenderer._renderAxes(this, this.getTimeZoomCanvas());
+  var timeZoomCanvas = this.getTimeZoomCanvas();
+  DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
   this.updateRows();
-  DvtGanttRenderer._renderVerticalGridline(this, this.getTimeZoomCanvas());
+  DvtGanttRenderer._renderDependencies(this);
+  DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
+  DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas);
+
 
   if (triggerViewportChangeEvent)
   {
@@ -1843,6 +2203,51 @@ dvt.Gantt.prototype.getVerticalGridlines = function()
 dvt.Gantt.prototype.setVerticalGridlines = function(gridlines)
 {
   this._gridlines = gridlines;
+};
+
+/**
+ * Retrieve the reference objects array
+ * @return {Array.<object>} the reference objects array
+ */
+dvt.Gantt.prototype.getReferenceObjects = function()
+{
+  return this._referenceObjects;
+};
+
+/**
+ * Retrieve the container for reference objects
+ * @return {dvt.Container} the container for reference objects
+ */
+dvt.Gantt.prototype.getReferenceObjectsContainer = function()
+{
+  return this._refObjectsContainer;
+};
+
+/**
+ * Sets the container for reference objects
+ * @param {dvt.Container} container the container for reference objects
+ */
+dvt.Gantt.prototype.setReferenceObjectsContainer = function(container)
+{
+  this._refObjectsContainer = container;
+};
+
+/**
+ * Retrieve the array of rendered reference objects
+ * @return {Array.<dvt.Line>} the array of rendered reference objects
+ */
+dvt.Gantt.prototype.getRenderedReferenceObjects = function()
+{
+  return this._renderedReferenceObjects;
+};
+
+/**
+ * Sets the array of rendered reference objects
+ * @param {Array.<dvt.Line>} renderedReferenceObjects the array of rendered reference objects
+ */
+dvt.Gantt.prototype.setRenderedReferenceObjects = function(renderedReferenceObjects)
+{
+  this._renderedReferenceObjects = renderedReferenceObjects;
 };
 
 /**
@@ -1977,26 +2382,6 @@ dvt.Gantt.prototype.isVerticalGridlinesVisible = function()
 };
 
 /**
- * Gets whether horizontal scrollbar should be visible
- * @return {boolean} true if horizontal scrollbar is visible, false otherwise
- */
-dvt.Gantt.prototype.isHorizontalScrollbarOn = function()
-{
-  // return this._xScrollbar == 'on';
-  return true; // always on for now
-};
-
-/**
- * Gets whether vertical scrollbar should be visible
- * @return {boolean} true if vertical scrollbar is visible, false otherwise
- */
-dvt.Gantt.prototype.isVerticalScrollbarOn = function()
-{
-  // return this._yScrollbar == 'on';
-  return true; // always on for now
-};
-
-/**
  * Gets the height of the entire Gantt content
  * @return {number} height the height of the entire Gantt including all rows.
  */
@@ -2012,24 +2397,6 @@ dvt.Gantt.prototype.getContentHeight = function()
 dvt.Gantt.prototype.setContentHeight = function(height)
 {
   this._contentHeight = height;
-};
-
-/**
- * Gets the canvas size.
- * @return {number} the canvas size.
- */
-dvt.Gantt.prototype.getCanvasSize = function()
-{
-  return this._canvasSize;
-};
-
-/**
- * Gets the canvas length.
- * @return {number} the canvas length.
- */
-dvt.Gantt.prototype.getCanvasLength = function()
-{
-  return this._canvasLength;
 };
 
 /**
@@ -2112,23 +2479,34 @@ dvt.Gantt.prototype.setRowAxis = function(rowAxis)
  */
 dvt.Gantt.prototype.scrollTaskIntoView = function(task)
 {
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
   var axesHeight = this.getAxesHeight();
   var timeZoomCanvas = this.getTimeZoomCanvas();
-  var taskRect = {x: task.getTranslateX(), y: task.getTranslateY(), w: task.getWidth(), h: task.getHeight()};
-  var viewportRect = {x: 0 - timeZoomCanvas.getTranslateX(), y: 0 - (this._databody.getTranslateY() - this._databodyStart), w: this._canvasLength, h: this._canvasSize - axesHeight};
+  var taskRect = {x: task.getTranslateX(), y: task.getTranslateY() + DvtGanttStyleUtils.getTaskbarPadding(), w: task.getWidth(), h: task.getHeight()};
+  var viewportRect = {x: this.getStartXOffset() - timeZoomCanvas.getTranslateX(), y: this._databodyStart - this._databody.getTranslateY(), w: this._canvasLength, h: this._canvasSize - axesHeight};
 
   var deltaX = 0;
   var deltaY = 0;
 
-  if (taskRect.x < viewportRect.x)
-    deltaX = taskRect.x - viewportRect.x;
-  else if (taskRect.x + taskRect.w > viewportRect.x + viewportRect.w)
-    deltaX = (taskRect.x + taskRect.w) - (viewportRect.x + viewportRect.w);
+  if (!isRTL)
+  {
+    if (taskRect.x < viewportRect.x)
+      deltaX = taskRect.x - viewportRect.x - DvtGanttStyleUtils.getTaskbarPadding();
+    else if (taskRect.x + taskRect.w > viewportRect.x + viewportRect.w)
+      deltaX = (taskRect.x + taskRect.w) - (viewportRect.x + viewportRect.w) + DvtGanttStyleUtils.getTaskbarPadding();
+  }
+  else
+  {
+    if (taskRect.x > viewportRect.x + viewportRect.w)
+      deltaX = taskRect.x - (viewportRect.x + viewportRect.w) + DvtGanttStyleUtils.getTaskbarPadding();
+    else if (taskRect.x - taskRect.w < viewportRect.x)
+      deltaX = (taskRect.x - taskRect.w) - viewportRect.x - DvtGanttStyleUtils.getTaskbarPadding();
+  }
 
   if (taskRect.y < viewportRect.y)
-    deltaY = taskRect.y - viewportRect.y;
+    deltaY = taskRect.y - viewportRect.y - DvtGanttStyleUtils.getTaskbarPadding();
   else if (taskRect.y + taskRect.h > viewportRect.y + viewportRect.h)
-    deltaY = (taskRect.y + taskRect.h) - (viewportRect.y + viewportRect.h);
+    deltaY = (taskRect.y + taskRect.h) - (viewportRect.y + viewportRect.h) + DvtGanttStyleUtils.getTaskbarPadding();
 
   this.panBy(deltaX, deltaY, true);
 };
@@ -2174,12 +2552,15 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
     if (this.isRowAxisEnabled())
       this.getRowAxis().setTranslateY(newTranslateY);
 
-    if (this.isVerticalScrollbarOn())
-      this.yScrollbar.setViewportRange(newTranslateY - (this._canvasSize - this._databodyStart - bottomOffset), newTranslateY);
+    if (this.isContentDirScrollbarOn())
+      this.contentDirScrollbar.setViewportRange(newTranslateY - (this._canvasSize - this._databodyStart - bottomOffset), newTranslateY);
+
+    if (this._deplines != null)
+      this._deplines.setTranslateY(newTranslateY);
   }
 
-  if (this.isHorizontalScrollbarOn())
-    this.xScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
+  if (this.isTimeDirScrollbarOn())
+    this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 };
 
 /**
@@ -2215,25 +2596,30 @@ dvt.Gantt.prototype.endDragPan = function(compX, compY)
  */
 dvt.Gantt.prototype.setTaskbarBrightness = function(task, dim)
 {
-  var rows = this._rows;
-  if (rows != null)
-  {
-    for (var i = 0; i < rows.length; i++)
-    {
-      var tasks = rows[i].getTasks();
-      if (tasks != null)
-      {
-        for (var j = 0; j < tasks.length; j++)
-        {
-          // skips the specified task bar
-          if (task == tasks[j])
-            continue;
+  var task = this.findTaskNodeById(task.getId());
+  if (task != null)
+    dim ? task.darken() : task.brighten();
+};
 
-          dim ? tasks[j].darken() : tasks[j].brighten();
-        }
-      }
+/**
+ * Find the task node with the specified id
+ * @param {string} id the id
+ * @return {DvtGanttTaskNode} the task with the specified id or null if none is found
+ */
+dvt.Gantt.prototype.findTaskNodeById = function(id)
+{
+  var rows = this._rows;
+  for (var i = 0; i < rows.length; i++)
+  {
+    var tasks = rows[i].getTasks();
+    for (var j = 0; j < tasks.length; j++)
+    {
+      if (id === tasks[j].getId())
+        return tasks[j];
     }
   }
+
+  return null;
 };
 
 /**
@@ -2326,6 +2712,54 @@ dvt.Gantt.prototype._processInitialSelections = function()
   }
 };
 
+/******************** Dependency line **********************/
+/**
+ * Gets the container object for the dependency lines
+ * @return {dvt.Container} the container for the dependency lines
+ */
+dvt.Gantt.prototype.getDependencyLines = function()
+{
+  return this._deplines;
+};
+
+/**
+ * Sets the container object for the dependency lines
+ * @param {dvt.Container} deplines the container for the dependency lines
+ */
+dvt.Gantt.prototype.setDependencyLines = function(deplines)
+{
+  this._deplines = deplines;
+};
+
+/**
+ * Sets the id of the default marker
+ * @param {string} id the id of the default marker
+ */
+dvt.Gantt.prototype.setDefaultMarkerId = function(id)
+{
+  this._markerId = id;
+};
+
+/**
+ * Gets the id of the default marker
+ * @return {string} the id of the default marker
+ */
+dvt.Gantt.prototype.getDefaultMarkerId = function()
+{
+  return this._markerId;
+};
+
+/**
+ * Gets the predecessors or successors for the specified task
+ * @param {DvtGanttTaskNode} task the task
+ * @param {string} type successor or predecessor
+ * @return {DvtGanttDependencyNode[]} array of predecessors or successors for the specified task
+ */
+dvt.Gantt.prototype.getNavigableDependencyLinesForTask = function(task, type)
+{
+  return type == 'successor' ? task.getSuccessorDependencies() : task.getPredecessorDependencies();
+};
+
 // should be in super
 /**
  * Handle touch start event
@@ -2385,6 +2819,10 @@ DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
  */
 DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
 {
+  // TOOLTIP
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
+    return this.GetTooltipElement(this._gantt);
+
   var openParen1 = subId.indexOf('[');
   var closeParen1 = subId.indexOf(']');
   var component = subId.substring(0, openParen1);
@@ -2472,6 +2910,1071 @@ DvtGanttDefaults.VERSION_1 = {
   }
 };
 /**
+ * Class representing a GanttDependency node.
+ * @param {dvt.Gantt} gantt The gantt component
+ * @param {object} props The properties for the dependency.
+ * @class
+ * @constructor
+ * @implements {DvtKeyboardNavigable}
+ */
+var DvtGanttDependencyNode = function(gantt, props)
+{
+  this.Init(gantt, props);
+};
+
+dvt.Obj.createSubclass(DvtGanttDependencyNode, dvt.Container);
+
+// supported dependency types
+/**
+ * Start-to-start dependency type
+ * @type {string}
+ */
+DvtGanttDependencyNode.START_START = 'startStart';
+/**
+ * Start-to-finish dependency type
+ * @type {string}
+ */
+DvtGanttDependencyNode.START_FINISH = 'startFinish';
+/**
+ * Finish-to-start dependency type
+ * @type {string}
+ */
+DvtGanttDependencyNode.FINISH_START = 'finishStart';
+/**
+ * Finish-to-finish dependency type
+ * @type {string}
+ */
+DvtGanttDependencyNode.FINISH_FINISH = 'finishFinish';
+
+// used for value indicating conflict between lines
+/**
+ * No conflicts between depdendency lines
+ * @type {number}
+ */
+DvtGanttDependencyNode.CONFLICT_NONE = 0;
+/**
+ * Conflicts between predecessor dependency lines
+ * @type {number}
+ */
+DvtGanttDependencyNode.CONFLICT_PREDECESSOR = 1;
+/**
+ * Conflicts between successor dependency lines
+ * @type {number}
+ */
+DvtGanttDependencyNode.CONFLICT_SUCCESSOR = 2;
+/**
+ * Conflicts between both predecessor and successor dependency lines
+ * @type {number}
+ */
+DvtGanttDependencyNode.CONFLICT_BOTH = 3;
+
+/**
+ * @param {dvt.Gantt} gantt The gantt component
+ * @param {object} props The properties for the node.
+ * @protected
+ */
+DvtGanttDependencyNode.prototype.Init = function(gantt, props)
+{
+  DvtGanttDependencyNode.superclass.Init.call(this, gantt.getCtx(), null, props['id']);
+
+  this._gantt = gantt;
+  this._props = props;
+};
+
+/**
+ * Sets the properties for the node.
+ * @param {object} props The properties.
+ */
+DvtGanttDependencyNode.prototype.setProps = function(props)
+{
+  this._props = props;
+};
+
+/**
+ * Gets the gantt.
+ * @return {dvt.Gantt} the gantt.
+ */
+DvtGanttDependencyNode.prototype.getGantt = function()
+{
+  return this._gantt;
+};
+
+/**
+ * Retrieve the id of the task.
+ * @return {object} the id of the task
+ */
+DvtGanttDependencyNode.prototype.getId = function()
+{
+  return this._props['id'];
+};
+
+/**
+ * Retrieve the id of the predecessor task
+ * @return {string} the id of the predecessor task
+ */
+DvtGanttDependencyNode.prototype.getPredecessor = function()
+{
+  return this._props['predecessorTaskId'];
+};
+
+/**
+ * Retrieve the id of the successor task
+ * @return {string} the id of the successor task
+ */
+DvtGanttDependencyNode.prototype.getSuccessor = function()
+{
+  return this._props['successorTaskId'];
+};
+
+/**
+ * Retrieve the dependency type
+ * @return {string} the dependency type
+ */
+DvtGanttDependencyNode.prototype.getType = function()
+{
+  return this._props['type'] == null ? DvtGanttDependencyNode.FINISH_START : this._props['type'];
+};
+
+/**
+ * Retrieve the svg inline style to set on the dependency line
+ * @return {string} the svg inline style to set on the dependency line
+ */
+DvtGanttDependencyNode.prototype.getStyle = function()
+{
+  return this._props['svgStyle'];
+};
+
+/**
+ * Retrieve the svg style class to set on the dependency line
+ * @return {string} the style class to set on the dependency line
+ */
+DvtGanttDependencyNode.prototype.getClassName = function()
+{
+  return this._props['svgClassName'];
+};
+
+/**
+ * Retrieve the short description for the dependency line
+ * @return {string} the short description for the dependency line
+ */
+DvtGanttDependencyNode.prototype.getShortDesc = function()
+{
+  return this._props['shortDesc'];
+};
+
+/**
+ * Retrieves the predecessor task object
+ * @return {DvtGanttTaskNode} the predecessor task object
+ */
+DvtGanttDependencyNode.prototype.getPredecessorNode = function()
+{
+  return this._predecessorNode;
+};
+
+/**
+ * Retrieves the successor task object
+ * @return {DvtGanttTaskNode} the successor task object
+ */
+DvtGanttDependencyNode.prototype.getSuccessorNode = function()
+{
+  return this._successorNode;
+};
+
+/**
+ * Determine the start position of the task bar, taking label into account
+ * @param {DvtGanttTaskNode} task the task bar
+ * @return {number} the start position of the task bar in pixels
+ * @private
+ */
+DvtGanttDependencyNode._getTaskStart = function(task)
+{
+  var ctx = task.getGantt().getCtx();
+
+  if (dvt.Agent.isRightToLeft(ctx))
+  {
+    if (task.getLabelText() != null && task.getLabelText().getParent() != null && task.getLabelPosition() == 'end')
+      return task.getCalculatedTranslateX() - task.getWidth() - task.getLabelText().getDimensions().w - DvtGanttStyleUtils.getTaskbarLabelPadding() * 2; // padding before + after
+    else
+      return task.getCalculatedTranslateX() - task.getWidth();
+  }
+  else
+  {
+    if (task.getLabelText() != null && task.getLabelText().getParent() != null && task.getLabelPosition() == 'start')
+      return task.getCalculatedTranslateX() - task.getLabelText().getDimensions().w - DvtGanttStyleUtils.getTaskbarLabelPadding() * 2;
+    else
+      return task.getCalculatedTranslateX();
+  }
+};
+
+/**
+ * Determine the middle position of the task bar
+ * @param {DvtGanttTaskNode} task the task to find the vertical middle point
+ * @return {number} the middle position of the task bar in pixels
+ * @private
+ */
+DvtGanttDependencyNode._getTaskMiddle = function(task)
+{
+  return DvtGanttDependencyNode._getTaskTop(task) + Math.round(task.getHeight() / 2);
+};
+
+/**
+ * Determine the end position of the task bar, taking label into account
+ * @param {DvtGanttTaskNode} task the task to find the end
+ * @return {number} the end position of the task bar in pixels
+ * @private
+ */
+DvtGanttDependencyNode._getTaskEnd = function(task)
+{
+  var ctx = task.getGantt().getCtx();
+  if (dvt.Agent.isRightToLeft(ctx))
+  {
+    if (task.getLabelText() != null && task.getLabelText().getParent() != null && task.getLabelPosition() == 'start')
+      return task.getCalculatedTranslateX() + task.getLabelText().getDimensions().w + DvtGanttStyleUtils.getTaskbarLabelPadding() * 2;
+    else
+      return task.getCalculatedTranslateX();
+  }
+  else
+  {
+    if (task.getLabelText() != null && task.getLabelText().getParent() != null && task.getLabelPosition() == 'end')
+      return task.getCalculatedTranslateX() + task.getWidth() + task.getLabelText().getDimensions().w + DvtGanttStyleUtils.getTaskbarLabelPadding() * 2;
+    else
+      return task.getCalculatedTranslateX() + task.getWidth();
+  }
+};
+
+/**
+ * Calculate the top of the task bar
+ * @param {DvtGanttTaskNode} task the task to find the top
+ * @return {number} the position of the top of the task bar in pixels
+ * @private
+ */
+DvtGanttDependencyNode._getTaskTop = function(task)
+{
+  var dims = task.getDimensions();
+  return task.getCalculatedTranslateY() + dims.y;
+};
+
+/**
+ * Calculate the bottom of the task bar
+ * @param {DvtGanttTaskNode} task the task to find the bottom
+ * @return {number} the position of the bottom of the task bar in pixels
+ * @private
+ */
+DvtGanttDependencyNode._getTaskBottom = function(task)
+{
+  return DvtGanttDependencyNode._getTaskTop(task) + task.getHeight();
+};
+
+/**
+ * Checks if dependency type is valid
+ * @param {string} type the dependency type
+ * @return {boolean} true if dependency type is valid, false otherwise
+ * @private
+ */
+DvtGanttDependencyNode._isValidType = function(type)
+{
+  return (type === DvtGanttDependencyNode.START_START || type === DvtGanttDependencyNode.START_FINISH ||
+          type === DvtGanttDependencyNode.FINISH_START || type === DvtGanttDependencyNode.FINISH_FINISH);
+};
+
+/**
+ * Renders the dependency line
+ * @param {dvt.Container} container the container to render the dependency line in.
+ */
+DvtGanttDependencyNode.prototype.render = function(container)
+{
+  if (this.getParent() != container)
+    container.addChild(this);
+
+  this.setAriaRole('img');
+
+  var predecessor = this.getPredecessor();
+  var successor = this.getSuccessor();
+  var type = this.getType();
+
+  // make sure all the mandatory fields are available and valid
+  if (predecessor == null || successor == null || predecessor == successor || !DvtGanttDependencyNode._isValidType(type))
+  {
+    // remove existing line if it's invalid
+    this._cleanup();
+    return;
+  }
+
+  var gantt = this.getGantt();
+  var predecessorNode = gantt.findTaskNodeById(predecessor);
+  var successorNode = gantt.findTaskNodeById(successor);
+  if (predecessorNode == null || successorNode == null)
+  {
+    // remove existing line if it's invalid
+    this._cleanup();
+    return;
+  }
+
+  // keep these around for highlighting and navigation
+  this._predecessorNode = predecessorNode;
+  this._successorNode = successorNode;
+
+  // update task about predecessors and successors
+  this._predecessorNode.addSuccessorDependency(this);
+  this._successorNode.addPredecessorDependency(this);
+
+  // for touch the aria-label needs to be available and aria-label on task needs to be updated
+  if (dvt.TimeAxis.supportsTouch())
+  {
+    this.setAriaProperty('label', this.getAriaLabel());
+    this._predecessorNode.refreshAriaLabel();
+    this._successorNode.refreshAriaLabel();
+  }
+
+  // due to IE bug https://connect.microsoft.com/IE/feedback/details/781964/,
+  // which happens only on older versions of Windows (<10), we'll need to re-render the path instead of just updating its command
+  if (dvt.Agent.isPlatformIE())
+    this._cleanup();
+
+  if (this._line != null)
+  {
+    // update dependency line
+    this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), this._predecessorNode, this._successorNode, type));
+    var elem = this._line.getElem();
+  }
+  else
+  {
+    var line = new dvt.Path(gantt.getCtx(), DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
+
+    elem = line.getElem();
+    // sets the default arrow marker
+    dvt.ToolkitUtils.setAttrNullNS(elem, 'marker-end', dvt.ToolkitUtils.getUrlById(gantt.getDefaultMarkerId()));
+
+    this.addChild(line);
+
+    if (!this._eventManagerAssociated)
+    {
+      this._gantt.getEventManager().associate(this, this);
+      this._eventManagerAssociated = true;
+    }
+
+    // set keyboard focus stroke
+    var his = new dvt.SolidStroke(DvtGanttStyleUtils.getFocusedDependencyLineInnerColor(), 1, DvtGanttStyleUtils.getFocusedDependencyLineInnerWidth());
+    // the outer color won't matter since it will be override by style class
+    var hos = new dvt.SolidStroke('#000', 1, 1);
+    line.setHoverStroke(his, hos);
+
+    this._line = line;
+  }
+
+  // apply inline style
+  var style = this.getStyle();
+  if (style)
+  {
+    if (typeof style === 'string')
+      dvt.ToolkitUtils.setAttrNullNS(elem, 'style', style);
+    else
+      elem['style'] = style;
+  }
+
+  // apply style class
+  var defaultStyleClass = gantt.GetStyleClass('dependencyLine');
+  var styleClass = this.getClassName();
+  if (styleClass)
+    dvt.ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
+  else
+    dvt.ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass);
+};
+
+/**
+ * Clean up any artifacts created by this dependency line
+ * @private
+ */
+DvtGanttDependencyNode.prototype._cleanup = function()
+{
+  if (this._line != null)
+  {
+    this.removeChild(this._line);
+    this._line = null;
+  }
+};
+
+/**
+ * Determine if there is potential conflict between dependency line going out from a task and dependency line
+ * going into a task
+ * @return {number} conflict value constant
+ * @private
+ */
+DvtGanttDependencyNode.prototype._calcConflict = function()
+{
+  var predecessorConflict = false;
+  var successorConflict = false;
+
+  var type = this.getType();
+
+  // checks if there's any dependency line rendered already that have the predecessor as its successor
+  var deps = this.getGantt().getNavigableDependencyLinesForTask(this._predecessorNode, 'predecessor');
+  if (deps != null)
+  {
+    for (var i = 0; i < deps.length; i++)
+    {
+      var depType = deps[i].getType();
+      if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) &&
+          (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.FINISH_START)) ||
+          ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.FINISH_START) &&
+          (depType == DvtGanttDependencyNode.FINISH_FINISH || depType == DvtGanttDependencyNode.START_FINISH)))
+      {
+        predecessorConflict = true;
+      }
+    }
+  }
+
+  // checks if there's any dependency line rendered already that have the successor as its predecessor
+  deps = this.getGantt().getNavigableDependencyLinesForTask(this._successorNode, 'successor');
+  if (deps != null)
+  {
+    for (i = 0; i < deps.length; i++)
+    {
+      depType = deps[i].getType();
+      if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START) &&
+          (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.START_FINISH)) ||
+          ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.START_FINISH) &&
+          (depType == DvtGanttDependencyNode.FINISH_FINISH || depType == DvtGanttDependencyNode.FINISH_START)))
+      {
+        successorConflict = true;
+      }
+    }
+  }
+
+  if (predecessorConflict && successorConflict)
+    return DvtGanttDependencyNode.CONFLICT_BOTH;
+  else
+  {
+    if (predecessorConflict)
+      return DvtGanttDependencyNode.CONFLICT_PREDECESSOR;
+    else if (successorConflict)
+      return DvtGanttDependencyNode.CONFLICT_SUCCESSOR;
+  }
+
+  return DvtGanttDependencyNode.CONFLICT_NONE;
+};
+
+/**
+ * Calculate path command for dependency lines
+ * @param {dvt.Context} context The rendering context.
+ * @param {DvtGanttTaskNode} predecessorNode the predecessor
+ * @param {DvtGanttTaskNode} successorNode the successor
+ * @param {string} type the dependency type
+ * @return {string} the command path
+ * @private
+ */
+DvtGanttDependencyNode._calcDepLine = function(context, predecessorNode, successorNode, type)
+{
+  var isRTL = dvt.Agent.isRightToLeft(context);
+
+  // invoke the proper method to generate command for finish-* dependency or start-* dependency
+  // note for RTL the rendering is flipped so for example for start-finish dependency the rendering
+  // in RTL would be exactly like finish-start in LTR
+  switch (type)
+  {
+    case DvtGanttDependencyNode.START_START:
+      if (isRTL)
+        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, true);
+      else
+        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, false);
+      break;
+    case DvtGanttDependencyNode.START_FINISH:
+      if (isRTL)
+        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, false);
+      else
+        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, true);
+      break;
+    case DvtGanttDependencyNode.FINISH_START:
+      if (isRTL)
+        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, true);
+      else
+        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, false);
+      break;
+    case DvtGanttDependencyNode.FINISH_FINISH:
+      if (isRTL)
+        return DvtGanttDependencyNode._calcDepLineForStart(predecessorNode, successorNode, false);
+      else
+        return DvtGanttDependencyNode._calcDepLineForFinish(predecessorNode, successorNode, true);
+      break;
+    default:
+      // invalid type, should not happen
+      break;
+  }
+
+  return null;
+};
+
+/**
+ * Calculate path command for start-start and start-finish types dependency lines
+ * @param {DvtGanttTaskNode} predecessorNode the predecessor
+ * @param {DvtGanttTaskNode} successorNode the successor
+ * @param {boolean} finish true if it's start-finish type, false otherwise
+ * @return {string} the command path
+ * @private
+ */
+DvtGanttDependencyNode._calcDepLineForStart = function(predecessorNode, successorNode, finish)
+{
+  var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
+  var m = DvtGanttStyleUtils.getTaskbarPadding() + DvtGanttStyleUtils.getDependencyLineLabelGap();
+
+  var x1 = DvtGanttDependencyNode._getTaskStart(predecessorNode);
+  var x2 = finish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
+
+  var y1 = DvtGanttDependencyNode._getTaskMiddle(predecessorNode);
+  var y2 = DvtGanttDependencyNode._getTaskMiddle(successorNode);
+
+  var line = dvt.PathUtils.moveTo(x1, y1);
+  // x2 with margin included
+  var x2m = finish ? x2 + m : x2 - m;
+
+  // predecessor is after successor
+  if (x1 >= x2m)
+  {
+    // successor is below predecessor
+    if (y2 > y1)
+    {
+      if (finish)
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x2m + r + r, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+      else
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x2m, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+    }
+    // successor is in the same y position as predecessor
+    else if (y2 == y1)
+    {
+      if (!finish)
+      {
+        var x1m = x1 - m;
+        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+
+        // line left
+        line += dvt.PathUtils.lineTo(x1m, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x1m - r, y2m - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m - r - r, y2m);
+        // line left
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+    // successor is above predecessor
+    else
+    {
+      if (finish)
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x2m + r + r, y1);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y1 - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+      else
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x2m, y1);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y1 - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+  }
+  else
+  {
+    x1m = x1 - m;
+    if (y2 > y1)
+    {
+      if (finish)
+      {
+        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+
+        line += dvt.PathUtils.lineTo(x1m + r, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x1m, y2m - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m + r, y2m);
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y2m + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+      else
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x1m, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x1m - r, y2 - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y2);
+      }
+    }
+    else if (y2 == y1)
+    {
+      var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+      // line left
+      line += dvt.PathUtils.lineTo(x1m, y1);
+      // arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m - r, y1 + r);
+      // line down
+      line += dvt.PathUtils.lineTo(x1m - r, y2m - r);
+      // arc right
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1m, y2m);
+
+      if (finish)
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+      else
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m - r - r, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+    else
+    {
+      y2m = DvtGanttDependencyNode._getTaskTop(predecessorNode) - m;
+
+      // line left
+      line += dvt.PathUtils.lineTo(x1m, y1);
+      // arc up
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m - r, y1 - r);
+      if (finish)
+      {
+        // line up
+        line += dvt.PathUtils.lineTo(x1m - r, y2m + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m, y2m);
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+      else
+      {
+        // line up
+        line += dvt.PathUtils.lineTo(x1m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1m, y2);
+      }
+    }
+  }
+
+  line += dvt.PathUtils.lineTo(x2, y2);
+
+  return line;
+};
+
+/**
+ * Calculate path command for finish-start and finish-finish types dependency lines
+ * @param {DvtGanttTaskNode} predecessorNode the predecessor
+ * @param {DvtGanttTaskNode} successorNode the successor
+ * @param {boolean} finish true if it's finish-finish type, false otherwise
+ * @return {string} the command path
+ * @private
+ */
+DvtGanttDependencyNode._calcDepLineForFinish = function(predecessorNode, successorNode, finish)
+{
+  var r = DvtGanttStyleUtils.getDependencyLineArcRadius();
+  var m = DvtGanttStyleUtils.getTaskbarPadding() + DvtGanttStyleUtils.getDependencyLineLabelGap();
+
+  var x1 = DvtGanttDependencyNode._getTaskEnd(predecessorNode);
+  var x2 = finish ? DvtGanttDependencyNode._getTaskEnd(successorNode) : DvtGanttDependencyNode._getTaskStart(successorNode);
+
+  var y1 = DvtGanttDependencyNode._getTaskMiddle(predecessorNode);
+  var y2 = DvtGanttDependencyNode._getTaskMiddle(successorNode);
+
+  var line = dvt.PathUtils.moveTo(x1, y1);
+  // x2 with margin included
+  var x2m = finish ? x2 + m : x2 - m;
+
+  if (x1 >= x2m)
+  {
+    // a little bit to the right
+    line += dvt.PathUtils.lineTo(x1 + m - r, y1);
+
+    if (y2 > y1)
+    {
+      // arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m, y1 + r);
+
+      if (finish)
+      {
+        // line down
+        line += dvt.PathUtils.lineTo(x1 + m, y2 - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m - r, y2);
+      }
+      else
+      {
+        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+
+        // line down
+        line += dvt.PathUtils.lineTo(x1 + m, y2m - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m - r, y2m);
+        // line left
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y2m + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+    }
+    else if (y2 == y1)
+    {
+      var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+      // line right
+      line += dvt.PathUtils.lineTo(x1 + m, y1);
+      // arc down
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m + r, y1 + r);
+      // line down
+      line += dvt.PathUtils.lineTo(x1 + m + r, y2m - r);
+      // arc left
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m, y2m);
+      if (finish)
+      {
+        // line left
+        line += dvt.PathUtils.lineTo(x2m + r + r, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+      else
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+    else
+    {
+      // arc up
+      line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m, y1 - r);
+
+      if (finish)
+      {
+        // line up
+        line += dvt.PathUtils.lineTo(x1 + m, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m - r, y2);
+      }
+      else
+      {
+        y2m = DvtGanttDependencyNode._getTaskTop(predecessorNode) - m;
+        // line up
+        line += dvt.PathUtils.lineTo(x1 + m, y2m + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m - r, y2m);
+        // line left
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+  }
+  else
+  {
+    if (y2 > y1)
+    {
+      if (finish)
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m + r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m + r, y2 - r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+      else
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m - r - r, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m - r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x2m - r, y2 - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+    }
+    else if (y2 == y1)
+    {
+      if (finish)
+      {
+        var y2m = DvtGanttDependencyNode._getTaskBottom(predecessorNode) + m;
+        // line right
+        line += dvt.PathUtils.lineTo(x1 + m, y1);
+        // arc down
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x1 + m + r, y1 + r);
+        // line down
+        line += dvt.PathUtils.lineTo(x1 + m + r, y2m - r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x1 + m + r + r, y2m);
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y2m);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y2m - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+    }
+    else
+    {
+      if (finish)
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m, y1);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m + r, y1 - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m + r, y2 + r);
+        // arc left
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m, y2);
+      }
+      else
+      {
+        // line right
+        line += dvt.PathUtils.lineTo(x2m - r - r, y1);
+        // arc up
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 0, x2m - r, y1 - r);
+        // line up
+        line += dvt.PathUtils.lineTo(x2m - r, y2 + r);
+        // arc right
+        line += dvt.PathUtils.arcTo(r, r, Math.PI / 2, 1, x2m, y2);
+      }
+    }
+  }
+
+  // line right
+  line += dvt.PathUtils.lineTo(x2, y2);
+
+  return line;
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.getNextNavigable = function(event) 
+{
+  if (event.keyCode == dvt.KeyboardEvent.UP_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW)
+  {
+    // this logic is identical to Diagram and TMap
+    //if the dependency line got focus via keyboard, get the task where the focus came from
+    //we'll navigate around that task
+    //if the focus was set through mouse click, set predecessor as a center of navigation
+    var task = this.getKeyboardFocusTask();
+    if (!task)
+      task = this.getPredecessorNode();
+
+    // go to the previous/next dependency line
+    var nextDependencyLine = this;
+    var keyboardHandler = this.getGantt().getEventManager().getKeyboardHandler();
+    if (keyboardHandler && keyboardHandler.getNextNavigableDependencyLine)
+    {
+      var type = task == this.getPredecessorNode() ? 'successor' : 'predecessor';
+      var dependencyLines = this.getGantt().getNavigableDependencyLinesForTask(task, type);
+      nextDependencyLine = keyboardHandler.getNextNavigableDependencyLine(task, this, event, dependencyLines);
+    }
+
+    nextDependencyLine.setKeyboardFocusTask(task);
+    return nextDependencyLine;
+  }
+  else if (event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW || event.keyCode == dvt.KeyboardEvent.LEFT_ARROW)
+  {
+    if (dvt.Agent.isRightToLeft(this.getGantt().getCtx()))
+      return event.keyCode == dvt.KeyboardEvent.LEFT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+    else
+      return event.keyCode == dvt.KeyboardEvent.RIGHT_ARROW ? this.getSuccessorNode() : this.getPredecessorNode();
+  }
+  else if (event.type == dvt.MouseEvent.CLICK)
+  {
+    return this;
+  }
+  return null;
+};
+
+/**
+ * Sets a node that should be used for dependency line navigation
+ * @param {DvtGanttTaskNode} node
+ */
+DvtGanttDependencyNode.prototype.setKeyboardFocusTask = function(node) 
+{
+  this._keyboardNavNode = node;
+};
+
+/**
+ * Gets a node that should be used for dependency line navigation
+ * @return {DvtGanttTaskNode} a node that should be used for dependency line navigation
+ */
+DvtGanttDependencyNode.prototype.getKeyboardFocusTask = function() 
+{
+  return this._keyboardNavNode;
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+{
+  return this.getDimensions(targetCoordinateSpace);
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.getTargetElem = function() 
+{
+  return this._line.getElem();
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.showKeyboardFocusEffect = function() 
+{
+  if (this._line)
+  {
+    var marker = dvt.ToolkitUtils.getAttrNullNS(this._line.getElem(), 'marker-end');
+
+    dvt.DomUtils.addCSSClassName(this._line.getElem(), this._gantt.GetStyleClass('focus'));
+    this._line.showHoverEffect();
+
+    // default marker-end is not copied to inner shape
+    if (marker != null)
+      dvt.ToolkitUtils.setAttrNullNS(this._line.getElem(), 'marker-end', marker);
+    this._isShowingKeyboardFocusEffect = true;
+  }
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.hideKeyboardFocusEffect = function()
+{
+  if (this.isShowingKeyboardFocusEffect())
+  {
+    this._line.hideHoverEffect();
+    dvt.DomUtils.removeCSSClassName(this._line.getElem(), this._gantt.GetStyleClass('focus'));
+    this._isShowingKeyboardFocusEffect = false;
+  }
+};
+
+/**
+ * @override
+ */
+DvtGanttDependencyNode.prototype.isShowingKeyboardFocusEffect = function()
+{
+  return this._isShowingKeyboardFocusEffect;
+};
+
+/**
+ * Retrieves the tooltip to display on the dependency line
+ * @override
+ */
+DvtGanttDependencyNode.prototype.getDatatip = function(target, x, y) 
+{
+  return this.getAriaLabel();
+};
+
+/**
+ * Gets the aria label
+ * @return {string} the aria label string.
+ */
+DvtGanttDependencyNode.prototype.getAriaLabel = function() 
+{
+  var desc = this.getShortDesc();
+  if (desc != null)
+    return desc;
+
+  var options = this._gantt.getOptions();
+
+  var predecessor = this.getPredecessor();
+  var successor = this.getSuccessor();
+  var type = this.getType();
+
+  if (predecessor == null || successor == null || !DvtGanttDependencyNode._isValidType(type))
+    return '';
+
+  var key = dvt.Bundle.getTranslation(options, type + 'DependencyAriaDesc');
+
+  // bundlePrefix and key param are not neccessary
+  desc = dvt.Bundle.getTranslation(options, 'accessibleDependencyInfo', '', '', [key, predecessor, successor]);
+  return desc;
+};
+/**
  * Gantt event manager.
  * @param {dvt.Gantt} gantt The owning dvt.Gantt.
  * @extends {dvt.TimeComponentEventManager}
@@ -2494,7 +3997,8 @@ DvtGanttEventManager.prototype.setFocus = function(navigable)
   DvtGanttEventManager.superclass.setFocus.call(this, navigable);
 
   // make sure focus task is in viewport
-  this._comp.scrollTaskIntoView(navigable);
+  if (navigable instanceof DvtGanttTaskNode)
+    this._comp.scrollTaskIntoView(navigable);
 };
 /**
  * Gantt keyboard handler.
@@ -2654,6 +4158,150 @@ DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, eve
 };
 
 /**
+ * Whether this is a navigation event.  Override base class to include alt + > and <
+ * @param {object} event
+ * @return {boolean} whether it is a navigation event
+ * @override
+ */
+DvtGanttKeyboardHandler.prototype.isNavigationEvent = function(event)
+{
+  var retVal = false;
+  switch (event.keyCode) {
+    case dvt.KeyboardEvent.OPEN_ANGLED_BRACKET:
+    case dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET:
+      retVal = event.altKey ? true : false;
+      break;
+    default:
+      retVal = DvtGanttKeyboardHandler.superclass.isNavigationEvent.call(this, event);
+  }
+  return retVal;
+};
+
+/**
+ * Calculate the distance (basically time duration in millis) between predecessor and successor
+ * @param {DvtGanttDependencyNode} dep
+ * @return {number} distance between predecessor and successor
+ * @private
+ */
+DvtGanttKeyboardHandler.prototype._getDistance = function(dep)
+{
+  var type = dep.getType();
+  var predecessor = dep.getPredecessorNode();
+  var successor = dep.getSuccessorNode();
+
+  var date1 = (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) ? predecessor.getStartTime() : predecessor.getEndTime();
+
+  if (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START)
+    var date2 = successor.getStartTime();
+  else
+    date2 = successor.getEndTime();
+
+  return Math.abs(date2 - date1);
+};
+
+/**
+ * Get function that compares two link around a given node
+ * The dependency lines are analyzed by distance from the node, which is derieved based on start and end time of the predeccessor and successor
+ * @return {function} a function that compares to dependency lines around the node
+ * @private
+ */
+DvtGanttKeyboardHandler.prototype._getDependencyComparator = function() 
+{
+  var self = this;
+  var comparator = function(dep1, dep2) {
+    var distance1 = self._getDistance(dep1);
+    var distance2 = self._getDistance(dep2);
+
+    if (distance1 < distance2)
+      return -1;
+    else if (distance1 > distance2)
+      return 1;
+    else
+      return 0;
+  };
+  return comparator;
+};
+
+/**
+ * Get first navigable dependency line
+ * @param {DvtGanttTaskNode} task task for which dependency lines are analyzed
+ * @param {dvt.KeyboardEvent} event keyboard event
+ * @param {array} listOfLines array of lines for the task
+ * @return {DvtGanttDependencyNode} first navigable dependency line
+ */
+DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(task, event, listOfLines)
+{
+  var direction = event.keyCode;
+  if (!listOfLines || listOfLines.length < 1 || !task)
+    return null;
+
+  var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
+  var first = null;
+  var min = 0;
+  for (var i = 0; i < listOfLines.length; i++)
+  {
+    var dependencyLine = listOfLines[i];
+
+    if (direction == dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET)
+      var taskToCompare = isRTL ? dependencyLine.getPredecessor() : dependencyLine.getSuccessor();
+    else
+      taskToCompare = isRTL ? dependencyLine.getSuccessor() : dependencyLine.getPredecessor();
+
+    // sanity check...
+    if (task.getId() == taskToCompare)
+      continue;
+
+    var dist = this._getDistance(dependencyLine);
+    if (first == null || dist < min)
+    {
+      min = dist;
+      first = dependencyLine;
+    }
+  }
+
+  return first;
+};
+
+/**
+ * Get next navigable dependency line.
+ * The decision is made based on distance between end points of tasks (start or end based on dependency type).
+ * @param {DvtGanttTaskNode} task the task for which dependency lines are analyzed
+ * @param {DvtGanttDependencyNode} currentDependencyLine the dependency line in focus
+ * @param {dvt.KeyboardEvent} event the keyboard event
+ * @param {array} listOfLines the array of dependency lines for the node
+ * @return {DvtGanttDependencyNode} next navigable dependency line
+ */
+DvtGanttKeyboardHandler.prototype.getNextNavigableDependencyLine = function(task, currentDependencyLine, event, listOfLines) 
+{
+  if (!listOfLines)
+    return null;
+
+  if (!currentDependencyLine)
+    return listOfLines[0];
+
+  if (!task)
+    return currentDependencyLine;
+
+  listOfLines.sort(this._getDependencyComparator());
+
+  var bForward = (event.keyCode == dvt.KeyboardEvent.DOWN_ARROW) ? true : false;
+  var index = 0;
+  for (var i = 0; i < listOfLines.length; i++)
+  {
+    var dependencyLine = listOfLines[i];
+    if (dependencyLine === currentDependencyLine)
+    {
+      if (bForward)
+        index = (i == listOfLines.length - 1) ? 0 : i + 1;
+      else
+        index = (i == 0) ? listOfLines.length - 1 : i - 1;
+      break;
+    }
+  }
+  return listOfLines[index];
+};
+
+/**
  * @override
  */
 DvtGanttKeyboardHandler.prototype.processKeyDown = function(event) 
@@ -2709,6 +4357,7 @@ DvtGanttParser.prototype.parse = function(options)
   ret.end = (new Date(options['end'])).getTime();
 
   ret.rows = options['rows'];
+  ret.dependencies = options['dependencies'];
 
   if (options['viewportStart'])
     ret.viewStart = (new Date(options['viewportStart'])).getTime();
@@ -2755,6 +4404,8 @@ DvtGanttParser.prototype.parse = function(options)
     ret.rowAxisMaxWidth = options['rowAxis']['maxWidth'];
     ret.rowAxisLabelsOverflowBehavior = options['rowAxis']['whiteSpace'];
   }
+
+  ret.referenceObjects = options['referenceObjects'];
 
   ret.styleClass = options['className'];
   ret.inlineStyle = options['style'];
@@ -2822,6 +4473,9 @@ DvtGanttRenderer.renderGantt = function(gantt)
     if (gantt.isRowAxisEnabled())
       DvtGanttRenderer._prerenderRowAxis(gantt);
     DvtGanttRenderer._renderRows(gantt, timeZoomCanvas, gantt.getRowAxis());
+    DvtGanttRenderer._renderDependencies(gantt, timeZoomCanvas);
+
+    DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas);
 
     DvtGanttRenderer._renderZoomControls(gantt);
 
@@ -2831,8 +4485,8 @@ DvtGanttRenderer.renderGantt = function(gantt)
     // Initial Selection
     gantt._processInitialSelections();
 
-    if (gantt.isHorizontalScrollbarOn() || gantt.isVerticalScrollbarOn())
-      DvtGanttRenderer._renderScrollbars(gantt);
+    if (gantt.isTimeDirScrollbarOn() || gantt.isContentDirScrollbarOn())
+      DvtGanttRenderer._renderScrollbars(gantt, gantt);
   }
   else
   {
@@ -2841,47 +4495,48 @@ DvtGanttRenderer.renderGantt = function(gantt)
 };
 
 /**
- * Prepares the horizontal scrollbar for rendering.
+ * Prepares the time direction scrollbar for rendering.
  * @param {dvt.Gantt} gantt The gantt being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} availSpace The available space.
  * @return {dvt.Dimension} The dimension of the scrollbar.
  * @private
  */
-DvtGanttRenderer._prerenderHorizScrollbar = function(gantt, container, availSpace)
+DvtGanttRenderer._prerenderTimeDirScrollbar = function(gantt, container, availSpace)
 {
   var width = availSpace.w;
-  var height = dvt.CSSStyle.toNumber(gantt.xScrollbarStyles.getHeight());
-  gantt.xScrollbar = new dvt.SimpleScrollbar(gantt.getCtx(), gantt.HandleEvent, gantt);
-  container.addChild(gantt.xScrollbar);
-  dvt.LayoutUtils.position(availSpace, 'bottom', gantt.xScrollbar, width, height, 0);
+  var height = dvt.CSSStyle.toNumber(gantt.timeDirScrollbarStyles.getHeight());
+  gantt.setTimeDirScrollbar(new dvt.SimpleScrollbar(gantt.getCtx(), gantt.HandleEvent, gantt));
+  container.addChild(gantt.timeDirScrollbar);
+  dvt.LayoutUtils.position(availSpace, 'bottom', gantt.timeDirScrollbar, width, height, 0);
   return new dvt.Dimension(width, height);
 };
 
 /**
- * Prepares the vertical scrollbar for rendering.
+ * Prepares the content direction scrollbar for rendering.
  * @param {dvt.Gantt} gantt The gantt being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} availSpace The available space.
  * @return {dvt.Dimension} The dimension of the scrollbar.
  * @private
  */
-DvtGanttRenderer._prerenderVertScrollbar = function(gantt, container, availSpace)
+DvtGanttRenderer._prerenderContentDirScrollbar = function(gantt, container, availSpace)
 {
-  var width = dvt.CSSStyle.toNumber(gantt.yScrollbarStyles.getWidth());
+  var width = dvt.CSSStyle.toNumber(gantt.contentDirScrollbarStyles.getWidth());
   var height = availSpace.h;
-  gantt.yScrollbar = new dvt.SimpleScrollbar(gantt.getCtx(), gantt.HandleEvent, gantt);
-  container.addChild(gantt.yScrollbar);
-  dvt.LayoutUtils.position(availSpace, dvt.Agent.isRightToLeft(gantt.getCtx()) ? 'left' : 'right', gantt.yScrollbar, width, height, 0);
+  gantt.setContentDirScrollbar(new dvt.SimpleScrollbar(gantt.getCtx(), gantt.HandleEvent, gantt));
+  container.addChild(gantt.contentDirScrollbar);
+  dvt.LayoutUtils.position(availSpace, dvt.Agent.isRightToLeft(gantt.getCtx()) ? 'left' : 'right', gantt.contentDirScrollbar, width, height, 0);
   return new dvt.Dimension(width, height);
 };
 
 /**
  * Renders the scrollbars.
  * @param {dvt.Gantt} gantt The gantt being rendered.
+ * @param {dvt.Container} container The container to render into
  * @private
  */
-DvtGanttRenderer._renderScrollbars = function(gantt)
+DvtGanttRenderer._renderScrollbars = function(gantt, container)
 {
   var databody = gantt.getDatabody();
   if (databody == null)
@@ -2889,59 +4544,58 @@ DvtGanttRenderer._renderScrollbars = function(gantt)
 
   var databodyStart = gantt.getDatabodyStart();
   var context = gantt.getCtx();
-  var ganttParent = gantt.getParent();
-  var scrollbarHitAreaSize = DvtGanttStyleUtils.getScrollbarHitAreaSize();
-  if (ganttParent._scrollbarsCanvas == null)
+  var scrollbarPadding = gantt.getScrollbarPadding();
+  if (gantt._scrollbarsCanvas == null)
   {
-    ganttParent._scrollbarsCanvas = new dvt.Container(context, 'sbCanvas');
-    ganttParent.addChild(ganttParent._scrollbarsCanvas);
+    gantt._scrollbarsCanvas = new dvt.Container(context, 'sbCanvas');
+    container.addChild(gantt._scrollbarsCanvas);
   }
   else
-    ganttParent._scrollbarsCanvas.removeChildren();
+    gantt._scrollbarsCanvas.removeChildren();
 
-  if (gantt.isHorizontalScrollbarOn())
+  if (gantt.isTimeDirScrollbarOn())
   {
     var availSpaceWidth = gantt.getCanvasLength();
-    var availSpaceHeight = gantt.Height - scrollbarHitAreaSize;
-    var horizScrollbarDim = DvtGanttRenderer._prerenderHorizScrollbar(gantt, ganttParent._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+    var availSpaceHeight = gantt.Height - scrollbarPadding;
+    var timeDirScrollbarDim = DvtGanttRenderer._prerenderTimeDirScrollbar(gantt, gantt._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
   }
-  if (gantt.isVerticalScrollbarOn())
+  if (gantt.isContentDirScrollbarOn())
   {
-    availSpaceWidth = gantt.Width - scrollbarHitAreaSize;
+    availSpaceWidth = gantt.Width - scrollbarPadding;
     availSpaceHeight = gantt.getCanvasSize() - gantt.getAxesHeight();
-    var vertScrollbarDim = DvtGanttRenderer._prerenderVertScrollbar(gantt, ganttParent._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+    var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(gantt, gantt._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
   }
 
-  if (gantt.xScrollbar)
+  if (gantt.timeDirScrollbar)
   {
     var sbOptions = {};
-    sbOptions['color'] = gantt.xScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
-    sbOptions['backgroundColor'] = gantt.xScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+    sbOptions['color'] = gantt.timeDirScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
+    sbOptions['backgroundColor'] = gantt.timeDirScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
     sbOptions['min'] = gantt._start;
     sbOptions['max'] = gantt._end;
     sbOptions['isHorizontal'] = true;
     sbOptions['isReversed'] = dvt.Agent.isRightToLeft(gantt.getCtx());
-    gantt.xScrollbar.setTranslateX(gantt.getStartXOffset());
-    gantt.xScrollbar.render(sbOptions, horizScrollbarDim.w, horizScrollbarDim.h);
-    gantt.xScrollbar.setViewportRange(gantt._viewStartTime, gantt._viewEndTime);
+    gantt.timeDirScrollbar.setTranslateX(gantt.getStartXOffset());
+    gantt.timeDirScrollbar.render(sbOptions, timeDirScrollbarDim.w, timeDirScrollbarDim.h);
+    gantt.timeDirScrollbar.setViewportRange(gantt._viewStartTime, gantt._viewEndTime);
   }
 
-  if (gantt.yScrollbar)
+  if (gantt.contentDirScrollbar)
   {
     sbOptions = {};
-    sbOptions['color'] = gantt.yScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
-    sbOptions['backgroundColor'] = gantt.yScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
-    sbOptions['min'] = -(Math.max(gantt.getContentHeight(), vertScrollbarDim.h) - databodyStart);
+    sbOptions['color'] = gantt.contentDirScrollbarStyles.getStyle(dvt.CSSStyle.COLOR);
+    sbOptions['backgroundColor'] = gantt.contentDirScrollbarStyles.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+    sbOptions['min'] = -(Math.max(gantt.getContentHeight(), contentDirScrollbarDim.h) - databodyStart);
     sbOptions['max'] = databodyStart;
     sbOptions['isHorizontal'] = false;
     sbOptions['isReversed'] = true;
-    gantt.yScrollbar.setTranslateY(databodyStart + gantt.getStartYOffset());
-    gantt.yScrollbar.render(sbOptions, vertScrollbarDim.w, vertScrollbarDim.h);
+    gantt.contentDirScrollbar.setTranslateY(databodyStart + gantt.getStartYOffset());
+    gantt.contentDirScrollbar.render(sbOptions, contentDirScrollbarDim.w, contentDirScrollbarDim.h);
 
     var bottomOffset = 0;
     if (gantt.getAxisPosition() == 'bottom')
       bottomOffset = gantt.getAxesHeight();
-    gantt.yScrollbar.setViewportRange(databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset), databody.getTranslateY());
+    gantt.contentDirScrollbar.setViewportRange(databody.getTranslateY() - (gantt.getCanvasSize() - databodyStart - bottomOffset), databody.getTranslateY());
   }
 };
 
@@ -3394,6 +5048,100 @@ DvtGanttRenderer._renderVerticalGridline = function(gantt, container)
 };
 
 /**
+ * Renders referenceObjects
+ * @param {dvt.Gantt} gantt The Gantt component
+ * @param {dvt.Container} container The container to render into.
+ * @private
+ */
+DvtGanttRenderer._renderReferenceObjects = function(gantt, container)
+{
+  var context = gantt.getCtx();
+  var isRTL = dvt.Agent.isRightToLeft(context);
+
+  var minTime = gantt.getStartTime();
+  var maxTime = gantt.getEndTime();
+  var width = gantt.getContentLength();
+
+  var referenceObjects = gantt.getReferenceObjects();
+  var referenceObjectsContainer = gantt.getReferenceObjectsContainer();
+  var renderedReferenceObjects = gantt.getRenderedReferenceObjects();
+  if (referenceObjects)
+  {
+    var newReferenceObjects = [];
+    var maxRefObjects = Math.min(1, referenceObjects.length); // For now, only render first referenceObject
+    if (referenceObjectsContainer == null)
+    {
+      referenceObjectsContainer = new dvt.Container(context);
+      container.addChild(referenceObjectsContainer);
+      gantt.setReferenceObjectsContainer(referenceObjectsContainer);
+
+      renderedReferenceObjects = [];
+    }
+
+    for (var i = 0; i < maxRefObjects; i++)
+    {
+      var referenceObject = referenceObjects[i];
+      if (referenceObject)
+      {
+        var value = referenceObject['value'];
+        if (value != null)
+        {
+          var pos = dvt.TimeAxis.getDatePosition(minTime, maxTime, value, width);
+          if (isRTL)
+            pos = width - pos;
+
+          // If old reference objects present in the DOM, reuse them:
+          var ref = renderedReferenceObjects.pop();
+          if (ref != null)
+          {
+            ref.setX1(pos);
+            ref.setY1(gantt.getDatabodyStart());
+            ref.setX2(pos);
+            ref.setY2(gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
+          }
+          else
+          {
+            ref = new dvt.Line(gantt.getCtx(), pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
+            ref.setPixelHinting(true);
+          }
+
+          if (ref.getParent() != referenceObjectsContainer)
+            referenceObjectsContainer.addChild(ref);
+          newReferenceObjects.push(ref);
+
+          var inlineStyle = referenceObject['svgStyle'];
+          if (inlineStyle)
+            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'style', inlineStyle);
+
+          var defaultStyleClass = gantt.GetStyleClass('referenceObject');
+          var styleClass = referenceObject['svgClassName'];
+          if (styleClass)
+            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'class', defaultStyleClass + ' ' + styleClass);
+          else
+            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'class', defaultStyleClass);
+        }
+      }
+    }
+
+    // Any remaining old reference objects are removed
+    for (var j = 0; j < renderedReferenceObjects.length; j++)
+    {
+      var uselessRef = renderedReferenceObjects[j];
+      uselessRef.getParent().removeChild(uselessRef);
+    }
+
+    gantt.setRenderedReferenceObjects(newReferenceObjects);
+  }
+  else
+  {
+    // clear any existing reference objects
+    if (referenceObjectsContainer)
+      referenceObjectsContainer.removeChildren();
+    gantt.setRenderedReferenceObjects([]);
+  }
+};
+
+/**
  * Render rows
  * @param {dvt.Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into
@@ -3679,6 +5427,95 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
 
   return newRowNodes;
 };
+
+
+/**
+ * Render dependency lines
+ * @param {dvt.Gantt} gantt The gantt component
+ * @param {dvt.Container=} container the parent container for the dependency lines
+ * @private
+ */
+DvtGanttRenderer._renderDependencies = function(gantt, container)
+{
+  // remove all existing dependency lines regardless whether it was visible/hidden
+  var deplines = gantt.getDependencyLines();
+  // container set to null for resize/zoom level cases in which we don't need to remove the lines
+  if (deplines != null && container != null)
+  {
+    deplines.removeChildren();
+  }
+
+  var options = gantt.getOptions();
+  var dependencies = options['dependencies'];
+
+  if (dependencies == null || dependencies.length == 0)
+    return;
+
+  if (deplines == null)
+  {
+    deplines = new dvt.Container(gantt.getCtx());
+    deplines.setTranslateY(gantt.getDatabodyStart());
+
+    container.addChild(deplines);
+    gantt.setDependencyLines(deplines);
+    gantt.setDefaultMarkerId(DvtGanttRenderer._createDefaultMarker(gantt));
+  }
+
+  // need to update clippath if canvas size updated
+  var cp = new dvt.ClipPath();
+  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt._canvasSize);
+  deplines.setClipPath(cp);
+
+  // check if it's just updating dependency lines vs re-rendering
+  var numChildren = deplines.getNumChildren();
+  if (numChildren > 0)
+  {
+    for (var i = 0; i < numChildren; i++)
+    {
+      var dependencyNode = deplines.getChildAt(i);
+      dependencyNode.render(deplines);
+    }
+  }
+  else
+  {
+    for (i = 0; i < dependencies.length; i++)
+    {
+      dependencyNode = new DvtGanttDependencyNode(gantt, dependencies[i]);
+      dependencyNode.render(deplines);
+    }
+  }
+};
+
+/**
+ * Create marker element under def
+ * @param {DvtGantt} gantt
+ * @return {string} the id of the marker element
+ * @private
+ */
+DvtGanttRenderer._createDefaultMarker = function(gantt)
+{
+  var context = gantt.getCtx();
+  var id = dvt.SvgShapeUtils.getUniqueId('mrk');
+  var elem = dvt.SvgShapeUtils.createElement('marker', id);
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'class', gantt.GetStyleClass('dependencyLineConnector'));
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerUnits', 'userSpaceOnUse');
+
+  var path = dvt.SvgShapeUtils.createElement('path');
+
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'viewBox', '0 0 6 8');
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'refX', '6');
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'refY', '4');
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerWidth', '6');
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'markerHeight', '8');
+  dvt.ToolkitUtils.setAttrNullNS(elem, 'orient', 'auto');
+  dvt.ToolkitUtils.setAttrNullNS(path, 'd', 'M0,0L6,4,0,8V0Z');
+
+  elem.appendChild(path);
+
+  context.appendDefs(elem);
+
+  return id;
+};
 /**
  * Class representing a Gantt row axis
  * @param {dvt.Gantt} gantt the Gantt component
@@ -3760,7 +5597,7 @@ DvtGanttRowAxis.prototype._generateRowLabels = function()
     dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'class', this._gantt.GetStyleClass('rowLabel'));
 
     // create dvt.CSSStyle from from style sheet
-    var labelCSSStyle = new dvt.CSSStyle(DvtGanttStyleUtils.getRowLabelStyle(this._gantt.getOptions()));
+    var labelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(this._gantt.getOptions());
 
     // sets the style if specified in options
     var labelStyle = row['labelStyle'];
@@ -3954,6 +5791,24 @@ DvtGanttRowNode.prototype.Init = function(gantt, props, index, top)
   this._rowHeight = 0;
   this._assignableTaskNode = [];
   this._animationState = 'new';
+};
+
+/**
+ * Gets the gantt.
+ * @return {dvt.Gantt} the gantt.
+ */
+DvtGanttRowNode.prototype.getGantt = function()
+{
+  return this._gantt;
+};
+
+/**
+ * Gets the node properties/data.
+ * @return {object} The properties/data for the node.
+ */
+DvtGanttRowNode.prototype.getProps = function()
+{
+  return this._props;
 };
 
 /**
@@ -4554,6 +6409,15 @@ DvtGanttTaskNode.prototype.resetState = function()
 };
 
 /**
+ * Gets the node properties/data.
+ * @return {object} The properties/data for the node.
+ */
+DvtGanttTaskNode.prototype.getProps = function()
+{
+  return this._props;
+};
+
+/**
  * Sets the properties for the node.
  * @param {object} props The properties.
  */
@@ -4614,6 +6478,15 @@ DvtGanttTaskNode.prototype.getStartTime = function()
 DvtGanttTaskNode.prototype.getEndTime = function()
 {
   return this._props['end'];
+};
+
+/**
+ * Retrieve the shortDesc of the task
+ * @return {string} the shortDesc of the task
+ */
+DvtGanttTaskNode.prototype.getShortDesc = function()
+{
+  return this._props['shortDesc'];
 };
 
 /**
@@ -4716,6 +6589,46 @@ DvtGanttTaskNode.prototype.getWidth = function()
 };
 
 /**
+ * Gets the calculated translateX of the task
+ * This value is derived from data, and is animation independent
+ * @return {number} the calculated translateX of the task
+ */
+DvtGanttTaskNode.prototype.getCalculatedTranslateX = function()
+{
+  return this._translateX;
+};
+
+/**
+ * Sets the calculated translateX of the task
+ * The value should be derived from data, and is animation independent
+ * @param {number} x the calculated translateX of the task
+ */
+DvtGanttTaskNode.prototype.setCalculatedTranslateX = function(x)
+{
+  this._translateX = x;
+};
+
+/**
+ * Gets the calculated translateY of the task
+ * This value is derived from data, and is animation independent
+ * @return {number} the calculated translateY of the task
+ */
+DvtGanttTaskNode.prototype.getCalculatedTranslateY = function()
+{
+  return this._translateY;
+};
+
+/**
+ * Sets the calculated translateY of the task
+ * The value should be derived from data, and is animation independent
+ * @param {number} y the calculated translateY of the task
+ */
+DvtGanttTaskNode.prototype.setCalculatedTranslateY = function(y)
+{
+  this._translateY = y;
+};
+
+/**
  * Gets the top of the task
  * @return {number} the top of the task
  */
@@ -4778,8 +6691,8 @@ DvtGanttTaskNode.prototype.setBarWidth = function(width)
   this._bar.setWidth(width);
   if (this._select)
     this._select.setWidth(width + DvtGanttTaskNode.EFFECT_MARGIN * 2);
-  if (this._hover)
-    this._hover.setWidth(width + DvtGanttTaskNode.EFFECT_MARGIN * 2);
+  if (this._ring)
+    this._ring.setWidth(width + DvtGanttTaskNode.EFFECT_MARGIN * 2);
 };
 
 /**
@@ -4791,8 +6704,8 @@ DvtGanttTaskNode.prototype.setBarHeight = function(height)
   this._bar.setHeight(height);
   if (this._select)
     this._select.setHeight(height + DvtGanttTaskNode.EFFECT_MARGIN * 2);
-  if (this._hover)
-    this._hover.setHeight(height + DvtGanttTaskNode.EFFECT_MARGIN * 2);
+  if (this._ring)
+    this._ring.setHeight(height + DvtGanttTaskNode.EFFECT_MARGIN * 2);
 };
 
 /**
@@ -4881,9 +6794,13 @@ DvtGanttTaskNode.prototype.render = function(container, previousAdjacentTask)
   if (this.getParent() != container)
     container.addChild(this);
 
+  // clear predecessors and successors info
+  this._predecessors = null;
+  this._successors = null;
+
   this.setAriaRole('img');
   if (dvt.TimeAxis.supportsTouch())
-    this._updateAriaLabel(this.getRow().getIndex());
+    this.refreshAriaLabel();
 
   if (this._gantt.getAnimationMode() === 'dataChange')
   {
@@ -5206,6 +7123,9 @@ DvtGanttTaskNode._renderBar = function(gantt, task)
     task.setTranslateX(startPos);
     task.setTranslateY(row.getTop() + y);
   }
+
+  task.setCalculatedTranslateX(startPos);
+  task.setCalculatedTranslateY(row.getTop() + y);
 };
 
 /**
@@ -5221,7 +7141,7 @@ DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
   var labelText = task.getLabelText();
   var pos = task.getLabelPosition();
   var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
-  if (label != null)
+  if (label != null && pos !== 'none')
   {
     if (labelText == null)
     {
@@ -5241,7 +7161,7 @@ DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
     task.setLabelText(labelText);
 
     // create dvt.CSSStyle from from style sheet
-    var labelCSSStyle = new dvt.CSSStyle(DvtGanttStyleUtils.getTaskLabelStyle(gantt.getOptions()));
+    var labelCSSStyle = DvtGanttStyleUtils.getTaskLabelStyle(gantt.getOptions());
 
     // sets the style if specified in options
     var labelStyle = task.getLabelStyle();
@@ -5339,7 +7259,7 @@ DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
       labelText.setX(x);
     }
   }
-  else // if label not specified, don't render anything. If something there before, remove it.
+  else // if label not specified or labelPosition == 'none', don't render anything. If something there before, remove it.
   {
     if (labelText != null)
       task.removeChild(labelText);
@@ -5471,26 +7391,6 @@ DvtGanttTaskNode._getFillColor = function(gantt, bar)
 //---------------------------------------------------------------------//
 // Selection Support: DvtSelectable impl                               //
 //---------------------------------------------------------------------//
-
-/**
- * Gets the date string
- * @param {Date|string|number} time
- * @return {string} the date string
- */
-DvtGanttTaskNode.prototype.getDateString = function(time)
-{
-  if (time == null)
-    return '';
-
-  var date = new Date(time);
-  var scale = this._gantt.getMinorAxis().getScale();
-  // we only wants to include hours/minutes/second info if minor scale is less than days
-  if (scale == 'hours' || scale == 'minutes' || scale == 'seconds')
-    return date.toLocaleString();
-  else
-    return date.toLocaleDateString();
-};
-
 /**
  * Gets the duration string
  * @param {number} startTime
@@ -5518,64 +7418,52 @@ DvtGanttTaskNode.prototype.getDuration = function(startTime, endTime)
 
 /**
  * Gets the aria label
- * @param {number} rowIndex
  * @return {string} the aria label string.
  */
-DvtGanttTaskNode.prototype.getAriaLabel = function(rowIndex) 
+DvtGanttTaskNode.prototype.getAriaLabel = function() 
 {
   var states = [];
   var options = this._gantt.getOptions();
   if (this.isSelectable())
     states.push(dvt.Bundle.getTranslation(options, this.isSelected() ? 'stateSelected' : 'stateUnselected', dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
 
-  var start = this.getStartTime();
-  var end = this.getEndTime();
-  if (start == null || end == null || start == end)
-  {
-    var time = this.getDateString((start != null) ? start : end);
-    var taskDesc = dvt.Bundle.getTranslation(options, 'accessibleMilestoneInfo', dvt.Bundle.UTIL_PREFIX, 'MILESTONE_INFO', [time]);
-  }
-  else
-  {
-    var startTime = this.getDateString(start);
-    var endTime = this.getDateString(end);
-    var duration = this.getDuration(start, end);
-    taskDesc = dvt.Bundle.getTranslation(options, 'accessibleTaskInfo', dvt.Bundle.UTIL_PREFIX, 'TASK_INFO', [startTime, endTime, duration]);
-  }
+  var shortDesc = DvtGanttTooltipUtils.getDatatip(this, false, true);
 
-  var label = this.getLabel();
-  if (label != null)
-    taskDesc = label + ', ' + taskDesc;
-
-  // include row index if current row has changed
-  var rowId = this.getRow().getId();
-  var currentRowId = this._gantt.getCurrentRow();
-  if (currentRowId != rowId)
+  // include hint of whether there are predecessors or successors
+  if (this._predecessors != null || this._successors != null)
   {
-    if (rowIndex == null)
+    var depDesc = '';
+    if (this._predecessors != null && this._predecessors.length > 0)
     {
-      var rowElem = this.getRow().getElem();
-      var childNodes = rowElem.parentNode.childNodes;
-      for (var i = 0; i < childNodes.length; i++)
+      depDesc = dvt.Bundle.getTranslation(options, 'accessiblePredecessorInfo', dvt.Bundle.UTIL_PREFIX, 'PREDECESSOR_INFO', [this._predecessors.length]);
+
+      // for VoiceOver/Talkback we'll need to include the full detail of the dependency in the task since we can't
+      // navigate to the dependency line directly
+      if (dvt.TimeAxis.supportsTouch())
       {
-        if (childNodes[i] == rowElem)
-        {
-          rowIndex = i;
-          break;
-        }
+        for (var i = 0; i < this._predecessors.length; i++)
+          depDesc = depDesc + ', ' + this._predecessors[i].getAriaLabel();
       }
     }
-    var rowDesc = dvt.Bundle.getTranslation(options, 'accessibleRowInfo', dvt.Bundle.UTIL_PREFIX, 'ROW_INFO', [rowIndex + 1]);
-    if (this._gantt.isRowAxisEnabled())
+
+    if (this._successors != null && this._successors.length > 0)
     {
-      var rowLabel = this.getRow().getRowLabelText().getTextString();
-      if (rowLabel != null)
-        rowDesc = rowDesc + ', ' + rowLabel;
+      if (depDesc.length > 0)
+        depDesc = depDesc + ', ';
+      depDesc = depDesc + dvt.Bundle.getTranslation(options, 'accessibleSuccessorInfo', dvt.Bundle.UTIL_PREFIX, 'SUCCESSOR_INFO', [this._successors.length]);
+
+      if (dvt.TimeAxis.supportsTouch())
+      {
+        for (i = 0; i < this._successors.length; i++)
+          depDesc = depDesc + ', ' + this._successors[i].getAriaLabel();
+      }
     }
-    taskDesc = rowDesc + ', ' + taskDesc;
+
+    if (depDesc.length > 0)
+      shortDesc = shortDesc + ', ' + depDesc;
   }
 
-  var ariaLabel = dvt.Displayable.generateAriaLabel(taskDesc, states);
+  var ariaLabel = dvt.Displayable.generateAriaLabel(shortDesc, states);
   var currentAriaLabel = this.getAriaProperty('label');
   // coming from setActiveElement() and nothing changed, must have been updated through selection, skipped
   if (currentAriaLabel != null && currentAriaLabel.indexOf(ariaLabel) > -1)
@@ -5585,15 +7473,63 @@ DvtGanttTaskNode.prototype.getAriaLabel = function(rowIndex)
 };
 
 /**
+ * Refresh the aria-label with the current row index info
+ * Called by DvtGanttTaskDependencyNode
+ */
+DvtGanttTaskNode.prototype.refreshAriaLabel = function()
+{
+  this._updateAriaLabel();
+};
+
+/**
  * Updates the aria-label as needed. On desktop, we can defer the aria creation, and the aria-label will be updated
  * when the activeElement is set.
- * @param {number} rowIndex
  * @private
  */
-DvtGanttTaskNode.prototype._updateAriaLabel = function(rowIndex) 
+DvtGanttTaskNode.prototype._updateAriaLabel = function() 
 {
-  this.setAriaProperty('label', this.getAriaLabel(rowIndex));
+  this.setAriaProperty('label', this.getAriaLabel());
   this.applyAriaProperties();
+};
+
+/**
+ * Adds a dependency line object that connects to its predecessor
+ * @param {DvtGanttDependencyNode} predecessor
+ */
+DvtGanttTaskNode.prototype.addPredecessorDependency = function(predecessor)
+{
+  if (this._predecessors == null)
+    this._predecessors = [];
+  this._predecessors.push(predecessor);
+};
+
+/**
+ * Gets a list of dependency line objects that connects to its predecessor
+ * @return {DvtGanttDependencyNode[]} an array of dependency nodes
+ */
+DvtGanttTaskNode.prototype.getPredecessorDependencies = function()
+{
+  return this._predecessors;
+};
+
+/**
+ * Adds a dependency line object that connects to its successor
+ * @param {DvtGanttDependencyNode} successor
+ */
+DvtGanttTaskNode.prototype.addSuccessorDependency = function(successor)
+{
+  if (this._successors == null)
+    this._successors = [];
+  this._successors.push(successor);
+};
+
+/**
+ * Gets a list of dependency line objects that connects to its successor
+ * @return {DvtGanttDependencyNode[]} an array of dependency nodes
+ */
+DvtGanttTaskNode.prototype.getSuccessorDependencies = function()
+{
+  return this._successors;
 };
 
 /**
@@ -5761,6 +7697,22 @@ DvtGanttTaskNode.prototype.brighten = function()
     this._select.setAlpha(1);
 };
 //---------------------------------------------------------------------//
+// Tooltip Support: DvtTooltipSource impl                              //
+//---------------------------------------------------------------------//
+/**
+ * @override
+ */
+DvtGanttTaskNode.prototype.getDatatip = function() {
+  return DvtGanttTooltipUtils.getDatatip(this, true);
+};
+
+/**
+ * @override
+ */
+DvtGanttTaskNode.prototype.getDatatipColor = function() {
+  return DvtGanttTooltipUtils.getDatatipColor(this);
+};
+//---------------------------------------------------------------------//
 // Keyboard Support: DvtKeyboardNavigable impl                        //
 //---------------------------------------------------------------------//
 
@@ -5769,13 +7721,32 @@ DvtGanttTaskNode.prototype.brighten = function()
  */
 DvtGanttTaskNode.prototype.getNextNavigable = function(event) 
 {
+  var next = null;
   var keyboardHandler = this._gantt.getEventManager().getKeyboardHandler();
   if (event.type == dvt.MouseEvent.CLICK || keyboardHandler.isMultiSelectEvent(event))
-    return this;
+    next = this;
+  else if ((event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET || dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) && event.altKey)
+  {
+    // get first navigable dependency line if exists
+    var keyboardHandler = this._gantt.getEventManager().getKeyboardHandler();
+    if (keyboardHandler && keyboardHandler.getFirstNavigableDependencyLine)
+    {
+      if (dvt.Agent.isRightToLeft(this.getGantt().getCtx()))
+        var type = event.keyCode == dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET ? 'predecessor' : 'successor';
+      else
+        type = event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET ? 'predecessor' : 'successor';
+      var dependencyLines = this._gantt.getNavigableDependencyLinesForTask(this, type);
+      next = keyboardHandler.getFirstNavigableDependencyLine(this, event, dependencyLines);
+    }
+    if (next)
+      next.setKeyboardFocusTask(this);
+    else
+      next = this;
+  }
   else if (keyboardHandler.isNavigationEvent(event))
-    return DvtGanttKeyboardHandler.getNextNavigable(this._gantt, this, event);
-  else
-    return null;
+    next = DvtGanttKeyboardHandler.getNextNavigable(this._gantt, this, event);
+
+  return next;
 };
 
 /**

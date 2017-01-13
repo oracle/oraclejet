@@ -1,6 +1,5 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../../utilities/oj.utilities";
-
 
 // ----- start dependencies ---------
 
@@ -9,6 +8,7 @@
   $includeIconClasses: true !global;
   $includeComponentClasses: true !global;
   $includeResizableClasses: true !global;
+  $includeButtonClasses: true !global;
 }
 
 // import dependencies
@@ -16,6 +16,7 @@
 @import "oj.alta.windows.icons";
 @import "oj.alta.windows.component"; // overlay class in this file
 @import "oj.alta.windows.resizable"; 
+@import "oj.alta.windows.button"; 
 
 // ----- end dependencies ---------
 
@@ -25,10 +26,5 @@
 
 @if $includeDialogClasses != false {
   @include module-include-once("alta.windows.dialog") {
-    
-    .oj-dialog-close-icon { 
-        color: $buttonBgColor; 
-     }       
-
   }
 }

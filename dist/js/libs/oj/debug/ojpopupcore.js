@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -699,11 +699,11 @@ oj.PopupServiceImpl.prototype.open = function (options)
 
   /** @type {!jQuery} */
   var popup = options[oj.PopupService.OPTION.POPUP];
-  oj.Assert.assertPrototype(popup, jQuery);
+  oj.Assert.assertPrototype(popup, $);
 
   /** @type {jQuery} */
   var launcher = options[oj.PopupService.OPTION.LAUNCHER];
-  oj.Assert.assertPrototype(launcher, jQuery);
+  oj.Assert.assertPrototype(launcher, $);
 
   /** @type {Object} */
   var position = options[oj.PopupService.OPTION.POSITION];
@@ -757,7 +757,7 @@ oj.PopupServiceImpl.prototype.close = function (options)
 
   /** @type {!jQuery} */
   var popup = options[oj.PopupService.OPTION.POPUP];
-  oj.Assert.assertPrototype(popup, jQuery);
+  oj.Assert.assertPrototype(popup, $);
 
   oj.ZOrderUtils.removeFromAncestorLayer(popup);
   popup.hide();
@@ -787,11 +787,11 @@ oj.PopupServiceImpl.prototype.changeOptions = function (options)
 
   /** @type {!jQuery} */
   var popup = options[oj.PopupService.OPTION.POPUP];
-  oj.Assert.assertPrototype(popup, jQuery);
+  oj.Assert.assertPrototype(popup, $);
 
   /** @type {!jQuery} */
   var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
-  oj.Assert.assertPrototype(layer, jQuery);
+  oj.Assert.assertPrototype(layer, $);
 
   /** @type Object.<oj.PopupService.EVENT, function(...)> */
   var events = options[oj.PopupService.OPTION.EVENTS];
@@ -1738,8 +1738,8 @@ oj.ZOrderUtils._openPopupsCallback = function (layer, context)
  */
 oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
 {
-  oj.Assert.assertPrototype(el1, jQuery);
-  oj.Assert.assertPrototype(el2, jQuery);
+  oj.Assert.assertPrototype(el1, $);
+  oj.Assert.assertPrototype(el2, $);
 
   function describeStackingContext(element, allLevels) {
     var positions = ['absolute', 'relative', 'fixed'];
@@ -2134,7 +2134,7 @@ oj.PopupLiveRegion._POPUP_LIVE_REGION_ID = "__oj_popup_arialiveregion";
  */
 oj.PopupSkipLink = function(sibling, message, callback, id)
 {
-  oj.Assert.assertPrototype(sibling, jQuery);
+  oj.Assert.assertPrototype(sibling, $);
   oj.Assert.assertString(message);
   oj.Assert.assertFunction(callback);
   oj.Assert.assertStringOrNull(id);

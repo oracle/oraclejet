@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -49,6 +49,7 @@ oj.PagingTableDataSource = function(dataSource, options)
   this.dataSource = dataSource;
   this._startIndex = 0;
   this._endIndex = -1;
+  this._dataSourceWrappedEventHandlers = [];
   this.Init();
 };
 
@@ -353,10 +354,11 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
 {
   var self = this;
   var dataSource = (/** @type {{on: Function}} */ (this.dataSource));
-  
+
   if (eventType == oj.TableDataSource.EventType['SYNC'])
   {
     var ev = function(event){self._handleSyncEvent(event, eventHandler);}
+    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
     dataSource.on(eventType, ev);
   }
   else if (eventType == oj.TableDataSource.EventType['ADD'] ||
@@ -364,6 +366,7 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
            eventType == oj.TableDataSource.EventType['CHANGE'])
   {
     var ev = function(event){self._handleRowEvent(event, eventHandler);}
+    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
     dataSource.on(eventType, ev);
   }
   else if (eventType == oj.TableDataSource.EventType['REFRESH'] ||
@@ -373,6 +376,7 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
       self._startIndex = 0;
       eventHandler(event);
     }
+    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
     dataSource.on(eventType, ev);
   }
   else if (eventType == oj.PagingModel.EventType['PAGE'] ||
@@ -404,6 +408,22 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
     oj.PagingTableDataSource.superclass.off.call(this, eventType, eventHandler);
   }
   var dataSource = (/** @type {{off: Function}} */ (this.dataSource));
+  
+  if (this._dataSourceWrappedEventHandlers != null)
+  {
+    var dataSourceWrappedEventHandlersCount = this._dataSourceWrappedEventHandlers.length;
+    var i;
+    for (i = 0; i < dataSourceWrappedEventHandlersCount; i++) 
+    {
+      if (this._dataSourceWrappedEventHandlers[i]['eventType'] == eventType &&
+          this._dataSourceWrappedEventHandlers[i]['eventHandler'] == eventHandler)
+      {
+        dataSource.off(eventType, this._dataSourceWrappedEventHandlers[i]['wrappedEventHandler']);
+        this._dataSourceWrappedEventHandlers.splice(i, 1);
+        break;
+      }
+    }
+  }
   dataSource.off(eventType, eventHandler);
 };
 

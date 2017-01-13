@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -254,7 +254,9 @@ oj.DomScroller.prototype._fetchNext = function(options)
     this._currentStartIndex = this._currentStartIndex + pageSize;
   }
     
-  if (this._data.totalSize() == -1 || this._data.totalSize() > this._currentStartIndex)
+  if (this._data.totalSize() == -1 || 
+      !this._isTotalSizeConfidenceActual() ||
+      (this._isTotalSizeConfidenceActual() && this._data.totalSize() > this._currentStartIndex))
   {
     var self = this;
     return new Promise(function(resolve, reject)
@@ -313,6 +315,23 @@ oj.DomScroller.prototype._handleDataRowEventFunc = function(eventType)
       }
     }
   };
+};
+
+/**
+ * Check if the totalSize confidence is "actual"
+ * @return {boolean} true or false
+ * @private
+ */
+oj.DomScroller.prototype._isTotalSizeConfidenceActual = function()
+{
+  var data = this._data;
+
+  if (data != null && data.totalSizeConfidence() == "actual")
+  {
+    return true;
+  }
+
+  return false;
 };
 
 /**

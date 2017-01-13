@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../../utilities/oj.utilities";
 
 
@@ -9,6 +9,7 @@
   $includeIconClasses: true !global;
   $includeComponentClasses: true !global;
   $includeResizableClasses: true !global;
+  $includeButtonClasses: true !global;
 }
 
 // import dependencies
@@ -16,6 +17,7 @@
 @import "oj.alta.android.icons";
 @import "oj.alta.android.component"; // overlay class in this file
 @import "oj.alta.android.resizable"; 
+@import "oj.alta.android.button";
 
 // ----- end dependencies ---------
 
@@ -25,10 +27,6 @@
 
 @if $includeDialogClasses != false {
   @include module-include-once("alta.android.dialog") {
-    
-    .oj-dialog-close-icon { 
-        color: $buttonBgColor; 
-     }       
 
   }
 }

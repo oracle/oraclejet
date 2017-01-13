@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -65,27 +65,16 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
- * <table class="keyboard-table">
- *   <thead>
- *     <tr>
- *       <th>Target</th>
- *       <th>Gesture</th>
- *       <th>Action</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>Offcanvas wrapper element</td>
- *       <td><kbd>Swipe</kbd></td>
- *       <td>Reveals the offcanvas element.  Depending on the distance relative to the target is swiped, the offcanvas will either be closed (swipe distance too short), opened, or the default action is performed (swipe distance passed the specified threshold).</td>
- *     </tr>
- *     <tr>
- *       <td>Offcanvas wrapper element</td>
- *       <td><kbd>Pan</kbd></td>
- *       <td>Reveals the offcanvas element.  If a default action is specified, the default action will get the entire space of the offcanvas after the user panned past a specified distance threshold.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="accessibility-section">
+ *   Accessibility
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
+ * </h3>
+ *
+ * <p>Application must ensure that the context menu is available and setup with the
+ * equivalent menu items so that keyboard-only users can perform all the swipe actions 
+ * just by using the keyboard.  
  */
 oj.SwipeToRevealUtils = {};
 
@@ -257,4 +246,31 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function(elem)
 
     oj.OffcanvasUtils.tearDownPanToReveal(offcanvas);
 };
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Offcanvas wrapper element</td>
+ *       <td><kbd>Swipe</kbd></td>
+ *       <td>Reveals the offcanvas element.  Depending on the distance relative to the target is swiped, the offcanvas will either be closed (swipe distance too short), opened, or the default action is performed (swipe distance passed the specified threshold).</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Offcanvas wrapper element</td>
+ *       <td><kbd>Pan</kbd></td>
+ *       <td>Reveals the offcanvas element.  If a default action is specified, the default action will get the entire space of the offcanvas after the user panned past a specified distance threshold.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.SwipeToRevealUtils
+ */
 });

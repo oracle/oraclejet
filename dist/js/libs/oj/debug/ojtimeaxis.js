@@ -1,15 +1,10 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis'], function (oj, $, comp, base, dvt)
 {
-/**
- * Copyright (c) 2016, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
 /**
  * @ojcomponent oj.ojTimeAxis
  * @augments oj.dvtBaseComponent
@@ -93,6 +88,15 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
   },
 
   //** @inheritdoc */
+  _GetChildStyleClasses: function()
+  {
+    var styleClasses = this._super();
+    styleClasses['oj-timeaxis-label'] = {'path': 'labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
+
+    return styleClasses;
+  },
+
+  //** @inheritdoc */
   _GetEventTypes : function() {
     return ['optionChange'];
   },
@@ -118,7 +122,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
     var resources = this.options['_resources'];
 
     // Create default converters
-    var converterFactory = oj.Validation.converterFactory("datetime");
+    var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
     var secondsConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'});
     var minutesConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit'});
     var hoursConverter = converterFactory.createConverter({'hour': 'numeric'});
@@ -150,6 +154,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
       'years': yearsConverterVert
     };
 
+    resources['converterFactory'] = converterFactory;
     resources['converter'] = converter;
     resources['converterVert'] = converterVert;
 
@@ -175,13 +180,13 @@ var ojTimeAxisMeta = {
       "type": "object"
     },
     "end": {
-      "type": "string|number"
+      "type": "number"
     },
     "scale": {
       "type": "string"
     },
     "start": {
-      "type": "string|number"
+      "type": "number"
     }
   },
   "methods": {},

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -332,14 +332,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     styleClasses['oj-legend'] = {'path' : 'textStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-legend-title'] = {'path' : 'titleStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-legend-section-title'] = {'path' : '_sectionTitleStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-
-    styleClasses['oj-legend-section-close-icon'] = {'path': '_resources/closedEnabled', 'property': 'CSS_URL'};
-    styleClasses['oj-legend-section-close-icon oj-hover'] = {'path': '_resources/closedOver', 'property': 'CSS_URL'};
-    styleClasses['oj-legend-section-close-icon oj-active'] = {'path': '_resources/closedDown', 'property': 'CSS_URL'};
-
-    styleClasses['oj-legend-section-open-icon'] = {'path': '_resources/openEnabled', 'property': 'CSS_URL'};
-    styleClasses['oj-legend-section-open-icon oj-hover'] = {'path': '_resources/openOver', 'property': 'CSS_URL'};
-    styleClasses['oj-legend-section-open-icon oj-active'] = {'path': '_resources/openDown', 'property': 'CSS_URL'};
     return styleClasses;
   },
 
@@ -391,6 +383,14 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     // Add images
     // TODO these should be defined in the skin instead
     resources['overviewGrippy'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
+
+    // Add images
+    resources['closedEnabled'] = 'oj-legend-section-close-icon';
+    resources['closedOver'] = 'oj-legend-section-close-icon oj-hover';
+    resources['closedDown'] = 'oj-legend-section-close-icon oj-active';
+    resources['openEnabled'] = 'oj-legend-section-open-icon';
+    resources['openOver'] = 'oj-legend-section-open-icon oj-hover';
+    resources['openDown'] = 'oj-legend-section-open-icon oj-active';
   },
 
   //** @inheritdoc */

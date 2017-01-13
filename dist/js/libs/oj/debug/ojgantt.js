@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -161,6 +161,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   {
     var map = new Object();
     map["databody"] = "oj-gantt-container";
+    map['dependencyLine'] = "oj-gantt-dependency-line";
+    map['dependencyLineConnector'] = "oj-gantt-dependency-line-connector";
     map["nodata"] = "oj-gantt-no-data-message";
     map["hgridline"] = "oj-gantt-horizontal-gridline";
     map["vgridline"] = "oj-gantt-vertical-gridline";
@@ -174,6 +176,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     map['rowLabel'] = "oj-gantt-row-label";
     map['task'] = "oj-gantt-task";
     map['taskLabel'] = "oj-gantt-task-label";
+    map['tooltipLabel'] = "oj-gantt-tooltip-label";
+    map['tooltipValue'] = "oj-gantt-tooltip-value";
+    map['tooltipTable'] = "oj-gantt-tooltip-content";
+    map['referenceObject'] = "oj-gantt-reference-object";
     map['selected'] = "oj-selected";
     map['hover'] = "oj-hover";
     map['focus'] = "oj-focus";
@@ -201,6 +207,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     {
       // rowLabel[rowIndex]
       subId = 'rowLabel[' + locator['index'] + ']';
+    }
+    else if (subId == 'oj-gantt-tooltip') {
+      subId = 'tooltip';
     }
 
     // Return the converted result or the original subId if a supported locator wasn't recognized.
@@ -233,6 +242,9 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
 
       locator['subId'] = 'oj-gantt-row-label';
       locator['index'] = indexPath[0];
+    }
+    else if (subId == 'tooltip') {
+      locator['subId'] = 'oj-gantt-tooltip';
     }
 
     return locator;
@@ -288,6 +300,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
       {'path': '_resources/zoomOut_d_bc', 'property': 'border-color'}
     ];
 
+    // Axes labels
+    styleClasses['oj-gantt-major-axis-label'] = {'path': '_resources/majorAxisLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-gantt-minor-axis-label'] = {'path': '_resources/minorAxisLabelFontProp', 'property': 'CSS_TEXT_PROPERTIES'};
+
     // chart border
     styleClasses['oj-gantt-container'] = {'path': '_resources/chartArea/strokeWidth', 'property': 'stroke-width'};
 
@@ -329,6 +345,10 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     this._super();
 
     var resources = this.options['_resources'];
+    var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+
+    resources['converterFactory'] = converterFactory;
+    
     // first day of week; locale specific
     resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
   },
@@ -365,6 +385,27 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['rows']};
+  },
+
+  /**
+   * {@ojinclude "name":"nodeContextDoc"}
+   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+   *
+   * @example {@ojinclude "name":"nodeContextExample"}
+   *
+   * @expose
+   * @instance
+   * @memberof oj.ojGantt
+   */
+  getContextByNode: function(node)
+  {
+    // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (context && context['subId'] !== 'oj-gantt-tooltip')
+        return context;
+
+      return null;
   }
 });
 
@@ -379,25 +420,28 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *   </thead>
  *   <tbody>
  *    <tr>
- *       <td rowspan="2">Task bar</td>
+ *       <td rowspan="3">Task bar</td>
  *       <td><kbd>Tap</kbd></td>
  *       <td>Select when <code class="prettyprint">selectionMode</code> is enabled.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>Tap and hold</kbd></td>
+ *       <td rowspan="2"><kbd>Press & Hold</kbd></td>
+ *       <td>Display tooltip.</td>
+ *     </tr>
+ *     <tr>
  *       <td>Display context menu on release.</td>
  *     </tr>
  *     <tr>
- *       <td rowspan="2">Chart Area</td>
+ *       <td rowspan="3">Chart Area</td>
  *       <td><kbd>Drag</kbd></td>
  *       <td>Paning: navigate forward and backward in time in horizontal/vertical orientation.</td>
  *     </tr>
  *     <tr>
- *       <td rowspan><kbd>Pinch-close</kbd></td>
+ *       <td><kbd>Pinch-close</kbd></td>
  *       <td>Zoom Out.</td>
  *     </tr>
  *     <tr>
- *       <td rowspan><kbd>Spread-open</kbd></td>
+ *       <td><kbd>Spread-open</kbd></td>
  *       <td>Zoom In.</td>
  *     </tr>
  *     <tr>
@@ -433,11 +477,11 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *       <td>Move focus to previous component.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>+</kbd></td>
+ *       <td><kbd>= or +</kbd></td>
  *       <td>Zoom in one level.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>-</kbd></td>
+ *       <td><kbd>- or _</kbd></td>
  *       <td>Zoom out one level.</td>
  *     </tr>
  *     <tr>
@@ -450,19 +494,25 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     </tr>
  *     <tr>
  *       <td><kbd>LeftArrow</kbd></td>
- *       <td>When focus is on a task bar, move focus and selection to the task bar on the left within the same row.  In LTR reading direction, if this is the first task within the row, then move focus and selection to the last task bar in the previous row. In RTL reading direction, if this is the last task within the row, then move focus and selection to the first task bar in the next row.</td>
+ *       <td>When focus is on a task bar, move focus and selection to the task bar on the left within the same row.  In LTR reading direction, if this is the first task within the row, then move focus and selection to the last task bar in the previous row. In RTL reading direction, if this is the last task within the row, then move focus and selection to the first task bar in the next row.
+ *           <br>When focus is on a dependency line, move focus to the predecessor task bar (RTL: successor task bar).</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>When focus is on a task bar, move focus and selection to the task bar on the right within the same row.  In LTR reading direction, if this is the last task within the row, then move focus and selection to the first task bar in the next row. In RTL reading direction, if this is the first task within the row, then move focus and selection to the last task bar in the previous row.</td>
+ *       <td>When focus is on a task bar, move focus and selection to the task bar on the right within the same row.  In LTR reading direction, if this is the last task within the row, then move focus and selection to the first task bar in the next row. In RTL reading direction, if this is the first task within the row, then move focus and selection to the last task bar in the previous row.
+ *           <br>When focus is on a dependency line, move focus to the successor task bar (RTL: predecessor task bar).</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
- *       <td>When focus is on a task bar, move focus and selection to first task bar in the previous row.</td>
+ *       <td>When focus is on a task bar, move focus and selection to first task bar in the previous row.
+ *           <br>When focus is on a dependency line, move focus to the previous dependency line with the same
+ *           predecessor/successor.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>DownArrow</kbd></td>
- *       <td>When focus is on a task bar, move focus and selection to first task bar in the next row.</td>
+ *       <td>When focus is on a task bar, move focus and selection to first task bar in the next row.
+ *           <br>When focus is on a dependency line, move focus to the next dependency line with the same
+ *           predecessor/successor.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl + Space</kbd></td>
@@ -475,6 +525,16 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     <tr>
  *       <td><kbd>Ctrl + &lt;task bar navigation shortcut&gt;</kbd></td>
  *       <td>Move focus to a task bar but do not select.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Alt + &lt;</kbd></td>
+ *       <td>Move focus from a task bar to an associated dependency line connecting to a predecessor task (RTL: successor task). Note that the dependency line must have been 
+ *        created referencing the task's ID in its predecessor/successorTask objects for an association to exist.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Alt + &gt;</kbd></td>
+ *       <td>Move focus from a task bar to an associated dependency line connecting to a successor task (RTL: predecessor task). Note that the dependency line must have been 
+ *        created referencing the task's ID in its predecessor/successorTask objects for an association to exist.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl + Mousewheel Up</kbd></td>
@@ -491,7 +551,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  */
 
 /**
- *<p>The application is responsible for setting the <code class="prettyprint">aria-label</code> attribute on the component element with meaningful descriptors. Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
+ *<p>The application is responsible for populating the <code class="prettyprint">aria-label</code> attribute on the component element, and the <code class="prettyprint">shortDesc</code> value in the component options object with meaningful descriptors when the component does not provide a default descriptor. Meaningful descriptors may include information on non-interactive elements such as reference objects to ensure its description is read out by screenreaders. Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
  *
  * @ojfragment a11yDoc
  * @memberof oj.ojGantt
@@ -524,6 +584,16 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * var nodes = $( ".selector" ).ojGantt( "getNodeBySubId", {'subId': 'oj-gantt-row-label', 'index': 0} );
  */
 
+ /**
+ * <p>Sub-ID for the the Gantt tooltip.</p>
+ *
+ * @ojsubid oj-gantt-tooltip
+ * @memberof oj.ojGantt
+ *
+ * @example <caption>Get the tooltip object of the gantt, if displayed:</caption>
+ * var nodes = $( ".selector" ).ojGantt( "getNodeBySubId", {'subId': 'oj-gantt-tooltip'} );
+ */
+
 // Node Context Objects ********************************************************
 
 /**
@@ -544,6 +614,31 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  * @ojnodecontext oj-gantt-row-label
  * @memberof oj.ojGantt
  */
+
+/**
+ * The knockout template used to render the content of the tooltip.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *   <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
+ *   <li>data: The data object of the hovered task.</li> 
+ *   <li>rowData: The data for the row the hovered task belongs to.</li>
+ *   <li>component: The widget constructor for the chart. The 'component' is bound to the associated jQuery element so that it can be called directly as a function. 
+ *   <li>color: The color of the hovered task.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name tooltip.template
+ * @memberof! oj.ojGantt
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
+ * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
+ * @ignore
+ */
 (function() {
 var ojGanttMeta = {
   "properties": {
@@ -556,8 +651,11 @@ var ojGanttMeta = {
     "axisPosition": {
       "type": "string"
     },
+    "dependencies": {
+      "type": "Array<object>"
+    },
     "end": {
-      "type": "string|number"
+      "type": "number"
     },
     "gridlines": {
       "type": "object"
@@ -566,6 +664,12 @@ var ojGanttMeta = {
       "type": "object"
     },
     "minorAxis": {
+      "type": "object"
+    },
+    "referenceObjects": {
+      "type": "Array<object>"
+    },
+    "rowAxis": {
       "type": "object"
     },
     "rows": {
@@ -578,16 +682,22 @@ var ojGanttMeta = {
       "type": "string"
     },
     "start": {
-      "type": "string|number"
+      "type": "number"
     },
     "taskDefaults": {
       "type": "object"
     },
+    "tooltip": {
+      "type": "object"
+    },
+    "valueFormats": {
+      "type": "Array<object>"
+    },
     "viewportEnd": {
-      "type": "string|number"
+      "type": "number"
     },
     "viewportStart": {
-      "type": "string|number"
+      "type": "number"
     }
   },
   "methods": {

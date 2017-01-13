@@ -787,7 +787,7 @@ DvtPictoChartItem.prototype.Init = function(picto, item) {
  */
 DvtPictoChartItem.prototype.getColSpan = function() {
   var colSpan = this._item['columnSpan'];
-  return (colSpan != null && colSpan >= 0) ? colSpan : 1;
+  return (colSpan != null && colSpan >= 0) ? Math.round(colSpan) : 1;
 };
 
 /**
@@ -796,7 +796,7 @@ DvtPictoChartItem.prototype.getColSpan = function() {
  */
 DvtPictoChartItem.prototype.getRowSpan = function() {
   var rowSpan = this._item['rowSpan'];
-  return (rowSpan != null && rowSpan >= 0) ? rowSpan : 1;
+  return (rowSpan != null && rowSpan >= 0) ? Math.round(rowSpan) : 1;
 };
 
 /**
@@ -1403,7 +1403,7 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
   picto.registerItems(info.items);
 
   var options = picto.getOptions();
-  var gapRatio = options['_gapRatio'];
+  var gapRatio = options['_gapRatio'] * info.minSpan;
   var isVert = DvtPictoChartRenderer.isVertical(picto);
   var isOriginBottom = DvtPictoChartRenderer.isOriginBottom(picto);
   var isOriginRight = DvtPictoChartRenderer.isOriginRight(picto);
@@ -1419,6 +1419,10 @@ DvtPictoChartRenderer.render = function(picto, container, availSpace, info) {
     var item = info.items[i];
     var colSpan = item.getColSpan();
     var rowSpan = item.getRowSpan();
+
+    if (colSpan <= 0 || rowSpan <= 0)
+      continue;
+
     var w = colSpan * info.colWidth;
     var h = rowSpan * info.rowHeight;
 
@@ -1546,6 +1550,7 @@ DvtPictoChartRenderer.getInfo = function(picto, width, height) {
   var numCells = 0;
   var maxColSpan = 1;
   var maxRowSpan = 1;
+  var minSpan = Infinity;
 
   for (var i = 0; i < itemObjs.length; i++) {
     if (itemObjs[i] == null)
@@ -1555,13 +1560,22 @@ DvtPictoChartRenderer.getInfo = function(picto, width, height) {
     if (categoryMap && dvt.ArrayUtils.hasAnyMapItem(categoryMap, item.getCategories()))
       continue;
 
-    // Compute the maximum colSpan and rowSpan
     var colSpan = item.getColSpan();
     var rowSpan = item.getRowSpan();
+    if (colSpan <= 0 || rowSpan <= 0)
+      continue;
+
+    // Compute the maximum colSpan and rowSpan
     if (colSpan > maxColSpan)
       maxColSpan = colSpan;
     if (rowSpan > maxRowSpan)
       maxRowSpan = rowSpan;
+
+    // Compute minimum span for gap computation
+    if (colSpan < minSpan)
+      minSpan = colSpan;
+    if (rowSpan < minSpan)
+      minSpan = rowSpan;
 
     numCells += colSpan * rowSpan * item.getCount();
     items.push(item);
@@ -1621,7 +1635,7 @@ DvtPictoChartRenderer.getInfo = function(picto, width, height) {
   if (colCount <= 0 || rowCount <= 0 || colWidth <= 0 || rowHeight <= 0)
     return {};
 
-  return {items: items, colCount: colCount, rowCount: rowCount, colWidth: colWidth, rowHeight: rowHeight};
+  return {items: items, colCount: colCount, rowCount: rowCount, colWidth: colWidth, rowHeight: rowHeight, minSpan: minSpan};
 };
 
 /**
