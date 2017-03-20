@@ -16,6 +16,10 @@
       }      
     }
 
+    oj-thematic-map {
+      display: block;
+    }
+
     .oj-thematicmap{
       @include oj-user-select-property(none);
       width:600px;

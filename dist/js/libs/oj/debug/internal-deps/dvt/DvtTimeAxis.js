@@ -284,7 +284,7 @@ dvt.TimeAxis.prototype.isVertical = function()
  */
 dvt.TimeAxis.prototype.render = function(options, width, height)
 {
-  if (options && !this.Options) // if initial render
+  if (options) // if initial render or rerender with new options
   {
     this.Width = width;
     this.Height = height;
@@ -292,6 +292,9 @@ dvt.TimeAxis.prototype.render = function(options, width, height)
     this.getPreferredLength(options, this._canvasLength);
   }
   this._handleResize(width, height); // else just resize already rendered axis
+
+  // Done rendering...fire the ready event.
+  this.RenderComplete();
 };
 
 /**
@@ -857,7 +860,7 @@ dvt.TimeAxis.prototype.formatDate = function(date, converter, converterType)
 
   if (converterType == 'axis')
   {
-    converter = converter || this._converter; // if no converter passed in, use try to use axis converter from options
+    converter = converter || this._converter; // if no converter passed in, try to use axis converter from options
     if (converter)
     {
       if (converter[scale])
@@ -865,7 +868,8 @@ dvt.TimeAxis.prototype.formatDate = function(date, converter, converterType)
       else if (converter['default'])
         converter = converter['default'];
     }
-    else if (this._defaultConverter && this._defaultConverter[scale])
+    // Use default scale converter (if available), if no converter available, or if the converter not usable for this scale.
+    if ((!converter || (!converter['format'] && !converter['getAsString'])) && this._defaultConverter && this._defaultConverter[scale])
       converter = this._defaultConverter[scale];
   }
   else // general formatting
@@ -888,7 +892,7 @@ dvt.TimeAxis.prototype.formatDate = function(date, converter, converterType)
         converter = converterFactory['createConverter'](factoryOptions);
       else
       {
-        // If no factory found for some reason, use native JS Date toLocaleDateSTring/toLocaleString() methods
+        // If no factory found for some reason (should never get here in JET), use native JS Date toLocaleDateSTring/toLocaleString() methods
         // See above Note for caveats:
         var localeStringMethod = 'toLocaleDateString';
         var options = {'year': 'numeric', 'month': 'short', 'day': 'numeric'}; // e.g. Jan 1, 2016
@@ -1530,6 +1534,7 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
 
   var labelClass = DvtTimeAxisStyleUtils.getAxisLabelClass(timeAxis.Options);
   var separatorClass = DvtTimeAxisStyleUtils.getAxisSeparatorClass(timeAxis.Options);
+  var maxLabelHeight = timeAxis.getContentSize();
 
   // the last date in dates is past the end time, and only used as the last 'next' date
   var dates = timeAxis._dates[timeAxis._zoomLevelOrder];
@@ -1556,11 +1561,11 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
     }
 
     if (timeAxis.isVertical())
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart, labelClass);
+      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], labelStart + ((axisEnd - labelStart) / 2), currentPos + ((nextPos - currentPos) / 2), axisEnd - labelStart, nextPos - currentPos, labelClass);
     else if (!isRTL)
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], currentPos + ((nextPos - currentPos) / 2), labelStart + ((axisEnd - labelStart) / 2), maxLength, labelClass);
+      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], currentPos + ((nextPos - currentPos) / 2), labelStart + ((axisEnd - labelStart) / 2), maxLength, maxLabelHeight, labelClass);
     else
-      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], length - (currentPos + ((nextPos - currentPos) / 2)), labelStart + ((axisEnd - labelStart) / 2), maxLength, labelClass);
+      DvtTimeAxisRenderer._addAxisLabel(block, labels[i], length - (currentPos + ((nextPos - currentPos) / 2)), labelStart + ((axisEnd - labelStart) / 2), maxLength, maxLabelHeight, labelClass);
   }
 };
 
@@ -1572,16 +1577,17 @@ DvtTimeAxisRenderer._renderAxisTicksLabels = function(timeAxis, startPos, endPos
  * @param {number} x The x coordinate of the label bounding box's reference point
  * @param {number} y The y coordinate of the label bounding box's reference point
  * @param {number} maxLength The maximum length of the label area
+ * @param {number} maxHeight The maximum height of the label area
  * @param {string=} labelClass The class to be applied on the text element
  * @private
  */
-DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, labelClass)
+DvtTimeAxisRenderer._addAxisLabel = function(container, label, x, y, maxLength, maxHeight, labelClass)
 {
   label.setX(x);
   label.setY(y);
   if (label.isTruncated())
     label.setTextString(label.getUntruncatedTextString());
-  dvt.TextUtils.fitText(label, maxLength, Infinity, container);
+  dvt.TextUtils.fitText(label, maxLength, maxHeight, container);
 
   // align text horizontally
   label.alignCenter();

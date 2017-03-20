@@ -121,9 +121,11 @@
        font-weight: $dataGridHeaderFontWeight;
        @include oj-ltr() {
          padding-left: $tableHeaderPadding;
+         padding-right: 0;
        }
        @include oj-rtl() {
          padding-right: $tableHeaderPadding;
+         padding-left: 0;
        }
        padding-top: $dataGridCellPadding;
        padding-bottom: $dataGridCellPadding;
@@ -194,7 +196,8 @@
     
     /* Styling for the column header element in focused state. */
     .oj-table-column-header-cell.oj-focus {
-       background-color: $dataGridHeaderBgColorFocus;
+       outline-offset: -1px;
+       @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
     
     /* Styling for the dragged column header element. */
@@ -424,6 +427,12 @@
        background-color: $dataGridCellBgColorHover;
     }
     
+    /* Styling for the data row elements in focus state. */
+    .oj-table-body-row.oj-focus:not(.oj-table-body-row-edit) {
+       outline-offset: -1px;
+       @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+    
     /* Styling for the data row drag indicator before a row. */
     .oj-table-body-row-drag-indicator-before {
       height: $dataGridRowHeight;
@@ -440,8 +449,8 @@
     .oj-table-body-row-touch-selection-affordance-top-icon, 
     .oj-table-body-row-touch-selection-affordance-bottom-icon {
       @include oj-border-radius(50%);
-      border: 2px solid $dataGridSelectionAffordanceBorder;
-      border: 2px solid rgba($dataGridSelectionAffordanceBorder, 0.8);
+      border: 2px solid $dataGridSelectionAffordanceBorderColor;
+      border: 2px solid rgba($dataGridSelectionAffordanceBorderColor, 0.8);
       box-sizing: border-box;		
       background-color: $iconColorHover;
       position: absolute;
@@ -500,7 +509,7 @@
     
     /* Edit row styling for data cell elements. */
     .oj-table-data-cell.oj-table-data-cell-edit {
-       outline: 1px dotted $dataGridEditableCellBorderColorFocus;
+       outline: 1px solid $dataGridEditableCellBorderColorFocus;
     }
     
     /* Styling on read only table cells, oj-readOnly must be applied by the application */
@@ -537,17 +546,6 @@
     /* Styling for the data cell elements in selected state when table not focused. */
     .oj-table-data-cell.oj-selected {
        background-color: $dataGridCellBgColorSelectedInactive;
-    }
-
-    /* Styling for the data cell elements in focused state. */
-    .oj-table-data-cell.oj-focus {
-       background-color: $dataGridCellBgColorFocus;
-    }
-
-    /* Styling for the data cell elements in focus state when table in high contrast mode. */
-    .oj-hicontrast .oj-table-data-cell.oj-focus {
-       outline-width: 2px;
-       outline-style: dotted;
     }
 
     /* Styling on form controls stamped inside a table */
@@ -684,8 +682,8 @@
       display: inline-block;
     }
 
-    /* Styling for the No Data message. */
-    .oj-table-no-data-message {
+    /* Styling for the body message. */
+    .oj-table-body-message {
       color: $textColor;
       padding: $dataGridCellPadding;
     } 

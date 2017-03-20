@@ -24,10 +24,14 @@
 
 
   @if ($generateChildFlex) {
+
+    .#{$selectorPrefix}-flex-items-0 > .oj-flex-item,
+    .#{$selectorPrefix}-flex-0 {
+      @include oj-flex-property(0);
+    }
+
     .#{$selectorPrefix}-flex-items-1 > .oj-flex-item,
     .#{$selectorPrefix}-flex-1 {
-      // make the columns even widths
-      // regardless of content by setting the flex property to 1
       @include oj-flex-property(1);
     }
 
@@ -36,6 +40,7 @@
       @include oj-flex-property(initial);
     }
   }
+
 
   @if ($generateOrdering)
   {

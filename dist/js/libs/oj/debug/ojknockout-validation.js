@@ -28,10 +28,12 @@ oj.ValueBinding = function(){};
 
 
 /** 
- * <p>When this attribute is bound to an observable, the framework pushes an object of type {@link oj.InvalidComponentTracker}
- * onto the observable. The object itself tracks the validity of a group of editable components.
+ * <p>When this attribute is bound to an observable, the framework pushes 
+ * an object of type {@link oj.InvalidComponentTracker} onto the observable. 
+ * The object itself tracks the validity of a group of editable components.
  * 
- * <p>When this attribute is present, the binding registers a listener for the <a href="#optionChange">optionChange</a>
+ * <p>When this attribute is present, the binding registers a listener 
+ * for the <a href="#optionChange">optionChange</a>
  * event. This event is fired by JET editable components whenever its validity changes (i.e. when 
  * <a href="#messagesShown">messagesShown</a> or <a href="#messagesHidden">messagesHidden</a> 
  * options change). When the event is fired, the listener determines the current validity of the 
@@ -47,7 +49,8 @@ oj.ValueBinding = function(){};
  * is not a component option.
  * </p>
  * 
- * @example <caption>Track validity of multiple components using a single observable bound to the <code class="prettyprint">invalidComponentTracker</code> attribute:</caption>
+ * @example <caption>Track validity of multiple components using a single observable 
+ * bound to the <code class="prettyprint">invalidComponentTracker</code> attribute:</caption>
  * &lt;input id="username" type="text" name="username" required 
  *   data-bind="ojComponent: {component: 'ojInputText', value: userName, 
  *                            invalidComponentTracker: tracker}">
@@ -66,6 +69,25 @@ oj.ValueBinding = function(){};
  *   
  *   self.userName = ko.observable();   
  *   self.password = ko.observable();
+ *   
+ *   self.focusOnFirstInvalid = function() 
+ *   {
+ *      var trackerObj = ko.utils.unwrapObservable(self.tracker);
+ *      if (trackerObj !== undefined)
+ *      {
+ *        // make sure the trackerObj is an oj.InvalidComponentTracker 
+ *        // before calling methods on it.
+ *        if (trackerObj instanceof oj.InvalidComponentTracker)
+ *        {
+*           // showMessages first
+*           // (this will show any hidden messages, if any)
+*           trackerObj.showMessages();
+*           // focusOnFirstInvalid will focus on the first component
+*           // that is invalid, if any.      
+*           trackerObj.focusOnFirstInvalid();
+*         }
+*       }
+*     }
  * }
  * &lt;/script>
  * 
@@ -87,7 +109,7 @@ oj.ValueBinding = function(){};
 
 oj.ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER = 'invalidComponentTracker';
 
-// An listener is added for this event to listen to changes to the 'messagesHidden' or 
+// A listener is added for this event to listen to changes to the 'messagesHidden' or 
 // 'messagesShown' options. The listener updates the InvalidComponentTracker.
 oj.ValueBinding._EVENT_OPTIONCHANGE = "ojoptionchange";
 
@@ -103,17 +125,18 @@ oj.ValueBinding._OPTION_READONLY = 'readOnly';
 // callback called when managed attribute is being updated
 oj.ValueBinding._update = function(name, value, element, component, valueAccessor)
 {
-  var options = valueAccessor.call(), updateProps = {},
-      ictObs = options[oj.ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER], 
-      icTracker;
-      
+  var options = valueAccessor.call();
+  var updateProps = {};
+  var ictObs = options[oj.ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER];
+  var icTracker;
+    
   if (name === oj.ValueBinding._OPTION_DISABLED || name === oj.ValueBinding._OPTION_READONLY)
   {
     icTracker = ictObs && ictObs.peek() || null; // don't add extra subscriptions
     // when either of these options are updated
     if (icTracker !== null && ko.isWriteableObservable(ictObs))
     {
-      if (icTracker._update.call(icTracker, component, name, value))
+      if (icTracker._update.call(icTracker, component, element, name, value))
       {
         // if _update mutates state
         ictObs.valueHasMutated();
@@ -144,7 +167,9 @@ oj.ValueBinding._init = function(name, value)
  */
 oj.ValueBinding._afterCreate = function(property, element, component, valueAccessor)
 {
-  var initProps = {}, optionsSet = valueAccessor.call(), isICTOptionSet;
+  var initProps = {};
+  var optionsSet = valueAccessor.call();
+  var isICTOptionSet;
 
   if (property ===  oj.ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER)
   {
@@ -169,8 +194,10 @@ oj.ValueBinding._afterCreate = function(property, element, component, valueAcces
  */
 oj.ValueBinding._beforeDestroy = function(property, element, component, valueAccessor)
 {
-  var jelem = $(element), options = valueAccessor.call(), icTracker,
-      ictObs = options[property];
+  var jelem = $(element);
+  var options = valueAccessor.call();
+  var icTracker;
+  var ictObs = options[property];
 
   if (property ===  oj.ValueBinding._ATTRIBUTE_INVALID_COMPONENT_TRACKER)
   {
@@ -201,17 +228,21 @@ oj.ValueBinding._beforeDestroy = function(property, element, component, valueAcc
  */
 oj.ValueBinding._updateInvalidComponentTracker = function(event)
 {
-  var ictObs = event.data.tracker, icTracker,
-      component = event.data.component, payload = arguments[1], option = payload['option'], 
-      msgs = payload['value'];
-  
+  var ictObs = event.data.tracker;
+  var icTracker;
+  var component = event.data.component;
+  var element = event.data.element;
+  var payload = arguments[1];
+  var option = payload['option']; 
+  var msgs = payload['value'];
+    
   if (option === oj.ValueBinding._OPTION_MESSAGES_SHOWN || 
       option === oj.ValueBinding._OPTION_MESSAGES_HIDDEN)
   {
     if (ictObs && ko.isWriteableObservable(ictObs))
     {
       icTracker = ictObs.peek();
-      if (icTracker && icTracker._update.call(icTracker, component, option, msgs))
+      if (icTracker && icTracker._update.call(icTracker, component, element, option, msgs))
       {
         // if _update mutates state
         ictObs.valueHasMutated();
@@ -232,8 +263,12 @@ oj.ValueBinding._updateInvalidComponentTracker = function(event)
  */
 oj.ValueBinding._registerInvalidComponentTrackerWriteback = function(property, options, element, component)
 {
-  var ictObs = options[property], messagesShown, messagesHidden, eventData,
-      icTracker, jElem = $(element);
+  var ictObs = options[property];
+  var messagesShown;
+  var messagesHidden;
+  var eventData;
+  var icTracker;
+  var jElem = $(element);
 
   // Create new intsance of InvalidComponentTracker if the observable is not set.
   if (ko.isObservable(ictObs))
@@ -255,21 +290,23 @@ oj.ValueBinding._registerInvalidComponentTrackerWriteback = function(property, o
 
   if (icTracker !== null)
   {
-    // update icTracker inital state using component's latest option values
+    // update icTracker initial state using component's latest option values
     if (ko.isWriteableObservable(ictObs))
     {
+      // EditableValue's messagesShown option is an Array of messages currently shown on component.
       messagesShown = component.call(component, "option", oj.ValueBinding._OPTION_MESSAGES_SHOWN);
+      // EditableValue's messagesHidden option is an Array of messages currently hidden on component
       messagesHidden = component.call(component, "option", oj.ValueBinding._OPTION_MESSAGES_HIDDEN);
 
-      icTracker._update.call(icTracker, component,
+      icTracker._update.call(icTracker, component, element,
               oj.ValueBinding._OPTION_MESSAGES_SHOWN, messagesShown);
-      icTracker._update.call(icTracker, component,
+      icTracker._update.call(icTracker, component, element,
               oj.ValueBinding._OPTION_MESSAGES_HIDDEN, messagesHidden);
       ictObs.valueHasMutated();
     }
 
     // register listener for optionChange event for future changes to messages* options
-    eventData = {tracker: ictObs, component: component};
+    eventData = {tracker: ictObs, component: component, element: element};
     jElem.on(oj.ValueBinding._EVENT_OPTIONCHANGE, eventData,
             oj.ValueBinding._updateInvalidComponentTracker);
   }
@@ -333,13 +370,32 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  * &lt;script>
  * function MyViewModel() { 
  *   var self = this;
- *   var tracker = ko.observable();
+ *   self.tracker = ko.observable();
  *   
  *   log = function ()
  *   {
  *     var trackerObj = ko.utils.unwrapObservable(self.tracker);
- *     console.log(trackerObj instanceof oj.InvalidComponentTracker); // true 
+ *     console.log(trackerObj instanceof oj.InvalidComponentTracker); // true, so safe to call InvalidComponentTracker methods and properties. 
  *   }
+ *   
+ *   self.focusOnFirstInvalid = function() 
+ *   {
+ *      var trackerObj = ko.utils.unwrapObservable(self.tracker);
+ *      if (trackerObj !== undefined)
+ *      {
+ *        // make sure the trackerObj is an oj.InvalidComponentTracker 
+ *        // before calling methods on it.
+ *        if (trackerObj instanceof oj.InvalidComponentTracker)
+ *        {
+*           // showMessages first
+*           // (this will show any hidden messages, if any)
+*           trackerObj.showMessages();
+*           // focusOnFirstInvalid will focus on the first component
+*           // that is invalid, if any.      
+*           trackerObj.focusOnFirstInvalid();
+*         }
+*       }
+*     }
  * }
  * &lt;/script>
  * Note: Make sure you have included the 'ojs/ojknockout-validation' dependency in your require list,
@@ -389,7 +445,7 @@ oj.Object.createSubclass(oj.InvalidComponentTracker, oj.Object, "oj.InvalidCompo
  * @default false 
  * @type {boolean}
  * @expose
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  */
 
 
@@ -405,7 +461,9 @@ oj.InvalidComponentTracker._OPTION_READONLY = 'readOnly';
 
 /**
  * Whether there is at least one component that is invalid with deferred messages, i.e., messages 
- * that are currently hidden.
+ * that are currently hidden. For example, when a component is 
+ * required, deferred validation is run when the component is created. 
+ * Any validation error raised is not shown to user right away, i.e., it is deferred.
  * 
  * @example <caption>Enable button using <code class="prettyprint">invalidHidden</code> property:</caption>
  * &lt;input id="username" type="text" required 
@@ -431,31 +489,38 @@ oj.InvalidComponentTracker._OPTION_READONLY = 'readOnly';
  * @default false 
  * @type {boolean}
  * @expose
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  */
 /**
  * Initializer
  * @protected
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  */
 oj.InvalidComponentTracker.prototype.Init = function()
 {
-  var self = this;
   oj.InvalidComponentTracker.superclass.Init.call(this);
 
   // INTERNAL PROPERTIES
-  // all tracked components
+  // Array of Objects containing component and its element 
+  // that are being tracked by invalidComponentTracker
+  // [{'component': component, 'element': element}]
   this._tracked = [];
 
   // tracks invalid components showing messages. indices correspond to this_tracked.
+  // e.g., [true, false, false, false, true]
   this._invalid = [];
 
-  // tracks invalid components hiding messages. Contains indices from tracked.
+  // tracks invalid components hiding messages. indices correspond to this_tracked.
+  // e.g., [false, true, false, false, false]
   this._invalidHidden = [];
 
   // PUBLIC PROPERTIES
+  // Whether there is at least one component 
+  // (tracked by this object) that is invalid and is currently showing messages.
   this['invalidShown'] = false;
+  // Whether there is at least one component that is invalid with deferred messages, 
+  // i.e., messages that are currently hidden.
   this['invalidHidden'] = false;
 };
 
@@ -471,12 +536,15 @@ oj.InvalidComponentTracker.prototype.Init = function()
  * unable to locate a component to focus on or there are no invalid components. 
  * @export
  * @see #showMessages
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  */
 oj.InvalidComponentTracker.prototype.focusOnFirstInvalid = function()
 {
-  var firstInvalid = null, self = this, updateCounter = this._updateCounter;
+  var firstInvalid = null;
+  var self = this;
+  var updateCounter = this._updateCounter;
+  
   if (this['invalidShown'])
   {
     firstInvalid = this._getFirstInvalidComponent();
@@ -489,7 +557,8 @@ oj.InvalidComponentTracker.prototype.focusOnFirstInvalid = function()
       // yet. Or the invalid states could have changed in between the timer being set and the 
       // callback being called.
       firstInvalid = (updateCounter === self._updateCounter) ? 
-                        firstInvalid || self._getFirstInvalidComponent() : self._getFirstInvalidComponent(); 
+                     firstInvalid || self._getFirstInvalidComponent() :
+                     self._getFirstInvalidComponent(); 
       if (firstInvalid)
       {
         // Call a protected method Focus() exposed on editable components for now.
@@ -519,13 +588,15 @@ oj.InvalidComponentTracker.prototype.focusOnFirstInvalid = function()
  *  }
  * 
  * @export
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  * @see oj.editableValue#showMessages
  */
 oj.InvalidComponentTracker.prototype.showMessages = function()
 {
-  var tr, len, index;
+  var index;  
+  var len;
+  var tr;
 
   if (this['invalidHidden'])
   {
@@ -534,7 +605,7 @@ oj.InvalidComponentTracker.prototype.showMessages = function()
     {
       if (this._invalidHidden[index])
       {
-        tr = this._tracked[index].call(tr, "showMessages");
+        tr = (this._tracked[index]['component']).call(tr, "showMessages");
       }
     }
   }
@@ -546,22 +617,46 @@ oj.InvalidComponentTracker.prototype.showMessages = function()
  * 
  * @returns the component instance that has focus or null
  * @private
+ * @memberof oj.InvalidComponentTracker
+ * @instance
  */
 oj.InvalidComponentTracker.prototype._getFirstInvalidComponent = function()
 {
-  var firstInvalid, focusable = null, idx = 0, len = this._invalid.length;
+  var isInvalid;
+  var idx = 0;
+  var invalidComponents = [];
+  var len = this._invalid.length;
 
   // locate first invalid component and set focus on it
+  // this._invalid is an array of booleans that tracks invalid components showing messages.
+  // e.g., [false, true, true, false]. This maps to the this._tracked which holds the 
+  // components. So the components showing messages is the ones at indices 1 and 2.
+  // this._tracked may not be in DOM order if a new tracked component was added not
+  // at the end of the DOM order.
   for (idx = 0; idx < len; idx++)
   {
-    firstInvalid = this._invalid[idx];
-    if (firstInvalid)
+    isInvalid = this._invalid[idx];
+    if (isInvalid)
     {
-      return this._tracked[idx];
+      invalidComponents.push(this._tracked[idx]);
     }
-  };
+  }
+  
+  if (invalidComponents.length === 0)
+  {
+    return null;
+  }
+  
+  // sort the invalidComponents based on dom order
+  invalidComponents.sort(function(a, b) {
+    var elementA = a['element'];
+    var elementB = b['element'];
+    // If elementA precedes elementB in dom order, return -1
+    return (elementA.compareDocumentPosition(elementB) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+  });
 
-  return focusable;
+  // invalidComponents is sorted now by document order, so return the first one.
+  return invalidComponents[0]['component'];
 };
 
 /**
@@ -570,17 +665,18 @@ oj.InvalidComponentTracker.prototype._getFirstInvalidComponent = function()
  * @param {Object} component being removed
  * @returns {boolean} if internal state mutated; false otherwise
  * @private
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  */
 oj.InvalidComponentTracker.prototype._remove = function(component)
 {
-  var trackedIndex = -1, mutated = false;
+  var trackedIndex = -1;
+  var mutated = false;
 
   // locate the index in tracked, for the component that was updated 
   $.each(this._tracked, function(index, item)
   {
-    if (trackedIndex < 0 && item === component)
+    if (trackedIndex < 0 && item['component'] === component)
     {
       trackedIndex = index;
       return;
@@ -606,22 +702,29 @@ oj.InvalidComponentTracker.prototype._remove = function(component)
  * new messages.
  * 
  * @param {Object} component the component that has the new messages
- * @param {string} option 
- * @param {Array} value 
+ * @param {Element} element the element that has the new messages (this is the component's element)
+ * @param {string} option the option being updated. e.g., messagesShown, messagesHidden, disabled,
+ *  readOnly
+ * @param {Array.<string>} value the value of the option. For example, if option is 'messagesShown'
+ *   the value is the Array of the messagesShown, if empty value is [].
  * @returns {boolean} if internal state mutated; false otherwise
  * @private
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  */
-oj.InvalidComponentTracker.prototype._update = function(component, option, value)
+oj.InvalidComponentTracker.prototype._update = function(component, element, option, value)
 {
-  var compValid = component.call(component, "isValid"), 
-      trackedIndex = -1, item, mutated = true, result, isDisabled, isReadOnly;
-  
-  // locate the index in tracked, for the component that was updated 
+  var compValid = component.call(component, "isValid");
+  var isDisabled;
+  var isReadOnly;
+  var mutated = true;
+  var result;
+  var trackedIndex = -1;
+
+  // locate the index in tracked, for the component that was updated.
   $.each(this._tracked, function(index, item)
   {
-    if (trackedIndex < 0 && item === component)
+    if (trackedIndex < 0 && item['component'] === component)
     {
       trackedIndex = index;
       return;
@@ -639,7 +742,11 @@ oj.InvalidComponentTracker.prototype._update = function(component, option, value
         // start tracking component if not already doing it.
         if (trackedIndex < 0)
         {
-          trackedIndex = this._tracked.push(component) - 1;
+          trackedIndex = this._tracked.push({'component': component, 'element': element}) - 1;
+          // adds the trackedIndex/result to this._invalid and this._invalidHidden boolean arrays,
+          // keeping this._tracked in sync with this._invalid and this._invalidHidden.
+          // adds the trackedIndex/result to this._invalid and this._invalidHidden boolean arrays,
+          // keeping this._tracked in sync with this._invalid and this._invalidHidden.
           this._initializeInvalidTrackers(trackedIndex, result);
         }
 
@@ -705,12 +812,27 @@ oj.InvalidComponentTracker.prototype._update = function(component, option, value
   return mutated;
 };
 
+/**
+ * This is called when we are starting to track a component. Before this function is called,
+ * we push the component and element into the this._tracked array and then we call this 
+ * with the trackedIndex
+ * 
+ * @param {number} trackedIndex
+ * @param {boolean} result true or false. Since this is initializing the this._invalid and 
+ * this._invalidHidden arrays, it really only makes sense if it is false but it 
+ *  isn't enforced.
+ * @private
+ * @memberof oj.InvalidComponentTracker
+ * @instance
+ */
 oj.InvalidComponentTracker.prototype._initializeInvalidTrackers = function(trackedIndex, result)
 {
   if (this._invalid[trackedIndex] === undefined)
-    this._updateInvalidTracker(oj.InvalidComponentTracker._OPTION_MESSAGES_SHOWN, trackedIndex, result);
+    this._updateInvalidTracker(
+      oj.InvalidComponentTracker._OPTION_MESSAGES_SHOWN, trackedIndex, result);
   if (this._invalidHidden[trackedIndex] === undefined)
-    this._updateInvalidTracker(oj.InvalidComponentTracker._OPTION_MESSAGES_HIDDEN, trackedIndex, result);
+    this._updateInvalidTracker(
+      oj.InvalidComponentTracker._OPTION_MESSAGES_HIDDEN, trackedIndex, result);
 };
 
 oj.InvalidComponentTracker.prototype._updateInvalidProperties = function()
@@ -720,14 +842,34 @@ oj.InvalidComponentTracker.prototype._updateInvalidProperties = function()
   this['invalidHidden'] = this._invalidHidden.indexOf(true) >= 0;
 };
 
+/**
+ * If option is "messagesShown", then update this._invalid boolean array, 
+ * else if option is "messagesHidden", update this._invalidHidden boolean array
+ * using the trackedIndex and the value.
+ * this._invalid is a boolean array, e.g., [false, false, false, true, false], indicating
+ * which components have invalid messages showing.
+ * this._invalidHidden is also a boolean array indicating which components have invalid messages
+ * hidden. The components are tracked in this._tracked. The indices correspond. For example,
+ * the component at this._tracked[3]['component'] is showing invalid messages 
+ * if this._invalid[3] is true.
+ * @private
+ * @memberof oj.InvalidComponentTracker
+ * @instance
+ * @param {string} option "messagesShown" or "messagesHidden".
+ * @param {number} trackedIndex the index of the tracked component
+ * @param {boolean} value true or false
+ * @returns {boolean} whether or not this._invalid or this._invalidHidden was mutated
+ */
 oj.InvalidComponentTracker.prototype._updateInvalidTracker = function(option, trackedIndex, value)
 {
-  var mutated = false, 
-      arr = (option === oj.InvalidComponentTracker._OPTION_MESSAGES_SHOWN) ? 
+  var arr;
+  var mutated = false;
+   
+  arr = (option === oj.InvalidComponentTracker._OPTION_MESSAGES_SHOWN) ? 
         this._invalid : (option === oj.InvalidComponentTracker._OPTION_MESSAGES_HIDDEN) ? 
           this._invalidHidden : [];
 
-  // adds or updates the appropriate array
+  // updates or pushes the value into the appropriate array
   if (trackedIndex >= 0 && arr[trackedIndex] !== undefined)
   {
     // mark component as invalid or invalidHidden to match the trackedIndex; update only if value 
@@ -735,11 +877,12 @@ oj.InvalidComponentTracker.prototype._updateInvalidTracker = function(option, tr
     mutated = arr[trackedIndex] !== value ? true : false;
     if (mutated)
     {
-      arr.splice(trackedIndex, 1, value);
+      arr[trackedIndex] = value;
     }
   }
   else
   {
+    // new
     arr.push(value);
     mutated = true;
   }
@@ -751,10 +894,10 @@ oj.InvalidComponentTracker.prototype._updateInvalidTracker = function(option, tr
  * helper to determine if we have invalid messages among the list of messages that are currently 
  * showing i.e., that are showing.
  * 
- * @param {!Array} messages list of all messages associated with component
+ * @param {!Array.<string>} messages list of all messages associated with component
  * @returns {boolean}
  * @private
- * @memberof! oj.InvalidComponentTracker
+ * @memberof oj.InvalidComponentTracker
  * @instance
  */
 oj.InvalidComponentTracker._hasInvalidMessages = function(messages)

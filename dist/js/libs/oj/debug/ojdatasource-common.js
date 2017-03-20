@@ -377,13 +377,15 @@ oj.TableDataSource.prototype.totalSizeConfidence = function()
 };
 
 /**
+ * Events which are published by TableDataSource. Any custom TableDataSource
+ * implementation must publish the corresponding events.
  * @export
  * Event types
  * @enum {string}
  */
 oj.TableDataSource.EventType =
   {
-    /** Triggered when a Row is added to a TableDataSource<p>
+    /** Triggered when a Row has been added to a TableDataSource<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -394,7 +396,7 @@ oj.TableDataSource.EventType =
      * </table>
      */
     'ADD': "add",
-    /** Triggered when a Row is removed from a TableDataSource<p>
+    /** Triggered when a Row has been removed from a TableDataSource<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -405,11 +407,11 @@ oj.TableDataSource.EventType =
      * </table>
      */
     'REMOVE': "remove",
-    /** Triggered when a TableDataSource is reset */
+    /** Triggered when a TableDataSource has been reset */
     'RESET': "reset",
-    /** Triggered when a TableDataSource is refreshed */
+    /** Triggered when a TableDataSource has been refreshed */
     'REFRESH': "refresh",
-    /** Triggered when a TableDataSource is sorted<p>
+    /** Triggered when a TableDataSource has been sorted<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -419,7 +421,7 @@ oj.TableDataSource.EventType =
      * </table>
      */
     'SORT': "sort",
-    /** Triggered when a Row's attributes are changed<p>
+    /** Triggered when a Row's attributes have been changed<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -430,7 +432,9 @@ oj.TableDataSource.EventType =
      * </table>
      */
     'CHANGE': "change",
-    /** Triggered when a TableDataSource has sent a fetch request
+    /** Triggered when a TableDataSource has sent a fetch request. It is expected that
+     * a component using TableDataSource will go into a busy state upon receiving
+     * this event.
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -439,7 +443,9 @@ oj.TableDataSource.EventType =
      * </table>
      */
     'REQUEST': "request",
-    /** Triggered when a TableDataSource has been updated by a fetch<p>
+    /** Triggered when a TableDataSource has been updated by a fetch. It is expected that
+     * a component using TableDataSource will exit busy state upon completion of rendering
+     * after receiving this event.<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
@@ -461,6 +467,139 @@ oj.TableDataSource._LOGGER_MSG =
     '_ERR_DATA_INVALID_TYPE_SUMMARY':             'Invalid data type.',
     '_ERR_DATA_INVALID_TYPE_DETAIL':              'Please specify the appropriate data type.'
   };
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+ 
+ /**
+ * Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
+
+ * @param {Object} data data supported by the component
+ * @export
+ * @extends oj.DataSource
+ * @constructor
+ */
+oj.DiagramDataSource = function(data)
+{
+    oj.DiagramDataSource.superclass.constructor.call(this, data);
+};
+
+
+// Subclass DiagramDataSource to DataSource
+oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSource");
+
+/**
+ * Returns child data for the given parent.
+ * The data include all immediate child nodes along with links whose endpoints
+ * both descend from the current parent node. 
+ * If all the links are available upfront, they can be returned as part of the
+ * top-level data (since all nodes descend from the diagram root).
+ * If lazy-fetching links is desirable, the most
+ * optimal way to return links is as part of the data of the
+ * nearest common ancestor of the link's endpoints.
+ *
+ * @param {Object|null} parentData An object that contains data for the parent node.
+ *                     If parentData is null, the method retrieves data for top level nodes.
+ * @return {Promise} Promise resolves to a component object with the following structure:<p>
+ * <table>
+ * <tbody>
+ * <tr><td><b>nodes</b></td><td>An array of objects for the child nodes for the given parent</td></tr>
+ * <tr><td><b>links</b></td><td>An array of objects for the links for the given parent</td></tr>
+ * </tbody>
+ * </table>
+ * @method
+ * @name getData
+ * @memberof! oj.DiagramDataSource
+ * @instance
+ */
+ 
+/**
+ * Retrieves number of child nodes
+ * @param {Object} nodeData A data object for the node in question.
+ *                          See node properties section.
+ * @return {number} Number of child nodes if child count is available.
+ *                  The method returns 0 for leaf nodes.
+ *                  The method returns -1 if the child count is unknown
+ *                  (e.g. if the children have not been fetched).
+ * @method
+ * @name getChildCount
+ * @memberof! oj.DiagramDataSource
+ * @instance
+ */
+ 
+/**
+ * Indicates whether the specified object contains links
+ * that should be discovered in order to display promoted links.
+ *
+ * @param {Object} nodeData A data object for the container node in question.
+ *                          See node properties section.
+ * @return {string} the valid values are "connected", "disjoint", "unknown"
+ * @method
+ * @name getDescendantsConnectivity
+ * @memberof! oj.DiagramDataSource
+ * @instance
+ */
+ 
+ /**
+ * @export
+ * Event types
+ * @enum {string}
+ */
+oj.DiagramDataSource.EventType =
+{
+  /** 
+   * Triggered when nodes or links are added to DiagramDataSource.<p>
+   * The event payload contains.<p>
+   *
+   * <table cellspacing="0" style="border-collapse: collapse;">
+   * <tbody>
+   * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
+   *  <ul>
+   *    <li>nodes: an array of node objects</li>
+   *    <li>links: an array of link objects</li>
+   *  </ul>
+   * </td></tr>
+   * <tr><td><b>parentId</b></td><td>string</td><td>parent id for nodes and links</td></tr>
+   * <tr><td><b>index</b></td><td>number</td><td>An index where the nodes should be added</td></tr>
+   * </tbody>
+   * </table>
+   */
+  'ADD': "add",
+  /**
+   * Triggered when nodes or links are removed from DiagramDataSource.
+   * The event payload contains:<p>
+   *
+   * <table cellspacing="0" style="border-collapse: collapse;">
+   * <tbody>
+   * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
+   *  <ul>
+   *    <li>nodes: an array of node objects</li>
+   *    <li>links: an array of link objects</li>
+   *  </ul>
+   * </td></tr>
+   * <tr><td><b>parentId</b></td><td>string</td><td>parent id for nodes and links</td></tr>
+   * </tbody>
+   * </table>
+   */
+  'REMOVE': "remove",
+  /**
+   * Triggered when nodes or links are removed from DiagramDataSource.
+   * The event payload contains:<p>
+   *
+   * <table cellspacing="0" style="border-collapse: collapse;">
+   * <tbody>
+   * <tr><td><b>data</b></td><td>Object</td><td>An object with the following properties:
+   *  <ul>
+   *    <li>nodes: an array of node objects</li>
+   *    <li>links: an array of link objects</li>
+   *  </ul>
+   * </td></tr>
+   * </tbody>
+   * </table>
+   */
+  'CHANGE': "change"
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.

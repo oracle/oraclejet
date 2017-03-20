@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'jqueryui-amd/widget'], function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'knockout', 'jqueryui-amd/widget', 'ojs/ojkoshared'], function(oj, $, ko)
 {
 /**
  * @private
@@ -1046,35 +1046,6 @@ $.widget("oj._ojDetectCleanData",
  }
 );
 /**
- * Returns a data layer renderer function and executes the template specified in
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getPieCenterRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var dummyDiv = document.createElement("div");
-    dummyDiv.style.display = "none";
-    var model = bindingContext['createChildContext'](context);
-    ko['renderTemplate'](template, model, {
-                            'afterRender': function(renderedElement)
-                            {
-                                $(renderedElement)['_ojDetectCleanData']();
-                            }}, dummyDiv);
-		var elem = dummyDiv.children[0];
-		if (elem) {
-			dummyDiv.removeChild(elem);
-			$(dummyDiv).remove();
-			return elem;
-		}
-		return null;
-  };
-}
-
-/**
  * Common method to handle managed attributes for both init and update
  * @param {string} name the name of the attribute
  * @param {Object} value the value of the attribute
@@ -1082,9 +1053,9 @@ function _getPieCenterRenderer(bindingContext, template) {
  * @return {Object} the modified attribute
  * @private
  */
-function _handleAttributes(name, value, bindingContext) {
+function _handleManagedChartAttributes(name, value, bindingContext) {
   if (name === "pieCenter" && value['template']) {
-    value['renderer'] = _getCenterRenderer(bindingContext, value['template']);
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
   }
   return {'pieCenter': value};
 }
@@ -1092,10 +1063,10 @@ function _handleAttributes(name, value, bindingContext) {
 oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   'attributes': ["pieCenter"],
   'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleAttributes(name, value, bindingContext);
+    return _handleManagedChartAttributes(name, value, bindingContext);
   },
   'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleAttributes(name, value, bindingContext);
+    return _handleManagedChartAttributes(name, value, bindingContext);
   },
   'for': 'ojChart'
 });
@@ -1571,326 +1542,6 @@ ko.bindingHandlers['ojContextMenu'] =
 };
 
 /**
- * @ignore
- * @constructor
- */
-function _KoCustomBindingProvider()
-{
-
-  this.install = function()
-  {
-    var provider = ko.bindingProvider;
-    var instance_name = "instance";
-    var wrapped = provider[instance_name];
-
-    var getAccessors = 'getBindingAccessors';
-    if (!wrapped[getAccessors])
-    {
-      oj.Logger.error("JET's Knockout bindings are not compatible with the current binding provider since it does " +
-                         "not implement getBindingAccessors()");
-      return this;
-    }
-
-    var custom = provider[instance_name] = {};
-
-    var methodsToWrap = [];
-    methodsToWrap.push(getAccessors, "nodeHasBindings", "getBindings", "preprocessNode");
-
-    methodsToWrap.forEach(
-      function(name)
-      {
-        _wrap(wrapped, custom, name);
-      }
-    );
-
-    return this;
-
-  };
-
-  this.addPostprocessor = function(postprocessor)
-  {
-    var keys = Object.keys(postprocessor);
-    keys.forEach(
-      function(key)
-      {
-        _postprocessors[key] = _postprocessors[key] || [];
-        _postprocessors[key].push(postprocessor[key]);
-      }
-    );
-  }
-
-  var _postprocessors = {};
-
-  function _wrap(wrapped, target, name)
-  {
-    var delegate = wrapped[name];
-    target[name] = function()
-    {
-      var ret = delegate ? delegate.apply(wrapped, arguments) : null;
-      var postprocessHandlers = _postprocessors[name];
-
-      if (postprocessHandlers != null)
-      {
-        var originalArgs = arguments;
-        postprocessHandlers.forEach(
-          function(handler)
-          {
-            var args = Array.prototype.slice.call(originalArgs);
-            args.push(ret, wrapped);
-            ret = handler.apply(null, args);
-          }
-        );
-      }
-      return ret;
-    }
-  }
-}
-
-/**
- * @ignore
- */
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE = new _KoCustomBindingProvider().install();
-
-
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({'getBindingAccessors': _replaceComponentBindingWithV2});
-
-
-
-/**
- * This function modifies the return value of getBindingAccessors()
- * to separate bindings for each tracked attributess in the 'inline' ojComponent binding
- * @param node
- * @param bindingContext
- * @param accessorMap
- * @param wrapped
- * @ignore
- */
-function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapped)
-{
-  if (accessorMap == null)
-  {
-    return null;
-  }
-
-  // Remove the old (pre-V2) binding from the accessor map
-  var bindingName = _findOwnBinding(accessorMap)
-  if (bindingName != null)
-  {
-    accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap);
-  }
-
-  return accessorMap;
-}
-
-/**
- * @ignore
- */
-function _findOwnBinding(accessorMap)
-{
-  var keys = Object.keys(accessorMap)
-  for (var i=-0; i<keys.length; i++)
-  {
-    var key = keys[i];
-    if (oj.ComponentBinding._isNameRegistered(key))
-    {
-      return key;
-    }
-  }
-  return null;
-}
-
-/**
- * @param node
- * @param bindingName
- * @param wrapped
- * @param bindingContext
- * @param accessorMap
- * @ignore
- */
-function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap)
-{
-  var info = _getBindingValueInfo(node, bindingName, wrapped, bindingContext);
-
-  var bindingList = info.attrList;
-
-  if (bindingList == null) // binding is specified externally (as opposed to an 'inline' object literal)
-  {
-    return accessorMap;
-  }
-
-  var bindingMap = {};
-  _keyValueArrayForEach(bindingList,
-    function(key, value)
-    {
-      bindingMap[key] = value;
-    }
-  );
-
-  // clone the original accessor map
-  accessorMap = oj.CollectionUtils.copyInto({}, accessorMap);
-
-  //Add accessor for the V2 version of the Component bidning
-  accessorMap[bindingName] =
-                      _getOjComponent2BindingAccessor(bindingContext, bindingMap, info.bindingExpr);
-
-  return accessorMap;
-
-}
-
-/**
- * @ignore
- */
-function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingExpr)
-{
-  var accessorFunc = function()
-  {
-    var accessor = {};
-    Object.keys(attributeMap).forEach(
-      function(option)
-      {
-        var expression = attributeMap[option];
-
-        // bindingContext will be passed as as the first parameter to the evaluator
-        var getter = oj.ComponentBinding.__CreateEvaluator(expression).bind(null, bindingContext);
-
-        Object.defineProperty(accessor, option,
-          {
-            'get': getter,
-            'enumerable': true
-          }
-        );
-      }
-    );
-
-    Object.defineProperty(accessor, oj.ComponentBinding._OPTION_MAP,
-      {
-        'value': attributeMap
-        /* not enumerable */
-      }
-    );
-
-    return accessor;
-  }
-
-  // Define toString() for the custom accessor function since we do not want the entire function body to show up in
-  // the log whenever a binding evaluation error occurs
-  accessorFunc.toString = function(){return bindingExpr;};
-
-  return accessorFunc;
-}
-
-
-/**
- * @param node
- * @param wrapped
- * @param bindingContext
- * @ignore
- */
-function _getBindingString(node, wrapped, bindingContext)
-{
-  var func = wrapped['getBindingsString'];
-  if (func)
-  {
-    return func.call(wrapped, node, bindingContext);
-  }
-
-  switch (node.nodeType)
-  {
-    case 1: // Element
-      return node.getAttribute("data-bind");
-
-    case 8: // Comment node
-      var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
-      return  (match ? match[1]: null);
-  }
-  return null;
-}
-
-/**
- * @param node
- * @param bindingName
- * @param wrapped
- * @param bindingContext
- * @ignore
- */
-function _getBindingValueInfo(node, bindingName, wrapped, bindingContext)
-{
-  var list = null;
-
-  var bindingString = _getBindingString(node, wrapped, bindingContext);
-  var keyValueArray = ko.jsonExpressionRewriting.parseObjectLiteral(bindingString);
-
-  var selfVal = null;
-
-  _keyValueArrayForEach(keyValueArray,
-    function(key, value)
-    {
-      if (key === bindingName)
-      {
-        selfVal = value;
-        return true;
-      }
-      return false;
-    }
-  );
-
-  if (selfVal != null)
-  {
-    // check for object literal
-    if (selfVal.indexOf('{') === 0)
-    {
-      list = ko.jsonExpressionRewriting.parseObjectLiteral(selfVal);
-    }
-  }
-
-  return {attrList: list, bindingExpr: selfVal};
-}
-
-function _keyValueArrayForEach(array, callback)
-{
-  for(var i=0; i<array.length; i++)
-  {
-    var entry = array[i];
-    var key = entry['key'];
-    var value = entry['value'];
-    if (key != null && value != null && callback(key.trim(), value.trim()))
-    {
-      break;
-    }
-  }
-}
-
-
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
-  {
-    'nodeHasBindings': function(node, wrappedReturn)
-    {
-      return wrappedReturn || (node.nodeType === 1 && 
-                   oj.Components && oj.Components.isRegistered(node.nodeName))
-    },
-
-    'getBindingAccessors': function(node, bindingContext, wrappedReturn)
-    {
-      if (node.nodeType === 1)
-      {
-        var name = node.nodeName;
-        if (oj.Components && oj.Components.isRegistered(name))
-        {
-          wrappedReturn = wrappedReturn || {};
-
-          var compositionBinding  = '_ojCustomElement';
-
-          wrappedReturn[compositionBinding] = function() {}
-
-        }
-      }
-
-      return wrappedReturn;
-    }
-  }
-);
-
-/**
  * Returns a header renderer function executes the template specified in the binding attribute.
  * (for example, a knockout template).
  * @param {Object} bindingContext the ko binding context
@@ -2111,22 +1762,9 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
   'for': 'ojDataGrid'
 });
 
-function _getDiagramNodeRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var model = bindingContext['createChildContext'](context['data']);
-    ko['renderTemplate'](template, model, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, context['parentElement']);
-    return null;
-  };
-};
-
 function _handleManagedDiagramAttributes(name, value, bindingContext) {
   if (name === "template") {
-    return {'_templateFunction': _getDiagramNodeRenderer(bindingContext, value)};
+    return {'_templateFunction': _getDvtDataRenderer(bindingContext, value)};
   }
   return null;
 };
@@ -2210,26 +1848,31 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
   this.setupExpression = function(attrVal, propName, metadata)
   {
+    // See if attribute is a component property by checking for metadata
+    var meta = _getPropertyMetadata(propName, metadata);
+    if (!meta)
+      return;
+
     var info = oj.__AttributeUtils.getExpressionInfo(attrVal);
 
-    if (propsWithLocalValue[propName])
+    if (_propsWithLocalValue[propName])
     {
-      propsWithLocalValue[propName] = null;
+      _propsWithLocalValue[propName] = null;
     }
 
-    var oldListener = expressionListeners[propName];
+    var oldListener = _expressionListeners[propName];
     if (oldListener)
     {
       oldListener['dispose']();
-      expressionListeners[propName] = null;
+      _expressionListeners[propName] = null;
     }
 
     // Clean up property change listeners to handler the case when the type of the expression changes
-    var changeListener  = changeListeners[propName];
+    var changeListener  = _changeListeners[propName];
     if (changeListener)
     {
       element.removeEventListener(propName + _CHANGED_EVENT_SUFFIX, changeListener);
-      changeListeners[propName] = null;
+      _changeListeners[propName] = null;
     }
 
     var readOnly = metadata['readOnly'];
@@ -2246,12 +1889,12 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
         ko.ignoreDependencies(
           function()
           {
-            expressionListeners[propName] = ko.computed(
+            _expressionListeners[propName] = ko.computed(
               // The read() function for the computed will be called when the computed is created and whenever any of
               // the expression's dependency changes
               function()
               {
-                if (!propsWithLocalValue[propName])
+                if (!_propsWithLocalValue[propName])
                 {
                   var value = evaluator(bindingContext);
                   
@@ -2264,7 +1907,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
         );
       }
 
-      changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator, metadata['writeback'] && !info.downstreamOnly);
+      _changeListeners[propName] = _listenToPropertyChanges(propName, expr, evaluator, metadata['writeback'] && !info.downstreamOnly);
 
       return true;
     }
@@ -2276,22 +1919,22 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
   
   this.teardown = function()
   {
-    var names = Object.keys(expressionListeners);
+    var names = Object.keys(_expressionListeners);
     for (var i=0; i<names.length; i++)
     {
-      expressionListeners[names[i]]['dispose']();
+      _expressionListeners[names[i]]['dispose']();
     }
-    expressionListeners = {};
+    _expressionListeners = {};
 
 
     // reset change listeners
-    names = Object.keys(changeListeners);
+    names = Object.keys(_changeListeners);
     for (i=0; i<names.length; i++)
     {
       var prop = names[i];
-      element.removeEventListener(prop + _CHANGED_EVENT_SUFFIX, changeListeners[prop]);
+      element.removeEventListener(prop + _CHANGED_EVENT_SUFFIX, _changeListeners[prop]);
     }
-    changeListeners = {};
+    _changeListeners = {};
   }
 
 
@@ -2332,7 +1975,7 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
         }
         if (!written)
         {
-          propsWithLocalValue[propName] = true;
+          _propsWithLocalValue[propName] = true;
         }
       }
 
@@ -2348,7 +1991,13 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
     _startSettingProperty(propName);
     try
     {
-      element[propName] = value;
+      // We cannot share the same storage with KO because we want to be able to compare values,
+      // so make a copy of the array before setting it.
+      if (Array.isArray(value))
+      {
+        value = value.slice();
+      }
+      element['setProperty'](propName, value);
     }
     finally
     {
@@ -2386,13 +2035,28 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
   {
     return _settingProperties[propName];
   }
+
+  function _getPropertyMetadata(propName, metadata)
+  {
+    var propPath = propName.split('.');
+    var meta = metadata;
+    propPath.shift(); // current metadata is already for top level property
+    for (var j = 0; j < propPath.length; j++)
+    {
+      meta = meta['properties'];
+      if (!meta)
+        break;
+      meta = meta[propPath[j]];
+    }
+    return meta;
+  }
   
 
-  var expressionListeners = {};
-  var changeListeners = {};
-  var propsWithLocalValue = {};
+  var _expressionListeners = {};
+  var _changeListeners = {};
+  var _propsWithLocalValue = {};
   var _settingProperties = {};
-  var _CHANGED_EVENT_SUFFIX = "-changed";
+  var _CHANGED_EVENT_SUFFIX = "Changed";
 }
 
 /*jslint browser: true*/
@@ -2590,27 +2254,6 @@ oj.ResponsiveKnockoutUtils.createScreenRangeObservable = function()
 }
 
 /**
- * Returns a data layer renderer function and executes the template specified in 
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getDataLayerRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var model = bindingContext['createChildContext'](context['data']);
-    ko['renderTemplate'](template, model, {
-                           'afterRender': function(renderedElement)
-                           {
-                               $(renderedElement)['_ojDetectCleanData']();
-                           }}, context['parentElement']);
-    return null;
-  };
-}
-
-/**
  * Common method to handle managed attributes for both init and update
  * @param {string} name the name of the attribute
  * @param {Object} value the value of the attribute
@@ -2618,14 +2261,14 @@ function _getDataLayerRenderer(bindingContext, template) {
  * @return {Object} the modified attribute
  * @private
  */
-function _handleManagedAttributes(name, value, bindingContext) {
+function _handleManagedMapAttributes(name, value, bindingContext) {
   if (name === "areaLayers") {
     for (var i = 0; i < value.length; i++) {
       var areaDataLayer = value[i]['areaDataLayer'];
       if (areaDataLayer) {
         var template = areaDataLayer['template'];
         if (template != null) {
-          areaDataLayer['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
+          areaDataLayer['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
         }
       }
     }
@@ -2635,7 +2278,7 @@ function _handleManagedAttributes(name, value, bindingContext) {
     for (var i = 0; i < value.length; i++) {
       var template = value[i]['template'];
       if (template != null) {
-        value[i]['_templateRenderer'] = _getDataLayerRenderer(bindingContext, template);
+        value[i]['_templateRenderer'] = _getDvtDataRenderer(bindingContext, template);
       }
     }
     return {'pointDataLayers': value};
@@ -2646,42 +2289,95 @@ function _handleManagedAttributes(name, value, bindingContext) {
 oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   'attributes': ["areaLayers", "pointDataLayers"],
   'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedAttributes(name, value, bindingContext);
+    return _handleManagedMapAttributes(name, value, bindingContext);
   },
   'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedAttributes(name, value, bindingContext);
+    return _handleManagedMapAttributes(name, value, bindingContext);
   },
   'for': 'ojThematicMap'
 });
 
 /**
- * Returns a data layer renderer function and executes the template specified in
- * the binding attribute. (for example, a knockout template).
+ * @export
+ */
+oj.KnockoutTemplateUtils = {};
+
+/**
+ * Returns a renderer for a knockout template.
+ * @param {string} template The template name to render
+ * @param {boolean=} bReplaceNode True if the entire target node will be replaced by the output of the template.
+ *                                If false or omitted, the children of the target node will be replaced.
+ * @return {function(Object)}
+ * @export
+ */
+oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode) 
+{
+  return function (context) {
+    // For DVTs, the node to attach the template to is different than the context's parentElement key
+    var parentElement = context['_parentElement'] || context['parentElement'];
+
+    var bindingContext = ko.contextFor(context['componentElement']);
+    var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
+    ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
+      parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
+    return null;
+  };
+};
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedTreemapAttributes(name, value, bindingContext) {
+  if (name === "nodeContent" && value['template']) {
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
+  }
+  return {'nodeContent': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["nodeContent"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTreemapAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedTreemapAttributes(name, value, bindingContext);
+  },
+  'for': 'ojTreemap'
+});
+
+/**
+ * Returns a renderer function and executes the template specified in the binding attribute. (for example, a knockout template).
  * @param {Object} bindingContext the ko binding context
  * @param {string} template the name of the template
  * @return {Function} the renderer function
  * @private
  */
-function _getTooltipRenderer(bindingContext, template) {
+function _getDvtRenderer(bindingContext, template) {
   return function (context) {
-    // runs the template
-    var dummyDiv = document.createElement("div");
-    dummyDiv.style.display = "none";
-    var model = bindingContext['createChildContext'](context);
-    ko['renderTemplate'](template, model, {
-                            'afterRender': function(renderedElement)
-                            {
-                                $(renderedElement)['_ojDetectCleanData']();
-                            }}, dummyDiv);
-    var elem = dummyDiv.children[0];
-    if (elem) {
-      dummyDiv.removeChild(elem);
-      $(dummyDiv).remove();
-      return elem;
-    }
+    var model = bindingContext['createChildContext'](context['context']);
+    ko['renderTemplate'](template, model, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, context['parentElement']);
     return null;
   };
-}
+};
+
+/**
+ * Returns a renderer function and executes the template specified in the binding attribute for data items. (for example, a knockout template).
+ * @param {Object} bindingContext the ko binding context
+ * @param {string} template the name of the template
+ * @return {Function} the renderer function
+ * @private
+ */
+function _getDvtDataRenderer(bindingContext, template) {
+  return function (context) {
+    var model = bindingContext['createChildContext'](context['data']);
+    ko['renderTemplate'](template, model, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, context['parentElement']);
+    return null;
+  };
+};
 
 /**
  * Common method to handle managed attributes for both init and update
@@ -2691,9 +2387,9 @@ function _getTooltipRenderer(bindingContext, template) {
  * @return {Object} the modified attribute
  * @private
  */
-function _handleManagedTooltipAttribute(name, value, bindingContext) {
+function _handleManagedTooltipAttributes(name, value, bindingContext) {
   if (name === "tooltip" && value['template']) {
-     value['renderer'] = _getTooltipRenderer(bindingContext, value['template']);
+     value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
   }   
   return {'tooltip': value};
 }
@@ -2701,10 +2397,10 @@ function _handleManagedTooltipAttribute(name, value, bindingContext) {
 oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   'attributes': ["tooltip"],
   'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTooltipAttribute(name, value, bindingContext);
+    return _handleManagedTooltipAttributes(name, value, bindingContext);
   },
   'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
-    return _handleManagedTooltipAttribute(name, value, bindingContext);
+    return _handleManagedTooltipAttributes(name, value, bindingContext);
   },
   'for': "tooltipOptionRenderer"
 });
@@ -2827,15 +2523,16 @@ oj.koStringTemplateEngine.install = function()
 {
   ko['bindingHandlers']['_ojCustomElement'] =
   {
-   
     'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
     {
       var callbackId = 0;
       var _expressionHandler;
       var attributeListener;
       
-      var componentCreatePromsie = oj.Components.getCreatePromise(element);
-      
+      // This instance won't be created unless oj.BaseCustomElementBridge is defined so this call is safe
+      var bridge = oj.BaseCustomElementBridge.getInstance(element);
+      bridge.notifyBindingsInvoked(element);
+      var propsPromise = bridge.getPropertiesPromise();
       
       function cleanup()
       {
@@ -2851,62 +2548,41 @@ oj.koStringTemplateEngine.install = function()
           element.removeEventListener(_ATTRIBUTE_CHANGED, attributeListener);
           attributeListener = null;
         }
-        
-        
-        
-        
+
+        bridge.notifyBindingsCleaned(element);
       };
-      
       
       function setup()
       {
-        var metadata = oj.Components.getMetadata(element.tagName);
-        if (!metadata)
+        var metadataProps = oj.BaseCustomElementBridge.getProperties(bridge);
+        if (Object.keys(metadataProps).length > 0)
         {
-          return;
-        }
-        var metadataProps = metadata['properties'];
-        if (!metadataProps)
-        {
-          return;
-        }
-        
-        var names = Object.keys(metadataProps);
-        if (names.length === 0)
-        {
-          return;
-        }
-        
-        _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext);
-        
-        names.forEach(
-          function(name)
+          _expressionHandler = new oj.__ExpressionPropertyUpdater(element, bindingContext);
+          
+          // setupExpression will only update properties defined in metadata so it's safe to iterate through all element attributes
+          // including ones defined on the base HTML prototype
+          var attrs = element.attributes; // attrs is a NodeList
+          for (var i = 0; i < attrs.length; i++)
           {
-            var attrName = oj.__AttributeUtils.propertyNameToAttribute(name);
-            
-            if (element.hasAttribute(name))
-            {
-              var attrVal = element.getAttribute(attrName);
-              _expressionHandler.setupExpression(attrVal, name, metadataProps[name]);
-            }
-      
+            var attr = attrs[i];
+            var propName = oj.__AttributeUtils.attributeToPropertyName(attr.nodeName);
+            _expressionHandler.setupExpression(attr.nodeValue, propName, metadataProps[propName.split('.')[0]]);
           }
-        );
-        
-        attributeListener = function(evt)
+          
+          attributeListener = function(evt)
           {
             var detail = evt['detail'];
             var attr = detail['attribute'];
             var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
             
-            var metadata = metadataProps[propName];
+            var metadata = metadataProps[propName.split('.')[0]]; // send metadata for top level property
             _expressionHandler.setupExpression(detail['value'], propName, metadata);
           };
-            
-        element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
-         
-        
-        element.classList.add("oj-complete");
+              
+          element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
+        }
+
+        bridge.notifyBindingsApplied(element, bindingContext);
       };
   
       // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
@@ -2941,7 +2617,7 @@ oj.koStringTemplateEngine.install = function()
                 return ret;
               }
               
-              componentCreatePromsie.then(
+              propsPromise.then(
                 _createCallbackWithIdMatching(callbackId,
                   function()
                   {
@@ -2982,35 +2658,6 @@ oj.koStringTemplateEngine.install = function()
 
 
 /**
- * Returns a data layer renderer function and executes the template specified in
- * the binding attribute. (for example, a knockout template).
- * @param {Object} bindingContext the ko binding context
- * @param {string} template the name of the template
- * @return {Function} the renderer function
- * @private
- */
-function _getCenterRenderer(bindingContext, template) {
-  return function (context) {
-    // runs the template
-    var dummyDiv = document.createElement("div");
-    dummyDiv.style.display = "none";
-    var model = bindingContext['createChildContext'](context);
-    ko['renderTemplate'](template, model, {
-                            'afterRender': function(renderedElement)
-                            {
-                                $(renderedElement)['_ojDetectCleanData']();
-                            }}, dummyDiv);
-		var elem = dummyDiv.children[0];
-		if (elem) {
-			dummyDiv.removeChild(elem);
-			$(dummyDiv).remove();
-			return elem;
-		}
-		return null;
-  };
-}
-
-/**
  * Common method to handle managed attributes for both init and update
  * @param {string} name the name of the attribute
  * @param {Object} value the value of the attribute
@@ -3020,7 +2667,7 @@ function _getCenterRenderer(bindingContext, template) {
  */
 function _handleManagedGaugeAttributes(name, value, bindingContext) {
   if (name === "center" && value['template']) {
-    value['renderer'] = _getCenterRenderer(bindingContext, value['template']);
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
   }
   return {'center': value};
 }
@@ -3231,6 +2878,271 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
     },
     'for': 'ojTable'
   });
+
+oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({'getBindingAccessors': _replaceComponentBindingWithV2});
+
+
+
+/**
+ * This function modifies the return value of getBindingAccessors()
+ * to separate bindings for each tracked attributess in the 'inline' ojComponent binding
+ * @param node
+ * @param bindingContext
+ * @param accessorMap
+ * @param wrapped
+ * @ignore
+ */
+function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapped)
+{
+  if (accessorMap == null)
+  {
+    return null;
+  }
+
+  // Remove the old (pre-V2) binding from the accessor map
+  var bindingName = _findOwnBinding(accessorMap)
+  if (bindingName != null)
+  {
+    accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap);
+  }
+
+  return accessorMap;
+}
+
+/**
+ * @ignore
+ */
+function _findOwnBinding(accessorMap)
+{
+  var keys = Object.keys(accessorMap)
+  for (var i=-0; i<keys.length; i++)
+  {
+    var key = keys[i];
+    if (oj.ComponentBinding._isNameRegistered(key))
+    {
+      return key;
+    }
+  }
+  return null;
+}
+
+/**
+ * @param node
+ * @param bindingName
+ * @param wrapped
+ * @param bindingContext
+ * @param accessorMap
+ * @ignore
+ */
+function _modifyOjComponentBinding(node, bindingName, wrapped, bindingContext, accessorMap)
+{
+  var info = _getBindingValueInfo(node, bindingName, wrapped, bindingContext);
+
+  var bindingList = info.attrList;
+
+  if (bindingList == null) // binding is specified externally (as opposed to an 'inline' object literal)
+  {
+    return accessorMap;
+  }
+
+  var bindingMap = {};
+  _keyValueArrayForEach(bindingList,
+    function(key, value)
+    {
+      bindingMap[key] = value;
+    }
+  );
+
+  // clone the original accessor map
+  accessorMap = oj.CollectionUtils.copyInto({}, accessorMap);
+
+  //Add accessor for the V2 version of the Component bidning
+  accessorMap[bindingName] =
+                      _getOjComponent2BindingAccessor(bindingContext, bindingMap, info.bindingExpr);
+
+  return accessorMap;
+
+}
+
+/**
+ * @ignore
+ */
+function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingExpr)
+{
+  var accessorFunc = function()
+  {
+    var accessor = {};
+    Object.keys(attributeMap).forEach(
+      function(option)
+      {
+        var expression = attributeMap[option];
+
+        // bindingContext will be passed as as the first parameter to the evaluator
+        var getter = oj.ComponentBinding.__CreateEvaluator(expression).bind(null, bindingContext);
+
+        Object.defineProperty(accessor, option,
+          {
+            'get': getter,
+            'enumerable': true
+          }
+        );
+      }
+    );
+
+    Object.defineProperty(accessor, oj.ComponentBinding._OPTION_MAP,
+      {
+        'value': attributeMap
+        /* not enumerable */
+      }
+    );
+
+    return accessor;
+  }
+
+  // Define toString() for the custom accessor function since we do not want the entire function body to show up in
+  // the log whenever a binding evaluation error occurs
+  accessorFunc.toString = function(){return bindingExpr;};
+
+  return accessorFunc;
+}
+
+
+/**
+ * @param node
+ * @param wrapped
+ * @param bindingContext
+ * @ignore
+ */
+function _getBindingString(node, wrapped, bindingContext)
+{
+  var func = wrapped['getBindingsString'];
+  if (func)
+  {
+    return func.call(wrapped, node, bindingContext);
+  }
+
+  switch (node.nodeType)
+  {
+    case 1: // Element
+      return node.getAttribute("data-bind");
+
+    case 8: // Comment node
+      var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
+      return  (match ? match[1]: null);
+  }
+  return null;
+}
+
+/**
+ * @param node
+ * @param bindingName
+ * @param wrapped
+ * @param bindingContext
+ * @ignore
+ */
+function _getBindingValueInfo(node, bindingName, wrapped, bindingContext)
+{
+  var list = null;
+
+  var bindingString = _getBindingString(node, wrapped, bindingContext);
+  var keyValueArray = ko.jsonExpressionRewriting.parseObjectLiteral(bindingString);
+
+  var selfVal = null;
+
+  _keyValueArrayForEach(keyValueArray,
+    function(key, value)
+    {
+      if (key === bindingName)
+      {
+        selfVal = value;
+        return true;
+      }
+      return false;
+    }
+  );
+
+  if (selfVal != null)
+  {
+    // check for object literal
+    if (selfVal.indexOf('{') === 0)
+    {
+      list = ko.jsonExpressionRewriting.parseObjectLiteral(selfVal);
+    }
+  }
+
+  return {attrList: list, bindingExpr: selfVal};
+}
+
+function _keyValueArrayForEach(array, callback)
+{
+  for(var i=0; i<array.length; i++)
+  {
+    var entry = array[i];
+    var key = entry['key'];
+    var value = entry['value'];
+    if (key != null && value != null && callback(key.trim(), value.trim()))
+    {
+      break;
+    }
+  }
+}
+
+
+oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+  {
+    'nodeHasBindings': function(node, wrappedReturn)
+    {
+      if (!oj.BaseCustomElementBridge)
+        return wrappedReturn;
+      return wrappedReturn || (node.nodeType === 1 && oj.BaseCustomElementBridge.isRegistered(node.nodeName));
+    },
+
+    'getBindingAccessors': function(node, bindingContext, wrappedReturn)
+    {
+      if (node.nodeType === 1 && oj.BaseCustomElementBridge)
+      {
+        var name = node.nodeName;
+        if (oj.BaseCustomElementBridge.isRegistered(name))
+        {
+          wrappedReturn = wrappedReturn || {};
+
+          var compositionBinding  = '_ojCustomElement';
+
+          wrappedReturn[compositionBinding] = function() {}
+
+        }
+      }
+
+      return wrappedReturn;
+    }
+  }
+);
+
+/**
+ * Common method to handle managed attributes for both init and update
+ * @param {string} name the name of the attribute
+ * @param {Object} value the value of the attribute
+ * @param {Object} bindingContext the ko binding context
+ * @return {Object} the modified attribute
+ * @private
+ */
+function _handleManagedSunburstAttributes(name, value, bindingContext) {
+  if (name === "rootNodeContent" && value['template']) {
+    value['_renderer'] = _getDvtRenderer(bindingContext, value['template']);
+  }
+  return {'rootNodeContent': value};
+}
+
+oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
+  'attributes': ["rootNodeContent"],
+  'init': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedSunburstAttributes(name, value, bindingContext);
+  },
+  'update': function (name, value, element, widgetConstructor, valueAccessor, allBindingsAccessor, bindingContext) {
+    return _handleManagedSunburstAttributes(name, value, bindingContext);
+  },
+  'for': 'ojSunburst'
+});
 
 /**
  * Returns a renderer function executes the template specified in the binding attribute.

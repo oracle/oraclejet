@@ -3,13 +3,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojvalidation'], function(oj, ojtd)
+define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojvalidation-base'], function(oj, ojtd)
 {
-/*
-** Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
-**
-**34567890123456789012345678901234567890123456789012345678901234567890123456789
-*/
 
 /*global ojtd:true*/
 

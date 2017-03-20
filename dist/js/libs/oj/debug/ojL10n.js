@@ -53,7 +53,7 @@
     //Helper function to avoid repeating code. Lots of arguments in the
     //desire to stay functional and support RequireJS contexts without having
     //to know about the RequireJS contexts.
-    function addPart(locale, master, needed, toLoad, prefix, suffix) {
+    function _addPart(locale, master, needed, toLoad, prefix, suffix) {
         
         if (!master[locale]) {
             // Try the same language/region without script for zh
@@ -77,7 +77,7 @@
     }
     
     /**
-     * Fixes up locale to comply with BCP47 spec and returns parts that shoudl be used for mathching the bundles 
+     * Fixes up locale to comply with BCP47 spec and returns parts that should be used for mathching the bundles 
      */
     function _getLocaleParts(locale) {
         var tokens = locale.toLowerCase().split(/-|_/), 
@@ -148,7 +148,7 @@
      * Object.prototype names, but the uses of mixin here seem unlikely to
      * trigger a problem related to that.
      */
-    function mixin(target, source) {
+    function _mixin(target, source) {
         var prop;
         for (prop in source) {
             if (source.hasOwnProperty(prop)) {
@@ -156,7 +156,7 @@
                     target[prop] = source[prop];
                 } 
                 else if (_isObject(source[prop]) && _isObject(target[prop])) {
-                    mixin(target[prop], source[prop]);
+                    _mixin(target[prop], source[prop]);
                 }
             }
         }
@@ -275,63 +275,56 @@
                     //First, fetch the master bundle, it knows what locales are available.
                     req(roots, function (master, extra) {
                     
-                        //Figure out the best fit
-                        var needed = [],mainBundleCount,
-                            part, matched = false, noMerge = noOverlay || (master['__noOverlay'] === true), backupBundle = backup || master['__defaultNoOverlayLocale'];
+                        var needed = [];
                         
-                        for (i = locales.length-1; i >= 0 && !(matched && noMerge); i--) {
-                            matched  = addPart(locales[i], master, needed, toLoad, prefix, suffix);
-                        }
+                        var _addParts = function(masterBundle, pref, suff) {
+                            var noMerge = noOverlay || (masterBundle['__noOverlay'] === true);
+                            var backupBundle = backup || masterBundle['__defaultNoOverlayLocale'];
+                            
+                            var matched = false;
+                                            
+                            for (var lo = locales.length-1; lo >= 0 && !(matched && noMerge); lo--) {
+                                matched = _addPart(locales[lo], masterBundle, needed, toLoad, pref, suff);
+                            }
+                            
+                            var rootOnly = (locales.length === 1 && "root" === locales[0]);
+                            
+                            if (noMerge && (rootOnly || !matched) && backupBundle) {
+                                _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff);
+                            }
+                            
+                            if (!rootOnly) {
+                                _addPart("root", masterBundle, needed, toLoad, pref, suff);
+                            }
+                        };
                         
-                        if (noMerge && !matched && backupBundle) {
-                            addPart(backupBundle, master, needed, toLoad, prefix, suffix);
-                        }
+                        _addParts(master, prefix, suffix);
                         
-                        addPart("root", master, needed, toLoad, prefix, suffix);
-                        
-                        mainBundleCount = needed.length;
+                        var mainBundleCount = needed.length;
                         
                         if (extra) {
-                            matched = false;
-                            
-                            noMerge = extra['__noOverlay'] === true;
-                            backupBundle = extra['__defaultNoOverlayLocale'];
-                            
-                            for (i = locales.length-1; i >= 0 && !(matched && noMerge); i--) {
-                                matched  = addPart(locales[i], extra, needed, toLoad, ebPrefix, ebSuffix);
-                            }
-                            
-                            if (noMerge && !matched && backupBundle) {
-                                addPart(backupBundle, extra, needed, toLoad, ebPrefix, ebSuffix);
-                            }
-                            
-                            addPart("root", extra, needed, toLoad, ebPrefix, ebSuffix);
+                            _addParts(extra, ebPrefix, ebSuffix);
                         }
 
                         //Load all the parts missing.
                         req(toLoad, function () {
-                            var i, partBundle, part;
                             
-                            // Start with the 'extra', as it is supposed to be overriding tghehe entire main bundle
-                            
-                            
-                            for (i = mainBundleCount; i < needed.length && needed[i]; i++) {
-                                part = needed[i];
-                                partBundle = extra[part];
-                                if (partBundle === true || partBundle === 1) {
-                                    partBundle = req(ebPrefix + part + '/' + ebSuffix);
+                            var _mixinBundle = function(bundle, start, end/*exclusive*/, pref, suff) {
+                                for (var i = start; i < end && needed[i]; i++) {
+                                    var part = needed[i];
+                                    var partBundle = bundle[part];
+                                    if (partBundle === true || partBundle === 1) {
+                                        partBundle = req(pref + part + '/' + suff);
+                                    }
+                                    _mixin(value, partBundle);
                                 }
-                                mixin(value, partBundle);
-                            }
+                            };
                             
-                            for (i = 0; i < mainBundleCount && needed[i]; i++) {
-                                part = needed[i];
-                                partBundle = master[part];
-                                if (partBundle === true || partBundle === 1) {
-                                    partBundle = req(prefix + part + '/' + suffix);
-                                }
-                                mixin(value, partBundle);
-                            }
+                            // Start with the 'extra', as it is supposed to be overriding the entire main bundle
+                            _mixinBundle(extra, mainBundleCount, needed.length, ebPrefix, ebSuffix);
+                            
+                            _mixinBundle(master, 0, mainBundleCount, prefix, suffix);
+                            
                             
                             // Stash away the locale on the bundle itself to make the framework aware of the locale used
                             // by Require.js

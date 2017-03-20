@@ -16,7 +16,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        function(oj, $)
 {
 
-/**
+ /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -61,35 +61,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
    * </h3>
    *
-   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
-   *
-   * <h3 id="styling-section">
-   *   Styling
-   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
-   * </h3>
-   * Several CSS classes are defined to implement the switch's style.
-   * The key classes are the following:
-   *
-   * <p>
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Class</th>
-   *       <th>Description</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-switch</td>
-   *       <td>Top level switch class. </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-focus-highlight</td>
-   *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
    * <p>
    * The component is accessible; it sets and maintains the appropriate aria- attributes,
    * like aria-checked and aria-disabled.
@@ -100,6 +71,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    * then set the <code class="prettyprint">for</code> attribute on the label to be the
    * input's id.
    * </p>
+   *
+   * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
+   *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   * {@ojinclude "name":"stylingDoc"}
    *
    * <h3 id="label-section">
    *   Label and Switch
@@ -178,12 +157,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        */
       readOnly: false,
 
-      /**
-       * @private
-       * @instance
-       * @memberof oj.ojSwitch
-       */
-      required: false,
 
       /**
        * Represents advisory information for the component, such as would be appropriate for
@@ -225,6 +198,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
        * @memberof oj.ojSwitch
        */
       value: false
+
+      // Events
+
+      /**
+       * Triggered when the ojSwitch is created.
+       *
+       * @event
+       * @name create
+       * @memberof oj.ojSwitch
+       * @instance
+       * @property {Event} event <code class="prettyprint">jQuery</code> event object
+       * @property {Object} ui Currently empty
+       *
+       * @example <caption>Initialize the ojSwitch with the <code class="prettyprint">create</code> callback specified:</caption>
+       * $( ".selector" ).ojSwitch({
+       *     "create": function( event, ui ) {}
+       * });
+       *
+       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+       */
+      // create event declared in superclass, but we still want the above API doc
     },
 
     // P U B L I C    M E T H O D S
@@ -362,7 +357,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
 
     /**
      * Overridden to set the options.value. When constructorOptions value is undefined,
-     * we read the CHECKED, DISABLED, READONLY, REQUIRED options on the checkbox and
+     * we read the CHECKED, DISABLED, READONLY OPTIONS on the checkbox and
      * build the switch options from that.
      *
      * @memberof oj.ojSwitch
@@ -376,8 +371,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       props = [
         { attribute: 'disabled', validateOption: true },
         { attribute: 'readonly', option: 'readOnly', validateOption: true },
-        { attribute: 'required', validateOption: false,
-          coerceDomValue: function () { return false; } },
         { attribute: 'checked', option: 'value', validateOption: false,
          coerceDomValue: function (domValue) {
            return domValue ? true : false;
@@ -389,7 +382,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this);
 
       val = this.option('value');
-      this.option({ required: false, value: !!val },
+      this.option({ value: !!val },
                   { '_context': { writeback: true, internalSet: true } });
     },
 
@@ -615,7 +608,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     _GetDefaultStyleClass: function () {
       return 'oj-switch';
     },
+  /**
+   * Whether the a value can be set on the component. For example, if the component is 
+   * disabled or readOnly then setting value on component is a no-op. 
+   * 
+   * @see #_SetValue
+   * @return {boolean}
+   * @memberof oj.ojSwitch
+   * @override
+   * @protected
+   */
+    _CanSetValue: function ()
+    {
+      var readOnly;
+      var superCanSetValue = this._super();
 
+      if (!superCanSetValue)
+        return false;
+
+      readOnly = this.options['readOnly'] || false;
+      return (readOnly) ? false : true;
+    },
     /**
      * Returns switch role for ARIA
      * ToDo: for IE it should be role="cehckbox"
@@ -663,7 +676,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     _GetContentElement: function () {
       return this.switchThumb;
     },
+    /**
+   * Performs post processing after _SetOption() is called. Different options when changed perform
+   * different tasks. See _AfterSetOption[OptionName] method for details.
+   *
+   * @param {string} option
+   * @param {Object|string=} previous
+   * @param {Object=} flags
+   * @protected
+   * @override
+   * @memberof oj.ojSwitch
+   * @instance
+   */
+  _AfterSetOption : function (option, previous, flags)
+  {
+    this._superApply(arguments);
+    switch (option)
+    {        
+      case "readOnly":
+        this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.readOnlyOptionOptions);
+        break;
+      default:
+        break;
+    }
 
+  },
     /**
      * @override
      * @private
@@ -675,9 +712,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         case 'readOnly':
         case 'value':
           coercedValue = !!value;
-          break;
-        case 'required':
-          coercedValue = false;
           break;
         default:
           coercedValue = value;
@@ -742,6 +776,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
      * @memberof oj.ojSwitch
      */
 
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     *
+     * <p>
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-switch</td>
+     *       <td>Top level switch class. </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-focus-highlight</td>
+     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojSwitch
+     */
+
   });
 }());
 
@@ -770,33 +831,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
 (function() {
 var ojSwitchMeta = {
   "properties": {
-    "disabled": {
-      "type": "boolean"
-    },
-    "readOnly": {
-      "type": "boolean"
-    },
-    "title": {
-      "type": "string"
-    },
     "value": {
+      "type": "boolean",
+      "writeback": true
+    },
+    "readonly": {
       "type": "boolean",
       "writeback": true
     }
   },
   "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
-    "refresh": {},
-    "widget": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojSwitch"
+    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojSwitch"
   }
 };
-oj.Components.registerMetadata('ojSwitch', 'editableValue', ojSwitchMeta);
-oj.Components.register('oj-switch', oj.Components.getMetadata('ojSwitch'));
+oj.CustomElementBridge.registerMetadata('oj-switch', 'editableValue', ojSwitchMeta);
+oj.CustomElementBridge.register('oj-switch', {'metadata': oj.CustomElementBridge.getMetadata('oj-switch')});
 })();
 });

@@ -323,36 +323,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
     input : null,
 
     /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojRatingGauge({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojRatingGauge
-     * @instance
-     */
-    optionChange: null,
-    /**
      * <p>The <code class="prettyprint">rawValue</code> is the read-only option for retrieving
      * the transient value from the rating gauge.</p>
      *
@@ -691,36 +661,6 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
     input : null,
 
     /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojDialGauge({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojDialGauge
-     * @instance
-     */
-    optionChange: null,
-    /**
      * <p>The <code class="prettyprint">rawValue</code> is the read-only option for retrieving
      * the transient value from the dial gauge.</p>
      *
@@ -1020,37 +960,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @instance
      */
     input : null,
-
-    /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojStatusMeterGauge({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     */
-    optionChange: null,
+    
     /**
      * <p>The <code class="prettyprint">rawValue</code> is the read-only option for retrieving
      * the transient value from the status meter gauge.</p>
@@ -1090,7 +1000,15 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
   },
 
   //** @inheritdoc */
-  _Render : function() {
+  _ProcessOptions: function() {
+    this._super();
+    var center = this.options['center'];
+    if (center && center['_renderer'])
+      center['renderer'] = this._GetTemplateRenderer(center['_renderer'], 'center');
+  },
+
+  //** @inheritdoc */
+  _Render: function() {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
     if(this.element.attr('title'))
     {
@@ -1333,70 +1251,21 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  */
 (function() {
 var dvtBaseGaugeMeta = {
-  "properties": {},
-  "methods": {},
-  "extension": {
-    "_widgetName": "dvtBaseGauge"
-  }
-};
-oj.Components.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
-})();
-
-(function() {
-var ojDialGaugeMeta = {
   "properties": {
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDataChange": {
-      "type": "string"
-    },
-    "animationOnDisplay": {
-      "type": "string"
-    },
-    "background": {
-      "type": "object|string"
-    },
-    "indicator": {
-      "type": "object|string"
-    },
-    "max": {
-      "type": "number"
-    },
-    "metricLabel": {
-      "type": "object"
-    },
-    "min": {
-      "type": "number"
-    },
-    "rawValue": {
-      "type": "number",
-      "readOnly": true,
-      "writeback": true
-    },
-    "readOnly": {
-      "type": "boolean"
-    },
-    "tickLabel": {
-      "type": "object"
-    },
-    "tooltip": {
-      "type": "object"
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     }
   },
-  "methods": {
-    "getMetricLabel": {}
-  },
+  "methods": {},
   "extension": {
-    "_widgetName": "ojDialGauge"
+    _WIDGET_NAME: "dvtBaseGauge"
   }
 };
-oj.Components.registerMetadata('ojDialGauge', 'dvtBaseGauge', ojDialGaugeMeta);
-oj.Components.register('oj-dial-gauge', oj.Components.getMetadata('ojDialGauge'));
+oj.CustomElementBridge.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
 })();
 
 (function() {
@@ -1405,7 +1274,7 @@ var ojLedGaugeMeta = {
     "borderColor": {
       "type": "string"
     },
-    "className": {
+    "svgClassName": {
       "type": "string"
     },
     "color": {
@@ -1415,62 +1284,142 @@ var ojLedGaugeMeta = {
       "type": "number"
     },
     "metricLabel": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        },
+        "scaling": {
+          "type": "string",
+          "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
+        },
+        "style": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "enumValues": ["percent", "number"]
+        },
+        "textType": {
+          "type": "string"
+        }
+      }
     },
     "min": {
       "type": "number"
     },
     "rotation": {
-      "type": "number"
+      "type": "number",
+      "enumValues": ["0", "90", "180", "270"]
     },
     "size": {
       "type": "number"
     },
-    "style": {
+    "svgStyle": {
       "type": "object"
     },
     "thresholds": {
       "type": "Array<object>"
     },
-    "title": {
-      "type": "object"
+    "label": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "type": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["arrow", "square", "circle", "rectangle", "diamond", "triangle", "human", "star"]
     },
     "value": {
       "type": "number",
       "writeback": true
     },
     "visualEffects": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "auto"]
     }
   },
   "methods": {
     "getMetricLabel": {}
   },
   "extension": {
-    "_widgetName": "ojLedGauge"
+    _WIDGET_NAME: "ojLedGauge"
   }
 };
-oj.Components.registerMetadata('ojLedGauge', 'dvtBaseGauge', ojLedGaugeMeta);
-oj.Components.register('oj-led-gauge', oj.Components.getMetadata('ojLedGauge'));
+oj.CustomElementBridge.registerMetadata('oj-led-gauge', 'dvtBaseGauge', ojLedGaugeMeta);
+oj.CustomElementBridge.register('oj-led-gauge', {'metadata': oj.CustomElementBridge.getMetadata('oj-led-gauge')});
 })();
 
 (function() {
 var ojRatingGaugeMeta = {
   "properties": {
     "changed": {
-      "type": "boolean"
+      "type": "boolean",
+      "writeback": true
     },
     "changedState": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "enumValues": ["circle", "rectangle", "diamond", "triangle", "human", "star"]
+        },
+        "source": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "hoverState": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "enumValues": ["circle", "rectangle", "diamond", "triangle", "human", "star"]
+        },
+        "source": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "max": {
       "type": "number"
@@ -1479,7 +1428,8 @@ var ojRatingGaugeMeta = {
       "type": "number"
     },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "orientation": ["vertical", "horizontal"]
     },
     "preserveAspectRatio": {
       "type": "string"
@@ -1493,35 +1443,82 @@ var ojRatingGaugeMeta = {
       "type": "boolean"
     },
     "selectedState": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "enumValues": ["circle", "rectangle", "diamond", "triangle", "human", "star"]
+        },
+        "source": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "step": {
-      "type": "number"
+      "type": "number",
+      "enumValues": ["1", ".5"]
     },
     "thresholds": {
       "type": "Array<object>"
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "unselectedState": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "enumValues": ["circle", "rectangle", "diamond", "triangle", "human", "star"]
+        },
+        "source": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "value": {
       "type": "number",
       "writeback": true
     },
     "visualEffects": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "auto"]
     }
   },
   "methods": {},
   "extension": {
-    "_widgetName": "ojRatingGauge"
+    _WIDGET_NAME: "ojRatingGauge"
   }
 };
-oj.Components.registerMetadata('ojRatingGauge', 'dvtBaseGauge', ojRatingGaugeMeta);
-oj.Components.register('oj-rating-gauge', oj.Components.getMetadata('ojRatingGauge'));
+oj.CustomElementBridge.registerMetadata('oj-rating-gauge', 'dvtBaseGauge', ojRatingGaugeMeta);
+oj.CustomElementBridge.register('oj-rating-gauge', {'metadata': oj.CustomElementBridge.getMetadata('oj-rating-gauge')});
 })();
 
 (function() {
@@ -1534,21 +1531,27 @@ var ojStatusMeterGaugeMeta = {
       "type": "number"
     },
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "borderColor": {
       "type": "string"
     },
     "borderRadius": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto"]
     },
     "center": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
-    "className": {
+    "svgClassName": {
       "type": "string"
     },
     "color": {
@@ -1564,16 +1567,66 @@ var ojStatusMeterGaugeMeta = {
       "type": "number"
     },
     "metricLabel": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object"
+        },
+        "position": {
+          "type": "string",
+          "enumValues": ["auto", "center", "insideIndicatorEdge", "outsideIndicatorEdge", "outsidePlotArea", "withTitle"]
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["auto", "on", "off"]
+        },
+        "scaling": {
+          "type": "string",
+          "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
+        },
+        "style": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "textType": {
+          "type": "string",
+          "enumValues": ["percent", "number"]
+        }
+      }
     },
     "min": {
       "type": "number"
     },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["circular", "horizontal", "vertical"]
     },
     "plotArea": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "borderRadius": {
+          "type": "string",
+          "enumValues": ["auto"]
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["auto", "on", "off"]
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "rawValue": {
       "type": "number",
@@ -1592,37 +1645,55 @@ var ojStatusMeterGaugeMeta = {
     "step": {
       "type": "number"
     },
-    "style": {
+    "svgStyle": {
       "type": "object"
     },
     "thresholdDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["cuurentOnly", "all", "onIndicator"]
     },
     "thresholds": {
       "type": "Array<object>"
     },
-    "title": {
-      "type": "object"
+    "label": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "string",
+          "enumValues": ["auto", "center", "start"]
+        },
+        "style": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "value": {
       "type": "number",
       "writeback": true
     },
     "visualEffects": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "auto"]
     }
   },
   "methods": {
     "getMetricLabel": {}
   },
   "extension": {
-    "_widgetName": "ojStatusMeterGauge"
+    _WIDGET_NAME: "ojStatusMeterGauge"
   }
 };
-oj.Components.registerMetadata('ojStatusMeterGauge', 'dvtBaseGauge', ojStatusMeterGaugeMeta);
-oj.Components.register('oj-status-meter-gauge', oj.Components.getMetadata('ojStatusMeterGauge'));
+oj.CustomElementBridge.registerMetadata('oj-status-meter-gauge', 'dvtBaseGauge', ojStatusMeterGaugeMeta);
+oj.CustomElementBridge.register('oj-status-meter-gauge', {'metadata': oj.CustomElementBridge.getMetadata('oj-status-meter-gauge')});
 })();
+
 });

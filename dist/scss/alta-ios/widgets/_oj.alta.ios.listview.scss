@@ -45,6 +45,12 @@
             outline-style: none;
         }
 
+        /* Styling addition for group items */
+        .oj-listview-group-item {
+            border-top-style: none;
+            border-bottom-style: none;
+        }
+
         /* Styling for drill icon */
         .oj-listview-drill-icon {
             @extend .oj-fwk-icon-caret03-end;

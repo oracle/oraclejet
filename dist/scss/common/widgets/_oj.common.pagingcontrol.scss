@@ -119,14 +119,8 @@
       line-height: $fontSize;
       padding: 8px 8px;
       display: inline-block;
-      outline: none;
     }
-    
-    /* Styling for the page mode dot link when focused. */
-    .oj-pagingcontrol-nav-dot.oj-focus {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
-    }
-    
+
     /* Styling for the page mode dot bullet. */
     .oj-pagingcontrol-nav-dot-bullet {
       font-size: 0;
@@ -176,6 +170,10 @@
       text-decoration: underline;
     }
 
+    .oj-pagingcontrol-nav-page.oj-focus {
+      text-decoration: underline;
+    }
+
     /* Styling for the page mode page link when selected. */
     .oj-pagingcontrol-nav-page.oj-selected {
       border: 1px solid $formControlLabelColor;
@@ -191,37 +189,40 @@
     /* Styling for the page mode page ellipsis. */
     .oj-pagingcontrol-nav-page-ellipsis {
       min-width: $fontSize;
-      padding: 4px 8px;
+      padding: 4px;
       vertical-align: bottom;
       font-size: $fontSize;
     }
 
     /* Styling for the page mode page label. */
-    .oj-pagingcontrol-nav-label {
+    label.oj-pagingcontrol-nav-label {
       color: $formControlLabelColor;
-      vertical-align: middle;
       font-size: $fontSize;
-      padding-top: 0.1em;
     }
 
     /* Styling for the page mode page input element. */
-    input.oj-pagingcontrol-nav-input { 
+    input.oj-pagingcontrol-nav-input.oj-inputtext-input { 
       @include oj-form-control-content($textAlign: center);
-      
-      margin: $wrappableMarginBottom 0 -1px 0;
       min-width: 2.5 * $fontSize;
       max-width: 2.5 * $fontSize;
-      vertical-align: middle;
       min-height: 2 * $fontSize;
       max-height: 2 * $fontSize;
       font-size: $fontSize;
       padding-left: 2px;
       padding-right: 2px;
     }
+    
+    /* Styling for the page mode page input element when readOnly. */
+    input[readOnly].oj-pagingcontrol-nav-input.oj-inputtext-input { 
+      color: $formControlLabelColor;
+      min-width: $fontSize;
+      max-width: $fontSize;
+      min-height: 0;
+      max-height: none;
+    }
 
     /* Styling for the page mode maximum number of pages text. */
     .oj-pagingcontrol-nav-input-max {
-      vertical-align: middle;
       color: $formControlLabelColor;
       font-size: $fontSize;
       @include oj-ltr() {    
@@ -234,7 +235,6 @@
 
     /* Styling for the page mode page range summary. */
     .oj-pagingcontrol-nav-input-summary {
-      vertical-align: middle;
       color: $formControlLabelColor;
       font-size: $fontSize;
       @include oj-ltr() {    

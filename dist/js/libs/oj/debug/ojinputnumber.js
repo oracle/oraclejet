@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojbutton'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number', 'ojs/ojbutton'], 
        /*
         * @param {Object} oj 
         * @param {jQuery} $
@@ -50,7 +50,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojbutton'],
  * <p>A step mismatch is when
  * the value is not a multiple of <code class="prettyprint">step</code>,
  * starting at the <code class="prettyprint">min</code>
- * or 0 if no <code class="prettyprint">min</code> is set.
+ * else initial vlaue if no <code class="prettyprint">min</code> is set, else 0.
  * A step mismatch will not be flagged as a validation error by default, but
  * the step up and step down feature will change the value to be a step match
  * if it isn't already.
@@ -391,7 +391,91 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      */
     readOnly: false,
-
+    /** 
+     * Whether the component is required or optional. When required is set to true, an implicit 
+     * required validator is created using the validator factory - 
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+     * 
+     * Translations specified using the <code class="prettyprint">translations.required</code> option 
+     * and the label associated with the component, are passed through to the options parameter of the 
+     * createValidator method. 
+     * 
+     * <p>
+     * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+     * the component may clears message and run validation, based on the current state it's in. </br>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on 
+     * the option value. This is to ensure errors are not flagged unnecessarily.
+     * <ul>
+     *   <li>if there is a deferred validation error, then 
+     *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then 
+     * component messages are cleared but no deferred validation is run.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then 
+     * component messages are cleared and normal validation is run using the current display value. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared. These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * 
+     * </p>
+     * 
+     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This is the default.
+     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * input's label will render a required icon. Additionally a required validator - 
+     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+     * An explicit required validator can be set by page authors using the validators option. 
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+     * $(".selector").ojInputNumber({required: true});<br/>
+     * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
+     * &lt;input required/><br/>
+     * // retreiving the required option returns true
+     * $(".selector").ojInputNumber("option", "required");<br/>
+     * 
+     * @example <caption>Customize messages and hints used by implicit required validator when 
+     * <code class="prettyprint">required</code> option is set:</caption> 
+     * &lt;input  data-bind="ojComponent: {
+     *   component: 'ojInputNumber', 
+     *   required: true,
+     *   value: currentValue, 
+     *   translations: {'required': {
+     *                 hint: 'custom: please enter a number',
+     *                 messageSummary: 'custom: \'{label}\' is Required', 
+     *                 messageDetail: 'custom: you must enter a number into \'{label}\''}}}"/>
+     * @expose 
+     * @access public
+     * @instance
+     * @default when the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * @memberof oj.ojInputNumber
+     * @type {boolean}
+     * @default false
+     * @since 0.7
+     * @see #translations
+     */
+    required: false, 
     /**
      * The size of the step to take when spinning via buttons or via the
      * <code class="prettyprint">stepUp()</code>/<code class="prettyprint">stepDown()</code> methods.
@@ -407,8 +491,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * <p>
      * The step up and step down feature will change the value to be a step match if it isn't already.
      * A step match is when the value is a multiple of step, starting at the
-     * <code class="prettyprint">min</code> or <code class="prettyprint">0</code> if no
-     * <code class="prettyprint">min</code> is set.
+     * <code class="prettyprint">min</code>, and if min is not set, then starting at the initial value, 
+     * and if neither <code class="prettyprint">min</code> or initial value are set, 
+     * then starting at <code class="prettyprint">0</code>. For example, if the value is 5, min is 0,
+     * and step is 100, stepUp will change value to be 100. Now if the value is 5, min is -20,
+     * and step is 100, stepUp will change the value to be 80.
+     * If the min is not set, and the initial value is 5 and the step is 100, then the stepUp will change
+     * the value to be 105.
+     * </p>
+     * <p> 
      * A value can be a step mismatch; if the <code class="prettyprint">value</code> is set
      * to be a step mismatch, it will not be flagged as a validation error.
      * @expose
@@ -432,6 +523,100 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * $( ".selector" ).ojInputNumber( { "step": "10" } );
      * */
     step: 1,
+    /** 
+     * List of validators used by component when performing validation. Each item is either an 
+     * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
+     * properties listed below. Implicit validators created by a component when certain options 
+     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
+     * validators specified through this option. At runtime when the component runs validation, it 
+     * combines the implicit validators with the list specified through this option. 
+     * <p>
+     * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
+     * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
+     * option. 
+     * </p>
+     * 
+     * <p>
+     * When <code class="prettyprint">validators</code> option changes due to programmatic 
+     * intervention, the component may decide to clear messages and run validation, based on the 
+     * current state it is in. </br>
+     * 
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to 
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the 
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages -
+     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
+     * and full validation run using the display value on the component. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does 
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.  These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * </p>
+     * 
+     * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can 
+     * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer 
+     * to {@link oj.ValidatorFactory}. <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
+     * @property {Object=} options - optional Object literal of options that the validator expects. 
+     * <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
+
+     * 
+     * @example <caption>Initialize the component with validator object literal:</caption>
+     * $(".selector").ojInputNumber({
+     *   validators: [{
+     *     type: 'regExp', 
+     *     options : {
+     *       pattern: '[0-9]{3,}'
+     *     }
+     *   }],
+     * });
+     * 
+     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
+     * to instantiate a range validator for numbers.
+     * 
+     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
+     * var validator2 = new MyCustomValidator({'foo': 'B'});
+     * $(".selector").ojInputNumber({
+     *   value: 10, 
+     *   validators: [validator1, validator2]
+     * });
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof oj.ojInputNumber
+     * @type {Array|undefined}
+     */    
+    validators: undefined,    
     /**
      * The value of the component. Value should be a number.
      *
@@ -484,6 +669,28 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @type {Object|null}
      */
     value: null
+
+    // Events
+
+    /**
+     * Triggered when the ojInputNumber is created.
+     *
+     * @event
+     * @name create
+     * @memberof oj.ojInputNumber
+     * @instance
+     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @property {Object} ui Currently empty
+     *
+     * @example <caption>Initialize the ojInputNumber with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputNumber({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     */
+    // create event declared in superclass, but we still want the above API doc
   },
   // P U B L I C    M E T H O D S
 
@@ -662,6 +869,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       throw new Error("ojInputNumber has no value");
     }
+    
+    this.initialValue = opts['value'];
 
     // now make sure min < max, else throw an Error
     if (opts['min'] != null && opts['max'] != null)
@@ -695,7 +904,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     
     this._focusable( this.uiInputNumber );
   },
-    /**
+  /**
    * Performs post processing after _SetOption() is called. Different options when changed perform
    * different tasks. See _AfterSetOption[OptionName] method for details.
    *
@@ -703,8 +912,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param {Object|string=} previous
    * @param {Object=} flags
    * @protected
-   * @memberof! oj.ojInputNumber
+   * @memberof oj.ojInputNumber
    * @instance
+   * @override
    */
   _AfterSetOption : function (option, previous, flags)
   {
@@ -714,13 +924,218 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       case "min":
       case "max":
         this._Refresh(option, this.options[option]);
+        break;           
+      case "readOnly":
+        this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.readOnlyOptionOptions);
         break;
+      case "required":
+        this._AfterSetOptionRequired(option);
+        break;
+      case "validators":
+        this._AfterSetOptionValidators(option);
+        break;
+      case "converter":
+        this._AfterSetOptionConverter(option);
+        break;           
       default:
         break;
     }
 
   },
+  /**
+   * Whether the a value can be set on the component. For example, if the component is 
+   * disabled or readOnly then setting value on component is a no-op. 
+   * 
+   * @see #_SetValue
+   * @return {boolean}
+   * @memberof oj.ojInputNumber
+   * @override
+   * @instance
+   * @protected
+   */
+  _CanSetValue: function ()
+  {
+    var readOnly;
+    var superCanSetValue = this._super();
+    
+    if (!superCanSetValue)
+      return false;
 
+    readOnly = this.options['readOnly'] || false;
+    return (readOnly) ? false : true;
+
+    
+  },
+  /**
+   * Performs post processing after value option changes by taking the following steps.
+   * This method piggybacks on the super's method by using the 'doNotClearMessages' flag to
+   * determine if this was a direct value option programmatic change.
+   * 
+   * - Calls super<br/>
+   * - if setOption was from programmatic intervention, <br/>
+   * &nbsp;&nbsp;- reset the this.initialValue which is used to determine the stepBase; <br/>
+   * 
+   * @param {string} option
+   * @param {Object=} flags
+   * 
+   * @protected
+   * @memberof oj.ojInputNumber
+   * @instance
+   * 
+   */
+  _AfterSetOptionValue : function(option, flags)
+  {
+    this._superApply(arguments);
+    var context = flags ? flags['_context'] : null;
+    var isUIValueChange;
+    var doNotClearMessages;
+
+    if (context)
+    {
+      isUIValueChange = context.originalEvent ? true : false;
+      doNotClearMessages = context.doNotClearMessages || false;
+    }
+
+    if (!isUIValueChange)
+    {
+      // value option can be updated directly (i.e., programmatically or through user interaction) 
+      // or updated indirectly as a result of some other option changing - e.g., converter, 
+      // validators, required etc. See _updateValue() method for details.
+      // When value changes directly due to programatic intervention (usually page author does this) 
+      // then update this.initialValue.
+      if (!doNotClearMessages) 
+      {
+        this.initialValue = this.options["value"];
+      }
+
+    }
+
+  },
+  /**
+   * Whether the component is required.
+   * 
+   * @return {boolean} true if required; false
+   * 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   * @override
+   */
+  _IsRequired : function () 
+  {
+    return this.options['required'];
+  },
+  /**
+   * Performs post processing after required option is set by taking the following steps.
+   * 
+   * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+   * run full validation with UI value (we don't know if the UI error is from a required validator 
+   * or something else);<br/>
+   * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+   * updated<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * 
+   * - if component is invalid and has messagesHidden -> required: false -> clear component 
+   * errors; no deferred validation is run.<br/>
+   * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+   * errors unnecessarily)<br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @param {string} option
+   * 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+  /**
+   * When validators option changes, take the following steps.
+   * 
+   * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+   * - if component is valid -> validators changes -> no change<br/>
+   * - if component is invalid has messagesShown -> validators changes -> clear all component 
+   * messages and re-run full validation on displayValue. if there are no errors push value to 
+   * model;<br/>
+   * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change 
+   * the required-ness of component <br/>
+   * - messagesCustom is not cleared.<br/>
+   * 
+   * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern, 
+   * etc. Components can call this method when these options change.
+   * 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,
+  /**
+   * Performs post processing after converter option changes by taking the following steps.
+   * 
+   * - always push new converter hint to messaging <br/>
+   * - if component has no errors -> refresh UI value<br/>
+   * - if component is invalid has messagesShown -> clear all component errors and run full 
+   * validation using display value. <br/>
+   * &nbsp;&nbsp;- if there are validation errors, value is not pushed to model; messagesShown is 
+   * updated.<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * - if component is invalid has messagesHidden -> refresh UI value. no need to run deferred 
+   * validations. <br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionConverter : oj.EditableValueUtils._AfterSetOptionConverter,  
+  /**
+   * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
+   * Called when convterer option changes 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected 
+   */
+  _ResetConverter : oj.EditableValueUtils._ResetConverter,
+ 
+    // *********** END WIDGET FACTORY METHODS **********
+  /**
+   * Need to override since we allow users to set the converter to null, undefined, and etc and when
+   * they do we use the default converter
+   *
+   * @return {Object} a converter instance or null
+   *
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   * @override
+   */
+  _GetConverter : function ()
+  {
+    return this.options['converter'] ?
+        this._getConverter() :
+        $["oj"]["ojInputNumber"]["prototype"]["options"]["converter"];
+  },
+  /**
+   * This returns an array of all validators 
+   * normalized from the validators option set on the component. <br/>
+   * @return {Array} of validators. 
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   */
+  _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
+  
+  /**
+   * Called to find out if aria-required is unsupported.
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @protected
+   */
+  _AriaRequiredUnsupported : function()
+  {
+    return false;
+  },
   /**
    * Handles options specific to inputnumber.
    * Note that _setOption does not get called during create in the super class.
@@ -794,12 +1209,49 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this.upButton = null;
     this.downButton = null;
     this.buttonSet = null;
+    this.initialValue = null;
 
     //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
     oj.DomUtils.unwrap(this.element, this.uiInputNumber);
     clearTimeout(this.timer);
     return ret;
   },
+      
+  /**
+   * Validates the component's display value using the converter and all validators registered on 
+   * the component and updates the <code class="prettyprint">value</code> option by performing the 
+   * following steps. 
+   * 
+   * <p>
+   * <ol> 
+   * <li>All messages are cleared, including custom messages added by the app. </li>
+   * <li>If no converter is present then processing continues to next step. If a converter is 
+   * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
+   * the <code class="prettyprint">messagesShown</code> option is updated and method returns false.</li>
+   * <li>If there are no validators setup for the component the <code class="prettyprint">value</code> 
+   * option is updated using the display value and the method returns true. Otherwise all 
+   * validators are run in sequence using the parsed value from the previous step. The implicit 
+   * required validator is run first if the component is marked required. When a validation error is 
+   * encountered it is remembered and the next validator in the sequence is run. </li>
+   * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
+   * option is updated and method returns false. If there were no errors, then the 
+   * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+   * </ol>
+   * 
+   * @returns {boolean} true if component passed validation, false if there were validation errors.
+   * 
+   * @example <caption>Validate component using its current value.</caption>
+   * // validate display value. 
+   * $(.selector).ojInputNumber('validate');
+   * 
+   * @method
+   * @access public
+   * @expose
+   * @instance
+   * @memberof oj.ojInputNumber
+   * @since 0.7
+   */
+  validate : oj.EditableValueUtils.validate,
   /**
    * Used for explicit cases where the component needs to be refreshed
    * (e.g., when the value option changes or other UI gestures).
@@ -809,44 +1261,50 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _Refresh: function(name, value, forceDisplayValueRefresh)
   {
-    this._superApply(arguments);
-    var valueMinMax = (name === "value" || name === "max" || name === "min");
-    var valueMinMaxDisabled = valueMinMax || name === "disabled";
     var valuenow;
-
-    if (valueMinMaxDisabled)
+    
+    this._superApply(arguments);
+    
+    switch (name)
     {
-      valuenow = this._getConvertedDisplayValue();
+      case "disabled":
+      case "max":
+      case "min": 
+      case "value":
+        valuenow = this._getConvertedDisplayValue();
+        // disables or enables both the up and down buttons depending upon what the value
+        // is on the screen after conversion plus what min/max are set to.
+        this._updateButtons(valuenow); 
+        // do not break;
+      case "max":
+      case "min": 
+      case "value":
+        // refreshes the aria-valuenow, aria-min, aria-max, etc.
+        this._refreshAriaMinMaxValue(valuenow);
+        break;
+        
+      case "converter":
+        valuenow = this._getConvertedDisplayValue();
+        this._refreshAriaText(valuenow);
+        break;
+     
+      case "required":
+        this._refreshRequired(value);
+        break;
+        
+      default:
+        break;
+        
     }
-    if (valueMinMax)
-      this._refreshAriaMinMaxValue(valuenow);
-    if (name === "converter")
-      this._refreshAriaText(valuenow);
-    // needs to get called if value, min, max, or disabled change, but not otherwise.
-    // put this condition since EditableValue calls _Refresh for every
-    // option change, and we don't want to updateButtons for every single option
-    // change.
-    if (valueMinMaxDisabled)
-      this._updateButtons(valuenow);
   },
-  // *********** END WIDGET FACTORY METHODS **********
   /**
-   * Need to override since we allow users to set the converter to null, undefined, and etc and when
-   * they do we use the default converter
-   *
-   * @return {Object} a converter instance or null
-   *
    * @memberof oj.ojInputNumber
    * @instance
-   * @protected
-   * @override
+   * @private
    */
-  _GetConverter : function ()
-  {
-    return this.options['converter'] ?
-        this._superApply(arguments) :
-        $["oj"]["ojInputNumber"]["prototype"]["options"]["converter"];
-  },
+  _refreshRequired : oj.EditableValueUtils._refreshRequired,
+
+
   /**
    * Sets up the default numberRange validators if there is a min or max.
    *
@@ -905,7 +1363,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       this._blurEnterSetValue(event);
     },
-    "touchstart .oj-inputnumber-button": function(event)
+    "touchstart .oj-inputnumber-button.oj-enabled": function(event)
     {
       this._start();
       
@@ -919,7 +1377,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       this._stop(event);
     },
-    "mousedown .oj-inputnumber-button": function(event)
+    "mousedown .oj-inputnumber-button.oj-enabled": function(event)
     {
       if (this._isRealMouseEvent(event))
       {
@@ -935,7 +1393,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
         this._stop(event);
       }
     },
-    "mouseenter .oj-inputnumber-button": function(event)
+    "mouseenter .oj-inputnumber-button.oj-enabled": function(event)
     {
       // button will add oj-active if mouse was down while mouseleave and kept down
       if (!$(event.currentTarget).hasClass("oj-active"))
@@ -1007,15 +1465,17 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     }
     this._refreshStateTheming("readOnly", this.options.readOnly);
     this._refreshRoleSpinbutton("readOnly", this.options.readOnly);
+    
+    this._refreshRequired(this.options['required']);
   },
   // Mark internal JET components for automation support. The automation
   // support needs to know while traversing the nodes that the JET button/buttonset 
   // is not the root JET component, but an internal node to a JET component.
   _markInternalComponents: function ()
   {
-     this.upButton.attr('data-oj-internal', true);
-     this.downButton.attr('data-oj-internal', true);
-     this.buttonSet.attr('data-oj-internal', true);
+     this.upButton.attr('data-oj-internal', '');
+     this.downButton.attr('data-oj-internal', '');
+     this.buttonSet.attr('data-oj-internal', '');
   },
   _createOjButtonset: function()
   {
@@ -1041,12 +1501,12 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
             .append(this._buttonHtml()); // @HTMLUpdateOK
      if (this.OuterWrapper) 
      {
-          this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber);
-          this.uiInputNumber.addClass("oj-inputnumber oj-component");
+        this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber); // @HTMLUpdateOK
+        this.uiInputNumber.addClass("oj-inputnumber oj-component");
      }
      else 
      {
-          this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
+        this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
      }
 
     //
@@ -1103,7 +1563,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _buttonHtml: function()
   {
-    return "" + "<div class='oj-buttonset-width-auto'>" +
+    return "<div class='oj-buttonset-width-auto'>" +
       "<button type='button' class='oj-inputnumber-button oj-inputnumber-down'></button>" +
       "<button type='button' class='oj-inputnumber-button oj-inputnumber-up'></button></div>";
   },
@@ -1116,17 +1576,40 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     return true;
   },
   /**
+   * Calls _spin to increment or decrement the number. It is called in a loop until
+   * this.timer is cleared (see this._stop(event) or min/max is reached. 
    * @private
    */
   _repeat: function(i, steps, event)
   {
+    var stopRepeat = false;
+    
+    // if steps is > 0, it is going up, else it is going down.
+    // need to check if min/max is reached, and if so, stop the repeat.
+    // we do a quick css check to see if it is disabled.
+    if (steps > 0)
+    {
+      if (this.upButton.hasClass("oj-disabled"))
+        stopRepeat = true;
+    }
+    else
+    {
+      if (this.downButton.hasClass("oj-disabled"))
+        stopRepeat = true;
+    }
     // repeat spinning as long as the key is down and min/max isn't reached
     i = i || 500;
 
     clearTimeout(this.timer);
+    // this.timer will be cleared elsewhere, like when the user stops holding down the up/down
+    // arrows. See this._stop
     this.timer = this._delay(function()
     {
-      this._repeat(40, steps, event);
+      if (!stopRepeat)
+      {
+
+        this._repeat(40, steps, event);
+      }
     },
             i);
 
@@ -1146,8 +1629,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var minOpt = options.min;
     var maxOpt = options.max;
     var stepOpt = options.step;
-    var precision = this._precision(minOpt, stepOpt);
-    value = this._adjustValue(value, step, minOpt, maxOpt, stepOpt, precision);
+    var initialValue = this.initialValue;
+    var precision = this._precision(minOpt, stepOpt, initialValue);
+    
+    value = this._adjustValue(value, step, minOpt, maxOpt, stepOpt, precision, initialValue);
     
     // Show the user what is going to be validated. We are making it so that clicking on the
     // up/down button is the same as if the user typed in a number and blurred.
@@ -1164,19 +1649,24 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     }
 
     // now validate and set value and all of that.
-    this._SetValue(value, event, this._VALIDATION_MODE.VALIDATORS_ONLY);
+    this._SetValue(value, event, {'validationMode': this._VALIDATION_MODE.VALIDATORS_ONLY});
   },
   /**
    * called from _adjustValue
    * @private
    */
-  _precision: function(minOpt, stepOpt)
+  _precision: function(minOpt, stepOpt, value)
   {
     var precision = this._precisionOf(stepOpt);
+    
     if (minOpt != null)
     {
       precision = Math.max(precision, this._precisionOf(minOpt));
     }
+    
+    if (value != null)
+      precision = Math.max(precision, this._precisionOf(value));
+    
     return precision;
   },
   /**
@@ -1196,7 +1686,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * http://www.w3.org/TR/html5/forms.html#dom-input-stepup
    * A valid value is one that is a multiple of
    * step starting at stepBase, where stepBase is min (if present),
-   * else initial value (if present) TODO,
+   * else initial value (if present),
    * else (if type == number) 0
    * If max is not a valid value, stepUp/stepDown will never go to max. It
    * will go to the calculated valid max (one that is the largest value
@@ -1209,25 +1699,32 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param {number} maxOpt - the max option
    * @param {number} stepOpt - the step option
    * @param {number} precision - the precision @see _precision
+   * @param {number} initialValue - the value when the component was created
    * @returns {number} - the new value after it has been adjusted
    */
-  _adjustValue: function(value, step, minOpt, maxOpt, stepOpt, precision)
+  _adjustValue: function(value, step, minOpt, maxOpt, stepOpt, precision, initialValue)
   {
     var newValue;
     var stepBase; 
     var aboveMin;
-     
+    var valueWithFraction;
+    
     if (precision > 0)
     {
-      return this._adjustValueForFractions(value, step, minOpt, maxOpt, stepOpt, precision);
+      valueWithFraction = 
+        this._adjustValueForFractions(value, step, minOpt, maxOpt, stepOpt, precision, initialValue);
+      return valueWithFraction;
     }
 
     // make sure we're at a valid step when we step up or down.
-    // - find out where we are relative to the base (min or 0)
-    stepBase = minOpt != null ? minOpt : 0;
-    
-    // what if I multiply everything by 10*precision, then divide by that
+    // - find out where we are relative to the base.
+    // follow these rules. use min, else use initial value, else use 0.
+    // https://www.w3.org/TR/html5/forms.html#concept-input-min-zero
+    stepBase = minOpt != null ? minOpt : initialValue;
+    if (stepBase == null)
+      stepBase = 0;
 
+    
     // From http://www.w3.org/TR/html5/forms.html#dom-input-stepup:
     // If value subtracted from the step base is not an integral multiple
     // of the step, then set value to the nearest value that, when subtracted
@@ -1238,7 +1735,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // is value-stepBase an integral multiple of step?
     try 
     {
-      value = parseFloat(value.toFixed(precision)); 
+      value = parseFloat(value.toFixed(precision));
     }
     catch (e)
     {
@@ -1264,7 +1761,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       {
         aboveMin = Math.floor(aboveMin / stepOpt) * stepOpt;
       }
-
       // rounding is based on 0, so adjust back to our base
       newValue = stepBase + aboveMin + step;
     }
@@ -1275,7 +1771,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
     // fix precision from bad JS floating point math
     // toFixed returns the newValue with a specific # of digits after the
-    // decimal point (this_precision() looks at max of step/min's # of
+    // decimal point (this_precision() looks at max of step/min/value's # of
     // digits.
     newValue = parseFloat(newValue.toFixed(precision));
     
@@ -1309,9 +1805,10 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @param {number} maxOpt - the max option
    * @param {number} stepOpt - the step option
    * @param {number} precision - the precision @see _precision
+   * @param {number} initialValue - the value when the component was created
    * @returns {number}
    */
-  _adjustValueForFractions: function(value, step, minOpt, maxOpt, stepOpt, precision)
+  _adjustValueForFractions: function(value, step, minOpt, maxOpt, stepOpt, precision, initialValue)
   {
     // don't call this function if precision is 0
     oj.Assert.assert(precision > 0);
@@ -1321,7 +1818,13 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var maxOptPower = maxOpt != null ? maxOpt*power : maxOpt;
     var stepOptPower = stepOpt != null ? stepOpt*power : stepOpt;
     var adjustValuePower =   
-      this._adjustValue(value*power, step*power, minOptPower, maxOptPower, stepOptPower, 0);
+      this._adjustValue(value*power, 
+                        step*power, 
+                        minOptPower, 
+                        maxOptPower, 
+                        stepOptPower, 
+                        0, 
+                        initialValue*power);
     return adjustValuePower/power;
     
   },
@@ -1360,6 +1863,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var upButton = this.upButton;
     var downButtonDisabledAlready;
     var upButtonDisabledAlready;
+    var isMaxOptNonNull = maxOpt != null;
+    var isMinOptNonNull = minOpt != null;
 
     if (!this.uiInputNumber)
       return;
@@ -1369,24 +1874,25 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
     // to prevent the overhead of disabling a button that is already disabled, check to see
     // if it is already disabled already.
-    downButtonDisabledAlready = downButton.ojButton("option", "disabled");
-    upButtonDisabledAlready = upButton.ojButton("option", "disabled");
-    
-    if (options.disabled || valuenow === undefined)
+    downButtonDisabledAlready = downButton.hasClass("oj-disabled");
+    upButtonDisabledAlready = upButton.hasClass("oj-disabled");
+      
+    if (options.disabled || valuenow === undefined || 
+       (isMaxOptNonNull && isMinOptNonNull && maxOpt === minOpt && valuenow === maxOpt))
     {
       if (!downButtonDisabledAlready)
         downButton.ojButton("disable");
       if (!upButtonDisabledAlready)
         upButton.ojButton("disable");
     }
-    else if (maxOpt != null && valuenow >= maxOpt)
+    else if (isMaxOptNonNull && valuenow >= maxOpt)
     {
       if (downButtonDisabledAlready)
         downButton.ojButton("enable");
       if (!upButtonDisabledAlready)
         upButton.ojButton("disable");
     }
-    else if (minOpt != null && valuenow <= minOpt)
+    else if (isMinOptNonNull && valuenow <= minOpt)
     {
       if (!downButtonDisabledAlready)
         downButton.ojButton("disable");
@@ -1403,6 +1909,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     
 
   },
+  /**
+   * Returns the normalized converter instance.
+   * 
+   * @return {Object} a converter instance or null
+   * @memberof oj.ojInputNumber
+   * @instance
+   * @private 
+   */
+  _getConverter : oj.EditableValueUtils._GetConverter,   
   /**
    * Returns the converted display value.
    * This function gets the display value (or 0 if no display value), then parses it using
@@ -1447,53 +1962,89 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._SetValue(val, event);
   },
   /**
+   * Create the NumberRangeValidator. Use the translations['numberRange'] options if they exist,
+   * otherwise use the NumberRangeValidator default strings for
+   *  hints, messageSummary and messageDetail.
+   * Use the 'min' and 'max' options.
    * @private
    */
   _createRangeValidator: function()
   {
-    var options = this.options, minOpt = options['min'], maxOpt = options['max'];
+    var options = this.options;
+    var minOpt = options['min'];
+    var maxOpt = options['max'];
     var newMin = minOpt != null ? minOpt : undefined;
     var newMax = maxOpt != null ? maxOpt : undefined;
     var translations = options['translations'];
+    var translationsOptionNumberRange = translations ? translations['numberRange'] || {}: {};   
+    var hintMin;
+    var hintMax;
+    var hintInRange;
+    var hintExact;
+    var messageDetailRangeOverflow;
+    var messageDetailRangeUnderflow;
+    var messageDetailExact;
+    var messageSummaryRangeOverflow;
+    var messageSummaryRangeUnderflow;
+    var translationsHint = translationsOptionNumberRange['hint'] || {};
+    var translationsMessageDetail = translationsOptionNumberRange['messageDetail'] || {};
+    var translationsMessageSummary = translationsOptionNumberRange['messageSummary'] || {};
+    var numberRangeValidatorOptions;
 
-    var reqTrans = translations ? translations['numberRange'] || {}: {};
-    
-    var hintMin, hintMax, hintInRange;
-    var messageDetailRangeOverflow, messageDetailRangeUnderflow;
-    var messageSummaryRangeOverflow, messageSummaryRangeUnderflow;
-
-    var hint = reqTrans['hint'] || {};
-    
-    var messageDetail = reqTrans['messageDetail'] || {};
-    var messageSummary = reqTrans['messageSummary'] || {};
-
-    if (hint !== null)
+    // First check if the translations hint/messageDetail/messageSummary options are set, and if
+    // so, use them.
+    // This is how the app dev could use inputNumber's translations option.
+    // var element = $("#spin").ojInputNumber(
+    //      {value: 10, min: -50,
+    //        translations:
+    //        {numberRange:
+    //          {hint:
+    //            {min: 'Translations Option Test: Please enter a number greater than or equal to {min}',
+    //             max: 'Translations Option Test: Please enter a number less than or equal to {max}',
+    //             inRange: 'Translations Option Test: Please enter a number between {min} and {max}'
+    //            },
+    //            messageDetail:
+    //            {rangeUnderflow: 
+    //            'Translations Option Test: The number {value} must be greater than or equal to {min}',
+    //              rangeOverflow: 
+    //              'Translations Option Test: The number {value} must be less than or equal to {max}'
+    //            }
+    //          }
+    //        } // end numberRange
+    if (translationsHint !== null)
     {
-      hintMin = hint['min'] || null;
-      hintMax = hint['max'] || null;
-      hintInRange = hint['inRange'] || null;
+      hintMin = translationsHint['min'] || null;
+      hintMax = translationsHint['max'] || null;
+      hintInRange = translationsHint['inRange'] || null;
+      hintExact = translationsHint['exact'] || null;
     }
-    if (messageDetail !== null)
+    if (translationsMessageDetail !== null)
     {
-      messageDetailRangeOverflow = messageDetail['rangeOverflow'] || null;
-      messageDetailRangeUnderflow = messageDetail['rangeUnderflow'] || null;
+      messageDetailRangeOverflow = translationsMessageDetail['rangeOverflow'] || null;
+      messageDetailRangeUnderflow = translationsMessageDetail['rangeUnderflow'] || null;
+      messageDetailExact = translationsMessageDetail['exact'] || null;
     }
-    if (messageSummary !== null)
+    if (translationsMessageSummary !== null)
     {
-      messageSummaryRangeOverflow = messageSummary['rangeOverflow'] || null;
-      messageSummaryRangeUnderflow = messageSummary['rangeUnderflow'] || null;
+      messageSummaryRangeOverflow = translationsMessageSummary['rangeOverflow'] || null;
+      messageSummaryRangeUnderflow = translationsMessageSummary['rangeUnderflow'] || null;
     }
 
-    var numberRangeOptions = {
+    // unless the translations options for the numberrange were set, the hints and messageDetails
+    // and messageSummaries will be null and we'll pick up the default strings from the 
+    // NumberRangeValidator.
+    numberRangeValidatorOptions = {
       'min': newMin,
       'max': newMax,
       'hint' : {'min':hintMin || null,
                 'max':hintMax || null,
-                'inRange': hintInRange || null
+                'inRange': hintInRange || null,
+                'exact': hintExact || null
                },
       'messageDetail' : {
                 'rangeOverflow':messageDetailRangeOverflow || null,
-                'rangeUnderflow': messageDetailRangeUnderflow || null},
+                'rangeUnderflow': messageDetailRangeUnderflow || null,
+                'exact': messageDetailExact || null},
       'messageSummary' : {
                 'rangeOverflow':messageSummaryRangeOverflow || null,
                 'rangeUnderflow': messageSummaryRangeUnderflow || null},
@@ -1501,7 +2052,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
     this._inputNumberDefaultValidators[oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE] =
             oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE)
-            .createValidator(numberRangeOptions);
+            .createValidator(numberRangeValidatorOptions);
   },
 
   // The user can clear out min/max by setting the option to null, so we
@@ -1778,8 +2329,14 @@ var ojInputNumberMeta = {
     "readOnly": {
       "type": "boolean"
     },
+    "required": {
+      "type": "boolean"
+    },    
     "step": {
       "type": "number"
+    },
+    "validators": {
+      "type": "Array"
     },
     "value": {
       "type": "number",
@@ -1791,15 +2348,15 @@ var ojInputNumberMeta = {
     "refresh": {},
     "stepDown": {},
     "stepUp": {},
-    "widget": {}
+    "widget": {},
+    "validate": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojInputNumber"
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojInputNumber"
   }
 };
-oj.Components.registerMetadata('ojInputNumber', 'editableValue', ojInputNumberMeta);
-oj.Components.register('oj-input-number', oj.Components.getMetadata('ojInputNumber'));
+oj.CustomElementBridge.registerMetadata('oj-input-number', 'editableValue', ojInputNumberMeta);
+oj.CustomElementBridge.register('oj-input-number', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-number')});
 })();
 });

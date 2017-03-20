@@ -56,51 +56,57 @@ $labelPosition: $radioCheckboxLabelPosition) {
   }
 }
 
-// Call this to position the radio/checkbox background-image using margins.
-@mixin oj-radiocheckbox-image-margin($margin) {
+// Add margin around the image. From the edge to the image and from the image to the label text.
+// This is needed when the image and the label text are close together.
+@mixin oj-radiocheckbox-image-margin($marginToText, $marginToEdge) {
   .oj-radiocheckbox-icon {
-    background-size: 100% 100%;
-    @if($radioCheckboxLabelPosition == 'end') {
-      @include oj-ltr() {
-        margin: 0 $margin 0 0;
+    
+
+    @if ($marginToText == $marginToEdge) {
+       margin: 0 $marginToText 0 $marginToEdge;
+    }@else {
+
+      @if($radioCheckboxLabelPosition == 'end') {
+        @include oj-ltr() {
+          margin: 0 $marginToText 0 $marginToEdge;
+        }
+        @include oj-rtl() {
+          margin: 0 $marginToEdge 0 $marginToText;
+        }   
+      } 
+      @else {
+        @include oj-ltr() {
+          margin: 0 $marginToEdge 0 $marginToText;
+        }
+        @include oj-rtl() {
+          margin: 0 $marginToText 0 $marginToEdge;
+        }             
       }
-      @include oj-rtl() {
-        margin: 0 0 0 $margin;
-      }   
-    } 
-    @else {
-      @include oj-ltr() {
-        margin: 0 0 0 $margin;
-      }
-      @include oj-rtl() {
-        margin: 0 $margin 0 0;
-      }             
     }
   }
 
-  @if ($margin != 0)
+  @if ($marginToText != $marginToEdge)
   {
     // make a more specific selector than above if 
     // an input-start or input-end selector is set on the root dom
     // put the margin on the 'inside'.
     .oj-radioset-input-start .oj-radiocheckbox-icon,
     .oj-checkboxset-input-start .oj-radiocheckbox-icon {
-
       @include oj-ltr() {
-        margin: 0 $margin 0 0;      
+        margin: 0 $marginToText 0 $marginToEdge;      
       }
       @include oj-rtl() {
-        margin: 0 0 0 $margin;
+        margin: 0 $marginToEdge 0 $marginToText;
       }       
     }
 
     .oj-radioset-input-end .oj-radiocheckbox-icon,
     .oj-checkboxset-input-end .oj-radiocheckbox-icon {
       @include oj-ltr() {
-        margin: 0 0 0 $margin;      
+        margin: 0 $marginToEdge 0 $marginToText;      
       }
       @include oj-rtl() {
-        margin: 0 $margin 0 0;
+        margin: 0 $marginToText 0 $marginToEdge;
       }       
     }
   }
@@ -150,40 +156,46 @@ $labelPosition: $radioCheckboxLabelPosition) {
     }
 
     /* App developer should put a span around the input and label, and use this styleclass */
+    .oj-choice-item,
     .oj-choice-row {
       @include oj-display-flex-property();
       @include oj-align-items-property(center); // needed so label text and radio/checkbox align center.
       margin: 0;
     }
 
+    .oj-choice-direction-row .oj-choice-item,
     .oj-choice-row-inline {
       @include oj-display-inline-flex-property();
       @include oj-align-items-property(center); // needed so label text and radio/checkbox align center.
-      padding-top: 1px;
-    }
-
-    .oj-choice-row input[type="checkbox"],
-    .oj-choice-row input[type="radio"],
-    .oj-choice-row-inline input[type="checkbox"],
-    .oj-choice-row-inline input[type="radio"] {
-      @include oj-flex-property(0 0 auto);
+      margin: 0;
+      padding-top: 0;
     }
 
     // for this case where we hide the input, we want the label to grow so we use flex-property,
-    // but only in .oj-choice-row and not .oj-choice-row-inline because IE doesn't work well
+    // but only in column and not row because IE doesn't work well
     // if we use inline-flex and flex:1, and it works fine otherwise.
     // if we remove this for non-inline mode, then in Firefox and Chrome and IE, 
     // the label is short and the icon is right after it, so it is a must.
     // Note: flex-basis has to be auto, otherwise in IE the label contents wrap.
-    .oj-choice-row .oj-radio-label,
+    .oj-choice-direction-column .oj-radio-label,
+    .oj-choice-direction-column .oj-checkbox-label,
+    .oj-checkbox-label-nocomp,
+     oj-choice-row .oj-radio-label,
     .oj-choice-row .oj-checkbox-label,
     .oj-choice-row .oj-checkbox-label-nocomp {
       @include oj-flex-property(1 1 auto);
     } 
 
-    .oj-radioset,
-    .oj-checkboxset	{
+    // .oj-radioset and .oj-checkboxset are the root dom elements
+    .oj-radioset, 
+    .oj-checkboxset {
       display: inline-block;
+      box-sizing: border-box;
+      @if ($formControlLargeMaxWidth == 100%) {
+        max-width: $formControlLargeMaxWidth;
+        min-width: $formControlMinWidth;
+        width: 100%;
+      }
     }
 
     .oj-radio-label,
@@ -249,35 +261,36 @@ $labelPosition: $radioCheckboxLabelPosition) {
     }
 
     // when pressed, the row's background and border changes color.
+    .oj-radioset .oj-choice-item.oj-active,
+    .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-item.oj-active,
     .oj-radioset .oj-choice-row.oj-active,
     .oj-radioset .oj-choice-row-inline.oj-active,
     .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-row.oj-active,
-      .oj-checkboxset:not(.oj-checkboxset-single).oj-choice-row-inline.oj-active {
+    .oj-checkboxset:not(.oj-checkboxset-single).oj-choice-row-inline.oj-active {
       background-color: $radioCheckboxItemBgColorActive;
     }
 
-    .oj-radioset .oj-choice-row.oj-active
-    .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-row.oj-active {
+    .oj-radioset.oj-choice-direction-column .oj-choice-item.oj-active,
+    .oj-checkboxset:not(.oj-checkboxset-single).oj-choice-direction-column .oj-choice-item.oj-active {
       border-top: 1px solid $radioCheckboxItemDividerColorActive;
     }
 
-    .oj-choice-row-inline {
-      margin: 0;
-      padding-top: 0;
-    }
-
     // the transparent border is so the text doesn't jump on active when we add a real border
-    // we only style oj-choice-row inside radioset or checkboxset, 
-    // not oj-choice-row-inline with borders.
+    // we only style oj-choice-item within oj-choice-direction-column inside radioset or checkboxset, 
+    // not oj-choice-direction-row with borders.
+    .oj-radioset.oj-choice-direction-column .oj-choice-item:first-child,
+    .oj-checkboxset.oj-choice-direction-column .oj-choice-item:first-child,
     .oj-radioset .oj-choice-row:first-child,
-      .oj-checkboxset .oj-choice-row:first-child  {
+    .oj-checkboxset .oj-choice-row:first-child  {
       border-top: 1px transparent solid;
     }
 
-    // oj-choice-row and oj-choice-row inline can be used for an individual, non-component checkbox.
-    // so we need to qualify which choice-row we give the divider borders to, the ones in the 
+    // oj-choice-item can be used for an individual, non-component checkbox.
+    // so we need to qualify which choice-item we give the divider borders to, the ones in the 
     // radioset or checkboxset
-    // remove the padding-top I put on .oj-choice-row that is there for a non-component checkbox.
+    // remove the padding-top I put on .oj-choice-item that is there for a non-component checkbox.
+    .oj-radioset.oj-choice-direction-column .oj-choice-item,
+    .oj-checkboxset.oj-choice-direction-column .oj-choice-item,
     .oj-radioset .oj-choice-row,
     .oj-checkboxset .oj-choice-row {
       border-top: 1px $radioCheckboxItemDividerColor solid;
@@ -285,27 +298,44 @@ $labelPosition: $radioCheckboxLabelPosition) {
     }
 
     // border-top of the next child.
+    .oj-radioset.oj-choice-direction-column .oj-choice-item.oj-active + .oj-choice-item,
+    .oj-checkboxset:not(.oj-checkboxset-single).oj-choice-direction-column .oj-choice-item.oj-active + .oj-choice-item,
     .oj-radioset .oj-choice-row.oj-active + .oj-choice-row,
     .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-row.oj-active + .oj-choice-row {
       border-top: 1px solid $radioCheckboxItemDividerColorActive;
     } 
 
+    .oj-radioset.oj-choice-direction-column .oj-choice-item:last-child.oj-active,
+    .oj-checkboxset:not(.oj-checkboxset-single).oj-choice-direction-column .oj-choice-item:last-child.oj-active,
     .oj-radioset .oj-choice-row:last-child.oj-active,
-      .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-row:last-child.oj-active {
+    .oj-checkboxset:not(.oj-checkboxset-single) .oj-choice-row:last-child.oj-active {
       border-bottom: 1px solid $radioCheckboxItemDividerColorActive;
     } 
 
     // the transparent border is so the text doesn't jump on active when we add a real border
+    .oj-choice-direction-column .oj-choice-item:last-child,
     .oj-choice-row:last-child {
       border-bottom: 1px solid transparent;
     }  
 
-    // height needed to have the label take up the entire height (and height:100% on label)
+    /*  oj-choice-row and oj-choice-row-inline have been deprecated 
+    on December 07, 2016 in v3.0.0. Use oj-choice-item instead. See release notes. */
+    .oj-choice-item,
     .oj-choice-row,
     .oj-choice-row-inline {
       position: relative;
+    }
+    
+    // if the label's text is really long, then I need the min-height on the ::before to work
+    // around an IE11 issue: IE11 Flexbox with 
+    // min-height not vertically aligning with align-items: center
+    .oj-choice-item::before,
+    .oj-choice-row::before,
+    .oj-choice-row-inline::before {
+      content: "";
+      display: inline-block;
+      visibility: hidden;
       min-height: $radioCheckboxRowHeight;
-      height: $radioCheckboxRowHeight;
     }
 
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should
@@ -313,52 +343,115 @@ $labelPosition: $radioCheckboxLabelPosition) {
     // editable datagrid cells and editable table cells
     // -----------------------------------------------------------------------------------------
 
-    .oj-form-control-inherit .oj-checkboxset-single .oj-choice-row,
-    .oj-form-control-inherit .oj-checkboxset-single .oj-checkboxset-wrapper {
+    .oj-form-control-inherit .oj-checkboxset-single.oj-choice-direction-column .oj-choice-item,
+    .oj-form-control-inherit .oj-checkboxset-single .oj-checkboxset-wrapper,
+    .oj-form-control-inherit .oj-checkboxset-single .oj-choice-row {
       margin-bottom: 0; 
       height:100%;
       min-height:100%;
     }
     
+    .oj-radiocheckbox-label-text,
+    .oj-checkbox-label-nocomp {
+      @if($radioCheckboxLabelPosition == "start") {
+        @include oj-ltr() {
+          padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+        }
+        @include oj-rtl() {
+          padding: 0 $radioCheckboxLabelToEdgePadding 0 0;
+        }
+      } @else {
+        @include oj-ltr() {
+          padding: 0 $radioCheckboxLabelToEdgePadding 0 0;
+        }
+        @include oj-rtl() {
+          padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+        }     
+      }
+    }
 
-    // IF HTML, THEN STYLE THE INPUTS WHEN THERE ARE ERRORS
+    .oj-checkboxset-input-end .oj-radiocheckbox-label-text,
+    .oj-checkboxset-input-end .oj-checkbox-label-nocomp,
+    .oj-radioset-input-end .oj-radiocheckbox-label-text {
+      @include oj-ltr() {
+        padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+      }
+      @include oj-rtl() {
+        padding: 0 $radioCheckboxLabelToEdgePadding 0 0;
+      }
+    }
+
+    // need the @ltr only so it overrides the padding selectors above
+    .oj-checkboxset-input-start .oj-radiocheckbox-label-text,
+    .oj-checkboxset-input-start .oj-checkbox-label-nocomp,
+    .oj-radioset-input-start .oj-radiocheckbox-label-text {
+      @include oj-ltr() {
+        padding: 0 $radioCheckboxLabelToEdgePadding 0 0;
+      }
+      @include oj-rtl() {
+        padding: 0 0 0 $radioCheckboxLabelToEdgePadding;
+      }
+    }
+    
+    .oj-radioset-input-end .oj-radio,
+    .oj-checkboxset-input-end .oj-checkbox {
+      @include oj-order-property(1);
+    }
+
+    .oj-radioset-input-start .oj-radio-label,
+    .oj-checkboxset-input-start .oj-checkbox-label {
+      @include oj-order-property(1);
+    }
+
+    // To make the label inline align with the set, this is needed. See the checkboxset
+    // checkbox position inline checkboxes demo and label inline demo.
+    .oj-label-inline.oj-radioset-label,
+    .oj-label-inline.oj-checkboxset-label {
+      margin-top: $radioCheckboxRowHeight/5;
+    }
+    
+    // If it isn't in html mode, we hide the input.
     @if($radioCheckboxRenderInputAs == 'html') {
+        // ui spec calls for about 8 pixels after label before next input if horizontal - one px
+        // more than before the label. see the label inline and inline checkboxes demos.
+        .oj-choice-direction-row .oj-choice-item > .oj-radio-label,
+        .oj-choice-direction-row .oj-choice-item > .oj-checkbox-label,
+        .oj-choice-direction-row .oj-choice-item > .oj-checkbox-label-nocomp,
+        .oj-choice-row-inline > .oj-radio-label,
+        .oj-choice-row-inline > .oj-checkbox-label,
+        .oj-choice-row-inline > .oj-checkbox-label-nocomp {
+          @include oj-ltr() {
+            margin-right: 1.5em;
+          }
+          @include oj-rtl() {
+            margin-left: 1.5em;
+          }   
+        }
+        
+          .oj-radio,
+          .oj-checkbox,
+          .oj-checkbox-nocomp {
+            @include oj-ltr() {
+              // I'm not using $formControlLabelInlineGutter since this variable
+              // is for the main label gutter, and if this is changed to something
+              // big, let's say, we probably don't want the radio label gutter to
+              // be affected. 
+              margin-left: $radioCheckboxInputToEdgePadding;
+              margin-right: $radioCheckboxInputToLabelPadding; 
+            }
+            @include oj-rtl() {
+              margin-right: $radioCheckboxInputToEdgePadding;
+              margin-left: $radioCheckboxInputToLabelPadding;
+            }
+            // this is needed to make sure the input doesn't get small when the label text is long.
+            // Chrome.
+            @include oj-flex-property(0 0 auto);
+          }
+        
 
-      .oj-radioset-input-end .oj-radio,
-      .oj-checkboxset-input-end .oj-checkbox {
-        @include oj-order-property(1);
-      }
-
-      .oj-radioset-input-start .oj-radio-label,
-      .oj-checkboxset-input-start .oj-checkbox-label {
-        @include oj-order-property(1);
-      }
-
-      /* Invalid styling for the radioset */
-      .oj-radioset.oj-invalid .oj-radio:not(.oj-disabled) {
-        -moz-outline-radius: 8px 8px 8px 8px;
-        // styling border does not work. Using outline like we do in ADF Faces
-        // radio components.
-        outline: $formControlMessagingBorderWidth solid $borderColorError;
-      }
-
-      /* Warning styling for the radioset */
-      .oj-radioset.oj-warning .oj-radio:not(.oj-disabled) {
-        -moz-outline-radius: 8px 8px 8px 8px;
-        outline: $formControlMessagingBorderWidth solid $borderColorWarning;
-      }  
-
-      /* Invalid styling for the checkboxset */
-      .oj-checkboxset.oj-invalid .oj-checkbox:not(.oj-disabled) {
-        outline: $formControlMessagingBorderWidth solid $borderColorError;
-      }
-
-      /* Warning styling for the checkboxset */
-      .oj-checkboxset.oj-warning .oj-checkbox:not(.oj-disabled) {
-        outline: $formControlMessagingBorderWidth solid $borderColorWarning;
-      }  
     }
     @else {
+
       // MOBILE THEMES USE IMAGES INSTEAD OF THE NATIVE INPUT COMPONENT
       // We tried 'icon fonts' - 
       // Firefox didn't do a good job of placing in content pixel perfect inside the border,
@@ -376,49 +469,55 @@ $labelPosition: $radioCheckboxLabelPosition) {
       //
       // The third thing we tried was to add dom inside of the label and use background-image.
       // This works well, but we need svg images in content for print/hi contrast mode. This 
-      // method is implemented.
+      // method was implemented, but now it isn't.
+      // 
+      // The fourth thing we tried was to use opacity: 0 to hide the input instead of 
+      // oj-helper-hidden-accessible and z-index: 1.
+      // This allows us to use content: instead background-image. 
+      // If we click on the image and swap the content
+      // the click event does not bubble up to the label so the item is not ever clicked/checked. 
+      // A simple html test case proves this. But of course clicking on the input directly works.
 
-      // add hidden-accessible on the input to hide the input
+      // Voiceover - there are two ways to use voiceover - swipe to get to the radioset/checkboxset
+      // items which works great, or tap on the image to read the item, which only works if the
+      // input is positioned under the image exactly.
+      // positioning the input under the image exactly is hard to do in every use case because
+      // the image is not absolutely positioned, it is positioned using flexbox, so I tried to 
+      // use width: 100% to have the input take up the entire row, but this made it so that the 
+      // android's active image did not display (whether I used background-image or content), 
+      // which I don't know why that would be.
+      // For now, take out width: 100% so everything works but the usecase where the input 
+      // is not on one of the edges. e.g., you see the input then the label rendered and they
+      // are both aligned on the right of the screen.
       .oj-radio, 
       .oj-checkbox {
-        @extend .oj-helper-hidden-accessible;
-      }
-
-      // for keyboard tabbing, show focus ring around the icon
-      .oj-choice-row.oj-focus-highlight .oj-radiocheckbox-icon {
-        @include oj-browser-focus-outline-approximation($primaryTextColor);
-      }
-
-      // And position it to the same spot as the img for voiceover to work.
-      // the actual positioning right/left is done in each theme using the 
-      // mixin oj-radiocheckbox-position-input.
-      .oj-radio, 
-      .oj-checkbox {
+        opacity: 0;
+        width: 100%;
         position: absolute;
-        top: 33%;
+        top: 0;
+        height: 90%;
+        z-index: 1;
       }
-
-      // need margin so the positioned input and the label don't overlap
-      .oj-checkbox-label-nocomp {
-        @include oj-ltr() {
-          margin-right: 1.5em;
-        }
-        @include oj-rtl() {
-          margin-left: 1.5em;
-        }   
+    
+      @include oj-radiocheckbox-position-input(0);
+      
+      // for keyboard tabbing, show focus ring around the icon
+      .oj-choice-item.oj-focus-highlight .oj-radiocheckbox-icon,
+      .oj-choice-row.oj-focus-highlight .oj-radiocheckbox-icon,
+      .oj-choice-row-inline.oj-focus-highlight .oj-radiocheckbox-icon {
+        @include oj-browser-focus-outline-approximation($primaryTextColor);
       }
 
       .oj-radio-label,
       .oj-checkbox-label,
       .oj-checkbox-label-nocomp {
-        padding: 0 $radioCheckboxLabelToEdgePadding 0 $radioCheckboxLabelToEdgePadding;
         @include oj-ltr() {
           text-align: left;
         }
         @include oj-rtl() {
           text-align: right;
         }  
-      } 
+      }   
 
       .oj-form-control-inherit .oj-checkbox-label {
         @include oj-ltr() {
@@ -429,31 +528,11 @@ $labelPosition: $radioCheckboxLabelPosition) {
         }
       }    
 
-
+      .oj-choice-direction-row .oj-choice-item,
       .oj-choice-row-inline {
         border-top-width: 0;
       }
-
-      // .oj-radioset and .oj-checkboxset are the root dom elements
-      .oj-radioset, 
-      .oj-checkboxset {
-        box-sizing: border-box;
-        max-width: $formControlLargeMaxWidth;
-        min-width: $formControlMinWidth;
-        width: 100%;
-      }
-
-
-      .oj-radioset.oj-invalid .oj-radioset-wrapper,
-      .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper {
-        border: $formControlMessagingBorderWidth solid $borderColorError;
-      }
-
-      .oj-radioset.oj-warning .oj-radioset-wrapper,
-      .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
-        border: $formControlMessagingBorderWidth solid $borderColorWarning;
-      }
-
+      
       // make label a flexbox, with the text and the icon as flex items.
       // label needs to take up the entire row so the user can click anywhere to select the item,
       // thus, height 100%.
@@ -492,6 +571,7 @@ $labelPosition: $radioCheckboxLabelPosition) {
       .oj-radiocheckbox-icon {
         box-sizing: border-box;
         background-repeat: no-repeat;
+        background-size: 100% 100%;
         @include oj-flex-property(0 0 auto);
         @if($radioCheckboxLabelPosition == "start") {
           @include oj-order-property(1);
@@ -499,14 +579,13 @@ $labelPosition: $radioCheckboxLabelPosition) {
         @else {
           @include oj-order-property(0);
         }
+        width: $radioCheckboxImageHeightWidth;
+        height: $radioCheckboxImageHeightWidth;
       }
-    }
 
-    // render as background image. using content: to render essentially changes the dom when the
-    // images change, 
-    // and this causes the click event from not bubbling to label so we don't use content:
-    @if ($radioCheckboxRenderInputAs == 'backgroundImage') {
-
+      @include oj-radiocheckbox-image-margin(
+        $radioCheckboxInputToLabelPadding, $radioCheckboxInputToEdgePadding);
+      
       // radio images
       // ------------
       .oj-radio-label .oj-radiocheckbox-icon {
@@ -517,11 +596,17 @@ $labelPosition: $radioCheckboxLabelPosition) {
         background-image: oj-radiocheckbox-image-url("radio_ena_selected.svg");
       }
 
-      .oj-radio-label.oj-active .oj-radiocheckbox-icon {
+            // need to use the active that gets set on the row, not the label, because
+      // if they click on the input, it won't make the label get the active class but the 
+      // row will still get the active class
+      .oj-radioset-wrapper > .oj-active  .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_pressed_unselected.svg");
       }
 
-      .oj-radio-label.oj-selected.oj-active .oj-radiocheckbox-icon {
+            // need to use the active that gets set on the row, not the label, because
+      // if they click on the input, it won't make the label get the active class but the 
+      // row will still get the active class
+      .oj-radioset-wrapper > .oj-selected.oj-active .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_pressed_selected.svg");
       }
 
@@ -543,11 +628,14 @@ $labelPosition: $radioCheckboxLabelPosition) {
         background-image: oj-radiocheckbox-image-url("checkbox_ena_selected.svg"); 
       }  
 
-      .oj-checkbox-label.oj-active .oj-radiocheckbox-icon {
+      // need to use the active that gets set on the row, not the label, because
+      // if they click on the input, it won't make the label get the active class but the 
+      // row will still get the active class
+      .oj-checkboxset-wrapper > .oj-active .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_pressed_unselected.svg");
       }
 
-      .oj-checkbox-label.oj-active.oj-selected .oj-radiocheckbox-icon {
+      .oj-checkboxset-wrapper > .oj-active.oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_pressed_selected.svg");
       }
 
@@ -636,6 +724,66 @@ $labelPosition: $radioCheckboxLabelPosition) {
       .oj-radioset-input-end .oj-radiocheckbox-label-text,
       .oj-checkboxset-input-end .oj-radiocheckbox-label-text {
         @include oj-order-property(0);
+      }
+    }
+    
+    // Invalid/Warning border for html mode and backgroundImage mode is defined here
+    
+    // If there is a border around the checkboxset or radioset by default, 
+    // then show the error on the border, regardless of if it is 
+    // an input element or an input image.
+    // If there is not a border around the checkboxset or radioset by default,
+    // then show the error border if it is 'backgroundImage' mode, else add the error outline
+    // around the input element.
+    @if($radioCheckboxRenderInputAs == 'html' and 
+    ($radioCheckboxSetBorderColor == null or $radioCheckboxSetBorderColor == transparent)) {      
+        /* Invalid styling for the radioset */
+        .oj-radioset.oj-invalid .oj-radio:not(.oj-disabled) {
+          -moz-outline-radius: 8px 8px 8px 8px;
+          // styling border does not work. Using outline like we do in ADF Faces
+          // radio components.
+          outline: $formControlMessagingBorderWidth solid $borderColorError;
+        }
+
+        /* Warning styling for the radioset */
+        .oj-radioset.oj-warning .oj-radio:not(.oj-disabled) {
+          -moz-outline-radius: 8px 8px 8px 8px;
+          outline: $formControlMessagingBorderWidth solid $borderColorWarning;
+        }  
+
+        /* Invalid styling for the checkboxset */
+        .oj-checkboxset.oj-invalid .oj-checkbox:not(.oj-disabled) {
+          outline: $formControlMessagingBorderWidth solid $borderColorError;
+        }
+
+        /* Warning styling for the checkboxset */
+        .oj-checkboxset.oj-warning .oj-checkbox:not(.oj-disabled) {
+          outline: $formControlMessagingBorderWidth solid $borderColorWarning;
+        }
+    }
+    @else {
+      
+      .oj-radioset.oj-invalid .oj-radioset-wrapper,
+      .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper {
+        border: $formControlMessagingBorderWidth solid $borderColorError;
+      }
+
+      .oj-radioset.oj-warning .oj-radioset-wrapper,
+      .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
+        border: $formControlMessagingBorderWidth solid $borderColorWarning;
+      }
+      
+      // this can be the case where there is no border around the radioset or checkboxset by
+      // default, so you don't have any padding, but you want padding once you show the error
+      @if ($radioCheckboxInputToEdgePadding == 0 and 
+           $radioCheckboxInputToLabelPadding != 0) {
+        .oj-radioset.oj-invalid .oj-radioset-wrapper,
+        .oj-checkboxset.oj-invalid .oj-checkboxset-wrapper,
+        .oj-radioset.oj-warning .oj-radioset-wrapper,
+        .oj-checkboxset.oj-warning .oj-checkboxset-wrapper {
+          padding: $radioCheckboxInputToLabelPadding/2 $radioCheckboxInputToLabelPadding 
+            $radioCheckboxInputToLabelPadding/2 $radioCheckboxInputToLabelPadding;
+        }
       }
     }
 

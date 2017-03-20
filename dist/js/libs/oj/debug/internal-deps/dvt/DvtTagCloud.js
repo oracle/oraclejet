@@ -1273,7 +1273,8 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
   //Text measurement properties
   var textProperties = dvt.CSSStyle.getTextMeasurementProperties();
   //Public default style
-  var defaultStyle = options['styleDefaults']['style'];
+  var styleDefaults = options['styleDefaults'];
+  var defaultStyle = styleDefaults['svgStyle'] || styleDefaults['style'];
   if (defaultStyle && !(defaultStyle instanceof Object))
     defaultStyle = dvt.CSSStyle.cssStringToObject(defaultStyle);
   //Process tag cloud items
@@ -1286,8 +1287,8 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
     if (categoryMap && dvt.ArrayUtils.hasAnyMapItem(categoryMap, data['categories']))
       continue;
 
-    var style = options['styleDefaults']['_style'].clone();
-    var itemStyle = data['style'];
+    var style = styleDefaults['_style'].clone();
+    var itemStyle = data['svgStyle'] || data['style'];
     if (itemStyle && !(itemStyle instanceof Object))
       itemStyle = dvt.CSSStyle.cssStringToObject(itemStyle);
     //Order of precedence of processing item color is,
@@ -1315,7 +1316,8 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
       style.setStyle(dvt.CSSStyle.COLOR, color);
     style.setStyle(dvt.CSSStyle.FONT_SIZE, fontSizeFunction.call(null, data['value']).toString());
 
-    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, data['className'], data['id']);
+    var className = data['svgClassName'] || data['className'];
+    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className, data['id']);
     var peer = new DvtTagCloudObjPeer(tagCloud, item, data);
     tagCloud.EventManager.associate(item, peer);
     tagCloud.registerObject(peer, i);

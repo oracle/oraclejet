@@ -147,6 +147,12 @@ dvt.Legend.prototype.render = function(options, width, height)
   this.getOptions()['isLayout'] = false;
 
   // Clear any contents rendered previously
+  var childCount = this.getNumChildren();
+  for (var childIndex = 0; childIndex < childCount; childIndex++) {
+    var child = this.getChildAt(childIndex);
+    child.destroy();
+  }
+
   this.removeChildren();
   this._peers = [];
   this._navigablePeers = [];
@@ -2107,7 +2113,7 @@ DvtLegendRenderer._calcColumns = function(legend, availSpace, rowHeight, items, 
 
   if (minimizeNumRows) {
     // For horizontal layouts form as many columns as possible to minimize the height
-    numCols = Math.min(Math.floor((availSpace.w + colGap) / (fullColWidth + colGap)), items.length); // Get possible number of cols
+    numCols = Math.min(Math.max(Math.floor((availSpace.w + colGap) / (fullColWidth + colGap)), 1), items.length); // Get possible number of cols
     numRows = Math.min(Math.floor((availSpace.h + rowGap) / (rowHeight + rowGap)) , Math.ceil(items.length / numCols));
 
     // Adjust number of columns and rows to remove unused columns and even out columns
@@ -2251,7 +2257,7 @@ DvtLegendRenderer._isItemDrillable = function(legend, item) {
  * @param {number} textSpace The width allowed for text.
  * @param {String} label The content of the text object.
  * @param {String} style The CSS style string to apply to the text object.
- * @return {DvtText}
+ * @return {dvt.Text}
  * @private
  */
 DvtLegendRenderer._createLegendText = function(container, textSpace, label, style) {
@@ -2369,8 +2375,8 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
   // Find the style values
   var shape = item['markerShape'];
   var color = item['markerColor'] ? item['markerColor'] : item['color'];
-  var style = item['markerStyle'] ? item['markerStyle'] : item['style'];
-  var className = item['markerClassName'] ? item['markerClassName'] : item['className'];
+  var style = (item['markerStyle'] || item['markerSvgStyle']) ? (item['markerStyle'] || item['markerSvgStyle']) : (item['style'] || item['svgStyle']);
+  var className = (item['markerClassName'] || item['markerSvgClassName']) ? (item['markerClassName'] || item['markerSvgClassName']) : (item['className'] || item['svgClassName']);
   var pattern = item['pattern'];
 
   var legendMarker;
@@ -2424,7 +2430,7 @@ DvtLegendRenderer._createLine = function(context, x, y, colWidth, rowHeight, ite
     stroke.setType(dvt.Stroke.convertTypeString(style), '2');
 
   // set custom style and class
-  line.setClassName(item['className']).setStyle(item['style']);
+  line.setClassName(item['className'] || item['svgClassName']).setStyle(item['style'] || item['svgStyle']);
 
   line.setStroke(stroke);
   line.setPixelHinting(true);
@@ -2444,8 +2450,8 @@ DvtLegendRenderer._getBoxPlotOptions = function(item, prefix) {
     'markerShape': 'rectangle',
     'color': item['_boxPlot'][prefix + 'Color'],
     'pattern': item['_boxPlot']['_' + prefix + 'Pattern'],
-    'className': item['_boxPlot'][prefix + 'ClassName'],
-    'style': item['_boxPlot'][prefix + 'Style']
+    'className': (item['_boxPlot'][prefix + 'ClassName'] || item['_boxPlot'][prefix + 'svgClassName']),
+    'style': (item['_boxPlot'][prefix + 'Style'] || item['_boxPlot'][prefix + 'svgStyle'])
   };
 };
 

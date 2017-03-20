@@ -3,32 +3,35 @@
 
 @if $includeRowExpanderClasses != false {
     @include module-include-once("common.rowexpander") {
-        
+
         // This is to prevent the flash of unstyled content before the html becomes JET components.
         @if $initialVisibility == hidden {
           oj-row-expander:not(.oj-complete) {
             visibility: hidden;
-          }      
+          }
         }
 
         /* Styling for the widget */
-        .oj-rowexpander{
-            display:inline-block;
+        .oj-table .oj-rowexpander {
+            display: inline-block;
         }
 
         /* Bottom alignment in datagrid */
-        .oj-datagrid .oj-rowexpander{
+        .oj-datagrid .oj-rowexpander {
             height:100%;
+            @include oj-display-flex-property();
+            @include oj-align-items-property(center);
+            @include oj-justify-content-property(center);
         }
 
-        /* Size and position the spacer */
-        .oj-rowexpander-icon-spacer{
-            min-width:1.5em;
+        /* Size and position the spacer that determines the distance between the icon and cell text */
+        .oj-rowexpander-icon-spacer {
+            min-width: $rowExpanderSpacerWidth;
             display:inline-block;
         }
 
         /* Size and position the touch area */
-        .oj-rowexpander-touch-area{
+        .oj-rowexpander-touch-area {
             box-sizing: border-box;
             height: 1.5em;
             width: 1.5em;
@@ -36,14 +39,15 @@
         }
 
         /* Data grid specific bottom alignment of touch area */
-        .oj-datagrid .oj-rowexpander-touch-area{
-            position:absolute;
-            bottom:0;
-            margin-bottom: calc(-.25em + 1px);
+        .oj-datagrid .oj-rowexpander-touch-area {
+            @include oj-display-flex-property();
+            @include oj-align-items-property(center);
+            @include oj-justify-content-property(center);
+            @include oj-flex-property(0 1 auto);
         }
 
         /* Table specific centered alignment of touch area */
-        .oj-table .oj-rowexpander-touch-area{
+        .oj-table .oj-rowexpander-touch-area {
             margin-bottom: -.25em;
             margin-top: -.25em;
         }
@@ -53,8 +57,9 @@
         .oj-rowexpander-expand-icon,
         .oj-rowexpander-collapse-icon,
         .oj-rowexpander-lazyload-icon {
-            font-size: 1em; 
+            // font size should be default for icons and not grow/shrink with content
             outline:none;
+            @include oj-flex-property(0 1 auto);
         }
 
         /* Focus border for highlighted icons */
@@ -65,14 +70,6 @@
             @include oj-browser-focus-outline-approximation($primaryTextColor);
         }
 
-        /* Data grid specific absolute icon positioning */
-        .oj-datagrid .oj-rowexpander-leaf-icon,
-        .oj-datagrid .oj-rowexpander-expand-icon,
-        .oj-datagrid .oj-rowexpander-collapse-icon,
-        .oj-datagrid .oj-rowexpander-lazyload-icon {
-            position:absolute;
-        }
-
         /* Styling for the load icon */
         .oj-rowexpander-lazyload-icon {
             @extend .oj-fwk-icon-load;
@@ -80,11 +77,9 @@
         }
 
         /* Add this class name to your text when stamping a row expander inside of data grid to obtain bottom alignment */
-        .oj-rowexpander-cell-text{
-            position:absolute;
-            overflow:hidden;
-            //in the row expander case text is default aligned to the bottom
-            bottom:0;
+        .oj-rowexpander-cell-text {
+            @include oj-flex-property(0 1 auto);
+            box-sizing: border-box;
         }
 
         .oj-rowexpander-indent{
@@ -92,47 +87,12 @@
         }
 
         /* Set the indentation here depth 1 is one indent level */
-        .oj-rowexpander-depth-1 {
-            width: $rowExpanderIndentWidth;
-        }
+        @include oj-property-multiplier($selectorName: 'oj-rowexpander-depth', $propertyName: 'width', $propertyMultiplicand: $rowExpanderIndentWidth, $minMultiplier: 1, $maxMultiplier: 7);
 
-        .oj-rowexpander-depth-2 {
-            width: ($rowExpanderIndentWidth * 2);
-        }
-
-        .oj-rowexpander-depth-3 {
-            width: ($rowExpanderIndentWidth * 3);
-        }
-
-        .oj-rowexpander-depth-4 {
-            width: ($rowExpanderIndentWidth * 4);
-        }
-
-        .oj-rowexpander-depth-5 {
-            width: ($rowExpanderIndentWidth * 5);
-        }
-
-        .oj-rowexpander-depth-6 {
-            width: ($rowExpanderIndentWidth * 6);
-        }
-
-        .oj-rowexpander-depth-7 {
-            width: ($rowExpanderIndentWidth * 7);
-        }
-
-        /* Styling for the expand icon */
-        .oj-rowexpander-expand-icon{
-            @extend .oj-fwk-icon-arrow03-end;
-        }
-
-        /* Styling for the collapse icon */
-        .oj-rowexpander-collapse-icon {
-            @extend .oj-fwk-icon-arrow03-s-end;
-        }
 
         /* Styling to remove the default underlining of hovered links */
         .oj-rowexpander a:hover,
-        .oj-rowexpander a:focus{
+        .oj-rowexpander a:focus {
             text-decoration:none;
         }
     }

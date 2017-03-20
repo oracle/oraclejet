@@ -21,8 +21,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#thematicMapOverview-section"></a>
  * </h3>
  *
- * <p>Thematic Map component for JET. Thematic maps are used to display data corresponding to a geographic location
- * or region, such as election data for a state or sales by territory for a product.</p>
+ * <p>Thematic maps are used to display data corresponding to geographic locations
+ * or regions, such as election data for a state or sales by territory for a product. 
+ * Applications are required to supply a basemap and an area layer for a valid Thematic Map.</p>
  *
  * {@ojinclude "name":"warning"}
  *
@@ -248,37 +249,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @deprecated Use the  <a href="#whenReady">whenReady</a> method instead
        * @instance
        */
-      load: null,
-      /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention. If the new value is the same as the previous value, no event will be fired.
-       *
-       * @property {Object} data event payload
-       * @property {string} data.option the name of the option that changed, i.e. "value"
-       * @property {Object} data.previousValue an Object holding the previous value of the option
-       * @property {Object} data.value an Object holding the current value of the option
-       * @property {Object} ui.optionMetadata information about the option that is changing
-       * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-       *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-       * $(".selector").ojThematicMap({
-       *   'optionChange': function (event, data) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-       * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       window.console.log("option changing is: " + data['option']);
-       *   };
-       * });
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojThematicMap
-       * @instance
-       */
-      optionChange: null
+      load: null
     },
     _currentLocale : '',
     _loadedBasemaps : [],
@@ -450,13 +421,68 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       this._super(options, flags);
      },
 
+
+    //** @inheritdoc */
+    _ProcessOptions: function() {
+      this._super();
+
+      // wrap tooltip function in try catch
+      var tooltipObj = this.options['tooltip'];
+      var tooltipFun = tooltipObj ? tooltipObj['renderer'] : null;
+      if (tooltipFun) {
+        this.options['_tooltip'] = {
+          'renderer': function(context) {
+            var defaultTooltip = context['tooltip'];
+            try {
+              var tooltip = tooltipFun(context);
+              return tooltip || defaultTooltip;
+            } catch (error) {
+              oj.Logger.warn("Showing default tooltip. " + error);
+              return defaultTooltip;
+            }
+          },
+          '_templateCleanup': tooltipObj['_templateCleanup']
+        };
+      }
+
+      var areaLayers = this.options['areaLayers'];
+      // call custom renderers
+      if (areaLayers) {
+        for (var i = 0; i < areaLayers.length; i++) {
+          var areaDataLayer = areaLayers[i]['areaDataLayer'];
+          if (areaDataLayer) {
+            var renderer = areaDataLayer['_templateRenderer'];
+            if (renderer)
+              areaDataLayer['renderer'] = this._GetTemplateDataRenderer(renderer, 'area');
+          }
+        }
+      }
+      var pointDataLayers = this.options['pointDataLayers'];
+      if (pointDataLayers) {
+        for (var i = 0; i < pointDataLayers.length; i++) {
+          var pointDataLayer = pointDataLayers[i];
+          if (pointDataLayer) {
+            var renderer = pointDataLayer['_templateRenderer'];
+            if (renderer)
+              pointDataLayer['renderer'] = this._GetTemplateDataRenderer(renderer, 'point');
+          }
+        }
+      }
+
+      // callback function for getting the context needed for custom renderers
+      this.options['_contextHandler'] = this._getContextHandler();
+    },
+
     //** @inheritdoc */
     _Render: function() {
       this._NotReady();
+      
       var areaLayers = this.options['areaLayers'];
-      // Don't render unless a basemap and area layer is at least specified
-      if (!this.options['basemap'] || !areaLayers || areaLayers.length < 1)
+      // Don't render unless a basemap and area layer are at least specified
+      if (!this.options['basemap'] || !areaLayers || areaLayers.length < 1) {
+        this._MakeReady();
         return;
+      }
 
       // For thematic map, we must ensure that all basemaps are loaded before rendering.  If basemaps are still loading,
       // return and wait for the load listener to call _Render again.
@@ -467,105 +493,34 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
       }
       this._checkBasemaps = [];
 
-        // parse the top level selection map and populate data layer selection option
-        this._updateDataLayerSelection();
+      // parse the top level selection map and populate data layer selection option
+      this._updateDataLayerSelection();
 
-        // wrap tooltip function in try catch
-        var tooltipObj = this.options['tooltip'];
-        var tooltipFun = tooltipObj? tooltipObj['renderer'] : null;
-        if (tooltipFun) {
-          this.options['_tooltip'] = function(context) {
-            var defaultTooltip = context['tooltip'];
-            try {
-              var tooltip = tooltipFun(context);
-              return tooltip || defaultTooltip;
-            } catch (error) {
-              oj.Logger.warn("Showing default tooltip. " + error);
-              return defaultTooltip;
-            }
+      // do data layer updates only if we've already initially rendered the thematic map
+      if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
+        // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
+        // getBBox calls will not return the correct values.
+        // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
+        if(this._context.isReadyToRender()) {
+          for (var i = 0; i < this._dataLayersToUpdate.length; i++) {
+            var dl = this._dataLayersToUpdate[i];
+            var isAdl = dl['isADL'];
+            if (isAdl)
+              this._CleanTemplate('area');
+            else
+              this._CleanTemplate('point');
+            this._component.updateLayer(dl['options'], dl['parentLayer'], isAdl);
           }
+          this._dataLayersToUpdate = [];
         }
+      } else {
+        // Delegate to the super to call the shared JS component for actual rendering.
+        this._super();
+        this._initiallyRendered = true;
+      }
 
-        // call custom renderers
-        if (areaLayers) {
-          for (var i = 0; i < areaLayers.length; i++) {
-            var areaDataLayer = areaLayers[i]['areaDataLayer'];
-            if (areaDataLayer) {
-              var renderer = areaDataLayer['_templateRenderer'];
-              if (renderer)
-                areaDataLayer['renderer'] = this._getTemplateRenderer(renderer, areaDataLayer['markers']);
-            }
-          }
-        }
-        var pointDataLayers = this.options['pointDataLayers'];
-        if (pointDataLayers) {
-          for (var i = 0; i < pointDataLayers.length; i++) {
-            var pointDataLayer = pointDataLayers[i];
-            if (pointDataLayer) {
-              var renderer = pointDataLayer['_templateRenderer'];
-              if (renderer) {
-                pointDataLayer['renderer'] = this._getTemplateRenderer(renderer, pointDataLayer['markers']);
-              }
-            }
-          }
-        }
-
-        // callback function for getting the context needed for custom renderers
-        this.options['_contextHandler'] = this._getContextHandler();
-
-        // do data layer updates only if we've already initially rendered the thematic map
-        if (this._initiallyRendered && this._dataLayersToUpdate.length > 0) {
-          // Fix 18498656: If the component is not attached to a visible subtree of the DOM, rendering will fail because
-          // getBBox calls will not return the correct values.
-          // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
-          if(this._context.isReadyToRender()) {
-            for (var i = 0; i < this._dataLayersToUpdate.length; i++) {
-              var dl = this._dataLayersToUpdate[i];
-              this._component.updateLayer(dl['options'], dl['parentLayer'], dl['isADL']);
-            }
-            this._dataLayersToUpdate = [];
-          }
-        } else {
-          // Delegate to the super to call the shared JS component for actual rendering.
-          this._super();
-          this._initiallyRendered = true;
-        }
-
-        // Send event once basemaps have been loaded and rendering is complete
-        this._trigger('load', null, null);
-    },
-
-    /**
-     * Creates a callback function that will be used by a data item as a custom renderer
-     * @param {Function} templateFunction template function used to render knockout template
-     * @return {Function} a function that will be used by a data item as a custom renderer
-     * @private
-     * @instance
-     * @memberof oj.ojThematicMap
-     */
-    _getTemplateRenderer: function(templateFunction) {
-      var thisRef = this;
-      var templateHandlerFunc = function (context) {
-        var dummyDiv = document.createElement("div");
-        dummyDiv.style.display = "none";
-        dummyDiv._dvtcontext = thisRef._context;
-        thisRef.element.append(dummyDiv); // @HTMLUpdateOK
-        templateFunction({'parentElement':dummyDiv, 'data': context['data']});
-        var elem = dummyDiv.children[0];
-        if (elem) {
-          // The dummy div can be removed for custom svg elements, but need to be
-          // kept around for stamped DVTs so the oj components aren't removed.
-          if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
-            dummyDiv.removeChild(elem);
-            $(dummyDiv).remove();
-            return elem;
-          } else {
-            return thisRef._GetDvtComponent(elem);
-          }
-        }
-        return null;
-      };
-      return templateHandlerFunc;
+      // Send event once basemaps have been loaded and rendering is complete
+      this._trigger('load', null, null);
     },
 
     /**
@@ -592,7 +547,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
          'x': data['x'],
          'y': data['y']
        };
-       return context;
+       return thisRef._FixRendererContext(context);
      }
      return contextHandlerFunc;
     },
@@ -869,22 +824,13 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
      * @property {string} label
      * @property {boolean} selected
      * @property {string} tooltip
-     * @property {Function} getColor <b>Deprecated</b>: Use <code class="prettyprint">color</code> instead.
-     * @property {Function} getLabel <b>Deprecated</b>: Use <code class="prettyprint">label</code> instead.
-     * @property {Function} getTooltip <b>Deprecated</b>: Use <code class="prettyprint">tooltip</code> instead.
-     * @property {Function} isSelected <b>Deprecated</b>: Use <code class="prettyprint">selected</code> instead.
      * @return {Object|null} An object containing properties for the area, or null if none exists.
      * @expose
      * @instance
      * @memberof oj.ojThematicMap
      */
     getArea : function(dataLayerId, index) {
-      var ret = this._component.getAutomation().getData(dataLayerId, 'area', index);
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getData(dataLayerId, 'area', index);
     },
 
     /**
@@ -897,22 +843,13 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
      * @property {string} label
      * @property {boolean} selected
      * @property {string} tooltip
-     * @property {Function} getColor <b>Deprecated</b>: Use <code class="prettyprint">color</code> instead.
-     * @property {Function} getLabel <b>Deprecated</b>: Use <code class="prettyprint">label</code> instead.
-     * @property {Function} getTooltip <b>Deprecated</b>: Use <code class="prettyprint">tooltip</code> instead.
-     * @property {Function} isSelected <b>Deprecated</b>: Use <code class="prettyprint">selected</code> instead.
      * @return {Object|null} An object containing properties for the marker, or null if none exists.
      * @expose
      * @instance
      * @memberof oj.ojThematicMap
      */
     getMarker : function(dataLayerId, index) {
-      var ret = this._component.getAutomation().getData(dataLayerId, 'marker', index);
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getData(dataLayerId, 'marker', index);
     },
 
     /**
@@ -931,12 +868,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojThematicMap
      */
     getLink : function(dataLayerId, index) {
-      var ret = this._component.getAutomation().getData(dataLayerId, 'link', index);
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getData(dataLayerId, 'link', index);
     },
 
     /**
@@ -965,6 +897,11 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         'areaLayers': ['areaDataLayer/areas', 'areaDataLayer/markers'],
         'pointDataLayers': ['markers', 'links']
       };
+    },
+
+    //** @inheritdoc */
+    _GetComponentNoClonePaths : function() {
+      return {'areaLayers': {'areaDataLayer': {'areas': true, 'markers': true}}, 'pointDataLayers': {'markers': true, 'links': true}};
     },
 
     //** @inheritdoc */
@@ -1241,8 +1178,8 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * The knockout template used for stamping other data visualizations within a data layer. Only data
- * visualizations are currently supported. The markers.location or markers.x and markers.y options will be 
+ * The knockout template used for stamping other data visualizations within a data layer. Only a single SVG element or DVT is supported 
+ * when using knockout templates at this time. The markers.location or markers.x and markers.y options will be 
  * used to determine the stamp placement within the Thematic Map. No other existing marker options will be used
  * by the Thematic Map when a knockout template is provided.
  *
@@ -1258,8 +1195,8 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * The knockout template used for stamping other data visualizations within a data layer. Only data
- * visualizations are currently supported. The markers.location or markers.x and markers.y options will be 
+ * The knockout template used for stamping other data visualizations within a data layer. Only a single SVG element or DVT is supported 
+ * when using knockout templates at this time. The markers.location or markers.x and markers.y options will be 
  * used to determine the stamp placement within the Thematic Map. No other existing marker options will be used
  * by the Thematic Map when a knockout template is provided.
  *
@@ -1495,7 +1432,7 @@ oj.MapProviderUtils.linearRingToPath = function(coords) {
 var ojThematicMapMeta = {
   "properties": {
     "animationDuration": {
-      "type": "number"
+      "type": "number|string"
     },
     "animationOnDisplay": {
       "type": "string"
@@ -1525,7 +1462,15 @@ var ojThematicMapMeta = {
       "type": "string"
     },
     "mapProvider": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "geo": {
+          "type": "object"
+        },
+        "propertiesKeys": {
+          "type": "object"
+        }
+      }
     },
     "markerZoomBehavior": {
       "type": "string"
@@ -1543,16 +1488,109 @@ var ojThematicMapMeta = {
       "type": "object"
     },
     "styleDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "areaStyle": {
+          "type": "string|object"
+        },
+        "dataAreaDefaults": {
+          "type": "object",
+          "properties": {
+            "dataAreaDefaults": {
+              "borderColor": {
+                "type": "string"
+              },
+              "drilledInnerColor": {
+                "type": "string"
+              },
+              "drilledOuterColor": {
+                "type": "string"
+              },
+              "hoverColor": {
+                "type": "string"
+              },
+              "selectedInnerColor": {
+                "type": "string"
+              },
+              "selectedOuterColor": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "dataMarkerDefaults": {
+          "type": "object",
+          "properties": {
+            "dataMarkerDefaults": {
+              "borderColor": {
+                "type": "string"
+              },
+              "borderStyle": {
+                "type": "string"
+              },
+              "borderWidth": {
+                "type": "number"
+              },
+              "color": {
+                "type": "string"
+              },
+              "height": {
+                "type": "number"
+              },
+              "labelStyle": {
+                "type": "string"
+              },
+              "opacity": {
+                "type": "number"
+              },
+              "shape": {
+                "type": "string"
+              },
+              "width": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "hoverBehaviorDelay": {
+          "type": "number|string"
+        },
+        "labelStyle": {
+          "type": "string"
+        },
+        "linkDefaults": {
+          "type": "object",
+          "properties": {
+            "linkDefaults": {
+              "color": {
+                "type": "string"
+              },
+              "width": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "tooltipDisplay": {
       "type": "string"
     },
     "touchResponse": {
       "type": "string"
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     },
     "zooming": {
       "type": "string"
@@ -1568,10 +1606,10 @@ var ojThematicMapMeta = {
     "renderDefaultSelection": {}
   },
   "extension": {
-    "_widgetName": "ojThematicMap"
+    _WIDGET_NAME: "ojThematicMap"
   }
 };
-oj.Components.registerMetadata('ojThematicMap', 'dvtBaseComponent', ojThematicMapMeta);
-oj.Components.register('oj-thematic-map', oj.Components.getMetadata('ojThematicMap'));
+oj.CustomElementBridge.registerMetadata('oj-thematic-map', 'dvtBaseComponent', ojThematicMapMeta);
+oj.CustomElementBridge.register('oj-thematic-map', {'metadata': oj.CustomElementBridge.getMetadata('oj-thematic-map')});
 })();
 });

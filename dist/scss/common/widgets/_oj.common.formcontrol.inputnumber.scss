@@ -41,6 +41,7 @@
 
       // font size needs to be on the root, because max/min width is in em.
       font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
     }
 
     .oj-inputnumber-wrapper {

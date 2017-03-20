@@ -2,6 +2,7 @@
 
 // helpers
 @import "../common/helpers/oj.common.helpers";
+@import "../common/widgets/oj.common.css.variables";
 
 // tags & text
 @import "widgets/oj.alta.ios.tags.core";
@@ -84,6 +85,8 @@
 @import "widgets/oj.alta.ios.formcontrol.inputsearch";
 @import "widgets/oj.alta.ios.formcontrol.switch";
 @import "widgets/oj.alta.ios.formcontrol.slider";
+@import "widgets/oj.alta.ios.formcontrol.colorpalette";
+@import "widgets/oj.alta.ios.formcontrol.colorspectrum";
 
 // responsive
 @import "widgets/oj.alta.ios.flex";

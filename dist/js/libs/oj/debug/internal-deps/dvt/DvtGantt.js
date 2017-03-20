@@ -612,6 +612,24 @@ DvtGanttStyleUtils._DEPENDENCY_LINE_ARC_RADIUS = 5;
 DvtGanttStyleUtils._DEPENDENCY_LINE_TASK_LABEL_GAP = 2;
 
 /**
+ * Gets the horizontal scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+DvtGanttStyleUtils.getHorizontalScrollbarStyle = function()
+{
+  return new dvt.CSSStyle(DvtGanttStyleUtils._DEFAULT_HORIZONTAL_SCROLLBAR_STYLE);
+};
+
+/**
+ * Gets the vertical scrollbar style.
+ * @return {dvt.CSSStyle} The scrollbar style.
+ */
+DvtGanttStyleUtils.getVerticalScrollbarStyle = function()
+{
+  return new dvt.CSSStyle(DvtGanttStyleUtils._DEFAULT_VERTICAL_SCROLLBAR_STYLE);
+};
+
+/**
  * Gets the padding around taskbar.
  * @return {number} The taskbar padding.
  */
@@ -1248,11 +1266,21 @@ DvtGanttTooltipUtils.getValueFormat = function(gantt, type) {
   var valueFormats = gantt.getOptions()['valueFormats'];
   if (!valueFormats)
     return {};
-
-  for (var i = 0; i < valueFormats.length; i++) {
-    if (valueFormats[i]['type'] == type)
-      return valueFormats[i];
+  else if (valueFormats instanceof Array) {
+    // TODO remove deprecated array support
+    // Convert the deprecated array syntax to object syntax
+    var obj = {};
+    for (var i = 0; i < valueFormats.length; i++) {
+      var valueFormat = valueFormats[i];
+      obj[valueFormat['type']] = valueFormat;
+    }
+    gantt.getOptions()['valueFormats'] = obj;
+    valueFormats = obj;
   }
+
+  if (valueFormats[type])
+    return valueFormats[type];
+
   return {};
 };
 
@@ -1717,6 +1745,7 @@ dvt.Gantt.prototype.triggerAnimations = function()
   if (this.Animation)
   {
     // Instead of animating dep lines, hide them, animate, then show them again.
+    // TODO: remove this in 3.0.0 and refine dependency lines animation instead.
     this._hideDepLines();
     dvt.Playable.appendOnEnd(this.Animation, this._showDepLines, this);
 
@@ -1907,6 +1936,10 @@ dvt.Gantt.prototype._handleResize = function(width, height)
   }
   else
     DvtGanttRenderer._renderEmptyText(this);
+
+  if (!this.Animation)
+    // If not animating, that means we're done rendering, so fire the ready event.
+    this.RenderComplete();
 };
 
 /**
@@ -1953,7 +1986,7 @@ dvt.Gantt.prototype.updateRows = function()
 {
   var labelContainer;
   var rows = this._rows;
-  if (rows != null)
+  if (rows != null && rows.length > 0)
   {
     // update databody clip path
     DvtGanttRenderer._updateDatabody(this, this.getDatabody());
@@ -1967,6 +2000,10 @@ dvt.Gantt.prototype.updateRows = function()
       // rows[i].reRender(width, height);
       rows[i].render(this.getDatabody(), labelContainer);
     }
+  }
+  else
+  {
+    DvtGanttRenderer._renderEmptyText(this, true);
   }
 };
 
@@ -2084,7 +2121,7 @@ dvt.Gantt.prototype.handleZoomWheel = function(newLength, time, compLoc, trigger
     }
   }
 
-  if (this.isTimeDirScrollbarOn())
+  if (this.isTimeDirScrollbarOn() && this.timeDirScrollbar)
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
   var timeZoomCanvas = this.getTimeZoomCanvas();
@@ -2529,7 +2566,7 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
   }
 
   // scroll vertically and make sure it's scrolling in one direction only
-  if (deltaY != 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX))))
+  if (this._databody && deltaY != 0 && (diagonal || (Math.abs(deltaY) > Math.abs(deltaX))))
   {
     var maxTranslateY = this._databodyStart;
     var minTranslateY = maxTranslateY;
@@ -2559,7 +2596,7 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
       this._deplines.setTranslateY(newTranslateY);
   }
 
-  if (this.isTimeDirScrollbarOn())
+  if (this.isTimeDirScrollbarOn() && this.timeDirScrollbar)
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 };
 
@@ -2909,6 +2946,29 @@ DvtGanttDefaults.VERSION_1 = {
     'whiteSpace': 'nowrap' // not publicly supported as of 2.2.0
   }
 };
+
+/**
+ * @override
+ */
+DvtGanttDefaults.prototype.getNoCloneObject = function()
+{
+  // Date time options as of 3.0.0 only support number and string types
+  // e.g. Date object type is not supported. However,
+  // during the options merging in SetOptions method,
+  // Date objects are automatically converted to number by default.
+  // We want to specify that they are to remain Date objects so that
+  // we can handle them in our code.
+  return {
+    'start': true,
+    'end': true,
+    'viewportStart': true,
+    'viewportEnd': true,
+    'rows': {
+      'tasks': {'start': true, 'end': true}
+    },
+    'referenceObjects': {'value': true}
+  };
+};
 /**
  * Class representing a GanttDependency node.
  * @param {dvt.Gantt} gantt The gantt component
@@ -3037,9 +3097,9 @@ DvtGanttDependencyNode.prototype.getType = function()
 
 /**
  * Retrieve the svg inline style to set on the dependency line
- * @return {string} the svg inline style to set on the dependency line
+ * @return {string|object} the svg inline style to set on the dependency line
  */
-DvtGanttDependencyNode.prototype.getStyle = function()
+DvtGanttDependencyNode.prototype.getSvgStyle = function()
 {
   return this._props['svgStyle'];
 };
@@ -3048,7 +3108,7 @@ DvtGanttDependencyNode.prototype.getStyle = function()
  * Retrieve the svg style class to set on the dependency line
  * @return {string} the style class to set on the dependency line
  */
-DvtGanttDependencyNode.prototype.getClassName = function()
+DvtGanttDependencyNode.prototype.getSvgClassName = function()
 {
   return this._props['svgClassName'];
 };
@@ -3263,18 +3323,27 @@ DvtGanttDependencyNode.prototype.render = function(container)
   }
 
   // apply inline style
-  var style = this.getStyle();
+  var style = this.getSvgStyle();
   if (style)
   {
-    if (typeof style === 'string')
+    // TODO: once we fully deprecate string type in 4.0.0, remove the string logic below
+    if (typeof style === 'string' || style instanceof String)
       dvt.ToolkitUtils.setAttrNullNS(elem, 'style', style);
     else
-      elem['style'] = style;
+      this._line.setStyle(style); // works if style is object
   }
 
   // apply style class
+  // TODO: right now, the hover inner stroke (see var his) is set to have white color.
+  // However, if we use Using toolkit's setClassName method, i.e. this._line.setClassName(styleClass),
+  // it saves the class in an internal variable. When one focuses on the dep line,
+  // the saved class is applied on the inner stroke in UpdateSelectionEffect(), which
+  // overrides the white stroke...
+  // See filed  for more details.
+  // For now, revert back to not using the Toolkit setClassName and just apply the class on the
+  // line ourselves, to eliminate this regression from 2.3.0. Post 3.0.0, we should investigate a better way to do this.
   var defaultStyleClass = gantt.GetStyleClass('dependencyLine');
-  var styleClass = this.getClassName();
+  var styleClass = this.getSvgClassName();
   if (styleClass)
     dvt.ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
   else
@@ -4353,16 +4422,31 @@ DvtGanttParser.prototype.parse = function(options)
 {
   var ret = new Object();
 
-  ret.start = (new Date(options['start'])).getTime();
-  ret.end = (new Date(options['end'])).getTime();
+  var parseDateOption = function(key) {
+    var optionType = typeof options[key];
+    // Ensures date option is of type number or string,
+    // e.g. excludes Date object type
+    // TODO: Remove number type support after complete
+    // deprecation in future release
+    if (optionType === 'number' || optionType === 'string')
+    {
+      var time = (new Date(options[key]).getTime());
+      if (!isNaN(time))
+        return time;
+    }
+    return null;
+  };
+
+  ret.start = parseDateOption('start');
+  ret.end = parseDateOption('end');
+
+  if (options['viewportStart'])
+    ret.viewStart = parseDateOption('viewportStart');
+  if (options['viewportEnd'])
+    ret.viewEnd = parseDateOption('viewportEnd');
 
   ret.rows = options['rows'];
   ret.dependencies = options['dependencies'];
-
-  if (options['viewportStart'])
-    ret.viewStart = (new Date(options['viewportStart'])).getTime();
-  if (options['viewportEnd'])
-    ret.viewEnd = (new Date(options['viewportEnd'])).getTime();
 
   ret.axisPosition = 'top';
   if (options['axisPosition'] != null)
@@ -4696,7 +4780,7 @@ DvtGanttRenderer._renderBackground = function(gantt)
   // and use a clippath to hide the inner half of the stroke to maintain stroke width.
   gantt._background.SetSvgProperty('style', 'stroke-width:' + (gantt._borderWidth * 2) + 'px');
 
-  dvt.ToolkitUtils.setAttrNullNS(gantt._background.getElem(), 'class', gantt.GetStyleClass('databody'));
+  gantt._background.setClassName(gantt.GetStyleClass('databody'));
   gantt._background.setPixelHinting(true);
   gantt._background.setCursor('move');
 
@@ -4729,7 +4813,7 @@ DvtGanttRenderer._renderRowBackground = function(gantt)
     gantt._rowBackground.setY(gantt.getStartYOffset());
   }
 
-  dvt.ToolkitUtils.setAttrNullNS(gantt._rowBackground.getElem(), 'class', gantt.GetStyleClass('row'));
+  gantt._rowBackground.setClassName(gantt.GetStyleClass('row'));
   gantt._rowBackground.setPixelHinting(true);
   gantt._rowBackground.setCursor('move');
 
@@ -4944,15 +5028,27 @@ DvtGanttRenderer._renderZoomControls = function(gantt)
 /**
  * Renders the empty text of Gantt.
  * @param {dvt.Gantt} gantt the gantt component.
+ * @param {boolean=} dontClear whether to not clear the canvas. Default false.
  * @private
  */
-DvtGanttRenderer._renderEmptyText = function(gantt)
+DvtGanttRenderer._renderEmptyText = function(gantt, dontClear)
 {
-  var emptyTextStr = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
+  // Get the empty text string
+  if (dontClear)
+  {
+    var emptyTextStr = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
+    gantt.removeEmptyText();
+  }
+  else
+  {
+    emptyTextStr = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA', null);
+    gantt.clearComponent();
+  }
+
   var text = dvt.TextUtils.renderEmptyText(gantt._canvas, emptyTextStr,
       new dvt.Rectangle(0, 0, gantt._backgroundWidth, gantt._backgroundHeight),
       gantt.EventManager, null);
-  dvt.ToolkitUtils.setAttrNullNS(text.getElem(), 'class', gantt.GetStyleClass('nodata'));
+  text.setClassName(gantt.GetStyleClass('nodata'));
 
   gantt.setEmptyText(text);
 };
@@ -5040,7 +5136,7 @@ DvtGanttRenderer._renderVerticalGridline = function(gantt, container)
 
       var gridLine = new dvt.Line(gantt.getCtx(), pos, gantt.getDatabodyStart(), pos, gantt.getDatabodyStart() + gantt._canvasSize - gantt.getAxesHeight());
       gridLine.setPixelHinting(true);
-      dvt.ToolkitUtils.setAttrNullNS(gridLine.getElem(), 'class', gridlineStyleClass);
+      gridLine.setClassName(gridlineStyleClass, true);
 
       gridlines.addChild(gridLine);
     }
@@ -5084,9 +5180,12 @@ DvtGanttRenderer._renderReferenceObjects = function(gantt, container)
       if (referenceObject)
       {
         var value = referenceObject['value'];
-        if (value != null)
+        var valueTime = new Date(value).getTime();
+        // value only supports number or string type, e.g. excludes Date object type
+        // TODO: Remove number type support after complete deprecation in future release
+        if (value != null && !isNaN(valueTime) && (typeof value === 'number' || typeof value === 'string'))
         {
-          var pos = dvt.TimeAxis.getDatePosition(minTime, maxTime, value, width);
+          var pos = dvt.TimeAxis.getDatePosition(minTime, maxTime, valueTime, width);
           if (isRTL)
             pos = width - pos;
 
@@ -5111,14 +5210,21 @@ DvtGanttRenderer._renderReferenceObjects = function(gantt, container)
 
           var inlineStyle = referenceObject['svgStyle'];
           if (inlineStyle)
-            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'style', inlineStyle);
+          {
+            // TODO: once we fully deprecate string type in 4.0.0, remove the string logic
+            if (typeof inlineStyle === 'string' || inlineStyle instanceof String)
+              dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'style', inlineStyle);
+            else
+              ref.setStyle(inlineStyle); // works if style is object
+          }
 
           var defaultStyleClass = gantt.GetStyleClass('referenceObject');
           var styleClass = referenceObject['svgClassName'];
           if (styleClass)
-            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'class', defaultStyleClass + ' ' + styleClass);
+            styleClass = defaultStyleClass + ' ' + styleClass;
           else
-            dvt.ToolkitUtils.setAttrNullNS(ref.getElem(), 'class', defaultStyleClass);
+            styleClass = defaultStyleClass;
+          ref.setClassName(styleClass, true);
         }
       }
     }
@@ -5152,13 +5258,13 @@ DvtGanttRenderer._renderRows = function(gantt, container, labelContainer)
 {
   var options = gantt.getOptions();
   var rows = options['rows'];
-  var isRowsCleanable = DvtGanttRenderer._prerenderRows(rows);
+  var isRowsCleanable = rows != null ? DvtGanttRenderer._prerenderRows(rows) : false;
   if (gantt.isRowAxisEnabled())
     var rowLabelTexts = gantt.getRowAxis().getRowLabelTexts();
 
-  if (rows.length == 0 || !isRowsCleanable)
+  if (!isRowsCleanable || rows.length == 0)
   {
-    DvtGanttRenderer._renderEmptyText(gantt);
+    DvtGanttRenderer._renderEmptyText(gantt, true);
     return;
   }
 
@@ -5287,7 +5393,15 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
     for (var j = 0; j < tasks.length; j++)
     {
       var task = tasks[j];
-      newTaskIdInfoMap[task['id']] = {'rowId': rowId, 'taskProps': dvt.JsonUtils.merge(task, taskDefaults)}; //state: same, moved, new
+      // start/end only supports number or string type, e.g. excludes Date object type
+      // TODO: Remove number type support after complete deprecation in future release
+      var startType = typeof task['start'];
+      var endType = typeof task['end'];
+      if ((task['start'] == null || startType === 'string' || startType === 'number') &&
+          (task['end'] == null || endType === 'string' || endType === 'number'))
+      {
+        newTaskIdInfoMap[task['id']] = {'rowId': rowId, 'taskProps': dvt.JsonUtils.merge(task, taskDefaults)}; //state: same, moved, new
+      }
     }
 
     var oldRowNodeWithId = oldRowIdRowNodeMap[rowId];
@@ -5594,7 +5708,7 @@ DvtGanttRowAxis.prototype._generateRowLabels = function()
     else
       labelText = new DvtGanttRowLabelText(this._gantt.getCtx(), rowLabel, 0, 0);
     labelText.setRowIndex(i);
-    dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'class', this._gantt.GetStyleClass('rowLabel'));
+    labelText.setClassName(this._gantt.GetStyleClass('rowLabel'));
 
     // create dvt.CSSStyle from from style sheet
     var labelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(this._gantt.getOptions());
@@ -5604,10 +5718,11 @@ DvtGanttRowAxis.prototype._generateRowLabels = function()
     if (labelStyle != null)
     {
       labelCSSStyle.parseInlineStyle(labelStyle);
-      if (typeof labelStyle === 'string')
-        labelText.getElem().style.cssText = labelStyle;
+      // TODO: once we fully deprecate string type in 4.0.0, remove the string logic
+      if (typeof labelStyle === 'string' || labelStyle instanceof String)
+        dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'style', labelStyle);
       else
-        dvt.ToolkitUtils.setAttrNullNS(labelText, 'style', labelStyle);
+        labelText.setStyle(labelStyle); // works if style is object
     }
 
     labelText.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
@@ -5960,10 +6075,18 @@ DvtGanttRowNode.prototype.getTasks = function()
     for (var i = 0; i < tasks.length; i++)
     {
       var task = tasks[i];
-      task = dvt.JsonUtils.merge(task, this._gantt.getOptions()['taskDefaults']);
-      var node = this.createTaskNode(task);
-      if (node)
-        this._tasks.push(node);
+      // start/end only supports number or string type, e.g. excludes Date object type
+      // TODO: Remove number type support after complete deprecation in future release
+      var startType = typeof task['start'];
+      var endType = typeof task['end'];
+      if ((task['start'] == null || startType === 'string' || startType === 'number') &&
+          (task['end'] == null || endType === 'string' || endType === 'number'))
+      {
+        task = dvt.JsonUtils.merge(task, this._gantt.getOptions()['taskDefaults']);
+        var node = this.createTaskNode(task);
+        if (node)
+          this._tasks.push(node);
+      }
     }
     this.sortTasks();
   }
@@ -6175,7 +6298,7 @@ DvtGanttRowNode.prototype._renderHorizontalGridline = function(gantt, container,
       var pos = row.getTop() + row.getRowHeight() + posOffset;
       var line = new dvt.Line(gantt.getCtx(), 0, pos, gantt.getContentLength(), pos);
       line.setPixelHinting(true);
-      dvt.ToolkitUtils.setAttrNullNS(line.getElem(), 'class', gridlineStyleClass);
+      line.setClassName(gridlineStyleClass, true);
 
       container.addChild(line);
       this._horizontalLine = line;
@@ -6554,20 +6677,22 @@ DvtGanttTaskNode.prototype.getHeightWithPadding = function()
 
 /**
  * Retrieve the style of the task
- * @return {object} the style of the task
+ * @return {string|object} the style of the task
  */
-DvtGanttTaskNode.prototype.getStyle = function()
+DvtGanttTaskNode.prototype.getSvgStyle = function()
 {
-  return this._get('style');
+  // TODO: Once we finish deprecating 'style' in 4.0.0 just retrieve 'svgStyle'
+  return this._get('svgStyle') ? this._get('svgStyle') : this._get('style');
 };
 
 /**
  * Retrieve the class name of the task
  * @return {string} the class name of the task
  */
-DvtGanttTaskNode.prototype.getClassName = function()
+DvtGanttTaskNode.prototype.getSvgClassName = function()
 {
-  return this._get('className');
+  // TODO: Once we finish deprecating 'className' in 4.0.0 just retrieve 'svgClassName'
+  return this._get('svgClassName') ? this._get('svgClassName') : this._get('className');
 };
 
 /**
@@ -7076,16 +7201,25 @@ DvtGanttTaskNode._renderBar = function(gantt, task)
     else
       bar = new DvtPathRect(context, 0, DvtGanttStyleUtils.getTaskbarPadding(), w, task.getHeight(), borderRadius);
 
-    var inlineStyle = task.getStyle();
+    var inlineStyle = task.getSvgStyle();
     if (inlineStyle)
-      dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'style', inlineStyle);
+    {
+      // TODO: once we fully deprecate string type in 4.0.0, remove the string logic
+      if (typeof inlineStyle === 'string' || inlineStyle instanceof String)
+        dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'style', inlineStyle);
+      else
+        bar.setStyle(inlineStyle); // works if style is object
+    }
 
     var defaultStyleClass = gantt.GetStyleClass('task');
-    var styleClass = task.getClassName();
+    var styleClass = task.getSvgClassName();
     if (styleClass)
-      dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'class', defaultStyleClass + ' ' + styleClass);
+      styleClass = defaultStyleClass + ' ' + styleClass;
     else
-      dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'class', defaultStyleClass);
+      styleClass = defaultStyleClass;
+
+    bar.setClassName(styleClass);
+
 
     task.addChild(bar);
     task._bar = bar;
@@ -7147,7 +7281,7 @@ DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
     {
       // labelText = new dvt.OutputText(gantt.getCtx(), label, 0, 0);
       labelText = new DvtGanttOutputText(gantt.getCtx(), label, 0, 0, gantt.htmlCanvas);
-      dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'class', gantt.GetStyleClass('taskLabel'));
+      labelText.setClassName(gantt.GetStyleClass('taskLabel'));
 
       task.addChild(labelText);
     }
@@ -7168,10 +7302,11 @@ DvtGanttTaskNode._renderLabel = function(gantt, task, previousAdjacentTask)
     if (labelStyle != null)
     {
       labelCSSStyle.parseInlineStyle(labelStyle);
-      if (typeof labelStyle === 'string')
-        labelText.getElem().style.cssText = labelStyle;
+      // TODO: once we fully deprecate string type in 4.0.0, remove the string logic
+      if (typeof labelStyle === 'string' || labelStyle instanceof String)
+        dvt.ToolkitUtils.setAttrNullNS(labelText.getElem(), 'style', labelStyle);
       else
-        dvt.ToolkitUtils.setAttrNullNS(labelText, 'style', labelStyle);
+        labelText.setStyle(labelStyle); // works if style is object
     }
 
     labelText.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
@@ -7605,12 +7740,13 @@ DvtGanttTaskNode.prototype._createEffectArtifact = function(effect)
   var h = this._bar.getHeight() + DvtGanttTaskNode.EFFECT_MARGIN * 2;
   var r = this.getBorderRadius();
   var bar = new DvtPathRect(this._gantt.getCtx(), x, y, w, h, r);
-  dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'class', this._gantt.GetStyleClass('task'));
-  dvt.ToolkitUtils.setAttrNullNS(bar.getElem(), 'style', 'fill:none');
+  bar.setClassName(this._gantt.GetStyleClass('task'));
+  bar.setStyle({'fill': 'none'});
   dvt.DomUtils.addCSSClassName(bar.getElem(), this._gantt.GetStyleClass(effect));
 
   return bar;
 };
+
 
 /**
  * Show hover ring effect on task bar

@@ -44,6 +44,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ * 
+ * {@ojinclude "name":"stylingDoc"}
+ * 
  * <h3 id="accessibility-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#accessibility-section"></a>
@@ -53,42 +60,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *    attribute must point to the id of the progressbar and <code class="prettyprint">aria-busy = "true"</code> must be added to the region until the loading is complete.</p>
  *
  *
- * <h3 id="markup-section">
- *   HTML Markup and Style Classes
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#markup-section"></a>
- * </h3>
- *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td> oj-progressbar-start-label</td>
- *       <td> Optional class that can be passed into a seperate div containing the start text to display underneath the progressbar. </td>
- *     </tr>
-  *    <tr>
- *       <td>oj-progressbar-end-label</td>
- *       <td> Optional class that can be passed into a seperate div containing the end text to display underneath the progressbar. </td>
- *     </tr>
- *     <tr>
- *       <td>oj-progressbar-embedded</td>
- *       <td> Optional class that can be passed into a progressbar div to style an embedded progressbar within a web application or dialog.</td>
- *       <td><code><pre>
- * 	    &lt;div class="oj-web-applayout-page">
- *  	      &lt;header class="oj-web-applayout-header">
- *  	      &lt;/header>
- *  	      &lt;div class="oj-progressbar-embedded" data-bind="ojComponent:{component: 'ojProgressbar', value: loadingValue}">
- *  	      &lt;/div>
- * 	    &lt;/div>
- *        </pre></code></td>
- *      </tr>
- *   </tbody>
- * </table>
- *
  *
  * @example <caption>Initialize component using widget API</caption>
  * &lt;div id="progressBar"/&gt;<br/>
@@ -97,6 +68,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * &lt;div id="progressBar" data-bind="ojComponent: {role: 'ojProgressbar', value: loadValue, max:100}"/&gt;
  * 
  */
+
 (function() {
    /*
 	* <h3 id="markup-section">
@@ -320,36 +292,81 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
 	
 // Fragments:
 
-	/**
-     * <p>This component has no touch interaction.  </p>
-	 *
-	 *
-	 * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
-	 * @memberof oj.ojProgressbar
-	 */
+/**
+ * <p>This component has no touch interaction.  </p>
+ *
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojProgressbar
+ */
 
-	/**
-     * <p>This component has no keyboard interaction.  </p>
-	 *
-	 * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-	 * @memberof oj.ojProgressbar
-	 */
+/**
+ * <p>This component has no keyboard interaction.  </p>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojProgressbar
+ */
+        
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * 
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-progressbar-embedded</td>
+ *       <td> Optional class that can be passed into a progressbar div to style an embedded progressbar within a web application or dialog.</td>
+ *       <td> <code class="prettyprint">
+ * 	    &lt;div class="oj-web-applayout-page">
+ *  	      &lt;header class="oj-web-applayout-header">
+ *  	      &lt;/header>
+ *  	      &lt;div class="oj-progressbar-embedded" data-bind="ojComponent:{component: 'ojProgressbar', value: loadingValue}">
+ *  	      &lt;/div>
+ * 	    &lt;/div>
+ *        </code>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td> oj-progressbar-start-label</td>
+ *       <td> Optional class that can be passed into a seperate div containing the start text to display underneath the progressbar. </td>
+ *     </tr>
+ *    <tr>
+ *       <td>oj-progressbar-end-label</td>
+ *       <td> Optional class that can be passed into a seperate div containing the end text to display underneath the progressbar. </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojProgressbar
+ */
+
 });
 
 }( ));
 (function() {
 var ojProgressbarMeta = {
   "properties": {
-    "disabled": {},
-    "max": {},
-    "value": {}
+    "max": {
+      "type": "number"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    }
   },
   "methods": {},
   "extension": {
-    "_widgetName": "ojProgressbar"
+    _WIDGET_NAME: "ojProgressbar"
   }
 };
-oj.Components.registerMetadata('ojProgressbar', 'baseComponent', ojProgressbarMeta);
-oj.Components.register('oj-progressbar', oj.Components.getMetadata('ojProgressbar'));
+oj.CustomElementBridge.registerMetadata('oj-progressbar', 'baseComponent', ojProgressbarMeta);
+oj.CustomElementBridge.register('oj-progressbar', {'metadata': oj.CustomElementBridge.getMetadata('oj-progressbar')});
 })();
 });

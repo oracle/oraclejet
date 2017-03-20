@@ -33,11 +33,17 @@
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorDefault;
+            .oj-contrast-marker & {
+              color: $navigationListItemContrastLabelColorDefault;
+            }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorSelected;
+            .oj-contrast-marker & {
+                color: $navigationListItemContrastLabelColorSelected;
+            }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
         {
@@ -64,6 +70,10 @@
         }
         .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
             @extend .oj-fwk-icon-arrowtail-end;
+        }
+
+        .oj-navigationlist-overflow-item-icon {
+           @extend .oj-fwk-icon-dots-vertical;
         }
     }
 }

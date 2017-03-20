@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'promise', 'ojs/ojanimation'], function(oj, ko)
+define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], function(oj, ko, $)
 {
 
 /**
@@ -18,134 +18,37 @@ define(['ojs/ojcore', 'knockout', 'promise', 'ojs/ojanimation'], function(oj, ko
  * These implementations assume that either the ojModule binding is on a real HTML element
  * or, for ojModule binding on virtual element, each view is contained by a single HTML
  * root element.
+ *
+ * <h3 id="module-layout-section">
+ *   Laying Out ojModule Views
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#module-layout-section"></a>
+ * </h3>
+ *
+ * Guidelines on laying out ojModule views to acheive smoother animation:
+ * <ul>
+ * <li>The ojModule binding should be placed on a container div that has a dimension
+ * independent of its children.  During view switch, new view is inserted and old view
+ * is removed.  The container div acts as a placeholder to ensure other elements around
+ * the views such as header and navigation controls do not move.
+ *
+ * <li>All views that will be loaded by the ojModule binding should have the same size.
+ * For example by setting their height to 100%.  This will make sure the views fill up
+ * the space in the container div.  Some animation effects such as sliding to cover or
+ * reveal look best when the old view and the new view have the same size.
+ *
+ * <li>All views should have a background color.  This will make sure the old view
+ * does not show through the new view, unless it is the intent of the application
+ * to have a glass pane effect during the animation.
+ *
+ * <li>Avoid applying css style to any view element that is dependent on the
+ * DOM hierarchy outside the view.  This is because during view change the view can be
+ * temporarily attached to a different parent.  Having css style that assumes certain
+ * hierarchy outside the view can make the desired style not to be applied during animation.
+ * </ul>
+ *
  * @namespace
  */
 oj.ModuleAnimations = {};
-
-oj.ModuleAnimations._DESCRIPTORS = {
-  'coverStart': {
-    oldViewClass: 'oj-animation-coverstart',
-    newViewClass: 'oj-animation-coverstart',
-    newViewOnTop: true
-  },
-  'coverUp': {
-    newViewClass: 'oj-animation-coverup',
-    newViewOnTop: true
-  },
-  'fade': {
-    oldViewClass: 'oj-animation-fade',
-    newViewClass: 'oj-animation-fade',
-    newViewOnTop: false
-  },
-  'pushStart': {
-    oldViewClass: 'oj-animation-revealstart',
-    newViewClass: 'oj-animation-coverstart',
-    newViewOnTop: false
-  },
-  'pushEnd': {
-    oldViewClass: 'oj-animation-revealend',
-    newViewClass: 'oj-animation-coverend',
-    newViewOnTop: false
-  },
-  'revealDown': {
-    oldViewClass: 'oj-animation-revealdown',
-    newViewOnTop: false
-  },
-  'revealEnd': {
-    oldViewClass: 'oj-animation-revealend',
-    newViewClass: 'oj-animation-revealend',
-    newViewOnTop: false
-  },
-  'zoomIn': {
-    newViewClass: 'oj-animation-zoomin',
-    newViewOnTop: true
-  },
-  'zoomOut': {
-    oldViewClass: 'oj-animation-zoomout',
-    newViewOnTop: false
-  }
-};
-
-/**
- * Main utility function for starting a transition or animation on an element.
- * For transition:
- * 1. The transition property and the initial value of the property being 
- *    animated must be specified in the ".{baseClass}.oj-{action}" css rule.
- * 2. The final value of the property being animated must be specified in the
- *    ".{baseClass}.oj-{action}.oj-{action}-active" css rule.
- * For animation:
- * 1. The animation property must be specified in the ".{baseClass}.oj-{action}"
- *    css rule.
- * 2. No ".{baseClass}.oj-{action}.oj-{action}-active" css rule is needed, as 
- *    the keyframes for the animation should have both initial and final values.
- * @private
- */
-oj.ModuleAnimations._animateElement = function(element, baseClass, action)
-{
-  var jelem = $(element);
-
-  var promise = new Promise(
-    function(resolve, reject) {
-      var fromClass = 'oj-' + action;
-      var toClass = fromClass + '-active';
-
-      jelem.addClass(baseClass);
-      jelem.addClass(fromClass);
-      
-      // Add the to-class on the next animation frame.  This is necessary
-      // for css transition so that the browser can detect a property change
-      // and start the transition.
-      window.requestAnimationFrame(function() {
-        jelem.addClass(toClass);
-      });
-
-      var endListener = function() {
-        // No need to remove the classes or listener from the element since
-        // the element is temporary and will be removed from the DOM
-        resolve(true);
-      };
-      var duration = jelem.css('animationDuration') || jelem.css('webkitAnimationDuration');
-      if (duration && duration != '0s')
-      {
-        jelem.on("animationend webkitAnimationEnd", endListener);
-      }
-      else
-      {
-        duration = jelem.css('transitionDuration') || jelem.css('webkitTransitionDuration');
-        if (duration && duration != '0s')
-        {
-          jelem.on("transitionend webkitTransitionEnd", endListener);
-        }
-        else
-        {
-          // If there is no animation, the promise is resolved.
-          resolve(true);
-        }
-      }
-
-    }
-  );
-
-  return promise;
-};
-
-oj.ModuleAnimations._animateView = function(oldElement, newElement, animateName)
-{
-  var promises = [];
-  var descriptor = oj.ModuleAnimations._DESCRIPTORS[animateName];
-
-  if (oldElement && descriptor && descriptor.oldViewClass)
-  {
-    promises.push(oj.ModuleAnimations._animateElement(oldElement, descriptor.oldViewClass, 'leave'));
-  }
-
-  if (newElement && descriptor && descriptor.newViewClass)
-  {
-    promises.push(oj.ModuleAnimations._animateElement(newElement, descriptor.newViewClass, 'enter'));
-  }
-
-  return Promise.all(promises);
-};
 
 oj.ModuleAnimations._addContainedElements = function(node, roots)
 {
@@ -242,43 +145,76 @@ oj.ModuleAnimations._createViewParent = function(oldView)
   return host;
 };
 
-oj.ModuleAnimations._defaultPrepareAnimation = function(context, animateName)
+/**
+  * Create and return a ModuleAnimation implementation that combines base effects from {@link oj.AnimationUtils}
+  *
+  * @param {null|string|Object} oldViewEffect - an animation effect for the outgoing view.<br><br>
+  *                              If this is null, no animation will be applied.<br>
+  *                              If this is a string, it should be one of the effect method names in oj.AnimationUtils.<br>
+  *                              If this is an object, it should describe the effect:
+  * @param {string} oldViewEffect.effect - the name of an effect method in oj.AnimationUtils
+  * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
+  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.  
+  *                                                 Refer to the method description in {@link oj.AnimationUtils} for available options.
+  * @param {null|string|Object} newViewEffect - an animation effect for the incoming view.<br><br>
+  *                                             This is in the same format as oldViewEffect.
+  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view. 
+  *                  This is needed for certain effects such as sliding the new view in to cover the old view.
+  *                  Default is false.
+  * @return {Object} an implementation of the ModuleAnimation interface
+  * @export
+  * 
+  * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
+  * var customAnimation = oj.ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
+  */
+oj.ModuleAnimations.createAnimation = function(oldViewEffect, newViewEffect, newViewOnTop)
 {
-  var viewParents = {};
-  var descriptor = oj.ModuleAnimations._DESCRIPTORS[animateName];
-  var oldView = oj.ModuleAnimations._getOldView(context);
-  
-  if (descriptor)
-  {
-    if (descriptor.newViewClass && !descriptor.newViewOnTop)
-    {
-      viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+  return {
+    'canAnimate': oj.ModuleAnimations._defaultCanAnimate,
+    'prepareAnimation': function(context) {
+      var viewParents = {};
+      var oldView = oj.ModuleAnimations._getOldView(context);
+      
+      if (newViewEffect && !newViewOnTop)
+      {
+        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }
+      
+      if (oldViewEffect)
+      {
+        viewParents['oldViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }
+
+      if (newViewEffect && newViewOnTop)
+      {
+        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+      }    
+
+      return viewParents;  
+    },
+    'animate': function(context) {
+      var oldViewHost = context['oldViewParent'];
+      var newViewHost = context['newViewParent'];
+
+      var promises = [];
+
+      if (oldViewHost && oldViewEffect)
+      {
+        promises.push(oj.AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
+      }
+
+      if (newViewHost && newViewEffect)
+      {
+        promises.push(oj.AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
+      }
+
+      var animatePromise = Promise.all(promises);
+
+      return animatePromise.then(function(result) {
+        oj.ModuleAnimations._postAnimationProcess(context);
+      });
     }
-    
-    if (descriptor.oldViewClass)
-    {
-      viewParents['oldViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-    }
-
-    if (descriptor.newViewClass && descriptor.newViewOnTop)
-    {
-      viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-    }    
-  }
-
-  return viewParents;  
-};
-
-oj.ModuleAnimations._defaultAnimate = function(context, animateName)
-{
-  var oldViewHost = context['oldViewParent'];
-  var newViewHost = context['newViewParent'];
-
-  var animatePromise = oj.ModuleAnimations._animateView(oldViewHost, newViewHost, animateName);
-
-  return animatePromise.then(function(result) {
-    oj.ModuleAnimations._postAnimationProcess(context);
-  });
+  };
 };
 
 oj.ModuleAnimations._removeViewParent = function(context, hostProp)
@@ -304,17 +240,32 @@ oj.ModuleAnimations._postAnimationProcess = function(context)
   oj.ModuleAnimations._removeViewParent(context, 'oldViewParent');
 };
 
+oj.ModuleAnimations._getModuleEffect = function(animateName)
+{
+  if (oj.ModuleAnimations._moduleEffects == null)
+  {
+    oj.ModuleAnimations._moduleEffects = oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-module-effects');
+  }
+
+  if (oj.ModuleAnimations._moduleEffects)
+  {
+    return oj.ModuleAnimations._moduleEffects[animateName];
+  }
+  
+  return null;
+};
+
 oj.ModuleAnimations._getImplementation = function(animateName)
 {
-  return {
-    'canAnimate': oj.ModuleAnimations._defaultCanAnimate,
-    'prepareAnimation': function(context) {
-      return oj.ModuleAnimations._defaultPrepareAnimation(context, animateName);
-    },
-    'animate': function(context) {
-      return oj.ModuleAnimations._defaultAnimate(context, animateName);
-    }
-  };
+  var descriptor = oj.ModuleAnimations._getModuleEffect(animateName);
+  if (descriptor)
+  {
+    return oj.ModuleAnimations.createAnimation(descriptor['oldViewEffect'],
+                                               descriptor['newViewEffect'],
+                                               descriptor['newViewOnTop']);
+  }
+  
+  return null;
 };
 
 oj.ModuleAnimations._getNavigateMethod = function(context, navigationType)
@@ -334,20 +285,36 @@ oj.ModuleAnimations._getNavigateMethod = function(context, navigationType)
 
 oj.ModuleAnimations._navigateCanAnimate = function(context, navigationType)
 {
-  return oj.ModuleAnimations._getNavigateMethod(context, navigationType) &&
-         oj.ModuleAnimations._defaultCanAnimate(context);
+  var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
+  if (oj['ModuleAnimations'][animateName])
+  {
+    return oj['ModuleAnimations'][animateName]['canAnimate'] == null ||
+           oj['ModuleAnimations'][animateName]['canAnimate'](context);
+  }
+  
+  return false;
 };
 
 oj.ModuleAnimations._navigatePrepareAnimation = function(context, navigationType)
 {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  return oj.ModuleAnimations._defaultPrepareAnimation(context, animateName)
+  if (oj['ModuleAnimations'][animateName] && oj['ModuleAnimations'][animateName]['prepareAnimation'])
+  {
+    return oj['ModuleAnimations'][animateName]['prepareAnimation'](context);
+  }
+  
+  return null;
 };
 
 oj.ModuleAnimations._navigateAnimate = function(context, navigationType)
 {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  return oj.ModuleAnimations._defaultAnimate(context, animateName);
+  if (oj['ModuleAnimations'][animateName] && oj['ModuleAnimations'][animateName]['animate'])
+  {
+    return oj['ModuleAnimations'][animateName]['animate'](context);
+  }
+  
+  return Promise.resolve();
 };
 
 oj.ModuleAnimations._getNavigateImplementation = function(navigationType)
@@ -367,6 +334,42 @@ oj.ModuleAnimations._getNavigateImplementation = function(navigationType)
 
 /**
  * ModuleAnimation implementation for changing views by
+ * sliding the new view left to cover the old view.
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @ignore
+ */
+oj.ModuleAnimations.coverLeft = oj.ModuleAnimations._getImplementation('coverLeft');
+
+/**
+ * ModuleAnimation implementation for changing views by
+ * sliding the new view left to cover the old view.
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @ignore
+ */
+oj.ModuleAnimations.coverRight = oj.ModuleAnimations._getImplementation('coverRight');
+
+/**
+ * ModuleAnimation implementation for changing views by
+ * sliding the old view left to reveal the new view.
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @ignore
+ */
+oj.ModuleAnimations.revealLeft = oj.ModuleAnimations._getImplementation('revealLeft');
+
+/**
+ * ModuleAnimation implementation for changing views by
+ * sliding the old view right to reveal the new view.
+ * @export
+ * @memberof oj.ModuleAnimations
+ * @ignore
+ */
+oj.ModuleAnimations.revealRight = oj.ModuleAnimations._getImplementation('revealRight');
+
+/**
+ * ModuleAnimation implementation for changing views by
  * sliding the new view in to cover the old view.<br><br>
  * This will take the text direction of the page into account.  On "ltr" page,
  * the new view will slide to the left.  On "rtl" page, it will slide to the
@@ -374,7 +377,9 @@ oj.ModuleAnimations._getNavigateImplementation = function(navigationType)
  * @export
  * @memberof oj.ModuleAnimations
  */
-oj.ModuleAnimations.coverStart = oj.ModuleAnimations._getImplementation('coverStart');
+oj.ModuleAnimations.coverStart = oj.DomUtils.getReadingDirection() === 'rtl' ?
+                                 oj.ModuleAnimations.coverRight :
+                                 oj.ModuleAnimations.coverLeft;
 
 /**
  * ModuleAnimation implementation for changing views by
@@ -385,7 +390,9 @@ oj.ModuleAnimations.coverStart = oj.ModuleAnimations._getImplementation('coverSt
  * @export
  * @memberof oj.ModuleAnimations
  */
-oj.ModuleAnimations.revealEnd = oj.ModuleAnimations._getImplementation('revealEnd');
+oj.ModuleAnimations.revealEnd = oj.DomUtils.getReadingDirection() === 'rtl' ?
+                                oj.ModuleAnimations.revealLeft :
+                                oj.ModuleAnimations.revealRight;
 
 /**
  * ModuleAnimation implementation for changing views by
@@ -625,78 +632,6 @@ oj.ModuleAnimations.switcher = function(callback)
   };
 
   return new AnimateProxy();
-};
-
-/**
-  * Create and return a ModuleAnimation implementation that combines base effects from {@link oj.AnimationUtils}
-  *
-  * @param {null|string|Object} oldViewEffect - an animation effect for the outgoing view.<br><br>
-  *                              If this is null, no animation will be applied.<br>
-  *                              If this is a string, it should be one of the effect method names in oj.AnimationUtils.<br>
-  *                              If this is an object, it should describe the effect:
-  * @param {string} oldViewEffect.effect - the name of an effect method in oj.AnimationUtils
-  * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
-  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.  
-  *                                                 Refer to the method description in {@link oj.AnimationUtils} for available options.
-  * @param {null|string|Object} newViewEffect - an animation effect for the incoming view.<br><br>
-  *                                             This is in the same format as oldViewEffect.
-  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view. 
-  *                  This is needed for certain effects such as sliding the new view in to cover the old view.
-  *                  Default is false.
-  * @return {Object} an implementation of the ModuleAnimation interface
-  * @export
-  * 
-  * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
-  * var customAnimation = oj.ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
-  */
-oj.ModuleAnimations.createAnimation = function(oldViewEffect, newViewEffect, newViewOnTop)
-{
-  return {
-    'canAnimate': oj.ModuleAnimations._defaultCanAnimate,
-    'prepareAnimation': function(context) {
-      var viewParents = {};
-      var oldView = oj.ModuleAnimations._getOldView(context);
-      
-      if (newViewEffect && !newViewOnTop)
-      {
-        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-      }
-      
-      if (oldViewEffect)
-      {
-        viewParents['oldViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-      }
-
-      if (newViewEffect && newViewOnTop)
-      {
-        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-      }    
-
-      return viewParents;  
-    },
-    'animate': function(context) {
-      var oldViewHost = context['oldViewParent'];
-      var newViewHost = context['newViewParent'];
-
-      var promises = [];
-
-      if (oldViewHost && oldViewEffect)
-      {
-        promises.push(oj.AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
-      }
-
-      if (newViewHost && newViewEffect)
-      {
-        promises.push(oj.AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
-      }
-
-      var animatePromise = Promise.all(promises);
-
-      return animatePromise.then(function(result) {
-        oj.ModuleAnimations._postAnimationProcess(context);
-      });
-    }
-  };
 };
 
 });

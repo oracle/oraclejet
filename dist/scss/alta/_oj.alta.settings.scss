@@ -1,8 +1,8 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
-
-
+@import "../utilities/oj.utilities.units";
+@import "../utilities/oj.utilities.modules";
 
 //-----------------------------------------------------------------------------
 // Variable Naming Conventions
@@ -126,6 +126,7 @@
 // INCLUDES
 //-----------------------------------------------------------------------------
 
+
 // Optimize performance by only including the css
 // for what you're using. It's recommended to 
 // set $includeAllClasses to false and then set 
@@ -142,6 +143,18 @@
 // send down value of $responsiveQuery[size] so that these
 // can be used with oj.ResponsiveUtils.getFrameworkQuery();
 //$includeResponsiveMediaQueryClasses: $includeAllClasses !default;
+
+
+
+// Make our key variable values available as css variables.  
+// See $oj-css-var-map for the variables included.
+// This can be useful for customers who want to use things like the 
+// current theme's colors and font sizes without using sass. 
+// However as of 10/14/16 css vars are not supported on 
+// all our supported platforms, so when using css vars
+// fallback values must be used. 
+//$includeCssVarDefinitions: $includeAllClasses !default;
+
 
 // group includes
 //----------------------------------
@@ -172,6 +185,8 @@
 //$includeSelectClasses:           $includeFormControlClasses !default;
 //$includeSliderClasses:           $includeFormControlClasses !default;
 //$includeSwitchClasses:           $includeFormControlClasses !default;
+//$includeColorPaletteClasses:     $includeFormControlClasses !default;
+//$includeColorSpectrumClasses:    $includeFormControlClasses !default;
 //$includeTextAreaClasses:         $includeFormControlClasses !default;
 
 // dvt
@@ -359,12 +374,12 @@
 // The browser default font size is 16px
 //$rootFontSize:    .875em !default;    // 14px
 
-//$fontSize:         1rem !default;      // 14px
-//$smallestFontSize: .7857rem !default;  // 11px when root 14px
-//$smallFontSize:    .857rem !default;   // 12px when root 14px
-//$mediumFontSize:   1.143rem !default;  // 16px when root 14px
-//$largeFontSize:    1.286rem !default;  // 18px when root 14px
-//$largestFontSize:  1.429rem !default;  // 20px when root 14px
+//$fontSize:         1rem !default;      
+//$smallestFontSize: oj-px-to-rem(11px, $baseFontSize: 14px)  !default; 
+//$smallFontSize:    oj-px-to-rem(12px, $baseFontSize: 14px)  !default;  
+//$mediumFontSize:   oj-px-to-rem(16px, $baseFontSize: 14px)  !default;  
+//$largeFontSize:    oj-px-to-rem(18px, $baseFontSize: 14px)  !default;  
+//$largestFontSize:  oj-px-to-rem(20px, $baseFontSize: 14px)  !default;  
 
 
 
@@ -376,7 +391,7 @@
 //----------------------------------
 //$textColor:             #333333 !default;
 //$primaryTextColor:      darken($textColor, 25%) !default;  // = #000000;
-//$secondaryTextColor:    lighten($textColor, 10%) !default; // = #454545;
+//$secondaryTextColor:    lighten($textColor, 10%) !default; // = #4d4d4d; libsass/issues/2294 makes this #4d4c4c
 //$tertiaryTextColor:     lighten($textColor, 25%) !default; // = #737373;
 //$contrastTextColor:     #ffffff !default;
 //$textColorDisabled:     #9e9e9e !default;
@@ -401,10 +416,6 @@
 //       are broadly in the widget specific files.
 //-----------------------------------------------------------------------------
 
-// interaction cue colors
-//----------------------------------
-//$colorRequired: #045fab !default;
-
 
 // icon colors
 //----------------------------------
@@ -419,6 +430,9 @@
 // used for a disabled icon in addition to color
 //$iconColorDisabled: #d4d6d7 !default;
 
+// interaction cue colors
+//----------------------------------
+//$colorRequired: #045fab !default;
 
 // border color
 //----------------------------------
@@ -718,7 +732,7 @@
 //-----------------------------------------------------------------------------
 
 // panel defaults:
-//$panelPadding:             .8571rem !default; // 12px when root is 14px
+//$panelPadding: oj-px-to-rem(12px, $baseFontSize: 14px) !default; 
 //$panelBgColor:             $background1Color !default;
 //$panelBorderColor:         $border1Color !default;
 //$panelBorderColorSelected: $interaction1Color !default;
@@ -780,11 +794,11 @@
 
 // $header[1|2|3|4|5]FontSize vars are 
 // applied to h[1|2|3|4|5] tags
-//$header1FontSize: 2.429rem         !default; // 34px when root 14px
-//$header2FontSize: 1.714rem         !default; // 24px when root 14px
-//$header3FontSize: $largestFontSize !default; // 20px when root 14px
-//$header4FontSize: $largeFontSize   !default; // 18px when root 14px
-//$header5FontSize: $mediumFontSize  !default; // 16px when root 14px
+//$header1FontSize: oj-px-to-rem(34px, $baseFontSize: 14px) !default; 
+//$header2FontSize: oj-px-to-rem(24px, $baseFontSize: 14px) !default; 
+//$header3FontSize: $largestFontSize !default; 
+//$header4FontSize: $largeFontSize   !default; 
+//$header5FontSize: $mediumFontSize  !default; 
 
 // the background variables below are for a header "container",
 // like the title bar of a dialog or an accordion header
@@ -823,6 +837,9 @@
 // Placeholder for theme specific popup modality option override.
 //$popupModalityOptionDefault: null !default;
 
+// animation theme defaults
+//$popupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
+//$popupCloseAnimation: ((effect: "zoomOut", persist: "all", transformOrigin: "#myPosition"), "fadeOut") !default;
  
 
 
@@ -865,7 +882,7 @@
 // APPLICATION LAYOUT - HYBRID
 //-------------------------------------------------------------
 // Padding
-//$appLayoutHybridPadding: 0.625rem !default;
+//$appLayoutHybridPadding:  oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
 // Header
 //$appLayoutHybridHeaderTextColor: $textColor !default;
@@ -874,7 +891,7 @@
 // We don't want header height to be relative to root font size so using a fixed px
 //$appLayoutHybridHeaderMinHeight: 44px !default;
 //$appLayoutHybridHeaderBoxShadow: none !default;
-//$appLayoutHybridHeaderTitleFontSize: 1.125rem !default; // 18px when root 16px
+//$appLayoutHybridHeaderTitleFontSize:  oj-px-to-rem(18px, $baseFontSize: 16px) !default; 
 //$appLayoutHybridHeaderTitleFontWeight: $headerFontWeight !default;
 
 // Footer
@@ -934,7 +951,7 @@
 
 // these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
 //$menuIconSize:                         16px !default; // per theming discussion, force it to size required by Alta spec, but don't grow/shrink via rems in case of artifacts, and DO scale the surrounding space via rems.
-//$menuIconToEdgePadding:                0.583rem !default; // 7px @12px font per Alta spec, 8.162px @14px font.
+//$menuIconToEdgePadding:                oj-px-to-rem(8px, $baseFontSize: 14px) !default;
 //$menuTextToIconPadding:                $menuIconToEdgePadding !default;
 
 // padding on both left and right of submenu icon:
@@ -945,6 +962,7 @@
 //----------------------------------
 
 // menus (.oj-menu), whether top-level or submenu
+//$menuBorderWidth:                      1px !default;
 //$menuBorderColor:                      $popupBorderColor !default;
 //$menuBorderRadius:                     null !default;
 //$menuBgColor:                          $popupBgColor !default;
@@ -979,7 +997,7 @@
 //$menuSubmenuIconColor:                 null !default;
 
 // menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
-//$menuDividerMargin:       0.083rem !default; // 1px @12px font, 1.162px @14px font. This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
+//$menuDividerMargin:       1px !default; // This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
 //$menuDividerBorderWidth:               1px !default;
 //$menuDividerBorderColor:               $menuBorderColor !default;
 
@@ -1026,7 +1044,7 @@
 //$buttonBorderRadius: $mediumBorderRadius !default;
 //$buttonCursor:       default !default;
 
-//$buttonHeight:       2.286rem !default; // 32px when base font 14px
+//$buttonHeight:       oj-px-to-rem(32px, $baseFontSize: 14px) !default;
 //$buttonSmallHeight:  $buttonHeight * .875 !default;
 //$buttonLargeHeight:  $buttonHeight * 1.3125 !default;
 //$buttonXlargeHeight: $buttonHeight * 1.5 !default;
@@ -1040,28 +1058,28 @@
 // button padding
 //----------------------------------
 // Horiz space between text and edge of button when no intervening icon.
-//$buttonTextToEdgePadding:       0.857rem !default; // 12px when root 14px
+//$buttonTextToEdgePadding:       oj-px-to-rem(12px, $baseFontSize: 14px) !default;
 //$buttonSmallTextToEdgePadding:  $buttonTextToEdgePadding !default;
-//$buttonLargeTextToEdgePadding:  1.43rem !default; // 20px when root 14px
+//$buttonLargeTextToEdgePadding:  oj-px-to-rem(20px, $baseFontSize: 14px) !default;
 //$buttonXlargeTextToEdgePadding: $buttonLargeTextToEdgePadding !default;
 
 // Horiz space between text and icon.
-//$buttonIconToTextPadding:       0.43rem !default; // 6px when root 14px
+//$buttonIconToTextPadding:       oj-px-to-rem(6px, $baseFontSize: 14px) !default;
 //$buttonSmallIconToTextPadding:  $buttonIconToTextPadding !default;
 //$buttonLargeIconToTextPadding:  $buttonIconToTextPadding !default;
 //$buttonXlargeIconToTextPadding: $buttonLargeIconToTextPadding !default;
 
 // Horiz space between icon and edge of button when text also showing.
-//$buttonIconToEdgePadding:       0.7rem !default;  // ~10px when root 14px
+//$buttonIconToEdgePadding:       oj-px-to-rem(10px, $baseFontSize: 14px) !default;
 //$buttonSmallIconToEdgePadding:  $buttonIconToEdgePadding !default;
-//$buttonLargeIconToEdgePadding:  1.071rem !default; // 15px when root 14px
+//$buttonLargeIconToEdgePadding:  oj-px-to-rem(15px, $baseFontSize: 14px) !default;
 //$buttonXlargeIconToEdgePadding: $buttonLargeIconToEdgePadding !default;
 
 // Horiz space between icon and edge of button when icon only.
-//$buttonIconOnlyPadding:       0.5rem !default; // 7px when root 14px
-//$buttonSmallIconOnlyPadding:  0.357rem !default; // 5px when root 14px
-//$buttonLargeIconOnlyPadding:  0.857rem !default; // 12px when root 14px
-//$buttonXlargeIconOnlyPadding: 1rem !default; // 14px when root 14px
+//$buttonIconOnlyPadding:       oj-px-to-rem(7px, $baseFontSize: 14px) !default;
+//$buttonSmallIconOnlyPadding:  oj-px-to-rem(5px, $baseFontSize: 14px) !default;
+//$buttonLargeIconOnlyPadding:  oj-px-to-rem(12px, $baseFontSize: 14px) !default;
+//$buttonXlargeIconOnlyPadding: oj-px-to-rem(14px, $baseFontSize: 14px) !default;
 
 
 
@@ -1110,6 +1128,8 @@
 // selected and hovered
 //$buttonTextColorSelectedHover:    $buttonIconColorHover !default;
 //$buttonIconColorSelectedHover:    $buttonIconColorHover !default;
+//$buttonBgColorSelectedHover:      null !default;
+//$buttonBorderColorSelectedHover:  null !default;
 
 // disabled
 //$buttonBgColorDisabled:           #f4f6f7 !default;
@@ -1167,15 +1187,17 @@
 // half chrome selected and hovered
 //$buttonHalfChromeTextColorSelectedHover:  $buttonTextColorSelectedHover !default;
 //$buttonHalfChromeIconColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
+//$buttonHalfChromeBgColorSelectedHover:    null !default;
+//$buttonHalfChromeBorderColorSelectedHover:  null !default;
 
 // half chrome disabled
 //$buttonHalfChromeTextColorDisabled:       $buttonTextColorDisabled !default;
-//$buttonHalfChromeIconColorDisabled:       $iconColorDisabled !default; // see [1]
+//$buttonHalfChromeIconColorDisabled:       $iconColorDisabled !default;
 //$buttonHalfChromeOpacityDisabled:         $buttonOpacityDisabled !default;
 
 // half chrome disabled and selected
 //$buttonHalfChromeTextColorSelectedDisabled:    $buttonTextColorSelectedDisabled !default;
-//$buttonHalfChromeIconColorSelectedDisabled:    $buttonHalfChromeTextColorSelectedDisabled !default; // see [1]
+//$buttonHalfChromeIconColorSelectedDisabled:    $buttonHalfChromeTextColorSelectedDisabled !default;
 //$buttonHalfChromeBgColorSelectedDisabled:      $buttonBgColorSelectedDisabled !default;
 //$buttonHalfChromeBorderColorSelectedDisabled:  $buttonHalfChromeBgColorSelectedDisabled !default;
 
@@ -1212,11 +1234,13 @@
 // outlined selected and hovered
 //$buttonOutlinedChromeTextColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
 //$buttonOutlinedChromeIconColorSelectedHover:  $buttonHalfChromeIconColorSelectedHover !default;
+//$buttonOutlinedChromeBgColorSelectedHover:    null !default;
+//$buttonOutlinedChromeBorderColorSelectedHover:  null !default;
 
 // outlined disabled
 //$buttonOutlinedChromeTextColorDisabled:       $buttonHalfChromeTextColorDisabled !default;
 //$buttonOutlinedChromeIconColorDisabled:       $buttonHalfChromeIconColorDisabled !default;
-//$buttonOutlinedChromeBorderColorDisabled:          $buttonBorderColorDisabled!default;
+//$buttonOutlinedChromeBorderColorDisabled:     $buttonBorderColorDisabled!default;
 //$buttonOutlinedChromeOpacityDisabled:         $buttonHalfChromeOpacityDisabled !default;
 
 // outlined disabled and selected
@@ -1253,6 +1277,10 @@
 
 // DIALOG
 //-----------------------------------------------------------------------------
+
+// animation theme defaults
+//$dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
+//$dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut") !default;
 
 // ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
 // default to the programmatic settings.
@@ -1320,12 +1348,15 @@
 // divider between rows
 //$formLayoutDividerColor: null !default;
 
-// These variables are used to set the column-width property
+// These variables are used to set the column-width/column-gap properties
 // in .oj-form-cols and .oj-form-cols-labels-inline.
 // These classes use css multi column layout, see:
 // http://dev.w3.org/csswg/css-multicol/
 //$formLayoutColumnWidth:             18.45rem !default;
+//$formLayoutColumnGap:               null !default;
 //$formLayoutLabelsInlineColumnWidth: 22rem !default;
+//$formLayoutLabelsInlineColumnGap:   null !default;
+
 
 // In a form layout this is the space expected between
 // form controls in different rows
@@ -1413,6 +1444,14 @@
 //$formControlMessagingBorderWidth: 2px !default;
 //$formControlTextAlign: null !default;
 
+
+// On iphone safari (if zooming is not disabled) then 
+// form controls auto zoom when you click on them if their
+// text size is less than 16px. This variable controls 
+// setting text-size-adjust such that the font size 
+// is a minimum of 16px to avoid auto zooming.
+//$formControlTextSizeAdjust: true !default;
+
 // form control states
 //----------------------------------
 
@@ -1460,15 +1499,23 @@
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
-// values are 'html' and 'backgroundImage'. default to 'html' for backward compatibility.
-//$radioCheckboxRenderInputAs: html !default;
+// values are 'html' and 'backgroundImage'.
+//$radioCheckboxRenderInputAs: backgroundImage !default;
 // The label can be rendered before or after the input/image.
 //$radioCheckboxLabelPosition: end !default;
 
-//$radioCheckboxRowHeight: 1.73rem !default;
+//$radioCheckboxRowHeight: 1.9rem !default;
 
-// padding between edge and the label text
-//$radioCheckboxLabelToEdgePadding: 10px !default;
+// image size
+//$radioCheckboxImageHeightWidth: 16px !default;
+
+// spacing between edge and the label text
+//$radioCheckboxLabelToEdgePadding: 22px !default;
+
+// spacing between edge and the input (html input or input image)
+//$radioCheckboxInputToEdgePadding: 0 !default;
+// spacing on the input (html input or input image) to give spacing between the input and the text
+//$radioCheckboxInputToLabelPadding: .6rem !default;
 
 // radioset and checkboxset image directory
 //$radioCheckboxImageDir: $imageDir !default;
@@ -1566,14 +1613,50 @@
 //$sliderBarValueBgColorDisabled:  $textColorDisabled !default;
 
 // Color picker variables
-
-//$sliderColorPickerBarThickness:         8px !default;
-//$sliderColorPickerThumbBorderWidth:     2px !default;
-//$sliderColorPickerThumbBorderRadius:    50% !default;
-//$sliderColorPickerThumbWidth:           28px !default;
+//$sliderColorPickerBarThickness:         10px !default;
+//$sliderColorPickerThumbBorderWidth:     3px !default;
+//$sliderColorPickerThumbBorderRadius:    17px !default;
+//$sliderColorPickerThumbBorderStyle:     solid !default;
+//$sliderColorPickerThumbBorderColor:     white !default;
+//$sliderColorPickerThumbWidth:           24px !default;
 //$sliderColorPickerThumbHeight:          $sliderColorPickerThumbWidth !default;
 //$sliderColorPickerThumbWidthActive:     $sliderColorPickerThumbWidth !default;
 //$sliderColorPickerThumbHeightActive:    $sliderColorPickerThumbWidthActive !default;
+//$sliderColorPickerThumbBoxShadow:       0 0 5px gray !default;
+
+
+// COLOR SPECTRUM
+//-----------------------------------------------------------------------------
+
+// Spectrum saturation/luminosity rectangle
+//$colorSpectrumBorderColor:       $border1Color !default; 
+//$colorSpectrumSize:              230px !default;
+
+// Spectrum Thumb
+//$colorSpectrumThumbBorderColor:         $sliderColorPickerThumbBorderColor !default;
+//$colorspectrumThumbBorderColorDisabled: $sliderThumbBorderColorDisabled;
+//$colorSpectrumThumbSize:                $sliderColorPickerThumbWidth !default;
+//$colorSpectrumThumbBorderWidth:         $sliderColorPickerThumbBorderWidth !default;
+//$colorSpectrumThumbBoxShadow:           $sliderColorPickerThumbBoxShadow !default;
+
+
+// COLOR PALETTE
+//-----------------------------------------------------------------------------
+
+//$colorPaletteTextColor :             $textColor !default;
+//$colorPaletteGridFontSize:           $smallFontSize !default;
+//$colorPaletteListFontSize:           null !default;
+//$colorPaletteSwatchInnerBorderColor:         $border8Color !default;
+//$colorPaletteSwatchOuterBorderColorSelected: $linkTextColor !default;
+//$colorPaletteGridSwatchXLargeSize:   64px !default;
+//$colorPaletteGridSwatchLargeSize:    50px !default;
+//$colorPaletteGridSwatchSmallSize:    29px !default;
+//$colorPaletteGridSwatchXSmallSize:   22px !default;
+//$colorPaletteListSwatchSmallWidth:   84px  !default;
+//$colorPaletteListSwatchSmallHeight:  22px  !default;
+//$colorPaletteListSwatchLargeWidth:   274px !default;
+//$colorPaletteListSwatchLargeHeight:  22px  !default;
+
 
 //SWITCH
 //-----------------------------------------------------------------------------
@@ -1704,11 +1787,19 @@
 // this is the additional padding per nesting level
 //$listboxIndentWidth: 15px !default;
 
-// DATEPICKER
+// Common values for datepicker and timepicker
 //-----------------------------------------------------------------------------
 
-//$datepickerWidth:            275px                      !default;
-//$datepickerPadding:          15px                       !default;
+//$dateTimePickerWidth:        275px                          !default;
+//$dateTimePickerPadding:      15px                           !default;
+
+//$dateTimePickerSwitcherBgColor: $background4Color     !default;
+//$dateTimePickerSwitcherPadding: 5px $dateTimePickerPadding !default;
+
+//$dateTimePickerDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
+
+// DATEPICKER
+//-----------------------------------------------------------------------------
 
 //$datepickerBgColorSelected:   $buttonHalfChromeBgColorSelected   !default;
 //$datepickerTextColorSelected: $buttonHalfChromeTextColorSelected !default;
@@ -1737,9 +1828,6 @@
 
 // TIMEPICKER
 //-----------------------------------------------------------------------------
-
-//$dateTimePickerWidth:        275px                          !default;
-//$dateTimePickerPadding:      15px                           !default;
 
 //$timepickerItemBgColorFocus: $interaction3Color             !default;
 
@@ -1819,8 +1907,8 @@
 //$trainButtonTextColorHover:               $contrastTextColor !default;
 
 // active state 
-//$trainBgColorActive :              $trainBgColorHover !default;
-//$trainBorderColorActive:           $trainBgColorHover !default;
+//$trainBgColorActive :                    $trainBgColorHover !default;
+//$trainBorderColorActive:                 $trainBgColorHover !default;
 //$trainLabelTextDecorationActive:         underline !default;
 //$trainLabelFontWeightActive:             normal !default;
 //$trainButtonTextColorActive:              $trainBgColorVisited !default;
@@ -1837,7 +1925,7 @@
 
 // $trainLabelTextWrap accepts css white-space 
 // values such as normal or nowrap
-//$trainLabelTextWrap:                      nowrap !default;
+//$trainLabelTextWrap:                      normal !default;
 
 // the diameter of the "button" representing a stop
 //$trainButtonDiameter:                    14px !default;
@@ -1891,8 +1979,13 @@
 // Headers
 //$dataGridCellPadding:                 0.5em !default;
 //$dataGridHeaderFontWeight:                  $headerFontWeight !default;
-//$dataGridHeaderTextColor:                   $primaryTextColor !default;
-//$dataGridHeaderFontSize:                    $fontSize !default;
+//$dataGridHeaderTextColor:                   $headerTextColor !default;
+//$dataGridHeaderFontSize:                    null !default;
+// Headers content alignment
+//$dataGridColumnHeaderJustifyContent:        center !default;
+//$dataGridColumnHeaderAlignItems:            center !default;
+//$dataGridRowHeaderJustifyContent:           flex-start !default;
+//$dataGridRowHeaderAlignItems:               center !default;
 // Headers - Default
 //$dataGridHeaderBgColor:                     adjust-color($background6Color , $lightness: 5%, $saturation: 12%, $hue: 16) !default;
 //$dataGridHeaderBorderColor:                 $dataGridBorderColor !default;
@@ -1910,6 +2003,10 @@
 
 // Cells
 //$dataGridCellTextColor:                     $textColor !default;
+//$dataGridCellFontSize:                      null !default;
+// Cells content alignment
+//$dataGridCellJustifyContent:                flex-end !default;
+//$dataGridCellAlignItems:                    center !default;
 // Cells - Default
 //$dataGridCellBorderColor:                   $border5Color !default;
 //$dataGridCellBgColor:                       $background1Color !default;
@@ -1922,7 +2019,7 @@
 //$dataGridCellBorderColorFocus:              $dataGridCellBorderColor !default;
 // Cells - Selected
 //$dataGridCellBgColorSelected:               $interaction3Color !default;
-//$dataGridCellBorderColorSelected:           $dataGridCellBorderColor !default;
+//$dataGridCellBorderColorSelected:           transparent !default;
 // Cells - Selected Inactive (selected but focus outside the component)
 //$dataGridCellBgColorSelectedInactive:       $interaction7Color !default;
 //$dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColor !default;
@@ -1936,12 +2033,14 @@
 
 // Rows - Height is now dependent on the default form control height
 //$dataGridRowHeight:                         max($formControlInputHeight, $formControlTriggerHeight) !default;
+//$dataGridHeaderHeight:                      $dataGridRowHeight !default;
+//$dataGridColumnWidth:                       4.166rem !default;
 
 // Status Text
 //$dataGridStatusBgColor:                     adjust-color($interaction7Color, $lightness: -7%, $saturation: 30%, $hue:1) !default;
 
 // Touch Selection Affordances
-//$dataGridSelectionAffordanceBorder:         $interaction1Color !default;
+//$dataGridSelectionAffordanceBorderColor:    $interaction1Color !default;
 
 // TABLE
 //-----------------------------------------------------------------------------
@@ -1963,8 +2062,8 @@
 
 // ROWEXPANDER
 //-----------------------------------------------------------------------------
-//$rowExpanderIndentWidth:  16px;
-
+//$rowExpanderIndentWidth:  16px !default;
+//$rowExpanderSpacerWidth:  1.5rem !default;
 
 // PAGING CONTROL
 //-----------------------------------------------------------------------------
@@ -1976,11 +2075,11 @@
 
 //$listViewAnimationDuration:    $animationDurationMedium !default;
 //$listViewHeaderBorderWidth: 1px !default;
-//$listViewHeaderFontSize:       $header3FontSize !default;
+//$listViewHeaderFontSize:       $header4FontSize !default;
 //$listViewHeaderOpacity:        1 !default;
 //$listViewHeaderFontWeight:     $headerFontWeight !default;
 // the right and left margins will be flipped in rtl languanges
-//$listViewCardMargin:           $spacingMedium $spacingMedium $spacingMedium 0 !default;
+//$listViewCardMargin:           $spacingMedium $spacingMedium 0 0 !default;
 //$listViewCardWidth:            240px !default;
 //$listViewCardHeight:           auto !default;
 //$listViewDrillIconColor:       $iconColorDefault !default;
@@ -2071,7 +2170,7 @@
 //-----------------------------------------------------------------------------
 
 //sizing
-//$navigationListItemMinHeight: 3.142rem !default;   //applies to vertical only, 44 px height when root font 14px.
+//$navigationListItemMinHeight:  oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
  
 //------Start of Common variables----
 
@@ -2103,8 +2202,8 @@
 
 //sizing
 // Not applicable to icon-only
-//$navigationListItemStartEndPadding:         1.072rem !default; //15px
-//$navigationListIconToTextPadding:           0.714rem !default; // 10px
+//$navigationListItemStartEndPadding:         oj-px-to-rem(15px, $baseFontSize: 14px) !default; 
+//$navigationListIconToTextPadding:           oj-px-to-rem(10px, $baseFontSize: 14px) !default; 
 //$navigationListItemAccentBorderWidth:       3px !default;
 //$navigationListItemLabelTextWrap:           nowrap !default;
 //------End of Common variables----
@@ -2170,7 +2269,12 @@
 //$navigationListItemContrastBgColorHover:            #262628 !default;
 //Selected
 //$navigationListItemContrastLabelColorSelected:      #fafafa !default;
+
 //$navigationListItemContrastBgColorSelected:         #202324 !default;
+
+//$navigationListPageLevelItemContrastBgColorSelected:         null !default;
+//$navigationListPageLevelItemContrastLabelColorSelected:      $navigationListItemContrastLabelColorSelected !default;
+
 //Disabled
 //$navigationListItemContrastLabelColorDisabled:  #616365 !default;
 //---------End of Navlist Contrast variables--------------
@@ -2204,7 +2308,7 @@
 
 //Sizing
 //$navigationBarFontSize: 1rem !default;
-//$navigationBarMinHeight: 2.714rem !default;//38 px height when root font 14px
+//$navigationBarMinHeight:  oj-px-to-rem(38px, $baseFontSize: 14px) !default;
 
 // the right and left borders will be flipped in rtl languanges
 //$navigationBarItemBorderWidth:   0 0 $navigationListItemAccentBorderWidth 0 !default;
@@ -2214,7 +2318,7 @@
 //$navigationBarIconToTextPadding: $navigationListIconToTextPadding !default;
 
 //Stacked nav bar 
-//$navigationBarStackedIconMinHeight: 4.285rem !default; //60 px height when root font 14px
+//$navigationBarStackedIconMinHeight:  oj-px-to-rem(60px, $baseFontSize: 14px) !default; //60 px height when root font 14px
 //$navigationBarStackedItemPadding: $navigationBarItemPadding !default;
 
 //----------Start of Navigation bar icon only variables
@@ -2237,6 +2341,12 @@
 //$navigationBarPageLevelItemLabelColorSelected:  $navigationListPageLevelItemLabelColorSelected !default;
 //$navigationBarPageLevelItemIconColorSelected:   $navigationListPageLevelItemIconColorSelected !default;
 //$navigationBarPageLevelItemBgColorSelected:     $navigationListPageLevelItemBgColorSelected !default;
+
+//Navigation bar contrast variables
+//$navigationBarItemContrastBgColorSelected:         null !default;
+//$navigationBarItemContrastLabelColorSelected:      $navigationListItemContrastLabelColorSelected !default;
+//$navigationBarPageLevelItemContrastBgColorSelected:         null !default;
+//$navigationBarPageLevelItemContrastLabelColorSelected:      $navigationListItemContrastLabelColorSelected !default;
 
 //------End of Horizontal list variables----
 
@@ -2305,7 +2415,7 @@
 
 // diagram
 //----------------------------------
-//$dvtDiagramNodeBorderColorHover: $interaction2Color !default;
+//$dvtDiagramNodeBorderColorHover: rgba(0,0,0,.3) !default;
 //$dvtDiagramLinkBorderColorHover: $dvtDiagramNodeBorderColorHover !default;
 //$dvtDiagramLinkColor: #9bb2c7 !default;
 
@@ -2336,9 +2446,9 @@
 //$dvtTimelineItemBorderColorHover:      #85bbe7 !default;
 //$dvtTimelineItemBorderColorSelected:   $dvtBorderColor !default;
 //$dvtTimelineItemDescriptionColor:      $textColor !default;
-//$dvtTimelineItemTitleColor:            #4f4f4f !default;
+//$dvtTimelineItemTitleColor:            $secondaryTextColor !default;
 
-//$dvtTimelineMajorAxisLabelColor:       #4f4f4f !default;
+//$dvtTimelineMajorAxisLabelColor:       $secondaryTextColor !default;
 //$dvtTimelineMajorAxisSeparatorColor:   #bcc7d2 !default;
 //$dvtTimelineMinorAxisSeparatorColor:   $dvtTimelineMajorAxisSeparatorColor !default;
 //$dvtTimelineMinorAxisBgColor:          $background2Color !default;
@@ -2346,7 +2456,7 @@
 //$dvtTimelineMinorAxisLabelColor:       $textColor !default;
 
 //$dvtTimelineOverviewBgColor:           #e6ecf3 !default;
-//$dvtTimelineOverviewLabelColor:        #4f4f4f !default;
+//$dvtTimelineOverviewLabelColor:        $secondaryTextColor !default;
 //$dvtTimelineOverviewWindowBgColor:     $background1Color !default;
 //$dvtTimelineOverviewWindowBorderColor: $border8Color !default;
 
@@ -2362,10 +2472,12 @@
 //$dvtTreemapNodeHeaderBorderColorHover: $interaction5Color !default;
 //$dvtTreemapNodeHeaderBgColor: $interaction6Color !default;
 //$dvtTreemapNodeBorderColorHover: $interaction2Color !default;
+//$dvtTreemapDrillTextColor: $linkTextColor !default;
 
 // sunburst
 //----------------------------------
 //$dvtSunburstNodeBorderColorHover: $dvtTreemapNodeBorderColorHover !default;
+//$dvtSunburstDrillTextColor: $linkTextColor !default;
 
 // timeaxis
 //----------------------------------
@@ -2459,6 +2571,61 @@
 //$borderRadiusGeneration: on !default;
 //$boxShadowGeneration: on !default;
 //$gradientGeneration: on !default;
-//$includeDeprecatedGridClasses:        false !default;
-//$includeDeprecatedFormLayoutClasses:  false !default;
-//$trainIconBoxShadowActive:               none !default;
+
+
+// see the comments for $includeCssVarDefinitions
+// for more information
+//$oj-css-var-map: (
+//  '--oj-interaction-1-color':         $interaction1Color,
+//  '--oj-interaction-2-color':         $interaction2Color,
+//  '--oj-interaction-3-color':         $interaction3Color,
+//  '--oj-interaction-4-color':         $interaction4Color,
+//  '--oj-interaction-5-color':         $interaction5Color,
+//  '--oj-interaction-6-color':         $interaction6Color,
+//  '--oj-interaction-7-color':         $interaction7Color,
+//  '--oj-background-1-color':          $background1Color,
+//  '--oj-background-2-color':          $background2Color,
+//  '--oj-background-3-color':          $background3Color,
+//  '--oj-background-4-color':          $background4Color,
+//  '--oj-background-5-color':          $background5Color,
+//  '--oj-background-6-color':          $background6Color,
+//  '--oj-contrast-background-1-color': $contrastBackground1Color,
+//  '--oj-border-1-color':              $border1Color,
+//  '--oj-border-2-color':              $border2Color,
+//  '--oj-border-3-color':              $border3Color,
+//  '--oj-border-4-color':              $border4Color,
+//  '--oj-border-5-color':              $border5Color,
+//  '--oj-border-6-color':              $border6Color,
+//  '--oj-border-7-color':              $border7Color,
+//  '--oj-border-8-color':              $border8Color,
+//  '--oj-font-size':                   $fontSize,
+//  '--oj-smallest-font-size':          $smallestFontSize,
+//  '--oj-small-font-size':             $smallFontSize,
+//  '--oj-medium-font-size':            $mediumFontSize,
+//  '--oj-large-font-size':             $largeFontSize,
+//  '--oj-largest-font-size':           $largestFontSize,
+//  '--oj-text-color':                  $textColor,
+//  '--oj-primary-text-color':          $primaryTextColor,
+//  '--oj-secondary-text-color':        $secondaryTextColor,
+//  '--oj-tertiary-text-color':         $tertiaryTextColor,
+//  '--oj-contrast-text-color':         $contrastTextColor,
+//  '--oj-text-color-disabled':         $textColorDisabled,
+//  '--oj-form-control-label-color':    $formControlLabelColor,
+//  '--oj-link-text-color':             $linkTextColor,
+//  '--oj-link-text-color-active':      $linkTextColorActive,
+//  '--oj-link-text-color-visited':     $linkTextColorVisited,
+//  '--oj-link-text-color-disabled':    $linkTextColorDisabled,
+//  '--oj-link-text-decoration':        $linkTextDecoration,
+//  '--oj-link-text-decoration-hover':  $linkTextDecorationHover,
+//  '--oj-link-font-weight-active':     $linkFontWeightActive,
+//  '--oj-link-bg-color-active':        $linkBgColorActive,
+//  '--oj-icon-color':                  $iconColor,
+//  '--oj-icon-color-default':          $iconColorDefault,
+//  '--oj-icon-color-hover':            $iconColorHover,
+//  '--oj-icon-color-active':           $iconColorActive,
+//  '--oj-icon-color-selected':         $iconColorSelected,
+//  '--oj-icon-color-disabled':         $iconColorDisabled,
+//  '--oj-drop-target-1-color':         $dropTarget1Color,
+//  '--oj-drop-target-2-color':         $dropTarget2Color
+//);
+

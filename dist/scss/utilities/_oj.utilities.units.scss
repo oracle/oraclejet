@@ -1,0 +1,195 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "../utilities/oj.utilities.math";
+
+//*****************************************************************************
+// @param {Number} $baseFontSize - base font size, can be %, em, or px.
+//       % or em will be resolved relative to browser default font of 16px,
+//       for example if you pass in 75% or .75em it will resolve to 12px.
+//*****************************************************************************
+@function _oj-base-to-px($baseFontSize) {
+
+  // Check if the value is a number
+  @if type-of($baseFontSize) != 'number' {
+    @error $baseFontSize + ' was passed to _oj-base-to-px, which is not a number.';
+    @return $baseFontSize;
+  }
+
+  // If the base font size is a % or em, then multiply it by 16px
+  // since 16px is the default font size in browsers
+
+  @if unit($baseFontSize) == '%' {
+    $baseFontSize: ($baseFontSize / 100%) * 16px;
+  }
+  @else if unit($baseFontSize) == 'em' {
+    $baseFontSize: oj-strip-unit($baseFontSize) * 16px;
+  }
+  @else if unit($baseFontSize) != 'px' {
+    @error $baseFontSize + ' was passed to _oj-base-to-px, only %, em, px supported in base value.';
+  }
+
+  // @debug "base = " + $baseFontSize;
+  @return $baseFontSize;
+}
+
+
+//*****************************************************************************
+// Private function called by oj-px-to-rem.
+// Converts a pixel value to matching rem value.  
+// @access private
+//
+// @param {Number} $value - Pixel value to convert. If rem values are 
+//       passed in they will be passed back as is. A number 
+//       without units will be considered a pixel value.
+// @param {Number} $baseFontSize - base font size in px, you can call 
+//       _oj-base-to-px before passing the value in. 
+// @param {Number} $decimals - the number of decimals to round to
+//
+// @returns {Number} A number in rems or 0
+//*****************************************************************************
+@function _oj-px-to-rem($value, $baseFontSize, $decimals: 5) {
+
+
+  // Check if the value is a number
+  @if type-of($value) != 'number' {
+    @error $value + ' was passed to px-to-rem(), which is not a number.';
+  }
+
+  $unit: unit($value);
+
+  // Calculate rem if units for $value is not rem
+  @if $unit != 'rem' {
+
+    @if ( $unit != "" and $unit != "px")
+    {
+      @error $value + ' was passed to px-to-rem(), only rem, px or unitless values allowed.';
+    }
+
+    $value: oj-round-float(oj-strip-unit($value) / oj-strip-unit($baseFontSize), $decimals) * 1rem;
+  }
+
+  // Turn 0rem into 0
+  @if $value == 0rem {
+    $value: 0;
+  }
+
+  // @debug  "px-to-rem = " +  $value;
+  @return $value;
+}
+
+
+//*****************************************************************************
+// Converts one or more pixel values into matching rem values.
+//
+// Often you want to use rems so that sizes adjust based on the root font size. 
+// For example if I want the width to be 12px when the root font size is 
+// 14px then you would divide 12px by 14px to get the following:
+//    width: .857rem; 
+// 
+// However the rem syntax isn't terribly human readable, so this function can 
+// be used instead, the example above would be:
+//     width: oj-px-to-rem($value:12px, $baseFontSize:14px);
+//
+//
+// @param {Number|List} $value - One or more px values to convert. 
+//      Be sure to separate them with spaces and not commas. 
+//      If you need to convert a comma-separated list, wrap the list in 
+//      parentheses.
+// @param {Number} $baseFontSize - base font size, can be %, em, or px.
+//       % or em will be resolved relative to browser default font of 16px.
+//       For example if you pass in 75% or .75em it will resolve to 12px.
+//
+// @returns {List} A list of converted values.
+//*****************************************************************************
+@function oj-px-to-rem($value, $baseFontSize) {
+
+  $rem-values: ();
+  $count: length($value);
+  $baseFontSize: _oj-base-to-px($baseFontSize);
+
+  @if $count == 1 {
+    @return _oj-px-to-rem($value, $baseFontSize);
+  }
+
+  @for $i from 1 through $count {
+    $rem-values: append($rem-values, _oj-px-to-rem(nth($value, $i), $baseFontSize));
+  }
+
+  //@debug  $rem-values;
+  @return $rem-values;
+}
+
+
+
+//*****************************************************************************
+// private function called by oj-rem-to-px.
+// Converts a rem value to matching px value. 
+// @access private
+//
+// @param {Number} $value - Rem value to convert, if px values are passed 
+//       in then they are passed through as is
+// @param {Number} $baseFontSize - base font size in px, you can call 
+//       _oj-base-to-px before passing the value in. 
+//
+// @returns {Number} A number in px.
+//*****************************************************************************
+@function _oj-rem-to-px($value, $baseFontSize) {
+
+
+  // Check if the value is a number
+  @if type-of($value) != 'number' {
+    @error $value + ' was passed to rem-to-px(), which is not a number.';
+    @return $value;
+  }
+
+  // Calculate rem if units for $value is not rem
+  @if unit($value) != 'px' {
+    @if unit($value) != 'rem' 
+    {
+      @error $value + ' was passed to rem-to-px(), only rem units allowed.';
+    }
+    @else
+    { 
+      $value: oj-strip-unit($value) * $baseFontSize;
+    }
+  }
+
+  // Turn 0rem into 0
+  @if $value == 0px {
+    $value: 0;
+  }
+
+  // @debug  "rem-to-px value = " + $value;
+  @return $value;
+}
+
+
+//*****************************************************************************
+// Converts one or more rem values into px.
+//
+// @param {Number|List} $values - One or more values to convert. 
+//      Be sure to separate them with spaces and not commas. 
+//      If you need to convert a comma-separated list, wrap the list in parentheses.
+// @param {Number} $baseFontSize - base font size, can be %, em, or px.
+//       % or em will be resolved relative to browser default font of 16px.
+//       For example if you pass in 75% or .75em it will resolve to 12px.
+//
+// @returns {List} A list of converted values.
+//*****************************************************************************
+@function oj-rem-to-px($values, $baseFontSize) {
+
+  $rem-values: ();
+  $count: length($values);
+  $baseFontSize: _oj-base-to-px($baseFontSize);
+
+  @if $count == 1 {
+    @return _oj-rem-to-px($values, $baseFontSize);
+  }
+
+  @for $i from 1 through $count {
+    $rem-values: append($rem-values, _oj-rem-to-px(nth($values, $i), $baseFontSize));
+  }
+
+  //@debug  $rem-values;
+  @return $rem-values;
+}

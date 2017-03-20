@@ -80,66 +80,21 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
  *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-offcanvas-outer-wrapper</td>
- *       <td>Applied to the outer most element of the offcanvas.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-page</td>
- *       <td>Applied to the outer wrapper of the page level offcanvas.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-inner-wrapper<br>
- *       <td>Applied to the inner wrapper of the offcanvas.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-start<br>
- *       <td>Applied to the offcanvas on the start edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-end<br>
- *       <td>Applied to the offcanvas on the end edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-top<br>
- *       <td>Applied to the offcanvas on the top edge.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-offcanvas-bottom<br>
- *       <td>Applied to the offcanvas on the bottom edge.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
  * </h3>
  *
- * <table class="keyboard-table">
- *   <thead>
- *     <tr>
- *       <th>Target</th>
- *       <th>Gesture</th>
- *       <th>Action</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>Offcanvas</td>
- *       <td><kbd>Swipe</kbd></td>
- *       <td>Close the offcanvas by swiping in the close direction.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"touchDoc"}
+ *
+ * <h3 id="keyboard-section">
+ *   Keyboard End User Information
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#keyboard-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"keyboardDoc"}
  *
  */
 oj.OffcanvasUtils = {};
@@ -511,22 +466,54 @@ oj.OffcanvasUtils._isAutoDismiss = function(offcanvas)
   return offcanvas["autoDismiss"] != "none";
 };
 
+oj.OffcanvasUtils._calcTransitionTime = function ($elem)
+{
+  var propertyArray = $elem.css('transitionProperty').split(',');
+  var delayArray = $elem.css('transitionDelay').split(',');
+  var durationArray = $elem.css('transitionDuration').split(',');
+  var maxTime = 0;
+  
+  for (var i = 0; i < propertyArray.length; i++)
+  {
+    var duration = durationArray[i % durationArray.length];
+    var durationMs = (duration.indexOf('ms') > -1) ? parseFloat(duration) : parseFloat(duration) * 1000;
+    if (durationMs > 0)
+    {
+      var delay = delayArray[i % delayArray.length];
+      var delayMs = (delay.indexOf('ms') > -1) ? parseFloat(delay) : parseFloat(delay) * 1000;
+
+      maxTime = Math.max(maxTime, delayMs + durationMs);
+    }
+  }
+
+  return maxTime + 100;
+};
+
 oj.OffcanvasUtils._onTransitionEnd = function(target, handler)
 {
   var endEvents = "transitionend.oc webkitTransitionEnd.oc otransitionend.oc oTransitionEnd.oc";
+  var transitionTimer;
   var listener =
     function ()
     {
-      handler(target);
-
+      if (transitionTimer)
+      {
+        clearTimeout(transitionTimer);
+        transitionTimer = undefined;
+      }
       //remove handler
       target.off(endEvents, listener);
+
+      handler(target);
     };
 
   //add transition end listener
   target.on(endEvents, listener);
 
+  transitionTimer = 
+    setTimeout(listener, oj.OffcanvasUtils._calcTransitionTime(target));
 };
+
 
 oj.OffcanvasUtils._closeWithCatch = function(offcanvas)
 {
@@ -740,32 +727,6 @@ oj.OffcanvasUtils._toggleOuterWrapper = function(offcanvas, drawer, test)
   return isOpen;
 };
 
-oj.OffcanvasUtils._detachDetector = function(target, endHandler)
-{
-  var rafId = 0;
-  //request animation frame in case the transition end get lost.
-  //for example: if offcanvas is hidden before transition end
-  var checkDetachedHandler = function()
-  {
-    var offsetParent = ($(target).css("position") === "fixed") ?
-      target.parentNode.offsetParent : target.offsetParent;
-
-    //if offcanvas is detached, ex: parent display:none
-    if (offsetParent == null)
-      endHandler();
-    else
-      rafId = window.requestAnimationFrame(checkDetachedHandler);
-  };
-
-  rafId = window.requestAnimationFrame(checkDetachedHandler);
-
-  return function()
-  {
-    if (rafId !== 0)
-      window.cancelAnimationFrame(rafId);
-  };
-};
-
 oj.OffcanvasUtils._afterCloseHandler = function(offcanvas)
 {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
@@ -918,6 +879,31 @@ oj.OffcanvasUtils._openPush = function(offcanvas, resolve, reject, edge)
   var size = offcanvas["size"];
   var translation;
 
+  //transition end handler
+  var endHandler = function ($elem)
+  {
+    //After animation, remove transition class
+    $elem.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+
+    if (pending) {
+      pending = false;
+    }
+    else {
+      // - opening offcanvas automatically scrolls to the top
+      oj.OffcanvasUtils._setFocus(offcanvas);
+
+      //fire after open event
+      drawer.trigger("ojopen", offcanvas);
+
+      // - push and overlay demos don't work in ie11
+      //register dismiss handler as late as possible because IE raises focus event
+      //on the launcher that will close the offcanvas if autoDismiss is true
+      oj.OffcanvasUtils._registerCloseHandler(offcanvas);
+
+      resolve(true);
+    }
+  };
+
   //set display block to get size of offcanvas
   drawer.addClass(oj.OffcanvasUtils.OPEN_SELECTOR);
 
@@ -949,6 +935,11 @@ oj.OffcanvasUtils._openPush = function(offcanvas, resolve, reject, edge)
                                          "translate3d(0, 0, 0)", translation);
 
       oj.OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
+
+      //add transition end listener
+      oj.OffcanvasUtils._onTransitionEnd($main, endHandler);
+      oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
+
     }, 0); //before animation
 
   }, 0);    //set translationX or Y
@@ -956,35 +947,6 @@ oj.OffcanvasUtils._openPush = function(offcanvas, resolve, reject, edge)
 
   //insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
-
-  //transition end handler
-  var endHandler = function ($elem)
-  {
-    //After animation, remove transition class
-    $elem.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
-
-    if (pending) {
-      pending = false;
-    }
-    else {
-      // - opening offcanvas automatically scrolls to the top
-      oj.OffcanvasUtils._setFocus(offcanvas);
-
-      //fire after open event
-      drawer.trigger("ojopen", offcanvas);
-
-      // - push and overlay demos don't work in ie11
-      //register dismiss handler as late as possible because IE raises focus event
-      //on the launcher that will close the offcanvas if autoDismiss is true
-      oj.OffcanvasUtils._registerCloseHandler(offcanvas);
-
-      resolve(true);
-    }
-  };
-
-  //add transition end listener
-  oj.OffcanvasUtils._onTransitionEnd($main, endHandler);
-  oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
 
 };
 
@@ -1101,38 +1063,23 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
 oj.OffcanvasUtils._closePush = function(offcanvas, resolve, reject, drawer, animation)
 {
   var $main = $(offcanvas[oj.OffcanvasUtils.CONTENT_KEY]);
+  //since drawer and main are animated seperately,
+  //only resolve true when both transitions are ended
   var pending = true;
 
   // - issue in ojoffcanvas when used inside ojtabs
-  var cancelDetector;
-  var endHandler = function ($target)
+  var endHandler = function ()
   {
-    //If this is called from the detach detector, dont check for pending
-    if (pending && $target) {
-      pending = false;
-    }
-    else {
+    if (! pending)
+    {
       //clear transform translation on $main
       $main.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
       oj.OffcanvasUtils._setTransform($main, "");
-
       oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-
-      if (cancelDetector)
-        cancelDetector();
       resolve(true);
     }
+    pending = false;
   };
-
-  if (animation)
-  {
-    //add transition end listener
-    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
-    oj.OffcanvasUtils._onTransitionEnd($main, endHandler);
-
-    //add detach detector
-    cancelDetector = oj.OffcanvasUtils._detachDetector(drawer[0], endHandler);
-  }
 
   //clear transform
   oj.OffcanvasUtils._setTransform(drawer, "");
@@ -1147,32 +1094,24 @@ oj.OffcanvasUtils._closePush = function(offcanvas, resolve, reject, drawer, anim
     //Before animation, add transition class
     $main.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
     drawer.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+
+    //add transition end listener
+    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
+    oj.OffcanvasUtils._onTransitionEnd($main, endHandler);
   }
   else {
-    oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    resolve(true);
+    pending = false;
+    endHandler();
   }
-
 };
 
 oj.OffcanvasUtils._closeOverlay = function(offcanvas, resolve, reject, drawer, animation)
 {
-  var cancelDetector;
   var endHandler = function ()
   {
     oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    if (cancelDetector)
-      cancelDetector();
     resolve(true);
   };
-
-  if (animation)
-  {
-    //add transition end listener
-    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
-    //add detach detector
-    cancelDetector = oj.OffcanvasUtils._detachDetector(drawer[0], endHandler);
-  }
 
   //clear transform
   oj.OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
@@ -1183,10 +1122,12 @@ oj.OffcanvasUtils._closeOverlay = function(offcanvas, resolve, reject, drawer, a
 
   if (animation) {
     drawer.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+
+    //add transition end listener
+    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
   }
   else {
-    oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    resolve(true);
+    endHandler();
   }
 };
 
@@ -1253,22 +1194,11 @@ oj.OffcanvasUtils._openOldDrawer = function(offcanvas, resolve, reject, edge, di
 
 oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, animation)
 {
-  var cancelDetector;
   var endHandler = function ()
   {
     oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    if (cancelDetector)
-      cancelDetector();
     resolve(true);
   };
-
-  if (animation)
-  {
-    //add transition end listener
-    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
-    //add detach detector
-    cancelDetector = oj.OffcanvasUtils._detachDetector(drawer[0], endHandler);
-  }
 
   //clear transform
   oj.OffcanvasUtils._toggleOuterWrapper(offcanvas, drawer, false);
@@ -1280,10 +1210,12 @@ oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, anima
   if (animation) {
     //Before animation, add transition class
     drawer.css("min-width", "0");
+ 
+    //add transition end listener
+    oj.OffcanvasUtils._onTransitionEnd(drawer, endHandler);
   }
   else {
-    oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    resolve(true);
+    endHandler();
   }
 };
 
@@ -1292,22 +1224,11 @@ oj.OffcanvasUtils._closeOldDrawer = function(offcanvas, resolve, reject, drawer,
   var displayMode = offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY],
       wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
 
-  var cancelDetector;
   var endHandler = function ()
   {
     oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    if (cancelDetector)
-      cancelDetector();
     resolve(true);
   };
-
-  if (animation)
-  {
-    //add transition end listener
-    oj.OffcanvasUtils._onTransitionEnd(wrapper, endHandler);
-    //add detach detector
-    cancelDetector = oj.OffcanvasUtils._detachDetector(drawer[0], endHandler);
-  }
 
   //clear transform
   if (displayMode === oj.OffcanvasUtils.DISPLAY_MODE_PUSH) {
@@ -1322,10 +1243,12 @@ oj.OffcanvasUtils._closeOldDrawer = function(offcanvas, resolve, reject, drawer,
   if (animation) {
     //Before animation, add transition class
     wrapper.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+
+    //add transition end listener
+    oj.OffcanvasUtils._onTransitionEnd(wrapper, endHandler);
   }
   else {
-    oj.OffcanvasUtils._afterCloseHandler(offcanvas);
-    resolve(true);
+    endHandler();
   }
 
 };
@@ -1436,6 +1359,9 @@ oj.OffcanvasUtils.open = function(offcanvas)
     var nOffcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
     if (nOffcanvas) {
       nOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY] = promise;
+
+      //notify subtree
+      oj.Components.subtreeShown(drawer[0]);
     }
   }
   return promise;
@@ -1528,6 +1454,9 @@ oj.OffcanvasUtils._close = function(selector, animation)
     offcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
     if (offcanvas) {
       offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY] = promise;
+
+      //notify subtree
+      oj.Components.subtreeHidden(drawer[0]);
     }
   }
 
@@ -1611,7 +1540,10 @@ oj.OffcanvasUtils._addGlassPane = function (drawer)
  */
 oj.OffcanvasUtils._createSurrogate = function (layer)
 {
-  var surrogate = $("<script>");
+  // - offcanvas utils use of <script>
+  var surrogate = $("<span style='display:none'>");
+  surrogate.attr("aria-hidden", "true");
+
   var layerId = layer.attr("id");
 
   var surrogateId;
@@ -1626,7 +1558,7 @@ oj.OffcanvasUtils._createSurrogate = function (layer)
   }
   surrogate.insertBefore(layer); // @HTMLUpdateOK
 
-  // loosely associate the popup to the surrogate element
+  // loosely associate the offcanvas to the surrogate element
   layer.attr(oj.OffcanvasUtils.SURROGATE_ATTR, surrogateId);
 
   return surrogate;
@@ -1705,6 +1637,8 @@ oj.OffcanvasUtils._removeModality = function (offcanvas, drawer)
     oj.OffcanvasUtils._restoreOrder(offcanvas);
   }
 };
+
+
 
 /**
  * Setup offcanvas for pan to reveal.
@@ -1831,7 +1765,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
         delta = event['gesture']['deltaX'];
         if ((direction == "start" && delta > 0) || (direction == "end" && delta < 0))
         {
-            oj.OffcanvasUtils._setTranslationX(wrapper, "start", "0px");
+            oj.OffcanvasUtils._setTranslationX(wrapper, "start", "0px"); 
             return;
         }
 
@@ -1839,7 +1773,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 
         // don't do css transition animation while panning
         wrapper.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
-        oj.OffcanvasUtils._setTranslationX(wrapper, "start", delta+"px");
+        oj.OffcanvasUtils._setTranslationX(wrapper, "start", delta+"px"); 
 
         ui = {"direction": direction, "distance": Math.abs(delta)};
         evt = $.Event("ojpanmove");
@@ -1928,7 +1862,7 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, siz
     wrapper.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
 
     // ideal ms per frame
-    ifps = Math.round(1000/fps);
+    ifps = Math.round(1000/fps);  
     matrix = wrapper.css("transform");
     values = matrix.split('(')[1].split(')')[0].split(',');
     // this is the translateX
@@ -1938,7 +1872,7 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, siz
     // calculate the increment needed to complete transition in 400ms with 60fps
     inc = Math.max(1, Math.abs(final - current) / (tt / ifps));
     lastFrame = (new Date()).getTime();
-    func = function()
+    func = function() 
     {
         currentFrame = (new Date()).getTime();
         // see how much we'll need to compensate if fps drops below ideal
@@ -1953,21 +1887,21 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, siz
             current = Math.max(final, current-adjInc);
         }
 
-        oj.OffcanvasUtils._setTranslationX(wrapper, edge, Math.abs(current)+"px");
+        oj.OffcanvasUtils._setTranslationX(wrapper, edge, Math.abs(current)+"px"); 
         drawer.css("width", Math.abs(current)+"px");
 
-        // make sure to cancel the animation frame if we are done
-        if (current == final)
+        // make sure to cancel the animation frame if we are done    
+        if (current == final) 
         {
             window.cancelAnimationFrame(reqId);
             wrapper.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
         }
         else
         {
-            reqId = window.requestAnimationFrame(func);
+            reqId = window.requestAnimationFrame(func);                            
         }
     };
-
+              
     reqId = window.requestAnimationFrame(func);
 };
 
@@ -1997,4 +1931,99 @@ oj.OffcanvasUtils.tearDownPanToReveal = function(offcanvas)
     // remove all listeners
     $(outerWrapper).off("panstart panmove panend");
 };
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Offcanvas</td>
+ *       <td><kbd>Swipe</kbd></td>
+ *       <td>Close the offcanvas by swiping in the close direction.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.OffcanvasUtils
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Close button</td>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>If offcanvas has a close button, navigate to the button and press Enter to close the offcanvas.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Outer wrapper</td>
+ *       <td><kbd>Tab or Shift+Tab</kbd></td>
+ *       <td>When focus is on the outer wrapper, Tab or shift+Tab moves the focus to the next or previous tab stop on the page. If autoDismiss is true, it also closes the offcanvas.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.OffcanvasUtils
+ */
+
+/**
+ * <p>The following CSS classes can be applied by the page author as needed.</p>
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Class</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-offcanvas-outer-wrapper</td>
+ *       <td>Applied to the outer most element of the offcanvas.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-page</td>
+ *       <td>Applied to the outer wrapper of the page level offcanvas.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-inner-wrapper<br>
+ *       <td>Applied to the inner wrapper of the offcanvas. Deprecated, please remove the inner wrapper.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-start<br>
+ *       <td>Applied to the offcanvas on the start edge.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-end<br>
+ *       <td>Applied to the offcanvas on the end edge.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-top<br>
+ *       <td>Applied to the offcanvas on the top edge.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-offcanvas-bottom<br>
+ *       <td>Applied to the offcanvas on the bottom edge.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.OffcanvasUtils
+ */
+
 });

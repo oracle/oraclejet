@@ -17,6 +17,10 @@
       }      
     }
 
+    oj-chart {
+      display: block;
+    }
+
     .oj-chart {
       @include oj-user-select-property(none);
       width:400px;
@@ -30,6 +34,10 @@
     .oj-chart-select-icon.oj-active {
       background-image: oj-common-image-url("dvt/chart/marquee-down.png");
     }
+    
+    .oj-chart-select-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/marquee-hover.png");
+    }
 
     .oj-chart-pan-icon {
       background-image: oj-common-image-url("dvt/chart/pan-up.png");
@@ -38,6 +46,10 @@
     .oj-chart-pan-icon.oj-active {
       background-image: oj-common-image-url("dvt/chart/pan-down.png");
     }
+    
+    .oj-chart-pan-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/pan-hover.png");
+    }
 
     .oj-chart-zoom-icon {
       background-image: oj-common-image-url("dvt/chart/zoom-up.png");
@@ -45,6 +57,10 @@
 
     .oj-chart-zoom-icon.oj-active {
       background-image: oj-common-image-url("dvt/chart/zoom-down.png");
+    }
+    
+    .oj-chart-zoom-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/zoom-hover.png");
     }
 
     .oj-chart-footnote {
@@ -82,7 +98,7 @@
     
     .oj-chart-stack-label{
       font-size: $smallFontSize;
-      font-weight: $headerFontWeight;
+      font-weight: bold;
     }
 
     .oj-chart-pie-center-label,
@@ -110,6 +126,10 @@
       oj-spark-chart:not(.oj-complete) {
         visibility: hidden;
       }      
+    }
+
+    oj-spark-chart {
+      display: block;
     }
 
     .oj-sparkchart {

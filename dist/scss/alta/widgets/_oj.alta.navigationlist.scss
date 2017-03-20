@@ -37,5 +37,9 @@
         .oj-navigationlist-slider .oj-navigationlist-collapse-icon{
             @extend .oj-fwk-icon-caret03-end;
         }
+
+        .oj-navigationlist-overflow-item-icon {
+           @extend .oj-fwk-icon-dots-horizontal;
+        }
     }
 }

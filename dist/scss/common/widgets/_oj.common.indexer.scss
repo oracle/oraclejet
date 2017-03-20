@@ -17,6 +17,8 @@
 
     /* Styling for the indexer widget container */
     .oj-indexer {
+      display: flex;
+      align-items: center;
       width: $indexerItemWidth;
       height: 100%;
     }    
@@ -55,6 +57,7 @@
     /* styling on hovered item */
     .oj-indexer li:hover {
       text-decoration: $indexerTextDecorationHover;
+      cursor: default;
     }
 
     /* styling on focused item */

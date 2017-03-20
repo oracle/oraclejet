@@ -16,6 +16,10 @@
       }      
     }
 
+    oj-treemap {
+      display: block;
+    }
+
     .oj-treemap {
       @include oj-user-select-property(none);
       width:650px;
@@ -87,9 +91,19 @@
       font-size: $fontSize;
     }
 
-    .oj-treemap-current-text {
+    .oj-treemap-current-drill-text {
       color: $textColor;
       font-size: $fontSize;
+    }
+    
+    .oj-treemap-drill-text {
+      color: $dvtTreemapDrillTextColor;
+      font-size: $fontSize;
+      text-decoration: $linkTextDecoration;
+    }
+    
+    .oj-treemap-drill-text.oj-hover {
+      text-decoration: $linkTextDecorationHover;
     }
 
     .oj-treemap-node {

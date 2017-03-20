@@ -27,202 +27,60 @@
       height: 100%;
     }
 
-    @include oj-keyframes-at-rule(oj-animation-slidein-left) {
-      from {left: 100%;}
-      to {left: 0;}
-    }
-    .oj-animation-coverleft.oj-enter {
-      @include oj-animation-property(oj-animation-slidein-left $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
+    $animationModuleEffects: (coverLeft: (
+                                oldViewEffect: (effect: "slideOut", offsetX: "-30%", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "left", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              coverRight: (oldViewEffect: (effect: "slideOut", offsetX: "30%", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "right", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              coverUp: (
+                                newViewEffect: (effect: "slideIn", direction: "top", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              fade: (
+                                oldViewEffect: (effect: "fadeOut", duration: $animationDurationMedium, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "fadeIn", duration: $animationDurationMedium, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              pushStart: (
+                                oldViewEffect: (effect: "slideOut", direction: "start", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "start", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              pushEnd: (
+                                oldViewEffect: (effect: "slideOut", direction: "end", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "end", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              revealDown: (
+                                oldViewEffect: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewOnTop: false
+                              ),
+                              revealLeft: (
+                                oldViewEffect: (effect: "slideOut", direction: "left", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", offsetX: "30%", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              revealRight: (
+                                oldViewEffect: (effect: "slideOut", direction: "right", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", offsetX: "-30%", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              zoomIn: (
+                                newViewEffect: (effect: "zoomIn", duration: $animationDurationMedium, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              zoomOut: (
+                                oldViewEffect: (effect: "zoomOut", duration: $animationDurationMedium, timingFunction: "ease-in-out", persist: "all"),
+                                newViewOnTop: false
+                              )
+                             );
 
-    @include oj-keyframes-at-rule(oj-animation-slidein-right) {
-      from {left: -100%;}
-      to {left: 0;}
-    }
-    .oj-animation-coverright.oj-enter {
-      @include oj-animation-property(oj-animation-slidein-right $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-slidein-up) {
-      from {top: 100%;}
-      to {top: 0;}
-    }
-    .oj-animation-coverup.oj-enter {
-      @include oj-animation-property(oj-animation-slidein-up $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    .oj-animation-coverstart.oj-enter {
-      @include oj-ltr() {
-        @extend .oj-animation-coverleft.oj-enter;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-coverright.oj-enter;
-      }
-    }
-    
-    .oj-animation-coverend.oj-enter {
-      @include oj-ltr() {
-        @extend .oj-animation-coverright.oj-enter;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-coverleft.oj-enter;
-      }
-    }
-    
-    @include oj-keyframes-at-rule(oj-animation-slideout30-left) {
-      from {left: 0;}
-      to {left: -30%;}
-    }
-    .oj-animation-coverleft.oj-leave {
-      @include oj-animation-property(oj-animation-slideout30-left $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-slideout30-right) {
-      from {left: 0;}
-      to {left: 30%;}
-    }
-    .oj-animation-coverright.oj-leave {
-      @include oj-animation-property(oj-animation-slideout30-right $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    .oj-animation-coverstart.oj-leave {
-      @include oj-ltr() {
-        @extend .oj-animation-coverleft.oj-leave;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-coverright.oj-leave;
-      }
-    }
-    
-    .oj-animation-coverend.oj-leave {
-      @include oj-ltr() {
-        @extend .oj-animation-coverright.oj-leave;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-coverleft.oj-leave;
-      }
-    }
-    
-    @include oj-keyframes-at-rule(oj-animation-slideout-left) {
-      from {left: 0;}
-      to {left: -100%;}
-    }
-    .oj-animation-revealleft.oj-leave {
-      @include oj-animation-property(oj-animation-slideout-left $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-slideout-right) {
-      from {left: 0;}
-      to {left: 100%;}
-    }
-    .oj-animation-revealright.oj-leave {
-      @include oj-animation-property(oj-animation-slideout-right $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-    
-    @include oj-keyframes-at-rule(oj-animation-slideout-down) {
-      from {top: 0;}
-      to {top: 100%;}
-    }
-    .oj-animation-revealdown.oj-leave {
-      @include oj-animation-property(oj-animation-slideout-down $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    .oj-animation-revealstart.oj-leave {
-      @include oj-ltr() {
-        @extend .oj-animation-revealleft.oj-leave;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-revealright.oj-leave;
-      }
-    }
-
-    .oj-animation-revealend.oj-leave {
-      @include oj-ltr() {
-        @extend .oj-animation-revealright.oj-leave;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-revealleft.oj-leave;
-      }
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-slidein30-left) {
-      from {left: 30%;}
-      to {left: 0;}
-    }
-    .oj-animation-revealleft.oj-enter {
-      @include oj-animation-property(oj-animation-slidein30-left $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-slidein30-right) {
-      from {left: -30%;}
-      to {left: 0;}
-    }
-    .oj-animation-revealright.oj-enter {
-      @include oj-animation-property(oj-animation-slidein30-right $animationDurationShort ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    .oj-animation-revealstart.oj-enter {
-      @include oj-ltr() {
-        @extend .oj-animation-revealleft.oj-enter;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-revealright.oj-enter;
-      }
-    }
-    
-    .oj-animation-revealend.oj-enter {
-      @include oj-ltr() {
-        @extend .oj-animation-revealright.oj-enter;
-      }
-      @include oj-rtl() {
-        @extend .oj-animation-revealleft.oj-enter;
-      }
-    }
-    
-    @include oj-keyframes-at-rule(oj-animation-zoomin) {
-      from {@include oj-transform-property(scale(0, 0));}
-      to {@include oj-transform-property(scale(1, 1));}
-    }
-    .oj-animation-zoomin.oj-enter {
-      @include oj-animation-property(oj-animation-zoomin $animationDurationMedium ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-zoomout) {
-      from {@include oj-transform-property(scale(1, 1));}
-      to {@include oj-transform-property(scale(0, 0));}
-    }
-    .oj-animation-zoomout.oj-leave {
-      @include oj-animation-property(oj-animation-zoomout $animationDurationMedium ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-fadein) {
-      from {opacity: 0;}
-      to {opacity: 1;}
-    }
-    .oj-animation-fade.oj-enter {
-      @include oj-animation-property(oj-animation-fadein $animationDurationMedium ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
-    }
-
-    @include oj-keyframes-at-rule(oj-animation-fadeout) {
-      from {opacity: 1;}
-      to {opacity: 0;}
-    }
-    .oj-animation-fade.oj-leave {
-      @include oj-animation-property(oj-animation-fadeout $animationDurationMedium ease-in-out);
-      @include oj-animation-fill-mode-property(forwards);
+    .oj-animation-module-effects {
+      font-family: oj-json-from-map($animationModuleEffects);
     }
 
     $animationNavigateMethods: ();

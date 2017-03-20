@@ -8,7 +8,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        function(oj, $)
 {
 
-/**
+ /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -75,24 +75,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
  *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-tabs-icon-only</td>
- *       <td>Applied to an ojtabs if the tab headers contain only icons.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-tabs-text-icon<br>
- *       <td>Applied to an ojtabs if the tab headers contain both icons and text.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="perf-section">
  *   Performance
@@ -667,40 +650,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
        *      if ($(event.target).is(".mySelector")) {} 
        * } );
        */
-      reorder : null, 
-
-      /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention.  If the new value is the same as the previous value, no event will be fired.
-       *
-       * @expose
-       * @event
-       * @memberof! oj.ojTabs
-       * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {string} ui.option the name of the option that is changing
-       * @property {Object} ui.previousValue the previous value of the option
-       * @property {Object} ui.value the current value of the option
-       * @property {Object} ui.optionMetadata information about the option that is changing
-       * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-       *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       *
-       * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
-       * $(".selector").ojTabs({
-       *   'optionChange': function (event, data) {}
-       * });
-       * @example <caption>Bind an event listener to the ojoptionchange event</caption>
-       * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       // verify that the component firing the event is a component of interest
-       *       if ($(event.target).is(".mySelector")) {
-       *           window.console.log("option that changed is: " + data['option']);
-       *       }
-       *   };
-       * });
-       */
-      optionChange: null
+      reorder : null
 
     },
 
@@ -1222,7 +1172,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         {
           orientation: "horizontal", 
           contentParent: "#" + tabsId
-        });
+        }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode
 
       var cparent = this.conveyor.parent();
       if (cparent.hasClass("oj-tabs-conveyorbelt-wrapper"))
@@ -1877,18 +1827,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           event.preventDefault();
 
         //if tab to be removed is selected, select the next enabled tab
-        var newSelectedContentId;
         if (tab.hasClass("oj-selected"))
         {
-          var nextIndex = this._getNextEnabledTab(this.tabs.index(tab));
+          var curIndex = this.tabs.index(tab);
+          var nextIndex = this._getNextEnabledTab(curIndex);
 
           // no enabled tabs left
           if (nextIndex === undefined) {
             this.active = undefined;
-            newSelectedContentId = -1;
+            this.option("selected", undefined,
+                        {'_context': {originalEvent: oEvent, internalSet: true}});
           }
           else {
-            newSelectedContentId = $(this.tabs[nextIndex]).attr("data-content");            
+            //fire selected event
+            this._fireSelectEvents(nextIndex, oEvent);
+
+            //adjust index 
+            var idOrIndex = this._getTabIdOrIndex($(this.tabs[nextIndex]));
+            if (typeof idOrIndex === 'number' && idOrIndex > curIndex) {
+              idOrIndex--;
+            }
+
+            //fire option change event
+            this.option("selected", idOrIndex,
+                        {'_context': {originalEvent: oEvent, internalSet: true}});
           }
         }
 
@@ -1903,23 +1865,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         this._updateDisabledTabs();
 
         this.refresh();
-
-        //if the deleted tab was selected, fire option change event
-        if (newSelectedContentId === -1) {
-          // no enabled tabs left
-          this.option("selected", undefined,
-                      {'_context': {originalEvent: oEvent, internalSet: true}});
-        }
-        else if (newSelectedContentId) {
-          var ntab = this._getTab(newSelectedContentId);
-          if (ntab) {
-            //fire selected event
-            this._fireSelectEvents(this.tabs.index(ntab), oEvent);
-
-            this.option("selected", this._getTabIdOrIndex(ntab),
-                        {'_context': {originalEvent: oEvent, internalSet: true}});
-          }
-        }
 
         // - tab area grabs focus when tabs are closed
         //set focus on the active
@@ -1936,7 +1881,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
     },
 
     /**
-     * Remove a tab from the tab bar.
+     * Remove a tab from the tab bar. 
      * <p>Please note that the tab must be <a href="#removable">removable</a>
      * 
      * @expose 
@@ -2088,9 +2033,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         this._fireSelectEvents(0);
 
       // - overflow icons do not appear correctly
-        // - new tabs don't get focus
+      // - new tabs don't get focus
       // - tabs flash when adding
-          tab[0].scrollIntoView(false);
+      tab[0].scrollIntoView(false);
 
     },
 
@@ -2119,6 +2064,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         {
           axis: (self._isHorizontal()) ? "x" : "y",
           distance: 10,
+          start: function(event, ui)
+          {
+            self.tablist.children(".ui-sortable-placeholder").each(function(index) {
+              $(this).addClass("oj-sortable-placeholder");
+            });
+          },
           stop: function(event, ui)
           {
             //find the element that was moved
@@ -2918,7 +2869,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
             }
           });
       }
-      if (! oj.Object._compareSet(this.options.disabledTabs, arr))
+      if (! oj.Object._compareArrayIdIndexObject(arr, this.options.disabledTabs))
       {
         // - tabs shouldn't implement _init()
         //don't fire initial option change events
@@ -3188,6 +3139,39 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
      * @memberof oj.ojTabs
      */
 
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     *
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-tabs-icon-only</td>
+     *       <td>Applied to an ojtabs if the tab headers contain only icons.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabs-text-icon<br>
+     *       <td>Applied to an ojtabs if the tab headers contain both icons and text.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabs-tab-icon</td>
+     *       <td>Applied to a custom icon of a tab.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-tabs-facet</td>
+     *       <td>Applied to an element that is displayed on the tab bar either before or after the horizontal tab headers.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojTabs
+     */
   });
 
 
@@ -3230,10 +3214,10 @@ var ojTabsMeta = {
     "removeTab": {}
   },
   "extension": {
-    "_widgetName": "ojTabs"
+    _WIDGET_NAME: "ojTabs"
   }
 };
-oj.Components.registerMetadata('ojTabs', 'baseComponent', ojTabsMeta);
-oj.Components.register('oj-tabs', oj.Components.getMetadata('ojTabs'));
+oj.CustomElementBridge.registerMetadata('oj-tabs', 'baseComponent', ojTabsMeta);
+oj.CustomElementBridge.register('oj-tabs', {'metadata': oj.CustomElementBridge.getMetadata('oj-tabs')});
 })();
 });

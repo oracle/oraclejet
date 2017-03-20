@@ -3,340 +3,849 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'ojs/ojknockout', 'promise'], function(oj, ko)
+define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockout'], function(oj)
 {
 /**
+ * JET component custom element bridge
+ * @class
  * @ignore
- * @constructor
  */
-function PropertyUpdater(element, props, bindingContext, parseFunction)
+oj.CompositeElementBridge = {};
+
+/**
+ * Prototype for the JET component custom element bridge instance
+ */
+oj.CompositeElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
 {
-  this.setup = function(metadata)
+  AddComponentMethods: function(proto) 
   {
-    // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
-    // update() will be called only once as a result
-
-    var metadataProps = metadata['properties'];
-    if (metadataProps)
-    {
-      var expressionHandler = this._expressionHandler = 
-                    new oj.__ExpressionPropertyUpdater(element, bindingContext);
-      
-      // Override set/removeAttribute so we get notifications when DOM changes
-      originalMethods.setAttribute = element.setAttribute,
-      originalMethods.removeAttribute = element.removeAttribute
-      element.setAttribute = function(name, value)
+    // Add subproperty getter/setter
+    proto['setProperty'] = function(prop, value) { 
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+      if (event)
       {
-        changeAttribute(name, value, originalMethods.setAttribute, false);
-      };
-      element.removeAttribute = function(name)
-      {
-        changeAttribute(name, null, originalMethods.removeAttribute, true);
-      };
-      var changeAttribute = function(name, value, operation, bRemove)
-      {
-        name = name.toLowerCase();
-        var previousValue = element.getAttribute(name);
-        operation.apply(element, arguments);
-        var newValue = element.getAttribute(name);
-        if (newValue !== previousValue)
-        {
-          var propName = oj.__AttributeUtils.attributeToPropertyName(name);
-          _setPropertyFromAttribute(props, metadataProps[propName], propName, newValue, expressionHandler, bRemove);
-        }
-      }
-
-      var names = Object.keys(metadataProps);
-
-      _setInitializing(true);
-
-      try
-      {
-        names.forEach(
-          function(name)
-          {
-            var attrName = oj.__AttributeUtils.propertyNameToAttribute(name);
-            var elemHasAttr = element.hasAttribute(attrName);
-            var propertyMetadata = metadataProps[name];
-            if (elemHasAttr)
-            {
-              var attrVal = element.getAttribute(attrName);
-              _setPropertyFromAttribute(props, propertyMetadata, name, attrVal, expressionHandler, false);
-            }
-            // Set default values from metadata for properties not defined by attribute values or were readOnly
-            // and bound to upstream-only expressions
-            if (!elemHasAttr || propertyMetadata['readOnly'])
-            {
-              try 
-              {
-                _setDefaulting(true);
-                element[name] = propertyMetadata['value'];
-              }
-              finally
-              {
-                _setDefaulting(false);
-              }
-            }
-          }
-        );
-
-        element.classList.add('oj-complete');
-      }
-      finally
-      {
-        _setInitializing(false);
-      }
-    }
-    return this;
-  }
-
-  this.isInitializing = function()
-  {
-    return _initializing;
-  }
-
-  this.isDefaulting = function()
-  {
-    return _defaulting;
-  }
-
-  function _setPropertyFromAttribute(props, metadata, propName, attrVal, expressionHandler, bRemove)
-  {    
-    // Only deal with element defined attribute changes
-    if (!metadata)
-      return;
-
-    if (!expressionHandler.setupExpression(attrVal, propName, metadata) && !metadata['readOnly'])
-    {
-      var value;
-      if (bRemove)
-      {
-        // Coercion is skipped if we are resetting the property to the default metadata value when the attribute is removed
-        value = metadata['value'];
+        this[prop] = value;
       }
       else
       {
-        // Use the composite's custom parse function if one is provided
-        if (parseFunction)
+        var previousValue = this['getProperty'](prop);
+        // Property change events for top level properties will be triggered by __SetProperty so avoid firing twice
+        var bridge = oj.BaseCustomElementBridge.getInstance(this);
+
+        // Check value against any defined enums
+        var propsMeta = oj.BaseCustomElementBridge.getProperties(bridge);
+        var propAr = prop.split('.');
+        var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, propsMeta);
+        if (!meta && propAr.length == 1) 
         {
-          value = parseFunction(attrVal, propName, metadata, 
-            function(value) 
-            {
-              return oj.__AttributeUtils.coerceValue(propName, value, metadata['type']); 
-            }
-          );
+          oj.Logger.error("Ignoring property set for undefined property " + prop + " on " + this.tagName);
+          return;
         }
+
+        // Check readOnly property for top level property
+        if (propsMeta[propAr[0]]['readOnly'])
+          throw "Read-only property " + prop + " cannot be set on "+ this.tagName;
+        
+        oj.BaseCustomElementBridge.__CheckEnumValues(this, prop, value, meta);
+
+        oj.BaseCustomElementBridge.__SetProperty(bridge.GetAliasForProperty.bind(bridge), this, prop, value);
+        if (bridge._READY_TO_FIRE && prop.indexOf('.') !== -1)
+          oj.CompositeElementBridge._firePropertyChangeEvent(this, prop, value, previousValue, 'external');
+      }
+    };
+    proto['getProperty'] = function(prop) { 
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+      if (event)
+        return event;
+      else
+      {
+        // Use the element/props getters for top level properties to handle default values
+        if (prop.indexOf('.') !== -1)
+          return oj.BaseCustomElementBridge.__GetProperty(this, prop);
+        else
+          return this[prop];
+      }
+    };
+    proto['_propsProto']['setProperty'] = function(prop, value) { 
+      var previousValue = this['getProperty'](prop);
+
+      // Check value against any defined enums
+      var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this._BRIDGE));
+      if (!meta && prop.indexOf('.') === -1) 
+      {
+        oj.Logger.error("Ignoring property set for undefined property " + prop + " on " + this._ELEMENT.tagName);
+        return;
+      }
+      oj.BaseCustomElementBridge.__CheckEnumValues(this._ELEMENT, prop, value, meta);
+
+      // Property change events for top level properties will be triggered by __SetProperty so avoid firing twice
+      oj.BaseCustomElementBridge.__SetProperty(this._BRIDGE.GetAliasForProperty.bind(this._BRIDGE), this, prop, value);
+      if (prop.indexOf('.') !== -1)
+        oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, prop, value, previousValue, 'internal');
+    };
+    proto['_propsProto']['getProperty'] = function(prop) {
+      // Use the element/props getters for top level properties to handle default values
+      if (prop.indexOf('.') !== -1)
+        return oj.BaseCustomElementBridge.__GetProperty(this, prop);
+      else
+        return this[prop];
+    };
+    // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
+    // and pass the default implementation in as the last parameter to the ViewModel's method.
+    proto['getNodeBySubId'] = function(locator) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._VIEW_MODEL.getNodeBySubId)
+        return bridge._VIEW_MODEL.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
+      else
+        return bridge._getNodeBySubId.bind(this)(locator);
+    };
+    proto['getSubIdByNode'] = function(node) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      if (bridge._VIEW_MODEL.getSubIdByNode)
+        return bridge._VIEW_MODEL.getSubIdByNode(node, bridge._getSubIdByNode.bind(this));
+      else
+        return bridge._getSubIdByNode.bind(this)(node);
+    };
+  },
+
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var methodName = methodMeta['internalName'] || method;
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return bridge._VIEW_MODEL[methodName].apply(null, arguments);
+    };
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var set = function(val, bOuterSet)
+    {
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+      var old = propertyTracker.peek();
+      if (old !== val) // We should consider supporting custom comparators
+      {
+        oj.BaseCustomElementBridge.__CheckEnumValues(this._ELEMENT, property, val, propertyMeta);
+        propertyTracker(val);
+        if (propertyMeta._eventListener)
+        {
+          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+          // Remove old event listener
+          if (old)
+            this._ELEMENT.removeEventListener(event, old);
+          // Add new event listener
+          if (val && val instanceof Function)
+            this._ELEMENT.addEventListener(event, val);
+        }
+
+        if (!propertyMeta._derived && (!bOuterSet || (bOuterSet && this._BRIDGE._READY_TO_FIRE)))
+        {
+          var updatedFrom = bOuterSet ? 'external' : 'internal';
+          oj.CompositeElementBridge._firePropertyChangeEvent(this._ELEMENT, property, val, old, updatedFrom);
+        }
+      }
+    }
+
+    // Called on the ViewModel props object
+    var innerSet = function(val)
+    {
+      set.bind(this)(val, false);
+    }
+
+    // Called on the custom element
+    var outerSet = function(val)
+    {
+      if (propertyMeta['readOnly'])
+        throw "Read-only property " + property + " cannot be set on "+ this.tagName;
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      set.bind(bridge._PROPS)(val, true);
+    }
+
+    // Called on the ViewModel props object
+    var innerGet = function()
+    {
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(this._BRIDGE, property);
+      // If the attribute has not been set, return the default value
+      var value = propertyTracker();
+      if (value == null)
+        return propertyMeta['value'];
+      return value;
+    }
+
+    // Called on the custom element
+    var outerGet = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(bridge, property);
+      var value = propertyTracker.peek();
+      // If the attribute has not been set, return the default value
+      if (value == null)
+        return propertyMeta['value'];
+      return value;
+    }
+
+    // Don't add event listener properties for inner props
+    if (!propertyMeta._derived)
+      oj.CompositeElementBridge._defineDynamicObjectProperty(proto['_propsProto'], property, innerGet, innerSet);
+    oj.CompositeElementBridge._defineDynamicObjectProperty(proto, property, outerGet, outerSet);
+  },
+
+  GetMetadata: function(descriptor)
+  {
+    return descriptor['_metadata'];
+  },
+
+  HandleAttached: function(element)
+  {
+    // Loop through all element attributes to get initial properties
+    var props = oj.BaseCustomElementBridge.getProperties(this);
+    oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, props, this.PARSE_FUNCTION);
+    this.GetDelayedPropertiesPromise().resolvePromise();
+  },
+
+  HandleBindingsApplied: function(element, bindingContext) 
+  {
+    if (this._MODEL_PROMISE) 
+    {
+      var bridge = this;
+      this._ACTIVATED_PROMISE = this._MODEL_PROMISE.then(
+        function(model)
+        {
+          return oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'activatedMethod', [bridge._VM_CONTEXT]);
+        }
+      );
+    }
+
+    this._PROPS_DELAYED_PROMISE.resolvePromise(this._PROPS);
+
+    var slotNodeCounts = {};
+    // Generate slot map before we update DOM with view nodes
+    var slotMap = oj.CompositeTemplateRenderer.createSlotMap(element);
+    for (var slot in slotMap)
+      slotNodeCounts[slot] = slotMap[slot].length;
+    this._SLOT_MAP = slotMap;
+    this._SLOTS_DELAYED_PROMISE.resolvePromise(slotNodeCounts);
+    
+    var bridge = this;
+    var masterPromise = Promise.all([this._VIEW_PROMISE, this._MODEL_PROMISE, this._PROPS_DELAYED_PROMISE.getPromise(), this._CSS_PROMISE, this._ACTIVATED_PROMISE]);
+    masterPromise.then(function(values)
+    {
+      var view = values[0];
+      if (!view)
+        throw "ojComposite is missing a View";
+
+      var params = {
+        props: bridge._PROPS,
+        slotMap: bridge._SLOT_MAP,
+        slotNodeCounts: slotNodeCounts,
+        unique: bridge._VM_CONTEXT['unique'],
+        viewModel: bridge._VIEW_MODEL,
+        viewModelContext: bridge._VM_CONTEXT
+      };
+
+      oj.CompositeTemplateRenderer.renderTemplate(params, element, view, bindingContext);
+
+      // Deprecated 3.0.0
+      oj.CompositeElementBridge._fireEvent('ready', element);
+
+      // Set flag when we can fire property change events
+      bridge._READY_TO_FIRE = true;
+
+      // Resolve the component busy state 
+      bridge.GetDelayedReadyPromise().resolvePromise();
+    });
+  },
+
+
+  HandleBindingsCleaned: function(element)
+  {
+    if (this._MODEL_PROMISE)
+    {
+      this._MODEL_PROMISE.then(function(model)
+      {
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'disposeMethod', [element]);
+      });
+    }
+  },
+
+  HandleCreated: function(element) 
+  { 
+    // Deprecated 3.0.0
+    oj.CompositeElementBridge._fireEvent('pending', element);
+
+    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+    if (!descriptor)
+      throw "Composite is missing a descriptor";
+
+    this.METADATA = this.GetMetadata(descriptor);
+    this.PARSE_FUNCTION = descriptor['parseFunction'];
+    if (element['_propsProto'])
+    {
+      this._PROPS = Object.create(element['_propsProto']);
+      this._PROPS._BRIDGE = this;
+      this._PROPS._ELEMENT = element;
+    }
+    this._PROPS_DELAYED_PROMISE = new oj.BaseCustomElementBridge.__DelayedPromise();
+    this._SLOTS_DELAYED_PROMISE = new oj.BaseCustomElementBridge.__DelayedPromise();
+
+    var vmContext = {
+      'element': element,
+      'props': this._PROPS_DELAYED_PROMISE.getPromise(),
+      'slotNodeCounts': this._SLOTS_DELAYED_PROMISE.getPromise(),
+      'unique': oj.CompositeElementBridge._getUnique()
+    };
+    this._VM_CONTEXT = vmContext;
+
+    var modelPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "viewModel");
+    if (modelPromise)
+    {
+      var bridge = this;
+      this._MODEL_PROMISE = modelPromise.then(
+        function(model)
+        {
+          if (typeof model === 'function')
+            model = new model(vmContext);
+          else // If the function returns a value, use it as the new model instance
+            model = oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'initializeMethod', [vmContext]) || model;
+
+          bridge._VIEW_MODEL = model;
+          return model;
+        }
+      );
+    }
+
+    var viewPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "view");
+    if (viewPromise) 
+    {
+      this._VIEW_PROMISE = viewPromise.then(function(view) 
+      { 
+        return oj.CompositeElementBridge._getDomNodes(view); 
+      });
+    }
+
+    // The CSS Promise will be null if loaded by the require-css plugin
+    var cssPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, "css");
+    if (cssPromise)
+    {
+      this._CSS_PROMISE = cssPromise.then(function(css)
+      {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        if (style.styleSheet) // for IE
+          style.styleSheet.cssText = css;
+        else
+          style.appendChild(document.createTextNode(css)); // @HTMLUpdateOK
+        document.head.appendChild(style); // @HTMLUpdateOK
+      });
+    }
+  },
+
+  HandleDetached: function(element) 
+  {
+    if (this._MODEL_PROMISE)
+    {
+      this._MODEL_PROMISE.then(function(model)
+      {
+        oj.CompositeTemplateRenderer.invokeViewModelMethod(model, 'detachedMethod', [element]);
+      });
+    }
+  },
+
+  InitProto: function(proto)
+  {
+    Object.defineProperty(proto, '_propsProto', {value: {}});
+  },
+
+  _getNodeBySubId: function(locator) 
+  {
+    // The locator subId can fall into one of 3 categories below:
+    // 1) The target node belongs to a JET component or composite with a subId map
+    // 2) The target node maps directly to a subId
+    // 3) The composite does not have a match for the subId 
+    
+    // The returned subId map the following key/value pairs:
+    // {
+    //    [subId]: {
+    //      alias: [alias or null for non JET components], 
+    //      node: [node]
+    //    }
+    // }
+    var map = oj.CompositeElementBridge.__GetSubIdMap(this);
+    var match = map[locator['subId']];
+    if (match)
+    {
+      if (match['alias']) // Case #1
+      {
+        var clone = oj.CollectionUtils.copyInto({}, locator, undefined, true)
+        clone['subId'] = match['alias'];
+        var component = match['node'];
+        // Check to see if we should call the method on the element or widget
+        if (component.getNodeBySubId) 
+        {
+          return component.getNodeBySubId(clone);
+        } 
         else 
         {
-          value = oj.__AttributeUtils.coerceValue(propName, attrVal, metadata['type']);
+          return oj.Components.getWidgetConstructor(component)('getNodeBySubId', clone);
         }
       }
-      element[propName] = value;
-    }
-  }
-
-
-  this.teardown = function(element)
-  {
-    this._expressionHandler.teardown();
-    // reset overridden methods
-    var names = Object.keys(originalMethods);
-    var i;
-    for (i=0; i<names.length; i++)
-    {
-      var method = names[i];
-      element[method] = originalMethods[method];
-    }
-    originalMethods = {};
-
-  }
-
-  function _setInitializing(flag)
-  {
-    _initializing = flag;
-  }
-
-  function _setDefaulting(flag)
-  {
-    _defaulting = flag;
-  }
-
-
-
-
-  var originalMethods = {};
-  var _initializing;
-  var _defaulting;
-}
-
-ko['bindingHandlers']['_ojNodeStorage_'] =
-{
-  'init': function()
-  {
-    return {'controlsDescendantBindings' : true};
-  }
-}
-
-ko['bindingHandlers']['_ojSlot_'] =
-{
-  'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
-  {
-
-    function cleanup(bindingContext)
-    {
-      var nodeStorage = bindingContext['__oj_nodestorage'];
-      // Move all non default slot children to nodeStorage
-      if (nodeStorage)
+      else
       {
-        // Check to see if we've processed this node as an assigned node by seeing if we've
-        // added a 'data-oj-slot' property to the node
-        var node;
-        while (node = ko.virtualElements.firstChild(element))
-        {
-          if (node['__oj_slots'] != null)
-            nodeStorage.appendChild(node);
-        }
+        return match['node']; // Case #2
       }
     }
-    ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup.bind(null, bindingContext));
 
-    var slots = bindingContext['__oj_slots'];
+    return null; // Case #3
+  },
 
-    var values = valueAccessor();
-    var unwrap = ko.utils.unwrapObservable;
-    var slotName =  unwrap(values['name']) || '';
-    var index =  unwrap(values['index']);
-    var assignedNodes = index != null ? [slots[slotName][index]] : slots[slotName];
+  _getSubIdByNode: function(node)
+  {
+    // The node can fall into one of 3 categories below:
+    // 1) The node is not a child of this composite.
+    // 2) The node is a child of an inner composite and we need to convert its aliased subId
+    // 3) The node is a child of this composite
+    // 3a) The node is mapped directly to a subId
+    // 3b) The node is owned by an element that has a getSubIdByNode method and we need to convert its aliased subId
+  
+    // Case #1
+    if (!this.contains(node))
+      return null;
 
-    if (assignedNodes)
+    // The returned node map has the following key/value pairs where nodeKey is 
+    // the value of the node's data-oj-subid[-map] attribute:
+    // [nodeKey]: { map: [subIdMap], node: [node] }
+    var nodeMap = oj.CompositeElementBridge.__GetNodeMap(this);
+
+    // Case #2
+    var composite = oj.Composite.getContainingComposite(node, this);
+    if (composite != null)
     {
-      for (var i = 0; i < assignedNodes.length; i++)
+      var nodeKey = composite.node.getAttribute('data-oj-subid-map');
+      var match = nodeMap[nodeKey];
+      if (match)
       {
-        // Save references to nodes we need to cleanup ._slot field
-        var node = assignedNodes[i];
-        // Get the slot value of this oj-slot element so we can assign it to its
-        // assigned nodes for downstream slotting
-        node['__oj_slots'] = unwrap(values['slot']) || '';
-      }
-      ko.virtualElements.setDomNodeChildren(element, assignedNodes);
-
-      // If no assigned nodes, let ko apply bindings to default slot content
-      return {'controlsDescendantBindings' : true};
-    }
-  }
-}
-
-// Allow _ojSlot_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
-ko.virtualElements.allowedBindings['_ojSlot_'] = true;
-
-(function()
-{
-
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
-  (
-    {
-      'nodeHasBindings': function(node, wrappedReturn)
-      {
-        return wrappedReturn || (node.nodeType === 1 && oj.Composite.__GetDescriptor(node.nodeName.toLowerCase()));
-      },
-
-      'getBindingAccessors': function(node, bindingContext, wrappedReturn)
-      {
-        if (node.nodeType === 1)
+        if (composite.getSubIdByNode)
         {
-          var name = node.nodeName.toLowerCase();
-          var descriptor = oj.Composite.__GetDescriptor(name);
-          if (descriptor)
+          var locator = composite.getSubIdByNode(node);
+          if (locator)
           {
-            wrappedReturn = wrappedReturn || {};
-
-            var compositionBinding  = 'ojComposite';
-
-            if (wrappedReturn[compositionBinding])
-            {
-
-              throw "Cannot use " + compositionBinding +  " binding on a custom element whose name is already registered for a composite binding";
-            }
-
-            var bindingValue = {'name': name};
-
-            wrappedReturn[compositionBinding] = function() {return bindingValue;}
-
+            var alias = match['map'][locator['subId']];
+            locator['subId'] = alias;
+            return locator;
           }
         }
-
-        return wrappedReturn;
-      },
-
-      'preprocessNode': function(node, wrappedReturn)
-      {
-        var newNodes;
-        if (node.nodeType === 1)
-        {
-          if ('oj-slot' === node.nodeName.toLowerCase())
-          {
-            var attrs = ['name', 'slot', 'index'];
-
-            var binding = 'ko _ojSlot_:{'
-            var valueExpressions = [];
-
-            for (var i=0; i<attrs.length; i++)
-            {
-              var attr = attrs[i];
-              var expr = _getExpression(node.getAttribute(attr));
-              if (expr)
-              {
-                valueExpressions.push(attr + ':' + expr);
-              }
-            }
-            binding += valueExpressions.join(',');
-            binding += '}';
-
-            var openComment = document.createComment(binding);
-
-            var closeComment = document.createComment('/ko');
-
-            newNodes = [openComment];
-
-            var parent  = node.parentNode;
-            parent.insertBefore(openComment, node);
-
-            // Copy the 'fallback content' children into the comment node
-            while (node.childNodes.length > 0)
-            {
-              var child = node.childNodes[0];
-              parent.insertBefore(child, node);
-              newNodes.push(child);
-            }
-
-            newNodes.push(closeComment);
-
-            parent.replaceChild(closeComment, node);
-          }
-        }
-        return newNodes? newNodes: wrappedReturn;
       }
+      // Return null if we did not expose the node even though the inner composite does
+      return null;
+    }
+    
+    // Case #3
+    // Walk up DOM tree until we find the containing node with the subId mapping
+    var curNode = node;
+    while (curNode !== this)
+    {
+      // We do not support an element having both attributes. If both are specified, -map takes precedence.
+      var nodeKey = curNode.getAttribute('data-oj-subid-map') || curNode.getAttribute('data-oj-subid');
+      if (nodeKey)
+        break;
+      curNode = curNode.parentNode;
     }
 
-  );
-
-  function _getExpression(attrValue)
-  {
-    if (attrValue != null)
+    var match = nodeMap[nodeKey];
+    if (match) 
     {
-      var exp = oj.__AttributeUtils.getExpressionInfo(attrValue).expr;
-      if (exp == null)
+      var map = match['map'];
+      if (!map) // Case #3a
       {
-        exp = "'" + attrValue + "'";
+        return {'subId': nodeKey};
       }
-      return exp;
+      else // Case #3b
+      {
+        var component = match['node'];
+        var locator;
+        // Check to see if we should call the method on the element or widget
+        if (component.getSubIdByNode) 
+        {
+          locator = component.getSubIdByNode(node);
+        } 
+        else 
+        {
+          locator = oj.Components.getWidgetConstructor(component)('getSubIdByNode', node);
+        }
+
+        if (locator)
+        {
+          locator['subId'] = match['map'][locator['subId']];
+          return locator;
+        }
+      }
     }
 
     return null;
   }
+  
+});
 
-}
-)();
+/*************************/
+/* PUBLIC STATIC METHODS */
+/*************************/
+
+/**
+ * Registers a composite component
+ * @param {string} tagName The component name, which should contain a dash '-' and not be a reserved tag name.
+ * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
+ * and CSS that are detailed below. A View is required, but all others are optional.
+ * See the <a href="#registration">registration section</a> above for a sample usage.
+ * The value for each key is a plain Javascript object that describes the loading
+ * behavior. One of the following keys must be set on the object:
+ * <ul>
+ * <li>promise - specifies the promise instance</li>
+ * <li>inline - provides the object inline</li>
+ * </ul>
+ * @param {Object} descriptor.metadata Describes how component Metadata is loaded. The object must contain one of the keys
+ * documented above and ultimately resolve to a JSON object.
+ * @param {Object} descriptor.view Describes how component's View is loaded. The object must contain one of the keys
+ * documented above and ultimately resolve to a string, array of DOM nodes, or document fragment.
+ * @param {Object} descriptor.css Describes how component's CSS is loaded. If specified, the object must contain one of the keys
+ * documented above and ultimately resolve to a string if loaded inline or as a Promise.
+ * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
+ * documented above. This option is only applicable to composites hosting a Knockout template
+ * with a ViewModel and ultimately resolves to a constructor function or object instance. If the initial ViewModel resolves to an object instance, the
+ * initialize lifecycle listener will be called. See the <a href="#lifecycle">initialize documentation</a> for more information.
+ * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
+ * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
+ * <ul>
+ *  <li>{string} value: The value to parse.</li>
+ *  <li>{string} name: The name of the property.</li>
+ *  <li>{Object} meta: The metadata object for the property which can include its type, default value, 
+ *      and any extensions that the composite has provided on top of the required metadata.</li>
+ *  <li>{function(string)} defaultParseFunction: The default parse function for the given attribute 
+ *      type which is used when a custom parse function isn't provided and takes as its parameters 
+ *      the value to parse.</li>
+ * </ul>
+ * @ignore
+ *
+ */
+oj.CompositeElementBridge.register = function(tagName, descriptor)
+{
+  // Need to retrieve metadata to create prototype
+  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CompositeElementBridge.proto))
+  {
+    var metadataPromise = oj.CompositeElementBridge.getMetadata(tagName);
+    metadataPromise.then(function(metadata)
+    {
+      // Check that the component name, version, and JET versions are defined in the metadata
+      var name = metadata['name'];
+      if (!name)
+        oj.Logger.warn('Required property "name" missing from metadata for %s.', tagName);
+      else if (tagName != name)
+        oj.Logger.warn('Registered property tagName: %s does not match name: %s provided in metadata.', tagName, name);
+      if (!metadata['version'])
+        oj.Logger.warn('Required property "version" missing from metadata for %s.', tagName);
+      if (!metadata['jetVersion'])
+        oj.Logger.warn('Required composite "jetVersion" missing from metadata for %s.', tagName);
+      descriptor['_metadata'] = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, false);
+      document.registerElement(tagName.toLowerCase(), {'prototype': oj.CompositeElementBridge.proto.getPrototype(descriptor)});
+    });
+  }
+};
+
+/**
+ * Returns a Promise resolving with the composite metadata with the given name.
+ * @param {string} tagName The component name, which should contain a dash '-' and not be a reserved tag name.
+ * @return {Promise}
+ * @ignore
+ */
+oj.CompositeElementBridge.getMetadata = function(tagName)
+{
+  var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(tagName);
+  if (descriptor)
+  {
+    var metadataPromise = descriptor['_metadataPromise'];
+    if (!metadataPromise)
+    {
+      metadataPromise = oj.CompositeElementBridge._getResourcePromise(descriptor, 'metadata');
+      // Metadata is required starting in 3.0.0, but to be backwards compatible, just log a warning.
+      if (!metadataPromise) {
+        oj.Logger.warn("Required metadata is missing for " + tagName);
+        metadataPromise = Promise.resolve({});
+      }
+      descriptor['_metadataPromise'] = metadataPromise;
+    }
+    return metadataPromise;
+  }
+  return null;
+};
+
+/*****************************/
+/* NON PUBLIC STATIC METHODS */
+/*****************************/
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._defineDynamicObjectProperty = function(obj, property, getter, setter)
+{
+  Object.defineProperty(obj, property, { 'enumerable': true, 'get': getter, 'set': setter });
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._fireEvent = function(type, element)
+{
+  element.dispatchEvent(new CustomEvent(type, {bubbles: true}));
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._firePropertyChangeEvent = function(element, name, value, previousValue, updatedFrom)
+{
+  var detail = {}
+  var subpropPath = name.split('.');
+  var eventName = name;
+  var eventValue = value;
+  var eventPrevValue = previousValue;
+  if (subpropPath.length > 1)
+  {
+    var subproperty = {};
+    subproperty['path'] = name;
+    subproperty['value'] = value;
+    subproperty['previousValue'] = previousValue;
+    detail['subproperty'] = subproperty;
+    eventName = subpropPath[0];
+    // We don't make a copy of the top level property so the old and new values will be the same;
+    eventValue = element[eventName];
+    eventPrevValue = eventValue;
+  }
+  detail['value'] = eventValue;
+  detail['previousValue'] = eventPrevValue;
+  detail['updatedFrom'] = updatedFrom;
+  element.dispatchEvent(new CustomEvent(eventName + "-changed", {'detail': detail}));
+  element.dispatchEvent(new CustomEvent(eventName + "Changed", {'detail': detail}));
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getDomNodes = function(content)
+{
+  if (typeof content === 'string')
+  {
+    var div = document.createElement('div');
+    div.innerHTML = content; //@HTMLUpdateOK content is the composite View which does not come from the end user
+    var nodes = [];
+    for (var i = 0; i < div.childNodes.length; i++)
+      nodes.push(div.childNodes[i])
+    return nodes;
+  }
+  else if (oj.CompositeElementBridge._isDocumentFragment(content))
+  {
+    var nodes = [];
+    for (var i = 0; i < content.childNodes.length; i++)
+      nodes.push(content.childNodes[i]);
+    return nodes;
+  }
+  else if (Array.isArray(content))
+  {
+    return content.splice(0);
+  }
+  else
+  {
+    throw "The View (" + content + ") has an unsupported type";
+  }
+};
+
+/**
+ * Creates the subId and node maps needed for automation
+ * @ignore
+ */
+oj.CompositeElementBridge._generateSubIdMap = function(bridge, element)
+{
+  if (!bridge._SUBID_MAP)
+  {
+    // The format of the map will be { [composite subId] : {alias: [alias], node: [node] } }
+    var subIdMap = {};
+    var nodeMap = {};
+
+    // data-oj-subid or data-oj-subid-map attributes can be defined on nested objects so we need
+    // to walk the composite tree skipping over slots
+    var children = element.children;
+    for (var i = 0; i < children.length; i++) {
+      oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
+    }
+
+    bridge._NODE_MAP = nodeMap;
+    bridge._SUBID_MAP = subIdMap;
+  }
+};
+
+/**
+ * Walks a composite subtree, parsing and generating subId mappings.
+ * @ignore
+ */
+oj.CompositeElementBridge._walkSubtree = function(subIdMap, nodeMap, node)
+{
+  if (!node.hasAttribute('slot'))
+  {
+    oj.CompositeElementBridge._addNodeToSubIdMap(subIdMap, nodeMap, node);
+    if (!oj.BaseCustomElementBridge.isRegistered(node.tagName) && !oj.Components.getWidgetConstructor(node))
+    {
+      var children = node.children;
+      for (var i = 0; i < children.length; i++)
+      {
+        oj.CompositeElementBridge._walkSubtree(subIdMap, nodeMap, children[i]);
+      }
+    }
+  }
+};
+
+/**
+ * Checks to see if a node has defined subIds and adds them to the composite's
+ * cached subId -> node and node -> subId maps for automation.
+ * @ignore
+ */
+oj.CompositeElementBridge._addNodeToSubIdMap = function(subIdMap, nodeMap, node)
+{
+  var nodeSubId = node.getAttribute('data-oj-subid');
+  var nodeSubIdMapStr = node.getAttribute('data-oj-subid-map');
+  // We do not support an element having both attributes. If both are specified, -map takes precedence.
+  if (nodeSubIdMapStr)
+  {
+    var parsedValue = JSON.parse(nodeSubIdMapStr);
+    if (typeof parsedValue === 'object' && !(parsedValue instanceof Array))
+    { 
+      // Due to closure compiler issues with passing in result of JSON.parse which has type * into Object.keys 
+      // which requires an Object, use for loop here instead of iterating over key Array.
+      var nodeSubIdMap = parsedValue;
+      var reverseMap = {};
+      for (var key in nodeSubIdMap)
+      {
+        subIdMap[key] = {'alias': nodeSubIdMap[key], 'node': node};
+        reverseMap[nodeSubIdMap[key]] = key;
+      }
+      nodeMap[nodeSubIdMapStr] = {'map': reverseMap, 'node': node};
+    }
+  }
+  else if (nodeSubId)
+  {
+    subIdMap[nodeSubId] = {'node': node};
+    nodeMap[nodeSubId] = {'node': node};
+  }
+};
+
+/**
+ * Returns the subId to node mapping for the composite's View.
+ * @ignore
+ */
+oj.CompositeElementBridge.__GetSubIdMap = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
+  return bridge._SUBID_MAP;
+};
+
+/**
+ * Returns the node to subId mapping for the composite's View. The returned map has the 
+ * following key/value pairs where nodeKey is value of the node's data-oj-subid[-map] attribute:
+ * {
+ *   [nodeKey]: {
+ *     map: [subIdMap],
+ *     node: [node]
+ *   }
+ * }
+ * @return {Map}
+ * @ignore
+ */
+oj.CompositeElementBridge.__GetNodeMap = function(element)
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  oj.CompositeElementBridge._generateSubIdMap(bridge, element);
+  return bridge._NODE_MAP;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getPropertyTracker = function(bridge, property)
+{
+  if (!bridge._TRACKERS)
+    bridge._TRACKERS = {};
+  if (!bridge._TRACKERS[property])
+    bridge._TRACKERS[property] = oj.CompositeTemplateRenderer.createTracker();
+  return bridge._TRACKERS[property];
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getResourcePromise = function(descriptor, resourceType)
+{
+  var promise = null;
+  var value = descriptor[resourceType];
+  if (value != null)
+  {
+    var key = Object.keys(value)[0];
+    var val = value[key];
+
+    if (key == null)
+    {
+      throw "Invalid component descriptor key";
+    }
+
+    switch(key)
+    {
+      case 'inline':
+        promise = Promise.resolve(val);
+        break;
+      case 'promise':
+        promise = val;
+        break;
+      default:
+        throw "Invalid descriptor key " + key + " for the resource type: " + resourceType;
+    }
+  }
+  return promise;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._getUnique = function()
+{
+  return _UNIQUE + _UNIQUE_INCR++;
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._isDocumentFragment = function(content)
+{
+  if (window['DocumentFragment'])
+  {
+    return content instanceof DocumentFragment;
+  }
+  else
+  {
+    return content && content.nodeType === 11;
+  }
+};
+
+/**
+ * @ignore
+ */
+oj.CompositeElementBridge._isSlotAssignable = function(node)
+{
+  return node.nodeType === 1 || node.nodeType === 3;
+};
+
+var _UNIQUE_INCR = 0;
+var _UNIQUE = '_ojcomposite';
+
 
 /**
  * <p>
@@ -456,63 +965,168 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * <h2 id="metadata">Metadata
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#metadata"></a>
  * </h2>
- * <p>Metadata can be provided via JSON format which will be used to define the composite component's properites, methods, and events.
+ * <p>Metadata can be provided via JSON format which will be used to define the composite component.
  *  The Metadata can be extended by appending any extra information in an "extension" field except at the first level of 
- *  the "properties", "methods", and "events" objects. Any metadata in an extension field will be ignored.
- *  The Metadata JSON object can have the following top level properties, "properties", "methods", "events", which can contain additional
- *  information described in the tables below for each top level property. Any types should be
- *  <a href="https://developers.google.com/closure/compiler/docs/js-for-compiler#types">Closure Compiler compatible</a>.</p>
+ *  the "properties", "methods", "events" or "slots" objects. Any metadata in an extension field will be ignored.</p>
+ *  
+ * <p>The Metadata JSON object should have the following required properties: "name", "version", "jetVersion" and 
+ *  the following optional properties: "description", compositeDependencies", properties", "methods", "events", or "slots". 
+ *  See the tables below for descriptions of these properties.</p>
+ *  
  * <p>Keys defined in the "properties" top level object should map to the composite component's properties following
- *  the same naming convention described in the <a href="#attr-to-prop-mapping">Attribute-to-Property mapping</a> section.
+ *  the same naming convention described in the <a href="#attr-to-prop-mapping">Property-to-Attribute mapping</a> section.
  *  Non expression bound composite component attributes will be correctly evaluated only if they are a primitive JavaScript type (boolean, number, string)
- *  or a JSON object. Attributes evaluating to any other types must be bound via expression syntax.  
+ *  or a JSON object. Note that JSON syntax requires that strings use double quotes. Attributes evaluating to any other types must be bound via expression syntax.  
  *  Boolean attributes are considered true if set to the case-insensitive attribute name, the empty string or have no value assignment. 
  *  JET composite components will also evalute boolean attributes set explicitly to 'true' or 'false' to their respective boolean values. All other values are invalid.</p>
+ *  
  * <p>Not all information provided in the Metadata is required at run time and those not indicated to be required at run time in the tables
  *  below can be omitted to reduce the Metadata download size. Any non run time information can be used for design time tools and property editors and could
  *  be kept in a separate JSON file which applications can use directly or merge with the run time metadata as needed, but would not be required by the loader.js
- *  file. For methods, only the method name is required at run time and for events, only run time environments that care about available events
- *  need to include the event name.  Otherwise, no event info needs to be included for run time.</p>
+ *  file. For methods and events, only the method/event name is required at run time.</p>
  *
- * <h3>Properties</h3>
+ * <h3>Metadata Properties</h3>
  * <table class="params">
  *   <thead>
  *     <tr>
- *       <th>Name</th>
+ *       <th>Key</th>
+ *       <th>Required</th>
  *       <th>Type</th>
  *       <th>Description</th>
  *     </tr>
  *   </thead>
  *   <tbody>
  *     <tr>
+ *       <td class="name"><code>name</code></td>
+ *       <td>yes</td>
+ *       <td>{string}</td>
+ *       <td>The component tag name.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>version</code></td>
+ *       <td>yes</td>
+ *       <td>{string}</td>
+ *       <td>The component version.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>jetVersion</code></td>
+ *       <td>yes</td>
+ *       <td>{string}</td>
+ *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s).</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>compositeDependencies</code></td>
+ *       <td>no</td>
+ *       <td>{Object<string, string>}</td>
+ *       <td>Dependency to semantic version mapping for composite dependencies. 
+ *         3rd party libraries should not be included in this mapping. Not used at run time.
+ *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code></td>
+ *     </tr>
+ *     <tr>
  *       <td class="name"><code>description</code></td>
+ *       <td>no</td>
  *       <td>{string}</td>
- *       <td>A description for the property. Not used at run time.</td>
+ *       <td>A high-level description for the component. Not used at run time.</td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>readOnly</code></td>
- *       <td>{boolean}</td>
- *       <td>Determines whether a property can be updated outside of the ViewModel.
- *          False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
- *          components within the composite.</td>
+ *       <td class="name"><code>properties</code></td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Properties table below for details.</td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>type</code></td>
- *       <td>{string}</td>
- *       <td>The type of the property, following Closure Compiler syntax.
- *          Complex properties can be expressed using the Closure Compiler record type
- *          syntax or additional nested properties objects.</td>
+ *       <td class="name"><code>methods</code></td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Methods table below for details.</td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>value</code></td>
- *       <td>{object}</td>
- *       <td>An optional default value for a property.</td>
+ *       <td class="name"><code>events</code></td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Events table below for details.</td>
  *     </tr>
  *     <tr>
- *       <td class="name"><code>writeback</code></td>
- *       <td>{boolean}</td>
- *       <td>Determines whether an expression bound to this property should be written back to. False by default.
- *          If writeback is true, any updates to the property will result in an update to the expression.</td>
+ *       <td class="name"><code>slots</code></td>
+ *       <td>no</td>
+ *       <td>{Object<string,<string>}</td>
+ *       <td>See Slots table below for details. Not used at run time.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * 
+ * <h3>Properties</h3>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Value</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>[property name]</code></td>
+ *       <td>Object containing the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>{string}</td>
+ *               <td>A description for the property. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>readOnly</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Determines whether a property can be updated outside of the ViewModel.
+ *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
+ *                 components within the composite. This property only needs to be defined for the top level property, 
+ *                 with subproperties inheriting that value.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>type</code></td>
+ *               <td>{string}</td>
+ *               <td>The type of the property, following 
+ *                 <a href="https://developers.google.com/closure/compiler/docs/js-for-compiler#types">Google's Closure Compiler</a> syntax.
+ *                 We will parse string, number, boolean, array and object types for non data-bound attributes, but will not provide 
+ *                 type checking for array and object elements. However, for documentation purposes, it may still be beneficial to provide
+ *                 array and object element details using the Closure Compiler syntax.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>value</code></td>
+ *               <td>{object}</td>
+ *               <td>An optional default value for a property.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>writeback</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Determines whether an expression bound to this property should be written back to. False by default.
+ *                 If writeback is true, any updates to the property will result in an update to the expression. This property only needs to be defined
+ *                 for the top level property, with subproperties inheriting that value.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>enumValues</code></td>
+ *               <td>{Array<string>}</td>
+ *               <td>An optional list of valid enum values for a string property. An error is thrown if a property value does not
+ *                 match one of the provided enumValues.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>properties</code></td>
+ *               <td>{Object}</td>
+ *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
+ *                 be set using dot notation in the attribute. See the <a href="#subproperties">Subproperties</a> section for more details on 
+ *                 working with subproperties.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -521,31 +1135,47 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * <table class="params">
  *   <thead>
  *     <tr>
- *       <th>Name</th>
- *       <th>Type</th>
- *       <th>Description</th>
+ *       <th>Key</th>
+ *       <th>Value</th>
  *     </tr>
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td class="name"><code>description</code></td>
- *       <td>{string}</td>
- *       <td>A description for the method. Not used at run time.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>internalName</code></td>
- *       <td>{string}</td>
- *       <td>An optional ViewModel method name that is different from, but maps to this method.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>params</code></td>
- *       <td>{Array<{description: string, name: string, type: string}>}</td>
- *       <td>An array of objects describing the method parameter. Not used at run time.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>return</code></td>
- *       <td>{string}</td>
- *       <td>The return type of the method, following Closure Compiler syntax. Not used at run time.</td>
+ *       <td class="name"><code>[method name]</code></td>
+ *       <td>Object containing the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>{string}</td>
+ *               <td>A description for the method. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>internalName</code></td>
+ *               <td>{string}</td>
+ *               <td>An optional ViewModel method name that is different from, but maps to this method.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>params</code></td>
+ *               <td>{Array<{description: string, name: string, type: string}>}</td>
+ *               <td>An array of objects describing the method parameter. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>return</code></td>
+ *               <td>{string}</td>
+ *               <td>The return type of the method, following Closure Compiler syntax. Not used at run time.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -554,58 +1184,110 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * <table class="params">
  *   <thead>
  *     <tr>
- *       <th>Name</th>
- *       <th>Type</th>
- *       <th>Description</th>
+ *       <th>Key</th>
+ *       <th>Value</th>
  *     </tr>
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td class="name"><code>bubbles</code></td>
- *       <td>{boolean}</td>
- *       <td>Indicates whether the event bubbles up through the DOM or not. Defaults to false. Not used at run time.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>cancelable</code></td>
- *       <td>{boolean}</td>
- *       <td>Indicates whether the event is cancelable or not. Defaults to false. Not used at run time.</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>description</code></td>
- *       <td>{string}</td>
- *       <td>A description for the event. Not used at run time.</td>
- *     </tr>
- *     <tr>
- *       <td>detail</td>
- *       <td>{object}</td>
- *       <td>Describes the properties available on the event's detail property which contains data passed when initializing the event. Not used at run time.</p>
- *          <h6>Properties</h6>
- *          <table class="params">
- *            <thead>
- *              <tr>
- *                <th>Name</th>
- *                <th>Type</th>
- *              </tr>
- *            </thead>
- *            <tbody>
- *              <tr>
- *                <td class="name"><code>[field name]</code></td>
- *                <td>{description: string, type: string}</td>
- *              </tr>
- *            </tbody>
- *          </table>
- *        </td>
+ *       <td class="name"><code>[event name]</code></td>
+ *       <td>Object containing the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>bubbles</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Indicates whether the event bubbles up through the DOM or not. Defaults to false. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>cancelable</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Indicates whether the event is cancelable or not. Defaults to false. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>{string}</td>
+ *               <td>A description for the event. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>detail</code></td>
+ *               <td>{object}</td>
+ *               <td>Describes the properties available on the event's detail property which contains data passed when initializing the event. Not used at run time.</p>
+ *                 <h6>Properties</h6>
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>[field name]</code></td>
+ *                       <td>{description: string, type: string}</td>
+ *                     </tr>
+ *                   </tbody>
+ *                 </table>
+ *               </td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
  *     </tr>
  *   </tbody>
  * </table>
  *
+ * <h3>Slots</h3>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Value</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>[slot name]</code></td>
+ *       <td>Object containing the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>description</code></td>
+ *               <td>{string}</td>
+ *               <td>A description for the slot. Not used at run time.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *       </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ * 
  * <h3>Example of Run Time Metadata</h3>
- * <p>Note that in the example below, the cardClick event is not needed if the run time does not need to know about available events.
- *   The JET composite binding does do anything with the events metadata and ignores "extension" fields. Extension fields cannot
- *   be defined at the first level of the "properties", "methods", and "events" objects.</p>
+ * <p>The JET framework will ignore "extension" fields. Extension fields cannot be defined at 
+ *   the first level of the "properties", "methods", "events", or "slots" objects.</p>
  * <pre class="prettyprint">
  * <code>
  * {
+ *  "name": "demo-card",
+ *  "version": "1.0.0",
+ *  "jetVersion": ">=3.0.0",
  *  "properties": {
  *    "currentImage" : {
  *      "type": "string",
@@ -627,7 +1309,7 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  *    "prevImage": {}
  *   },
  *   "events": {
- *     "cardClick": {}
+ *     "cardclick": {}
  *   }
  * }
  * </code>
@@ -643,22 +1325,44 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * ViewModel will be a Promise which will contain the properties object when resolved. The application can access
  * the composite component properties by accessing them directly from the DOM element. Using the DOM setAttribute and
  * removeAttribute APIs will also result in property updates. Changes made to properties will
- * result in a [propertyName]-changed event being fired for that property regardless of where they are modified.
+ * result in a [propertyName]Changed event being fired for that property regardless of where they are modified.
  * </p>
  *
- * <h3 id="attr-to-prop-mapping">Attribute-to-Property Mapping
+ * <h3 id="attr-to-prop-mapping">Property-to-Attribute Mapping
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#attr-to-prop-mapping"></a>
  * </h3>
  * <p>
- * The following rules apply when mapping attribute to property names:
+ * The following rules apply when mapping property to attribute names:
+ * 
  * <ul>
- *  <li>Attribute names are converted to lowercase, e.g. a "chartType" attribute will map to a "charttype" property.</li>
- *  <li>Attribute names with dashes are converted to camelCase by capitalizing the first character after a dash and then removing the dashes,
- *    e.g. a "chart-type" attribute will map to a "chartType" property.</li>
+ *  <li>Attribute names are case insensitive and are considered to be all lower case. Properties with camelCase are mapped to 
+ *    attribute names by inserting a dash before the uppercase letter and converting that letter to lower case, 
+ *    e.g. a "chartType" property will be mapped to a "chart-type" attribute.</li>
+ *  <li> The reverse occurs when mapping a property name from an attribute name.</li>
  * </ul>
- * The reverse occurs when mapping property to attribute names.
  * </p>
  *
+ * <h3 id="subproperties">Subproperties
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#subproperties"></a>
+ * </h3>
+ * <p>
+ * Subproperties can be exposed and documented by adding nested properties objects in the composite <a href="#metadata">metadata</a>. Event listeners
+ * should be added for the top level property, with applications checking the event's <a href="#events">subproperty</a> field to access information about the
+ * subproperty changes. Subproperties can be set declaratively using dot notation, e.g. person.first-name="{{name}}".  Setting overlapping attributes, 
+ * e.g. person="{{personInfo}}" person.first-name="{{name}}" will cause an error to be thrown.
+ * </p> 
+ * 
+ * <p>Subproperties can also be set programmatically using the <code>set/getProperty</code> methods. 
+ * Note that while setting the subproperty using dot notation via the element's top level property is allowed, the setProperty method must be used in order
+ * to trigger a property change event.
+ * <pre class="prettyprint">
+ * <code>
+ * element.setProperty("person.firstName", Fred);
+ * var firstName = element.getProperty("person.firstName");
+ * </code>
+ * </pre>
+ * </p>
+ * 
  * <h2 id="styling">Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling"></a>
  * </h2>
@@ -682,14 +1386,20 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * </h2>
  * <p>
  * Composite components fire the following events. Any custom composite events should be created and fired by the composite's ViewModel and documented in the metadata
- * for design and run time environments as needed.
+ * for design and run time environments as needed.  In addition to standard add/removeEventListener syntax, declarative event listeners will also be supported for
+ * custom composite events and [propertyName]Changed events.  As a result, if a composite declares an event of type "customType", applications can listen by setting the
+ * "onCustomType" property or the "on-custom-type" attribute.  Similarly, property change listeners can be set via the appropriate "on[PropertyName]Changed" property or
+ * "on-[property-name]-changed" attribute. Expression syntax can be used in the on-[event-name] attributes, but we do not support executing arbitrary JavaScript like those for
+ * native event attributes like onclick.
  * <ul>
- *  <li><b><i>pending</i></b> - Fired to notify the application that a composite component is about to render.</li>
- *  <li><b><i>ready</i></b> - Fired after bindings are applied on the composite component's children. Child pending events will be fired before the parent
+ *  <li><b><i>pending (Deprecated)</i></b> - Fired to notify the application that a composite component is about to render. 
+ *    This event is deprecated. The application should use the page's oj.BusyContext to determine when the composite is ready.</li>
+ *  <li><b><i>ready (Deprecated)</i></b> - Fired after bindings are applied on the composite component's children. Child pending events will be fired before the parent
  *    composite component's ready event. Note that this does not gaurantee that its children are ready at this point as they could be performing
  *    their own asynchronous operations. Applications may use the pending and ready events  to determine when a composite
- *    component and its children are fully ready (i.e. when the number of received ready events matches the number of received pending events).</li>
- *  <li><b><i>[propertyName]-changed</i></b> - Fired when a property is modified and contains the following fields in its event detail object:
+ *    component and its children are fully ready (i.e. when the number of received ready events matches the number of received pending events).
+ *    This event is deprecated. The application should use the page's oj.BusyContext to determine when the composite is ready.</li>
+ *  <li><b><i>[propertyName]-changed (Deprecated) </i></b> - Fired when a property is modified and contains the following fields in its event detail object:
  *    <ul>
  *      <li>previousValue - The previous property value</li>
  *      <li>value - The new property value</li>
@@ -698,6 +1408,34 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  *          <li>default - The default value specified in the metadata.</li>
  *          <li>internal - The View or ViewModel</li>
  *          <li>external - The DOM Element either by its property setter, setAttribute, or external data binding.</li>
+ *        </ul>
+ *      </li>
+ *      <li>subproperty - An object containing information about the subproperty that changed with the following fields:
+ *        <ul>
+ *          <li>path - The subproperty path that changed</li>
+ *          <li>previousValue - The previous subproperty value</li>
+ *          <li>value - The new subproperty value</li>
+ *        </ul>
+ *      </li>
+ *    </ul>
+ *    This event is deprecated.  Applications should listen to [propertyName]Changed events instead.
+ *  </li>
+ *  <li><b><i>[propertyName]Changed</i></b> - Fired when a property is modified and contains the following fields in its event detail object:
+ *    <ul>
+ *      <li>previousValue - The previous property value</li>
+ *      <li>value - The new property value</li>
+ *      <li>updatedFrom - Where the property was updated from. Supported values are:
+ *        <ul>
+ *          <li>default - The default value specified in the metadata.</li>
+ *          <li>internal - The View or ViewModel</li>
+ *          <li>external - The DOM Element either by its property setter, setAttribute, or external data binding.</li>
+ *        </ul>
+ *      </li>
+ *      <li>subproperty - An object containing information about the subproperty that changed with the following fields:
+ *        <ul>
+ *          <li>path - The subproperty path that changed</li>
+ *          <li>previousValue - The previous subproperty value</li>
+ *          <li>value - The new subproperty value</li>
  *        </ul>
  *      </li>
  *    </ul>
@@ -713,15 +1451,15 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * callback methods can be defined on its ViewModel and will be called at each stage of the composite
  * component's lifecycle. The ViewModel provided at registration can either be a function which will be 
  * treated as a constructor that will be invoked to create the ViewModel instance or an object which will
- * be treated as a singleton instance. The following are the default names of the callback methods, which
- * can also be configured in oj.Composite.defaults.
+ * be treated as a singleton instance.
  *
  * <h4 class="name">initialize<span class="signature">(context)</span></h4>
  * <div class="description">
  * This optional method may be implemented on the ViewModel to perform initialization tasks.
  * This method will be invoked only if the ViewModel specified during registration is an object instance as opposed to a constructor function.
  * If the registered ViewModel is a constructor function, the same context object will be passed to the constructor function instead.
- * If this method returns a Promise, activation will be delayed until the Promise is resolved.
+ * This method can return 1) nothing in which case the original model instance will be used, 2) a new model instance which will replace the original, 
+ * or 3) a Promise which resolves to a new model instance which will replace the original and delay additional lifecycle phases until it is resolved.
  * </div>
  * <h5>Parameters:</h5>
  * <table class="params">
@@ -777,6 +1515,8 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * <h4 class="name">activated<span class="signature">(context)</span></h4>
  * <div class="description">
  * This optional method may be implemented on the ViewModel and will be invoked after the ViewModel is initialized.
+ * This method can return a Promise which will delay additional lifecycle phases until it is resolved and can be used 
+ * as a hook for data fetching.
  * </div>
  * <h5>Parameters:</h5>
  * <table class="params">
@@ -938,9 +1678,32 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  *     </tr>
  *   </tbody>
  * </table>
+ * 
+ * <h4 class="name">detached<span class="signature">(element)</span></h4>
+ * <div class="description">
+ * This optional method may be implemented on the ViewModel and will be invoked when this composite component is detached from the DOM.
+ * </div>
+ * <h5>Parameters:</h5>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="name"><code>element</code></td>
+ *       <td>Node</td>
+ *       <td>The composite component DOM element.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
  *
  * <h4 class="name">dispose<span class="signature">(element)</span></h4>
  * <div class="description">
+ * <b>Deprecated</b>: use the detached method instead.
  * This optional method may be implemented on the ViewModel and will be invoked when this composite component is being disposed.
  * </div>
  * <h5>Parameters:</h5>
@@ -971,7 +1734,7 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * is updated by the composite component's ViewModel. The 'data' property will contain the current value, but the salesData expression will not
  * be updated. Alternatively, if the 'axisLabels' property is updated by the ViewModel, both the 'axisLabel' property and the showAxisLabels expression
  * will contain the updated value. Updating a readOnly property will disconnect the expression binding since the expression will no longer be
- * in sync with the property value. The property will still update and a property change event, [propertyName]-changed, will still be fired when 
+ * in sync with the property value. The property will still update and a property change event, [propertyName]Changed, will still be fired when 
  * the property value changes regardless of whether the expression is written back to.
  * <pre class="prettyprint">
  * <code>
@@ -1174,6 +1937,20 @@ ko.virtualElements.allowedBindings['_ojSlot_'] = true;
  * </code>
  * </pre>
  * 
+ * <h2 id="automation">Automation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#automation"></a>
+ * </h2>
+ * <p>
+ * The JET framework will by default expose <code>getNodeBySubId/getSubIdByNode</code> implementations on the composite element, using the presence of <code>data-oj-subid(-map)</code> 
+ * attribute markup within the composite View to determine which elements to expose. The data-oj-subid attribute takes a single string which maps that element to the given subid 
+ * The data-oj-subid-map attribute takes a JSON object containing custom subIds that map to component subIds when the component is another composite or JET component. 
+ * If both attributes are specified, the data-oj-subid-map value takes precedence and data-oj-subid will be ignored as we do not recommend exposing both.
+ * If the composite can expose all necessary subIds via the data-oj-subid(-map) attributes then it does not need to provide its own implementation. 
+ * However, for cases like exposing subIds on stamped items, the composite can provide its own implementation on the composite ViewModel. For an example
+ * and more details, please see the "Preparing Oracle JET Composite Components for Automation Testing" section of the Developer's Guide. The composite does not need to 
+ * define <code>getNodeBySubId/getSubIdByNode</code> methods in the metadata except for documentation purposes.
+ * </p>
+ * 
  * @namespace
  */
 oj.Composite = {};
@@ -1189,7 +1966,9 @@ oj.Composite = {};
  * @property {string} activatedMethod The name of the method invoked after the Model is instantiated. Defaults to 'activated'.
  * @property {string} attachedMethod The name of the method invoked when the View is inserted into the document DOM. Defaults to 'attached'.
  * @property {string} bindingsAppliedMethod The name of the method invoked after the bindings are applied on the View. Defaults to 'bindingsApplied'.
- * @property {string} disposeMethod The name of the dispose method. Defaults to 'dispose'.
+ * @property {string} detachedMethod The name of the method called when the composite is detached from the DOM. Defaults to 'detached'.
+ * @property {string} disposeMethod <b>Deprecated</b>: Use the detached method instead. The name of the method called when the composite is disposed. Defaults to 'dispose'.
+ * @deprecated Since composites are designed to be reusable components, we do not recommend overriding the default lifecycle listener names and potentially breaking consumed composites.
  *
  * @export
  * @memberof oj.Composite
@@ -1200,14 +1979,30 @@ oj.Composite.defaults =
   'activatedMethod': 'activated',
   'attachedMethod': 'attached',
   'bindingsAppliedMethod': 'bindingsApplied',
+  'detachedMethod': 'detached',
   'disposeMethod': 'dispose'
+};
+
+
+/**
+ * Returns a Promise resolving with the composite metadata with the given name.
+ * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
+ * @return {Promise}
+ * 
+ * @export
+ * @memberof oj.Composite
+ *
+ */
+oj.Composite.getMetadata = function(name)
+{
+  return oj.CompositeElementBridge.getMetadata(name);
 };
 
 /**
  * Registers a composite component
  * @param {string} name The component name, which should contain a dash '-' and not be a reserved tag name.
  * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for Metadata, View, ViewModel
- * and CSS that are detailed below. A View is required, but all others are optional.
+ * and CSS that are detailed below. At a minimum a composite must register Metadata and View files, but all others are optional.
  * See the <a href="#registration">registration section</a> above for a sample usage.
  * The value for each key is a plain Javascript object that describes the loading
  * behavior. One of the following keys must be set on the object:
@@ -1223,7 +2018,8 @@ oj.Composite.defaults =
  * documented above and ultimately resolve to a string if loaded inline or as a Promise.
  * @param {Object} descriptor.viewModel Describes how component's ViewModel is loaded. If specified, the object must contain one of the keys
  * documented above. This option is only applicable to composites hosting a Knockout template
- * with a ViewModel and ultimately resolve to a constructor function or object instance
+ * with a ViewModel and ultimately resolves to a constructor function or object instance. If the initial ViewModel resolves to an object instance, the
+ * initialize lifecycle listener will be called. See the <a href="#lifecycle">initialize documentation</a> for more information.
  * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
  * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
  * <ul>
@@ -1242,687 +2038,44 @@ oj.Composite.defaults =
  */
 oj.Composite.register = function(name, descriptor)
 {
-  if (name)
-    oj.Composite._registry[name.toLowerCase()] = descriptor;
-}
+  oj.CompositeElementBridge.register(name, descriptor);
+};
 
 /**
+ * Finds the containing composite component for a given node. If the immediate enclosing
+ * composite component is contained by another composite, the method will keep
+ * walking up the composite hierarchy until the top-level composite
+ * or the optional 'stopBelow' element is reached
+ * 
+ * @param {Node} node the DOM node whose containing composite should be returned
+ * @param {Element=} stopBelow the element where search should stop
+ * @return {Element|null} the containing composite
+ * 
+ * This method is currently intended for internal use only, and it is not exported
  * @ignore
  */
-oj.Composite.__GetDescriptor = function(name)
+oj.Composite.getContainingComposite = function(node, stopBelow)
 {
-  if (name)
-    return oj.Composite._registry[name.toLowerCase()];
-  return null;
-}
-
-/**
- * Saves the metadata Promise for the given composite
- * @param {string} name The composite component name.
- * @param {Promise} metadata The metadata Promise.
- * @ignore
- */
-oj.Composite.__SaveMetadata = function(name, metadata)
-{
-  if (name) 
+  var composite = null;
+  
+  while(node)
   {
-    var descriptor = oj.Composite._registry[name.toLowerCase()];
-    if (descriptor)
-      descriptor['_metadata'] = metadata;
-  }
-}
-
-/**
- * Returns the metadata JSON object for the given composite component name.
- * @param {string} name The composite component name.
- * @return {Promise} metadata The metadata Promise.
- * @ignore
- * @export
- */
-oj.Composite.getMetadata = function(name)
-{
-  if (name) 
-  {
-    var descriptor = oj.Composite._registry[name.toLowerCase()];
-    if (descriptor)
-      return descriptor['_metadata'];
-  }
-  return null;
-}
-
-/**
- * @ignore
- */
-oj.Composite._registry = {};
-
-ko['bindingHandlers']['ojComposite'] =
-{
-  'init': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
-  {
-    return {'controlsDescendantBindings' : true};
-  },
-
-  'update': function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext)
-  {
-    var _INTERRUPTED_ERROR = new Error();
-    var childViewModel;
-    var propertyUpdater;
-    var pendingLoadId = -1;
-    var nodeDisposed = false;
-    var compMetadata;
-    var props = {};
-    var nodeStorage;
-
-    function cleanup(isNodeDispose, bindingContext)
+    node = oj.CompositeTemplateRenderer.getEnclosingComposite(node);
+    if (node)
     {
-      if (propertyUpdater)
+      if (stopBelow && !(node.compareDocumentPosition(stopBelow) & 16/*contained by*/))
       {
-        propertyUpdater.teardown(element);
-        propertyUpdater = null;
-      }
-
-      nodeDisposed = isNodeDispose;
-
-      _invokeCompositeViewModelMethod(childViewModel, 'disposeMethod', [element]);
-
-      childViewModel = null;
-
-      if (compMetadata)
-      {
-        _resetElement(element, compMetadata);
-      }
-
-      // cleanup nodeStorage after view slotting is complete
-      if (nodeStorage)
-      {
-        element.removeChild(nodeStorage);
-        nodeStorage = null;
-      }
-
-      compMetadata = null;
-      props = {};
-    }
-
-    // Wraps a callback functions to associate it with the the current Load Id
-    function wrapToCheckLoadId(func)
-    {
-      var checker = function(id)
-      {
-        if (nodeDisposed || id != pendingLoadId)
-        {
-          throw _INTERRUPTED_ERROR;
-        }
-
-        // Exclude the first argument (load Id) when invoking the callback
-        return func.apply(this, Array.prototype.slice.call(arguments, 1));
-
-      }.bind(null, pendingLoadId);
-
-      return checker;
-    }
-
-    var unwrap = ko.utils.unwrapObservable;
-
-
-    // Since we are tracking all our dependencies explicitly, we are suspending dependency detection here.
-    // update() will be called only once as a result
-    ko.ignoreDependencies(
-      function()
-      {
-        ko.computed(
-          function()
-          {
-            // Increment the load Id to ensure that we discard any old pending promises
-            pendingLoadId++;
-            _fireEvent('pending', element);
-
-            cleanup(false, bindingContext);
-
-            var value = unwrap(valueAccessor()) || {};
-
-            var name = unwrap(value['name']);
-
-            var descriptor = oj.Composite.__GetDescriptor(name);
-
-            if (!descriptor)
-            {
-              throw "Composite is missing a descriptor";
-            }
-
-            var metadataPromise = _getResourcePromise(descriptor, "metadata");
-            oj.Composite.__SaveMetadata(name, metadataPromise);
-            var propertiesInitializedPromise = null;
-            if (metadataPromise)
-            {
-              propertiesInitializedPromise = metadataPromise.then(
-                wrapToCheckLoadId (
-                  function(metadata)
-                  {
-                    if (metadata)
-                    {
-                      compMetadata = metadata;
-
-                      propertyUpdater = new PropertyUpdater(element, props, bindingContext, descriptor["parseFunction"]);
-                      _setupProperties(element, props, metadata, propertyUpdater);
-                      propertyUpdater.setup(metadata);
-                    }
-                    else
-                    {
-                      element.classList.add('oj-complete');
-                      oj.Logger.warn("ojComposite is being loaded without metadata. No element properties will be set up");
-                    }
-
-                    return props;
-                  }
-                )
-              );
-            }
-            else
-            {
-              element.classList.add('oj-complete');
-            }
-
-            var resolveSlotsPromise;
-            var slotsPromise = new Promise(function(resolve) {
-              resolveSlotsPromise = resolve;
-            });
-
-            var unique = _getUnique();
-            var vmContext = {
-              'element': element,
-              'props': propertiesInitializedPromise,
-              'slotNodeCounts': slotsPromise,
-              'unique': unique
-            };
-            var modelInstancePromise = null;
-            var modelPromise = _getResourcePromise(descriptor, "viewModel");
-            if (modelPromise)
-            {
-              modelInstancePromise = modelPromise.then(
-                wrapToCheckLoadId(
-                  function(model)
-                  {
-                    if (typeof model === 'function')
-                    {
-                      model = new model(vmContext);
-                    }
-                    else
-                    {
-                      // If the function returns a value, use it as the new model instance
-                      model = _invokeCompositeViewModelMethod(model, 'initializeMethod', [vmContext]) || model;
-                    }
-
-                    return model;
-                  }
-                )
-              );
-            }
-
-            var activatedPromise = null;
-            if (modelInstancePromise) {
-              activatedPromise = modelInstancePromise.then(
-                wrapToCheckLoadId(
-                  function(model)
-                  {
-                    return _invokeCompositeViewModelMethod(model, 'activatedMethod', [vmContext]);
-                  }
-                )
-              );
-            }
-
-            var viewPromise =  _getResourcePromise(descriptor, "view");
-            if (viewPromise)
-            {
-              viewPromise = viewPromise.then (
-                 wrapToCheckLoadId(
-                  function(view)
-                  {
-                    return _getDomNodes(view);
-                  }
-                 )
-              );
-            }
-
-            var cssPromise =  _getResourcePromise(descriptor, "css");
-            if (cssPromise)
-            {
-              cssPromise = cssPromise.then (
-                wrapToCheckLoadId(
-                  function(css)
-                  {
-                    var style = document.createElement('style');
-                    style.type = 'text/css';
-                    if (style.styleSheet) // for IE
-                    {
-                      style.styleSheet.cssText = css;
-                    }
-                    else
-                    {
-                      style.appendChild(document.createTextNode(css));
-                    }
-                    document.head.appendChild(style);
-                  }
-                )
-              );
-            }
-
-            // apply bindings to original DOM in composite context before creating slot map
-            ko.applyBindingsToDescendants(bindingContext, element);
-
-            var masterPromise = Promise.all([viewPromise, modelInstancePromise, propertiesInitializedPromise, cssPromise, activatedPromise]);
-            masterPromise.then(
-              function(id, values)
-              {
-                if (nodeDisposed || id != pendingLoadId)
-                {
-                  return;
-                }
-                var view = values[0];
-                if (!view)
-                {
-                  throw "ojComposite is missing a View";
-                }
-
-                // generate slot map before we update DOM with view nodes
-                var slotMap = _createSlotMap(element);
-                var slotNodeCounts = {};
-                for (var slot in slotMap)
-                {
-                  slotNodeCounts[slot] = slotMap[slot].length;
-                }
-                resolveSlotsPromise(slotNodeCounts);
-
-                // Store composite children on a hidden node while slotting to avoid stale knockout bindings
-                // when observables are updated while children are disconnected from DOM. The _storeNodes methods
-                // also adds the storage node to the view so it's added to the DOM in setDomNodChildren
-                nodeStorage = _storeNodes(element, view);
-                ko.virtualElements.setDomNodeChildren(element, view);
-
-                childViewModel = values[1];
-                _invokeCompositeViewModelMethod(childViewModel, 'attachedMethod', [vmContext]);
-
-                var childBindingContext = bindingContext['createChildContext'](childViewModel,
-                  undefined, function (ctx)
-                  {
-                    ctx['__oj_slots'] = slotMap;
-                    ctx['__oj_nodestorage'] = nodeStorage;
-                    ctx['$slotNodeCounts'] = slotNodeCounts;
-                    ctx['$props'] = props;
-                    ctx['$unique'] = unique;
-                  }
-                );
-
-                // Setup view model methods before apply bindings
-                if (compMetadata && childViewModel)
-                {
-                  _setupMethods(element, compMetadata, childViewModel);
-                }
-
-                ko.applyBindingsToDescendants(childBindingContext, element);
-
-                _invokeCompositeViewModelMethod(childViewModel, 'bindingsAppliedMethod', [vmContext]);
-
-                _fireEvent('ready', element);
-
-              }.bind(null, pendingLoadId),
-              /* reject callback */
-              function(id, reason)
-              {
-                // Ignore failures that were interrupted due to the response no longer being expected
-                if (reason === _INTERRUPTED_ERROR)
-                {
-                  return;
-                }
-
-                if (reason != null)
-                {
-                  oj.Logger.error(reason);
-                }
-
-              }.bind(null, pendingLoadId)
-            );
-          },
-          null,
-          {'disposeWhenNodeIsRemoved' : element}
-        )
-      }
-    );
-
-    ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup.bind(null, true, bindingContext));
-
-
-  }
-}
-
-/**
- * @ignore
- */
-function _getResourcePromise(descriptor, resourceType)
-{
-  var promise = null;
-  var value = descriptor[resourceType];
-  if (value != null)
-  {
-    var key = Object.keys(value)[0];
-    var val = value[key];
-
-    if (key == null)
-    {
-      throw "Invalid component descriptor key";
-    }
-
-    switch(key)
-    {
-      case 'inline':
-        promise = Promise.resolve(val);
         break;
-      case 'promise':
-        promise = val;
-        break;
-      default:
-        throw "Invalid descriptor key " + key + " for the resopurce type: " + resourceType;
-    }
-  }
-  return promise;
-}
-
-/**
- * @ignore
- */
-function _invokeCompositeViewModelMethod(model, key, args)
-{
-  if (model == null)
-  {
-    return;
-  }
-  var name = oj.Composite.defaults[key];
-  if (name != null && model)
-  {
-    var handler = model[name];
-    if (typeof handler === 'function')
-    {
-      return ko.ignoreDependencies(handler, model, args);
-    }
-  }
-}
-
-// TODO: Copied from ModuleBinding.js - consider sharing
-/**
- * @ignore
- */
-function _getDomNodes(content)
-{
-  if (typeof content === 'string')
-  {
-    content = ko.utils.parseHtmlFragment(content);
-  }
-  else if (_isDocumentFragment(content))
-  {
-    content = ko.utils.arrayPushAll([], content.childNodes);
-  }
-  else if (Array.isArray(content))
-  {
-    content = ko.utils.arrayPushAll([], content);
-  }
-  else
-  {
-    throw "The View (" + content + ") has an unsupported type";
-  }
-  return content;
-}
-
-/**
- * @ignore
- */
-function _isDocumentFragment(content)
-{
-  if (window['DocumentFragment'])
-  {
-    return content instanceof DocumentFragment;
-  }
-  else
-  {
-    return content && content.nodeType === 11;
-  }
-}
-
-/**
- * @ignore
- */
-function _setupProperties(element, props, metadata, propertyUpdater)
-{
-  _enumMetadataProperty(metadata, 'properties',
-    function(name, propMetadata)
-    {
-      _defineDynamicCompositeProperty(element, props, name, propMetadata, propertyUpdater);
-    }
-  );
-}
-
-/**
- * @ignore
- */
-function _setupMethods(element, metadata, model)
-{
-  _enumMetadataProperty(metadata, 'methods',
-    function(name)
-    {
-      var internalName = metadata['methods'][name]['internalName'];
-      if (internalName)
-        element[name] = model[internalName].bind(model);
-      else
-        element[name] = model[name].bind(model);
-    }
-  );
-}
-
-/**
- * @ignore
- */
-function _defineDynamicCompositeProperty(element, props, name, metadata, propertyUpdater)
-{
-  var propertyTracker = ko.observable();
-
-  var innerSet = function(val, bOuterSet)
-  {
-    var old = propertyTracker.peek();
-
-    if(old !== val) // We should consider supporting custom comparators
-    {
-      propertyTracker(val);
-      if (!propertyUpdater.isInitializing() || propertyUpdater.isDefaulting())
-      {
-        var updatedFrom = propertyUpdater.isDefaulting() ? 'default' : (bOuterSet ? 'external' : 'internal');
-        _firePropertyChangeEvent(element, name, val, old, updatedFrom);
       }
+      composite = node;
     }
   }
-
-  var outerSet = function(val)
-  {
-    if (metadata['readOnly'] && !propertyUpdater.isDefaulting())
-    {
-      throw "Read-only property " + name + " cannot be set";
-    }
-    innerSet(val, true);
-  }
-
-  var get = function()
-  {
-    return propertyTracker();
-  }
-
-  var outerGet = function()
-  {
-    return propertyTracker.peek();
-  }
-
-  _defineDynamicObjectProperty(props, name, get, function(val) { innerSet(val, false) });
-  _defineDynamicObjectProperty(element, name, outerGet, outerSet);
-}
+  
+  return composite;
+};
 
 /**
  * @ignore
  */
-function _defineDynamicObjectProperty(obj, name, getter, setter)
-{
-  Object.defineProperty(
-    obj,
-    name,
-    {
-      'configurable': true, // configurable needs to be true so we can delete in cleanup()
-      'enumerable': true,
-      'get': getter,
-      'set': setter
-    }
-  );
-}
-
-/**
- * @ignore
- */
-function _firePropertyChangeEvent(element, name, value, previousValue, updatedFrom)
-{
-  var evt = new CustomEvent(name + "-changed",
-  {
-    'detail':
-    {
-      'value': value,
-      'previousValue': previousValue,
-      'updatedFrom': updatedFrom
-    }
-  });
-
-  element.dispatchEvent(evt);
-}
-
-/**
- * @ignore
- */
-function _enumMetadataProperty(metadata, property, callback)
-{
-  if (!metadata)
-  {
-    return;
-  }
-
-  var properties  = metadata[property] || {};
-
-  var names = Object.keys(properties);
-  names.forEach(
-    function(name)
-    {
-      callback(name, properties[name]);
-    }
-  );
-}
-
-/**
- * @ignore
- */
-function _resetElement(element, metadata)
-{
-  ['methods', 'properties'].forEach(
-    function(type)
-    {
-      _enumMetadataProperty(metadata, type,
-        function(name)
-        {
-          delete element[name];
-        }
-      );
-    }
-  );
-}
-/**
- * @ignore
- */
-function _isSlotAssignable(node)
-{
-  return node.nodeType === 1 || node.nodeType === 3;
-}
-
-/**
- * @ignore
- */
-function _createSlotMap(element)
-{
-  var slotMap = {};
-  var childNodeList = element.childNodes;
-  for (var i = 0; i < childNodeList.length; i++)
-  {
-    var child = childNodeList[i];
-    // Only assign Text and Element nodes to a slot
-    if (_isSlotAssignable(child))
-    {
-      // Ignore text nodes that only contain whitespace
-      if (child.nodeType === 3 && !child.nodeValue.trim())
-      {
-        continue;
-      }
-
-      // Text nodes and elements with no slot attribute map to the default slot
-      var savedSlot = child['__oj_slots'];
-      var slot = savedSlot != null ? savedSlot : child.getAttribute && child.getAttribute('slot');
-      if (!slot)
-        slot = '';
-
-      if (!slotMap[slot])
-      {
-        slotMap[slot] = [];
-      }
-      slotMap[slot].push(child);
-    }
-  }
-  return slotMap;
-}
-
-/**
- * @ignore
- */
-function _storeNodes(element, view)
-{
-  var nodeStorage;
-  var childNodes = element.childNodes;
-  if (childNodes)
-  {
-    nodeStorage = document.createElement('div');
-    nodeStorage.setAttribute('data-bind', '_ojNodeStorage_')
-    nodeStorage.style.display = 'none';
-    view.push(nodeStorage);
-    var assignableNodes = [];
-    for (var i = 0; i < childNodes.length; i++)
-    {
-      var node = childNodes[i];
-      if (_isSlotAssignable(node))
-      {
-        assignableNodes.push(node);
-      }
-    }
-    assignableNodes.forEach(function (node) {
-      nodeStorage.appendChild(node);
-    });
-  }
-  return nodeStorage;
-}
-
-/**
- * @ignore
- */
-function _getUnique()
-{
-  return _UNIQUE + _UNIQUE_INCR++;
-}
-
-/**
- * @ignore
- */
-function _fireEvent(type, element)
-{
-  element.dispatchEvent(new CustomEvent(type, {bubbles: true}));
-}
-
-var _UNIQUE_INCR = 0;
-var _UNIQUE = '_ojcomposite';
-
+oj.Composite.__COMPOSITE_PROP = '__oj_composite';
 });

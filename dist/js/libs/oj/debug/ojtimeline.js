@@ -6,6 +6,237 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline'], function (oj, $, comp, base, dvt)
 {
 /**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Target</th>
+ *       <th>Gesture</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>Timeline Item</td>
+ *       <td>Tap</td>
+ *       <td>Select when <code class="prettyprint">selectionMode</code> is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan="2">Timeline Panel</td>
+ *       <td>Drag</td>
+ *       <td>Paning: navigate forward and backward in time in horizontal/vertical orientation.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan>Pinch-Close/Spread-Open</td>
+ *       <td>Zoom In/Out.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan="2">Zoom Control</td>
+ *       <td>Tap on "+" element</td>
+ *       <td>Zoom In.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Tap on "-" element</td>
+ *       <td>Zoom Out.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan="2">Overview</td>
+ *       <td>Press on right/left side of window & Hold & Drag in right of left direction</td>
+ *       <td>Zoom In/Out (resize overview window).</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Press & Hold on the body of window & Drag in right of left direction</td>
+ *       <td>Pan (move overview window).</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
+ * @memberof oj.ojTimeline
+ */
+
+/**
+ * <table class="keyboard-table">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Action</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td><kbd>Tab</kbd></td>
+ *       <td>Move focus to next component.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + Tab</kbd></td>
+ *       <td>Move focus to previous component.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>UpArrow</kbd></td>
+ *       <td rowspan="2">Moves focus between series in a Dual Timeline and does nothing in a Single Timeline.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>DownArrow</kbd></td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>LeftArrow</kbd></td>
+ *       <td>Move focus and selection to previous data item (on left).</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>RightArrow</kbd></td>
+ *       <td>Move focus and selection to next data item (on right).</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + UpArrow</kbd></td>
+ *       <td>Move focus and multi-select previous data item.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + DownArrow</kbd></td>
+ *       <td>Move focus and multi-select next data item.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + LeftArrow</kbd></td>
+ *       <td>Move focus and multi-select previous data item (on left).</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + RightArrow</kbd></td>
+ *       <td>Move focus and multi-select next data item (on right).</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + UpArrow</kbd></td>
+ *       <td>Move focus to previous data item, without changing the current selection.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + DownArrow</kbd></td>
+ *       <td>Move focus to next data item, without changing the current selection.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + LeftArrow</kbd></td>
+ *       <td>Move focus to previous data item (on left), without changing the current selection.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + RightArrow</kbd></td>
+ *       <td>Move focus to next data item (on right), without changing the current selection.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + Spacebar</kbd></td>
+ *       <td>Multi-select data item with focus.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>= or +</kbd></td>
+ *       <td>Zoom in one level if zooming is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>- or _</kbd></td>
+ *       <td>Zoom out one level if zooming is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>PageUp</kbd></td>
+ *       <td>Pan up if scrolling is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>PageDown</kbd></td>
+ *       <td>Pan down if scrolling is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + PageUp</kbd></td>
+ *       <td>Pan left in left-to-right locales. Pan right in right-to-left locales.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Shift + PageDown</kbd></td>
+ *       <td>Pan right in left-to-right locales. Pan left in right-to-left locales.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+ * @memberof oj.ojTimeline
+ */
+
+/**
+ *<p>The date/time data in the Timeline plays a key role, not only in the representation of events in the order in which they occurred, but also in many other places, such as the time axis, event durations, time markers, size and position calculations for the overview locator window, etc.</p>
+ *<p>The Timeline supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+ *<table  class="keyboard-table">
+ *<thead>
+ *<tr>
+ *<th>Symbol</th>
+ *<th>Description</th>
+ *<th>Values</th>
+ *<th>Examples</th>
+ *</tr>
+ </thead>
+ <tbody>
+ *<tr>
+ *<td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following. If the value is omitted, character 'Z' should be used to specify UTC time.<br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li></ul></td><td></td><td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
+ *</tr>
+ *</tbody>
+ *</table>
+ *<p>The ISO format support short notations where the string must only include the date and not time, as in the following formats: YYYY, YYYY-MM, YYYY-MM-DD.</p>
+ *<p>The ISO format does not support time zone names. You can use the Z position to specify an offset from UTC time. If you do not include a value in the Z position, UTC time is used. The correct format for UTC should always include character 'Z' if the offset time value is omitted. The date-parsing algorithms are browser-implementation-dependent and, for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
+ *<p>You can specify midnight by using 00:00, or by using 24:00 on the previous day. The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
+ *
+ * @ojfragment formatsDoc
+ * @memberof oj.ojTimeline
+ */
+
+/**
+ *<p>The application is responsible for populating the shortDesc value in the component options object with meaningful descriptors when the component does not provide a default descriptor. Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
+ *
+ * @ojfragment a11yDoc
+ * @memberof oj.ojTimeline
+ */
+
+// SubId Locators **************************************************************
+
+/**
+ * <p>Sub-ID for timeline series items indexed by series and item indices.</p>
+ *
+ * @property {number} seriesIndex
+ * @property {number} itemIndex
+ *
+ * @ojsubid oj-timeline-item
+ * @memberof oj.ojTimeline
+ *
+ * @example <caption>Gets the second item from the first series:</caption>
+ * var nodes = $( ".selector" ).ojTimeline( "getNodeBySubId", {'subId': 'oj-timeline-item', 'seriesIndex': 0, 'itemIndex': 1} );
+ */
+
+// Node Context Objects ********************************************************
+
+/**
+ * <p>Context for timeline series items indexed by series and item indices.</p>
+ *
+ * @property {number} seriesIndex
+ * @property {number} itemIndex
+ *
+ * @ojnodecontext oj-timeline-item
+ * @memberof oj.ojTimeline
+ */
+/**
  * @ojcomponent oj.ojTimeline
  * @augments oj.dvtTimeComponent
  * @since 1.1.0
@@ -252,49 +483,37 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
 
     // Zoom Control Icons
     styleClasses['oj-timeline-zoomin-icon'] = [
-      {'path': '_resources/zoomIn', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomin-icon oj-hover'] = [
-      {'path': '_resources/zoomIn_h', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_h_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_h_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomin-icon oj-active'] = [
-      {'path': '_resources/zoomIn_a', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_a_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_a_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomin-icon oj-disabled'] = [
-      {'path': '_resources/zoomIn_d', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_d_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_d_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomout-icon'] = [
-      {'path': '_resources/zoomOut', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomout-icon oj-hover'] = [
-      {'path': '_resources/zoomOut_h', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_h_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_h_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomout-icon oj-active'] = [
-      {'path': '_resources/zoomOut_a', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_a_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_a_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-timeline-zoomout-icon oj-disabled'] = [
-      {'path': '_resources/zoomOut_d', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_d_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_d_bc', 'property': 'border-color'}
     ];
-
-    // Overview Icons
-    styleClasses['oj-timeline-overview-window-handle-horizontal'] = {'path': '_resources/overviewHandleHor', 'property': 'CSS_URL'};
-    styleClasses['oj-timeline-overview-window-handle-vertical'] = {'path': '_resources/overviewHandleVert', 'property': 'CSS_URL'};
 
     return styleClasses;
   },
@@ -320,9 +539,9 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
 
     var resources = this.options['_resources'];
     var converter = resources['converter'];
+    var converterFactory = resources['converterFactory'];
 
     // Create default converters for vertical timeline
-    var converterFactory = oj.Validation.converterFactory("datetime");
     var monthsConverterVert = converterFactory.createConverter({'month': 'short'});
     var yearsConverterVert = converterFactory.createConverter({'year': '2-digit'});
 
@@ -337,255 +556,28 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
       'years': yearsConverterVert
     };
 
-    resources['converterVert'] = converterVert;    
+    resources['converterVert'] = converterVert;
 
-    // first day of week; locale specific
-    resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
+    // Zoom control icons
+    resources['zoomIn'] = 'oj-timeline-zoomin-icon';
+    resources['zoomIn_h'] = 'oj-timeline-zoomin-icon oj-hover';
+    resources['zoomIn_a'] = 'oj-timeline-zoomin-icon oj-active';
+    resources['zoomIn_d'] = 'oj-timeline-zoomin-icon oj-disabled';
+    resources['zoomOut'] = 'oj-timeline-zoomout-icon';
+    resources['zoomOut_h'] = 'oj-timeline-zoomout-icon oj-hover';
+    resources['zoomOut_a'] = 'oj-timeline-zoomout-icon oj-active';
+    resources['zoomOut_d'] = 'oj-timeline-zoomout-icon oj-disabled';
+
+    // Overview icons
+    resources['overviewHandleHor'] = 'oj-timeline-overview-window-handle-horizontal';
+    resources['overviewHandleVert'] = 'oj-timeline-overview-window-handle-vertical';
   },
 
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['series']};
   }
-
-/**
- * <table class="keyboard-table">
- *   <thead>
- *     <tr>
- *       <th>Key</th>
- *       <th>Action</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td><kbd>Tab</kbd></td>
- *       <td>Move focus to next component.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + Tab</kbd></td>
- *       <td>Move focus to previous component.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>UpArrow</kbd></td>
- *       <td rowspan="2">Moves focus between series in a Dual Timeline and does nothing in a Single Timeline.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>DownArrow</kbd></td>
- *     </tr>
- *     <tr>
- *       <td><kbd>LeftArrow</kbd></td>
- *       <td>Move focus and selection to previous data item (on left).</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>RightArrow</kbd></td>
- *       <td>Move focus and selection to next data item (on right).</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + UpArrow</kbd></td>
- *       <td>Move focus and multi-select previous data item.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + DownArrow</kbd></td>
- *       <td>Move focus and multi-select next data item.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + LeftArrow</kbd></td>
- *       <td>Move focus and multi-select previous data item (on left).</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + RightArrow</kbd></td>
- *       <td>Move focus and multi-select next data item (on right).</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Ctrl + UpArrow</kbd></td>
- *       <td>Move focus to previous data item, without changing the current selection.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Ctrl + DownArrow</kbd></td>
- *       <td>Move focus to next data item, without changing the current selection.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Ctrl + LeftArrow</kbd></td>
- *       <td>Move focus to previous data item (on left), without changing the current selection.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Ctrl + RightArrow</kbd></td>
- *       <td>Move focus to next data item (on right), without changing the current selection.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Ctrl + Spacebar</kbd></td>
- *       <td>Multi-select data item with focus.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>= or +</kbd></td>
- *       <td>Zoom in one level if zooming is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>- or _</kbd></td>
- *       <td>Zoom out one level if zooming is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>PageUp</kbd></td>
- *       <td>Pan up if scrolling is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>PageDown</kbd></td>
- *       <td>Pan down if scrolling is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + PageUp</kbd></td>
- *       <td>Pan left in left-to-right locales. Pan right in right-to-left locales.</td>
- *     </tr>
- *     <tr>
- *       <td><kbd>Shift + PageDown</kbd></td>
- *       <td>Pan right in left-to-right locales. Pan left in right-to-left locales.</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojTimeline
- */
-
- /**
-  * <table class="keyboard-table">
- *   <thead>
- *     <tr>
- *       <th>Target</th>
- *       <th>Gesture</th>
- *       <th>Action</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>Timeline Item</td>
- *       <td>Tap</td>
- *       <td>Select when <code class="prettyprint">selectionMode</code> is enabled.</td>
- *     </tr>
- *     <tr>
- *       <td rowspan="2">Timeline Panel</td>
- *       <td>Drag</td>
- *       <td>Paning: navigate forward and backward in time in horizontal/vertical orientation.</td>
- *     </tr>
- *     <tr>
- *       <td rowspan>Pinch-Close/Spread-Open</td>
- *       <td>Zoom In/Out.</td>
- *     </tr>
- *     <tr>
- *       <td rowspan="2">Zoom Control</td>
- *       <td>Tap on "+" element</td>
- *       <td>Zoom In.</td>
- *     </tr>
- *     <tr>
- *       <td>Tap on "-" element</td>
- *       <td>Zoom Out.</td>
- *     </tr>
- *     <tr>
- *       <td rowspan="2">Overview</td>
- *       <td>Press on right/left side of window & Hold & Drag in right of left direction</td>
- *       <td>Zoom In/Out (resize overview window).</td>
- *     </tr>
- *     <tr>
- *       <td>Press & Hold on the body of window & Drag in right of left direction</td>
- *       <td>Pan (move overview window).</td>
- *     </tr>
- *   </tbody>
- * </table>
- *
- * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
- * @memberof oj.ojTimeline
- */
- /**
- *
- *<p>The date/time data in the Timeline plays a key role, not only in the representation of events in the order in which they occurred, but also in many other places, such as the time axis, event durations, time markers, size and position calculations for the overview locator window, etc.</p>
- *<p>The Timeline supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
- *<table  class="keyboard-table">
- *<thead>
- *<tr>
- *<th>Symbol</th>
- *<th>Description</th>
- *<th>Values</th>
- *<th>Examples</th>
- *</tr>
- </thead>
- <tbody>
- *<tr>
- *<td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
- *</tr>
- *<tr>
- *<td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following. If the value is omitted, character 'Z' should be used to specify UTC time.<br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li></ul></td><td></td><td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
- *</tr>
- *</tbody>
- *</table>
- *<p>The ISO format support short notations where the string must only include the date and not time, as in the following formats: YYYY, YYYY-MM, YYYY-MM-DD.</p>
- *<p>The ISO format does not support time zone names. You can use the Z position to specify an offset from UTC time. If you do not include a value in the Z position, UTC time is used. The correct format for UTC should always include character 'Z' if the offset time value is omitted. The date-parsing algorithms are browser-implementation-dependent and, for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
- *<p>You can specify midnight by using 00:00, or by using 24:00 on the previous day. The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
- *<p>If a date string is not in the ISO format, the following notations are allowed:</p>
- *<p>1. MM/DD/YYYY, example: "02/10/2013"<br>
- *2. MMM DD, YYYY, example: "Feb 17, 2013"<br>
- *3. MM, DD, YYYY, example: "02, 17, 2013"<br>
- *4. MM DD YYYY, example: "02 17 2013"</p>
- *
- * @ojfragment formatsDoc
- * @memberof oj.ojTimeline
- */
-
- /**
- *<p>The application is responsible for populating the shortDesc value in the component options object with meaningful descriptors when the component does not provide a default descriptor. Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
- *
- * @ojfragment a11yDoc
- * @memberof oj.ojTimeline
- */
 });
-
-// SubId Locators **************************************************************
-
-/**
- * <p>Sub-ID for timeline series items indexed by series and item indices.</p>
- *
- * @property {number} seriesIndex
- * @property {number} itemIndex
- *
- * @ojsubid oj-timeline-item
- * @memberof oj.ojTimeline
- *
- * @example <caption>Gets the second item from the first series:</caption>
- * var nodes = $( ".selector" ).ojTimeline( "getNodeBySubId", {'subId': 'oj-timeline-item', 'seriesIndex': 0, 'itemIndex': 1} );
- */
-
-// Node Context Objects ********************************************************
-
-/**
- * <p>Context for timeline series items indexed by series and item indices.</p>
- *
- * @property {number} seriesIndex
- * @property {number} itemIndex
- *
- * @ojnodecontext oj-timeline-item
- * @memberof oj.ojTimeline
- */
-
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
@@ -594,25 +586,85 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
 var ojTimelineMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "end": {
-      "type": "string|number"
+      "type": "string"
     },
     "majorAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "properties": {
+            "days": {},
+            "default": {},
+            "hours": {},
+            "minutes": {},
+            "months": {},
+            "quarters": {},
+            "seconds": {},
+            "weeks": {},
+            "years": {}
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "minorAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "properties": {
+            "days": {},
+            "default": {},
+            "hours": {},
+            "minutes": {},
+            "months": {},
+            "quarters": {},
+            "seconds": {},
+            "weeks": {},
+            "years": {}
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+        },
+        "svgStyle": {
+          "type": "object"
+        },
+        "zoomOrder": {
+          "type": "Array<string>"
+        }
+      }
     },
     "orientation": {
       "type": "string"
     },
     "overview": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "referenceObjects": {
       "type": "Array<object>"
@@ -621,32 +673,179 @@ var ojTimelineMeta = {
       "type": "Array<string>"
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["single", "multiple", "none"]
     },
     "series": {
       "type": "Array<object>"
     },
     "start": {
-      "type": "string|number"
+      "type": "string"
     },
     "styleDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "item": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "backgroundColor": {
+                "type": "string"
+              },
+              "borderColor": {
+                "type": "string"
+              },
+              "descriptionStyle": {
+                "type": "object"
+              },
+              "hoverBackgroundColor": {
+                "type": "string"
+              },
+              "hoverBorderColor": {
+                "type": "string"
+              },
+              "selectedBackgroundColor": {
+                "type": "string"
+              },
+              "selectedBorderColor": {
+                "type": "string"
+              },
+              "titleStyle": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "majorAxis": {
+          "type": "object",
+          "properties": {
+            "majorAxis": {
+              "labelStyle": {
+                "type": "object"
+              },
+              "separatorColor": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "minorAxis": {
+          "type": "object",
+          "properties": {
+            "minorAxis": {
+              "backgroundColor": {
+                "type": "string"
+              },
+              "borderColor": {
+                "type": "string"
+              },
+              "labelStyle": {
+                "type": "object"
+              },
+              "separatorColor": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "overview": {
+          "type": "object",
+          "properties": {
+            "overview": {
+              "backgroundColor": {
+                "type": "string"
+              },
+              "labelStyle": {
+                "type": "object"
+              },
+              "window": {
+                "type": "object",
+                "properties": {
+                  "window": {
+                    "backgroundColor": {
+                      "type": "string"
+                    },
+                    "borderColor": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "referenceObject": {
+          "type": "object",
+          "properties": {
+            "referenceObject": {
+              "color": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "series": {
+          "type": "object",
+          "properties": {
+            "series": {
+              "backgroundColor": {
+                "type": "string"
+              },
+              "colors": {
+                "type": "Array<string>"
+              },
+              "emptyTextStyle": {
+                "type": "object"
+              },
+              "labelStyle": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelSeries": {
+          "type": "string"
+        },
+        "tooltipZoomIn": {
+          "type": "string"
+        },
+        "tooltipZoomOut": {
+          "type": "string"
+        }
+      }
     },
     "viewportEnd": {
-      "type": "string|number"
+      "type": "string"
     },
     "viewportStart": {
-      "type": "string|number"
+      "type": "string"
     }
   },
   "methods": {
     "getContextByNode": {}
   },
+  "events": {
+    "viewportChange": {}
+  },
   "extension": {
-    "_widgetName": "ojTimeline"
+    _WIDGET_NAME: "ojTimeline"
   }
 };
-oj.Components.registerMetadata('ojTimeline', 'dvtBaseComponent', ojTimelineMeta);
-oj.Components.register('oj-timeline', oj.Components.getMetadata('ojTimeline'));
+oj.CustomElementBridge.registerMetadata('oj-timeline', 'dvtTimeComponent', ojTimelineMeta);
+oj.CustomElementBridge.register('oj-timeline', {'metadata': oj.CustomElementBridge.getMetadata('oj-timeline')});
 })();
 });

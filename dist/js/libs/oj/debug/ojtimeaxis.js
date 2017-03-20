@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis'], function (oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojvalidation-datetime'], function (oj, $, comp, base, dvt)
 {
 /**
  * @ojcomponent oj.ojTimeAxis
@@ -23,11 +23,60 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * &lt;div data-bind="ojComponent: {
  *   component: 'ojTimeAxis',
  *   scale: 'months',
- *   start: new Date("Jan 1, 2016").getTime(),
- *   end: new Date("Dec 31, 2016").getTime()
+ *   start: new Date("Jan 1, 2016").toISOString(),
+ *   end: new Date("Dec 31, 2016").toISOString()
  * }"/>
  * </code>
  * </pre>
+ *
+ * <h3 id="formats-section">
+ *   Date and Time Formats
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#formats-section"></a>
+ * </h3>
+ *
+ * <p>The Time Axis supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+ * <table  class="keyboard-table">
+ * <thead>
+ * <tr>
+ * <th>Symbol</th>
+ * <th>Description</th>
+ * <th>Values</th>
+ * <th>Examples</th>
+ * </tr>
+ * </thead>
+ * <tbody>
+ * <tr>
+ * <td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+ * </tr>
+ * <tr>
+ * <td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following. If the value is omitted, character 'Z' should be used to specify UTC time.<br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li></ul></td><td></td><td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>The ISO format support short notations where the string must only include the date and not time, as in the following formats: YYYY, YYYY-MM, YYYY-MM-DD.</p>
+ * <p>The ISO format does not support time zone names. You can use the Z position to specify an offset from UTC time. If you do not include a value in the Z position, UTC time is used. The correct format for UTC should always include character 'Z' if the offset time value is omitted. The date-parsing algorithms are browser-implementation-dependent and, for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
+ * <p>You can specify midnight by using 00:00, or by using 24:00 on the previous day. The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
  *
  * <h3 id="a11y-section">
  *   Accessibility
@@ -113,6 +162,23 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
   },
 
   //** @inheritdoc */
+  _ProcessOptions: function() {
+    this._super();
+
+    // Date related options support only number | string types
+    // TODO: remove deprecated number type support in favor of ISO String in future release
+    var self = this;
+    var processRootDateOptions = function(key) {
+      var optionType = typeof self.options[key];
+      if (!(optionType === 'number' || optionType === 'string'))
+        self.options[key] = null; // e.g. this will exclude Date object types
+    };
+
+    processRootDateOptions('start');
+    processRootDateOptions('end');
+  },
+
+  //** @inheritdoc */
   _LoadResources: function()
   {
     // Ensure the resources object exists
@@ -177,24 +243,43 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
 var ojTimeAxisMeta = {
   "properties": {
     "converter": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "days": {},
+        "default": {},
+        "hours": {},
+        "minutes": {},
+        "months": {},
+        "quarters": {},
+        "seconds": {},
+        "weeks": {},
+        "years": {}
+      }
     },
     "end": {
-      "type": "number"
-    },
-    "scale": {
       "type": "string"
     },
+    "scale": {
+      "type": "string",
+      "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+    },
     "start": {
-      "type": "number"
+      "type": "string"
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     }
   },
   "methods": {},
   "extension": {
-    "_widgetName": "ojTimeAxis"
+    _WIDGET_NAME: "ojTimeAxis"
   }
 };
-oj.Components.registerMetadata('ojTimeAxis', 'dvtBaseComponent', ojTimeAxisMeta);
-oj.Components.register('oj-time-axis', oj.Components.getMetadata('ojTimeAxis'));
+oj.CustomElementBridge.registerMetadata('oj-time-axis', 'dvtBaseComponent', ojTimeAxisMeta);
+oj.CustomElementBridge.register('oj-time-axis', {'metadata': oj.CustomElementBridge.getMetadata('oj-time-axis')});
 })();
 });

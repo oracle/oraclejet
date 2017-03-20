@@ -239,6 +239,28 @@ dvt.AmxThematicMap.prototype.getSubIdForDomElement = function(domElement) {
   else
     return subId;
 };
+
+/**
+ * Returns an object with the following properties for automation testing verification of the marker with
+ * the specified data layer id and index: color, label, selected, tooltip.
+ * @param {string} dataLayerId
+ * @param {number} index
+ * @return {?Object} An object containing properties for the marker, or null if none exists.
+ */
+dvt.AmxThematicMap.prototype.getMarker = function(dataLayerId, index) {
+  return this._tmap.getAutomation().getData(dataLayerId, 'marker', index);
+};
+
+/**
+ * Returns an object with the following properties for automation testing verification of the area with
+ * the specified data layer id and index: color, label, selected, tooltip.
+ * @param {string} dataLayerId
+ * @param {number} index
+ * @return {?Object} An object containing properties for the area, or null if none exists.
+ */
+dvt.AmxThematicMap.prototype.getArea = function(dataLayerId, index) {
+  return this._tmap.getAutomation().getData(dataLayerId, 'area', index);
+};
 /**
  * DVT Toolkit based thematic map component
  * @extends {dvt.Container}
@@ -1188,7 +1210,7 @@ dvt.ThematicMap.prototype.HandleZoomEvent = function(event) {
  */
 dvt.ThematicMap.prototype.HandlePanEvent = function(event) {
   var subType = event.getSubType();
-  if (subType == dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_BEGIN) {
+  if (subType == dvt.PanEvent.SUBTYPE_ELASTIC_ANIM_BEGIN || subType == dvt.PanEvent.SUBTYPE_PANNING) {
     this._updateAnimator(event, false);
   }
   else if (subType == dvt.PanEvent.SUBTYPE_PANNED) {
@@ -1867,7 +1889,7 @@ dvt.ThematicMap.prototype.getShowPopupBehaviors = function() {
 
 /**
  * Add show popup behavior
- * @param {array} spbs array of DvtAfShowPopupBehavior
+ * @param {array} spbs array of dvt.ShowPopupBehavior
  */
 dvt.ThematicMap.prototype.setShowPopupBehaviors = function(spbs) {
   this._showPopupBehaviors = spbs;
@@ -4001,9 +4023,9 @@ DvtMapObjPeer.prototype.getCategories = function() {
 DvtMapObjPeer.prototype.getDatatip = function() {
   if (this._view.getDisplayTooltips() != 'none') {
     // Custom Tooltip from Function
-    var tooltipFunc = this._view.getOptions()['_tooltip'];
-    if (tooltipFunc)
-      return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
+    var tooltipObj = this._view.getOptions()['_tooltip'];
+    if (tooltipObj)
+      return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
 
     // Custom Tooltip from ShortDesc
     return this.getShortDesc();
@@ -4211,6 +4233,7 @@ DvtMapObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
  * @override
  */
 DvtMapObjPeer.prototype.getNextNavigable = function(event) {
+  var next;
   if (event.type == dvt.MouseEvent.CLICK) {
     return this;
   } else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
@@ -4221,10 +4244,12 @@ DvtMapObjPeer.prototype.getNextNavigable = function(event) {
       event.altKey) {
     // get first navigable link if it exists
     var adjLinks = this.getDataLayer().getNavigableLinksForNodeId(this.getId());
-    return DvtThematicMapKeyboardHandler.getFirstNavigableLink(this, event, adjLinks);
+    next = DvtThematicMapKeyboardHandler.getFirstNavigableLink(this, event, adjLinks);
   } else {
-    return dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.GetNavigables());
+    next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.GetNavigables());
   }
+  this.getDataLayer().getMap().ensureObjInViewport(event, next);
+  return next;
 };
 
 /**
@@ -4386,12 +4411,13 @@ DvtMapObjPeer.prototype.animateUpdate = function(handler, oldObj) {
   if (this.Displayable.getFill) {
     var startFill = oldDisplayable.getFill();
     var endFill = this.Displayable.getFill();
-    if (endFill instanceof dvt.SolidFill && !(endFill.getColor() == startFill.getColor() && endFill.getAlpha() == startFill.getAlpha())) {
+    if (endFill instanceof dvt.SolidFill && !endFill.equals(startFill)) {
       this.Displayable.setFill(startFill);
       if (oldObj.getLabel() && this._label) {
         var endLabelFill = this._label.getFill();
         this._label.setFill(oldObj.getLabel().getFill().clone());
-        anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._label, this._label.getFill, this._label.setFill, endLabelFill);
+        if (!endLabelFill.equals(this._label.getFill()))
+          anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._label, this._label.getFill, this._label.setFill, endLabelFill);
       }
       anim.getAnimator().addProp(dvt.Animator.TYPE_FILL, this.Displayable, this.Displayable.getFill, this.Displayable.setFill, endFill);
     }
@@ -4765,6 +4791,7 @@ DvtMapLinkPeer.prototype.getEndPoint = function() {
  */
 DvtMapLinkPeer.prototype.getNextNavigable = function(event) {
   var keyboardHandler = this._dataLayer.getMap().EventManager.getKeyboardHandler();
+  var next;
   if (event.type == dvt.MouseEvent.CLICK) {
     return this;
   } else if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
@@ -4780,7 +4807,7 @@ DvtMapLinkPeer.prototype.getNextNavigable = function(event) {
       idx++;
       if (idx === adjLinks.length)
         idx = 0;
-      return adjLinks[idx];
+      next = adjLinks[idx];
     } else if (event.keyCode === dvt.KeyboardEvent.DOWN_ARROW) {
       // Get the marker that was used to traverse to this link and traverse its other links
       var markerId = keyboardHandler.getLinkMarker().getId();
@@ -4789,18 +4816,20 @@ DvtMapLinkPeer.prototype.getNextNavigable = function(event) {
       idx--;
       if (idx === -1)
         idx = adjLinks.length - 1;
-      return adjLinks[idx];
+      next = adjLinks[idx];
     } else if (event.keyCode === dvt.KeyboardEvent.LEFT_ARROW) {
-      return this.getStartPoint().x <= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
+      next = this.getStartPoint().x <= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
     } else if (event.keyCode === dvt.KeyboardEvent.RIGHT_ARROW) {
-      return this.getStartPoint().x >= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
+      next = this.getStartPoint().x >= this.getEndPoint().x ? this.getStartMarker() : this.getEndMarker();
     } else {
       // invalid navigation key, do nothing
       return this;
     }
   } else {
-    return dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.GetNavigables());
+    next = dvt.KeyboardHandler.getNextAdjacentNavigable(this, event, this.GetNavigables());
   }
+  this.getDataLayer().getMap().ensureObjInViewport(event, next);
+  return next;
 };
 
 /**
@@ -4924,10 +4953,14 @@ DvtMapArea.prototype.getAreaId = function() {
  * @override
  */
 DvtMapArea.prototype.getDatatip = function() {
-  var tooltipFunc = this._view.getOptions()['_tooltip'];
-  if (tooltipFunc)
-    return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipFunc, this.getDataContext());
-  return this._tooltip;
+  if (this._view.getDisplayTooltips() != 'none') {
+    // Custom Tooltip from Function
+    var tooltipObj = this._view.getOptions()['_tooltip'];
+    if (tooltipObj)
+      return this._view.getCtx().getTooltipManager().getCustomTooltip(tooltipObj['renderer'], this.getDataContext());
+    return this._tooltip;
+  }
+  return null;
 };
 
 /**
@@ -6687,10 +6720,11 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     if (focusObj.getTypeName() === 'DvtMapObjPeer' || navigables.length === 0) {
       navigables = this._tmap.getNavigableLinks();
     }
-    if (navigables.length > 0)
+    if (navigables.length > 0) {
       focusObj = dvt.KeyboardHandler.getNextAdjacentNavigable(focusObj, event, navigables);
+      this._tmap.ensureObjInViewport(event, focusObj);
+    }
     this._eventManager.SetClickInfo(focusObj);
-    return focusObj;
   }
   else if (keyCode == dvt.KeyboardEvent.OPEN_BRACKET) {
     // Set the data layer link navigation type
@@ -6702,10 +6736,11 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     // DvtMapLinkPeer and DvtMapAreaPeer are subclasses of DvtMapObjPeer so we need to check type name instead of instanceof
     if (focusObj.getTypeName() === 'DvtMapObjPeer' || navigables.length === 0)
       navigables = this._tmap.getNavigableAreas();
-    if (navigables.length > 0)
+    if (navigables.length > 0) {
       focusObj = dvt.KeyboardHandler.getNextAdjacentNavigable(focusObj, event, navigables);
+      this._tmap.ensureObjInViewport(event, focusObj);
+    }
     this._eventManager.SetClickInfo(focusObj);
-    return focusObj;
   }
   else {
     if ((event.keyCode == dvt.KeyboardEvent.OPEN_ANGLED_BRACKET || dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET) && event.altKey) {
@@ -6717,8 +6752,8 @@ DvtThematicMapKeyboardHandler.prototype.processKeyDown = function(event) {
     // update the clicked object for a navigation and selection event
     if (this.isNavigationEvent(event) && !event.ctrlKey)
       this._eventManager.SetClickInfo(focusObj);
-    return focusObj;
   }
+  return focusObj;
 };
 
 /**
@@ -6794,7 +6829,7 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
   }
   return link;
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -7060,6 +7095,9 @@ DvtThematicMapEventManager.prototype.ProcessKeyboardEvent = function(event) {
       this._bPassOnEvent = false;
     }
   } else {
+    if (keyCode == dvt.KeyboardEvent.TAB && focusObj) {//make sure focused obj in on screen
+      this._tmap.ensureObjInViewport(event, focusObj);
+    }
     eventConsumed = DvtThematicMapEventManager.superclass.ProcessKeyboardEvent.call(this, event);
   }
 
@@ -7190,6 +7228,22 @@ DvtThematicMapEventManager.prototype.StoreInfoByEventType = function(key) {
     return false;
   }
   return DvtThematicMapEventManager.superclass.StoreInfoByEventType.call(this, key);
+};
+
+/**
+ * Shows the keyboard focus effects wich includes tooltip, for a keyboard navigable object.
+ * @param {dvt.KeyboardEvent} event The keyboard event
+ * @param {DvtKeyboardNavigable} navigable The keyboard navigable to show focus effect for
+ */
+DvtThematicMapEventManager.prototype.showFocusEffect = function(event, navigable) {
+  this.ShowFocusEffect(event, navigable);
+};
+/**
+ * @override
+ */
+DvtThematicMapEventManager.prototype.ShowFocusEffect = function(event, obj) {
+  if (!this._tmap.isPanning())
+    DvtThematicMapEventManager.superclass.ShowFocusEffect.call(this, event, obj);
 };
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -9036,6 +9090,8 @@ dvt.exportProperty(dvt.AmxThematicMap, 'newInstance', dvt.AmxThematicMap.newInst
 dvt.exportProperty(dvt.AmxThematicMap.prototype, 'render', dvt.AmxThematicMap.prototype.render);
 dvt.exportProperty(dvt.AmxThematicMap.prototype, 'getDomElementForSubId', dvt.AmxThematicMap.prototype.getDomElementForSubId);
 dvt.exportProperty(dvt.AmxThematicMap.prototype, 'getSubIdForDomElement', dvt.AmxThematicMap.prototype.getSubIdForDomElement);
+dvt.exportProperty(dvt.AmxThematicMap.prototype, 'getArea', dvt.AmxThematicMap.prototype.getArea);
+dvt.exportProperty(dvt.AmxThematicMap.prototype, 'getMarker', dvt.AmxThematicMap.prototype.getMarker);
 
 dvt.exportProperty(DvtBaseMapManager, 'getLayerIds', DvtBaseMapManager.getLayerIds);
 

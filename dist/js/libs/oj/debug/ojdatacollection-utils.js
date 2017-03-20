@@ -14,13 +14,16 @@ oj.DataCollectionEditUtils = {};
 
 /**
  * @export
- * @param {Event} event
- * @param {Object} ui
- * @returns {boolean}
+ * @param {Object} event
+ * @param {Object|null=} ui
  */
 oj.DataCollectionEditUtils.basicHandleEditEnd = function(event, ui)
 {
     var input, cancel, widgetConstructor;
+    if (ui == null)
+    {
+        ui = event.detail;
+    }
     input = $(ui['cellContext']['parentElement']).find('.oj-component-initnode')[0];
     widgetConstructor = oj.Components.getWidgetConstructor(input);
     cancel = ui['cancelEdit'];
@@ -35,10 +38,9 @@ oj.DataCollectionEditUtils.basicHandleEditEnd = function(event, ui)
         if (!widgetConstructor('isValid'))
         {
             // not valid so do not allow edit to end
-            return false;
+            event.preventDefault();
         }
     }
-    return true;
 };
 
 /**

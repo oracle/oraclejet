@@ -235,7 +235,7 @@ oj.FlattenedTreeTableDataSource.prototype.at = function(index, options)
 {
   var row;
 
-  if (index < 0 || index >= this._rows.length)
+  if (index < 0 || index >= this._rows['data'].length)
   {
     row = null;
   }
@@ -386,7 +386,9 @@ oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
             self._data.refresh();
             self._rows = null;
             var result = {'header': criteria['key'], 'direction': criteria['direction']};
-            oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['SORT'], result);
+            // We need to dispatch a RESET event because after a sort the data needs to be completely
+            // refetched and we need to start from page 1 again if paging.
+            oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['RESET'], null);
             resolve(result);
           }, 0);
         }.bind(this),
@@ -523,7 +525,17 @@ oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
         // if there are results then we potentially have more
         if (rowArray.length > 0)
         {
-          self._hasMore = true;
+          if (self._pageSize != null &&
+              rowArray.length < self._pageSize)
+          {
+            // if we are paged and we return less than the page size
+            // then we don't have any more rows
+            self._hasMore = false;
+          }
+          else
+          {
+            self._hasMore = true;
+          }
         }
         else
         {

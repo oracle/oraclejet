@@ -32,7 +32,20 @@
       color: $secondaryTextColor;
     }
 
+    .oj-text-tertiary-color {
+      color: $tertiaryTextColor;
+    }
 
+    .oj-text-disabled-color {
+      color: $textColorDisabled;
+    }
+
+    // contrast background
+    .oj-contrast-marker .oj-contrast-background,
+    .oj-contrast-marker.oj-contrast-background {
+      background-color: $contrastBackground1Color;
+      color: $contrastTextColor
+    }
 
     // margins
     .oj-margin {

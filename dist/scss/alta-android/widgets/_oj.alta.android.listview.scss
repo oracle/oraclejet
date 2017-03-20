@@ -38,11 +38,10 @@
            display: none;
         }
 
-        /* Styling for each list item */
-        /* this position the border to where the content starts, application can customize this such that the border
-           starts after the thumbnail ends for example */
-        .oj-listview-item {
-            background-position: $panelPadding 0;
+        /* Styling addition for group items */
+        .oj-listview-group-item {
+            border-top-style: none;
+            border-bottom-style: none;
         }
 
         /* Styling on focused list or group item */

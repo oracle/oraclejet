@@ -96,6 +96,15 @@ dvt.TimeComponent.prototype.SetOptions = function(options)
   }
 };
 
+/**
+ * Removes all children from the component's canvas.
+ */
+dvt.TimeComponent.prototype.clearComponent = function()
+{
+  if (this._canvas)
+    this._canvas.removeChildren();
+};
+
 dvt.TimeComponent.prototype._applyParsedProperties = function(props)
 {
   this._start = props.start;
@@ -522,7 +531,12 @@ dvt.TimeComponent.prototype.beginPinchZoom = function(x1, y1, x2, y2)
   else
     this._initialPinchZoomLoc = Math.sqrt((x1 - x2) * (x1 - x2)) + (x1 < x2 ? x1 : x2);
   var widthFactor = (this._end - this._start) / this.getContentLength();
-  this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
+
+  if (this.isRTL() && !this._isVertical)
+    this._initialPinchZoomTime = this._viewEndTime - widthFactor * this._initialPinchZoomLoc;
+  else
+    this._initialPinchZoomTime = widthFactor * this._initialPinchZoomLoc + this._viewStartTime;
+
   this._initialPinchZoomDist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
   this._initialPinchZoomLength = this.getContentLength();
 };
@@ -1023,9 +1037,9 @@ dvt.TimeComponentEventManager.prototype.addListeners = function(displayable)
 /**
  * @override
  */
-dvt.TimeComponentEventManager.prototype.removeListeners = function(displayable)
+dvt.TimeComponentEventManager.prototype.RemoveListeners = function(displayable)
 {
-  dvt.TimeComponentEventManager.superclass.removeListeners.call(this, displayable);
+  dvt.TimeComponentEventManager.superclass.RemoveListeners.call(this, displayable);
   if (!dvt.Agent.isTouchDevice())
   {
     if (dvt.Agent.isPlatformGecko())

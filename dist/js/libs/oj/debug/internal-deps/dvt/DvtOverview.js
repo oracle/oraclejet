@@ -1388,7 +1388,8 @@ dvt.Overview.prototype.addLabel = function(pos, text, width, height, maxWidth, i
 
 dvt.Overview.prototype.updateCurrentTime = function(width, height)
 {
-  if (this._currentTime == null || isNaN(this._currentTime))
+  // return if current time is invalid or outside of the time range
+  if (this._currentTime == null || isNaN(this._currentTime) || this._currentTime < this._start || this._currentTime > this._end)
     return;
 
   var time_pos = this.getDatePosition(this._currentTime);
@@ -2877,7 +2878,6 @@ dvt.Obj.createSubclass(DvtOverviewEventManager, dvt.EventManager);
  */
 DvtOverviewEventManager.prototype.addListeners = function(displayable)
 {
-  DvtOverviewEventManager.superclass.addListeners.call(this, displayable);
   dvt.SvgDocumentUtils.addDragListeners(this._overview, this._onDragStart, this._onDragMove, this._onDragEnd, this);
 };
 

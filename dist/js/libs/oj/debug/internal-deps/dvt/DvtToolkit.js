@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define([], function() {
+define(['jquery'], function($) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
   // Declare dvt, since it will be used in the toolkit source.
@@ -596,7 +596,7 @@ dvt.StringUtils.processAriaLabel = function(label) {
 
   return ret;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Context object corresponding to an SVG document. The constructor creates a SVG document inside the specified
  * container.
@@ -633,6 +633,7 @@ dvt.Context = function(container, id, referenceDiv) {
   this._defaultFontFamily = dvt.Context._DEFAULT_FONT_FAMILY;
   this._defaultFontSize = dvt.Context._DEFAULT_FONT_SIZE;
   this._normalizedFontFamilyCache = {};
+  this._customElement = false;
 
   this.Init(this._implFactory, this._root, id);
 
@@ -960,11 +961,6 @@ dvt.Context.prototype.stageToPageCoords = function(stageX, stageY) {
  * @return {dvt.Point}
  */
 dvt.Context.prototype.getStageAbsolutePosition = function() {
-  // If a cached value is available, use it
-  if (this._stageAbsolutePosition)
-    return this._stageAbsolutePosition;
-
-
   // Use a reference element at the same position at the SVG whenever possible.  The browser functions used in dvt.Agent's
   // getElementPosition do not always return the correct values for SVG elements, especially in Firefox.  Note that we
   // can ensure the presence of a parent div at the same coordinates across all our supported frameworks, so this
@@ -978,15 +974,7 @@ dvt.Context.prototype.getStageAbsolutePosition = function() {
   // Note: As mentioned above, this returns the wrong position in Firefox for SVG elements.
   var svgPos = dvt.Agent.getElementPosition(referenceElem);
 
-  this._stageAbsolutePosition = new dvt.Point(parseInt(svgPos.x), parseInt(svgPos.y));
-  return this._stageAbsolutePosition;
-};
-
-/**
- * Clears the cached value for the stage position.
- */
-dvt.Context.prototype.clearStageAbsolutePosition = function() {
-  this._stageAbsolutePosition = null;
+  return new dvt.Point(parseInt(svgPos.x), parseInt(svgPos.y));
 };
 
 /**
@@ -994,13 +982,29 @@ dvt.Context.prototype.clearStageAbsolutePosition = function() {
  * @return {boolean}
  */
 dvt.Context.prototype.isOffscreen = function() {
-  // Note: This code ignores the FF bug in getBoundingClientRect, which is supposed to be fixed in FF33. This should be
-  // okay as the current behavior only returns sizes larger than the actual.
-  var referenceElem = this.getStage().getImpl().getSVGRoot();
-  var rect = referenceElem.getBoundingClientRect();
-  return rect.bottom < 0 || rect.right < 0 ||
-         rect.top > (window.innerHeight || document.documentElement.clientHeight) ||
-         rect.left > (window.innerWidth || document.documentElement.clientWidth);
+  // Use the cached value if available, since the calculation can cause reflow.
+  if (this._bOffscreen != null)
+    return this._bOffscreen;
+
+  var referenceElem = this.getStage().getSVGRoot();
+  try {
+    var rect = referenceElem.getBoundingClientRect();
+    this._bOffscreen = rect.bottom < 0 || rect.right < 0 ||
+        rect.top > (window.innerHeight || document.documentElement.clientHeight) ||
+        rect.left > (window.innerWidth || document.documentElement.clientWidth);
+  }
+  catch (e) {
+    //IE11 throws 'Unspecified error' exception, when referenceElem is disconnected from the DOM
+    this._bOffscreen = true;
+  }
+  return this._bOffscreen;
+};
+
+/**
+ * Resets the cached isOffscreen flag.
+ */
+dvt.Context.prototype.resetIsOffscreen = function() {
+  this._bOffscreen = null;
 };
 
 /**
@@ -1097,8 +1101,8 @@ dvt.Context.resetUniqueSeeds = function() {
   if (dvt.Agent.isEnvironmentBrowser())
     return;
 
-  if (typeof DvtAfComponent != 'undefined')
-    DvtAfComponent._uniqueSeed = 0;
+  if (typeof dvt.AfComponent != 'undefined')
+    dvt.AfComponent._uniqueSeed = 0;
   DvtSvgFilterUtils._counter = 0;
   dvt.ClipPath._uniqueSeed = 0;
   dvt.SvgShapeUtils._uniqueSeed = 0;
@@ -1114,8 +1118,8 @@ dvt.Context.resetCaches = function() {
   if (dvt.Agent.isEnvironmentBrowser())
     return;
 
-  if (typeof DvtAfComponent != 'undefined')
-    DvtAfStyleUtils.resetStyles();
+  if (typeof dvt.AfComponent != 'undefined')
+    dvt.AfStyleUtils.resetStyles();
   dvt.OutputText._cache = null;
   dvt.TextUtils._cachedTextDimensions = {};
 
@@ -1141,7 +1145,7 @@ dvt.Context.prototype.setActiveElement = function(displayable) {
   var elem = displayable.getElem();
   var id = dvt.ToolkitUtils.getAttrNullNS(elem, 'id');
   if (!id) {
-    id = displayable.getId();
+    id = displayable.getActiveElementId();
     if (id) {
       // Apply the existing id
       dvt.ToolkitUtils.setAttrNullNS(elem, 'id', id);
@@ -1373,10 +1377,12 @@ dvt.Context.prototype.setLocaleHelpers = function(helpers) {
  *                  dvt.Context.cancelAnimationFrame to cancel the request.
  */
 dvt.Context.requestAnimationFrame = function(callback) {
-  if (window.requestAnimationFrame)
-    return window.requestAnimationFrame(callback);
+  // On android, requestAnimationFrame results causes the JS to wait until after the Rasterizer and GPU are
+  // done, which can be slow. Using timeouts will allow the JS to execute concurrently.
+  if (dvt.Agent.isTouchDevice() && dvt.Agent.isBrowserChrome())
+    return window.setTimeout(callback, 1000 / 60);
   else
-    return window.setTimeout(callback, 1000 / 30);
+    return window.requestAnimationFrame(callback);
 };
 
 /**
@@ -1384,10 +1390,10 @@ dvt.Context.requestAnimationFrame = function(callback) {
  * @param {number} requestId A long integer value that uniquely identifies the entry in the callback list.
  */
 dvt.Context.cancelAnimationFrame = function(requestId) {
-  if (window.cancelAnimationFrame)
-    window.cancelAnimationFrame(requestId);
-  else
+  if (dvt.Agent.isTouchDevice() && dvt.Agent.isBrowserChrome())
     clearTimeout(requestId);
+  else
+    window.cancelAnimationFrame(requestId);
 };
 
 /**
@@ -1454,6 +1460,42 @@ dvt.Context.prototype.removeDndEventManager = function(em) {
  */
 dvt.Context.prototype.isLastDndEventManager = function(em) {
   return this._dndEventManagers[this._dndEventManagers.length - 1] === em;
+};
+
+/**
+ * Sets a callback used to fix the renderer context for JET DVTs.
+ * @param {function} callback
+ */
+dvt.Context.prototype.setFixContextCallback = function(callback) {
+  this._fixContextCallback = callback;
+};
+
+/**
+ * Prepares a custom renderer context object by calling a provided callback for
+ * fixing a renderer context if one exists.
+ * @param {Object} rendererContext
+ * @return {Object}
+ */
+dvt.Context.prototype.fixRendererContext = function(rendererContext) {
+  if (this._fixContextCallback)
+    return this._fixContextCallback(rendererContext);
+  return rendererContext;
+};
+
+/**
+ * Sets whether or not the JET component was created as a custom element or not
+ * @param {boolean} customElement True if the JET component was created as a custom element, false otherwise
+ */
+dvt.Context.prototype.setCustomElement = function(customElement) {
+  this._customElement = customElement;
+};
+
+/**
+ * Gets whether or not the JET component was created as a custom element or not
+ * @return {boolean} True if the JET component was created as a custom element, false otherwise
+ */
+dvt.Context.prototype.isCustomElement = function() {
+  return this._customElement;
 };
 /**
  * A base class for shape fills, strokes, shadows, etc.
@@ -11935,6 +11977,19 @@ dvt.Math.interpolateNumber = function(origVal, destVal, percent) {
 dvt.Math.log10 = function(value) {
   return Math.log(value) / Math.LN10;
 };
+
+/**
+ * Returns the angle in radians between two vectors
+ * @param {number} vector1X
+ * @param {number} vector1Y
+ * @param {number} vector2X
+ * @param {number} vector2Y
+ * @return {number} angle in radians
+ */
+dvt.Math.calculateAngleBetweenTwoVectors = function(vector1X, vector1Y, vector2X, vector2Y) {
+  var angle = Math.atan2(vector2Y, vector2X) - Math.atan2(vector1Y, vector1X);
+  return angle < 0 ? angle + dvt.Math.TWO_PI : angle;
+};
 /**
  * 2D map implementation for use in improving performance.  Alternate implementation options may be added in
  * the future as needed.
@@ -12277,11 +12332,11 @@ dvt.PropMap.prototype.setProperties = function(attrArray) {
 /**
  * Stamp out this template object only.
  * @param {} elcontext EL binding context
- * @return {DvtAfComponent} a new DvtAfComponent tree
+ * @return {dvt.AfComponent} a new dvt.AfComponent tree
  */
 dvt.PropMap.prototype.stamp = function(elcontext) {
 
-  // create a new DvtAfComponent object of the same type
+  // create a new dvt.AfComponent object of the same type
   var result = new this.constructor();
 
   // copy properties
@@ -12455,6 +12510,10 @@ dvt.JsonUtils.merge = function(a, b, noClone) {
 dvt.JsonUtils._copy = function(a, b) {
   for (var key in a) {
     var value = a[key];
+    // Treat an 'undefined' value as if the key were not set and ignore
+    if (value === undefined)
+      continue;
+
     if ((value && (value instanceof Array)) || key == '_widgetConstructor') {
       // Copy the array over, since we don't want arrays to be merged
       // We also don't want the widget constructor to be copied/cloned
@@ -14107,11 +14166,6 @@ dvt.TouchManager.prototype.processTouchEnd = function(touchEvent) {
       }
     }
   }
-
-  // 
-  // Clear the cached stage position on touch end. This prevents the cached position value from being caried over
-  // and breaking interaction when there are layout or device orientation changes.
-  this._context.clearStageAbsolutePosition();
 
   return true;
 };
@@ -16373,7 +16427,7 @@ dvt.PolygonUtils.translate = function(points, tx, ty) {
   }
   return ret;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Utility functions for text.
  * @class
@@ -16488,9 +16542,9 @@ dvt.TextUtils.guessTextDimensions = function(text, minChars) {
   // Use the cached size to guess at the string length
   var w = cachedDims.w * dvt.TextUtils._getTextLength(textString);
 
-  // Esimate the minimum truncated length using fudge factor and by estimating the ellipsis as 2 characters
+  // Esimate the minimum truncated length using fudge factor and by estimating the ellipsis as one character
   minChars = (isNaN(minChars) || minChars == null) ? 1 : minChars;
-  var wMin = Math.min(0.3 * w, cachedDims.w * ((0.3 * minChars) + 2));
+  var wMin = Math.min(0.3 * w, cachedDims.w * ((0.3 * minChars) + 1));
 
   if ((text instanceof dvt.MultilineText) || (text instanceof dvt.BackgroundMultilineText))
     return {w: w, h: cachedDims.h * text.getLineCount(), wMin: wMin};
@@ -16649,6 +16703,11 @@ dvt.TextUtils._guessFit = function(text, maxWidth, maxHeight, container, minChar
  * @private
  */
 dvt.TextUtils._truncateOutputText = function(text, maxWidth, minChars) {
+  if (maxWidth <= 0) {
+    text.setTextString('');
+    return;
+  }
+
   // Initial check using accurate dimensions
   var dims = text.measureDimensions();
   if (dims.w <= maxWidth)
@@ -17016,7 +17075,7 @@ dvt.SvgShapeUtils.convertPointsArray = function(arPoints) {
   }
   return s;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  *  Abstract base class for displayable objects.
  *  @extends {dvt.Obj}
@@ -17641,6 +17700,14 @@ dvt.Displayable.prototype._setAriaRole = function(role) {
     dvt.ToolkitUtils.removeAttrNullNS(elem, 'role');
 };
 
+/**
+ * Returns the active element id of this displayable.
+ * Allows subclasses to return its own active element id if needed
+ * @return {string} Active element id
+ */
+dvt.Displayable.prototype.getActiveElementId = function() {
+  return this.getId();
+};
 
 /**
  * Gets the WAI-ARIA role.
@@ -17762,6 +17829,13 @@ dvt.Displayable.prototype.getPathToStage = function()
   return array;
 };
 
+/**
+ * Removes the displayable from its parent if one exists.
+ */
+dvt.Displayable.prototype.removeFromParent = function() {
+  if (this._parent)
+    this._parent.removeChild(this);
+};
 
 /**
  *    Destroy the displayable.  It should no longer be used or displayed
@@ -20510,7 +20584,7 @@ dvt.Circle.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
   var bounds = new dvt.Rectangle(this.getCx() - this.getRadius(), this.getCy() - this.getRadius(), this.getRadius() * 2, this.getRadius() * 2);
   return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Image displayable.
  * @param {dvt.Context} context
@@ -20529,9 +20603,6 @@ dvt.Image = function(context, src, x, y, w, h, id) {
 };
 
 dvt.Obj.createSubclass(dvt.Image, dvt.Shape);// TODO  this should extend displayable
-
-dvt.Image.XLINK_NS = 'http://www.w3.org/1999/xlink';
-
 
 /**
  * Helper method called by the constructor for initializing this object
@@ -20662,7 +20733,7 @@ dvt.Image.prototype.setSrc = function(src) {
       }
     }
 
-    dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', uri);
+    dvt.ToolkitUtils.setHref(this._elem, uri);
   }
 
   // Return self for linking setters
@@ -21022,7 +21093,7 @@ dvt.Line.prototype.setClassName = function(className, bSkipAdjustDimensions) {
     this._adjustDimensionsForStyle();
   return dvt.Line.superclass.setClassName.call(this, className);
 };
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  *  @param {dvt.Context} context
@@ -21704,7 +21775,7 @@ dvt.SimpleMarker.prototype.setHollow = function(color) {
 
 /**
  * Adds reference for legend text to marker
- * @param {DvtText} text Legend text
+ * @param {dvt.Text} text Legend text
  */
 dvt.SimpleMarker.prototype.setText = function(text) {
   this._markerText = text;
@@ -21718,9 +21789,12 @@ dvt.SimpleMarker.prototype.setText = function(text) {
  */
 dvt.SimpleMarker.prototype.setAlpha = function(alpha) {
   dvt.SimpleMarker.superclass.setAlpha.call(this, alpha);
-  if (this._markerText)
-    this._markerText.setAlpha(alpha);
-  this.UpdateSelectionEffect();
+
+  if (alpha !== this.getAlpha()) {
+    if (this._markerText)
+      this._markerText.setAlpha(alpha);
+    this.UpdateSelectionEffect();
+  }
 };
 
 /**
@@ -21767,7 +21841,7 @@ dvt.SimpleMarker.prototype.getMaintainAspectRatio = function() {
   return this._bMaintainAspectRatio;
 };
 
-// Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * @param {dvt.Context} context
@@ -22004,7 +22078,8 @@ dvt.ImageMarker.prototype._setSource = function(src) {
     if (imageInfo)
       src = imageInfo.uri;
   }
-  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', src);
+
+  dvt.ToolkitUtils.setHref(this._elem, src);
 };
 
 /**
@@ -22209,6 +22284,22 @@ dvt.ImageMarker.prototype.setHollow = function(fc, strokeWidth) {
  */
 dvt.ImageMarker.prototype.copyShape = function() {
   return new dvt.ImageMarker(this.getCtx(), this.getCx(), this.getCy(), this.getWidth(), this.getHeight(), this._getBorderRadius(), this._getImage(), this._getImageSelected(), this._getImageHover(), this._getImageHoverSelected(), null);
+};
+
+
+/**
+ * Returns the bounds of the displayable relative to the target coordinate space.  If the target
+ * coordinate space is not specified, returns the bounds relative to this displayable.  This function does not take
+ * into account any child displayables.
+ * @param {dvt.Displayable} targetCoordinateSpace The displayable defining the target coordinate space.
+ * @return {dvt.Rectangle} The bounds of the displayable relative to the target coordinate space.
+ */
+dvt.ImageMarker.prototype.getDimensionsSelf = function(targetCoordinateSpace) {
+  var x = this.getCx() - this.getWidth() / 2;
+  var y = this.getCy() - this.getHeight() / 2;
+  var bounds = new dvt.Rectangle(x, y, this.getWidth(), this.getHeight());
+  // Calculate the bounds relative to the target space
+  return this.ConvertCoordSpaceRect(bounds, targetCoordinateSpace);
 };
 // Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -23432,7 +23523,7 @@ dvt.OutputText.prototype.getOptimalFontSize = function(bounds) {
  */
 dvt.OutputText.prototype.measureDimensions = function(targetCoordinateSpace) {
   // TODO : measureDimensions is now hooked into getDimensions, so it need not exist.  We can integrate into
-  // getDimensions as soon as we have time to rename all usages.  The tricky part is just that DvtText also has a
+  // getDimensions as soon as we have time to rename all usages.  The tricky part is just that dvt.Text also has a
   // measureDimensions call, so renames will need to be carefully done.
   var textString = this.getTextString() != null ? this.getTextString() : '';
   var hAlign = this.getHorizAlignment();
@@ -24113,7 +24204,7 @@ dvt.BackgroundOutputText._hasBackgroundStyles = function(style) {
     return true;
   return false;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Read-only text object that supports wrapping.
  * @extends {dvt.Container}
@@ -24580,7 +24671,7 @@ dvt.MultilineText.prototype.wrapText = function(maxWidth, maxHeight, minChars, b
     this._removeAdditionalLines();
 
   // Split the string into parts.  Reverse the array so that we can use like a queue.
-  var splits = this.getTextString().split(' ');
+  var splits = this.getTextString().split(/\s+/);
   splits.reverse();
 
   // Loop and add each part into the current line.  Create a new line once the current is full.
@@ -24917,7 +25008,7 @@ dvt.BackgroundMultilineText.prototype.UpdateSelectionEffect = function() {
   // noop: Does not participate in selection effects
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * Use element displayable.
  * @param {dvt.Context} context
@@ -24965,7 +25056,9 @@ dvt.Use.prototype.Init = function(context, x, y, target, id) {
   }
 
   this._targetId = targetId;
-  dvt.ToolkitUtils.setAttrNS(this._elem, dvt.Image.XLINK_NS, 'xlink:href', dvt.ToolkitUtils.getUrlPathById(targetId));
+
+  dvt.ToolkitUtils.setHref(this._elem, dvt.ToolkitUtils.getUrlPathById(targetId));
+
   this.setX(x).setY(y);
 };
 
@@ -25633,7 +25726,7 @@ dvt.GradientParser._startsWith = function(str, value) {
 /**
  * @constructor
  * Represents a set of CSS styles.
- * @param {String} style inlineStyle
+ * @param {string|object} style inlineStyle string/object
  */
 dvt.CSSStyle = function(style) {
   this.Init(style);
@@ -25780,8 +25873,8 @@ dvt.CSSStyle.COLORS_ALTA = ['#267db3', '#68c182', '#fad55c', '#ed6647', '#8561c8
 
 
 /**
- * Initializes the dvt.CSSStyle using the specified inline style string.
- * @param {String} style The inline style string containing the attributes for this dvt.CSSStyle.
+ * Initializes the dvt.CSSStyle using the specified inline style string/object.
+ * @param {string|object} style The inline style string/object containing the attributes for this dvt.CSSStyle.
  * @protected
  */
 dvt.CSSStyle.prototype.Init = function(style) {
@@ -25794,14 +25887,24 @@ dvt.CSSStyle.prototype.Init = function(style) {
 
 
 /**
- * Parse an inlineStyle string into a set of CSS styles and merge the results to this style object.
- * @param {String} style inlineStyle
+ * Parse an inlineStyle string/object into a set of CSS styles and merge the results to this style object.
+ * @param {string|object} style inlineStyle string/object
  */
 dvt.CSSStyle.prototype.parseInlineStyle = function(style) {
+  if (!style)
+    return;
   var cssStyle = this;
-  dvt.CSSStyle._parseStyleString(style, function(attrName, attrVal) {
-    cssStyle.setStyle(attrName, attrVal);
-  });
+  if (style instanceof Object) {
+    for (var key in style) {
+      var attrVal = style[key];
+      key = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      cssStyle.setStyle(key, attrVal);
+    }
+  } else {
+    dvt.CSSStyle._parseStyleString(style, function(attrName, attrVal) {
+      cssStyle.setStyle(attrName, attrVal);
+    });
+  }
 };
 
 /**
@@ -27195,6 +27298,11 @@ dvt.BaseComponent.prototype.RenderComplete = function()
   // Reset the animation and reference
   this.Animation = null;
   this.AnimationStopped = false;
+
+  // Reset the cached isOffscreen check
+  this.getCtx().resetIsOffscreen();
+
+  // Finally fire the ready event
   this.dispatchEvent(dvt.EventFactory.newReadyEvent());
 };
 
@@ -27790,6 +27898,8 @@ dvt.SimpleScrollbar = function(context, callback, callbackObj, dragTarget) {
 
 dvt.Obj.createSubclass(dvt.SimpleScrollbar, dvt.Container);
 
+/** @private */
+dvt.SimpleScrollbar._THUMB_MIN_SIZE = 12;
 
 /**
  * Renders the simple scrollbar at the specified size.
@@ -27823,6 +27933,10 @@ dvt.SimpleScrollbar.prototype.render = function(options, width, height) {
   this._thumbMin = this._globalMin;
   this._thumbMax = this._globalMax;
 
+  // The renderedThumbMin/Max can be wider than the actual thumbMin/Max if the viewport range is very small
+  this._renderedThumbMin = this._thumbMin;
+  this._renderedThumbMax = this._thumbMax;
+
   // Add hit area to make interaction with scrollbar easier
   var hitAreaSize = dvt.Agent.isTouchDevice() ? 8 : 4;
   var hitArea = new dvt.Rect(this.getCtx(), -hitAreaSize, -hitAreaSize, this._width + 2 * hitAreaSize, this._height + 2 * hitAreaSize);
@@ -27853,6 +27967,32 @@ dvt.SimpleScrollbar.prototype.setViewportRange = function(min, max, globalMin, g
   if (globalMax != null)
     this._globalMax = globalMax;
 
+  // Store the actual min/max before minRange adjustments
+  this._thumbMin = min;
+  this._thumbMax = max;
+
+  // For usability, make sure that the thumb is not shorter than the minimum number of pixels
+  var range = max - min;
+  var globalRange = this._globalMax - this._globalMin;
+  var minRange = Math.min(dvt.SimpleScrollbar._THUMB_MIN_SIZE / (this._isHoriz ? this._width : this._height) * globalRange, globalRange);
+
+  if (range < minRange) {
+    max += (minRange - range) / 2;
+    min -= (minRange - range) / 2;
+
+    if (min < this._globalMin) {
+      min = this._globalMin;
+      max = this._globalMin + minRange;
+    }
+    if (max > this._globalMax) {
+      max = this._globalMax;
+      min = this._globalMax - minRange;
+    }
+  }
+
+  this._renderedThumbMin = min;
+  this._renderedThumbMax = max;
+
   // Get the coords and modify the thumb
   var minCoord = this._getCoord(min);
   var maxCoord = this._getCoord(max);
@@ -27864,9 +28004,6 @@ dvt.SimpleScrollbar.prototype.setViewportRange = function(min, max, globalMin, g
     this._thumb.setY(Math.min(minCoord, maxCoord));
     this._thumb.setHeight(Math.abs(maxCoord - minCoord));
   }
-
-  this._thumbMin = min;
-  this._thumbMax = max;
 };
 
 
@@ -27912,7 +28049,7 @@ dvt.SimpleScrollbar.prototype._getValue = function(pageX, pageY) {
  */
 dvt.SimpleScrollbar.prototype._onClick = function(event) {
   var val = this._getValue(event.pageX, event.pageY);
-  if (val >= this._thumbMin && val <= this._thumbMax)
+  if (val >= this._renderedThumbMin && val <= this._renderedThumbMax)
     return;
 
   var range = this._thumbMax - this._thumbMin;
@@ -27937,9 +28074,11 @@ dvt.SimpleScrollbar.prototype._onDragStart = function(event) {
     val = this._getValue(event.pageX, event.pageY);
 
   // Bypass thumb checking logic if we're scrolling on an outer container
-  if (this._dragTarget || (val >= this._thumbMin && val <= this._thumbMax)) {
+  if (this._dragTarget || (val >= this._renderedThumbMin && val <= this._renderedThumbMax)) {
+    // If the rendered thumb is bigger than the actual range, we still need to bound the val to the actual range,
+    // otherwise the scrollbar won't drag all the way to the edges of the chart.
+    this._prevVal = Math.min(Math.max(val, this._thumbMin), this._thumbMax);
     this._dragged = true;
-    this._prevVal = val;
     return true;
   }
   return false;
@@ -29083,7 +29222,7 @@ dvt.Button.prototype.setSize = function(width, height) {
 
 
 /*
- * Called from DvtAfMenu and DvtAfGoButton to right align this component or its content.
+ * Called from dvt.AfMenu and dvt.AfGoButton to right align this component or its content.
  */
 dvt.Button.prototype.rightAlign = function(maxw, ww, self) {
   var delta = maxw - ww;
@@ -29753,14 +29892,14 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
 /**
  * Simple logical object for custom datatip support.
  * @param {dvt.TooltipManager} tooltipManager
- * @param {object} tooltipObj The object containing the callback function used to render the datatip content
+ * @param {function} tooltipFunc The callback function used to render the datatip content
  * @param {string} datatipColor The border color of the datatip.
  * @param {object} dataContext Object passed into the callback function
  * @class
  * @constructor
  */
-dvt.CustomDatatipPeer = function(tooltipManager, tooltipObj, datatipColor, dataContext) {
-  this.Init(tooltipManager, tooltipObj, datatipColor, dataContext);
+dvt.CustomDatatipPeer = function(tooltipManager, tooltipFunc, datatipColor, dataContext) {
+  this.Init(tooltipManager, tooltipFunc, datatipColor, dataContext);
 };
 
 dvt.Obj.createSubclass(dvt.CustomDatatipPeer, dvt.Obj);
@@ -29768,9 +29907,9 @@ dvt.Obj.createSubclass(dvt.CustomDatatipPeer, dvt.Obj);
 /**
  * @override
  */
-dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipObj, datatipColor, dataContext) {
+dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipFunc, datatipColor, dataContext) {
   this._tooltipManager = tooltipManager;
-  this._tooltipObj = tooltipObj;
+  this._tooltipFunc = tooltipFunc;
   this._datatipColor = datatipColor;
   this._dataContext = dataContext;
 };
@@ -29780,7 +29919,7 @@ dvt.CustomDatatipPeer.prototype.Init = function(tooltipManager, tooltipObj, data
  * @override
  */
 dvt.CustomDatatipPeer.prototype.getDatatip = function(target) {
-  return this._tooltipManager.getCustomTooltip(this._tooltipObj, this._dataContext);
+  return this._tooltipManager.getCustomTooltip(this._tooltipFunc, this._dataContext);
 };
 
 /**
@@ -30784,7 +30923,8 @@ DvtPopupBehaviorHandler.prototype._createShowPopupEvent = function(target, behav
 
   // Find the bounds that the popup should align to
   var launcherBounds = target.getPopupBounds ? target.getPopupBounds(behaviorForBounds) : null;
-  if (canAlignToMouse && !launcherBounds) {
+  var isContextMenuMouseAlign = !spb.getAlign() && !spb.getAlignId() && spb.getTriggerType() == 'contextMenu';
+  if ((canAlignToMouse && !launcherBounds) || isContextMenuMouseAlign) {
     // If the object doesn't specify a bounds, then align to the mouse
     var pos = this._context.pageToStageCoords(position.x, position.y);
     launcherBounds = new dvt.Rectangle(pos.x, pos.y - 5, 1, 5);
@@ -30974,20 +31114,25 @@ dvt.SelectionHandler.prototype.processInitialSelections = function(selectedIds, 
   if (!selectedIds || !targets)
     return;
 
+  // Construct a targetMap that maps the id to the target object so that the process to match targets with the
+  // selectedId array takes O(n) time instead of O(n^2) ()
+  var targetMap = {};
+  for (var j = 0; j < targets.length; j++) {
+    if (targets[j].getId() != null)
+      targetMap[targets[j].getId()] = targets[j];
+  }
+
   // Loop through all the selected ids, matching them to the targets
   for (var i = 0; i < selectedIds.length; i++) {
-    var hidden = true;
-    for (var j = 0; j < targets.length; j++) {
-      var targetId = targets[j].getId();
-      if (targetId != null && dvt.SelectionHandler._isEquals(selectedIds[i], targetId) && targets[j].isSelectable && targets[j].isSelectable()) {
-        // Found a match, continue to next selected id
-        this._addToSelection(targets[j], true, true);
-        hidden = false;
-        break;
-      }
+    var target = targetMap[selectedIds[i]];
+    if (target && target.isSelectable && target.isSelectable()) {
+      // Found a match
+      this._addToSelection(target, true, true);
     }
-    if (hidden)
+    else {
+      // The selected item doesn't have a displayable, so add it to the hidden selection array
       this._hiddenSelectedIds.push(selectedIds[i]);
+    }
   }
 };
 
@@ -32823,16 +32968,30 @@ dvt.EventManager.prototype._addDndListener = function(eventType, callback) {
 
 
 /**
- * Removes event listeners from the specified displayable.
+ * Removes event listeners and hides tooltip from the specified displayable.
+ * Subcomponents that only need to perform additional listener cleanup
+ * should override RemoveListener instead of this function
  * @param {dvt.Displayable} displayable The object on which to remove the listeners.
+ * @param {boolean=} keepTooltip optional true if tooltip should not be hidden
  */
-dvt.EventManager.prototype.removeListeners = function(displayable)
+dvt.EventManager.prototype.removeListeners = function(displayable, keepTooltip)
 {
   if (!displayable)
     return;
 
   // Hide any tooltips previously shown
-  this.hideTooltip();
+  if (!keepTooltip)
+    this.hideTooltip();
+
+  this.RemoveListeners(displayable);
+};
+/**
+ * Removes event listeners from the specified displayable.
+ * @protected
+ * @param {dvt.Displayable} displayable The object on which to remove the listeners.
+ */
+dvt.EventManager.prototype.RemoveListeners = function(displayable)
+{
 
   if (dvt.Agent.isTouchDevice()) {
     displayable.removeEvtListener(dvt.TouchEvent.TOUCHSTART, this.OnTouchStartBubble, false, this);
@@ -34091,7 +34250,7 @@ dvt.EventManager.prototype.OnTouchStartBubble = function(event) {
   this.TouchManager.postEventBubble(event);
 
   // Handle touch actions
-  if (this._isTouchResponseTouchStart()) {
+  if (this.isTouchResponseTouchStart()) {
     this._touchResponseHandled = true;
     this.TouchManager.processAssociatedTouchAttempt(event, dvt.EventManager.TOUCH_RESPONSE_TOUCH_START, this._saveTouchStart, this);
   } else {
@@ -34384,7 +34543,7 @@ dvt.EventManager.prototype.OnComponentTouchClick = function(event) {
 
 
   // When touchResponse is touchStart, selection is handled on touchend listener.
-  if (!this._isTouchResponseTouchStart())
+  if (!this.isTouchResponseTouchStart())
     this._processTouchSelection(dlo);
   // Prevent selection clearing if popup has just closed
   if (!this._popupJustClosed)
@@ -34704,8 +34863,14 @@ dvt.EventManager.prototype.GetClearSelectionText = function() {
 
 // Add a clear selection popup menu item
 dvt.EventManager.prototype.addClearAllActionItem = function() {
-  this.addActionTooltipMenuItem(dvt.EventManager.CLEAR_SELECTION_ACTION_TYPE, this.GetClearSelectionText(), this._actionTooltipClearListener, this);
   var actionTooltip = this.CustomTooltipManager.getActionTooltip();
+  var menuItems = actionTooltip.getMenuItems();
+  if (actionTooltip && menuItems.length > 0) {
+    if (menuItems[menuItems.length - 1].getId() === dvt.EventManager.CLEAR_SELECTION_ACTION_TYPE) {
+      return;
+    }
+  }
+  this.addActionTooltipMenuItem(dvt.EventManager.CLEAR_SELECTION_ACTION_TYPE, this.GetClearSelectionText(), this._actionTooltipClearListener, this);
   // Override color to always be gray
   if (actionTooltip)
     actionTooltip.setTooltipBorderColor(DvtCustomTooltip.DEFAULT_BORDER_COLOR);
@@ -35129,12 +35294,6 @@ dvt.EventManager.prototype._handlePreOutEvent = function(eventType, event, handl
   }
   finally {
     this.SetEventInfo(event, dvt.EventManager._EVENT_INFO_CURRENT_TARGET_KEY, null);
-
-    // Clear the cached stage position on mouse out.  The cache makes it significantly cheaper to access the stage
-    // position, but it must only be used when the DOM position of the component is not changing.  We make this
-    // assumption whenever the user is directly interacting with the component (via mouse or touch).
-    if (!(event.relatedTarget instanceof dvt.Displayable))
-      this._context.clearStageAbsolutePosition();
   }
 };
 
@@ -35334,9 +35493,8 @@ dvt.EventManager.prototype.GetTouchResponse = function() {
 /**
  * Returns true if touch response should be on touchStart event
  * @return {boolean}
- * @private
  */
-dvt.EventManager.prototype._isTouchResponseTouchStart = function() {
+dvt.EventManager.prototype.isTouchResponseTouchStart = function() {
   var touchResponse = this.GetTouchResponse();
   if (touchResponse === dvt.EventManager.TOUCH_RESPONSE_TOUCH_START)
     return true;
@@ -35349,7 +35507,8 @@ dvt.EventManager.prototype._isTouchResponseTouchStart = function() {
       var style = window.getComputedStyle(root);
       if (style.overflow !== 'hidden' &&
           ((root.scrollWidth > root.clientWidth + dvt.EventManager._TOUCH_RESPONSE_PADDING_CHECK && style['overflow-x'] !== 'hidden') ||
-          (root.scrollHeight > root.clientHeight + dvt.EventManager._TOUCH_RESPONSE_PADDING_CHECK && style['overflow-y'] !== 'hidden'))) {
+          (root.scrollHeight > root.clientHeight + dvt.EventManager._TOUCH_RESPONSE_PADDING_CHECK && style['overflow-y'] !== 'hidden')) ||
+          (window.frameElement && window.frameElement.nodeName == 'IFRAME')) { // touchResponse should be auto when in an iFrame 
         return false;
       }
       root = root.parentElement;
@@ -35668,7 +35827,7 @@ dvt.EventManager.prototype.isDndSupported = function() {
  * @protected
  */
 dvt.EventManager.prototype.OnDndDragStart = function(event) {
-  var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+  var $event = dvt.ToolkitUtils.getEventForSyntax(this._context, event);
   var dataTransfer = $event.dataTransfer;
 
   // Pass if the dataTransfer is already loaded, since the event is already handled by another event manager
@@ -35741,7 +35900,7 @@ dvt.EventManager.prototype.OnDndDragStart = function(event) {
   dvt.SvgDocumentUtils.disableMouseEvents(dragImage);
 
   // The drag image has to be in the DOM tree when being set, so we add it and remove it immediately.
-  document.body.appendChild(dragImage);
+  document.body.appendChild(dragImage); // @HtmlUpdateOk
   dvt.Context.requestAnimationFrame(function() {
     document.body.removeChild(dragImage);
   });
@@ -35866,7 +36025,7 @@ dvt.EventManager.prototype._handleDragSourceEvent = function(event, eventType) {
 
   var callback = this._getDragOptions(event)[eventType];
   if (callback) {
-    var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+    var $event = dvt.ToolkitUtils.getEventForSyntax(this._context, event);
     callback($event);
   }
 };
@@ -36005,7 +36164,7 @@ dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventT
   if (dropTargetType == null)
     return true;
 
-  var $event = dvt.ToolkitUtils.getJQueryEvent(event);
+  var $event = dvt.ToolkitUtils.getEventForSyntax(this._context, event);
   var dropOptions = this._getDropOptions(event);
 
   // Handle user-defined callback function
@@ -37053,6 +37212,13 @@ dvt.HtmlTooltipManager.prototype.hideTooltip = function()
     else
       tooltip.style.left = tooltip.style.right;
     tooltip.style.top = '0px';
+
+    // Use JQuery .remove() to cleanup DOM to prevent memory leaks
+    // when using JET knockout templates
+    // : Don't do this for HtmlRichTooltip because the contents are not rerendered every time
+    if (typeof $ != 'undefined' && !(this instanceof DvtHtmlRichTooltipManager)) {
+      $(tooltip).children().remove();
+    }
   }
 };
 
@@ -37297,6 +37463,8 @@ dvt.HtmlTooltipManager.prototype.getCustomTooltip = function(tooltipFunc, dataCo
   tooltipElem.className = '';
   tooltipElem.style.borderColor = '';
 
+  // Fix renderer context before calling the tooltip function
+  dataContext = this._context.fixRendererContext(dataContext);
   var tooltip = tooltipFunc(dataContext);
 
   // if custom class or border color are specified, set flags so we don't override them with the default values
@@ -37348,7 +37516,7 @@ dvt.HtmlKeyboardListenerUtils = function() {};
 dvt.Obj.createSubclass(dvt.HtmlKeyboardListenerUtils, dvt.Obj);
 
 
-//: for editable DvtText, ignore events from the HTML textArea
+//: for editable dvt.Text, ignore events from the HTML textArea
 /**
  * Field to look for on event target to see if events from that target should be ignored.
  */
@@ -37405,7 +37573,7 @@ dvt.HtmlKeyboardListenerUtils._captureListener = function(event)
  * @private
  */
 dvt.HtmlKeyboardListenerUtils._commonListener = function(event, useCapture) {
-  //: for editable DvtText, ignore events from the HTML textArea
+  //: for editable dvt.Text, ignore events from the HTML textArea
   if (dvt.HtmlKeyboardListenerUtils._checkIgnoreTarget(event)) {
     return;
   }
@@ -37449,7 +37617,7 @@ dvt.HtmlKeyboardListenerUtils._commonListener = function(event, useCapture) {
  * @private
  */
 dvt.HtmlKeyboardListenerUtils._checkIgnoreTarget = function(event) {
-  //: for editable DvtText, ignore events from the HTML textArea
+  //: for editable dvt.Text, ignore events from the HTML textArea
   if (event && event.target && event.target[dvt.HtmlKeyboardListenerUtils.ATTR_IGNORE_EVENTS_FROM_TARGET]) {
     return true;
   }
@@ -37888,19 +38056,34 @@ dvt.EventFactory.newChartViewportChangeEvent = function(bComplete, xMin, xMax, s
 };
 
 /**
+ * sunburst expand/collapse event
+ * @param {string} type The event type.
  * @param {string} id The id of the node.
+ * @param {object} data The data object of the node.
+ * @param {object} component The widget constructor.
+ * @param {array} expanded The expanded nodes array.
  * @return {object}
  */
-dvt.EventFactory.newSunburstCollapseEvent = function(id) {
-  return dvt.EventFactory.newEvent('collapse', id);
+dvt.EventFactory.newSunburstExpandCollapseEvent = function(type, id, data, component, expanded) {
+  var ret = dvt.EventFactory.newEvent(type, id);
+  ret['expanded'] = expanded;
+  ret['data'] = data;
+  ret['component'] = component;
+  return ret;
 };
 
 /**
+ * Tree drill event
  * @param {string} id The id of the node.
+ * @param {number} data The data value of the node.
+ * @param {object} component The widget constructor.
  * @return {object}
  */
-dvt.EventFactory.newSunburstExpandEvent = function(id) {
-  return dvt.EventFactory.newEvent('expand', id);
+dvt.EventFactory.newTreeDrillEvent = function(id, data, component) {
+  var ret = dvt.EventFactory.newDrillEvent(id);
+  ret['data'] = data;
+  ret['component'] = component;
+  return ret;
 };
 
 /**
@@ -38015,7 +38198,7 @@ dvt.EventDispatcher.dispatchEvent = function(callback, callbackObj, component, e
   if (callback && callback.call)
     callback.call(callbackObj, event, component);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * @class
@@ -38172,85 +38355,28 @@ dvt.ToolkitUtils.appendChildElem = function(parent, child) {
   return parent.appendChild(child);//@HTMLUpdateOk
 };
 
-
 /**
- * Wrapper for getAttributeNS method
- * @param {object} elem DOM element
- * @param {string} namespace Namespace to use
- * @param {string} name Attribute name to get
- * @return {string} Value associated with given name
- */
-dvt.ToolkitUtils.getAttrNS = function(elem, namespace, name) {
-  return elem.getAttributeNS(namespace, name);
-};
-
-
-/**
- * Wrapper for getAttributeNS method
+ * Wrapper for getAttribute method
  * @param {object} elem DOM element
  * @param {string} name Attribute name to get
  * @return {string} Value associated with given name
  */
 dvt.ToolkitUtils.getAttrNullNS = function(elem, name) {
-  return elem.getAttributeNS(null, name);
+  return elem.getAttribute(name);
 };
 
-
 /**
- * Wrapper for hasAttributeNS method
- * @param {object} elem DOM element
- * @param {string} namespace The namespace of the attribute.
- * @param {string} name the name of the attribute.
- * @return {boolean} true if the element has the specified attribute.
- */
-dvt.ToolkitUtils.hasAttrNS = function(elem, namespace, name) {
-  return elem.hasAttributeNS(namespace, name);
-};
-
-
-/**
- * Wrapper for hasAttributeNS method
+ * Wrapper for hasAttribute method
  * @param {object} elem DOM element
  * @param {string} name the name of the attribute.
  * @return {boolean} true if the element has the specified attribute.
  */
 dvt.ToolkitUtils.hasAttrNullNS = function(elem, name) {
-  return dvt.ToolkitUtils.hasAttrNS(elem, null, name);
+  return elem.hasAttribute(name);
 };
 
-
 /**
- * Wrapper for setAttributeNS method.  When the value of the attribute matches the default value, the DOM will not be
- * updated unless the attribute has already been set to a different value.
- * @param {object} elem DOM element
- * @param {string} namespace The namespace of the attribute.
- * @param {string} name the name of the attribute.
- * @param {string} value The value of the attribute.
- * @param {string=} defaultValue The default value of the attribute, which can be provided to optimize performance.
- */
-dvt.ToolkitUtils.setAttrNS = function(elem, namespace, name, value, defaultValue) {
-  // Note: We're not strict about value or defaultValue being String types, since browser implementations are not. The
-  //       code in this function should always assume that users may pass objects that would be converted to Strings.
-
-  // If defaultValue specified and value matches default, optimize the DOM calls
-  // removeAttrNS fails for IE9 and IE10 and x,y attributes of text elements in Chrome version 34, so exclude it here. (when not in test environment)
-  if (defaultValue != null && value == defaultValue) {
-    if (dvt.ToolkitUtils.hasAttrNS(elem, namespace, name)) {
-      if ((dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() <= 10) || (dvt.Agent.isBrowserChrome() && !dvt.Agent.isEnvironmentTest() && dvt.Agent.getVersion() >= 34 && elem.nodeName == 'text' && (name == 'x' || name == 'y')))
-        elem.setAttributeNS(namespace, name, value);
-      else
-        dvt.ToolkitUtils.removeAttrNS(elem, namespace, name);
-    }
-    return;
-  }
-
-  // Otherwise set the attribute
-  elem.setAttributeNS(namespace, name, value);
-};
-
-
-/**
- * Wrapper for setAttributeNS method.  When the value of the attribute matches the default value, the DOM will not be
+ * Wrapper for setAttribute method.  When the value of the attribute matches the default value, the DOM will not be
  * updated unless the attribute has already been set to a different value.
  * @param {object} elem DOM element
  * @param {string} name the name of the attribute.
@@ -38258,22 +38384,20 @@ dvt.ToolkitUtils.setAttrNS = function(elem, namespace, name, value, defaultValue
  * @param {string=} defaultValue The default value of the attribute, which can be provided to optimize performance.
  */
 dvt.ToolkitUtils.setAttrNullNS = function(elem, name, value, defaultValue) {
-  dvt.ToolkitUtils.setAttrNS(elem, null, name, value, defaultValue);
+  // Note: We're not strict about value or defaultValue being String types, since browser implementations are not. The
+  //       code in this function should always assume that users may pass objects that would be converted to Strings.
+
+  // If defaultValue specified and value matches default, optimize the DOM calls
+  if (defaultValue != null && value == defaultValue) {
+    if (dvt.ToolkitUtils.hasAttrNullNS(elem, name)) {
+      dvt.ToolkitUtils.removeAttrNullNS(elem, name);
+    }
+    return;
+  }
+
+  // Otherwise set the attribute
+  elem.setAttribute(name, value);
 };
-
-
-/**
- * Remove an attribute from a DOM element.
- * @param {object} elem DOM element
- * @param {string} namespace Namespace to use
- * @param {string} name Attribute name to remove
- */
-dvt.ToolkitUtils.removeAttrNS = function(elem, namespace, name) {
-  //  This might be an over-optimization, but we know that hasAttrNS is cheap
-  if (dvt.ToolkitUtils.hasAttrNS(elem, namespace, name))
-    elem.removeAttributeNS(namespace, name);
-};
-
 
 /**
  * Remove an attribute from a DOM element, using a null namespace.
@@ -38281,9 +38405,23 @@ dvt.ToolkitUtils.removeAttrNS = function(elem, namespace, name) {
  * @param {string} name Attribute name to remove
  */
 dvt.ToolkitUtils.removeAttrNullNS = function(elem, name) {
-  dvt.ToolkitUtils.removeAttrNS(elem, null, name);
+  //  This might be an over-optimization, but we know that hasAttrNullNS is cheap
+  if (dvt.ToolkitUtils.hasAttrNullNS(elem, name))
+    elem.removeAttribute(name);
 };
 
+
+/**
+ * Sets the href or xlink:href attribute for an element depending on browser support.
+ * @param {object} elem DOM element
+ * @param {string} src The href value
+ */
+dvt.ToolkitUtils.setHref = function(elem, src) {
+  if (dvt.Agent.isBrowserSafari() || (dvt.Agent.isPlatformGecko() && dvt.Agent.getVersion() < 51))
+    elem.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', src);
+  else
+    dvt.ToolkitUtils.setAttrNullNS(elem, 'href', src);
+};
 /**
  * Get a pseudo link callback that loads a document into the existing or a new window.
  * The callback can be used as an onclick callback for dvt.Button.
@@ -38366,13 +38504,15 @@ dvt.ToolkitUtils.getOuterDivSize = function(context) {
 };
 
 /**
- * Returns jQuery wrapped event. If jQuery is not available, returns the native event.
+ * Returns jQuery-wrapped event or a native event based on jQuery availability and the
+ * syntax used to create the JET component.
+ * @param {dvt.Context} context
  * @param {dvt.BaseEvent} event
- * @return {$.Event}
+ * @return {$.Event|Event}
  */
-dvt.ToolkitUtils.getJQueryEvent = function(event) {
+dvt.ToolkitUtils.getEventForSyntax = function(context, event) {
   var nativeEvent = event.getNativeEvent();
-  if (typeof $ != 'undefined') {
+  if (!context.isCustomElement() && typeof $ != 'undefined') {
     // Use $.event.fix instead of $.Event so that the $event properties are populated
     // The dataTransfer property has to be copied manually
     var $event = $.event.fix(nativeEvent);
@@ -38474,6 +38614,11 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {
   'ROW_INFO': 'Row {0}',
   'TASK_INFO': 'Start time is {0}, end time is {1}, duration is {2}',
   'MILESTONE_INFO': 'Time is {0}',
+
+  'ITEM_START': 'Start time is {0}.',
+  'ITEM_END': 'End time is {0}.',
+  'ITEM_TITLE': 'Title is {0}.',
+  'ITEM_DESCRIPTION': 'Description is {0}.',
 
   'INVALID_DATA': 'Invalid data',
   'NO_DATA': 'No data to display',
@@ -39399,7 +39544,7 @@ DvtSvgGradientUtils.createElem = function(grad, id)
   }
   return elemGrad;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------------*/
 /*    DvtSvgImageFillUtils    A static class for SVG image fill property     */
 /*                           manipulation.                                   */
@@ -39425,7 +39570,7 @@ DvtSvgImageFillUtils.createElem = function(imageFill, id)
   /* Example:
       <defs>
         <pattern id="img1" patternUnits="userSpaceOnUse" width="20" height="20" >
-          <image xlink:href="400.png" x="0" y="0"  width="20" height="20" />
+          <image href="400.png" x="0" y="0"  width="20" height="20" />
         </pattern>
       </defs>
 
@@ -39466,7 +39611,7 @@ DvtSvgImageFillUtils.createElem = function(imageFill, id)
       */
 
     if (src) {
-      dvt.ToolkitUtils.setAttrNS(elemImg, dvt.Image.XLINK_NS, 'xlink:href', src);
+      dvt.ToolkitUtils.setHref(elemImg, src);
     }
   }
 
@@ -40094,6 +40239,8 @@ dvt.exportProperty(dvt.Context.prototype, 'setTooltipAttachedCallback', dvt.Cont
 dvt.exportProperty(dvt.Context.prototype, 'setTooltipStyleClass', dvt.Context.prototype.setTooltipStyleClass);
 dvt.exportProperty(dvt.Context.prototype, 'setDefaultFontFamily', dvt.Context.prototype.setDefaultFontFamily);
 dvt.exportProperty(dvt.Context.prototype, 'setDefaultFontSize', dvt.Context.prototype.setDefaultFontSize);
+dvt.exportProperty(dvt.Context.prototype, 'setFixContextCallback', dvt.Context.prototype.setFixContextCallback);
+dvt.exportProperty(dvt.Context.prototype, 'setCustomElement', dvt.Context.prototype.setCustomElement);
 
 dvt.exportProperty(dvt.Dimension.prototype, 'getWidth', dvt.Dimension.prototype.getWidth);
 dvt.exportProperty(dvt.Dimension.prototype, 'getHeight', dvt.Dimension.prototype.getHeight);

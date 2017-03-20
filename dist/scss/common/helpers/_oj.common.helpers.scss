@@ -155,4 +155,68 @@
   .oj-focus-config {
     font-family: oj-json-from-map($focusConfig);
   }
+
+  // marker style for ojDialog accesskey bug #22685535
+  .oj-helper-element-with-accesskey {
+
+  }
+
+  // marker style for ojDialog accesskey bug #22685535
+  .oj-helper-element-in-dialog-with-accesskey {
+
+  }
+  
+  /* justifies flex content start
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-flex-start {
+    @include oj-justify-content-property(flex-start !important);
+  }
+
+  /* justifies flex content end
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-flex-end {
+    @include oj-justify-content-property(flex-end !important);
+  }
+
+  /* justifies flex content center
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-center {
+    @include oj-justify-content-property(center !important);
+  }
+
+  /* justifies flex content space between
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-space-between {
+    @include oj-justify-content-property(space-between !important);
+  }
+  
+  /* justifies flex content space around
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-space-around {
+    @include oj-justify-content-property(space-around !important);
+  }
+
+  /* justifies flex content right
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-right {
+    @include oj-ltr() {
+      @include oj-justify-content-property(flex-end !important);
+    }
+
+    @include oj-rtl() {
+      @include oj-justify-content-property(flex-start !important);
+    }
+  }
+
+  /* justifies flex content left
+     NOTE: this uses !important, it can therefore be used to override a previously set value */
+  .oj-helper-justify-content-left {
+    @include oj-ltr() {
+      @include oj-justify-content-property(flex-start !important);
+    }
+
+    @include oj-rtl() {
+      @include oj-justify-content-property(flex-end !important);
+    }
+  }
 }

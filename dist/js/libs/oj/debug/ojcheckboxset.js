@@ -126,83 +126,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  *   Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-choice-row</td>
- *       <td><p>Used to line up the input and the label with each other on the same line, and
- *              following input and label on the next line.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the span surrounding the input and label to keep them aligned.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-choice-row-inline</td>
- *       <td><p>Used to line up the input and the label with each other on the same line, and
- *              following input and label on the same line as well.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the span surrounding the input and label to keep them aligned.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-checkboxset-no-chrome</td>
- *       <td><p>Use this styleclass if you don't want the chrome around the set.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojCheckboxset.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-checkboxset-input-start</td>
- *       <td><p>Use this styleclass to order the checkbox at the start and label text at the end 
- *       even if a theme has a different default order.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojCheckboxset.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-checkboxset-input-end</td>
- *       <td><p>Use this styleclass to order the checkbox at the end and the label text at the start 
- *       even if a theme has a different default order.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojCheckboxset.</li>
- *           </ul>
- *       </td>
- *     </tr>
-*      <tr>
- *       <td>oj-focus-highlight</td>
- *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}
-*           <ul>
- *             <li>The class must be applied to the div where you apply oj-choice-row or oj-choice-row-inline.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"stylingDoc"}
  * <h3 id="eventHandling-section">
  *   Event Handling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#eventHandling-section"></a>
@@ -244,7 +168,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * $(".selector").ojCheckboxset();
  *
  * @example <caption>Initialize the checkboxset with some options and callbacks specified:</caption>
- * $( ".selector" ).ojCheckboxset( { "value": ["copy"], "valuechange":
+ * $( ".selector" ).ojCheckboxset( { "value": ["copy"], "optionChange":
  * function( event, ui ) {alert("valuechanged from " + ui.previousValue + " to " + ui.value);} } );
  * @example <caption>Initialize component using widget API</caption>
  * &lt;label id="grouplabel">Greetings&lt;/label>
@@ -321,6 +245,88 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @memberof oj.ojCheckboxset
      */
     disabled: false,
+    
+    /** 
+     * Whether the component is required or optional. When required is set to true, an implicit 
+     * required validator is created using the validator factory - 
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+     * 
+     * Translations specified using the <code class="prettyprint">translations.required</code> option 
+     * and the label associated with the component, are passed through to the options parameter of the 
+     * createValidator method. 
+     * 
+     * <p>
+     * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+     * the component may clears message and run validation, based on the current state it's in. </br>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on 
+     * the option value. This is to ensure errors are not flagged unnecessarily.
+     * <ul>
+     *   <li>if there is a deferred validation error, then 
+     *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then 
+     * component messages are cleared but no deferred validation is run.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then 
+     * component messages are cleared and normal validation is run using the current display value. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared. These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * 
+     * </p>
+     * 
+     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This is the default.
+     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * input's label will render a required icon. Additionally a required validator - 
+     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+     * An explicit required validator can be set by page authors using the validators option. 
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+     * $(".selector").ojCheckboxset({required: true});<br/>
+     * 
+     * @example <caption>Customize messages and hints used by implicit required validator when 
+     * <code class="prettyprint">required</code> option is set:</caption> 
+     * &lt;div data-bind="ojComponent: {
+     *   component: 'ojCheckboxset', 
+     *   value: colors, 
+     *   required: true,
+     *   translations: {'required': {
+     *                 hint: 'custom: check at least one value',
+     *                 messageSummary: 'custom: \'{label}\' is Required', 
+     *                 messageDetail: 'custom: please check at least one value for \'{label}\''}}}"/>
+     * @expose 
+     * @access public
+     * @instance
+     * @default when the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * @memberof oj.ojCheckboxset
+     * @type {boolean}
+     * @default false
+     * @since 0.7
+     * @see #translations
+     */
+    required: false,    
     /**
      * The value of the component.
      *
@@ -359,7 +365,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * When the option is not set, value is set to an array built from the checked checkboxes, if
      * any are checked.
      * @memberof oj.ojCheckboxset
-     * @type {Array|undefined|null}
+     * @type {Array.<string>|undefined}
      */
     value: undefined
   },
@@ -400,7 +406,36 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   {
     return this.uiCheckboxset;
   },
-
+/**
+   * Validates the component's display value using all validators registered on 
+   * the component and updates the <code class="prettyprint">value</code> option by performing the 
+   * following steps. 
+   * 
+   * <p>
+   * <ol> 
+   * <li>All messages are cleared, including custom messages added by the app. </li>
+   * <li>The implicit 
+   * required validator is run if the component is marked required. When a validation error is 
+   * encountered it is remembered. </li>
+   * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
+   * option is updated and method returns false. If there were no errors, then the 
+   * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+   * </ol>
+   * 
+   * @returns {boolean} true if component passed validation, false if there were validation errors.
+   * 
+   * @example <caption>Validate component using its current value.</caption>
+   * // validate display value. 
+   * $(.selector).ojCheckboxset('validate');
+   * 
+   * @method
+   * @access public
+   * @expose
+   * @instance
+   * @memberof oj.ojCheckboxset
+   * @since 0.7
+   */
+  validate : oj.EditableValueUtils.validate,
    /**** end Public APIs ****/
 
   /**** start internal widget functions ****/
@@ -461,6 +496,11 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
         this.options["value"] = [];
 
     }
+    else
+    {
+      // confirm that the option value is an Array, otherwise throw an error
+      this._confirmValueIsArray(this.options["value"]);
+    }
   },
   /**
    * After _ComponentCreate and _AfterCreate,
@@ -482,7 +522,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     // in calls from 'create'. Also, since ojCheckboxSet delegates to the _ojRadioCheckbox
     // component, and we need to mark this as an internal node so that oj.Components.getComponentElementByNode
     // knows it is an internal component in this case, not a stand-alone component
-    this.$checkboxes._ojRadioCheckbox().attr('data-oj-internal', true);
+    this.$checkboxes._ojRadioCheckbox().attr('data-oj-internal', '');
  
     // keep the root dom element as is, and add a wrapper dom underneath it. This way we can
     // have one div around all the inputs and labels, and for inline messaging we can have another
@@ -492,6 +532,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
 
     this._on(this._events);
     this._setup();
+    
   },
     /**
    * Resets this.checkboxes. This is called at the beginning of a refresh in EditableValue
@@ -564,26 +605,47 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     // no-op
   },
   /**
+   * Whether the component is required.
+   * 
+   * @return {boolean} true if required; false
+   * 
+   * @memberof oj.ojCheckboxset
+   * @instance
+   * @protected
+   * @override
+   */
+  _IsRequired : function () 
+  {
+    return this.options['required'];
+  },
+  /**
+   * @memberof oj.ojCheckboxset
+   * @instance
+   * @private
+   */
+  _refreshRequired : oj.EditableValueUtils._refreshRequired,
+  /**
    * Returns a jquery object that is a set of elements that are input type checkbox
    * and have the name of the first checkbox found.
    *
-   * @return {Object} jquery object of all the checkboxes within the root dom element
+   * @return {jQuery} jquery object of all the checkboxes within the root dom element
    * that have the same 'name' attribute as the first checkbox found.
    * @private
    */
   _findCheckboxesWithMatchingName : function ()
 
   {
-    //return this.element.find('input[type=checkbox]'); // simplest thing to do.
-
-    var first = this.element.find("input[type=checkbox]:first"),
-      name, allcheckboxes, selector;
-    if (first.length === 0)
+    var allcheckboxes;
+    var $first = this.element.find("input[type=checkbox]:first");
+    var name;
+    var selector;
+    
+    if ($first.length === 0)
     {
       oj.Logger.warn("Could not find any input type=checkbox within this element");
     }
     // get the name attribute of the first input checkbox
-    name = first.attr("name");
+    name = $first.attr("name");
     // find all input checkboxes with matching name
     if (name === undefined)
     {
@@ -634,7 +696,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      // at this point we already have this.$checkboxes set to a list of checkboxes for this
      // checkboxset
     this._propagateDisabled(this.options.disabled );
-    // TODO: if one checkbox, set oj-checkboxset-single. if more than one, remove it.
+
     if (this.$checkboxes !== null)
     {
       if (this.$checkboxes.length === 1)
@@ -646,6 +708,15 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
         this.element.removeClass("oj-checkboxset-single");
       }
     }
+    
+    // add to the root dom the style class 'oj-choice-direction-column' 
+    // if there isn't already a 'oj-choice-direction-row' or 'oj-choice-direction-column' there.
+    if (!(this.element.hasClass("oj-choice-direction-column")) && 
+        !(this.element.hasClass("oj-choice-direction-row")))
+    {
+      this.element.addClass("oj-choice-direction-column");
+    }
+    this._refreshRequired(this.options['required']);
   },
   _events :
   {
@@ -655,7 +726,20 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       this._HandleChangeEvent(event);
     }
   },
-
+  /**
+   * _confirmValueIsArray
+   * @memberof oj.ojCheckboxset
+   * @instance
+   * @private
+   * @throws new Error if value isn't an Array
+   */
+  _confirmValueIsArray: function(value)
+  {
+    if (!Array.isArray(value))
+    {
+      throw new Error("Invalid 'value' set on JET Checkboxset: " + value + ".It must be an Array. ");
+    }
+  },
   /**
    * @param {Event} event DOM event
    * @override
@@ -664,7 +748,8 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    */
   _HandleChangeEvent: function(event)
   {
-    var submittedValue, checkboxes;
+    var submittedValue;
+    var checkboxes;
     
     // keep oj-selected in sync with the input element's checked state
     checkboxes = this.$checkboxes;
@@ -706,41 +791,59 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * what this means is we need to 'check' the checkboxes whose values match the
    * displayValue and 'uncheck' those that don't.
    *
-   * @param {Array} checkedBoxes an Array of values that need to be checked, e.g., ["red","blue"]
+   * @param {Array} displayValueArray an Array of values that need to be checked, e.g., ["red","blue"].
+   *  Any checkbox in the checkboxset that doesn't match one of the checkBoxes needs to be unchecked
+   *  if it isn't already.
    * @override
    * @protected
+   * @throws new Error if displayValueArray is not an Array
    * @memberof oj.ojCheckboxset
   */
- _SetDisplayValue : function (checkedBoxes)
+ _SetDisplayValue : function (displayValueArray)
   {
+    var checkboxInputValue;
+    var i;
     var length = this.$checkboxes.length;
-    var checkboxInputValue, i, $checkbox;
-
-    // go through each _ojRadioCheckbox and see if it needs to be checked or unchecked.
-    for (i = 0; i < length; i++)
+    var $checkbox;
+    
+    // confirm that the option value is an Array, otherwise throw an error
+    this._confirmValueIsArray(displayValueArray);
+      
+    // If it is empty or not an array, then set all the _ojRadioCheckboxes's checked option to false.
+    // _GetDisplayValue gets the checked options and creates an Array from it.
+    if (displayValueArray === null || displayValueArray === undefined || 
+        displayValueArray.length === 0)
     {
-      $checkbox = $(this.$checkboxes[i]);
-      checkboxInputValue = $checkbox[0].value;
-      // does the checkbox's value exist in the checkedBoxes array?
-      var index = checkedBoxes.indexOf(checkboxInputValue);
-      var checked = $checkbox._ojRadioCheckbox("option", "checked"); 
-      if (index !== -1)
+      this.$checkboxes._ojRadioCheckbox("option", "checked", false);
+    }
+    else
+    {
+      // go through each _ojRadioCheckbox and see if it needs to be checked or unchecked.
+      for (i = 0; i < length; i++)
       {
-        // yes. this needs to be checked, if it isn't already
-        if (!checked)
+        $checkbox = $(this.$checkboxes[i]);
+        checkboxInputValue = $checkbox[0].value;
+        // does the checkbox's value exist in the checkedBoxes array?
+        var index = displayValueArray.indexOf(checkboxInputValue);
+        var checked = $checkbox._ojRadioCheckbox("option", "checked"); 
+        if (index !== -1)
         {
-          $checkbox._ojRadioCheckbox("option", "checked", true);
+          // yes. this needs to be checked, if it isn't already
+          if (!checked)
+          {
+            $checkbox._ojRadioCheckbox("option", "checked", true);
+          }
+        }
+        else
+        {
+          /// no. this needs to be unchecked, if it isn't already
+          if (checked)
+          {
+            $checkbox._ojRadioCheckbox("option", "checked", false);
+          }
         }
       }
-      else
-      {
-        /// no. this needs to be unchecked, if it isn't already
-        if (checked)
-        {
-          $checkbox._ojRadioCheckbox("option", "checked", false);
-        }
-      }
-    } 
+    }
   },
   /**
    * Returns the element's value. Normally, this is a call to this.element.val(),
@@ -800,22 +903,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       return this.$checkboxes;
     else this._findCheckboxesWithMatchingName();
   },
-  /**
-   * Called when a aria-required attribute needs to be set or removed.
-   * Most inputs/selects need aria-required on the input element (aka 'content')
-   * But it is not legal to have aria-required on radio/checkboxes, nor on
-   * radiogroup/group.
-   * Subclasses can override to put aria-required where they want or not put it at all.
-   *
-   * @param {Object=} value the current value of the required option
-   * @memberof oj.ojCheckboxset
-   * @instance
-   * @protected
-   */
-  _RefreshAriaRequired : function (value)
-  {
-    // Radiogroup/group does not support aria-required so we can't use it there.
-  },
+
   /**
    * Called to find out if aria-required is unsupported. This is needed for the label.
    * It is not legal to have aria-required on radio/checkboxes, nor on
@@ -832,6 +920,37 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
   {
     return true;
   },
+ 
+  /**
+   * Performs post processing after required option is set by taking the following steps.
+   * 
+   * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+   * run full validation with UI value (we don't know if the UI error is from a required validator 
+   * or something else);<br/>
+   * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+   * updated<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * 
+   * - if component is invalid and has messagesHidden -> required: false -> clear component 
+   * errors; no deferred validation is run.<br/>
+   * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+   * errors unnecessarily)<br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @param {string} option
+   * 
+   * @memberof oj.ojCheckboxset
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+
+  /**
+   * 
+   * @param {boolean} disabled
+   * @private
+   */
   _propagateDisabled: function( disabled ) {
       disabled = !!disabled;
       this.$checkboxes.each(function()
@@ -864,6 +983,30 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
     if ( key === "disabled" )
     {
       this._propagateDisabled(value);
+    }
+  },
+  /**
+   * Performs post processing after _SetOption() is called. Different options when changed perform
+   * different tasks. See _AfterSetOption[OptionName] method for details.
+   *
+   * @param {string} option
+   * @param {Object|string=} previous
+   * @param {Object=} flags
+   * @protected
+   * @memberof oj.ojCheckboxset
+   * @instance
+   * @override
+   */
+  _AfterSetOption : function (option, previous, flags)
+  {
+    this._superApply(arguments);
+    switch (option)
+    {
+      case "required":
+        this._AfterSetOptionRequired(option);
+        break;
+      default:
+        break;
     }
   },
 
@@ -944,7 +1087,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    *       <td>Input or Label</td>
    *       <td><kbd>Press & Hold</kbd></td>
    *       <td>If hints, title or messages exist in a notewindow, 
-   *        pop up the notewindow.</td>
+     *           pop up the notewindow.</td>
    *    </tr>
    *    {@ojinclude "name":"labelTouchDoc"}
    *   </tbody>
@@ -980,6 +1123,148 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojCheckboxset
    */
+
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * 
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-choice-item</td>
+     *       <td>Used to line up the input and the label with each other, and
+     *           as well as adding height to the row.
+     *           You must add for the component to work properly. 
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;span class="oj-choice-item">
+     *   &lt;input id="blueopt" type="checkbox" value="blue">
+     *   &lt;label for="blueopt">Blue&lt;/label>
+     * &lt;/span>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-choice-direction-column</td>
+     *       <td>This is the default. It lays out the checkboxes in a column.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId" 
+     *  class="oj-checkboxset-direction-column" 
+     *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-choice-direction-row</td>
+     *       <td>It lays out the checkboxes in a row.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId" 
+     *  class="oj-checkboxset-direction-row" 
+     *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+     * </code></pre>
+     *       </td>
+     *     </tr>
+   *     <tr>
+   *       <td style="text-decoration:line-through">oj-choice-row</td>
+   *       <td><span style="color:red">Deprecated</span>. Please use <code class="prettyprint">oj-choice-direction-column</code> and <code class="prettyprint">oj-choice-item</code> instead.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;!-- Deprecated. Please use oj-choice-direction-column and oj-choice-item instead. -->
+   * &lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId"
+   *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+   *    &lt;span class="oj-choice-row">
+   *      &lt;input id="agree" type="checkbox" value="agree">
+   *      &lt;label for="agree">I Agree</label>
+   *    &lt;/span>
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td style="text-decoration:line-through">oj-choice-row-inline</td>
+   *       <td><span style="color:red">Deprecated</span>. Please use <code class="prettyprint">oj-choice-direction-row</code> and <code class="prettyprint">oj-choice-item</code> instead.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;!-- Deprecated. Please use oj-choice-direction-row and oj-choice-item instead. -->
+   * &lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId"
+   *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+   *    &lt;span class="oj-choice-row-inline">
+   *      &lt;input id="agree" type="checkbox" value="agree">
+   *      &lt;label for="agree">I Agree</label>
+   *    &lt;/span>
+   * </code></pre>
+   *       </td>
+   *     </tr>
+
+     *     <tr>
+     *       <td>oj-checkboxset-no-chrome</td>
+     *       <td>Use this styleclass if you don't want the chrome around the set.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId" 
+     *  class="oj-checkboxset-no-chrome" 
+     *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-checkboxset-input-start</td>
+     *       <td>Use this styleclass to order the checkbox at the start and label text at the end 
+     *       even if a theme has a different default order.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId" 
+     *  class="oj-checkboxset-input-start" 
+     *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-checkboxset-input-end</td>
+     *       <td>Use this styleclass to order the checkbox at the end and the label text at the start 
+     *       even if a theme has a different default order.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="checkboxsetId" aria-labelledby="checkboxsetLabelId" 
+     *  class="oj-checkboxset-input-end" 
+     *  data-bind="ojComponent: {component: 'ojCheckboxset', value: agreement}" >
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-focus-highlight</td>
+     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}
+     *         <p>The class must be applied to the element where you apply oj-choice-item.</p>
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;span class="oj-choice-item oj-focus-highlight">
+     *  &lt;input id="blueopt" type="checkbox" value="blue">
+     *  &lt;label for="blueopt">Blue&lt;/label>
+     * &lt;/span>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojCheckboxset
+     */
 });
 
 
@@ -1012,6 +1297,9 @@ var ojCheckboxsetMeta = {
     "disabled": {
       "type": "boolean"
     },
+    "required": {
+      "type": "boolean"
+    },  
     "value": {
       "type": "Array"
     }
@@ -1019,13 +1307,14 @@ var ojCheckboxsetMeta = {
   "methods": {
     "destroy": {},
     "refresh": {},
-    "widget": {}
+    "widget": {},
+    "validate": {}
   },
   "extension": {
-    "_widgetName": "ojCheckboxset"
+    _WIDGET_NAME: "ojCheckboxset"
   }
 };
-oj.Components.registerMetadata('ojCheckboxset', 'editableValue', ojCheckboxsetMeta);
-oj.Components.register('oj-checkboxset', oj.Components.getMetadata('ojCheckboxset'));
+oj.CustomElementBridge.registerMetadata('oj-checkboxset', 'editableValue', ojCheckboxsetMeta);
+oj.CustomElementBridge.register('oj-checkboxset', {'metadata': oj.CustomElementBridge.getMetadata('oj-checkboxset')});
 })();
 });

@@ -223,6 +223,29 @@ define('dragImage',[],function() {
     var _scrollLeft = element.scrollLeft;
     var _scrollTop = element.scrollTop;
 
+    // Find the maximum zIndex for the children of an element.  If an immediate
+    // child doesn't form a stacking context, we have to visit descendants until
+    // a stacking context is found.
+    function _findMaxChildZIndex(element) {
+      var zIndex = 0;
+
+      if (element.children) {
+        for (var i = 0; i < element.children.length; i++) {
+          var childElem = element.children[i];
+          var style = window.getComputedStyle(childElem);
+          if (style.position !== "static" && style.zIndex !== "auto" &&
+              !isNaN(style.zIndex))
+          {
+             zIndex = Math.max(zIndex, style.zIndex);
+          } else {
+             zIndex = Math.max(zIndex, _findMaxChildZIndex(childElem));
+          }
+        }
+      }
+
+      return zIndex;
+    }
+
     function _createDragImageElement(element) {
       var attached = (element.parentNode != null);
       var stylePosition = element.style.position;
@@ -242,6 +265,9 @@ define('dragImage',[],function() {
       imageElem.style.position = "fixed";
       imageElem.style.width = element.offsetWidth + "px";
       imageElem.style.height = element.offsetHeight + "px";
+
+      // Set zIndex so that the drag image won't get covered by other elements
+      imageElem.style.zIndex = _findMaxChildZIndex(document.body) + 1;
 
       if (!attached) {
         document.body.removeChild(element);

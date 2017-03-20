@@ -262,38 +262,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix : "oj",
-  options: {
-    /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojTagCloud({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojTagCloud
-     * @instance
-     */
-    optionChange: null
-  },
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
@@ -428,43 +396,74 @@ oj.__registerWidget('oj.ojTagCloud', $['oj']['dvtBaseComponent'],
 var ojTagCloudMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "items": {
       "type": "Array<object>"
     },
     "layout": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["cloud", "rectangular"]
     },
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["single", "multiple", "none"]
     },
     "styleDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "hoverBehaviorDelay": {
+          "type": "number"
+        },
+        "svgStyle": {
+          "type": "object"
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["touchStart", "auto"]
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     }
   },
   "methods": {
@@ -473,10 +472,10 @@ var ojTagCloudMeta = {
     "getItemCount": {}
   },
   "extension": {
-    "_widgetName": "ojTagCloud"
+    _WIDGET_NAME: "ojTagCloud"
   }
 };
-oj.Components.registerMetadata('ojTagCloud', 'dvtBaseComponent', ojTagCloudMeta);
-oj.Components.register('oj-tag-cloud', oj.Components.getMetadata('ojTagCloud'));
+oj.CustomElementBridge.registerMetadata('oj-tag-cloud', 'dvtBaseComponent', ojTagCloudMeta);
+oj.CustomElementBridge.register('oj-tag-cloud', {'metadata': oj.CustomElementBridge.getMetadata('oj-tag-cloud')});
 })();
 });

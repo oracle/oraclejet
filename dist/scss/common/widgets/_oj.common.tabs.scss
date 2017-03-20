@@ -50,12 +50,8 @@
       @include oj-user-select-property (none);
     }
 
-    .oj-tabs-tab:focus {
+    .oj-tabs-tab:not(.oj-focus-highlight):focus {
       outline: none;
-    }
-
-    .oj-tabs-tab.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
 
     /*
@@ -198,11 +194,11 @@
     /*
      * applied to the tab placeholder created when reordering
      */
-    .oj-tabs-horizontal > .oj-tabs-nav-root .oj-tabs-tab.ui-sortable-placeholder {
+    .oj-tabs-horizontal > .oj-tabs-nav-root .oj-tabs-tab.oj-sortable-placeholder {
       margin-bottom: -1rem;
     }
 
-    .oj-tabs-horizontal.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.ui-sortable-placeholder {
+    .oj-tabs-horizontal.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-sortable-placeholder {
       margin-top: -1rem;
     }
 

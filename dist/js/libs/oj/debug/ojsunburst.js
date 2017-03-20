@@ -97,36 +97,6 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix : "oj",
   options: {
-    /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojSunburst({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojSunburst
-     * @instance
-     */
-    optionChange: null,
 
     /**
      * Triggered during user rotation of the sunburst.
@@ -147,7 +117,91 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojSunburst
      * @instance
      */
-    rotateInput : null
+    rotateInput : null,
+    /**
+     * Triggered immediately before any node in the sunburst is drilled into. The drill event can be vetoed if the beforeDrill callback returns false.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the drilled node
+     * @property {Object} data.data  the data object of the drilled node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     * 
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */
+    beforeDrill: null,
+    /**
+     * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the drilled node
+     * @property {Object} data.data  the data object of the drilled node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */
+    drill: null,
+     /**
+     * Triggered immediately before any node in the sunburst is expanded. The expand event can be vetoed if the beforeExpand callback returns false.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the node to expand
+     * @property {Object} data.data  the data object of the node to expand
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */
+    beforeExpand: null,
+    /**
+     * Triggered when a node has been expanded. The ui object contains one property, "nodeId", which is the id of the node that has been expanded.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the expanded node
+     * @property {Object} data.data  the data object of the expanded node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */    
+    expand: null,
+    /**
+     * Triggered immediately before any container node in the sunburst is collapsed. The collapse event can be vetoed if the beforeCollapse callback returns false.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the node to collapse
+     * @property {Object} data.data  the data object of the node to collapse
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */
+    beforeCollapse: null,
+    /**
+     * Triggered when a node has been collapsed.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the collapsed node
+     * @property {Object} data.data  the data object of the collapsed node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojSunburst
+     * @instance
+     */        
+    collapse: null
   },
 
   //** @inheritdoc */
@@ -188,6 +242,14 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
   },
 
   //** @inheritdoc */
+  _ProcessOptions: function() {
+    this._super();
+    var rootNodeContent = this.options['rootNodeContent'];
+    if (rootNodeContent && rootNodeContent['_renderer'])
+      rootNodeContent['renderer'] = this._GetTemplateRenderer(rootNodeContent['_renderer'], 'rootNodeContent');
+  },
+  
+  //** @inheritdoc */
   _GetComponentStyleClasses : function() {
     var styleClasses = this._super();
     styleClasses.push('oj-sunburst');
@@ -197,17 +259,10 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _GetChildStyleClasses : function() {
     var styleClasses = this._super();
-    // TODO  fill in the urls after expand/collapse are supported
-// 		styleClasses['oj-sunburst-expand-icon'] = {'path' : '', 'property' : 'CSS_URL'};
-// 		styleClasses['oj-sunburst-expand-icon oj-hover'] = {'path' : '', 'property' : 'CSS_URL'};
-// 		styleClasses['oj-sunburst-expand-icon oj-active'] = {'path' : '', 'property' : 'CSS_URL'};
-// 		styleClasses['oj-sunburst-collapse-icon'] = {'path' : '', 'property' : 'CSS_URL'};
-// 		styleClasses['oj-sunburst-collapse-icon oj-hover'] = {'path' : '', 'property' : 'CSS_URL'};
-// 		styleClasses['oj-sunburst-collapse-icon oj-active'] = {'path' : '', 'property' : 'CSS_URL'};
     styleClasses['oj-sunburst-attribute-type-text'] = {'path' : 'styleDefaults/_attributeTypeTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-sunburst-attribute-value-text'] = {'path' : 'styleDefaults/_attributeValueTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
-    // TODO  add this once drilling is supported
-//    styleClasses['oj-sunburst-current-text'] = {'path' : '', 'property' : 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-sunburst-drill-text '] = {'path' : 'styleDefaults/_drillTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
+    styleClasses['oj-sunburst-current-drill-text '] = {'path' : 'styleDefaults/_currentTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-sunburst-node'] = {'path' : 'nodeDefaults/labelStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
     styleClasses['oj-sunburst-node oj-hover'] = {'path' : 'nodeDefaults/hoverColor', 'property' : 'border-top-color'};
     styleClasses['oj-sunburst-node oj-selected'] = [
@@ -219,7 +274,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _GetEventTypes : function() {
-    return ['optionChange', 'rotateInput'];
+    return ['optionChange', 'rotateInput','beforeDrill', 'drill', 'beforeExpand', 'expand', 'beforeCollapse', 'collapse'];
   },
 
   //** @inheritdoc */
@@ -238,11 +293,33 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _HandleEvent : function(event) {
     var type = event['type'];
+    var eventData = {'id': event['id'], 'data': event['data'], 'component': event['component']};
     if(type === 'rotation') {
       if(event['complete'])
         this._UserOptionChange('startAngle', event['startAngle']);
       else
         this._trigger('rotateInput', null, {'value': event['startAngle']});
+    }
+    else if(type == 'drill') {
+      if(event['id'] && this._trigger('beforeDrill', null, eventData)) {
+        this._UserOptionChange('rootNode', event['id']);
+        this._Render();
+        this._trigger('drill', null, eventData);
+      }
+    }
+    else if(type == 'expand') {
+      if(event['id'] && this._trigger('beforeExpand', null, eventData)) {
+        this._UserOptionChange('expanded', event['expanded']);
+        this._Render();
+        this._trigger('expand', null, eventData);
+      }
+    }
+    else if(type == 'collapse') {
+      if(event['id'] && this._trigger('beforeCollapse', null, eventData)) {
+        this._UserOptionChange('expanded', event['expanded']);
+        this._Render();
+        this._trigger('collapse', null, eventData);
+      }
     }
     else {
       this._super(event);
@@ -259,6 +336,13 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
 
     // Add cursors
     resources['rotateCursor'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/sunburst/rotate.cur');
+    
+    resources['expand'] = 'oj-sunburst-expand-icon';
+    resources['expandOver'] = 'oj-sunburst-expand-icon oj-hover';
+    resources['expandDown'] = 'oj-sunburst-expand-icon oj-active';
+    resources['collapse'] = 'oj-sunburst-collapse-icon';
+    resources['collapseOver'] = 'oj-sunburst-collapse-icon oj-hover';
+    resources['collapseDown'] = 'oj-sunburst-collapse-icon oj-active';
   },
 
   /**
@@ -271,23 +355,13 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
    * @property {boolean} selected
    * @property {number} size
    * @property {string} tooltip
-   * @property {Function} getColor <b>Deprecated</b>: Use <code class="prettyprint">color</code> instead.
-   * @property {Function} getLabel <b>Deprecated</b>: Use <code class="prettyprint">label</code> instead.
-   * @property {Function} getSize <b>Deprecated</b>: Use <code class="prettyprint">size</code> instead.
-   * @property {Function} getTooltip <b>Deprecated</b>: Use <code class="prettyprint">tooltip</code> instead.
-   * @property {Function} isSelected <b>Deprecated</b>: Use <code class="prettyprint">selected</code> instead.
    * @return {Object|null} An object containing properties for the node, or null if none exists.
    * @expose
    * @instance
    * @memberof oj.ojSunburst
    */
   getNode: function(subIdPath) {
-    var ret = this._component.getAutomation().getNode(subIdPath);
-
-    // : Provide backwards compatibility for getters until 1.2.0.
-    this._AddAutomationGetters(ret);
-
-    return ret;
+    return this._component.getAutomation().getNode(subIdPath);
   },
 
   /**
@@ -453,6 +527,18 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  *       <td><kbd>Shift + Alt + RightArrow</kbd></td>
  *       <td>Rotate 5 degrees clockwise.</td>
  *     </tr>
+ *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Drill on a node when <code class="prettyprint">drilling</code> is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>+</kbd></td>
+ *       <td>Expand a node when <code class="prettyprint">showDisclosure</code> is enabled and the node is expandable.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>-</kbd></td>
+ *       <td>Collapse a node when <code class="prettyprint">showDisclosure</code> is enabled and the node is collapsable.</td>
+ *     </tr>
  *   </tbody>
  * </table>
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
@@ -522,6 +608,28 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  */
 
 /**
+ * The knockout template used to render the custom content of the root node.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the root node area. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the root node area. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>data: The data object for the root node.</li> 
+ *    <li>id: The id of the root node.</li> 
+ *    <li>component: The widget constructor for the sunburst. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name rootNodeContent.template
+ * @memberof! oj.ojSunburst
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
+/**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
@@ -532,10 +640,12 @@ var ojSunburstMeta = {
       "type": "number"
     },
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationUpdateColor": {
       "type": "string"
@@ -543,61 +653,162 @@ var ojSunburstMeta = {
     "colorLabel": {
       "type": "string"
     },
+    "displayLevels": {
+      "type": "number"
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": ["on", "off"]
+    },
+    "expanded": {
+      "type": "Array<string>|string"
+    },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "hoverBehaviorDelay": {
-      "type": "number|string"
-    },
+      "type": "number"
+    },    
     "nodeDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "borderWidth": {
+          "type": "number"
+        },
+        "hoverColor": {
+          "type": "string"
+        },
+        "labelDisplay": {
+          "type": "string",
+          "enumValues": ["auto", "horizontal", "rotated", "off"]
+        },
+        "labelHalign": {
+          "type": "string",
+          "enumValues": ["inner", "outer", "center"]
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "selectedInnerColor": {
+          "type": "string"
+        },
+        "selectedOuterColor": {
+          "type": "string"
+        },
+        "showDisclosure": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        }
+      }
     },
     "nodes": {
       "type": "Array<object>"
     },
-    "rotation": {
+    "rootNode": {
       "type": "string"
+    },
+    "rotation": {
+      "type": "string",
+      "enumValues": ["off", "on"]
+    },
+    "rootNodeContent": {
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "single", "multiple"]
     },
     "sizeLabel": {
       "type": "string"
     },
     "sorting": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "startAngle": {
-      "type": "number"
+      "type": "number",
+      "writeback": true
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
       "type": "string"
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelColor": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        }
+      }
     }
   },
   "methods": {
     "getContextByNode": {},
     "getNode": {}
   },
+  "events": {
+    "rotateInput": {},
+    "beforeDrill": {},
+    "drill": {},
+    "beforeExpand": {},
+    "expand": {},
+    "beforeCollapse": {},
+    "collapse": {}
+  },
   "extension": {
-    "_widgetName": "ojSunburst"
+    _WIDGET_NAME: "ojSunburst"
   }
 };
-oj.Components.registerMetadata('ojSunburst', 'dvtBaseComponent', ojSunburstMeta);
-oj.Components.register('oj-sunburst', oj.Components.getMetadata('ojSunburst'));
+
+var _ARRAY_REGEXP = /^\[.*\]/;
+var sunburstParseFunction = function(value, name, meta, defaultParseFunction) {
+  if (name == "expanded") {
+    if (_ARRAY_REGEXP.test(value)) {
+      return JSON.parse(value);
+    }
+    return value;
+  }
+  else 
+    return defaultParseFunction(value);
+};
+
+oj.CustomElementBridge.registerMetadata('oj-sunburst', 'dvtBaseComponent', ojSunburstMeta);
+oj.CustomElementBridge.register('oj-sunburst', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-sunburst'),
+  'parseFunction': sunburstParseFunction});
 })();
+
 });

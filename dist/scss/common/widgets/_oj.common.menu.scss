@@ -45,7 +45,7 @@
     
     // top-level menu (component root node) when displayed as a dropdown
     .oj-menu-dropdown {
-        border: 1px solid $menuBorderColor;
+        border: $menuBorderWidth solid $menuBorderColor;
         border-radius: $menuBorderRadius;
         background: $menuBgColor;
         font-size: $fontSize;

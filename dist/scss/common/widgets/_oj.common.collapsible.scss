@@ -20,6 +20,10 @@
       }      
     }
     
+    oj-collapsible {
+      display: block;
+    }
+    
     .oj-collapsible {
       margin-bottom: 10px;
       -webkit-tap-highlight-color: transparent;
@@ -32,9 +36,7 @@
      */
     .oj-collapsible-header {
       display: block;
-
       position: relative;
-      font-weight: $listViewHeaderFontWeight;
       color: $headerTextColor;
       padding: 5px 0 3px 0;
       margin: 0;
@@ -133,14 +135,10 @@
       outline-offset: -5px;
     }
 
-    .oj-collapsible-header-icon:focus {
+    .oj-collapsible-header-icon:not(.oj-focus-highlight):focus {
       outline: none;
     }
 
-    .oj-collapsible-header-icon.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
-    }
-			
 
     /*
      * set hand cursor while over the clickable area

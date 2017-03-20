@@ -190,14 +190,8 @@
       }      
     }
 
-    // This is to prevent the flash of unstyled content before the html becomes JET components.
-    @if $initialVisibility == hidden {
-      oj-toggle-button:not(.oj-complete) {
-        visibility: hidden;
-      }      
-    }
-
-    .oj-button { 
+    .oj-button-jqui,     // jqui only
+    .oj-button-button {  // custom element only
         @include oj-display-inline-flex-property;
 
         @include oj-justify-content-property(center);
@@ -239,7 +233,8 @@
     }
 
     // specificity needed to override this Normalize rule:  html input[type="button"] {cursor: pointer} 
-    html body .oj-button {
+    html body .oj-button-jqui,                // jqui only
+    html body .oj-button-button {  // custom element only
         cursor: $buttonCursor; 
     }
 
@@ -293,21 +288,23 @@
     // Alternate button sizes
     //----------------------------------
 
-
-    .oj-button-sm.oj-button {
+    .oj-button-jqui.oj-button-sm,                // jqui only
+    .oj-button.oj-button-sm .oj-button-button {  // custom element only
         height: $buttonSmallHeight;
         line-height: $buttonSmallHeight;
         font-size: $buttonSmallFontSize;
     }
 
-    .oj-button-lg.oj-button {
+    .oj-button-jqui.oj-button-lg,                // jqui only
+    .oj-button.oj-button-lg .oj-button-button {  // custom element only
         height: $buttonLargeHeight;
         line-height: $buttonLargeHeight;
         font-size: $buttonLargeFontSize;
     }
 
 
-    .oj-button-xl.oj-button {
+    .oj-button-jqui.oj-button-xl,                // jqui only
+    .oj-button.oj-button-xl .oj-button-button {  // custom element only
         height: $buttonXlargeHeight;
         line-height: $buttonXlargeHeight;
         font-size: $buttonXlargeFontSize;
@@ -318,15 +315,21 @@
     //----------------------------------
 
 
-    .oj-button, 
-    .oj-button:link, 
-    .oj-button:visited, 
-    .oj-button:hover, 
-    .oj-button:active { 
+    .oj-button-jqui,            // jqui only
+    .oj-button-button,          // custom element only
+    .oj-button-jqui:link,       // jqui only
+    .oj-button-button:link,     // custom element only
+    .oj-button-jqui:visited,    // jqui only
+    .oj-button-button:visited,  // custom element only
+    .oj-button-jqui:hover,      // jqui only
+    .oj-button-button:hover,    // custom element only
+    .oj-button-jqui:active,     // jqui only
+    .oj-button-button:active {  // custom element only
         text-decoration: none; 
     }
 
-    .oj-button:focus {
+    .oj-button-jqui:focus,     // jqui only
+    .oj-button-button:focus {  // custom element only
         outline:none; // e.g. Chrome adds blue outline to focused element
     }
 
@@ -336,11 +339,13 @@
     // example keyboard or initial page load.
     // See also the $focusHighlightPolicy variable, which controls when this 
     // class is set.  That variable affects multiple components, not just Button.
-    .oj-button.oj-focus-highlight {
+    .oj-button-jqui.oj-focus-highlight,                // jqui only
+    .oj-button.oj-focus-highlight .oj-button-button {  // custom element only
         @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
 
-    .oj-button.oj-disabled {
+    .oj-button-jqui.oj-disabled,                // jqui only
+    .oj-button.oj-disabled .oj-button-button {  // custom element only
         cursor: default; // in case a themer sets clickable "hand" cursor on buttons, override it if disabled
     }
 
@@ -353,11 +358,16 @@
      * focus-only, disabled, hover, active, selected, ...).
      */
 
-    .oj-button.oj-button-full-chrome,
-    .oj-button.oj-button-full-chrome:link,
-    .oj-button.oj-button-full-chrome:visited,
-    .oj-button.oj-button-full-chrome:hover,
-    .oj-button.oj-button-full-chrome:active { 
+    .oj-button-jqui.oj-button-full-chrome,                       // jqui only
+    .oj-button-jqui.oj-button-full-chrome:link,                  // jqui only
+    .oj-button-jqui.oj-button-full-chrome:visited,               // jqui only
+    .oj-button-jqui.oj-button-full-chrome:hover,                 // jqui only
+    .oj-button-jqui.oj-button-full-chrome:active,                // jqui only
+    .oj-button.oj-button-full-chrome .oj-button-button,          // custom element only
+    .oj-button.oj-button-full-chrome .oj-button-button:link,     // custom element only
+    .oj-button.oj-button-full-chrome .oj-button-button:visited,  // custom element only
+    .oj-button.oj-button-full-chrome .oj-button-button:hover,    // custom element only
+    .oj-button.oj-button-full-chrome .oj-button-button:active {  // custom element only
         // can't set font-weight on oj-button-text class because oj-button-text 
         // not used on inputs of type button, submit, and reset
         font-weight: $buttonFontWeight;
@@ -366,8 +376,10 @@
     /* oj-default is applied iff the button is not in any of the other states, 
        namely oj-active, oj-disabled, oj-selected, oj-hover, or oj-focus.
        oj-focus-only is applied iff the button has oj-focus but not any of the other 4 states listed above.*/
-    .oj-button.oj-default.oj-button-full-chrome,
-    .oj-button.oj-focus-only.oj-button-full-chrome {
+    .oj-button-jqui.oj-default.oj-button-full-chrome,                   // jqui only
+    .oj-button-jqui.oj-focus-only.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-default.oj-button-full-chrome .oj-button-button,      // custom element only
+    .oj-button.oj-focus-only.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $buttonBgColor; 
         @include oj-background-image($buttonBgImage);
         border-color: $buttonBorderColor;   
@@ -383,7 +395,8 @@
         color: $buttonIconColor; 
     }
 
-    .oj-button.oj-hover.oj-button-full-chrome {
+    .oj-button-jqui.oj-hover.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-hover.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $buttonBgColorHover;
         @include oj-background-image($buttonBgImageHover);
         border-color: $buttonBorderColorHover; 
@@ -401,7 +414,8 @@
     // active should trump hover
     /* oj-active is applied to a push button when it is actively being held down 
        by the mouse button or Enter or Spacebar. */
-    .oj-button.oj-active.oj-button-full-chrome {
+    .oj-button-jqui.oj-active.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-active.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $buttonBgColorActive;
         @include oj-background-image($buttonBgImageActive);
         border-color: $buttonBorderColorActive;
@@ -420,7 +434,8 @@
     
     // selected mostly trumps hover (like active), but unlike active, the text/icon
     // colors are a 3rd color different than the selected color and hover color
-    .oj-button.oj-selected.oj-button-full-chrome {
+    .oj-button-jqui.oj-selected.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-selected.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $buttonBgColorSelected;
         @include oj-background-image($buttonBgImageSelected);
         border-color: $buttonBorderColorSelected;
@@ -431,8 +446,11 @@
         text-shadow: $buttonTextShadowSelected;
     }
     
-    .oj-button.oj-selected.oj-hover.oj-button-full-chrome {
+    .oj-button-jqui.oj-selected.oj-hover.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-selected.oj-hover.oj-button-full-chrome .oj-button-button {  // custom element only
         color: $buttonTextColorSelectedHover;  
+        background-color: $buttonBgColorSelectedHover;
+        border-color: $buttonBorderColorSelectedHover;
     }
     
     .oj-button.oj-selected.oj-button-full-chrome .oj-button-icon {
@@ -443,7 +461,8 @@
         color: $buttonIconColorSelectedHover; 
     }
 
-    .oj-button.oj-disabled.oj-button-full-chrome {
+    .oj-button-jqui.oj-disabled.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-button-full-chrome .oj-button-button {  // custom element only
         background-color: $buttonBgColorDisabled;
         @include oj-background-image(none);
         border-color: $buttonBorderColorDisabled;
@@ -459,7 +478,8 @@
     // Unlike other occurrences of .oj-selected, these "disabled selected" rules have no corresponding "disabled active"
     // rules, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
 
-    .oj-button.oj-disabled.oj-selected.oj-button-full-chrome { 
+    .oj-button-jqui.oj-disabled.oj-selected.oj-button-full-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-selected.oj-button-full-chrome .oj-button-button {  // custom element only
         color: $buttonTextColorSelectedDisabled;
         background-color: $buttonBgColorSelectedDisabled;
         border-color: $buttonBorderColorSelectedDisabled;
@@ -486,9 +506,12 @@
      */
     
     // half-chrome and (default or focus-only or disabled)
-    .oj-button.oj-default.oj-button-half-chrome,
-    .oj-button.oj-focus-only.oj-button-half-chrome,
-    .oj-button.oj-disabled.oj-button-half-chrome {
+    .oj-button-jqui.oj-default.oj-button-half-chrome,                 // jqui only
+    .oj-button-jqui.oj-focus-only.oj-button-half-chrome,              // jqui only
+    .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-default.oj-button-half-chrome .oj-button-button,    // custom element only
+    .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button, // custom element only
+    .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {  // custom element only
         border-color: transparent;
         background-color: transparent;
         @include oj-background-image(none);
@@ -496,14 +519,17 @@
     }
 
     // half-chrome and (default or focus-only)
-    .oj-button.oj-default.oj-button-half-chrome,
-    .oj-button.oj-focus-only.oj-button-half-chrome {
+    .oj-button-jqui.oj-default.oj-button-half-chrome,                   // jqui only
+    .oj-button-jqui.oj-focus-only.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-default.oj-button-half-chrome .oj-button-button,      // custom element only
+    .oj-button.oj-focus-only.oj-button-half-chrome .oj-button-button {  // custom element only
         text-shadow: none;
         color: $buttonHalfChromeTextColor;
     }
 
     // half-chrome hover
-    .oj-button.oj-hover.oj-button-half-chrome {
+    .oj-button-jqui.oj-hover.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-hover.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorHover;
         background-color: $buttonHalfChromeBgColorHover;
         border-color: $buttonHalfChromeBorderColorHover;
@@ -511,7 +537,8 @@
     }
 
     // half-chrome active: should trump half-chrome hover
-    .oj-button.oj-active.oj-button-half-chrome {
+    .oj-button-jqui.oj-active.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-active.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorActive;
         background-color: $buttonHalfChromeBgColorActive;
         border-color: $buttonHalfChromeBorderColorActive;
@@ -520,7 +547,8 @@
     }
 
     // half-chrome selected
-    .oj-button.oj-selected.oj-button-half-chrome {
+    .oj-button-jqui.oj-selected.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-selected.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorSelected;
         background-color: $buttonHalfChromeBgColorSelected;
         border-color: $buttonHalfChromeBorderColorSelected;
@@ -528,12 +556,16 @@
     }
 
     // half-chrome selected hover 
-    .oj-button.oj-selected.oj-hover.oj-button-half-chrome {
+    .oj-button-jqui.oj-selected.oj-hover.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-selected.oj-hover.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorSelectedHover;
+        background-color: $buttonHalfChromeBgColorSelectedHover;
+        border-color: $buttonHalfChromeBorderColorSelectedHover;
     }
 
     // half-chrome disabled
-    .oj-button.oj-disabled.oj-button-half-chrome {
+    .oj-button-jqui.oj-disabled.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorDisabled;
         opacity: $buttonHalfChromeOpacityDisabled;
     }
@@ -541,18 +573,25 @@
     // half-chrome disabled selected
     // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
     // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
-    .oj-button.oj-disabled.oj-selected.oj-button-half-chrome { // 6/2014:  still need this line for specificity
+    // 6/2014:  still need this line for specificity
+    .oj-button-jqui.oj-disabled.oj-selected.oj-button-half-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-selected.oj-button-half-chrome .oj-button-button {  // custom element only
         color: $buttonHalfChromeTextColorSelectedDisabled;
         background-color: $buttonHalfChromeBgColorSelectedDisabled;
         border-color: $buttonHalfChromeBorderColorSelectedDisabled;
     }
 
     // half-chrome
-    .oj-button.oj-button-half-chrome,
-    .oj-button.oj-button-half-chrome:link,
-    .oj-button.oj-button-half-chrome:visited,
-    .oj-button.oj-button-half-chrome:hover,
-    .oj-button.oj-button-half-chrome:active { 
+    .oj-button-jqui.oj-button-half-chrome,                       // jqui only
+    .oj-button-jqui.oj-button-half-chrome:link,                  // jqui only
+    .oj-button-jqui.oj-button-half-chrome:visited,               // jqui only
+    .oj-button-jqui.oj-button-half-chrome:hover,                 // jqui only
+    .oj-button-jqui.oj-button-half-chrome:active,                // jqui only
+    .oj-button.oj-button-half-chrome .oj-button-button,          // custom element only
+    .oj-button.oj-button-half-chrome .oj-button-button:link,     // custom element only
+    .oj-button.oj-button-half-chrome .oj-button-button:visited,  // custom element only
+    .oj-button.oj-button-half-chrome .oj-button-button:hover,    // custom element only
+    .oj-button.oj-button-half-chrome .oj-button-button:active {  // custom element only
         // can't set font-weight on oj-button-text class because oj-button-text 
         // not used on inputs of type button, submit, and reset
         font-weight: $buttonHalfChromeFontWeight; 
@@ -604,9 +643,12 @@
     /* Outlined buttons are similar to half-chrome buttons, but have a border in the default state. */
     
     // outlined and (default or focus-only or disabled)
-    .oj-button.oj-default.oj-button-outlined-chrome,
-    .oj-button.oj-focus-only.oj-button-outlined-chrome,
-    .oj-button.oj-disabled.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-default.oj-button-outlined-chrome,                 // jqui only
+    .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,              // jqui only
+    .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,    // custom element only
+    .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button, // custom element only
+    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {  // custom element only
         border-color: $buttonOutlinedChromeBorderColor;
         background-color: transparent;
         @include oj-background-image(none);
@@ -614,14 +656,17 @@
     }
 
     // outlined and (default or focus-only)
-    .oj-button.oj-default.oj-button-outlined-chrome,
-    .oj-button.oj-focus-only.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-default.oj-button-outlined-chrome,                   // jqui only
+    .oj-button-jqui.oj-focus-only.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-default.oj-button-outlined-chrome .oj-button-button,      // custom element only
+    .oj-button.oj-focus-only.oj-button-outlined-chrome .oj-button-button {  // custom element only
         text-shadow: none;
         color: $buttonOutlinedChromeTextColor;
     }
 
     // outlined hover
-    .oj-button.oj-hover.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-hover.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-hover.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorHover;
         background-color: $buttonOutlinedChromeBgColorHover;
         border-color: $buttonOutlinedChromeBorderColorHover;
@@ -629,7 +674,8 @@
     }
 
     // outlined active: should trump outlined hover
-    .oj-button.oj-active.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-active.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-active.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorActive;
         background-color: $buttonOutlinedChromeBgColorActive;
         border-color: $buttonOutlinedChromeBorderColorActive;
@@ -638,7 +684,8 @@
     }
 
     // outlined selected
-    .oj-button.oj-selected.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-selected.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-selected.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorSelected;
         background-color: $buttonOutlinedChromeBgColorSelected;
         border-color: $buttonOutlinedChromeBorderColorSelected;
@@ -646,12 +693,16 @@
     }
 
     // outlined selected hover 
-    .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-selected.oj-hover.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-selected.oj-hover.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorSelectedHover;
+        background-color: $buttonOutlinedChromeBgColorSelectedHover;
+        border-color: $buttonOutlinedChromeBorderColorSelectedHover;
     }
 
     // outlined disabled
-    .oj-button.oj-disabled.oj-button-outlined-chrome {
+    .oj-button-jqui.oj-disabled.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorDisabled;
         border-color: $buttonOutlinedChromeBorderColorDisabled;
         opacity: $buttonOutlinedChromeOpacityDisabled;
@@ -660,18 +711,25 @@
     // outlined disabled selected
     // Unlike other occurrences of .oj-selected, this "disabled selected" rule has no corresponding "disabled active"
     // rule, since disabled buttons can't be active (pressed down by mouse/Space/Enter).
-    .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome { // 6/2014:  still need this line for specificity
+    // 6/2014:  still need this line for specificity
+    .oj-button-jqui.oj-disabled.oj-selected.oj-button-outlined-chrome,                // jqui only
+    .oj-button.oj-disabled.oj-selected.oj-button-outlined-chrome .oj-button-button {  // custom element only
         color: $buttonOutlinedChromeTextColorSelectedDisabled;
         background-color: $buttonOutlinedChromeBgColorSelectedDisabled;
         border-color: $buttonOutlinedChromeBorderColorSelectedDisabled;
     }
 
     // outlined
-    .oj-button.oj-button-outlined-chrome,
-    .oj-button.oj-button-outlined-chrome:link,
-    .oj-button.oj-button-outlined-chrome:visited,
-    .oj-button.oj-button-outlined-chrome:hover,
-    .oj-button.oj-button-outlined-chrome:active { 
+    .oj-button-jqui.oj-button-outlined-chrome,                       // jqui only
+    .oj-button-jqui.oj-button-outlined-chrome:link,                  // jqui only
+    .oj-button-jqui.oj-button-outlined-chrome:visited,               // jqui only
+    .oj-button-jqui.oj-button-outlined-chrome:hover,                 // jqui only
+    .oj-button-jqui.oj-button-outlined-chrome:active,                // jqui only
+    .oj-button.oj-button-outlined-chrome .oj-button-button,          // custom element only
+    .oj-button.oj-button-outlined-chrome .oj-button-button:link,     // custom element only
+    .oj-button.oj-button-outlined-chrome .oj-button-button:visited,  // custom element only
+    .oj-button.oj-button-outlined-chrome .oj-button-button:hover,    // custom element only
+    .oj-button.oj-button-outlined-chrome .oj-button-button:active {  // custom element only
         // can't set font-weight on oj-button-text class because oj-button-text 
         // not used on inputs of type button, submit, and reset
         font-weight: $buttonOutlinedChromeFontWeight;
@@ -743,7 +801,8 @@
 
     /* reset extra padding in Firefox, see h5bp.com/1 */
     input.oj-button::-moz-focus-inner,
-    button.oj-button::-moz-focus-inner { 
+    button.oj-button::-moz-focus-inner, 
+    .oj-button button::-moz-focus-inner { 
         border: 0; 
         padding: 0; 
     }
@@ -755,22 +814,26 @@
 
     // in high contrast mode bump up the focus outline size to 
     // make it easier to see
-    .oj-hicontrast .oj-button.oj-focus {
+    .oj-hicontrast .oj-button-jqui.oj-focus,                // jqui only
+    .oj-hicontrast .oj-button.oj-focus .oj-button-button {  // custom element only
       outline-width: 3px;
     }
 
     // a selected button will have a more prominent border
-    .oj-hicontrast .oj-button.oj-selected {
+    .oj-hicontrast .oj-button-jqui.oj-selected,                // jqui only
+    .oj-hicontrast .oj-button.oj-selected .oj-button-button {  // custom element only
       border-style: double;
       border-width: 3px;
     }
 
     // a disabled button will have a less prominent border
-    .oj-hicontrast .oj-button.oj-disabled {
+    .oj-hicontrast .oj-button-jqui.oj-disabled,                // jqui only
+    .oj-hicontrast .oj-button.oj-disabled .oj-button-button {  // custom element only
       border-style: dotted;
     }
 
-    .oj-hicontrast .oj-button.oj-disabled.oj-selected {
+    .oj-hicontrast .oj-button-jqui.oj-disabled.oj-selected,                // jqui only
+    .oj-hicontrast .oj-button.oj-disabled.oj-selected .oj-button-button {  // custom element only
       border-width: 2px;
     }
 

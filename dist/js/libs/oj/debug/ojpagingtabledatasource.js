@@ -25,7 +25,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
 /**
  * @export
  * @class oj.PagingTableDataSource
- * @classdesc Object representing data used by the paging component
+ * @classdesc Object representing data used by the paging component.
+ *            <p>This class implements the {@link oj.PagingModel} interface and 
+ *            publish all of the oj.PagingModel event types, which can be
+ *            listened to using the [on()]{@link oj.PagingTableDataSource#on}
+ *            method.</p>
  * @extends oj.TableDataSource
  * @implements oj.PagingModel
  * @param {Object} dataSource
@@ -51,6 +55,16 @@ oj.PagingTableDataSource = function(dataSource, options)
   this._endIndex = -1;
   this._dataSourceWrappedEventHandlers = [];
   this.Init();
+
+  // PagingTableDataSource doesn't need its own copy of sortCriteria and can
+  // just act as a proxy for the underlying dataSource
+  Object.defineProperty(this, 'sortCriteria',
+  {
+    'configurable': false,
+    'enumerable': true,
+    'get': function() { return this.dataSource['sortCriteria']; },
+    'set': function(newValue) { this.dataSource['sortCriteria'] = newValue; }
+  });
 };
 
 // Subclass from oj.DataSource 
@@ -120,7 +134,7 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
   }
   catch (err)
   {
-    return Promise.reject(null);
+    return Promise.reject(err);
   }
   var previousPage = this._getPageFromStartIndex();
   this._pageSize = options['pageSize'] != null ? options['pageSize'] : this._pageSize;
@@ -151,7 +165,7 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
       function(e)
       {
         self._startIndex = previousPage * self._pageSize;
-        reject(null); 
+        reject(e); 
       });
     }
     else
@@ -343,7 +357,9 @@ oj.PagingTableDataSource.prototype.getCapability = function(feature)
 
 /**
  * Attach an event handler to the datasource
- * @param {string} eventType eventType supported by the datasource
+ * @param {string} eventType eventType supported by the datasource.
+ *        <p>In addition to this class's event types, it can also be one of the 
+ *           {@link oj.PagingModel} event types.</p>
  * @param {function(Object)} eventHandler event handler function
  * @export
  * @expose
@@ -440,15 +456,6 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
  */
 oj.PagingTableDataSource.prototype.sort = function(criteria)
 {
-  if (criteria == null)
-  {
-    criteria = this['sortCriteria'];
-  }
-  else
-  {
-    this['sortCriteria'] = criteria;
-  }
-  
   return this.dataSource.sort(criteria);
 };
 

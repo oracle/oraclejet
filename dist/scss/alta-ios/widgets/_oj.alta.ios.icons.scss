@@ -6,7 +6,7 @@ $includeIconClasses: $includeAllClasses !default;
 
 // icon font vars
 
-// NOTE: do not put a slash in the string, meaning 
+// NOTE: do not put a slash in the string, meaning
 // the stings should look like "e600", not "\e600".
 // Search for
 // @function oj-prepend-slash
@@ -17,6 +17,7 @@ $oj-fwk-icon-arrow02-s: "e602" !default;
 $oj-fwk-icon-arrow03-e: "e603" !default;
 $oj-fwk-icon-arrow03-se: "e604" !default;
 $oj-fwk-icon-calendar: "e609" !default;
+$oj-fwk-icon-calendarclock: "e619" !default;
 $oj-fwk-icon-caret-e: "e605" !default;
 $oj-fwk-icon-caret02-e: "e606" !default;
 $oj-fwk-icon-caret02end-e: "e607" !default;
@@ -38,14 +39,21 @@ $oj-fwk-icon-checkmark: "e615" !default;
 $oj-fwk-icon-plus: "e616" !default;
 $oj-fwk-icon-minus: "e617" !default;
 $oj-fwk-icon-corner-drag: "e618" !default;
+$oj-fwk-icon-dots-vertical: "e61a" !default;
 
 
-@import "../../common/widgets/oj.common.icons"; 
+@import "../../common/widgets/oj.common.icons";
 
 @if $includeIconClasses != false {
   @include module-include-once("alta.ios.icons") {
 
+    .oj-fwk-icon-back {
+        @extend .oj-fwk-icon-caret-start;
+    }
+
+    .oj-fwk-icon-next {
+        @extend .oj-fwk-icon-caret-end;
+    }
+
   }
 }
-
-

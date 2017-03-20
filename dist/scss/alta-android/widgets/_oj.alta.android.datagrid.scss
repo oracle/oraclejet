@@ -21,6 +21,15 @@
 @import "../../common/widgets/oj.common.datagrid";
 
 @if $includeDataGridClasses != false {
-  @include module-include-once("alta.android.datagrid") {     
+  @include module-include-once("alta.android.datagrid") {
+    /* Styling for the sort ascending icon */
+    .oj-datagrid-sort-ascending-icon {
+      @extend .oj-fwk-icon-arrowtail-n;
+    }
+
+    /* Styling for the sort descending icon */
+    .oj-datagrid-sort-descending-icon {
+      @extend .oj-fwk-icon-arrowtail-s;
+    }
   }
 }

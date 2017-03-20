@@ -37,6 +37,20 @@ oj.ListViewDndContext.C_KEY = 67;
 oj.ListViewDndContext.V_KEY = 86;
 oj.ListViewDndContext.X_KEY = 88;
 
+/**
+ * Clears the internal of dnd context.  Called by _resetInternal in ListView.
+ */
+oj.ListViewDndContext.prototype.reset = function()
+{
+    // this cache might not be clear if dnd never did happened
+    this._unsetSelectionDraggable();
+
+    this.m_itemsDragged = null;
+    this.m_dragImage = null;
+    this.m_currentDragItem = null;
+    this.m_dragItems = null;
+};
+
 /******************************** common helpers ***********************************************/
 
 /**
@@ -213,6 +227,45 @@ oj.ListViewDndContext.prototype.itemRenderComplete = function(elem, context)
     }
 };
 /******************************** Mouse down/up, touch start/end helpers ***********************************************/
+oj.ListViewDndContext.prototype._unsetSelectionDraggable = function()
+{
+    if (this.m_draggableSelection)
+    {
+        $.each(this.m_draggableSelection, function(index, elem)
+        {
+            $(elem).removeClass("oj-draggable");
+        });
+    }
+};
+
+/** 
+ * Make every item in the current selection draggable.
+ * Invoke by listview when selection has changed
+ * @private
+ */
+oj.ListViewDndContext.prototype.setSelectionDraggable = function()
+{
+    var elems = [], selection, i, elem;
+
+    // clear previous draggable selections
+    this._unsetSelectionDraggable();
+
+    // make current selection draggable
+    selection = this.listview.GetOption("selection");
+    for (i=0; i<selection.length; i++)
+    {
+        elem = this.listview.FindElementByKey(selection[i]);
+        // make sure item is focusable also
+        if (elem != null && !this.listview.SkipFocus($(elem)))
+        {     
+            elems.push(elem);
+            $(elem).addClass("oj-draggable");
+        }
+    }
+
+    this.m_draggableSelection = elems;
+};
+
 /** 
  * Sets draggable style class on item
  * @param {jQuery} item the listview item
@@ -254,7 +307,7 @@ oj.ListViewDndContext.prototype._unsetItemDraggable = function(item)
  */
 oj.ListViewDndContext.prototype._setDraggable = function(target)
 {
-    var cls, item, dragger, skipped, activeItem;
+    var cls, item, dragger, skipped, selectedItems;
 
     if (this._getDragOptions() != null || this._isItemReordering())
     {
@@ -276,21 +329,22 @@ oj.ListViewDndContext.prototype._setDraggable = function(target)
                 }
             }
 
-            // if dragging an item, it must be already the current item
-            activeItem = this._getActiveItem();
-            if (activeItem != null)
+            // if dragging an item, it must be already the current item or one of the selected item
+            selectedItems = this._getSelectedItems();
+            if (selectedItems.length > 0)
             {
                 // in order to initiate drag the item must be the current active item
-                if (item != null && item[0] == activeItem)
+                if (item != null && selectedItems.indexOf(item[0]) > -1)
                 {
                     dragger = item;
                 }
                 else
                 {
                     // the active item would change, so remove oj-draggable now
-                    $(activeItem).removeClass("oj-draggable");
+                    // note for multiple selection case see setSelectionDraggable
+                    $(selectedItems[0]).removeClass("oj-draggable");
                 }   
-            } 
+            }
         }
 
         if (dragger != null)
@@ -485,8 +539,14 @@ oj.ListViewDndContext.prototype._setDragItemImage = function(nativeEvent, items)
         // calculate offset if drag on affordance
         if ($(target).hasClass(this._getDragAffordanceClass()))
         {
+            offsetTop = 0;
+            if ($.contains(items[0], target.offsetParent))
+            {
+                offsetTop = target.offsetTop;
+            }
+
             left = Math.max(0, target.offsetLeft - items[0].offsetLeft) + target.offsetWidth/2;
-            top = target.offsetTop + target.offsetHeight/2;
+            top = offsetTop + target.offsetHeight/2;
         }
 
         clone = $(items[0].cloneNode(true));
@@ -645,12 +705,19 @@ oj.ListViewDndContext.prototype._handleDragEnd = function(event)
     // clean up drag image
     this._destroyDragImage();
 
+    // remove style classes from selected items that were draggable
+    this._unsetSelectionDraggable();
+
     // invoke callback
     this._invokeDndCallback('drag', 'dragEnd', event);
+
+    // save dragItems for potential drop within same listview (reordering)
+    this.m_itemsDragged = this.m_dragItems;
 
     // reset drag variables (except this.m_dragItems)
     this.m_dragImage = null;
     this.m_currentDragItem = null;
+    this.m_dragItems = null;
 };
 
 /**
@@ -1098,7 +1165,8 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
     // fire reorder event
     if (ui['reorder'])
     {
-        ui['items'] = this.m_dragItems;
+        // the order in which dragEnd and drop event is called is inconsistent, hence the check
+        ui['items'] = this.m_itemsDragged == null ? this.m_dragItems : this.m_itemsDragged;
         ui['reference'] = ui['item'];
         this.listview.Trigger("reorder", event, ui);
 
@@ -1119,6 +1187,7 @@ oj.ListViewDndContext.prototype._handleDrop = function(event)
     this.m_currentDropItem = null;
     this.m_dropTargetIndex = -1;
     this.m_dropPosition = null;
+    this.m_itemsDragged = null;
 
     if (returnValue === -1)
     {

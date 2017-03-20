@@ -3350,6 +3350,8 @@ dvt.PanZoomComponent.prototype.Init = function(context, callback, callbackObj) {
   this._resourcesMap = null;
   this._subcomponentStyles = null;
   this._skinName = '';
+  this._panAnimator = null;
+  this._panningInterrupted = false;
 };
 
 /**
@@ -3802,7 +3804,78 @@ dvt.PanZoomComponent.prototype.destroy = function() {
   // Always call superclass last for destroy
   dvt.PanZoomComponent.superclass.destroy.call(this);
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+
+/**
+ * Ensures the displayable is in viewport
+ * @param {dvt.KeyboardEvent} event
+ * @param {DvtKeyboardNavigable} navigable The keyboard navigable, different fortmap
+ */
+dvt.PanZoomComponent.prototype.ensureObjInViewport = function(event, navigable) 
+    {
+  if (!this._panZoomCanvas.isPanningEnabled()) {
+    return;
+  }
+  if (this._panAnimator) {
+    this._panningInterrupted = true;
+    this._panAnimator.stop();
+  }
+  var width = this.Width;
+  var height = this.Height;
+  var dimensions = navigable.getKeyboardBoundingBox(this.getCtx().getStage());
+  var viewport = new dvt.Rectangle(0, 0, width, height);
+  if (viewport.getUnion(dimensions).equals(viewport)) {
+    //navigable is entirely inside the viewport
+    return;
+  }
+  var panX = 0;
+  var panY = 0;
+  var objW = dimensions.w;
+  var objH = dimensions.h;
+  var objX = dimensions.x;
+  var objY = dimensions.y;
+  if (objW <= width) {
+    if (objX < 0) {
+      panX = objX;
+    }
+    else if (objX + objW > width) {
+      panX = objX + objW - width;
+    }
+  }
+  else {
+    panX = (objX + 0.5 * objW) - (0.5 * width);
+  }
+  if (objH <= height) {
+    if (objY < 0) {
+      panY = objY;
+    }
+    else if (objY + objH > height) {
+      panY = objY + objH - height;
+    }
+  }
+  else {
+    panY = (objY + 0.5 * objH) - (0.5 * height);
+  }
+
+  var animator = new dvt.Animator(this.getCtx(), this.getAnimationDuration());
+  this._panAnimator = animator;
+  var thisRef = this;
+  var fireEndEventPanFunc = function() {
+    thisRef._panAnimator = null;
+    thisRef.getEventManager().showFocusEffect(event, navigable);
+    thisRef._panningInterrupted = false;
+  };
+  this.getPanZoomCanvas().panBy(-panX, -panY, animator, fireEndEventPanFunc);
+  animator.play();
+};
+
+/**
+  * Returns whether the component is currently panning
+  * @return {boolean} true is component is currently panning
+  */
+dvt.PanZoomComponent.prototype.isPanning = function() {
+  return this._panAnimator != null || this._panningInterrupted;
+};
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a canvas that supports panning and zooming.
   *  @extends {dvt.Container}
@@ -4024,8 +4097,9 @@ dvt.PanZoomCanvas.prototype.getZoomToFitPadding = function()
   * @param {number} dx horizontal amount to pan by
   * @param {number} dy vertical amount to pan by
   * @param {dvt.Animator} animator optional animator to use to animate the pan
+  * @param {function=} panEndFunc Additional optional callback function panning completed
   */
-dvt.PanZoomCanvas.prototype.panBy = function(dx, dy, animator)
+dvt.PanZoomCanvas.prototype.panBy = function(dx, dy, animator, panEndFunc)
 {
   if (!this.isPanningEnabled()) {
     return;
@@ -4072,12 +4146,18 @@ dvt.PanZoomCanvas.prototype.panBy = function(dx, dy, animator)
                      mat);
     dvt.Playable.prependOnInit(animator, fireStartEventFunc);
     dvt.Playable.appendOnEnd(animator, fireEndEventFunc);
+    if (panEndFunc) {
+      dvt.Playable.appendOnEnd(animator, panEndFunc);
+    }
   }
   else
   {
     fireStartEventFunc();
     this._contentPane.setMatrix(mat);
     fireEndEventFunc();
+    if (panEndFunc) {
+      panEndFunc();
+    }
   }
 };
 
@@ -5103,8 +5183,8 @@ dvt.PanZoomCanvasEventManager.prototype.addListeners = function(displayable) {
 /**
  * @override
  */
-dvt.PanZoomCanvasEventManager.prototype.removeListeners = function(displayable) {
-  dvt.PanZoomCanvasEventManager.superclass.removeListeners.call(this, displayable);
+dvt.PanZoomCanvasEventManager.prototype.RemoveListeners = function(displayable) {
+  dvt.PanZoomCanvasEventManager.superclass.RemoveListeners.call(this, displayable);
   displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
 };
 

@@ -880,7 +880,7 @@ oj.Model._init = function(model, attributes, options, properties) {
             // Move them in
             for (prop in attrCopy) {
                 if (attrCopy.hasOwnProperty(prop)) {
-                    model._setProp(prop, attrCopy[prop], false, false, options);
+                    model._setProp(prop, attrCopy[prop], false, false, options, true);
                 }
             }
         }
@@ -1150,10 +1150,11 @@ oj.Model.prototype._addChange = function(property, value) {
  * @param {Object|null|undefined} value
  * @param {boolean} copyRegardless
  * @param {boolean} propertyBag
- * @param {Object=} options
+ * @param {Object} options
+ * @param {boolean} init
  * @returns {boolean}
  */
-oj.Model.prototype._setProp = function(prop, value, copyRegardless, propertyBag, options) {
+oj.Model.prototype._setProp = function(prop, value, copyRegardless, propertyBag, options, init) {
     if (prop == null) {
         return true;
     }
@@ -1184,7 +1185,7 @@ oj.Model.prototype._setProp = function(prop, value, copyRegardless, propertyBag,
     }
     
     // Store old value
-    if (!this.nestedSet) {
+    if (!this.nestedSet && !init) {
         this.previousAttrs = oj.Model._cloneAttributes(this.attributes, null);
     }
     
@@ -1358,7 +1359,7 @@ oj.Model.prototype.set = function (property, value, options) {
                 }
             }
             else {
-                if (!this._setProp(property, null, true, true, opts)) {
+                if (!this._setProp(property, null, true, true, opts, false)) {
                     valid = false;
                 }
             }
@@ -1369,7 +1370,7 @@ oj.Model.prototype.set = function (property, value, options) {
                 this._unsetInternal(property, null, false);
             }
             else {
-                if (!this._setProp(property, value, false, false, opts)) {
+                if (!this._setProp(property, value, false, false, opts, false)) {
                     valid = false;
                 }
             }
@@ -7263,6 +7264,7 @@ oj.Collection.prototype.GetCollectionFetchUrl = function(options) {
     
     // Adorn it with options, if any
     if (this.IsVirtual()) {
+        options = options || {};
         var all = options['all'];
         
         // Put in page size

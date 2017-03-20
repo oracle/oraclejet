@@ -168,7 +168,6 @@
     .oj-selected  .oj-tree-title {
        border: 1px solid $treeNodeBorderColorSelected;
        background-color: $treeNodeBgColorSelected;
-       font-weight: bold;
     }
 
     /*  Selected inactive node text  */
@@ -181,7 +180,6 @@
     .oj-hover.oj-selected .oj-tree-title {
        background-color: $treeNodeBgColorHoverSelected;
        border:  1px solid $treeNodeBorderColorHoverSelected;
-       font-weight: bold;
     }
 
     /*  Cursor over invalid drop target  */

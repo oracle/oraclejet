@@ -49,35 +49,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *
  * {@ojinclude "name":"keyboardDoc"}
  *
- * <h3 id="markup-section">
- *   HTML Markup and Style Classes
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#markup-section"></a>
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
  *
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td> oj-train-stretch</td>
- *       <td> Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified. </td>
- *     </tr>
- *   </tbody>
- * </table>
- *
+ * {@ojinclude "name":"stylingDoc"}
  *
  *
  * @desc Creates a JET Train.
  * @example <caption>Initialize component using widget API</caption>
  * &lt;div id="train"/&gt;<br/>
- * $("#train").ojTrain({'selected': "stp1", 'steps': [{label:'Step One', id:'stp1'},
+ * $("#train").ojTrain({'selectedStep': "stp1", 'steps': [{label:'Step One', id:'stp1'},
  * {label:'Step Two', id:'stp2'},{label:'Step Three', id:'stp3'}]});
- * @example <caption>Using knockout, selected bind to observables - selectedStep</caption>
- * &lt;div id="train" data-bind="ojComponent:{component: 'ojTrain', selected: selectedStep, steps:[{label:'Step One', id:'stp1'},
+ * @example <caption>Using knockout, selectedStep bind to observables - selectedStep</caption>
+ * &lt;div id="train" data-bind="ojComponent:{component: 'ojTrain', selectedStep: selectedStep, steps:[{label:'Step One', id:'stp1'},
  * {label:'Step Two', id:'stp2'},{label:'Step Three', id:'stp3'}]}"/&gt;gt;
  */
 (function()
@@ -100,6 +86,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * </ul>
        * @expose
        * @public
+       * @type {Array.<Object>}
        * @instance
        * @memberof! oj.ojTrain
        */
@@ -109,36 +96,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * The selected variable indicates the id of the current selected step.
        * @expose
        * @public
+       * @type {string} 
+       * @deprecated use selectedStep
        * @instance
        * @memberof! oj.ojTrain
        */
       selected: "",
+      
+      /**
+       * The selectedStep variable indicates the id of the current selected step.
+       * @expose
+       * @public
+       * @type {string} 
+       * @instance
+       * @memberof! oj.ojTrain
+       */
+      selectedStep: "",
 
       // Events
-
-      /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention.  If the new value is the same as the previous value, no event will be fired.
-       *
-       * Currently there is one supported option, <code class="prettyprint">"selected"</code>.  Additional
-       * options may be supported in the future, so listeners should verify which option is changing
-       * before taking any action.
-       *
-       * @expose
-       * @event
-       * @memberof! oj.ojTrain
-       * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {string} ui.option the name of the option that is changing
-       * @property {string} ui.previousValue the previous value of the option
-       * @property {string} ui.value the current value of the option
-       * @property {Object} ui.optionMetadata information about the option that is changing
-       * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-       *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       *
-       */
-      optionChange: null,
 
       /**
        * Triggered immediately before a step is deselected.
@@ -268,13 +243,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Train Wrapper
       this._wrapper = $("<div class='oj-train-wrapper'></div>");
 
-      // @HTMLUpdateOK
-      this._wrapper.appendTo(this.element);
+      this._wrapper.appendTo(this.element);// @HTMLUpdateOK
 
       this._connectorWrapper = $("<div class='oj-train-connector-wrapper'></div>");
 
-      // @HTMLUpdateOK
-      this._connectorWrapper.appendTo(this._wrapper);
+      this._connectorWrapper.appendTo(this._wrapper);// @HTMLUpdateOK
 
       var styleClass = this.element.attr('class');
       this._stretch = (styleClass != null && styleClass.indexOf("oj-train-stretch") >= 0);
@@ -284,8 +257,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Draw the connector bar  for the train
       this._connector = $("<div class='oj-train-connector'></div>");
 
-      // @HTMLUpdateOK
-      this._connector.appendTo(this._connectorWrapper);
+      this._connector.appendTo(this._connectorWrapper);// @HTMLUpdateOK
 
       this._stepList = $("<ul>");
       this._stepList.addClass('oj-train-step-list');
@@ -294,15 +266,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Initialize the background progressbar object that will be updated to have the correct width based on the current step.
       this._connectorFill = $("<div class='oj-train-connector-fill'></div>");
 
-      // @HTMLUpdateOK
-      this._connectorFill.appendTo(this._connectorWrapper);
+      this._connectorFill.appendTo(this._connectorWrapper);// @HTMLUpdateOK
 
       // Setup array that stores train information for each step.
       this._setupArray();
-      this._selectedIndex = this._getStepIndex(options.selected);
+      this._selectedIndex = this._getStepIndex(options.selectedStep || options.selected);
       if (this._selectedIndex === -1 && steps[0] && steps[0]['id'])
       {
         this._selectedIndex = 0;
+        options.selectedStep = steps[0]['id'];
         options.selected = steps[0]['id'];
       }
 
@@ -323,8 +295,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         else if (messageType === "warning")
           stepTag.addClass("oj-warning");
 
-        // @HTMLUpdateOK
-        stepTag.appendTo(this._stepList);
+        stepTag.appendTo(this._stepList);// @HTMLUpdateOK
 
         this._drawLabel(i);
         this._drawStepFill(i);
@@ -340,8 +311,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       var connectorFillWidth = this._stepNum - 1 === this._selectedIndex ? 100 : (100 / (2 * (this._stepNum - 1)) + this._selectedIndex / (this._stepNum - 1) * 100)
       this._connectorFill.css({'width': connectorFillWidth + "%"});
 
-      // @HTMLUpdateOK
-      this._stepList.appendTo(this._wrapper);
+      this._stepList.appendTo(this._wrapper);// @HTMLUpdateOK
 
       this.element.addClass("oj-train");
     },
@@ -406,8 +376,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           this._AddActiveable(button);
 
           button.on("click" + this.eventNamespace, function(event) {
-            var oldStepId = self.options.selected;
-            self._fireOptionChange("selected", oldStepId, this.parentNode.parentNode.id, event);
+            self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
             self.refresh();
           });
         }
@@ -418,18 +387,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         // If there is remove it and insert the new button in the same position. If there isn't a preexsisting button, simply add one.
         if (stepBackground.length >= 1) {
           stepBackground.children().remove();
-
-          // @HTMLUpdateOK
-          stepBackground.append(button);
+          stepBackground.append(button);// @HTMLUpdateOK
         }
-        // @HTMLUpdateOK
         else
-          stepBackground.append(button);
+          stepBackground.append(button);// @HTMLUpdateOK
         scrnRead.text(desc);
         scrnRead.addClass("oj-helper-hidden-accessible");
-
-        // @HTMLUpdateOK
-        this._stepList.children().eq(index).find('a').append(scrnRead);
+ 
+        this._stepList.children().eq(index).find('a').append(scrnRead);// @HTMLUpdateOK
       }
     },
 
@@ -444,7 +409,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       if (this._stepArray[index] && this._stepArray[index][4])
       {
         var icon = $("<div/>")
-                .addClass("oj-train-icon oj-component-icon");
+                .addClass("oj-train-icon oj-component-icon")
+                .attr( "aria-hidden", "true" );
         var scrnRead = $("<span/>");
         var desc = "";
         var self = this;
@@ -479,8 +445,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         // Make icon clickable
         if (!this._stepArray[index][2] && this._selectedIndex !== index) {
           icon.on("click" + this.eventNamespace, function(event) {
-            var oldStepId = self.options.selected;
-            self._fireOptionChange("selected", oldStepId, this.parentNode.parentNode.parentNode.id, event);
+            self._fireSelectedStepOptionChange(this.parentNode.parentNode.parentNode.id, event);
             self.refresh();
           });
         }
@@ -491,9 +456,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           scrnRead.text(desc);
           scrnRead.addClass("oj-helper-hidden-accessible");
 
-          /*@HTMLUpdateOK*/
-          this._stepList.children().eq(index).find('a').append(scrnRead);
-          button.append(icon);
+          this._stepList.children().eq(index).find('a').append(scrnRead);// @HTMLUpdateOK
+          button.append(icon); // @HTMLUpdateOK
 
         }
       }
@@ -501,17 +465,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     /**
      * Fire optionChange event
-     * @param {String} key - 'selected'
      * @param {String} previousValue
      * @param {String} value
      * @param {Object} originalEvent
      *
      * @private
      */
-    _fireOptionChange: function(key, previousValue, value, originalEvent)
+    _fireOptionChange: function(previousValue, value, originalEvent)
     {
       var eventData = {
-        "option": key,
         "fromStep": this.getStep(previousValue),
         "toStep": this.getStep(value),
         // (originalEvent is non-null) iff (option change is due to user interaction) iff (binding should write back the value)
@@ -528,9 +490,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       }
 
       this._trigger("deselect", originalEvent, eventData);
-
-      this.option('selected', value, {'_context': {originalEvent: originalEvent, internalSet: true}});
-
+      
+      if (this.options.selectedStep) 
+        this.option('selectedStep', value, {'_context': {originalEvent: originalEvent, internalSet: true}});
+      if (this.options.selected) 
+        this.option('selected', value, {'_context': {originalEvent: originalEvent, internalSet: true}});
+      
       this._trigger("select", originalEvent, eventData);
 
     },
@@ -544,9 +509,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     _drawStepNumberLabel: function(index) {
       var stepNumberLabel = $("<div/>")
                .addClass("oj-train-button-text");
-      stepNumberLabel.append((index + 1).toString());
+      stepNumberLabel.append((index + 1).toString());// @HTMLUpdateOK
       var stepBackground = this._stepList.children().eq(index).find('.oj-train-button');
-      stepBackground.append(stepNumberLabel);
+      stepBackground.append(stepNumberLabel);// @HTMLUpdateOK
     },
 
     /**
@@ -559,7 +524,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       if(index != this._stepNum - 1) {
         var stepConnector = $("<div/>")
                  .addClass("oj-train-step-individual-connector");
-        this._stepList.children().eq(index).prepend(stepConnector);
+        this._stepList.children().eq(index).prepend(stepConnector);// @HTMLUpdateOK
       }
     },
 
@@ -578,7 +543,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         if (index <= this._selectedIndex)
           stepFill.addClass("oj-train-fill");
         var stepLi = this._stepList.children().eq(index).children();
-        stepFill.insertBefore(stepLi);
+        stepFill.insertBefore(stepLi);// @HTMLUpdateOK
       }
     },
 
@@ -618,8 +583,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
             function(event) {
               if (event.keyCode === $.ui.keyCode.ENTER || event.type === "click") {
                 event.preventDefault();
-                var oldStepId = self.options.selected;
-                self._fireOptionChange("selected", oldStepId, this.parentNode.parentNode.id, event);
+                self._fireSelectedStepOptionChange(this.parentNode.parentNode.id, event);
                 self.refresh();
                 if (event.keyCode === $.ui.keyCode.ENTER)
                   self._setFocus(this.parentNode.parentNode.id);
@@ -629,8 +593,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         var stepLi = this._stepList.children().eq(index).children();
         if (stepLi.length >= 2)
           stepLi[1].remove();
-        // @HTMLUpdateOK
-        this._stepList.children().eq(index).append(labelWrapper);
+        this._stepList.children().eq(index).append(labelWrapper);// @HTMLUpdateOK
       }
     },
 
@@ -671,14 +634,41 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * <p>Returns the id of the next selectable step based on the selected id. If the current step is the last selectable step, returns null</p>
      * @public
      * @return {String} next selectable Id
+     * @deprecated Use getNextSelectableStep
      * @expose
      * @instance
      * @memberof! oj.ojTrain
      */
     nextSelectableStep: function()
     {
-      var selectedIndex = this._getStepIndex(this.options.selected);
-      for (var i = selectedIndex; i < this._stepNum; i++) {
+      return this.getNextSelectableStep();
+    },
+
+    /**
+     * <p>Returns the id of the previous selectable step based on the selected id. If the current step is the first selectable step, returns null</p>
+     * @public
+     * @return {String} previous selectable Id
+     * @expose
+     * @deprecated Use getPreviousSelectableStep
+     * @instance
+     * @memberof! oj.ojTrain
+     */
+    previousSelectableStep: function()
+    {
+      return this.getPreviousSelectableStep();
+    },
+    
+    /**
+     * <p>Returns the id of the next selectable step based on the current selectedStep. If the current step is the last selectable step, the function returns null</p>
+     * @public
+     * @return {String} next selectable Id
+     * @expose
+     * @instance
+     * @memberof! oj.ojTrain
+     */
+    getNextSelectableStep: function()
+    {
+      for (var i = this._selectedIndex; i < this._stepNum; i++) {
         if (i + 1 < this._stepNum && this._stepArray[i + 1] && !this._stepArray[i + 1][2])
         {
           return this._stepArray[i + 1][1];
@@ -688,17 +678,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     },
 
     /**
-     * <p>Returns the id of the previous selectable step based on the selected id. If the current step is the first selectable step, returns null</p>
+     * <p>Returns the id of the previous selectable step based on the current selectedStep. If the current step is the first selectable step, the function returns null</p>
      * @public
      * @return {String} previous selectable Id
      * @expose
      * @instance
      * @memberof! oj.ojTrain
      */
-    previousSelectableStep: function()
+    getPreviousSelectableStep: function()
     {
-      var selectedIndex = this._getStepIndex(this.options.selected);
-      for (var i = selectedIndex; i >= 0; i--) {
+      for (var i = this._selectedIndex; i >= 0; i--) {
         if (this._stepArray[i - 1] && !this._stepArray[i - 1][2])
         {
           return this._stepArray[i - 1][1];
@@ -710,6 +699,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     /**
      * <p>Sets the properties for the step. Takes in the object conatining the properties for the step.</p>
      * @public
+     * @deprecated Use updateStep instead
      * @param {Object} stepProperties - The property bag to overwrite properties on the step.
      * @expose
      * @instance
@@ -717,11 +707,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      */
     setStep: function(stepProperties)
     {
-
       if (stepProperties['id'])
       {
-        var stepInfo = this.getStep(stepProperties['id']);
-        var stepIndex = this._getStepIndex(stepProperties['id']);
+        this.updateStep(stepProperties['id'], stepProperties);
+      }
+    },
+    
+    /**
+     * <p>Update the step with the specified id with the provided property bag.</p>
+     * @public
+     * @param {string} id - The id of the step to update
+     * @param {Object} stepProperties - The set of step properties to update. Will overwrite any previously set values.
+     * @expose
+     * @instance
+     * @memberof! oj.ojTrain
+     */
+    updateStep: function(id, stepProperties)
+    {
+      if (id)
+      {
+        var stepInfo = this.getStep(id);
+        var stepIndex = this._getStepIndex(id);
         if (stepIndex !== -1)
         {
           var stepObj = this.options.steps[stepIndex];
@@ -729,6 +735,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           {
             stepInfo[0] = stepProperties['label'];
             stepObj['label'] = stepProperties['label'];
+          }
+          if (typeof (stepProperties['id']) === 'string')
+          {
+            stepInfo[1] = stepProperties['id'];
+            stepObj['id'] = stepProperties['id'];
           }
           if (typeof (stepProperties['disabled']) === 'boolean')
           {
@@ -745,8 +756,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
             stepInfo[4] = stepProperties['messageType'];
             stepObj['messageType'] = stepProperties['messageType'];
           }
-        }
         this.refresh();
+      }
       }
     },
 
@@ -757,14 +768,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     _setOption: function(key, value, flags)
     {
-      if (key === "selected")
+      if ((key == "selectedStep" || key == "selected") && this._stepArray && this._stepArray[this._selectedIndex])
       {
-        var stepIndex = this._getStepIndex(value);
-        var prevSelected = this.options.selected
-        if (prevSelected && this._stepArray && this._stepArray[this._selectedIndex])
-          this._fireOptionChange("selected", this._stepArray[this._selectedIndex][1], value, null);
+        var prevSelected = this._stepArray[this._selectedIndex][1];
+        if(value == prevSelected)
+          return;
+        
+        this._fireOptionChange(this._stepArray[this._selectedIndex][1], value, null);
       }
-      this._super(key, value, flags);
+      else
+        this._super(key, value, flags);
     },
 
     /**
@@ -802,9 +815,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       // Call super at the end for destroy.
       this._super();
     },
+    
+    /**
+     * Fire option change event for selectedStep on click or keyboard action
+     * @param {string} event
+     * @private
+     */
+    _fireSelectedStepOptionChange: function(newSelectedStep, event)
+    {
+      var prevSelected = this._stepArray[this._selectedIndex][1];
+      if(prevSelected != newSelectedStep)
+        this._fireOptionChange(prevSelected, newSelectedStep, event);
+    },
 
     /**
-     * Set the focus on the step following the step specified. Focus first step if last step is specified.
+     * Set the focus on the step defined by the id.
      * @param {string} id - The id of the step to focus
      *
      * @private
@@ -812,12 +837,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
     _setFocus: function(id)
     {
       var index = this._getStepIndex(id)
-      for (var i = 0; i < this._stepNum; i++) {
-        if (this._stepArray[(index + i + 1) % this._stepNum] && !this._stepArray[(index + i + 1) % this._stepNum][2]) {
-          this._stepList.children().eq((index + i + 1) % this._stepNum).find('.oj-train-label').focus();
-          break;
-        }
-      }
+      this._stepList.children().eq(index).find('.oj-train-label').focus()
     },
 
     //** @inheritdoc */
@@ -917,15 +937,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      */
 
     /**
-     * <p>
-     * <h5>  When the focus is on the train</h5>
-     * </p>
-     *
      * <table class="keyboard-table">
      *   <thead>
      *     <tr>
      *       <th>Key</th>
-     *       <th>Use</th>
+     *       <th>Action</th>
      *     </tr>
      *   </thead>
      *   <tbody>
@@ -943,6 +959,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      *
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojTrain
+     */
+
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * 
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td> oj-train-stretch</td>
+     *       <td> Optional class that may be added to the train div which will stretch the train to cover the full width of the container specified. </td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     * <br> 
+     *
+     * Train step label wrapping is controlled by the $trainLabelTextWrap SASS Variable. $trainLabelTextWrap accepts css white-space values such as normal or nowrap(default).
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojTrain
      */
 
@@ -1039,21 +1080,32 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 (function() {
 var ojTrainMeta = {
   "properties": {
-    "selected": {},
-    "steps": {}
+    "selectedStep": {
+      "type": "string",
+      "writeback": true
+    },
+    "steps": {
+      "type": "Array<object>"
+    }
   },
   "methods": {
     "getStep": {},
-    "nextSelectableStep": {},
-    "previousSelectableStep": {},
+    "getNextSelectableStep": {},
+    "getPreviousSelectableStep": {},
     "refresh": {},
-    "setStep": {}
+    "updateStep": {}
   },
   "extension": {
-    "_widgetName": "ojTrain"
-  }
+    _WIDGET_NAME: "ojTrain"
+  },
+  "events": {
+    "select": {},
+    "deselect": {},
+    "beforeDeselect": {},
+    "beforeSelect": {}
+  },
 };
-oj.Components.registerMetadata('ojTrain', 'baseComponent', ojTrainMeta);
-oj.Components.register('oj-train', oj.Components.getMetadata('ojTrain'));
+oj.CustomElementBridge.registerMetadata('oj-train', 'baseComponent', ojTrainMeta);
+oj.CustomElementBridge.register('oj-train', {'metadata': oj.CustomElementBridge.getMetadata('oj-train')});
 })();
 });

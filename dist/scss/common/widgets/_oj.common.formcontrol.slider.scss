@@ -438,19 +438,15 @@
    border-color: $sliderThumbBorderColorActive;
 }
 
- .oj-slider-thumb:focus {
-    outline:none; // e.g. Chrome adds blue outline to focused element
- }
-
 //  The oj-focus-highlight class applies focus styling that may not be desirable
 //  when the focus results from pointer interaction (touch or mouse), but which is
 //  needed for accessibility when the focus occurs by a non-pointer mechanism, for
 //  example keyboard or initial page load.
 //  See also the $focusHighlightPolicy variable, which controls when this 
 //  class is set.
- .oj-slider-thumb.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
- }
+.oj-slider-thumb:not(.oj-focus-highlight):focus {
+   outline: none;
+}
 
 //
 // The following three classses are used in demos 
@@ -498,10 +494,14 @@
   min-height: $sliderColorPickerThumbWidth*2;
 }
 
-.oj-slider-color-picker .oj-slider-thumb {
+.oj-slider-color-picker .oj-slider-thumb,
+// Styling for warning/invalid state: let the color picker show the warning/invalid border
+.oj-warning .oj-slider-color-picker .oj-slider-thumb,
+.oj-invalid .oj-slider-color-picker .oj-slider-thumb {
   background-color: transparent;
   border-width: $sliderColorPickerThumbBorderWidth;
   @include oj-border-radius($sliderColorPickerThumbBorderRadius);
+  border-color: $sliderThumbBorderColor;
 }
 
 .oj-slider-color-picker .oj-slider-bar {

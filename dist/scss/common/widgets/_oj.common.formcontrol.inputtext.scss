@@ -56,6 +56,7 @@
       // because max/min width is in em the font size needs to be on this element 
       // and not on the selector that goes on the input.
       font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
 
       /* use a width of 100% and then max and min width so that when 
          there's less room for the form control it can automatically 
@@ -118,7 +119,7 @@
       @include oj-normalize-textarea;
 
       height: auto;
-      padding: .5em $formControlPaddingHorizontal;
+      padding: .5rem $formControlPaddingHorizontal;
       resize: none; //turning off as resizing can cause layout problems.
 
       line-height: $textAreaLineHeight;

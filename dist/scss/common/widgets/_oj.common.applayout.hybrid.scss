@@ -70,9 +70,10 @@
       @include oj-box-shadow(3px 2px 7px rgba(0,0,0,.5));
     }
 
-    //PAGE
+    // PAGE
     .oj-hybrid-applayout-page {
       min-height: 100vh;
+      background-color: $bodyBgColor;
     }
 
     // HEADER
@@ -187,6 +188,12 @@
       @if $appLayoutHybridFooterBorderColor != null {
         border-top: 1px solid $appLayoutHybridFooterBorderColor;
       }
+    }
+
+
+    // BACK ARROW
+    .oj-hybrid-applayout-header-icon-back {
+      @extend .oj-fwk-icon-back;
     }
 
 

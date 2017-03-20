@@ -133,7 +133,7 @@
     .oj-gantt-tooltip-label {
       font-size: $smallFontSize;
       color: $formControlLabelColor;
-      padding: 0 2px; 
+      padding: 0px 2px; 
       white-space: nowrap;
 
       @include oj-ltr() {
@@ -147,7 +147,7 @@
     /* Styling for the tooltip value */
     .oj-gantt-tooltip-value {
       color: $textColor;
-      padding: 0 2px;
+      padding: 0px 2px;
 
       @include oj-ltr() {
         text-align: left;

@@ -94,3 +94,69 @@
   @error "oj-convert-to-jqui-position-syntax function param must be of form 0, 7px, 10%, but was #{$number}.";
 }
 
+///*****************************************************************************
+/// implementation from https://css-tricks.com/snippets/sass/fix-number-n-digits/
+/// @param {Number} $float - Number to format
+/// @param {Number} $digits [5] - Number of digits to leave
+/// @return {Number}
+///*****************************************************************************
+@function oj-round-float($float, $decimals) {
+  
+  $pow: 1;
+
+  @if $decimals > 0 {
+    @for $i from 1 through $decimals {
+      $pow: 10 * $pow;
+    }
+  }
+
+  @return round($float * $pow) / $pow;
+}
+
+///*****************************************************************************
+/// Use this mixin to multiply the values of a certain property
+/// across an incrementing selector name
+///
+/// SCSS EXAMPLE:
+///
+///   .oj-datagrid-column-header-cell {
+///     @include oj-property-multiplier(
+///				 $selectorName: 'oj-datagrid-depth'
+///               $propertyName: 'height',
+///               $propertyMultiplicand: 15px,
+///               $minMultiplier: 2,
+///               $maxMultiplier: 3);
+///   }
+///
+/// CSS:
+///   .oj-datagrid-column-header-cell.oj-datagrid-depth-2 {
+///     height: 30px;
+///   }
+///
+///   .oj-datagrid-column-header-cell.oj-datagrid-depth-3 {
+///     height: 45px;
+///   }
+///*****************************************************************************
+@mixin oj-property-multiplier($selectorName, $propertyName, $propertyMultiplicand, $minMultiplier, $maxMultiplier)
+{
+  @if (unit($propertyMultiplicand) == 'rem')
+  {
+    $propertyMultiplicand: oj-rem-to-px($propertyMultiplicand, $rootFontSize);
+  }
+
+  @if (unit($propertyMultiplicand) == 'px')
+  {
+    @for $i from $minMultiplier through $maxMultiplier
+    {
+      #{if(&, "&", "*")}.#{$selectorName}-#{$i} {
+        // $dimensionValue needs to be rounded and in pixels in the case that multiplying the rem value
+        // by i is different than converting to pixels and summing over the three values.
+        #{$propertyName}: ($i * round($propertyMultiplicand))
+      }
+    }
+  }
+  @else
+  {
+    @warn $propertyMultiplicand + ' was passed to oj-property-multiplier(), only px and rem units allowed, therefore no multiplication was applied';
+  }
+}

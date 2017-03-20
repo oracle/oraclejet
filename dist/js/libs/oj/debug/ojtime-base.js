@@ -3,10 +3,14 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtToolkit'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtToolkit', 'ojs/ojvalidation-datetime'], function(oj, $, comp, base, dvt)
 {
 
 /**This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
+/**
+ * Copyright (c) 2016, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
 
 /**
  * @ojcomponent oj.dvtTimeComponent
@@ -103,7 +107,7 @@ oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
     var resources = this.options['_resources'];
 
     // Create default converters
-    var converterFactory = oj.Validation.converterFactory("datetime");
+    var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
     var secondsConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'});
     var minutesConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit'});
     var hoursConverter = converterFactory.createConverter({'hour': 'numeric'});
@@ -123,6 +127,10 @@ oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
     };
 
     resources['converter'] = converter;
+    resources['converterFactory'] = converterFactory;
+
+    // first day of week; locale specific
+    resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
   },
 
   /**
@@ -150,9 +158,9 @@ var dvtTimeComponentMeta = {
     "getContextByNode": {}
   },
   "extension": {
-    "_widgetName": "dvtTimeComponent"
+    _WIDGET_NAME: "dvtTimeComponent"
   }
 };
-oj.Components.registerMetadata('dvtTimeComponent', 'dvtBaseComponent', dvtTimeComponentMeta);
+oj.CustomElementBridge.registerMetadata('dvtTimeComponent', 'dvtBaseComponent', dvtTimeComponentMeta);
 })();
 });

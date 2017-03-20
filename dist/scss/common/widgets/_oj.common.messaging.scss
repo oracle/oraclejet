@@ -40,10 +40,18 @@
         border-radius: $formControlBorderRadius;
       }
     }
+    
+    // if theme doesn't have a border around the radioset/checkboxset, it needs to 
+    // detach even if the border-radius is 0.
+    @if(($radioCheckboxSetBorderColor == null or $radioCheckboxSetBorderColor == transparent)) {
+      .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
+      .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
+        margin-top: 5px;
+        border-top-width: 1px;
+      }
+    }
 
     // For these components it needs a top border regardless of border radius.
-    .oj-radioset .oj-messaging-inline-container .oj-message:first-child,
-    .oj-checkboxset .oj-messaging-inline-container  .oj-message:first-child,
     .oj-switch .oj-messaging-inline-container .oj-message:first-child,
     .oj-slider .oj-messaging-inline-container .oj-message:first-child {
       border-top-width: 1px;
@@ -90,7 +98,7 @@
      */
     
     .oj-message {
-      display: block;
+      @include oj-display-flex-property();
       @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
       white-space: nowrap; /* 1 */
     }
@@ -122,7 +130,7 @@
     .oj-message-summary {
       color: $textColor;
       font-size: $fontSize;    
-      font-weight: $headerFontWeight;
+      font-weight: 500;
       vertical-align: top;
       white-space: normal; /* 1 */
       @include oj-ltr() {
@@ -176,13 +184,17 @@
 
     .oj-message-status-icon {
       display: inline-block;
-      vertical-align:top;
+      position: relative;
+      top: 3px;
+    }
+    .oj-message-status-icon:before {
+      width: 16px; /* Needed for old versions of IE11 */
     }
 
     .oj-message-status-icon.oj-message-error-icon {
       @extend .oj-fwk-icon-status-error;
     }
-    
+
     .oj-message-status-icon.oj-message-warning-icon {
       @extend .oj-fwk-icon-status-warning;
     }

@@ -1,0 +1,155 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+
+
+
+//*****************************************************************************
+// This function returns css a css var call with a fallback value. 
+//
+// The $varMap passed in should use the css var name as the key, for example:
+//
+// $fooBgColor: green;
+// $fooBorderColor: red;
+//
+// $my-css-var-map: (
+//   '--demo-foo-bg-color':     $fooBgColor,
+//   '--demo-foo-border-color': $fooBorderColor
+// ) 
+//
+// JET makes key variable values available as css variables.
+// If no $varMap is passed in the function will see 
+// if JET's css varmap is loaded.
+//
+// example usage (assumes the jet variables are loaded before calling):
+//   .demo-foo
+//   {
+//     border-color: oj-cssvar($var: --interaction-1-color);
+//     background-color: oj-cssvar($var: --demo-foo-bg-color, $varMap: $my-css-var-map );
+//   }
+//
+// example output:
+//   .demo-foo {
+//     border-color: var(--oj-interaction-1-color, #0572ce);
+//     background-color: var(--demo-foo-bg-color, green); }
+//*****************************************************************************
+@function oj-cssvar($var, $varMap: null)
+{
+  @if ($varMap == null)
+  {
+    @if variable-exists(oj-css-var-map)
+    {
+      $varMap: $oj-css-var-map;
+    }
+    @else
+    {
+      @error "function cssvar called with null $varMap"
+    }
+  }
+
+  @if ($varMap != null)
+  {
+
+    @if (map-has-key($varMap, $var) == false)
+    {
+      @error "function cssvar: var #{$var} not in $varMap";
+    }
+    @else
+    {
+      $value: map-get($varMap, $var);
+
+      @if ($value == null)
+      {
+        // add the css var reference
+        @return var(#{$var});
+      }
+      @else
+      {
+        // add the css var reference and since the 
+        // value is non-null add it as a fallback
+        @return var(#{$var}, $value);
+      }
+    }
+  }
+}
+
+
+
+
+//*****************************************************************************
+// This mixin writes out css variables and fallback values. 
+// The fallback values are required because as of 10/14/16 css vars are 
+// not supported on all of JET's supported platforms
+//
+// The $varMap passed in should use the css var name as the key, for example:
+//
+// $fooBgColor: green;
+// $fooBorderColor: red;
+//
+// $my-css-var-map: (
+//   '--demo-foo-bg-color':     $fooBgColor,
+//   '--demo-foo-border-color': $fooBorderColor
+// ) 
+//
+// JET makes key variable values available as css variables.
+// If no $varMap is passed in the function will see 
+// if JET's css varmap is loaded.
+//
+// example usage (assumes the jet variables are loaded before calling):
+//   .demo-foo
+//   {
+//     @include oj-cssvar-prop-fallback($property:border-color, $var: --interaction-1-color);
+//     @include oj-cssvar-prop-fallback($property:background-color, $var: --demo-foo-bg-color, $varMap: $my-css-var-map );
+//   }
+//
+// example output:
+//   .demo-foo {
+//     border-color: #0572ce;
+//     border-color: var(--oj-interaction-1-color, #0572ce);
+//     background-color: green;
+//     background-color: var(--demo-foo-bg-color, green); }
+//*****************************************************************************
+
+@mixin oj-cssvar-prop-fallback($property, $var, $varMap: null)
+{
+  @if ($varMap == null)
+  {
+    @if variable-exists(oj-css-var-map)
+    {
+      $varMap: $oj-css-var-map;
+    }
+    @else
+    {
+      @error "mixin cssvar called with null varMap"
+    }
+  }
+
+  @if ($varMap != null)
+  {
+
+    @if (map-has-key($varMap, $var) == false)
+    {
+      @error "mixin cssvar: var #{$var} not in varMap";
+    }
+    @else
+    {
+      $value: map-get($varMap, $var);
+
+      // write out the property for browsers that don't support css vars
+      #{$property}: $value;
+
+      @if ($value == null)
+      {
+        // add the css var reference
+        #{$property}: var(#{$var});
+      }
+      @else
+      {
+        // add the css var reference and since the 
+        // value is non-null add it as a fallback
+        #{$property}: var(#{$var}, $value);
+      }
+    }
+  }
+}
+

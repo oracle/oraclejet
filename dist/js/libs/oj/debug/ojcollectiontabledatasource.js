@@ -327,45 +327,52 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
   var self = this;
   this._collection.on(oj.Events.EventType['SYNC'], function(event) 
   {
-    if (!(event instanceof oj.Collection))
+    if (event instanceof oj.Model)
     {
-      return;
+      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['CHANGE'], {'data': [event['attributes']], 'keys': [event['id']], 'indexes': [event['index']]});
     }
-    if (!self._isFetchingForAt && !self._isFetching)
+    else if (event instanceof oj.Collection)
     {
-      var startIndex = event['offset'];
-      var pageSize = event['lastFetchCount'] || event['lastFetchSize'];
+      if (!self._isFetchingForAt && !self._isFetching)
+      {
+        var startIndex = event['offset'];
+        var pageSize = event['lastFetchCount'] || event['lastFetchSize'];
 
-      if (pageSize > 0)
-      {
-        self._startIndex = startIndex;
-        self._pageSize = pageSize;
-        
-        // paged fetch
-        self._isFetchingForAt = true;
-        event.IterativeAt(startIndex, startIndex + pageSize).then(function(modelArray)
+        // Do not call _getRowArray if this datasource is paged,
+        // or if the underlying oj.Collection is virtual since _getRowArray
+        // assumes collection.at returns Model objects, which is not the case
+        // for virtual collection.
+        if (pageSize > 0 || self._collection.IsVirtual())
         {
-          self._isFetchingForAt = false;
-          var rowArray = [];
-          var keyArray = [];
-          var i, modelClone;
-          for (i = 0; i < modelArray.length; i++)
+          self._startIndex = startIndex;
+          self._pageSize = pageSize;
+          
+          // paged fetch
+          self._isFetchingForAt = true;
+          event.IterativeAt(startIndex, startIndex + pageSize).then(function(modelArray)
           {
-            if (modelArray[i] != null)
+            self._isFetchingForAt = false;
+            var rowArray = [];
+            var keyArray = [];
+            var i, modelClone;
+            for (i = 0; i < modelArray.length; i++)
             {
-              modelClone = modelArray[i].clone();
-              rowArray.push(modelClone['attributes']);
-              keyArray.push(modelClone['id']);
+              if (modelArray[i] != null)
+              {
+                modelClone = modelArray[i].clone();
+                rowArray.push(modelClone['attributes']);
+                keyArray.push(modelClone['id']);
+              }
             }
-          }
-          var result = {'data': rowArray, 'keys': keyArray, 'startIndex': startIndex};
+            var result = {'data': rowArray, 'keys': keyArray, 'startIndex': startIndex};
+            self._endFetch.call(self, {'silent': false}, result, null);
+          });
+        }
+        else
+        {
+          var result = self._getRowArray();
           self._endFetch.call(self, {'silent': false}, result, null);
-        });
-      }
-      else
-      {
-        var result = self._getRowArray();
-        self._endFetch.call(self, {'silent': false}, result, null);
+        }
       }
     }
   });
@@ -425,6 +432,9 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
   this._collection.on(oj.Events.EventType['ERROR'], function(collection, xhr, options) {
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ERROR'], collection, xhr, options);
   });
+  this._collection.on(oj.Events.EventType['REQUEST'], function(event) {
+    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REQUEST'], event);
+  });
 };
 
 oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
@@ -453,7 +463,11 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
       {
         var result;
         
-        if (self._isPaged)
+        // Do not call _getRowArray if this datasource is paged,
+        // or if the underlying oj.Collection is virtual since _getRowArray
+        // assumes collection.at returns Model objects, which is not the case
+        // for virtual collection.
+        if (self._isPaged || self._collection.IsVirtual())
         {
           var rowArray = [];
           var keyArray = [];

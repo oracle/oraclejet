@@ -1,16 +1,12 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 @import "../utilities/oj.utilities.urls";
 @import "../utilities/oj.utilities.math";
+@import "../utilities/oj.utilities.units";
 
 // This is the variable file for the Oracle Alta look and feel.
 
 
 $includeAllClasses: true !default;
-
-// DEPRECATED grid and form layout classes starting in JET version 1.2.0
-// In 1.3 these need to be
-$includeDeprecatedGridClasses:        false !default;
-$includeDeprecatedFormLayoutClasses:  false !default;
 
 
 $themeName:           alta !default;
@@ -106,12 +102,12 @@ $iconColorHover:    #85bbe7 !default;
 // Therefore set $rootFontValue to .875em to get 14px;
 $rootFontSize:    .875em !default;    // 14px
 
-$fontSize:         1rem !default;      // 14px
-$smallestFontSize: .7857rem !default;  // 11px when root 14px
-$smallFontSize:    .857rem !default;   // 12px when root 14px
-$mediumFontSize:   1.143rem !default;  // 16px when root 14px
-$largeFontSize:    1.286rem !default;  // 18px when root 14px
-$largestFontSize:  1.429rem !default;  // 20px when root 14px
+$fontSize:         1rem !default;      
+$smallestFontSize: oj-px-to-rem(11px, $baseFontSize: 14px)  !default; 
+$smallFontSize:    oj-px-to-rem(12px, $baseFontSize: 14px)  !default;  
+$mediumFontSize:   oj-px-to-rem(16px, $baseFontSize: 14px)  !default;  
+$largeFontSize:    oj-px-to-rem(18px, $baseFontSize: 14px)  !default;  
+$largestFontSize:  oj-px-to-rem(20px, $baseFontSize: 14px)  !default;  
 
 
 $fontWeightNormalization: $allowTagSelectors !default;
@@ -122,7 +118,7 @@ $fontWeightNormalization: $allowTagSelectors !default;
 //----------------------------------
 $textColor:             #333333 !default;
 $primaryTextColor:      darken($textColor, 25%) !default;  // = #000000;
-$secondaryTextColor:    lighten($textColor, 10%) !default; // = #454545;
+$secondaryTextColor:    lighten($textColor, 10%) !default; // = #4d4d4d; libsass/issues/2294 makes this #4d4c4c
 $tertiaryTextColor:     lighten($textColor, 25%) !default; // = #737373;
 $contrastTextColor:     #ffffff !default;
 $textColorDisabled:     #9e9e9e !default;
@@ -177,11 +173,11 @@ $windowBgColor:     $background2Color !default;
 
 // HEADERS
 //----------------------------------------------------------------
-$header1FontSize: 2.429rem         !default; // 34px when root 14px
-$header2FontSize: 1.714rem         !default; // 24px when root 14px
-$header3FontSize: $largestFontSize !default; // 20px when root 14px
-$header4FontSize: $largeFontSize   !default; // 18px when root 14px
-$header5FontSize: $mediumFontSize  !default; // 16px when root 14px
+$header1FontSize: oj-px-to-rem(34px, $baseFontSize: 14px) !default; 
+$header2FontSize: oj-px-to-rem(24px, $baseFontSize: 14px) !default; 
+$header3FontSize: $largestFontSize !default; 
+$header4FontSize: $largeFontSize   !default; 
+$header5FontSize: $mediumFontSize  !default; 
 
 // $header[1|2|3|4|5]FontWeight vars can be used 
 // to override the default font weight, they are  
@@ -196,7 +192,7 @@ $header5FontWeight: 400   !default;
 // PANEL
 //----------------------------------------------------------------
 
-$panelPadding:             .8571rem !default; // 12px when root is 14px
+$panelPadding: oj-px-to-rem(12px, $baseFontSize: 14px) !default; 
 
 
 // using these adjustments panels can choose to
@@ -238,9 +234,12 @@ $formControlPlaceholderFontStyle: italic !default;
 $formLayoutLabelInlineAlign: end !default;
 
 // RADIOSET AND CHECKBOXSET
-
-$radioCheckboxRowHeight: 1.73rem !default;
+$radioCheckboxImageHeightWidth: 16px !default;
+$radioCheckboxRowHeight: 1.9rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
+$radioCheckboxInputToEdgePadding: 0 !default;
+$radioCheckboxInputToLabelPadding: .6rem !default;
+$radioCheckboxLabelToEdgePadding: 22px !default;
 
 // INPUT DATE/TIME
 //-----------------------------------------------------------------------------
@@ -287,7 +286,7 @@ $menuDropDownModality: "modeless" !default;
 
 // these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
 $menuIconSize:                         16px !default; // per theming discussion, force it to size required by Alta spec, but don't grow/shrink via rems in case of artifacts, and DO scale the surrounding space via rems.
-$menuIconToEdgePadding:                0.583rem !default; // 7px @12px font per Alta spec, 8.162px @14px font.
+$menuIconToEdgePadding:                oj-px-to-rem(8px, $baseFontSize: 14px) !default;
 $menuTextToIconPadding:                $menuIconToEdgePadding !default;
 
 // applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
@@ -307,7 +306,7 @@ $menuSubmenuBoxShadow:    $menuBoxShadow !default;
 $menuIconColorDisabled:   $iconColorDisabled !default;
 
 // menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
-$menuDividerMargin:       0.083rem !default; // 1px @12px font, 1.162px @14px font. This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
+$menuDividerMargin:       1px !default; // This spacing is on all 4 sides, including left/right, per Alta spec. rem not em since font-size 0.
 
 
 // sheet menus
@@ -335,17 +334,21 @@ $buttonBorderColor:               $border3Color !default;
 $buttonInternalBorderColor:       null !default;
 
 // hover
+$buttonBgColorHover:              #f7f8f9 !default;
 $buttonIconColorHover:            $iconColorHover !default;
 $buttonBorderColorHover:          $buttonBorderColor !default;
 
 // active
 $buttonBgColorActive:             $interaction1Color !default;
 $buttonInternalBorderColorActive: $buttonBorderColor !default;
+$buttonTextColorActive:           $contrastTextColor !default;
 
 // selected - default to use active values
+$buttonTextColorSelected:         $buttonTextColorActive !default;
 $buttonInternalBorderColorSelected: $buttonInternalBorderColorActive !default;
 
 // selected and hovered
+$buttonTextColorSelectedHover:    $buttonIconColorHover !default;
 
 // disabled
 $buttonBgColorDisabled:           #f4f6f7 !default;
@@ -355,6 +358,8 @@ $buttonBorderColorDisabled:       #e0e6eb !default;
 $buttonOpacityDisabled:           $opacityDisabled !default;
 
 // disabled and selected
+$buttonTextColorSelectedDisabled:            $buttonTextColorSelected !default;
+$buttonIconColorSelectedDisabled:            $buttonTextColorSelectedDisabled !default;
 $buttonBgColorSelectedDisabled:              $buttonIconColorDisabled !default;
 $buttonInternalBorderColorSelectedDisabled:  $buttonBorderColorDisabled !default;
 
@@ -380,9 +385,12 @@ $buttonHalfChromeBorderColorHover:        $buttonBorderColorHover !default;
 
 // half chrome disabled
 $buttonHalfChromeTextColorDisabled:       $buttonTextColorDisabled !default;
+$buttonHalfChromeIconColorDisabled:       $iconColorDisabled !default;
 $buttonHalfChromeOpacityDisabled:         $buttonOpacityDisabled !default;
 
 // half chrome disabled and selected
+$buttonHalfChromeTextColorSelectedDisabled:    $buttonTextColorSelectedDisabled !default;
+$buttonHalfChromeIconColorSelectedDisabled:    $buttonHalfChromeTextColorSelectedDisabled !default;
 
 // outlined
 $buttonOutlinedChromeInternalBorderColor:          $buttonInternalBorderColor !default;
@@ -402,7 +410,9 @@ $buttonOutlinedChromeInternalBorderColorSelected:  $buttonInternalBorderColorSel
 // outlined selected and hovered
 
 // outlined disabled
-$buttonOutlinedChromeBorderColorDisabled:          $buttonBorderColorDisabled!default;
+$buttonOutlinedChromeTextColorDisabled:       $buttonHalfChromeTextColorDisabled !default;
+$buttonOutlinedChromeIconColorDisabled:       $buttonHalfChromeIconColorDisabled !default;
+$buttonOutlinedChromeBorderColorDisabled:     $buttonBorderColorDisabled!default;
 
 // outlined disabled and selected
 $buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonInternalBorderColorSelectedDisabled !default;
@@ -410,6 +420,8 @@ $buttonOutlinedChromeInternalBorderColorSelectedDisabled:  $buttonInternalBorder
 
 // alternate button colors
 //----------------------------------
+$buttonConfirmColor:      #008230 !default;
+
 
 // LISTVIEW
 //----------------------------------------------------------------
@@ -446,9 +458,9 @@ $navigationListItemLabelColorDisabled:      $linkTextColorDisabled !default;
 $navigationListIconColorDisabled:           $iconColorDisabled !default;
 
 //Sizing
-$navigationListItemStartEndPadding:         1.072rem !default; //15px
-$navigationListIconToTextPadding:           0.714rem !default; // 10px
-$navigationListItemMinHeight: 3.142rem !default;   //applies to vertical only, 44 px height when root font 14px.
+$navigationListItemStartEndPadding:         oj-px-to-rem(15px, $baseFontSize: 14px) !default; 
+$navigationListIconToTextPadding:           oj-px-to-rem(10px, $baseFontSize: 14px) !default; 
+$navigationListItemMinHeight:  oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
 $navigationListIconOnlyStyle:  circle !default;
 $navigationListIconOnlyItemPadding: 4px !default;
 
@@ -460,8 +472,8 @@ $navigationBarItemLabelColorDefault: #4d4d4d !default;
 $navigationBarItemIconColorDefault: #333 !default;
 //Sizing
 $navigationBarFontSize: 1rem !default;
-$navigationBarMinHeight: 2.714rem !default;//38 px height when root font 14px
-$navigationBarStackedIconMinHeight: 4.285rem !default; //60 px height when root font 14px
+$navigationBarMinHeight:  oj-px-to-rem(38px, $baseFontSize: 14px) !default;
+$navigationBarStackedIconMinHeight:  oj-px-to-rem(60px, $baseFontSize: 14px) !default; //60 px height when root font 14px
 $navigationBarItemPadding: 0.5rem $navigationListItemStartEndPadding 4px !default;
 $navigationBarIconMargin: 0 !default;
 $navigationBarIconToTextPadding: $navigationListIconToTextPadding !default;
@@ -499,11 +511,10 @@ $trainBgColorHover:                      $iconColorHover !default;
 $trainBorderColorHover:                  $trainBgColorHover !default;
 
 // active state 
-$trainBgColorActive :              $trainBgColorHover !default;
-$trainBorderColorActive:           $trainBgColorHover !default;
+$trainBgColorActive :                    $trainBgColorHover !default;
+$trainBorderColorActive:                 $trainBgColorHover !default;
 $trainLabelTextDecorationActive:         underline !default;
 $trainLabelFontWeightActive:             normal !default;
-$trainIconBoxShadowActive:               none !default;
 
 // valid values are 'none' and 'numeric'
 $trainButtonStyleType:                   none !default;
@@ -545,9 +556,9 @@ $filmStripArrowBorderRadius: 50% !default;
 // APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
 //-------------------------------------------------------------
 // Padding
-$appLayoutHybridPadding: 0.625rem !default;
+$appLayoutHybridPadding:  oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 //Header
-$appLayoutHybridHeaderTitleFontSize: 1.125rem !default; // 18px when root 16px
+$appLayoutHybridHeaderTitleFontSize:  oj-px-to-rem(18px, $baseFontSize: 16px) !default; 
 $appLayoutHybridHeaderBorderColor: $border2Color !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
@@ -562,11 +573,5 @@ $indexerTextDecorationHover: underline !default;
 
 // DVT
 //-----------------------------------------------------------------------------
-
-// timeline
-//----------------------------------
-$dvtTimelineItemTitleColor:            #4f4f4f !default;
-$dvtTimelineMajorAxisLabelColor:       #4f4f4f !default;
-$dvtTimelineOverviewLabelColor:        #4f4f4f !default;
 
 @import "../common/oj.common.variables";

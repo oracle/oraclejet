@@ -167,4 +167,25 @@ $textDirection: null !default;
   }
 }
 
+// useful if you want to base the text-align property based on the justify-content property
+@mixin oj-justify-content-to-text-align($justifyContentVal)
+{
+  @if ($justifyContentVal == flex-start)
+  {
+    @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
+  }
+  @else if ($justifyContentVal == center)
+  {
+    text-align: center;
+  }
+  @else if ($justifyContentVal == flex-end)
+  {
+    @include oj-bidi-property($property: 'text-align', $startOrEnd: end);
+  }
+  @else
+  {
+    // if we cannot map the justify-content value to text-align log a warning
+    @warn $justifyContentVal + ' cannot be mapped to text-align value, so no text-align value written out'; 
+  }
+}
 

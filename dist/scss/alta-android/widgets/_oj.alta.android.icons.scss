@@ -17,6 +17,7 @@ $oj-fwk-icon-arrow02-s: "e602" !default;
 $oj-fwk-icon-arrow03-e: "e603" !default;
 $oj-fwk-icon-arrow03-se: "e604" !default;
 $oj-fwk-icon-calendar: "e609" !default;
+$oj-fwk-icon-calendarclock: "e616" !default;
 $oj-fwk-icon-caret-e: "e605" !default;
 $oj-fwk-icon-caret02-e: "e606" !default;
 $oj-fwk-icon-caret02end-e: "e607" !default;
@@ -45,6 +46,16 @@ $oj-fwk-icon-corner-drag: "e619" !default;
 
 @if $includeIconClasses != false {
   @include module-include-once("alta.android.icons") {
+
+
+
+    .oj-fwk-icon-back {
+        @extend .oj-fwk-icon-arrowtail-start;
+    }
+
+    .oj-fwk-icon-next {
+        @extend .oj-fwk-icon-arrowtail-end;
+    }
 
   }
 }

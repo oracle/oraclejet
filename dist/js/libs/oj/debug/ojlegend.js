@@ -76,18 +76,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 // SubId Locators **************************************************************
 
 /**
- * <p>Sub-ID for legend section indexed by its position in the legend's sections array.</p>
- *
- * @property {Array} indexPath The array of numerical indices for the section.
- *
- * @ojsubid oj-legend-section
- * @memberof oj.ojLegend
- *
- * @example <caption>Get the first section:</caption>
- * var nodes = $( ".selector" ).ojLegend( "getNodeBySubId", {'subId': 'oj-legend-section', indexPath: [0]} );
- */
-
-/**
  * <p>Sub-ID for legend items indexed by their section and item indices.</p>
  *
  * @property {Array} sectionIndexPath The array of numerical indices for the section.
@@ -117,14 +105,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  */
 // Node Context Objects ********************************************************
 
-/**
- * <p>Context for legend section indexed by its position in the legend's sections array.</p>
- *
- * @property {Array} indexPath The array of numerical indices for the section.
- *
- * @ojnodecontext oj-legend-section
- * @memberof oj.ojLegend
- */
 
 /**
  * <p>Context for legend items indexed by their section and item indices.</p>
@@ -199,52 +179,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   widgetEventPrefix : "oj",
   options: {
     /**
-     * Triggered when a category of data items is hidden or shown.
-     *
-     * @property {Object} ui event payload
-     * @property {Object} ui.category the category that was filtered on
-     * @property {string} ui.type specifies whether the category is being filtered 'in' or 'out'
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">categoryFilter</code> callback specified:</caption>
-     * $(".selector").ojLegend({
-     *   "categoryFilter": function(event, ui){}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryfilter</code> event:</caption>
-     * $(".selector").on("ojcategoryfilter", function(event, ui){});
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojLegend
-     * @instance
-     * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">hiddenCategories</code> property instead.
-     */
-    categoryFilter : null,
-
-    /**
-     * Triggered when a category of data items is highlighted.
-     *
-     * @property {Object} ui event payload
-     * @property {Array} ui.categories the categories that are being highlighted
-     * @property {string} ui.type specifies whether highlighting is being turned 'on' or 'off'
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">categoryHighlight</code> callback specified:</caption>
-     * $(".selector").ojLegend({
-     *   "categoryHighlight": function(event, ui){}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryhighlight</code> event:</caption>
-     * $(".selector").on("ojcategoryhighlight", function(event, ui){});
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojLegend
-     * @instance
-     * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">highlightedCategories</code> property instead.
-     */
-    categoryHighlight : null,
-
-    /**
      * Triggered during a drill gesture (single click on the legend item).
      *
      * @property {Object} ui event payload
@@ -276,12 +210,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   _ConvertLocatorToSubId : function(locator) {
     var subId = locator['subId'];
 
-    // Convert the supported locators
-    if(subId == 'oj-legend-section') {
-      // section[sectionIndex0][sectionIndex1]...[sectionIndexN]
-      subId = 'section' + this._GetStringFromIndexPath(locator['indexPath']);
-    }
-    else if(subId == 'oj-legend-item') {
+    if(subId == 'oj-legend-item') {
       // section[sectionIndex0][sectionIndex1]...[sectionIndexN]:item[itemIndex]
       subId = 'section' + this._GetStringFromIndexPath(locator['sectionIndexPath']);
       subId += ':item[' + locator['itemIndex'] + ']';
@@ -307,11 +236,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
       locator['subId'] = 'oj-legend-item';
       locator['sectionIndexPath'] = this._GetIndexPath(sectionSubstr);
       locator['itemIndex'] = this._GetFirstIndex(itemSubstr);
-    }
-    else if(subId.indexOf('section') == 0) {
-      // section[sectionIndex0][sectionIndex1]...[sectionIndexN]
-      locator['subId'] = 'oj-legend-section';
-      locator['indexPath'] = this._GetIndexPath(subId);
     }
     else if(subId == 'tooltip') {
         locator['subId'] = 'oj-legend-tooltip';
@@ -348,23 +272,13 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
 
   //** @inheritdoc */
   _GetEventTypes : function() {
-    return ['categoryFilter', 'categoryHighlight', 'drill'];
+    return ['drill'];
   },
 
   //** @inheritdoc */
   _HandleEvent : function(event) {
     var type = event['type'];
-    if (type === 'categoryHide' || type === 'categoryShow') {
-      var filterType = (type === 'categoryHide') ? 'out' : 'in';
-      this._trigger('categoryFilter', null, {'category': event['category'], 'type': filterType});
-      this._UserOptionChange('hiddenCategories', event['hiddenCategories']);
-    }
-    else if (type === 'categoryHighlight') {
-      var highlightType = event['categories'] && event['categories'].length > 0 ? 'on' : 'off';
-      this._trigger('categoryHighlight', null, {'categories': event['categories'], 'type': highlightType});
-      this._UserOptionChange('highlightedCategories', event['categories']);
-    }
-    else if (type === 'drill') {
+    if (type === 'drill') {
       this._trigger('drill', null, {'id': event['id']});
     }
     else {
@@ -381,10 +295,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
     var resources = this.options['_resources'];
 
     // Add images
-    // TODO these should be defined in the skin instead
-    resources['overviewGrippy'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
-
-    // Add images
     resources['closedEnabled'] = 'oj-legend-section-close-icon';
     resources['closedOver'] = 'oj-legend-section-close-icon oj-hover';
     resources['closedDown'] = 'oj-legend-section-close-icon oj-active';
@@ -396,11 +306,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _Render: function() {
     this._super();
-
-    // Remove the tabindex from the element to disable keyboard handling if the component
-    // does not have a role on the parent element like for non-interactive legends
-    if (!this.element.attr("role"))
-      this.element.attr("tabIndex", null);
   },
 
   /**
@@ -423,8 +328,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
    * @property {string} title
    * @property {Function(number)} getSection Returns the section with the specified index.
    * @property {string} getSection.title
-   * @property {string} getSection.getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
-   * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
    * @return {Object|null} An object containing properties for the legend section at the given subIdPath, or null if
    *   none exists.
    * @expose
@@ -434,30 +337,15 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   getSection : function(subIdPath) {
     var ret = this._component.getAutomation().getSection(subIdPath);
     if(ret) {
-      var ojComponent = this;
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
       // Support for getSection(sectionIndex)
       ret['getSection'] = function(sectionIndex) {
         var section = ret['sections'] ? ret['sections'][sectionIndex] : null;
-
-        // : Provide backwards compatibility for getters until 1.2.0.
-        if(section)
-          ojComponent._AddAutomationGetters(section);
-
         return section;
       }
 
       // Support for getSection(itemIndex)
       ret['getItem'] = function(itemIndex) {
         var item = ret['items'] ? ret['items'][itemIndex] : null;
-
-        // : Provide backwards compatibility for getters until 1.2.0.
-        if(item)
-          ojComponent._AddAutomationGetters(item);
-
         return item;
       }
     }
@@ -470,7 +358,6 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
    *
    * @param {Array} subIdPath The array of indices in the subId for the desired legend item.
    * @property {string} text
-   * @property {Function} getText <b>Deprecated</b>: Use <code class="prettyprint">text</code> instead.
    * @return {Object|null} An object containing properties for the legend item at the given subIdPath, or null if
    *   none exists.
    * @expose
@@ -478,12 +365,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
    * @memberof oj.ojLegend
    */
   getItem : function(subIdPath) {
-    var ret = this._component.getAutomation().getItem(subIdPath);
-
-    // : Provide backwards compatibility for getters until 1.2.0.
-    this._AddAutomationGetters(ret);
-
-    return ret;
+    return this._component.getAutomation().getItem(subIdPath);
   },
 
   /**
@@ -497,7 +379,21 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
    * @memberof oj.ojLegend
    */
   getPreferredSize : function(width, height) {
-    var dims = this._component.getPreferredSize(this.options, width, height);
+    // Check if the options has a promise.
+    var hasPromise = false;
+    var legendSections = this.options['sections'] ? this.options['sections'] : [];
+    for(var i=0; i<legendSections.length; i++) {
+      var items = legendSections[i]['items'];
+      if(items && items.then) 
+        hasPromise = true;
+    }
+    
+    // If the options has a promise, then use the last options to be rendered rather 
+    // than passing in a promise that can't be dealt with here. This won't work if the
+    // data is provided via a promise and not yet rendered, but this problem will go 
+    // away once we have flowing layout.
+    var options = hasPromise ? null : this.options;
+    var dims = this._component.getPreferredSize(options, width, height);
     return {'width': dims.getWidth(), 'height': dims.getHeight()};
   },
 
@@ -525,6 +421,11 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'sections': ['items']};
+  },
+
+  //** @inheritdoc */
+  _GetComponentNoClonePaths : function() {
+    return {'sections': {'items': true}};
   }
 });
 
@@ -536,31 +437,38 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
 var ojLegendMeta = {
   "properties": {
     "drilling": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "halign": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["center", "end", "start"]
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "hideAndShowBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "hoverBehaviorDelay": {
-      "type": "number|string"
-    },
-    "orientation": {
-      "type": "string"
+      "type": "number"
+    },    "orientation": {
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     },
     "scrolling": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["asNeeded", "off"]
     },
     "sections": {
       "type": "Array<object>"
@@ -572,33 +480,33 @@ var ojLegendMeta = {
       "type": "number"
     },
     "textStyle": {
-      "type": "string"
+      "type": "object"
     },
-    "title": {
-      "type": "string"
-    },
-    "titleHalign": {
-      "type": "string"
-    },
-    "titleStyle": {
-      "type": "string"
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     },
     "valign": {
       "type": "string"
     }
   },
+  "events": {
+    "drill": {}
+  },
   "methods": {
     "getContextByNode": {},
     "getItem": {},
     "getPreferredSize": {},
-    "getSection": {},
-    "getTitle": {}
+    "getSection": {}
   },
   "extension": {
-    "_widgetName": "ojLegend"
+    _WIDGET_NAME: "ojLegend"
   }
 };
-oj.Components.registerMetadata('ojLegend', 'dvtBaseComponent', ojLegendMeta);
-oj.Components.register('oj-legend', oj.Components.getMetadata('ojLegend'));
+oj.CustomElementBridge.registerMetadata('oj-legend', 'dvtBaseComponent', ojLegendMeta);
+oj.CustomElementBridge.register('oj-legend', {'metadata': oj.CustomElementBridge.getMetadata('oj-legend')});
 })();
 });

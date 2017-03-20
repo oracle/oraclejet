@@ -31,27 +31,16 @@
 @if $includeRadiosetClasses != false {
   @include module-include-once("alta.windows.radioset") {
 
+
     @if($radioCheckboxRenderInputAs == 'backgroundImage') {
 
-      @include oj-radiocheckbox-image-margin($radioCheckboxLabelToEdgePadding);
-      
       // single checkbox disabled selected icon is different on Windows theme for single checkbox.
       // it's gray both unselected/selected for single checkbox, 
       // and gray/blueish for unselected/selected for multiple checkboxes.
       .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
-       background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
+        background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
       }
       
-      .oj-radiocheckbox-icon {
-        width: 20px;
-        height: 20px;
-      }
-   
-      // position radio/checkbox underneath the icon for voiceover to work
-      // the calculation is margin from side (20px) + 1/4*width of image
-      @include oj-radiocheckbox-position-input(25px);
-      
-
     }
   }
 }

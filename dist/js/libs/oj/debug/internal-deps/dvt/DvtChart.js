@@ -7,7 +7,7 @@ define(['./DvtToolkit', './DvtAxis', './DvtLegend', './DvtOverview'], function(d
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Chart component.
@@ -179,20 +179,15 @@ dvt.Chart.prototype.SetOptions = function(options) {
     this._rawOptions = options;
     this.Options = this.Defaults.calcOptions(options);
 
-    // Process "horizontalBar" chart type for backwards compatibility
-    if (this.Options['type'] == 'horizontalBar') {
-      this.Options['type'] = 'bar';
-      this.Options['orientation'] = 'horizontal';
-    }
-
     // Reset options cache
     this.getOptionsCache().clearCache();
 
     // Process the data to add bulletproofing
     DvtChartDataUtils.processDataObject(this);
 
-    // Disable animation for canvas, xml and large series
-    if (!dvt.Agent.isEnvironmentBrowser() || (DvtChartDataUtils.hasData(this) && DvtChartDataUtils.getSeriesCount(this) * DvtChartDataUtils.getGroupCount(this) > 5000)) {
+    // Disable animation for canvas, xml and large bubble/scatter data
+    if (!dvt.Agent.isEnvironmentBrowser() || (DvtChartTypeUtils.isScatterBubble(this) &&
+        DvtChartDataUtils.getSeriesCount(this) * DvtChartDataUtils.getGroupCount(this) > DvtChartPlotAreaRenderer.FILTER_THRESHOLD_SCATTER_BUBBLE)) {
       this.Options['animationOnDisplay'] = 'none';
       this.Options['animationOnDataChange'] = 'none';
     }
@@ -315,17 +310,19 @@ dvt.Chart.prototype.render = function(options, width, height)
     // Disable event listeners temporarily
     this.EventManager.removeListeners(this);
 
+    // Run the animation
     dvt.Playable.appendOnEnd(this.Animation, this._onAnimationEnd, this);
     this.Animation.play();
-  }
 
-  // Clean up the old container.  If doing black box animation, store a pointer and clean
-  // up after animation is complete.  Otherwise, remove immediately.
-  if (bBlackBoxUpdate) {
+    // Store a reference to the old container to be cleaned up after the animation. Remove
+    // from the DOM if we don't need it for black box animation.
     this._oldContainer = this._container;
+    if (!bBlackBoxUpdate && this._oldContainer)
+      this._oldContainer.removeFromParent();
   }
   else if (this._container) {
-    this.removeChild(this._container);  // Not black box animation, so clean up the old contents
+    // No animation, so delete the previously rendered contents.
+    this._container.removeFromParent();
     this._container.destroy();
     this._container = null;
   }
@@ -411,15 +408,26 @@ dvt.Chart.prototype.__cleanUpAxisAndPlotArea = function() {
   this.Peers = [];
 
   // Clean up the axis and plot area
-  this._container.removeChild(this.xAxis);
-  this._container.removeChild(this.yAxis);
-  this._container.removeChild(this.y2Axis);
+  if (this.xAxis) {
+    this._container.removeChild(this.xAxis);
+    this.xAxis.destroy();
+  }
+  if (this.yAxis) {
+    this._container.removeChild(this.yAxis);
+    this.yAxis.destroy();
+  }
+  if (this.y2Axis) {
+    this._container.removeChild(this.y2Axis);
+    this.y2Axis.destroy();
+  }
 
   // Plot area which is a touch target needs to be kept so that subsequent touch events are fired.
   if (this._plotArea && this._plotArea == this._panZoomTarget)
     this._plotArea.setVisible(false);
-  else
+  else if (this._plotArea) {
     this._container.removeChild(this._plotArea);
+    this._plotArea.destroy();
+  }
 
   this._plotArea = null;
 
@@ -433,17 +441,19 @@ dvt.Chart.prototype.__cleanUpAxisAndPlotArea = function() {
  * @private
  */
 dvt.Chart.prototype._onAnimationEnd = function() {
-  // Clean up the old container used by black box updates
+  // Clean up the old container. This is done after the animation to avoid garbage
+  // collection during the animation and because the black box updates need it.
   if (this._oldContainer) {
-    this.removeChild(this._oldContainer);
+    this._oldContainer.removeFromParent();
     this._oldContainer.destroy();
     this._oldContainer = null;
   }
 
-  if (this._delContainer && this._delContainer.getNumChildren() > 0)
-    this.getPlotArea().removeChild(this._delContainer);
-
-  this._delContainer = null;
+  if (this._delContainer) {
+    this._delContainer.removeFromParent();
+    this._delContainer.destroy();
+    this._delContainer = null;
+  }
 
   // Fire ready event saying animation is finished.
   if (!this.AnimationStopped)
@@ -734,23 +744,53 @@ dvt.Chart.prototype._processSelectionEvent = function(event) {
  */
 dvt.Chart.prototype._processPanZoomEvent = function(event) {
   var subtype = event.getSubtype();
-  var actionDone = subtype == dvt.PanZoomEvent.SUBTYPE_PAN_END || subtype == dvt.PanZoomEvent.SUBTYPE_ZOOM || subtype == dvt.PanZoomEvent.SUBTYPE_PINCH_END;
   var actionStart = subtype == dvt.PanZoomEvent.SUBTYPE_PAN_START || subtype == dvt.PanZoomEvent.SUBTYPE_PINCH_START;
-
-  // The initial touch target has to be kept so that the subsequent touch move events are fired
-  if (dvt.Agent.isTouchDevice() && actionStart && this._panZoomTarget != this._plotArea) {
-    this._container.removeChild(this._panZoomTarget);
-    this._panZoomTarget = this._plotArea;
+  if (actionStart) {
+    // The initial touch target has to be kept so that the subsequent touch move events are fired
+    if (dvt.Agent.isTouchDevice() && this._panZoomTarget != this._plotArea) {
+      this._container.removeChild(this._panZoomTarget);
+      this._panZoomTarget = this._plotArea;
+    }
+    return null; // start event does not need to be processed further because the viewport does not change
   }
+
+  if (this._lastPanZoomEvent) {
+    // If there is an existing event waiting for the next animation frame, add up the dx's and dy's of the current event
+    // to be processed together as one event in the next frame. This ensures that each animation frame only processes
+    // one event so that the z&s behavior is smoother.
+    event.dxMin += this._lastPanZoomEvent.dxMin;
+    event.dxMax += this._lastPanZoomEvent.dxMax;
+    event.dyMin += this._lastPanZoomEvent.dyMin;
+    event.dyMax += this._lastPanZoomEvent.dyMax;
+  }
+  else {
+    // If there is not an existing event in the queue, request an animation frame to process the current event.
+    dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._animatePanZoomEvent));
+  }
+
+  this._lastPanZoomEvent = event;
+
+  return null; // viewportChange event is created and dispatched in the animate callback
+};
+
+/**
+ * requestAnimationFrame callback to animate pan/zoom.
+ * It will rerender the chart based on the last pan/zoom event that is fired since the last frame.
+ * @private
+ */
+dvt.Chart.prototype._animatePanZoomEvent = function() {
+  var event = this._lastPanZoomEvent;
+  this._lastPanZoomEvent = null; // nullify to indicate that the event has been processed
+
+  var subtype = event.getSubtype();
+  var actionDone = subtype == dvt.PanZoomEvent.SUBTYPE_PAN_END || subtype == dvt.PanZoomEvent.SUBTYPE_ZOOM || subtype == dvt.PanZoomEvent.SUBTYPE_PINCH_END;
 
   // Calculate the bounds and update the viewport
   var bounds;
   if (DvtChartEventUtils.isLiveScroll(this)) { // live
     bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMin, event.dxMax, event.dyMin, event.dyMax);
-    if (!actionStart) {
-      this._setViewport(bounds, actionDone);
-      this._setScrollbarViewport(bounds);
-    }
+    this._setScrollbarViewport(bounds);
+    this._setViewport(bounds, actionDone);
   }
   else { // delayed
     bounds = DvtChartEventUtils.getAxisBoundsByDelta(this, event.dxMinTotal, event.dxMaxTotal, event.dyMinTotal, event.dyMaxTotal);
@@ -771,10 +811,15 @@ dvt.Chart.prototype._processPanZoomEvent = function(event) {
   }
 
   // Fire viewport change event
-  if (DvtChartTypeUtils.isBLAC(this))
-    return dvt.EventFactory.newChartViewportChangeEvent(actionDone, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
-  else
-    return dvt.EventFactory.newChartViewportChangeEvent(actionDone, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
+  if (actionDone || !bounds.unchanged) {
+    var viewportChangeEvent;
+    if (DvtChartTypeUtils.isBLAC(this))
+      viewportChangeEvent = dvt.EventFactory.newChartViewportChangeEvent(actionDone, bounds.xMin, bounds.xMax, bounds.startGroup, bounds.endGroup, null, null);
+    else
+      viewportChangeEvent = dvt.EventFactory.newChartViewportChangeEvent(actionDone, bounds.xMin, bounds.xMax, null, null, bounds.yMin, bounds.yMax);
+
+    this.dispatchEvent(viewportChangeEvent);
+  }
 };
 
 
@@ -805,7 +850,7 @@ dvt.Chart.prototype._processMarqueeEvent = function(event) {
     }
 
     // Create and populate selection event
-    var selection = DvtChartEventUtils.getSelectedObjects(this, event, selectionHandler);
+    var selection = selectionHandler.getSelectedIds();
     bounds = DvtChartEventUtils.getAxisBounds(this, event, false);
     var bComplete = (subtype == dvt.MarqueeEvent.SUBTYPE_END) ? true : false;
     var selectionEvent = dvt.EventFactory.newChartSelectionEvent(selection, bComplete,
@@ -852,22 +897,51 @@ dvt.Chart.prototype._processMarqueeEvent = function(event) {
  * @private
  */
 dvt.Chart.prototype._processScrollbarEvent = function(start, end, actionDone, source) {
+  // If there is not an existing event in the queue, request an animation frame to process the current event
+  if (!this._lastScrollbarEvent)
+    dvt.Context.requestAnimationFrame(dvt.Obj.createCallback(this, this._animateScrollbarEvent));
+
+  this._lastScrollbarEvent = {start: start, end: end, actionDone: actionDone, source: source};
+
+  return null; // viewportChange event is created and dispatched in the animate callback
+};
+
+
+/**
+ * requestAnimationFrame callback to animate on scrollbar event.
+ * It will rerender the chart based on the last scrollbar event that is fired since the last frame.
+ * @private
+ */
+dvt.Chart.prototype._animateScrollbarEvent = function() {
+  // Rerender the chart based on the last scrollbar event that is fired within the current animation frame
+  var start = this._lastScrollbarEvent.start;
+  var end = this._lastScrollbarEvent.end;
+  var actionDone = this._lastScrollbarEvent.actionDone;
+  var source = this._lastScrollbarEvent.source;
+  this._lastScrollbarEvent = null; // nullify to indicate that the event has been processed
+
   var axis = (source == this.yScrollbar) ? this.yAxis : this.xAxis;
-  start = axis.linearToActual(start);
-  end = axis.linearToActual(end);
+  var minMax = DvtChartEventUtils.getActualMinMax(axis, start, end);
+  start = minMax.min;
+  end = minMax.max;
 
   if (DvtChartEventUtils.isLiveScroll(this) || actionDone) {
     if (source == this.yScrollbar)
       this._setViewport({yMin: start, yMax: end}, actionDone);
     else
-      this._setViewport({xMin: start, xMax: end}, actionDone);
+      this._setViewport({xMin: start, xMax: end, unchanged: minMax.unchanged}, actionDone);
   }
 
-  if (source == this.yScrollbar)
-    return dvt.EventFactory.newChartViewportChangeEvent(actionDone, null, null, null, null, start, end, null, null);
-  else {
-    var startEndGroup = DvtChartEventUtils.getAxisStartEndGroup(this.xAxis, start, end);
-    return dvt.EventFactory.newChartViewportChangeEvent(actionDone, start, end, startEndGroup.startGroup, startEndGroup.endGroup, null, null, null, null);
+  // Fire viewport change event
+  if (actionDone || !minMax.unchanged) {
+    var viewportChangeEvent;
+    if (source == this.yScrollbar)
+      viewportChangeEvent = dvt.EventFactory.newChartViewportChangeEvent(actionDone, null, null, null, null, start, end, null, null);
+    else {
+      var startEndGroup = DvtChartEventUtils.getAxisStartEndGroup(this.xAxis, start, end);
+      viewportChangeEvent = dvt.EventFactory.newChartViewportChangeEvent(actionDone, start, end, startEndGroup.startGroup, startEndGroup.endGroup, null, null, null, null);
+    }
+    this.dispatchEvent(viewportChangeEvent);
   }
 };
 
@@ -1201,6 +1275,10 @@ dvt.Chart.prototype.getShapesForViewSwitcher = function(bOld) {
  * @private
  */
 dvt.Chart.prototype._setViewport = function(bounds, actionDone) {
+  // If the bounds are unchanged, do not rerender the viewport unless the action is done
+  if (!actionDone && bounds.unchanged)
+    return;
+
   if (bounds.xMax != null)
     this.Options['xAxis']['viewportMax'] = bounds.xMax;
   if (bounds.xMin != null)
@@ -1220,7 +1298,7 @@ dvt.Chart.prototype._setViewport = function(bounds, actionDone) {
       this.Options['yAxis']['viewportMin'] = bounds.yMin;
   }
 
-  this.Options['_duringAnimation'] = !actionDone;
+  this.Options['_duringZoomAndScroll'] = !actionDone;
   DvtChartRenderer.rerenderAxisAndPlotArea(this, this._container);
 };
 
@@ -2195,7 +2273,7 @@ dvt.Automation.prototype.IsTooltipElement = function(domElement) {
   return false;
 };
 
-
+// TODO DELETE ME.
 dvt.Bundle.addDefaultStrings(dvt.Bundle.CHART_PREFIX, {
   'DEFAULT_GROUP_NAME': 'Group {0}',
 
@@ -2259,9 +2337,6 @@ var DvtChartEventManager = function(chart) {
   this._panZoomHandler = null;
   this._marqueeZoomHandler = null;
   this._marqueeSelectHandler = null;
-
-  // Cached stage absolute position
-  this._stageAbsolutePosition = null;
 };
 
 dvt.Obj.createSubclass(DvtChartEventManager, dvt.EventManager);
@@ -2297,8 +2372,8 @@ DvtChartEventManager.prototype.addListeners = function(displayable) {
 /**
  * @override
  */
-DvtChartEventManager.prototype.removeListeners = function(displayable) {
-  DvtChartEventManager.superclass.removeListeners.call(this, displayable);
+DvtChartEventManager.prototype.RemoveListeners = function(displayable) {
+  DvtChartEventManager.superclass.RemoveListeners.call(this, displayable);
   if (!dvt.Agent.isTouchDevice()) {
     displayable.removeEvtListener(dvt.MouseEvent.MOUSEWHEEL, this.OnMouseWheel, false, this);
   }
@@ -2312,21 +2387,6 @@ DvtChartEventManager.prototype.removeListeners = function(displayable) {
  */
 DvtChartEventManager.prototype.getLogicalObject = function(target) {
   return this.GetLogicalObject(target, true);
-};
-
-
-/**
- * Return the relative position relative to the stage, based on the cached stage absolute position.
- * @param {number} pageX
- * @param {number} pageY
- * @return {dvt.Point} The relative position.
- * @private
- */
-DvtChartEventManager.prototype._getRelativePosition = function(pageX, pageY) {
-  if (!this._stageAbsolutePosition)
-    this._stageAbsolutePosition = this._context.getStageAbsolutePosition();
-
-  return new dvt.Point(pageX - this._stageAbsolutePosition.x, pageY - this._stageAbsolutePosition.y);
 };
 
 
@@ -2407,7 +2467,7 @@ DvtChartEventManager.prototype._onDragEnd = function(event) {
  * @private
  */
 DvtChartEventManager.prototype._onMouseDragStart = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   var dragHandler = this._getDragHandler(relPos);
   var chartEvent;
 
@@ -2442,7 +2502,7 @@ DvtChartEventManager.prototype._onMouseDragStart = function(event) {
  * @private
  */
 DvtChartEventManager.prototype._onMouseDragMove = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
   var chartEvent;
 
@@ -2465,7 +2525,7 @@ DvtChartEventManager.prototype._onMouseDragMove = function(event) {
  * @private
  */
 DvtChartEventManager.prototype._onMouseDragEnd = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   var dragHandler = this._getDragHandler(); // don't pass the relPos so that the drag mode stays
   var chartEvent;
 
@@ -2483,9 +2543,6 @@ DvtChartEventManager.prototype._onMouseDragEnd = function(event) {
     if (axisSpace)
       this.setDragButtonsVisible(axisSpace.containsPoint(relPos.x, relPos.y));
   }
-
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
 };
 
 
@@ -2495,7 +2552,7 @@ DvtChartEventManager.prototype._onMouseDragEnd = function(event) {
 DvtChartEventManager.prototype.OnMouseMove = function(event) {
   DvtChartEventManager.superclass.OnMouseMove.call(this, event);
 
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   if (this._dataCursorHandler) {
     if (this.GetCurrentTargetForEvent(event) instanceof dvt.Button) // don't show DC over buttons
       this._dataCursorHandler.processEnd();
@@ -2516,7 +2573,7 @@ DvtChartEventManager.prototype.OnMouseMove = function(event) {
  */
 DvtChartEventManager.prototype.OnMouseOut = function(event) {
   DvtChartEventManager.superclass.OnMouseOut.call(this, event);
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
 
   // Hide the drag buttons
   var axisSpace = this._chart.__getAxisSpace();
@@ -2525,9 +2582,6 @@ DvtChartEventManager.prototype.OnMouseOut = function(event) {
 
   if (this._dataCursorHandler)
     this._dataCursorHandler.processOut(relPos);
-
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
 
   var obj = this.GetLogicalObject(event.target);
   if (!obj)
@@ -2542,7 +2596,7 @@ DvtChartEventManager.prototype.OnMouseWheel = function(event) {
     return;
 
   var delta = event.wheelDelta != null ? event.wheelDelta : 0;
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
 
   if (this._panZoomHandler) {
     var panZoomEvent = this._panZoomHandler.processMouseWheel(relPos, delta);
@@ -2587,7 +2641,7 @@ DvtChartEventManager.prototype.OnBlur = function(event)
  */
 DvtChartEventManager.prototype.OnClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
-  var pos = this._getRelativePosition(event.pageX, event.pageY);
+  var pos = this._context.pageToStageCoords(event.pageX, event.pageY);
   if (this.SeriesFocusHandler)
     this.SeriesFocusHandler.processSeriesFocus(pos, obj);
 
@@ -2619,6 +2673,12 @@ DvtChartEventManager.prototype.OnDblClickInternal = function(event) {
  * @override
  */
 DvtChartEventManager.prototype.HandleTouchHoverStartInternal = function(event) {
+  if (this._dataCursorHandler && !this.isTouchResponseTouchStart()) {
+    var relPos = this._context.pageToStageCoords(event.touch.pageX, event.touch.pageY);
+    this._dataCursorHandler.processMove(relPos);
+    return false;
+  }
+
   var dlo = this.GetLogicalObject(event.target);
   this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
   return false;
@@ -2629,6 +2689,12 @@ DvtChartEventManager.prototype.HandleTouchHoverStartInternal = function(event) {
  * @override
  */
 DvtChartEventManager.prototype.HandleTouchHoverMoveInternal = function(event) {
+  if (this._dataCursorHandler && !this.isTouchResponseTouchStart()) {
+    var relPos = this._context.pageToStageCoords(event.touch.pageX, event.touch.pageY);
+    this._dataCursorHandler.processMove(relPos);
+    return false;
+  }
+
   var dlo = this.GetLogicalObject(event.target);
   this.TouchManager.setTooltipEnabled(event.touch.identifier, this.getTooltipsEnabled(dlo));
   return false;
@@ -2638,6 +2704,8 @@ DvtChartEventManager.prototype.HandleTouchHoverMoveInternal = function(event) {
  * @override
  */
 DvtChartEventManager.prototype.HandleTouchHoverEndInternal = function(event) {
+  this.endDrag();
+
   var obj = this.GetLogicalObject(event.target);
   if (!obj)
     return;
@@ -2740,19 +2808,19 @@ DvtChartEventManager.prototype._onTouchDragStart = function(event) {
   var chartEvent, dataCursorOn;
 
   if (touches.length == 1) {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos = this._context.pageToStageCoords(touches[0].pageX, touches[0].pageY);
     var dragHandler = this._getDragHandler();
     if (dragHandler)
       chartEvent = dragHandler.processDragStart(relPos, true);
-    else if (this._dataCursorHandler) {
+    else if (this._dataCursorHandler && this.isTouchResponseTouchStart()) {
       this._dataCursorHandler.processMove(relPos);
       dataCursorOn = true;
     }
   }
   else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
     this.endDrag(); // clean 1-finger events before starting pinch zoom
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    var relPos1 = this._context.pageToStageCoords(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._context.pageToStageCoords(touches[1].pageX, touches[1].pageY);
     chartEvent = this._panZoomHandler.processPinchStart(relPos1, relPos2);
   }
 
@@ -2782,18 +2850,18 @@ DvtChartEventManager.prototype._onTouchDragMove = function(event) {
   var chartEvent, dataCursorOn;
 
   if (touches.length == 1) {
-    var relPos = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
+    var relPos = this._context.pageToStageCoords(touches[0].pageX, touches[0].pageY);
     var dragHandler = this._getDragHandler();
     if (dragHandler)
       chartEvent = dragHandler.processDragMove(relPos, true);
-    else if (this._dataCursorHandler) {
+    else if (this._dataCursorHandler && this.isTouchResponseTouchStart()) {
       this._dataCursorHandler.processMove(relPos);
       dataCursorOn = true;
     }
   }
   else if (touches.length == 2 && this._panZoomHandler && DvtChartEventUtils.isZoomable(this._chart)) {
-    var relPos1 = this._getRelativePosition(touches[0].pageX, touches[0].pageY);
-    var relPos2 = this._getRelativePosition(touches[1].pageX, touches[1].pageY);
+    var relPos1 = this._context.pageToStageCoords(touches[0].pageX, touches[0].pageY);
+    var relPos2 = this._context.pageToStageCoords(touches[1].pageX, touches[1].pageY);
     chartEvent = this._panZoomHandler.processPinchMove(relPos1, relPos2);
   }
 
@@ -2828,9 +2896,12 @@ DvtChartEventManager.prototype._onTouchDragEnd = function(event) {
   if (chartEvent1 || chartEvent2) {
     event.preventDefault();
     this.getCtx().getTooltipManager().hideTooltip();
+
+    // : Reset the touch manager because we do not use it to handle the dragging, but the dragging
+    // updates the touch manager state
+    this.getTouchManager().reset();
   }
 
-  this._stageAbsolutePosition = null; // Clear the stage absolute position cache
   this.setDragButtonsVisible(true);
 };
 
@@ -3181,7 +3252,7 @@ DvtChartEventManager.prototype.GetDropOffset = function(event) {
     var dataPos = obj.getDataPosition();
     if (dataPos) {
       dataPos = this._chart.getPlotArea().localToStage(dataPos);
-      var relPos = this._getRelativePosition(event.pageX, event.pageY);
+      var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
       return new dvt.Point(dataPos.x - relPos.x, dataPos.y - relPos.y);
     }
   }
@@ -3193,7 +3264,7 @@ DvtChartEventManager.prototype.GetDropOffset = function(event) {
  * @override
  */
 DvtChartEventManager.prototype.GetDropTargetType = function(event) {
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
 
   var paBounds = this._chart.__getPlotAreaSpace();
   if (paBounds.containsPoint(relPos.x, relPos.y))
@@ -3222,7 +3293,7 @@ DvtChartEventManager.prototype.GetDropEventPayload = function(event) {
   var offsetX = Number(dataTransfer.getData(dvt.EventManager.DROP_OFFSET_X_DATA_TYPE)) || 0;
   var offsetY = Number(dataTransfer.getData(dvt.EventManager.DROP_OFFSET_Y_DATA_TYPE)) || 0;
 
-  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
   return this._chart.getValuesAt(relPos.x + offsetX, relPos.y + offsetY);
 };
 
@@ -3516,7 +3587,8 @@ DvtChartObjPeer.prototype.Init = function(chart, displayables, seriesIndex, grou
  * @param {dvt.Point} dataPos The coordinate of the data point relative to the plot area.
  */
 DvtChartObjPeer.associate = function(displayable, chart, seriesIndex, groupIndex, itemIndex, dataPos) {
-  if (!displayable)
+  // Associate is expensive and not needed during zoom & scroll.
+  if (!displayable || chart.getOptions()['_duringZoomAndScroll'])
     return;
 
   // Create the logical object.
@@ -4221,6 +4293,16 @@ DvtChartDataItem.prototype.equals = function(dataItem) {
 
   return false;
 };
+
+/**
+ * @override
+ */
+DvtChartDataItem.prototype.toString = function() {
+  if (this['id'] != null)
+    return this['id'].toString();
+  else
+    return DvtChartDataUtils.createDataItemId(this['series'], this['group']);
+};
 /**
  * Default values and utility functions for component versioning.
  * @class
@@ -4311,16 +4393,14 @@ DvtChartDefaults.VERSION_1 = {
     'majorTick': {'rendered': 'auto'},
     'minorTick': {'rendered': 'auto'},
     'axisLine': {'rendered': 'on'},
-    'scale': 'linear',
-    'maxSize': 0.33
+    'scale': 'linear'
   },
   'yAxis': {
     'tickLabel': {'rendered': 'on'},
     'majorTick': {'rendered': 'auto'},
     'minorTick': {'rendered': 'auto'},
     'axisLine': {'rendered': 'on'},
-    'scale': 'linear',
-    'maxSize': 0.33
+    'scale': 'linear'
   },
   'y2Axis': {
     'tickLabel': {'rendered': 'on'},
@@ -4328,7 +4408,6 @@ DvtChartDefaults.VERSION_1 = {
     'minorTick': {'rendered': 'auto'},
     'axisLine': {'rendered': 'on'},
     'scale': 'linear',
-    'maxSize': 0.33,
     'alignTickMarks': 'on'
   },
   'zAxis': {}, // this will be used for dataMin/Max calculations
@@ -4338,7 +4417,6 @@ DvtChartDefaults.VERSION_1 = {
   'legend': {
     'position': 'auto',
     'rendered': 'auto',
-    'maxSize': 0.3,
     'layout': {'gapRatio': 1.0},
     'seriesSection': {},
     'referenceObjectSection': {},
@@ -4398,10 +4476,10 @@ DvtChartDefaults.VERSION_1 = {
     'tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px;'),
     'stackLabelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS + dvt.BaseComponentDefaults.FONT_SIZE_11),
     'boxPlot': {
-      'whiskerStyle': {},
-      'whiskerEndStyle': {'strokeWidth' : 2},
+      'whiskerSvgStyle': {},
+      'whiskerEndSvgStyle': {'strokeWidth' : 2},
       'whiskerEndLength': 9,
-      'medianStyle': {'strokeWidth': 3}
+      'medianSvgStyle': {'strokeWidth': 3}
     }
   },
 
@@ -4463,7 +4541,7 @@ DvtChartDefaults.prototype.getNoCloneObject = function(chart) {
   // TODO: Put logic for no clone here
   return {};
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*  DvtChartDataCursorHandler                 Data Cursor Event Handler                  */
 /*---------------------------------------------------------------------*/
@@ -4491,7 +4569,7 @@ DvtChartDataCursorHandler.prototype.Init = function(chart, dataCursor) {
 // Returns whether or not data cursor is shown
 DvtChartDataCursorHandler.prototype.processMove = function(pos, bSuppressEvent) {
   var plotRect = this._chart.__getPlotAreaSpace();
-  if (plotRect && plotRect.containsPoint(pos.x, pos.y)) {
+  if (plotRect && plotRect.containsPoint(pos.x, pos.y) && !this._chart.getOptions()['_duringZoomAndScroll']) {
     // Show the data cursor only if the current point is within the plot area
     this._showDataCursor(plotRect, pos.x, pos.y, bSuppressEvent);
     return true;
@@ -4787,6 +4865,7 @@ DvtChartSelectableWedge.prototype._makeWedgePath = function(inset) {
   var ir = this._ir ? this._ir + inset : 0;
 
   var angleExtentRads = (this._ae == 360) ? dvt.Math.degreesToRads(359.99) : dvt.Math.degreesToRads(this._ae);
+
   var startAngleRads = dvt.Math.degreesToRads(this._sa);
   var dataItemGaps = gap / 2;
 
@@ -4806,6 +4885,8 @@ DvtChartSelectableWedge.prototype._makeWedgePath = function(inset) {
   var arcPoint2X = this._cx + Math.cos(-startAngleRads - angleExtentRads + gapAngle) * rx;
   var arcPoint2Y = this._cy + Math.sin(-startAngleRads - angleExtentRads + gapAngle) * ry;
 
+  var outerAngle = dvt.Math.calculateAngleBetweenTwoVectors(arcPoint2X - this._cx, arcPoint2Y - this._cy, arcPointX - this._cx, arcPointY - this._cy);
+  outerAngle = Math.min(outerAngle, angleExtentRads);
   var pathCommands;
   if (ir > 0) {
     var innerGapAngle = (dataItemGaps < ir) ? Math.asin(dataItemGaps / ir) : 0;
@@ -4814,6 +4895,10 @@ DvtChartSelectableWedge.prototype._makeWedgePath = function(inset) {
 
     var innerPoint2X = this._cx + Math.cos(-startAngleRads - angleExtentRads + innerGapAngle) * ir;
     var innerPoint2Y = this._cy + Math.sin(-startAngleRads - angleExtentRads + innerGapAngle) * ir;
+
+    var innerAngle = dvt.Math.calculateAngleBetweenTwoVectors(innerPoint2X - this._cx, innerPoint2Y - this._cy, innerPointX - this._cx, innerPointY - this._cy);
+    innerAngle = Math.min(innerAngle, outerAngle, angleExtentRads);
+
     if (this._ae == 360) {
       pathCommands = dvt.PathUtils.moveTo(arcPoint2X, arcPoint2Y);
       pathCommands += dvt.PathUtils.arcTo(rx, ry, angleExtentRads, 1, arcPointX, arcPointY);
@@ -4824,9 +4909,9 @@ DvtChartSelectableWedge.prototype._makeWedgePath = function(inset) {
     else {
       pathCommands = dvt.PathUtils.moveTo(innerPoint2X, innerPoint2Y);
       pathCommands += dvt.PathUtils.lineTo(arcPoint2X, arcPoint2Y);
-      pathCommands += dvt.PathUtils.arcTo(rx, ry, angleExtentRads, 1, arcPointX, arcPointY);
+      pathCommands += dvt.PathUtils.arcTo(rx, ry, outerAngle, 1, arcPointX, arcPointY);
       pathCommands += dvt.PathUtils.lineTo(innerPointX, innerPointY);
-      pathCommands += dvt.PathUtils.arcTo(ir, ir, angleExtentRads, 0, innerPoint2X, innerPoint2Y);
+      pathCommands += dvt.PathUtils.arcTo(ir, ir, innerAngle, 0, innerPoint2X, innerPoint2Y);
     }
   }
   else {
@@ -4837,7 +4922,7 @@ DvtChartSelectableWedge.prototype._makeWedgePath = function(inset) {
     else {
       pathCommands = dvt.PathUtils.moveTo(startPointX, startPointY);
       pathCommands += dvt.PathUtils.lineTo(arcPoint2X, arcPoint2Y);
-      pathCommands += dvt.PathUtils.arcTo(rx, ry, angleExtentRads, 1, arcPointX, arcPointY);
+      pathCommands += dvt.PathUtils.arcTo(rx, ry, outerAngle, 1, arcPointX, arcPointY);
     }
   }
 
@@ -5545,15 +5630,19 @@ DvtChartAxis.prototype.getMaxCoord = function() {
   *  @param {number} endCoord The location where the bar length ends.
   *  @param {number} x1 The left coord of a vertical bar, or the top of a horizontal bar.
   *  @param {number} x2 The right coord of a vertical bar, or the bottom of a horizontal bar.
+  *  @param {boolean} doNotRender Flag to indicate that this shape is only used as a property bag, so the DOM elem shouldn't be rendered.
   */
-var DvtChartBar = function(chart, axisCoord, baselineCoord, endCoord, x1, x2)
+var DvtChartBar = function(chart, axisCoord, baselineCoord, endCoord, x1, x2, doNotRender)
 {
-  this.Init(chart.getCtx());
+  if (!doNotRender)
+    this.Init(chart.getCtx());
+
   this._bHoriz = DvtChartTypeUtils.isHorizontal(chart);
   this._bStacked = DvtChartTypeUtils.isStacked(chart);
   this._barGapRatio = DvtChartStyleUtils.getBarGapRatio(chart);
   this._dataItemGaps = DvtChartStyleUtils.getDataItemGaps(chart);
   this._axisCoord = axisCoord;
+  this._doNotRender = !!doNotRender;
 
   // Calculate the points array and apply to the polygon
   this._setBarCoords(baselineCoord, endCoord, x1, x2, true);
@@ -5773,7 +5862,7 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
         // gaps. We can only do this for barGapRatio > 0, as otherwise positioning is more important than crispness.
 
         // Don't do this for FF though, since it does pixel hinting incorrectly.
-        if (!dvt.Agent.isPlatformGecko())
+        if (!dvt.Agent.isPlatformGecko() && !this._doNotRender)
           this.setPixelHinting(true);
 
         // Round the coords for crisp looking bars
@@ -5794,6 +5883,9 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
       }
     }
   }
+
+  if (this._doNotRender)
+    return;
 
   // Calculate the points array for the outer shape
   var points = this._createPointsArray();
@@ -5945,24 +6037,10 @@ DvtChartBoxAndWhisker.prototype._render = function(x1, x2, low, q1, q2, q3, high
   whiskerEndLength = Math.floor((whiskerEndLength - 1) / 2) * 2 + 1;
 
   // Create the whiskers
-  // Some browsers draw the stroke to the left of the coord, and some to the right, so we have to take that into
-  // account to ensure symmetry.
-  var whiskerX, whiskerX1, whiskerX2;
-  var isMacOS = dvt.Agent.getOS() == dvt.Agent.MAC_OS;
-  if (dvt.Agent.isBrowserSafari() || (dvt.Agent.isBrowserChrome() && isMacOS) || (dvt.Agent.isPlatformGecko() && !isMacOS)) {
-    whiskerX = Math.ceil((x1 + x2) / 2);
-    whiskerX1 = whiskerX - Math.ceil(whiskerEndLength / 2);
-    whiskerX2 = whiskerX + Math.floor(whiskerEndLength / 2);
-  }
-  else {
-    whiskerX = Math.floor((x1 + x2) / 2);
-    whiskerX1 = whiskerX - Math.floor(whiskerEndLength / 2);
-    whiskerX2 = whiskerX + Math.ceil(whiskerEndLength / 2);
+  var whiskerX = Math.floor((x1 + x2) / 2) + 0.5;
+  var whiskerX1 = whiskerX - Math.floor(whiskerEndLength / 2) - 0.5;
+  var whiskerX2 = whiskerX + Math.floor(whiskerEndLength / 2) + 0.5;
 
-    // Mac FF draws the vertical line 1px too long. IE always draws the line 1px too long.
-    if ((this._bHoriz && dvt.Agent.isPlatformGecko()) || dvt.Agent.isPlatformIE())
-      whiskerX2--;
-  }
   this._drawLine(whiskerX, this._low, whiskerX, this._high, 'whisker');
   this._drawLine(whiskerX1, this._low, whiskerX2, this._low, 'whiskerEnd');
   this._drawLine(whiskerX1, this._high, whiskerX2, this._high, 'whiskerEnd');
@@ -6112,13 +6190,19 @@ DvtChartBoxAndWhisker.prototype.getUpdateAnimation = function(duration, oldShape
   // Animation: Transition shape and color.
   var nodePlayable = new dvt.CustomAnimation(this.getCtx(), this, duration);
 
+  var startQ2Fill = oldShape._getQ2Fill();
   var endQ2Fill = this._getQ2Fill();
-  this._setQ2Fill(oldShape._getQ2Fill());
-  nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this, this._getQ2Fill, this._setQ2Fill, endQ2Fill);
+  if (!startQ2Fill.equals(endQ2Fill)) {
+    this._setQ2Fill(startQ2Fill);
+    nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this, this._getQ2Fill, this._setQ2Fill, endQ2Fill);
+  }
 
+  var startQ3Fill = oldShape._getQ3Fill();
   var endQ3Fill = this._getQ3Fill();
-  this._setQ3Fill(oldShape._getQ3Fill());
-  nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this, this._getQ3Fill, this._setQ3Fill, endQ3Fill);
+  if (!startQ3Fill.equals(endQ3Fill)) {
+    this._setQ3Fill(startQ3Fill);
+    nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this, this._getQ3Fill, this._setQ3Fill, endQ3Fill);
+  }
 
   var endState = this._getAnimationParams();
   this._setAnimationParams(oldShape._getAnimationParams());
@@ -6369,8 +6453,8 @@ DvtChartBoxAndWhisker.prototype._createPointsArray = function(x1, x2, y1, y2) {
  * @private
  */
 DvtChartBoxAndWhisker.prototype._applyCustomStyle = function(shape, prefix) {
-  shape.setStyle(this._styleOptions[prefix + 'Style'], true);
-  shape.setClassName(this._styleOptions[prefix + 'ClassName'], true);
+  shape.setStyle(this._styleOptions[prefix + 'Style'] || this._styleOptions[prefix + 'SvgStyle'], true);
+  shape.setClassName(this._styleOptions[prefix + 'ClassName'] || this._styleOptions[prefix + 'SvgClassName'], true);
 };
 
 /**
@@ -6572,9 +6656,9 @@ DvtChartCandlestick.prototype.getUpdateAnimation = function(duration, oldShape) 
   nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this._changeShape, this._changeShape.getPoints, this._changeShape.setAnimationParams, endStateChange);
 
   // Change Shape: Fill. Need the get the primary color, since it might be overwritten during selection
-  var bSkipFillAnimation = (oldShape._changeShape.isSelected() || this._changeShape.isSelected());
   var startFill = oldShape._changeShape.getPrimaryFill().clone();
   var endFill = this._changeShape.getPrimaryFill();
+  var bSkipFillAnimation = oldShape._changeShape.isSelected() || this._changeShape.isSelected() || startFill.equals(endFill);
   if (!bSkipFillAnimation) {
     this._changeShape.setFill(startFill);
     nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._changeShape, this._changeShape.getFill, this._changeShape.setFill, endFill);
@@ -8101,7 +8185,7 @@ DvtChartDataCursor.prototype.getBehavior = function() {
 DvtChartDataCursor.prototype.setBehavior = function(behavior) {
   this._behavior = behavior;
 };
-// Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   *  Creates a funnel shape.
   *  @extends {dvt.Path}
@@ -8338,7 +8422,7 @@ DvtChartFunnelSlice.prototype._getPath = function() {
 
 
 /**
- * Creates a single slice label DvtText object associated with this slice.
+ * Creates a single slice label dvt.Text object associated with this slice.
  * @param {dvt.Rectangle} sliceBounds The space occupied by the slice this is associated with.
  * @param {dvt.Rectangle} barBounds The space occupied by the colored bar this is associated with. Could affect the color.
  * @return {dvt.OutputText} slice label for this slice
@@ -8358,8 +8442,7 @@ DvtChartFunnelSlice.prototype._getSliceLabel = function(sliceBounds, barBounds) 
 
   // Have to move the style setting first because was using wrong font size to come up with truncated text
   var isPatternBg = DvtChartStyleUtils.getPattern(this._chart, this._seriesIndex, 0) != null;
-  var labelStyleArray = [this._chart.getOptions()['styleDefaults']['dataLabelStyle'], new dvt.CSSStyle(this._chart.getOptions()['styleDefaults']['sliceLabelStyle']),
-        new dvt.CSSStyle(DvtChartDataUtils.getDataItem(this._chart, this._seriesIndex, 0)['labelStyle'])];
+  var labelStyleArray = [this._chart.getOptions()['styleDefaults']['dataLabelStyle'], new dvt.CSSStyle(DvtChartDataUtils.getDataItem(this._chart, this._seriesIndex, 0)['labelStyle'])];
   var style = dvt.CSSStyle.mergeStyles(labelStyleArray);
   label.setCSSStyle(style);
 
@@ -8703,7 +8786,7 @@ DvtChartPyramidSlice.prototype._getPath = function() {
 
 
 /**
- * Creates a single slice label DvtText object associated with this slice.
+ * Creates a single slice label dvt.Text object associated with this slice.
  * @param {dvt.Rectangle} sliceBounds The space occupied by the slice this is associated with.
  * @return {dvt.OutputText} slice label for this slice
  * @private
@@ -8722,8 +8805,7 @@ DvtChartPyramidSlice.prototype._getSliceLabel = function(sliceBounds) {
 
   // Have to move the style setting first because was using wrong font size to come up with truncated text
   var isPatternBg = DvtChartStyleUtils.getPattern(this._chart, this._seriesIndex, 0) != null;
-  var labelStyleArray = [this._chart.getOptions()['styleDefaults']['dataLabelStyle'], new dvt.CSSStyle(this._chart.getOptions()['styleDefaults']['sliceLabelStyle']),
-        new dvt.CSSStyle(DvtChartDataUtils.getDataItem(this._chart, this._seriesIndex, 0)['labelStyle'])];
+  var labelStyleArray = [this._chart.getOptions()['styleDefaults']['dataLabelStyle'], new dvt.CSSStyle(DvtChartDataUtils.getDataItem(this._chart, this._seriesIndex, 0)['labelStyle'])];
   var style = dvt.CSSStyle.mergeStyles(labelStyleArray);
   label.setCSSStyle(style);
 
@@ -8948,7 +9030,7 @@ DvtChartPyramidSlice.prototype.copyShape = function() {
 DvtChartPyramidSlice.prototype.getPrimaryFill = function() {
   return this._mainFace ? this._mainFace.getFill() : this.getFill();
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPie                                                       */
 /*---------------------------------------------------------------------*/
@@ -9761,12 +9843,7 @@ DvtChartPie.prototype.getShapesForViewSwitcher = function(bOld) {
  * @return {string} "auto", "none", "center", or "outsideSlice"
  */
 DvtChartPie.prototype.getLabelPosition = function() {
-  // First read from sliceLabelPosition to honor it if set.
-  var position = this._options['styleDefaults']['sliceLabelPosition'];
-  if (!position) // if sliceLabelPosition is not set, check for dataLabelPosition
-    position = this._options['styleDefaults']['dataLabelPosition'];
-
-  return DvtChartPie.parseLabelPosition(position);
+  return DvtChartPie.parseLabelPosition(this._options['styleDefaults']['dataLabelPosition']);
 };
 
 /**
@@ -9810,7 +9887,7 @@ DvtChartPie.prototype.getSkin = function() {
   return this._options['skin'];
 };
 
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieSlice                                                       */
 /*---------------------------------------------------------------------*/
@@ -10091,6 +10168,9 @@ DvtChartPieSlice.prototype.preRender = function() {
     this._rightSurface = DvtChartPieRenderUtils.createLateralSurface(this, DvtChartPieRenderUtils.SURFACE_RIGHT, sideFill);
     this._crustSurface = DvtChartPieRenderUtils.createLateralSurface(this, DvtChartPieRenderUtils.SURFACE_CRUST, crustFill);
   }
+
+  // Clear slice label from previous render
+  this.setSliceLabel(null);
 };
 
 
@@ -11482,8 +11562,10 @@ DvtChartAnimOnDC._buildAnimLists = function(ctx, arOldList, oldChart, arNewList,
   var ar = oldChart.getChartObjPeers();
   var aOut = arOldList; // start on old peers first
   var peer, obj, dch;
+  var isDataFiltered = newChart.getCache().getFromCache('dataFiltered');
 
   for (i = 0; i < 2; i++) {            // loop over old peers and new peers
+    var barCount = {}; // keeps track of how many bars have been handled for each series
     for (j = 0; j < ar.length; j++) {
       peer = ar[j];
 
@@ -11498,6 +11580,16 @@ DvtChartAnimOnDC._buildAnimLists = function(ctx, arOldList, oldChart, arNewList,
       }
       else if (obj instanceof DvtChartBar || obj instanceof DvtChartPolarBar) {
         dch = new DvtChartDataChangeBar(peer, duration);
+
+        // When the bars are filtered, the groups that are rendered would vary depending on data, so we workaround by
+        // animating the rendered bars based on the ordering, regardless of which group they belong to. Otherwise,
+        // we'd see undesired insert/delete animations every time.
+        // Note that this approach is only correct if the number of groups stays the same before and after the animation.
+        if (isDataFiltered) {
+          var series = peer.getSeries();
+          barCount[series] = barCount[series] ? barCount[series] + 1 : 1;
+          dch.setId(series + '/' + barCount[series] + '/bar');
+        }
       }
       else if (obj instanceof DvtChartLineArea) {
         dch = new DvtChartDataChangeLineArea(peer, duration);
@@ -11665,14 +11757,22 @@ DvtChartDataChangeAbstract.prototype.animateDelete = function(handler, delContai
 };
 
 /**
-  *  @return {String}  a unique Id for object comparison during
-  *  datachange animation of two charts.
-  */
+ * @return {String} A unique id for object comparison during data change animation of a chart.
+ */
 DvtChartDataChangeAbstract.prototype.getId = function()
 {
   return this._animId;
 };
 
+/**
+ * Sets the id for the data change object. Generally the id is created automatically, so this method should only be
+ * used if the default id needs to be overridden.
+ * @param {String} id A unique id for object comparison during data change animation of a chart.
+ */
+DvtChartDataChangeAbstract.prototype.setId = function(id)
+{
+  this._animId = id;
+};
 
 /**
   *  Object initializer.
@@ -11761,9 +11861,9 @@ DvtChartDataChangeBar.prototype.animateUpdate = function(handler, oldDC) {
 
   // Get the start and end state for the fill animation. If either shape is selected, skip the fill animation so
   // that it doesn't animate the black fill of the selection outer shape
-  var bSkipFillAnimation = (oldDC._shape.isSelected() || this._shape.isSelected());
   var startFill = oldDC._shape.getPrimaryFill().clone();
   var endFill = this._shape.getPrimaryFill();
+  var bSkipFillAnimation = oldDC._shape.isSelected() || this._shape.isSelected() || startFill.equals(endFill);
 
   if (dvt.ArrayUtils.equals(startState, endState) && startFill.equals(endFill))
     return;
@@ -12390,7 +12490,6 @@ DvtChartDataChangeFunnelSlice.prototype.animateUpdate = function(handler, oldDC)
 
   // Initialize start state
   obj.setAnimationParams(startState);
-  this._shape.setFill(startFill);
 
   // Create the animator for this slice update
   var nodePlayable = new dvt.CustomAnimation(obj.getCtx(), this, this._updateDuration);
@@ -12398,7 +12497,10 @@ DvtChartDataChangeFunnelSlice.prototype.animateUpdate = function(handler, oldDC)
 
   // TODO  this only works for slices without target values. Slices with target values are drawn within
   // DvtChartFunnelSlice, so wait until the animation code is collapsed to do that work.
-  nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, this._shape, this._shape.getFill, this._shape.setFill, endFill);
+  if (!startFill.equals(endFill)) {
+    this._shape.setFill(startFill);
+    nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, obj, obj.getFill, obj.setFill, endFill);
+  }
 
   // TODO  this line of code makes no sense, since we never draw an indicator for funnel
   if (this._indicator) {
@@ -12491,12 +12593,15 @@ DvtChartDataChangePyramidSlice.prototype.animateUpdate = function(handler, oldDC
 
   // Initialize start state
   obj.setAnimationParams(startState);
-  this._shape.setFill(startFill);
 
   // Create the animator for this slice update
   var nodePlayable = new dvt.CustomAnimation(obj.getCtx(), this, this._updateDuration);
   nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, obj, obj.getAnimationParams, obj.setAnimationParams, endState);
-  nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, obj, obj.getFill, obj.setFill, endFill);
+
+  if (!startFill.equals(endFill)) {
+    this._shape.setFill(startFill);
+    nodePlayable.getAnimator().addProp(dvt.Animator.TYPE_FILL, obj, obj.getFill, obj.setFill, endFill);
+  }
 
   handler.add(nodePlayable, 1); // create the playable
 };
@@ -12920,6 +13025,11 @@ DvtChartAxisUtils.isTickLabelInside = function(chart, type) {
  * @return {object} An object containing min and max.
  */
 DvtChartAxisUtils.getXAxisViewportMinMax = function(chart, useGlobal) {
+  var cacheKey = useGlobal ? 'xAxisViewportMinMaxUG' : 'xAxisViewportMinMax';
+  var minMax = chart.getCache().getFromCache(cacheKey);
+  if (minMax)
+    return minMax;
+
   var options = chart.getOptions()['xAxis'];
   var isGroupAxis = DvtChartAxisUtils.hasGroupAxis(chart);
   var groupOffset = DvtChartAxisUtils.getAxisOffset(chart);
@@ -12945,7 +13055,11 @@ DvtChartAxisUtils.getXAxisViewportMinMax = function(chart, useGlobal) {
     max = globalMinMax['max'];
   }
 
-  return {'min': min, 'max': max};
+  // Cache the value
+  minMax = {'min': min, 'max': max};
+  chart.getCache().putToCache(cacheKey, minMax);
+
+  return minMax;
 };
 
 /**
@@ -13065,41 +13179,48 @@ DvtChartAxisUtils.getGroupWidthRatios = function(chart) {
   var numGroups = DvtChartDataUtils.getGroupCount(chart);
   var isSplitDualY = DvtChartTypeUtils.isSplitDualY(chart);
   var categories = DvtChartDataUtils.getStackCategories(chart, 'bar');
-  var hasVaryingWidth = chart.getOptionsCache().getFromCache('_hasVaryingBarWidth');
-  var barWidths = [], barWidth;
-  var yWidth, y2Width, i;
-  for (var g = 0; g < numGroups; g++) {
-    yWidth = 0;
-    y2Width = 0;
-    if (hasVaryingWidth) {
-      for (i = 0; i < categories['y'].length; i++)
+  var hasVaryingWidth = chart.getOptionsCache().getFromCache('hasVaryingBarWidth');
+  var groupWidths, yWidth, y2Width, i;
+
+  if (hasVaryingWidth) {
+    var barWidths = [];
+    for (var g = 0; g < numGroups; g++) {
+      yWidth = 0;
+      for (i = 0; i < categories['y'].length; i++) {
         yWidth += DvtChartDataUtils.getBarCategoryZ(chart, categories['y'][i], g, false);
-
-      for (i = 0; i < categories['y2'].length; i++)
+      }
+      y2Width = 0;
+      for (i = 0; i < categories['y2'].length; i++) {
         y2Width += DvtChartDataUtils.getBarCategoryZ(chart, categories['y2'][i], g, true);
-    }
-    else {
-      yWidth = categories['y'].length;
-      y2Width = categories['y2'].length;
+      }
+      barWidths.push(isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width);
     }
 
-    barWidths.push(isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width);
+    var barWidthSum = dvt.ArrayUtils.reduce(barWidths, function(prev, cur) {
+      return prev + cur;
+    });
+
+    // The gap size is the same for all groups, regardless of the bar width.
+    var gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
+    groupWidths = dvt.ArrayUtils.map(barWidths, function(barWidth) {
+      // divide the gaps evenly
+      return barWidth + gapWidthSum / numGroups;
+    });
+
+    // Store the average z-value. This is useful because when we call groupAxisInfo.getGroupWidth(), it returns the average
+    // group width. Thus, we can convert z-value to pixels using (zValue / averageGroupZ * groupAxisInfo.getGroupWidth()).
+    options['_averageGroupZ'] = (barWidthSum + gapWidthSum) / numGroups;
   }
+  else {
+    // Same logic as above, but simplified when the Z value is always one
+    yWidth = categories['y'].length;
+    y2Width = categories['y2'].length;
+    var barWidth = isSplitDualY ? Math.max(yWidth, y2Width) : yWidth + y2Width;
+    options['_averageGroupZ'] = barWidth / (1 - barGapRatio);
 
-  var barWidthSum = dvt.ArrayUtils.reduce(barWidths, function(prev, cur) {
-    return prev + cur;
-  });
-
-  // The gap size is the same for all groups, regardless of the bar width.
-  var gapWidthSum = barWidthSum * barGapRatio / (1 - barGapRatio);
-  var groupWidths = dvt.ArrayUtils.map(barWidths, function(barWidth) {
-    // divide the gaps evenly
-    return barWidth + gapWidthSum / numGroups;
-  });
-
-  // Store the average z-value. This is useful because when we call groupAxisInfo.getGroupWidth(), it returns the average
-  // group width. Thus, we can convert z-value to pixels using (zValue / averageGroupZ * groupAxisInfo.getGroupWidth()).
-  options['_averageGroupZ'] = (barWidthSum + gapWidthSum) / numGroups;
+    // When the Z value is always one, we don't need to return the group width ratios
+    groupWidths = null;
+  }
 
   return groupWidths;
 };
@@ -13268,11 +13389,15 @@ DvtChartDataUtils.processDataObject = function(chart) {
   if (!DvtChartTypeUtils.isValidType(chart))
     options['type'] = 'bar';
 
+  // Cached variables
+  var hasY2Assignment = false;
+  var hasVolume = false;
+  var hasVaryingBarWidth = false;
+  var hasLowHighSeries = false;
+
   // Stock Chart Overrides
   var isStock = DvtChartTypeUtils.isStock(chart);
   if (isStock) {
-    optionsCache.putToCache('_hasVolume', false);
-
     // Only a single series is supported currently
     if (seriesCount > 1) {
       options['series'] = options['series'].slice(0, 1);
@@ -13281,23 +13406,19 @@ DvtChartDataUtils.processDataObject = function(chart) {
   }
 
   var isBLAC = DvtChartTypeUtils.isBLAC(chart);
-  optionsCache.putToCache('_hasVaryingBarWidth', false);
-  optionsCache.putToCache('dataMarkerSizeSet', false);
-  optionsCache.putToCache('dataMarkerDisplayedSet', false);
   var isMixedFrequency = DvtChartAxisUtils.isMixedFrequency(chart);
   var hasLargeSeriesCount = seriesCount > 100;
   optionsCache.putToCache('hasLargeSeriesCount', hasLargeSeriesCount);
-  optionsCache.putToCache('hasY2Assignment', false);
 
   // Iterate through the series to keep track of the count and the series style indices
   var maxGroups = 0;
   var arSeriesStyle = chart.getSeriesStyleArray();
-  for (var i = 0; i < seriesCount; i++) {
-    var series = DvtChartDataUtils.getSeries(chart, i);
+  for (var seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
+    var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
     if (!hasLargeSeriesCount && series != null && dvt.ArrayUtils.getIndex(arSeriesStyle, series) < 0)
       arSeriesStyle.push(series);
 
-    var seriesItem = DvtChartDataUtils.getSeriesItem(chart, i);
+    var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
     if (seriesItem['items'] && seriesItem['items'].length > maxGroups)
       maxGroups = seriesItem['items'].length;
 
@@ -13309,69 +13430,75 @@ DvtChartDataUtils.processDataObject = function(chart) {
     seriesItem['visibility'] = null;
 
     if (seriesItem['assignedToY2'] == 'on')
-      optionsCache.putToCache('hasY2Assignment', true);
+      hasY2Assignment = true;
 
     //  - SANITIZE CHART OPTIONS OBJECT
     if (seriesItem && seriesItem['items']) {
       var items = seriesItem['items'];
       var item;
       for (var j = 0; j < items.length; j++) {
-        if (items[j]) {
+        if (items[j] != null) {
           item = items[j];
           if (typeof(item) != 'object') {
-            item = Number(item);
-          } else {
-            if (!isMixedFrequency && item['x'])
-              item['x'] = Number(item['x']);
-
-            if (item['y'])
-              item['y'] = Number(item['y']);
-
-            if (item['z']) {
-              item['z'] = Number(item['z']);
-              if (isBLAC && item['z'] != 1)
-                optionsCache.putToCache('_hasVaryingBarWidth', true);
-            }
-
-            if (item['value'])
-              item['value'] = Number(item['value']);
-
-            if (item['targetValue'])
-              item['targetValue'] = Number(item['targetValue']);
-
-            if (item['open'])
-              item['open'] = Number(item['open']);
-
-            if (item['close'])
-              item['close'] = Number(item['close']);
-
-            if (item['low'])
-              item['low'] = Number(item['low']);
-
-            if (item['high'])
-              item['high'] = Number(item['high']);
-
-            if (item['volume']) {
-              item['volume'] = Number(item['volume']);
-              optionsCache.putToCache('_hasVolume', true);
-            }
-            if (item['markerSize'])
-              optionsCache.putToCache('dataMarkerSizeSet', true);
-
-            if (item['markerDisplayed'])
-              optionsCache.putToCache('dataMarkerDisplayedSet', true);
+            item = {'y': item};
+            items[j] = item;
           }
-          items[j] = item;
+          if (!isMixedFrequency && item['x'] != null) {
+            item['x'] = Number(item['x']);
+          }
+          if (item['y'] != null) {
+            item['y'] = Number(item['y']);
+          }
+          if (item['z'] != null) {
+            item['z'] = Number(item['z']);
+            if (isBLAC && item['z'] != 1)
+              hasVaryingBarWidth = true;
+          }
+          if (item['value'] != null) {
+            item['value'] = Number(item['value']);
+          }
+          if (item['targetValue'] != null) {
+            item['targetValue'] = Number(item['targetValue']);
+          }
+          if (item['open'] != null) {
+            item['open'] = Number(item['open']);
+            hasLowHighSeries = true;
+          }
+          if (item['close'] != null) {
+            item['close'] = Number(item['close']);
+            hasLowHighSeries = true;
+          }
+          if (item['low'] != null) {
+            item['low'] = Number(item['low']);
+            hasLowHighSeries = true;
+          }
+          if (item['high'] != null) {
+            item['high'] = Number(item['high']);
+            hasLowHighSeries = true;
+          }
+          if (item['volume'] != null) {
+            item['volume'] = Number(item['volume']);
+            hasVolume = true;
+          }
+          if (item['color'] || item['borderColor'] || item['borderWidth'] ||
+              item['style'] || item['svgStyle'] || item['className'] || item['svgClassName']) {
+            optionsCache.putToCachedMap('itemStyleSet', seriesIndex, true);
+          }
         }
       }
     }
   }
 
+  // Cache the computed values
+  optionsCache.putToCache('hasVolume', hasVolume);
+  optionsCache.putToCache('hasVaryingBarWidth', hasVaryingBarWidth);
+  optionsCache.putToCache('hasLowHighSeries', hasLowHighSeries);
+
   // Add Volume Series
   if (isStock && DvtChartDataUtils.hasVolumeSeries(chart) && !DvtChartTypeUtils.isOverview(chart)) {
     var volumeSeries = dvt.JsonUtils.clone(DvtChartDataUtils.getSeriesItem(chart, 0));
     volumeSeries['assignedToY2'] = 'on';
-    optionsCache.putToCache('hasY2Assignment', true);
+    hasY2Assignment = true;
     volumeSeries['type'] = 'bar';
     volumeSeries['categories'] = DvtChartDataUtils.getCategories(chart, 0);
     volumeSeries['id'] = '_volume';
@@ -13382,11 +13509,15 @@ DvtChartDataUtils.processDataObject = function(chart) {
       volumeItem['color'] = DvtChartStyleUtils.getStockVolumeColor(chart, 0, itemIndex);
       volumeItem['x'] = seriesItem['items'][itemIndex]['x'];
       volumeItem['value'] = seriesItem['items'][itemIndex]['volume'];
+      volumeItem['drilling'] = 'off';
       volumeSeries['items'].push(volumeItem);
     }
 
     options['series'].push(volumeSeries);
+    optionsCache.putToCachedMap('itemStyleSet', options['series'].length - 1, true);
   }
+
+  optionsCache.putToCache('hasY2Assignment', hasY2Assignment);
 
   // Reference Objects
   var refObjs = DvtChartRefObjUtils.getRefObjs(chart);
@@ -13427,7 +13558,7 @@ DvtChartDataUtils.processDataObject = function(chart) {
     var group = dvt.Bundle.getTranslation(options, 'labelDefaultGroupName', dvt.Bundle.CHART_PREFIX, 'DEFAULT_GROUP_NAME', options['groups'].length + 1);// +1 so we start at "Group 1"
     options['groups'].push(group);
   }
-  chart.getOptionsCache().putToCache('groupsArray', null);
+  optionsCache.putToCache('groupsArray', null);
 
   // Time Axis: Support date strings provided in the JSON
   DvtChartDataUtils._processTimeAxis(chart);
@@ -13474,8 +13605,8 @@ DvtChartDataUtils.processDataObject = function(chart) {
     options['groups'] = groupItems;
 
     // Reset cached groupsArray and value because the data item ordering has been changed
-    chart.getOptionsCache().putToCache('groupsArray', null);
-    chart.getOptionsCache().putToCache('value', null);
+    optionsCache.putToCache('groupsArray', null);
+    optionsCache.putToCache('value', null);
   }
 
   // Don't allow axis extents where the min and max are the same
@@ -13635,7 +13766,8 @@ DvtChartDataUtils.isEqualId = function(a, b) {
  * @return {number}
  */
 DvtChartDataUtils.getSeriesCount = function(chart) {
-  return chart.getOptions()['series'].length;
+  var seriesArray = chart.getOptions()['series'];
+  return seriesArray ? seriesArray.length : 0;
 };
 
 /**
@@ -13777,7 +13909,17 @@ DvtChartDataUtils.getDataItemId = function(chart, seriesIndex, groupIndex) {
     return dataItem['id'];
 
   // default id
-  return DvtChartDataUtils.getSeries(chart, seriesIndex) + '; ' + DvtChartDataUtils.getGroup(chart, groupIndex);
+  return DvtChartDataUtils.createDataItemId(DvtChartDataUtils.getSeries(chart, seriesIndex), DvtChartDataUtils.getGroup(chart, groupIndex));
+};
+
+/**
+ * Returns the default data item id based on series name and group name.
+ * @param {string} series The series name.
+ * @param {string} group The group name.
+ * @return {string} The data item id.
+ */
+DvtChartDataUtils.createDataItemId = function(series, group) {
+  return series + '; ' + group;
 };
 
 /**
@@ -13929,10 +14071,15 @@ DvtChartDataUtils.getGroupLabel = function(chart, groupIndex) {
  * @return {Array} An array of the group id's.
  */
 DvtChartDataUtils.getGroups = function(chart) {
-  var groupCount = DvtChartDataUtils.getGroupCount(chart);
-  var groups = [];
-  for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
-    groups.push(DvtChartDataUtils.getGroup(chart, groupIndex));
+  var cacheKey = 'groups';
+  var groups = chart.getOptionsCache().getFromCache(cacheKey);
+  if (!groups) {
+    var groupCount = DvtChartDataUtils.getGroupCount(chart);
+    groups = [];
+    for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+      groups.push(DvtChartDataUtils.getGroup(chart, groupIndex));
+    }
+    chart.getOptionsCache().putToCache(cacheKey, groups);
   }
   return groups;
 };
@@ -14013,9 +14160,14 @@ DvtChartDataUtils._getNestedGroups = function(groups, groupsArray) {
  * @return {number} The number of label levels.
  */
 DvtChartDataUtils.getNumLevels = function(chart) {
-  var groupsArray = DvtChartDataUtils._getGroupsArray(chart);
-  var numLevels = 0;
+  var cacheKey = 'groupsNumLevels';
+  var numLevels = chart.getOptionsCache().getFromCache(cacheKey);
+  if (numLevels != null)
+    return numLevels;
 
+  // Compute the value
+  numLevels = 0;
+  var groupsArray = DvtChartDataUtils._getGroupsArray(chart);
   for (var i = 0; i < groupsArray.length; i++) {
     var group = groupsArray[i];
     if (group && group['id']) {
@@ -14024,6 +14176,8 @@ DvtChartDataUtils.getNumLevels = function(chart) {
     }
   }
 
+  // Put the computed value into the cache and return
+  chart.getOptionsCache().putToCache(cacheKey, numLevels);
   return numLevels;
 };
 
@@ -14287,93 +14441,53 @@ DvtChartDataUtils.getCategories = function(chart, seriesIndex, groupIndex, itemI
   return [];
 };
 
-/**
- * Retuns whether the xValue is inside the viewport
- * @param {dvt.Chart} chart
- * @param {number} xVal
- * @return {boolean}
- */
-DvtChartDataUtils.isXValInViewport = function(chart, xVal) {
-  if (isNaN(xVal) || xVal == null)
-    return false;
-  else {
-    var minMax = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true);
-    return !(minMax['min'] != null && xVal < minMax['min']) && !(minMax['max'] != null && xVal > minMax['max']);
-  }
-};
-
 
 /**
- * Retuns whether the data point X value is inside the viewport
+ * Returns the min and max groupIndex that are entirely within the chart viewport for the specified seriesIndex.
  * @param {dvt.Chart} chart
  * @param {number} seriesIndex
- * @param {number} groupIndex
- * @return {boolean}
+ * @return {object} An object containing min and max properties.
  */
-DvtChartDataUtils.isXInViewport = function(chart, seriesIndex, groupIndex) {
-  // Use the cached value if it has been computed before
-  var cacheKey = 'isXInViewport';
-  var isXInViewport = chart.getCache().getFromCachedMap2D(cacheKey, seriesIndex, groupIndex);
+DvtChartDataUtils.getViewportMinMaxGroupIndex = function(chart, seriesIndex) {
+  var minMaxValue = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true);
+  var hasGroupAxis = DvtChartAxisUtils.hasGroupAxis(chart);
+  var groupCount = DvtChartDataUtils.getGroupCount(chart);
 
-  if (isXInViewport == null) {
-    var xVal = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
-    isXInViewport = DvtChartDataUtils.isXValInViewport(chart, xVal);
-
-    // Cache the value
-    chart.getCache().putToCachedMap2D(cacheKey, seriesIndex, groupIndex, isXInViewport);
+  var minValue = minMaxValue['min'];
+  var minIndex = 0;
+  if (minValue != null) {
+    if (hasGroupAxis)
+      minIndex = Math.ceil(minValue);
+    else {
+      // TODO: faster with binary search
+      for (var g = 0; g < groupCount; g++) {
+        var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, g);
+        if (xValue >= minValue) {
+          minIndex = g;
+          break;
+        }
+      }
+    }
   }
 
-  return isXInViewport;
-};
-
-
-/**
- * Retuns whether the referenceObject is inside the viewport
- * @param {dvt.Chart} chart
- * @param {object} items The array of reference object items
- * @param {number} index The index of the reference object in the items list
- * @return {boolean}
- */
-DvtChartDataUtils.isRefObjInViewport = function(chart, items, index) {
-  var xVal = DvtChartRefObjUtils.getXValue(chart, items, index);
-
-  // Use the cached value if it has been computed before
-  var cacheKey = 'isRefObjInViewport';
-  var isRefObjInViewport = chart.getCache().getFromCachedMap2D(cacheKey, xVal);
-
-  if (isRefObjInViewport == null) {
-    var previousVal = DvtChartRefObjUtils.getXValue(chart, items, index - 1);
-    var nextVal = DvtChartRefObjUtils.getXValue(chart, items, index + 1);
-
-    // Reference object is said to be in the viewport if any part of its adjacent line/area segments are in the viewport
-    isRefObjInViewport = DvtChartDataUtils.isXValInViewport(chart, xVal) ||
-                         DvtChartDataUtils.isXValInViewport(chart, previousVal) ||
-                         DvtChartDataUtils.isXValInViewport(chart, nextVal);
-
-    // Cache the value
-    chart.getCache().putToCachedMap2D(cacheKey, xVal, isRefObjInViewport);
+  var maxValue = minMaxValue['max'];
+  var maxIndex = groupCount - 1;
+  if (maxIndex != null) {
+    if (hasGroupAxis)
+      maxIndex = Math.floor(maxValue);
+    else {
+      // TODO: faster with binary search
+      for (var g = groupCount - 1; g >= minIndex; g--) {
+        var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, g);
+        if (xValue <= maxValue) {
+          maxIndex = g;
+          break;
+        }
+      }
+    }
   }
 
-  return isRefObjInViewport;
-};
-
-
-/**
- * Retuns whether the data point is within the x-axis viewport. This method should only be used for BLAC charts.
- * @param {dvt.Chart} chart
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @return {boolean}
- */
-DvtChartDataUtils.isBLACItemInViewport = function(chart, seriesIndex, groupIndex) {
-  if (!DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
-    return false;
-
-  // For BLAC charts, we can safely assume that the data item is completely outside the viewport (not partially showing)
-  // if both its x-value and the x-values of the adjacent points are outside the viewport.
-  return DvtChartDataUtils.isXInViewport(chart, seriesIndex, groupIndex) ||
-      DvtChartDataUtils.isXInViewport(chart, seriesIndex, groupIndex - 1) ||
-      DvtChartDataUtils.isXInViewport(chart, seriesIndex, groupIndex + 1);
+  return {'min': minIndex, 'max': maxIndex};
 };
 
 
@@ -14412,55 +14526,6 @@ DvtChartDataUtils._computeYAlongLine = function(isLog, x1, y1, x2, y2, x) {
 
 
 /**
- * Returns the Y values at the X-axis min/max edges of the viewport.
- * @param {dvt.Chart} chart
- * @param {number} seriesIndex
- * @return {object} An object containing the Y values at the viewport min/max edge.
- * @private
- */
-DvtChartDataUtils._getViewportEdgeYValues = function(chart, seriesIndex) {
-  var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-
-  // Loop through the data
-  var seriesData = seriesItem['items'];
-  if (!seriesData)
-    return {'min': null, 'max': null};
-
-  // Include hidden series if hideAndShowBehavior occurs without rescale
-  var bIncludeHiddenSeries = (DvtChartEventUtils.getHideAndShowBehavior(chart) == 'withoutRescale');
-
-  // Find the viewport min/max
-  var minMax = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true);
-  var min = minMax['min'];
-  var max = minMax['max'];
-
-  var isLog = DvtChartAxisUtils.isLog(chart, DvtChartDataUtils.isAssignedToY2(chart, seriesIndex) ? 'y2' : 'y');
-
-  // Find the X locations of the edges and compute the Y values
-  var x, y, prevX, prevY, yMin, yMax;
-  for (var groupIndex = 0; groupIndex < seriesData.length; groupIndex++) {
-    if (!bIncludeHiddenSeries && !DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
-      continue;
-
-    x = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
-    y = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex, bIncludeHiddenSeries);
-
-    if (prevX != null) {
-      if (min != null && min > prevX && min < x)
-        yMin = DvtChartDataUtils._computeYAlongLine(isLog, prevX, prevY, x, y, min);
-      if (max != null && max > prevX && max < x)
-        yMax = DvtChartDataUtils._computeYAlongLine(isLog, prevX, prevY, x, y, max);
-    }
-
-    prevX = x;
-    prevY = y;
-  }
-
-  return {'min': yMin, 'max': yMax};
-};
-
-
-/**
  * Returns the min and max values from the data.
  * @param {dvt.Chart} chart
  * @param {string} type The type of value to find: "x", "y", "y2", "z".
@@ -14479,6 +14544,14 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
   if (axisOptions['dataMax'] != null && axisOptions['dataMin'] != null && isDataOnly) {
     // Cache the value
     minMax = {'min': axisOptions['dataMin'], 'max': axisOptions['dataMax']};
+    chart.getCache().putToCache(cacheKey, minMax);
+    return minMax;
+  }
+
+  var hasTimeAxis = DvtChartAxisUtils.hasTimeAxis(chart);
+  if (axisOptions['max'] != null && axisOptions['min'] != null && !isDataOnly && !hasTimeAxis) {
+    // Cache the value
+    minMax = {'min': axisOptions['min'], 'max': axisOptions['max']};
     chart.getCache().putToCache(cacheKey, minMax);
     return minMax;
   }
@@ -14526,13 +14599,19 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
     if (!seriesData)
       continue;
 
-    for (var groupIndex = 0; groupIndex < seriesData.length; groupIndex++) {
+    var minGroupIndex = 0;
+    var maxGroupIndex = seriesData.length - 1;
+    if (limitToViewport) {
+      var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, seriesIndex);
+      minGroupIndex = minMaxGroupIndex['min'];
+      maxGroupIndex = minMaxGroupIndex['max'];
+    }
+
+    for (var groupIndex = minGroupIndex; groupIndex <= maxGroupIndex; groupIndex++) {
       // Skip the data item if it is hidden
       if (!bIncludeHiddenSeries && !DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
         continue;
 
-      if (typeof seriesData[groupIndex] != 'object')
-        seriesData[groupIndex] = {'y': seriesData[groupIndex]};
       var data = seriesData[groupIndex];
 
       var value = null;
@@ -14540,7 +14619,7 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
         if (!isRange)
           value = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex, bIncludeHiddenSeries);
       }
-      else if (type == 'x' && DvtChartAxisUtils.hasTimeAxis(chart) && !DvtChartAxisUtils.isMixedFrequency(chart)) {
+      else if (type == 'x' && hasTimeAxis && !DvtChartAxisUtils.isMixedFrequency(chart)) {
         // Take time value from the groups array and transfer it to the data item
         value = DvtChartDataUtils.getGroupLabel(chart, groupIndex);
         if (data != null)
@@ -14550,9 +14629,6 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
         value = data[type];
 
       if (type == 'z' && value <= 0) // exclude 0 for bubble radius min/max
-        continue;
-
-      if (limitToViewport && !DvtChartDataUtils.isXInViewport(chart, seriesIndex, groupIndex))
         continue;
 
       if (!isRange && value != null && typeof(value) == 'number' && !(isLog && value <= 0)) {
@@ -14573,18 +14649,31 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
           minValue = Math.min(minValue, high, low);
         }
       }
-    }
 
-    // If the min/max is limited to viewport, included the values at the viewport edges.
-    if (limitToViewport) {
-      var edgeValues = DvtChartDataUtils._getViewportEdgeYValues(chart, seriesIndex);
-      if (edgeValues['min'] != null) {
-        minValue = Math.min(minValue, edgeValues['min']);
-        maxValue = Math.max(maxValue, edgeValues['min']);
-      }
-      if (edgeValues['max'] != null) {
-        minValue = Math.min(minValue, edgeValues['max']);
-        maxValue = Math.max(maxValue, edgeValues['max']);
+      // Include the Y values at the X-axis min/max edges of the viewport to make the Y-axis rescale smoothly
+      // TODO: Implement for range series
+      if (limitToViewport && !isRange) {
+        // Computation only applies to first and last group in the viewport. Get the adjacent group just outside
+        // the viewport to get the viewport edge value.
+        var adjacentIndex = null;
+        var edgeX = null;
+        if (minGroupIndex > 0 && groupIndex == minGroupIndex) {
+          adjacentIndex = groupIndex - 1;
+          edgeX = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true)['min'];
+        }
+        else if (maxGroupIndex < seriesData.length - 1 && groupIndex == maxGroupIndex) {
+          adjacentIndex = groupIndex + 1;
+          edgeX = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true)['max'];
+        }
+
+        if (adjacentIndex != null) {
+          var x = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
+          var adjacentX = DvtChartDataUtils.getXValue(chart, seriesIndex, adjacentIndex);
+          var adjacentValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, adjacentIndex);
+          var edgeValue = DvtChartDataUtils._computeYAlongLine(isLog, x, value || 0, adjacentX, adjacentValue || 0, edgeX);
+          maxValue = Math.max(maxValue, edgeValue);
+          minValue = Math.min(minValue, edgeValue);
+        }
       }
     }
   }
@@ -14609,8 +14698,16 @@ DvtChartDataUtils.getMinMaxValue = function(chart, type, isDataOnly) {
         continue;
 
       if (items && !hidden) {
-        for (var j = 0; j < items.length; j++) {
-          if (items[j] == null || (limitToViewport && !DvtChartDataUtils.isRefObjInViewport(chart, items, j)))
+        var minItemIndex = 0;
+        var maxItemIndex = items.length - 1;
+        if (limitToViewport) {
+          var minMaxItemIndex = DvtChartRefObjUtils.getViewportMinMaxIndex(chart, items);
+          minItemIndex = minMaxItemIndex['min'];
+          maxItemIndex = minMaxItemIndex['max'];
+        }
+
+        for (var j = minItemIndex; j <= maxItemIndex; j++) {
+          if (items[j] == null)
             continue;
 
           var low = DvtChartRefObjUtils.getLowValue(items[j]);
@@ -14739,7 +14836,7 @@ DvtChartDataUtils.getCurrentSelection = function(chart) {
  * @return {boolean}
  */
 DvtChartDataUtils.hasVolumeSeries = function(chart) {
-  var hasVolume = chart.getOptionsCache().getFromCache('_hasVolume');
+  var hasVolume = chart.getOptionsCache().getFromCache('hasVolume');
   return hasVolume ? hasVolume : false;
 };
 /**
@@ -14967,7 +15064,7 @@ DvtChartDataUtils.getBarInfo = function(chart, seriesIndex, groupIndex, availSpa
   var isRTL = dvt.Agent.isRightToLeft(chart.getCtx());
   var xAxis = chart.xAxis;
   var bRange = DvtChartStyleUtils.isRangeSeries(chart, seriesIndex);
-  var offsetMap = DvtChartStyleUtils.getBarCategoryOffsetMap(chart, groupIndex, bStacked);
+  var offsetMap = DvtChartStyleUtils.getBarCategoryOffsetMap(chart, groupIndex);
 
   // Get the x-axis position
   var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
@@ -15200,7 +15297,7 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
 
     if (isOtherSlice || nestedDataItem || dataItem) {
       dataContext['group'] = DvtChartDataUtils.getGroup(chart, groupIndex);
-      dataContext['groupData'] = DvtChartDataUtils._getGroupsDataArray(chart)[groupIndex];
+      dataContext['groupData'] = DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex];
     }
 
     if (!isOtherSlice && (nestedDataItem || dataItem || seriesItem)) {
@@ -15219,9 +15316,8 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
  * Returns an array containing the hierarchical groups  associated with each innermost group item.
  * @param {dvt.Chart} chart
  * @return {Array} An array containing the hierarchical groups  associated with each innermost group item in chart.
- * @private
  */
-DvtChartDataUtils._getGroupsDataArray = function(chart) {
+DvtChartDataUtils.getGroupsDataForContext = function(chart) {
   var cacheKey = 'groupsDataArray';
   var groupsDataArray = chart.getOptionsCache().getFromCache(cacheKey);
 
@@ -15281,11 +15377,59 @@ DvtChartDataUtils.isOutermostBar = function(chart, seriesIndex, groupIndex) {
       continue;
     if (DvtChartStyleUtils.getSeriesType(chart, s) != 'bar')
       continue;
-    if (!DvtChartDataUtils.isBLACItemInViewport(chart, s, groupIndex)) // Skip hidden data items
+    if (!DvtChartStyleUtils.isDataItemRendered(chart, s, groupIndex)) // Skip hidden data items
       continue;
     return false;
   }
   return true;
+};
+
+/**
+ * Returns whether the data item is filtered.
+ * @param {dvt.Chart} chart
+ * @param {number} seriesIndex
+ * @param {number} groupIndex
+ * @return {boolean}
+ */
+DvtChartDataUtils.isDataItemFiltered = function(chart, seriesIndex, groupIndex) {
+  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
+  if (dataItem && dataItem['_filtered'])
+    return true;
+  return false;
+};
+
+/**
+ * Returns the peers of the chart data items that are filtered.
+ * @param {dvt.Chart} chart
+ * @return {Array}
+ */
+DvtChartDataUtils.getFilteredChartObjPeers = function(chart) {
+  if (!chart.getCache().getFromCache('dataFiltered'))
+    return [];
+
+  var cacheKey = 'filteredChartObjPeers';
+  var filteredPeers = chart.getCache().getFromCache(cacheKey);
+
+  if (!filteredPeers) {
+    filteredPeers = [];
+    for (var s = 0; s < DvtChartDataUtils.getSeriesCount(chart); s++) {
+      for (var g = 0; g < DvtChartDataUtils.getGroupCount(chart); g++) {
+        if (!DvtChartDataUtils.isDataItemFiltered(chart, s, g))
+          continue;
+
+        var dataPos;
+        if (DvtChartStyleUtils.getSeriesType(chart, s) == 'bar')
+          dataPos = DvtChartDataUtils.getBarInfo(chart, s, g).dataPos;
+        else
+          dataPos = DvtChartDataUtils.getMarkerPosition(chart, s, g);
+
+        filteredPeers.push(new DvtChartObjPeer(chart, [], s, g, null, dataPos));
+      }
+    }
+    chart.getCache().putToCache(cacheKey, filteredPeers);
+  }
+
+  return filteredPeers;
 };
 /**
  * Utility functions for dvt.Chart eventing and interactivity.
@@ -15463,63 +15607,14 @@ DvtChartEventUtils.adjustBounds = function(event) {
 
 
 /**
- * Gets the chart data items that are inside a marquee, even if not drawn.
- * @param {dvt.Chart} chart The chart.
- * @param {dvt.MarqueeEvent} event The marquee event, which contains the rectangular bounds (relative to stage).
- * @param {dvt.SelectionHandler} selectionHandler The selection handler for the graph
- * @return {array} Array of chart data items that are inside the rectangle.
- */
-DvtChartEventUtils.getSelectedObjects = function(chart, event, selectionHandler) {
-  // If data is not filtered, just use the selected ids from the peers
-  if (!chart.getCache().getFromCache('dataFiltered'))
-    return selectionHandler.getSelectedIds();
-
-  var boundedObjects = [];
-
-  // Get the cached data positions
-  var cacheKey = 'dataPositions';
-  var dataPositions = chart.getCache().getFromCache(cacheKey);
-
-  // If not found in the cache, need to calculate the data positions for all the data points to be used for selection
-  if (!dataPositions) {
-    dataPositions = [];
-    for (var seriesIdx = 0; seriesIdx < DvtChartDataUtils.getSeriesCount(chart); seriesIdx++) {
-      for (var groupIdx = 0; groupIdx < DvtChartDataUtils.getGroupCount(chart); groupIdx++) {
-        var dataPos;
-        if (DvtChartStyleUtils.getSeriesType(chart, seriesIdx) == 'bar')
-          dataPos = DvtChartDataUtils.getBarInfo(chart, seriesIdx, groupIdx).dataPos;
-        else
-          dataPos = DvtChartDataUtils.getMarkerPosition(chart, seriesIdx, groupIdx);
-        if (dataPos) {
-          dataPos = chart.getPlotArea().localToStage(dataPos);
-          dataPositions.push({seriesIndex: seriesIdx, groupIndex: groupIdx, pos: dataPos });
-        }
-      }
-    }
-    chart.getCache().putToCache(cacheKey, dataPositions);
-  }
-
-  // Go through all the data positions for this chart and check if they are within the marquee rectangle
-  for (var i = 0; i < dataPositions.length; i++) {
-    var dataPos = dataPositions[i].pos;
-    if (dataPos) {
-      var withinX = (event.x == null) || (dataPos.x >= event.x && dataPos.x <= event.x + event.w);
-      var withinY = (event.y == null) || (dataPos.y >= event.y && dataPos.y <= event.y + event.h);
-      if (withinX && withinY)
-        boundedObjects.push(new DvtChartDataItem(null, DvtChartDataUtils.getSeries(chart, dataPositions[i].seriesIndex), DvtChartDataUtils.getGroup(chart, dataPositions[i].groupIndex)));
-    }
-  }
-  return boundedObjects;
-};
-
-/**
  * Gets the chart data items that are inside a marquee.
  * @param {dvt.Chart} chart The chart.
  * @param {dvt.MarqueeEvent} event The marquee event, which contains the rectangular bounds (relative to stage).
  * @return {array} Array of peer objects that are inside the rectangle.
  */
 DvtChartEventUtils.getBoundedObjects = function(chart, event) {
-  var peers = chart.getChartObjPeers();
+  // Include the filtered data items so that they are included if they are inside the marquee rectangle
+  var peers = chart.getChartObjPeers().concat(DvtChartDataUtils.getFilteredChartObjPeers(chart));
   var boundedPeers = [];
 
   for (var i = 0; i < peers.length; i++) {
@@ -15573,7 +15668,7 @@ DvtChartEventUtils.getAxisBounds = function(chart, event, limitExtent) {
   if (chart.y2Axis)
     y2MinMax = DvtChartEventUtils._getAxisMinMax(chart.y2Axis, coords.yMin, coords.yMax, limitExtent);
 
-  return {xMin: xMinMax.min, xMax: xMinMax.max,
+  return {xMin: xMinMax.min, xMax: xMinMax.max, unchanged: xMinMax.unchanged,
     yMin: yMinMax.min, yMax: yMinMax.max,
     y2Min: y2MinMax.min, y2Max: y2MinMax.max,
     startGroup: startEndGroup.startGroup, endGroup: startEndGroup.endGroup};
@@ -15607,7 +15702,7 @@ DvtChartEventUtils._getAxisMinMax = function(axis, minCoord, maxCoord, limitExte
     return DvtChartEventUtils._limitToGlobal(axis, min, max);
   }
   else
-    return DvtChartEventUtils._getActualMinMax(axis, min, max);
+    return DvtChartEventUtils.getActualMinMax(axis, min, max);
 };
 
 
@@ -15637,7 +15732,7 @@ DvtChartEventUtils.getAxisBoundsByDelta = function(chart, xMinDelta, xMaxDelta, 
   if (chart.y2Axis)
     y2MinMax = DvtChartEventUtils._getAxisMinMaxByDelta(chart.y2Axis, deltas.yMin, deltas.yMax);
 
-  return {xMin: xMinMax.min, xMax: xMinMax.max,
+  return {xMin: xMinMax.min, xMax: xMinMax.max, unchanged: xMinMax.unchanged,
     yMin: yMinMax.min, yMax: yMinMax.max,
     y2Min: y2MinMax.min, y2Max: y2MinMax.max,
     startGroup: startEndGroup.startGroup, endGroup: startEndGroup.endGroup};
@@ -15659,7 +15754,7 @@ DvtChartEventUtils._getAxisMinMaxByDelta = function(axis, minDelta, maxDelta) {
 
   // Don't do the computation if the min/max won't change. This is to prevent rounding errors.
   if (maxDelta == minDelta && axis.isFullViewport())
-    return DvtChartEventUtils._getActualMinMax(axis, min, max);
+    return DvtChartEventUtils.getActualMinMax(axis, min, max);
 
   var minDeltaVal = axis.getUnboundedLinearValueAt(minDelta) - axis.getUnboundedLinearValueAt(0);
   var maxDeltaVal = axis.getUnboundedLinearValueAt(maxDelta) - axis.getUnboundedLinearValueAt(0);
@@ -15733,7 +15828,7 @@ DvtChartEventUtils._limitToGlobal = function(axis, min, max) {
     max = globalMax;
   }
 
-  return DvtChartEventUtils._getActualMinMax(axis, min, max);
+  return DvtChartEventUtils.getActualMinMax(axis, min, max);
 };
 
 
@@ -15743,10 +15838,22 @@ DvtChartEventUtils._limitToGlobal = function(axis, min, max) {
  * @param {number} min Linearized min value of the axis.
  * @param {number} max Linearzied max value of the axis.
  * @return {object} An object containing the actual axis min/max value.
- * @private
  */
-DvtChartEventUtils._getActualMinMax = function(axis, min, max) {
-  return {min: axis.linearToActual(min), max: axis.linearToActual(max)};
+DvtChartEventUtils.getActualMinMax = function(axis, min, max) {
+  var actualMinMax = {min: axis.linearToActual(min), max: axis.linearToActual(max)};
+
+  // For group axis, skip if the bounds don't change so we don't render the sparse axis labels unnecessarily ()
+  if (axis.isGroupAxis()) {
+    var currentMin = axis.getLinearViewportMin();
+    var currentMax = axis.getLinearViewportMax();
+
+    // Instead of strict equality, we need to add some tolerance to handle rounding errors
+    var tolerance = 0.0001;
+    if (Math.abs(min - currentMin) < tolerance && Math.abs(max - currentMax) < tolerance)
+      actualMinMax.unchanged = true;
+  }
+
+  return actualMinMax;
 };
 
 
@@ -15778,24 +15885,30 @@ DvtChartEventUtils.getAxisStartEndGroup = function(axis, min, max) {
  */
 DvtChartEventUtils.setInitialSelection = function(chart, selection) {
   var handler = chart.getSelectionHandler();
-  if (!handler)
+  if (!handler || !selection || selection.length == 0)
     return;
 
+  // Construct a selectionMap that maps the selection id to a selected boolean so that the process to match peers with
+  // the selection array takes O(n) time instead of O(n^2) ()
+  var selectionMap = {};
+  for (var i = 0; i < selection.length; i++) {
+    if (selection[i]['id'] != null)
+      selectionMap[selection[i]['id']] = true;
+    else if (selection[i]['series'] != null && selection[i]['group'] != null)
+      selectionMap[DvtChartDataUtils.createDataItemId(selection[i]['series'], selection[i]['group'])] = true;
+  }
+
+  // Now go through the peers and add the peers that can be found inside the selectionMap to the selectedIds array.
   var peers = chart.getChartObjPeers();
   var selectedIds = [];
-  for (var i = 0; i < selection.length; i++) {
-    for (var j = 0; j < peers.length; j++) {
-      var peer = peers[j];
-      if (!peer.isSelectable())
-        continue;
+  for (var j = 0; j < peers.length; j++) {
+    var peer = peers[j];
+    if (!peer.isSelectable())
+      continue;
 
-      var isSameId = DvtChartDataUtils.isEqualId(peer.getDataItemId(), selection[i]['id']);
-      var isSameSeries = DvtChartDataUtils.isEqualId(peer.getSeries(), selection[i]['series']);
-      var isSameGroup = DvtChartDataUtils.isEqualId(peer.getGroup(), selection[i]['group']);
-
-      if (isSameId || (selection[i]['id'] == null && isSameSeries && isSameGroup))
-        selectedIds.push(peer.getId());
-    }
+    // We have to check both id and series+group combination because the user can specify selection using either
+    if (selectionMap[peer.getDataItemId()] || selectionMap[DvtChartDataUtils.createDataItemId(peer.getSeries(), peer.getGroup())])
+      selectedIds.push(peer.getId());
   }
 
   handler.processInitialSelections(selectedIds, peers);
@@ -15885,7 +15998,11 @@ DvtChartEventUtils.addEventData = function(chart, eventPayload) {
   if (dataContext) {
     eventPayload['data'] = dataContext['data'];
     eventPayload['seriesData'] = dataContext['seriesData'];
-    eventPayload['groupData'] = dataContext['groupData'];
+    if (dataContext['groupData'])
+      eventPayload['groupData'] = dataContext['groupData'];
+    // getDataContext() doesn't support group objects
+    else if (groupIndex != null)
+      eventPayload['groupData'] = DvtChartDataUtils.getGroupsDataForContext(chart)[groupIndex];
   }
 };
 /**
@@ -16048,8 +16165,6 @@ DvtChartRefObjUtils.getRefObj = function(chart, id) {
 DvtChartRefObjUtils.getLowValue = function(item) {
   if (item == null)
     return null;
-  if (item['min'] != null) // for backwards compat
-    return item['min'];
   return item['low'];
 };
 
@@ -16061,8 +16176,6 @@ DvtChartRefObjUtils.getLowValue = function(item) {
 DvtChartRefObjUtils.getHighValue = function(item) {
   if (item == null)
     return null;
-  if (item['max'] != null) // for backwards compat
-    return item['max'];
   return item['high'];
 };
 
@@ -16074,12 +16187,63 @@ DvtChartRefObjUtils.getHighValue = function(item) {
  * @return {number}
  */
 DvtChartRefObjUtils.getXValue = function(chart, items, index) {
-  if (items[index] && items[index]['x'] != null)
-    return items[index]['x'];
-  else if (DvtChartAxisUtils.hasTimeAxis(chart) && !DvtChartAxisUtils.isMixedFrequency(chart))
-    return DvtChartDataUtils.getGroupLabel(chart, index);
-  else
+  if (DvtChartAxisUtils.hasGroupAxis(chart)) {
     return index;
+  }
+  else {
+    if (items[index] && items[index]['x'] != null)
+      return items[index]['x'];
+    else
+      return DvtChartDataUtils.getGroupLabel(chart, index);
+  }
+};
+
+/**
+ *
+ * Returns the min and max ref obj item index that are entirely within the chart viewport.
+ * @param {dvt.Chart} chart
+ * @param {object} items The array of reference object items
+ * @return {object} An object containing min and max properties.
+ */
+DvtChartRefObjUtils.getViewportMinMaxIndex = function(chart, items) {
+  var minMaxValue = DvtChartAxisUtils.getXAxisViewportMinMax(chart, true);
+  var hasGroupAxis = DvtChartAxisUtils.hasGroupAxis(chart);
+
+  var minValue = minMaxValue['min'];
+  var minIndex = 0;
+  if (minValue != null) {
+    if (hasGroupAxis)
+      minIndex = Math.ceil(minValue);
+    else {
+      // TODO: faster with binary search
+      for (var i = 0; i < items.length; i++) {
+        var xValue = DvtChartRefObjUtils.getXValue(chart, items, i);
+        if (xValue >= minValue) {
+          minIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  var maxValue = minMaxValue['max'];
+  var maxIndex = items.length - 1;
+  if (maxIndex != null) {
+    if (hasGroupAxis)
+      maxIndex = Math.floor(maxValue);
+    else {
+      // TODO: faster with binary search
+      for (var i = items.length - 1; i >= minIndex; i--) {
+        var xValue = DvtChartDataUtils.getXValue(chart, items, i);
+        if (xValue <= maxValue) {
+          maxIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  return {'min': minIndex, 'max': maxIndex};
 };
 /**
  * Series effect utility functions for dvt.Chart.
@@ -16381,9 +16545,13 @@ DvtChartStyleUtils.getSeriesType = function(chart, seriesIndex) {
  * @return {boolean}
  */
 DvtChartStyleUtils.isRangeSeries = function(chart, seriesIndex) {
+  var optionsCache = chart.getOptionsCache();
+  if (!optionsCache.getFromCache('hasLowHighSeries'))
+    return false;
+
   // Use the cached value if it has been computed before
   var cacheKey = 'isRange';
-  var isRange = chart.getOptionsCache().getFromCachedMap(cacheKey, seriesIndex);
+  var isRange = optionsCache.getFromCachedMap(cacheKey, seriesIndex);
   if (isRange != null)
     return isRange;
 
@@ -16969,8 +17137,23 @@ DvtChartStyleUtils.getMaxBarWidth = function(chart) {
  * @return {number} The bar width.
  */
 DvtChartStyleUtils.getBarWidth = function(chart, seriesIndex, groupIndex) {
+  // If the chart doesn't have Z values, the stack widths are all the same, so override the seriesIndex and groupIndex so
+  // the computation doesn't need to be repeated for every group and we can use the cached value instead.
+  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth')) {
+    seriesIndex = 0;
+    groupIndex = 0;
+  }
+
+  var cacheKey = 'barWidth';
+  var barWidth = chart.getCache().getFromCachedMap2D(cacheKey, seriesIndex, groupIndex);
+  if (barWidth != null)
+    return barWidth;
+
   var ratio = DvtChartDataUtils.getZValue(chart, seriesIndex, groupIndex, 1) / chart.getOptions()['_averageGroupZ'];
-  return Math.min(ratio * DvtChartStyleUtils.getGroupWidth(chart), DvtChartStyleUtils.getMaxBarWidth(chart));
+  barWidth = Math.min(ratio * DvtChartStyleUtils.getGroupWidth(chart), DvtChartStyleUtils.getMaxBarWidth(chart));
+
+  chart.getCache().putToCachedMap2D(cacheKey, seriesIndex, groupIndex, barWidth);
+  return barWidth;
 };
 
 /**
@@ -16982,9 +17165,14 @@ DvtChartStyleUtils.getBarWidth = function(chart, seriesIndex, groupIndex) {
  * @return {number} The stack width.
  */
 DvtChartStyleUtils.getBarStackWidth = function(chart, category, groupIndex, isY2) {
+  // If the chart doesn't have Z values, the stack widths are all the same, so override the groupIndex so
+  // the computation doesn't need to be repeated for every group and we can use the cached value instead.
+  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth'))
+    groupIndex = 0;
+
   var cacheKey = isY2 ? 'y2BarStackWidth' : 'yBarStackWidth';
   var barStackWidth = chart.getCache().getFromCachedMap2D(cacheKey, category, groupIndex);
-  if (barStackWidth)
+  if (barStackWidth != null)
     return barStackWidth;
 
   var ratio = DvtChartDataUtils.getBarCategoryZ(chart, category, groupIndex, isY2) / chart.getOptions()['_averageGroupZ'];
@@ -16997,16 +17185,21 @@ DvtChartStyleUtils.getBarStackWidth = function(chart, category, groupIndex, isY2
  * Computes the offsets of the bar stack categories relative to the group coordinate and stores it in a map.
  * @param {dvt.Chart} chart
  * @param {Number} groupIndex
- * @param {Boolean} bStacked
  * @return {Object} An object containing two maps for y and y2 respectively. Each map contains the categories as the
  *    keys and the offsets as the values.
  */
-DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex, bStacked) {
+DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex) {
+  // If the chart doesn't have Z values, the stack widths are all the same, so override the groupIndex so
+  // the computation doesn't need to be repeated for every group and we can use the cached value instead.
+  if (!chart.getOptionsCache().getFromCache('hasVaryingBarWidth'))
+    groupIndex = 0;
+
   var cacheKey = 'barCategoryOffsetMap';
-  var yOffsetMaps = chart.getCache().getFromCachedMap2D(cacheKey, groupIndex, bStacked);
+  var yOffsetMaps = chart.getCache().getFromCachedMap(cacheKey, groupIndex);
   if (yOffsetMaps)
     return yOffsetMaps;
 
+  var bStacked = DvtChartTypeUtils.isStacked(chart);
   var categories = DvtChartDataUtils.getStackCategories(chart, 'bar');
   var isMixedFreq = DvtChartAxisUtils.isMixedFrequency(chart);
   var isSplitDualY = DvtChartTypeUtils.isSplitDualY(chart);
@@ -17080,7 +17273,7 @@ DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex, bStacke
     y2OffsetMap[category] -= (!isSplitDualY && !bStacked) ? (yTotalWidth + y2TotalWidth) / 2 - yTotalWidth : y2TotalWidth / 2;
 
   yOffsetMaps = {'y': yOffsetMap, 'y2': y2OffsetMap};
-  chart.getCache().putToCachedMap2D(cacheKey, groupIndex, bStacked, yOffsetMaps);
+  chart.getCache().putToCachedMap(cacheKey, groupIndex, yOffsetMaps);
   return yOffsetMaps;
 };
 
@@ -17090,15 +17283,21 @@ DvtChartStyleUtils.getBarCategoryOffsetMap = function(chart, groupIndex, bStacke
  * @return {number}
  */
 DvtChartStyleUtils.getDataItemGaps = function(chart) {
+  var cacheKey = 'dataItemGaps';
+  var ret = chart.getOptionsCache().getFromCache(cacheKey);
+  if (ret != null) {
+    return ret;
+  }
+
   var options = chart.getOptions();
 
   if (DvtChartTypeUtils.isFunnel(chart) && options['styleDefaults']['funnelSliceGaps'] == 'on') {
     // Backwards compatibility for funnelSliceGaps
-    return 1;
+    ret = 1;
   }
   else if (options['styleDefaults']['sliceGaps'] != null) {
     // Backwards compatibility with sliceGaps, which is a number between 0 and 1
-    return options['styleDefaults']['sliceGaps'];
+    ret = options['styleDefaults']['sliceGaps'];
   }
   else {
     // dataItemGaps: Currently a percentage string to be converted to ratio or "auto"
@@ -17112,12 +17311,16 @@ DvtChartStyleUtils.getDataItemGaps = function(chart) {
     var percentIndex = dataItemGaps && dataItemGaps.indexOf ? dataItemGaps.indexOf('%') : -1;
     if (percentIndex >= 0) {
       dataItemGaps = dataItemGaps.substring(0, percentIndex);
-      return dataItemGaps / 100;
+      ret = dataItemGaps / 100;
     }
-
-    // Not a valid string, return 0.
-    return 0;
+    else {
+      // Not a valid string, return 0.
+      ret = 0;
+    }
   }
+
+  chart.getOptionsCache().putToCache(cacheKey, ret);
+  return ret;
 };
 
 /**
@@ -17166,8 +17369,19 @@ DvtChartStyleUtils.isSeriesRendered = function(chart, seriesIndex) {
  * @return {boolean} True if the series should be rendered.
  */
 DvtChartStyleUtils.isDataItemRendered = function(chart, seriesIndex, groupIndex, itemIndex) {
+  // Use the cached value if it has been computed before
+  var ret;
+  var cacheKey = 'isDataItemRendered';
+  var isNested = !isNaN(itemIndex) && itemIndex != null && itemIndex >= 0;
+  if (!isNested) {
+    ret = chart.getOptionsCache().getFromCachedMap2D(cacheKey, seriesIndex, groupIndex);
+    if (ret !== undefined) // anything that's defined, including null
+      return ret;
+  }
+
+  ret = true;
   if (!DvtChartStyleUtils.isSeriesRendered(chart, seriesIndex))
-    return false;
+    ret = false;
   else {
     // Check if any category is hidden
     var hiddenCategories = DvtChartStyleUtils.getHiddenCategories(chart);
@@ -17176,17 +17390,21 @@ DvtChartStyleUtils.isDataItemRendered = function(chart, seriesIndex, groupIndex,
         groupIndex = 0;
 
       if (dvt.ArrayUtils.hasAnyItem(hiddenCategories, DvtChartDataUtils.getCategories(chart, seriesIndex, groupIndex))) {
-        return false;
+        ret = false;
       }
 
       // nested item
       if (dvt.ArrayUtils.hasAnyItem(hiddenCategories, DvtChartDataUtils.getCategories(chart, seriesIndex, groupIndex, itemIndex))) {
-        return false;
+        ret = false;
       }
     }
   }
 
-  return true;
+  // Cache the value
+  if (!isNested)
+    chart.getOptionsCache().putToCachedMap2D(cacheKey, seriesIndex, groupIndex, ret);
+
+  return ret;
 };
 
 
@@ -17647,12 +17865,12 @@ DvtChartStyleUtils.optimizeMarkerFill = function(chart) {
  */
 DvtChartStyleUtils.getClassName = function(chart, seriesIndex, groupIndex) {
   var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (dataItem && dataItem['className'])
-    return dataItem['className'];
+  if (dataItem && (dataItem['className'] || dataItem['svgClassName']))
+    return dataItem['className'] || dataItem['svgClassName'];
 
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['className'])
-    return seriesItem['className'];
+  if (seriesItem && (seriesItem['className'] || seriesItem['svgClassName']))
+    return seriesItem['className'] || seriesItem['svgClassName'];
   else
     return null;
 };
@@ -17665,10 +17883,10 @@ DvtChartStyleUtils.getClassName = function(chart, seriesIndex, groupIndex) {
  */
 DvtChartStyleUtils.getAreaClassName = function(chart, seriesIndex) {
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['areaClassName'])
-    return seriesItem['areaClassName'];
-  else if (seriesItem && seriesItem['className'])
-    return seriesItem['className'];
+  if (seriesItem && (seriesItem['areaClassName'] || seriesItem['areaSvgClassName']))
+    return seriesItem['areaClassName'] || seriesItem['areaSvgClassName'];
+  else if (seriesItem && (seriesItem['className'] || seriesItem['svgClassName']))
+    return seriesItem['className'] || seriesItem['svgClassName'];
   return null;
 };
 
@@ -17683,21 +17901,21 @@ DvtChartStyleUtils.getAreaClassName = function(chart, seriesIndex) {
 DvtChartStyleUtils.getMarkerClassName = function(chart, seriesIndex, groupIndex, itemIndex) {
   // Nested Data Override
   var nestedDataItem = DvtChartDataUtils.getNestedDataItem(chart, seriesIndex, groupIndex, itemIndex);
-  if (nestedDataItem && nestedDataItem['className'])
-    return nestedDataItem['className'];
+  if (nestedDataItem && (nestedDataItem['className'] || nestedDataItem['svgClassName']))
+    return nestedDataItem['className'] || nestedDataItem['svgClassName'];
 
   // Data Override
   var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (dataItem && dataItem['className'])
-    return dataItem['className'];
+  if (dataItem && (dataItem['className'] || dataItem['svgClassName']))
+    return dataItem['className'] || dataItem['svgClassName'];
 
   // Series Override
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['markerClassName'])
-    return seriesItem['markerClassName'];
+  if (seriesItem && (seriesItem['markerClassName'] || seriesItem['markerSvgClassName']))
+    return seriesItem['markerClassName'] || seriesItem['markerSvgClassName'];
 
-  if (DvtChartTypeUtils.isScatterBubble(chart) && seriesItem && seriesItem['className'])
-    return seriesItem['className'];
+  if (DvtChartTypeUtils.isScatterBubble(chart) && seriesItem && (seriesItem['className'] || seriesItem['svgClassName']))
+    return seriesItem['className'] || seriesItem['svgClassName'];
   else
     return null;
 };
@@ -17711,12 +17929,12 @@ DvtChartStyleUtils.getMarkerClassName = function(chart, seriesIndex, groupIndex,
  */
 DvtChartStyleUtils.getStyle = function(chart, seriesIndex, groupIndex) {
   var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (dataItem && dataItem['style'])
-    return dataItem['style'];
+  if (dataItem && (dataItem['style'] || dataItem['svgStyle']))
+    return dataItem['style'] || dataItem['svgStyle'];
 
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['style'])
-    return seriesItem['style'];
+  if (seriesItem && (seriesItem['style'] || seriesItem['svgStyle']))
+    return seriesItem['style'] || seriesItem['svgStyle'];
   return null;
 };
 
@@ -17728,10 +17946,10 @@ DvtChartStyleUtils.getStyle = function(chart, seriesIndex, groupIndex) {
  */
 DvtChartStyleUtils.getAreaStyle = function(chart, seriesIndex) {
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['areaStyle'])
-    return seriesItem['areaStyle'];
-  else if (seriesItem && seriesItem['style'])
-    return seriesItem['style'];
+  if (seriesItem && (seriesItem['areaStyle'] || seriesItem['areaSvgStyle']))
+    return seriesItem['areaStyle'] || seriesItem['areaSvgStyle'];
+  else if (seriesItem && (seriesItem['style'] || seriesItem['svgStyle']))
+    return seriesItem['style'] || seriesItem['svgStyle'];
   return null;
 };
 
@@ -17746,21 +17964,21 @@ DvtChartStyleUtils.getAreaStyle = function(chart, seriesIndex) {
 DvtChartStyleUtils.getMarkerStyle = function(chart, seriesIndex, groupIndex, itemIndex) {
   // Nested Data Override
   var nestedDataItem = DvtChartDataUtils.getNestedDataItem(chart, seriesIndex, groupIndex, itemIndex);
-  if (nestedDataItem && nestedDataItem['style'])
-    return nestedDataItem['style'];
+  if (nestedDataItem && (nestedDataItem['style'] || nestedDataItem['svgStyle']))
+    return nestedDataItem['style'] || nestedDataItem['svgStyle'];
 
   // Data Override
   var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (dataItem && dataItem['style'])
-    return dataItem['style'];
+  if (dataItem && (dataItem['style'] || dataItem['svgStyle']))
+    return dataItem['style'] || dataItem['svgStyle'];
 
   // Series Override
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && seriesItem['markerStyle'])
-    return seriesItem['markerStyle'];
+  if (seriesItem && (seriesItem['markerStyle'] || seriesItem['markerSvgStyle']))
+    return seriesItem['markerStyle'] || seriesItem['markerSvgStyle'];
 
-  if (DvtChartTypeUtils.isScatterBubble(chart) && seriesItem && seriesItem['style'])
-    return seriesItem['style'];
+  if (DvtChartTypeUtils.isScatterBubble(chart) && seriesItem && (seriesItem['style'] || seriesItem['svgStyle']))
+    return seriesItem['style'] || seriesItem['svgStyle'];
   else
     return null;
 };
@@ -17811,14 +18029,30 @@ DvtChartStyleUtils.getBoxPlotStyleOptions = function(chart, seriesIndex, groupIn
 
   // Default whisker and median line color
   var defaultLineColor = dvt.ColorUtils.getDarker(defaultColor, 0.1);
-  if (!boxPlotOptions['whiskerStyle']['stroke'] && !boxPlotOptions['whiskerClassName'])
-    boxPlotOptions['whiskerStyle']['stroke'] = defaultLineColor;
-  if (!boxPlotOptions['whiskerEndStyle']['stroke'] && !boxPlotOptions['whiskerEndClassName'])
-    boxPlotOptions['whiskerEndStyle']['stroke'] = defaultLineColor;
-  if (!boxPlotOptions['medianStyle']['stroke'] && !boxPlotOptions['medianClassName'])
-    boxPlotOptions['medianStyle']['stroke'] = defaultLineColor;
+  DvtChartStyleUtils._setBoxPlotDefaultLineColor(boxPlotOptions, 'whisker', defaultLineColor);
+  DvtChartStyleUtils._setBoxPlotDefaultLineColor(boxPlotOptions, 'whiskerEnd', defaultLineColor);
+  DvtChartStyleUtils._setBoxPlotDefaultLineColor(boxPlotOptions, 'median', defaultLineColor);
 
   return boxPlotOptions;
+};
+
+/**
+ * Sets the default line color for box plot shapes.
+ * @param {object} boxPlotOptions The box plot style option object.
+ * @param {string} prefix The option name prefix.
+ * @param {string} defaultLineColor The default line color to set if the color is not user-specified.
+ * @private
+ */
+DvtChartStyleUtils._setBoxPlotDefaultLineColor = function(boxPlotOptions, prefix, defaultLineColor) {
+  // The deprecated *Style option name has to be merged with *SvgStyle to maintain backwards compatibility.
+  // The reason is that the default options in DvtChartDefaults are only defined for *SvgStyle.
+  var lineSvgStyle = dvt.JsonUtils.merge(boxPlotOptions[prefix + 'Style'], boxPlotOptions[prefix + 'SvgStyle']);
+  boxPlotOptions[prefix + 'SvgStyle'] = lineSvgStyle;
+  boxPlotOptions[prefix + 'Style'] = null; // nullify so *Style will not be applied
+
+  // Set the default line color if the stroke is not set in the svgStyle, and if svgClassName is not set.
+  if (!lineSvgStyle['stroke'] && !boxPlotOptions[prefix + 'ClassName'] && !boxPlotOptions[prefix + 'SvgClassName'])
+    boxPlotOptions[prefix + 'SvgStyle']['stroke'] = defaultLineColor;
 };
 /**
  * Text related utility functions.
@@ -17830,7 +18064,7 @@ dvt.Obj.createSubclass(DvtChartTextUtils, dvt.Obj);
 
 
 /**
- * Creates and adds a DvtText object to a container. Will truncate and add tooltip as necessary.
+ * Creates and adds a dvt.Text object to a container. Will truncate and add tooltip as necessary.
  * @param {dvt.EventManager} eventManager
  * @param {dvt.Container} container The container to add the text object to.
  * @param {String} textString The text string of the text object.
@@ -17839,7 +18073,7 @@ dvt.Obj.createSubclass(DvtChartTextUtils, dvt.Obj);
  * @param {number} y The y coordinate of the text object.
  * @param {number} width The width of available text space.
  * @param {number} height The height of the available text space.
- * @return {DvtText} The created text object. Can be null if no text object could be created in the given space.
+ * @return {dvt.Text} The created text object. Can be null if no text object could be created in the given space.
  */
 DvtChartTextUtils.createText = function(eventManager, container, textString, cssStyle, x, y, width, height) {
   var text = new dvt.OutputText(container.getCtx(), textString, x, y);
@@ -18195,10 +18429,7 @@ DvtChartTooltipUtils._addDatatipRow = function(datatip, chart, type, defaultLabe
   var tooltipDisplay = valueFormat['tooltipDisplay'];
 
   if (!tooltipDisplay || tooltipDisplay == 'auto') {
-    // maintain old tooltip attrs for backwards compat
-    if ((type == 'series' && options['seriesTooltipType'] == 'none') ||
-        (type == 'group' && (options['groupTooltipType'] == 'none' || DvtChartTypeUtils.isPie(chart) || DvtChartTypeUtils.isFunnel(chart))) ||
-        ((type != 'series' && type != 'group' && type != 'label') && options['valueTooltipType'] == 'none'))
+    if (type == 'group' && (DvtChartTypeUtils.isPie(chart) || DvtChartTypeUtils.isFunnel(chart)))
       tooltipDisplay = 'off';
   }
 
@@ -18259,11 +18490,19 @@ DvtChartTooltipUtils.getValueFormat = function(chart, type) {
   var valueFormats = chart.getOptions()['valueFormats'];
   if (!valueFormats)
     return {};
-
-  for (var i = 0; i < valueFormats.length; i++) {
-    if (valueFormats[i]['type'] == type)
-      return valueFormats[i];
+  else if (valueFormats instanceof Array) {
+    // Convert the deprecated array syntax to object syntax
+    var obj = {};
+    for (var i = 0; i < valueFormats.length; i++) {
+      var valueFormat = valueFormats[i];
+      obj[valueFormat['type']] = valueFormat;
+    }
+    chart.getOptions()['valueFormats'] = obj;
+    valueFormats = obj;
   }
+
+  if (valueFormats[type])
+    return valueFormats[type];
 
   // For chart with time axis, if group valueFormat is not defined, fall back to x.
   if (type == 'group' && DvtChartAxisUtils.hasTimeAxis(chart))
@@ -18275,7 +18514,6 @@ DvtChartTooltipUtils.getValueFormat = function(chart, type) {
 
   return {};
 };
-
 
 /**
  * Formats value with the converter from the valueFormat.
@@ -18444,8 +18682,9 @@ DvtChartTypeUtils.isPolar = function(chart) {
  */
 DvtChartTypeUtils.isStacked = function(chart) {
   // To be stacked, the attribute must be set and the chart must be a supporting type.
+  // If the series count is less than 2, assume unstacked because it's faster to render.
   var options = chart.getOptions();
-  if (options['stack'] != 'on' || DvtChartAxisUtils.isMixedFrequency(chart))
+  if (options['stack'] != 'on' || DvtChartAxisUtils.isMixedFrequency(chart) || DvtChartDataUtils.getSeriesCount(chart) < 2)
     return false;
 
   return DvtChartTypeUtils.isBLAC(chart);
@@ -20113,7 +20352,7 @@ DvtChartPieLabelInfo.prototype.getY = function() {
 DvtChartPieLabelInfo.prototype.setY = function(y) {
   this._y = y;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /*---------------------------------------------------------------------*/
 /*   DvtChartPieLabelUtils                                                  */
 /*---------------------------------------------------------------------*/
@@ -20319,7 +20558,7 @@ DvtChartPieLabelUtils._createLabel = function(slice, isInside) {
 
   // Apply the label color- read all applicable styles and merge them.
   var styleDefaults = pieChart.getOptions()['styleDefaults'];
-  var labelStyleArray = [styleDefaults['dataLabelStyle'], new dvt.CSSStyle(styleDefaults['sliceLabelStyle'])];
+  var labelStyleArray = [styleDefaults['dataLabelStyle']];
   var dataItem = DvtChartDataUtils.getDataItem(pieChart.chart, slice.getSeriesIndex(), 0);
   if (dataItem)
     labelStyleArray.push(new dvt.CSSStyle(dataItem['labelStyle']));
@@ -20417,9 +20656,9 @@ DvtChartPieLabelUtils.createPieCenter = function(pieChart) {
     if (!customContent)
       return;
     var newOverlay = context.createOverlayDiv();
-    newOverlay.appendChild(customContent);
+    newOverlay.appendChild(customContent); // @HtmlUpdateOk
     pieChart.chart.pieCenterDiv = newOverlay;
-    parentDiv.appendChild(newOverlay);
+    parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
 
     // Invoke the overlay attached callback if one is available.
     var callback = context.getOverlayAttachedCallback();
@@ -20623,11 +20862,19 @@ DvtChartPieLabelUtils._setLabelsAndFeelers = function(pie, alabels, side) {
 
     if (labelInfo.hasFeeler()) {
       excessLength = DvtChartPieLabelUtils._calculateFeeler(labelInfo, slice, isLeftSide);
+
+      // For numeric labels, the minLabelWidth is equal to the labelWidth because anything shorter will be skipped.
+      // For text labels, the minLabelWidth is one character + ellipses ("S...") because if it is shorter than that then
+      // fitText() will completely remove the label. We estimate that width as twice the font height.
+      var fontHeight = dvt.TextUtils.getTextStringHeight(pie.getCtx(), labelInfo.getSliceLabel().getCSSStyle());
+      var labelWidth = labelInfo.getWidth();
+      var minLabelWidth = DvtChartPieLabelUtils._isTextLabel(pie, slice) ? Math.min(2 * fontHeight, labelWidth) : labelWidth;
       var maxLabelWidth = DvtChartPieLabelUtils.getMaxLabelWidth(pie, labelInfo.getX(), isLeftSide);
 
       // Remove feelers for labels that will not be rendered and ignore for excess width calculation
-      if (labelInfo.getWidth() - excessLength >= maxLabelWidth || labelInfo.getWidth() == 0) {
-        labelInfo.setHasFeeler(false);
+      if (maxLabelWidth + excessLength < minLabelWidth || labelInfo.getWidth() == 0) {
+        labelInfo.setSliceLabel(null);
+        slice.setNoOutsideFeeler();
         continue;
       }
       excessWidth = Math.min(excessWidth, excessLength);
@@ -20640,6 +20887,8 @@ DvtChartPieLabelUtils._setLabelsAndFeelers = function(pie, alabels, side) {
     labelInfo = alabels[i];
     slice = labelInfo.getSlice();
     sliceLabel = labelInfo.getSliceLabel();
+    if (!sliceLabel)
+      continue;
 
     if (labelInfo.hasFeeler()) {
       // shorten the horizontal feelers
@@ -20650,8 +20899,6 @@ DvtChartPieLabelUtils._setLabelsAndFeelers = function(pie, alabels, side) {
       }
       // setup the feeler line (let it clip if needed)
       DvtChartPieLabelUtils._calculateFeeler(labelInfo, slice, isLeftSide);
-      // do not wrap text if column layout is used
-      sliceLabel.setMaxLines(1);
     }
 
     sliceLabel.setY(labelInfo.getY());
@@ -21153,6 +21400,7 @@ DvtChartPieLabelUtils._createLabelInfo = function(slice, sliceLabel, ma, pa, tmD
   labelInfo.setHeight(tmDimPt.y);
   labelInfo.setX(labelPt.x);
   labelInfo.setY(labelPt.y);
+  labelInfo.setInitialNumLines(s_label.getLineCount());
 
   labelInfoArray.splice(insertPos, 0, labelInfo);
 };
@@ -21894,35 +22142,34 @@ DvtChartRenderer._renderDragButtons = function(chart, container) {
   var isScrollable = DvtChartEventUtils.isScrollable(chart);
 
   chart.dragButtons = new dvt.Container(chart.getCtx());
-  var resources = options['_resources'];
 
   var tooltip, position;
+  var hasSelectButton = options['selectionMode'] == 'multiple' && (isTouch || isScrollable);
+  var hasPanButton = isScrollable && isTouch;
+  var hasZoomButton = isScrollable && !isTouch && DvtChartEventUtils.isZoomable(chart) && DvtChartTypeUtils.isScatterBubble(chart);
 
-  if (options['selectionMode'] == 'multiple' && (isTouch || isScrollable)) {
-    position = isScrollable && (isTouch || DvtChartEventUtils.isZoomable(chart)) ? 'end' : 'solo';
-    em.selectButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
-        resources['selectUp'], resources['selectDown'], em.onSelectButtonClick, em, position);
+  if (hasSelectButton) {
+    position = (hasPanButton || hasZoomButton) ? 'end' : 'solo';
+    em.selectButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'select', em.onSelectButtonClick, em, position);
     tooltip = dvt.Bundle.getTranslation(options, 'tooltipSelect', dvt.Bundle.CHART_PREFIX, 'MARQUEE_SELECT');
     em.selectButton.setTooltip(tooltip);
     em.associate(em.selectButton, em.selectButton);
   }
 
-  if (isScrollable) {
-    position = em.selectButton == null ? 'solo' : 'start';
-    if (isTouch) {
-      em.panButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
-          resources['panUp'], resources['panDown'], em.onPanButtonClick, em, position);
-      tooltip = dvt.Bundle.getTranslation(options, 'tooltipPan', dvt.Bundle.CHART_PREFIX, 'PAN');
-      em.panButton.setTooltip(tooltip);
-      em.associate(em.panButton, em.panButton);
-    }
-    else if (DvtChartEventUtils.isZoomable(chart) && DvtChartTypeUtils.isScatterBubble(chart)) {
-      em.zoomButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons,
-          resources['zoomUp'], resources['zoomDown'], em.onZoomButtonClick, em, position);
-      tooltip = dvt.Bundle.getTranslation(options, 'tooltipZoom', dvt.Bundle.CHART_PREFIX, 'MARQUEE_ZOOM');
-      em.zoomButton.setTooltip(tooltip);
-      em.associate(em.zoomButton, em.zoomButton);
-    }
+  if (hasPanButton) {
+    position = hasSelectButton ? 'start' : 'solo';
+    em.panButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'pan', em.onPanButtonClick, em, position);
+    tooltip = dvt.Bundle.getTranslation(options, 'tooltipPan', dvt.Bundle.CHART_PREFIX, 'PAN');
+    em.panButton.setTooltip(tooltip);
+    em.associate(em.panButton, em.panButton);
+  }
+
+  if (hasZoomButton) {
+    position = hasSelectButton ? 'start' : 'solo';
+    em.zoomButton = DvtChartRenderer._createDragButton(chart, chart.dragButtons, 'zoom', em.onZoomButtonClick, em, position);
+    tooltip = dvt.Bundle.getTranslation(options, 'tooltipZoom', dvt.Bundle.CHART_PREFIX, 'MARQUEE_ZOOM');
+    em.zoomButton.setTooltip(tooltip);
+    em.associate(em.zoomButton, em.zoomButton);
   }
 
   DvtChartRenderer.positionDragButtons(chart);
@@ -21994,10 +22241,11 @@ DvtChartRenderer.positionDragButtons = function(chart) {
  * Creates the rounded square background for the drag button.
  * @param {dvt.Context} context
  * @param {string} position The position of the button: start, end, or solo.
+ * @param {string} borderColor The border color of the button.
  * @return {dvt.Rect} The button background.
  * @private
  */
-DvtChartRenderer._createDragButtonBackground = function(context, position) {
+DvtChartRenderer._createDragButtonBackground = function(context, position, borderColor) {
   var blcr = 2;
   var trcr = 2;
   var isR2L = dvt.Agent.isRightToLeft(context);
@@ -22017,11 +22265,11 @@ DvtChartRenderer._createDragButtonBackground = function(context, position) {
 
   // don't use pixel hinting on desktop bc the corners look broken
   if (dvt.Agent.getDevicePixelRatio() > 1) {
-    background.setSolidStroke('#D8DEE3', 1, 1);
+    background.setSolidStroke(borderColor, DvtChartRenderer._BUTTON_OPACITY, 1);
     background.setPixelHinting(true);
   }
   else
-    background.setSolidStroke('#B8BDC1', 1, 1);
+    background.setSolidStroke(borderColor, DvtChartRenderer._BUTTON_OPACITY, 1);
 
   return background;
 };
@@ -22031,34 +22279,41 @@ DvtChartRenderer._createDragButtonBackground = function(context, position) {
  * Creates and a drag button.
  * @param {dvt.Chart} chart
  * @param {dvt.Container} container The container for the button.
- * @param {string} upSrc The image URL for the up state.
- * @param {string} downSrc The image URL for the down state.
+ * @param {string} prefix The resource prefix for the button image URL.
  * @param {object} callback The callback method of the button.
  * @param {object} callbackObj The object of the callback method.
  * @param {string} position The position of the button: start, end, or solo.
  * @return {dvt.Button}
  * @private
  */
-DvtChartRenderer._createDragButton = function(chart, container, upSrc, downSrc, callback, callbackObj, position) {
+DvtChartRenderer._createDragButton = function(chart, container, prefix, callback, callbackObj, position) {
   // Create the button and add to the container
   var context = chart.getCtx();
+  var resources = chart.getOptions()['_resources'];
 
   // Initialize the button states
-  var upState = DvtChartRenderer._createDragButtonBackground(context, position);
-  upState.setSolidFill('#FFFFFF', DvtChartRenderer._BUTTON_OPACITY);
+  var upState = DvtChartRenderer._createDragButtonBackground(context, position, '#C4CED7');
+  var upSrc = resources[prefix + 'Up'];
+  upState.setFill(new dvt.LinearGradientFill(270,
+      ['#FFFFFF', '#F1F3F4', '#E8EBED', '#E4E8EA'],
+      [DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY],
+      [0, 0.0364, 0.5, 1]));
   upState.addChild(new dvt.Image(context, upSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
 
-  var overState = DvtChartRenderer._createDragButtonBackground(context, position);
-  overState.setSolidFill('#E2E3E4', DvtChartRenderer._BUTTON_OPACITY);
-  overState.addChild(new dvt.Image(context, upSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
+  var overState = DvtChartRenderer._createDragButtonBackground(context, position, '#C4CED7');
+  var overSrc = resources[prefix + 'UpHover'] ? resources[prefix + 'UpHover'] : upSrc;
+  overState.setSolidFill('#F7F8F9', DvtChartRenderer._BUTTON_OPACITY);
+  overState.addChild(new dvt.Image(context, overSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
 
-  var downState = DvtChartRenderer._createDragButtonBackground(context, position);
-  downState.setFill(new dvt.LinearGradientFill(90, ['#0527CE', '#0586F0'], [DvtChartRenderer._BUTTON_OPACITY, DvtChartRenderer._BUTTON_OPACITY]));
+  var downState = DvtChartRenderer._createDragButtonBackground(context, position, '#0572CE');
+  var downSrc = resources[prefix + 'Down'];
+  downState.setSolidFill('#0572CE', DvtChartRenderer._BUTTON_OPACITY);
   downState.addChild(new dvt.Image(context, downSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
 
-  var overDownState = DvtChartRenderer._createDragButtonBackground(context, position);
-  overDownState.setSolidFill('#0586F0', DvtChartRenderer._BUTTON_OPACITY);
-  overDownState.addChild(new dvt.Image(context, downSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
+  var overDownState = DvtChartRenderer._createDragButtonBackground(context, position, '#0572CE');
+  var overDownSrc = resources[prefix + 'DownHover'] ? resources[prefix + 'DownHover'] : downSrc;
+  overDownState.setSolidFill('#0572CE', DvtChartRenderer._BUTTON_OPACITY);
+  overDownState.addChild(new dvt.Image(context, overDownSrc, 0, 0, DvtChartRenderer._BUTTON_SIZE, DvtChartRenderer._BUTTON_SIZE));
 
   var button = new dvt.Button(context, upState, overState, downState, null, null, callback, callbackObj);
   button.setOverDownState(overDownState);
@@ -22138,6 +22393,9 @@ DvtChartRenderer.renderDataCursor = function(chart) {
 var DvtChartAxisRenderer = new Object();
 
 dvt.Obj.createSubclass(DvtChartAxisRenderer, dvt.Obj);
+
+/** @private */
+DvtChartAxisRenderer._DEFAULT_AXIS_MAX_SIZE = 0.33;
 
 
 /**
@@ -22499,6 +22757,7 @@ DvtChartAxisRenderer._addCommonAxisAttributes = function(axisOptions, type, char
 
   axisOptions['zoomAndScroll'] = DvtChartTypeUtils.isPolar(chart) ? 'off' : options['zoomAndScroll'];
   axisOptions['_isOverview'] = DvtChartTypeUtils.isOverview(chart);
+  axisOptions['_duringZoomAndScroll'] = options['_duringZoomAndScroll'];
 
   // Data Axis Support
   if (type != 'x' || !DvtChartAxisUtils.hasGroupAxis(chart)) {
@@ -22640,14 +22899,20 @@ DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOpti
   // size is explicitly specified
 
   else if (axisSize != null) {
-    if (isHoriz)
-      preferredHeight = DvtChartStyleUtils.getSizeInPixels(axisSize, totalAvailSpace.h) - gap;
-    else
+    if (!isHoriz) {
       preferredWidth = DvtChartStyleUtils.getSizeInPixels(axisSize, totalAvailSpace.w) - gap;
+      if (maxSize != null)
+        preferredWidth = Math.min(preferredWidth, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.w) - gap);
+    }
+    else {
+      preferredHeight = DvtChartStyleUtils.getSizeInPixels(axisSize, totalAvailSpace.h) - gap;
+      if (maxSize != null)
+        preferredHeight = Math.min(preferredHeight, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.h) - gap);
+    }
   }
 
   // during animation, reuse the previous axis size
-  else if (chart.getOptions()['_duringAnimation']) {
+  else if (chart.getOptions()['_duringZoomAndScroll'] && oldAxis) {
     if (isHoriz) {
       // The axis overflow amount has to be maintained to prevent jumpy animation
       var isR2L = dvt.Agent.isRightToLeft(chart.getCtx());
@@ -22662,6 +22927,7 @@ DvtChartAxisRenderer._getPreferredSize = function(chart, axis, oldAxis, axisOpti
 
   else {
     // last option: use axis.getPreferredSize based on the maxSize
+    maxSize = maxSize == null ? DvtChartAxisRenderer._DEFAULT_AXIS_MAX_SIZE : maxSize;
     if (isHoriz)
       return axis.getPreferredSize(axisOptions, availSpace.w, DvtChartStyleUtils.getSizeInPixels(maxSize, totalAvailSpace.h) - gap);
     else
@@ -22836,6 +23102,12 @@ dvt.Obj.createSubclass(DvtChartLegendRenderer, dvt.Obj);
 /** @private */
 DvtChartLegendRenderer._DEFAULT_LINE_WIDTH_WITH_MARKER = 2;
 
+/** @private */
+DvtChartLegendRenderer._DEFAULT_MAX_SIZE = 0.3;
+
+/** @private */
+DvtChartLegendRenderer._PIE_SIZE_RATIO = 1.2;
+
 /**
  * Renders legend and updates the available space.
  * @param {dvt.Chart} chart The chart being rendered.
@@ -22908,8 +23180,20 @@ DvtChartLegendRenderer.render = function(chart, container, availSpace) {
       actualSize = new dvt.Dimension(DvtChartStyleUtils.getSizeInPixels(legendOptions['size'], availSpace.w), availSpace.h);
   }
   else { // use preferred size
-    var maxWidth = isHoriz ? availSpace.w : DvtChartStyleUtils.getSizeInPixels(legendOptions['maxSize'], availSpace.w);
-    var maxHeight = isHoriz ? DvtChartStyleUtils.getSizeInPixels(legendOptions['maxSize'], availSpace.h) : availSpace.h;
+    var maxSize = legendOptions['maxSize'];
+    if (maxSize == null) {
+      maxSize = DvtChartLegendRenderer._DEFAULT_MAX_SIZE;
+
+      // Pie charts are usually almost square in the amount of space it takes, so we can allocate more space to the
+      // legend if the legend needs it.
+      if (DvtChartTypeUtils.isPie(chart)) {
+        var availMaxSize = 1 - DvtChartLegendRenderer._PIE_SIZE_RATIO * (isHoriz ? availSpace.w / availSpace.h : availSpace.h / availSpace.w);
+        maxSize = Math.max(maxSize, availMaxSize);
+      }
+    }
+
+    var maxWidth = isHoriz ? availSpace.w : DvtChartStyleUtils.getSizeInPixels(maxSize, availSpace.w);
+    var maxHeight = isHoriz ? DvtChartStyleUtils.getSizeInPixels(maxSize, availSpace.h) : availSpace.h;
     actualSize = legend.getPreferredSize(legendOptions, maxWidth, maxHeight);
   }
 
@@ -22970,8 +23254,6 @@ DvtChartLegendRenderer._addLegendData = function(chart, legendOptions) {
   if (refObjItems.length > 0) {
     var refObjSection = legendOptions['referenceObjectSection'];
     refObjSection['items'] = refObjItems;
-    if (legendOptions['referenceObjectTitle']) // maintain this attr for backwards compat
-      refObjSection['title'] = legendOptions['referenceObjectTitle'];
     legendOptions['sections'].push(refObjSection); // add Reference Objects as the last section
     delete legendOptions['referenceObjectSection'];
   }
@@ -23155,10 +23437,10 @@ DvtChartLegendRenderer._createLegendItem = function(chart, seriesIndex) {
   legendItem['color'] = DvtChartStyleUtils.getColor(chart, seriesIndex);
   legendItem['borderColor'] = DvtChartStyleUtils.getBorderColor(chart, seriesIndex);
   legendItem['pattern'] = DvtChartStyleUtils.getPattern(chart, seriesIndex);
-  legendItem['style'] = seriesType == 'area' ? DvtChartStyleUtils.getAreaStyle(chart, seriesIndex) : DvtChartStyleUtils.getStyle(chart, seriesIndex);
-  legendItem['className'] = seriesType == 'area' ? DvtChartStyleUtils.getAreaClassName(chart, seriesIndex) : DvtChartStyleUtils.getClassName(chart, seriesIndex);
-  legendItem['markerStyle'] = DvtChartStyleUtils.getMarkerStyle(chart, seriesIndex);
-  legendItem['markerClassName'] = DvtChartStyleUtils.getMarkerClassName(chart, seriesIndex);
+  legendItem['svgStyle'] = seriesType == 'area' ? DvtChartStyleUtils.getAreaStyle(chart, seriesIndex) : DvtChartStyleUtils.getStyle(chart, seriesIndex);
+  legendItem['svgClassName'] = seriesType == 'area' ? DvtChartStyleUtils.getAreaClassName(chart, seriesIndex) : DvtChartStyleUtils.getClassName(chart, seriesIndex);
+  legendItem['markerSvgStyle'] = DvtChartStyleUtils.getMarkerStyle(chart, seriesIndex);
+  legendItem['markerSvgClassName'] = DvtChartStyleUtils.getMarkerClassName(chart, seriesIndex);
 
   // Action, popup, drill, and tooltip support
   legendItem['action'] = seriesItem['action'];
@@ -23199,8 +23481,8 @@ DvtChartLegendRenderer._getRefObjItems = function(chart) {
       'categories': DvtChartRefObjUtils.getRefObjCategories(refObj),
       'categoryVisibility': DvtChartRefObjUtils.isObjectRendered(chart, refObj) ? 'visible' : 'hidden',
       'shortDesc': refObj['shortDesc'],
-      'style': refObj['style'],
-      'className': refObj['className']
+      'svgStyle': (refObj['style'] || refObj['svgStyle']),
+      'svgClassName': (refObj['className'] || refObj['svgClassName'])
     });
   }
 
@@ -23226,9 +23508,8 @@ DvtChartPlotAreaRenderer._MIN_CHARS_DATA_LABEL = 3; // minimum number of chars t
 /**
  * The minimum number of data points after which data filtering will be enabled for scatter and bubble charts.
  * @const
- * @private
  */
-DvtChartPlotAreaRenderer._FILTER_THRESHOLD_SCATTER_BUBBLE = 10000;
+DvtChartPlotAreaRenderer.FILTER_THRESHOLD_SCATTER_BUBBLE = 10000;
 
 /**
  * Renders the plot area into the available space.
@@ -23479,7 +23760,8 @@ DvtChartPlotAreaRenderer._renderGridline = function(chart, container, position, 
   }
   else if (position == 'tangential') {
     line = new dvt.Line(context, 0, 0, chart.getRadius() * Math.sin(coord), -chart.getRadius() * Math.cos(coord));
-    if (coord % Math.PI / 2 < 0.01 && usePixelHinting) // use pixel hinting at 0, 90, 180, and 270 degrees
+    var mod = coord % (Math.PI / 2); // use pixel hinting at 0, 90, 180, and 270 degrees
+    if ((mod < 0.001 || mod > Math.PI / 2 - 0.001) && usePixelHinting)
       line.setPixelHinting(true);
 
     line.setTranslate(availSpace.x + availSpace.w / 2, availSpace.y + availSpace.h / 2);
@@ -23711,6 +23993,9 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
  */
 DvtChartPlotAreaRenderer._renderDataLabelForMarker = function(chart, container, marker) {
   var logicalObject = chart.getEventManager().getLogicalObject(marker);
+  if (!logicalObject)
+    return;
+
   var seriesIndex = logicalObject.getSeriesIndex();
   var groupIndex = logicalObject.getGroupIndex();
   var itemIndex = logicalObject.getNestedDataItemIndex();
@@ -23868,7 +24153,7 @@ DvtChartPlotAreaRenderer._getMarkerInfo = function(chart, seriesIndex, groupInde
     return null;
 
   // Filter markers to optimize rendering
-  if (DvtChartPlotAreaRenderer._isDataItemFiltered(chart, seriesIndex, groupIndex))
+  if (DvtChartDataUtils.isDataItemFiltered(chart, seriesIndex, groupIndex))
     return null;
 
   // Determine whether a visible marker is to be displayed
@@ -23900,7 +24185,7 @@ DvtChartPlotAreaRenderer._getMarkerInfo = function(chart, seriesIndex, groupInde
   if (!bMarkerDisplayed) {
     if (DvtChartTypeUtils.isSpark(chart))
       return null;
-    else if ((options['_duringAnimation'] || DvtChartTypeUtils.isOverview(chart)) &&
+    else if ((options['_duringZoomAndScroll'] || DvtChartTypeUtils.isOverview(chart)) &&
             !DvtChartDataUtils.isDataSelected(chart, seriesIndex, groupIndex, itemIndex))
       return null;
   }
@@ -24134,7 +24419,7 @@ DvtChartPlotAreaRenderer._getRangeMarkersForSeries = function(chart, seriesIndex
   // Loop through the groups in the series
   for (var groupIndex = 0; groupIndex < numGroups; groupIndex++) {
     // Filter markers to optimize rendering
-    if (DvtChartPlotAreaRenderer._isDataItemFiltered(chart, seriesIndex, groupIndex))
+    if (DvtChartDataUtils.isDataItemFiltered(chart, seriesIndex, groupIndex))
       continue;
 
     // Skip if not visible
@@ -24169,7 +24454,7 @@ DvtChartPlotAreaRenderer._getRangeMarkersForSeries = function(chart, seriesIndex
     }
 
     // If the chart is inside overview or in the middle of animation, don't render invisible markers unless the marker is selected.
-    if ((options['_duringAnimation'] || DvtChartTypeUtils.isOverview(chart) || DvtChartTypeUtils.isSpark(chart)) &&
+    if ((options['_duringZoomAndScroll'] || DvtChartTypeUtils.isOverview(chart) || DvtChartTypeUtils.isSpark(chart)) &&
         !bMarkerDisplayed && !DvtChartDataUtils.isDataSelected(chart, seriesIndex, groupIndex))
       continue;
 
@@ -24224,12 +24509,25 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
   var isR2L = dvt.Agent.isRightToLeft(chart.getCtx());
   var hasStackLabel = DvtChartStyleUtils.isStackLabelRendered(chart);
   var isStacked = DvtChartTypeUtils.isStacked(chart);
+  var innerColor = DvtChartStyleUtils.getSelectedInnerColor(chart);
+  var outerColor = DvtChartStyleUtils.getSelectedOuterColor(chart);
+  var duringZoomAndScroll = chart.getOptions()['_duringZoomAndScroll'];
+  var groupWidth = DvtChartStyleUtils.getGroupWidth(chart);
 
   // Iterate through the data
-  for (var groupIndex = 0; groupIndex < DvtChartDataUtils.getGroupCount(chart); groupIndex++) {
+  for (var seriesIndex = 0; seriesIndex < DvtChartDataUtils.getSeriesCount(chart); seriesIndex++) {
+    if (DvtChartStyleUtils.getSeriesType(chart, seriesIndex) != 'bar')
+      continue;
 
-    for (var seriesIndex = 0; seriesIndex < DvtChartDataUtils.getSeriesCount(chart); seriesIndex++) {
-      if (!DvtChartDataUtils.isBLACItemInViewport(chart, seriesIndex, groupIndex) || DvtChartStyleUtils.getSeriesType(chart, seriesIndex) != 'bar')
+    DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
+
+    var pathCmd = ''; // path command for optimized rendering during zoom & scroll
+    var itemStyleSet = chart.getOptionsCache().getFromCachedMap('itemStyleSet', seriesIndex);
+
+    var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, seriesIndex);
+    for (var groupIndex = minMaxGroupIndex['min'] - 1; groupIndex <= minMaxGroupIndex['max'] + 1; groupIndex++) {
+      if (DvtChartDataUtils.isDataItemFiltered(chart, seriesIndex, groupIndex) ||
+          !DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex))
         continue;
 
       var barInfo = DvtChartDataUtils.getBarInfo(chart, seriesIndex, groupIndex, availSpace);
@@ -24264,8 +24562,18 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
       var shape;
       if (bPolar)
         shape = new DvtChartPolarBar(chart, axisCoord, baseCoord, yCoord, x1, x2, availSpace);
-      else
-        shape = new DvtChartBar(chart, axisCoord, baseCoord, yCoord, x1, x2);
+      else {
+        // Optimize rendering during zoom & scroll by drawing all the bars belonging to one series as a single path.
+        // If the items in the series have custom styles, we can't use this optimization.
+        var bOptimize = duringZoomAndScroll && groupWidth < 5 && !itemStyleSet;
+        shape = new DvtChartBar(chart, axisCoord, baseCoord, yCoord, x1, x2, bOptimize);
+        if (bOptimize) {
+          var bbox = shape.getBoundingBox();
+          pathCmd += dvt.PathUtils.moveTo(bbox.x, bbox.y) + dvt.PathUtils.horizontalLineTo(bbox.x + bbox.w) +
+              dvt.PathUtils.verticalLineTo(bbox.y + bbox.h) + dvt.PathUtils.horizontalLineTo(bbox.x) + dvt.PathUtils.closePath();
+          continue;
+        }
+      }
       container.addChild(shape);
 
       if (DvtChartStyleUtils.isSelectable(chart, seriesIndex, groupIndex))
@@ -24283,11 +24591,8 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
           stroke = new dvt.SolidStroke(borderColor, null, borderWidth);
       }
 
-      var dataColor = DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex);
-      var innerColor = DvtChartStyleUtils.getSelectedInnerColor(chart);
-      var outerColor = DvtChartStyleUtils.getSelectedOuterColor(chart);
-
       // Apply the fill, stroke, and selection colors
+      var dataColor = DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex);
       var className = DvtChartStyleUtils.getClassName(chart, seriesIndex, groupIndex);
       var style = DvtChartStyleUtils.getStyle(chart, seriesIndex, groupIndex);
       shape.setStyleProperties(fill, stroke, dataColor, innerColor, outerColor, className, style);
@@ -24320,6 +24625,29 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
         DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, null, null, true);
       }
     }
+
+    if (pathCmd) {
+      // If optimizing for zoom & scroll, create the path and set the series style properties
+      var path = new dvt.Path(chart.getCtx(), pathCmd);
+
+      var seriesColor = DvtChartStyleUtils.getColor(chart, seriesIndex);
+      path.setSolidFill(seriesColor);
+
+      var seriesBorderColor = DvtChartStyleUtils.getBorderColor(chart, seriesIndex);
+      if (seriesBorderColor) {
+        var seriesBorderWidth = DvtChartStyleUtils.getBorderWidth(chart, seriesIndex);
+        path.setSolidStroke(seriesBorderColor, null, seriesBorderWidth);
+      }
+
+      var seriesClassName = DvtChartStyleUtils.getClassName(chart, seriesIndex);
+      var seriesStyle = DvtChartStyleUtils.getStyle(chart, seriesIndex);
+      path.setClassName(seriesClassName).setStyle(seriesStyle);
+
+      if (bPixelSpacing)
+        path.setPixelHinting(true);
+
+      container.addChild(path);
+    }
   }
 };
 
@@ -24340,20 +24668,19 @@ DvtChartPlotAreaRenderer._renderStock = function(chart, container, availSpace) {
     return;
 
   // Iterate through the data
-  for (var groupIndex = 0; groupIndex < DvtChartDataUtils.getGroupCount(chart); groupIndex++) {
-    if (!DvtChartDataUtils.isBLACItemInViewport(chart, 0, groupIndex))
+  var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, 0);
+  for (var groupIndex = minMaxGroupIndex['min'] - 1; groupIndex <= minMaxGroupIndex['max'] + 1; groupIndex++) {
+    if (!DvtChartStyleUtils.isDataItemRendered(chart, 0, groupIndex))
       continue;
 
-    // Get the axis values
-    var xValue = DvtChartDataUtils.getXValue(chart, 0, groupIndex);
     var dataItem = DvtChartDataUtils.getDataItem(chart, 0, groupIndex);
-    var openValue, closeValue, lowValue, highValue = null;
-    if (dataItem) {
-      openValue = dataItem['open'];
-      closeValue = dataItem['close'];
-      lowValue = dataItem['low'];
-      highValue = dataItem['high'];
-    }
+    if (!dataItem)
+      continue;
+
+    var openValue = dataItem['open'];
+    var closeValue = dataItem['close'];
+    var lowValue = dataItem['low'];
+    var highValue = dataItem['high'];
 
     var renderRange = lowValue != null && highValue != null;
     // Don't render bars whose value is null
@@ -24361,6 +24688,7 @@ DvtChartPlotAreaRenderer._renderStock = function(chart, container, availSpace) {
       continue;
 
     // Get the position on the x axis and the bar width.
+    var xValue = DvtChartDataUtils.getXValue(chart, 0, groupIndex);
     var xCoord = xAxis.getUnboundedCoordAt(xValue);
     var barWidth = DvtChartStyleUtils.getBarWidth(chart, 0, groupIndex);
 
@@ -24420,22 +24748,22 @@ DvtChartPlotAreaRenderer._renderStock = function(chart, container, availSpace) {
 DvtChartPlotAreaRenderer._renderBoxPlot = function(chart, container, availSpace) {
   var xAxis = chart.xAxis;
 
-  for (var groupIndex = 0; groupIndex < DvtChartDataUtils.getGroupCount(chart); groupIndex++) {
-    for (var seriesIndex = 0; seriesIndex < DvtChartDataUtils.getSeriesCount(chart); seriesIndex++) {
-      if (!DvtChartDataUtils.isBLACItemInViewport(chart, seriesIndex, groupIndex) || DvtChartStyleUtils.getSeriesType(chart, seriesIndex) != 'boxPlot')
+  for (var seriesIndex = 0; seriesIndex < DvtChartDataUtils.getSeriesCount(chart); seriesIndex++) {
+    var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, seriesIndex);
+
+    for (var groupIndex = minMaxGroupIndex['min'] - 1; groupIndex <= minMaxGroupIndex['max'] + 1; groupIndex++) {
+      if (!DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex) || DvtChartStyleUtils.getSeriesType(chart, seriesIndex) != 'boxPlot')
         continue;
 
-      // Get the axis values
-      var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
       var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-      var lowValue, q1Value, q2Value, q3Value, highValue = null;
-      if (dataItem) {
-        lowValue = dataItem['low'];
-        q1Value = dataItem['q1'];
-        q2Value = dataItem['q2'];
-        q3Value = dataItem['q3'];
-        highValue = dataItem['high'];
-      }
+      if (!dataItem)
+        continue;
+
+      var lowValue = dataItem['low'];
+      var q1Value = dataItem['q1'];
+      var q2Value = dataItem['q2'];
+      var q3Value = dataItem['q3'];
+      var highValue = dataItem['high'];
 
       // Don't render anything if the required values aren't specified
       if (lowValue == null || q1Value == null || q2Value == null || q3Value == null || highValue == null)
@@ -24444,13 +24772,14 @@ DvtChartPlotAreaRenderer._renderBoxPlot = function(chart, container, availSpace)
       // Get the position on the x axis and the box width
 
       var boxWidth = DvtChartStyleUtils.getBarWidth(chart, seriesIndex, groupIndex);
-      var offsetMap = DvtChartStyleUtils.getBarCategoryOffsetMap(chart, groupIndex, false);
+      var offsetMap = DvtChartStyleUtils.getBarCategoryOffsetMap(chart, groupIndex);
       var bAssignedToY2 = DvtChartDataUtils.isAssignedToY2(chart, seriesIndex);
       var category = DvtChartDataUtils.getStackCategory(chart, seriesIndex);
       var boxOffset = offsetMap[bAssignedToY2 ? 'y2' : 'y'][category] + boxWidth / 2;
       if (dvt.Agent.isRightToLeft(chart.getCtx()) && DvtChartTypeUtils.isVertical(chart))
         boxOffset *= -1;
 
+      var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
       var xCoord = xAxis.getUnboundedCoordAt(xValue) + boxOffset;
 
       // Get the position on the y axis
@@ -24552,8 +24881,7 @@ DvtChartPlotAreaRenderer._renderLines = function(chart, container, clipGroup, av
       continue;
 
     // Filter points to reduce render time
-    if (!DvtChartTypeUtils.isPolar(chart))
-      DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
+    DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
 
     DvtChartPlotAreaRenderer._renderLinesForSeries(chart, clipGroup, seriesIndex, availSpace);
   }
@@ -24609,7 +24937,6 @@ DvtChartPlotAreaRenderer._renderAreas = function(chart, container, availSpace, i
  */
 DvtChartPlotAreaRenderer._renderAreasForAxis = function(chart, container, areaSeries, baselineCoord, availSpace, isLineWithArea) {
   var bStacked = DvtChartTypeUtils.isStacked(chart);
-  var bPolar = DvtChartTypeUtils.isPolar(chart);
 
   // Create group to clip the areas
   var clippedGroup = DvtChartPlotAreaRenderer.createClippedGroup(chart, container, availSpace);
@@ -24656,8 +24983,7 @@ DvtChartPlotAreaRenderer._renderAreasForAxis = function(chart, container, areaSe
     var type = DvtChartStyleUtils.getLineType(chart, seriesIndex);
 
     // Filter points to reduce render time
-    if (!bPolar)
-      DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
+    DvtChartPlotAreaRenderer._filterPointsForSeries(chart, seriesIndex);
 
     var coords, baseCoords, baseType;
     var isRange = DvtChartStyleUtils.isRangeSeries(chart, seriesIndex);
@@ -24836,7 +25162,7 @@ DvtChartPlotAreaRenderer._filterScatterBubble = function(chart, bSortBySize, ava
 
   // Filter only if there are a sufficient number of data points. The filtering cost has overhead based on the size of
   // the availSpace, and is not generally worthwhile until several thousand markers can be skipped.
-  if (seriesCount * groupCount < DvtChartPlotAreaRenderer._FILTER_THRESHOLD_SCATTER_BUBBLE)
+  if (seriesCount * groupCount < DvtChartPlotAreaRenderer.FILTER_THRESHOLD_SCATTER_BUBBLE)
     return null;
 
   // Gather the marker information objects for all data items.
@@ -24855,7 +25181,7 @@ DvtChartPlotAreaRenderer._filterScatterBubble = function(chart, bSortBySize, ava
   }
 
   // Check the data count again now that obscured series accounted for.
-  if (markerInfos.length < DvtChartPlotAreaRenderer._FILTER_THRESHOLD_SCATTER_BUBBLE)
+  if (markerInfos.length < DvtChartPlotAreaRenderer.FILTER_THRESHOLD_SCATTER_BUBBLE)
     return null;
 
   if (bSortBySize)
@@ -24899,13 +25225,23 @@ DvtChartPlotAreaRenderer._filterScatterBubble = function(chart, bSortBySize, ava
  * @private
  */
 DvtChartPlotAreaRenderer._filterPointsForSeries = function(chart, seriesIndex) {
+  // TODO: implement filtering for range series
+  if (DvtChartTypeUtils.isPolar(chart) || DvtChartStyleUtils.isRangeSeries(chart, seriesIndex))
+    return;
+
   var maxNumPts = chart.__getPlotAreaSpace().w; // one point per pixel
   var seriesItems = DvtChartDataUtils.getSeriesItem(chart, seriesIndex)['items'];
+  var isBar = DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar';
   var axisInfo = chart.xAxis.getInfo();
   var zoomFactor = (axisInfo.getDataMax() - axisInfo.getDataMin()) / (axisInfo.getViewportMax() - axisInfo.getViewportMin());
-  var setSize = Math.round(2 * (seriesItems.length / zoomFactor) / maxNumPts); // pick two points (max and min) from each set
 
-  if (setSize <= 2) {
+  // For line/area, pick two points (max and min) from each set, so each set can cover two pixels.
+  // For bar, only pick the max for each set, so the set size should only cover 1/2 pixel to prevent sparse plot area.
+  var numPixelsPerSet = isBar ? 0.5 : 2;
+  var setSize = zoomFactor ? Math.round(numPixelsPerSet * (seriesItems.length / zoomFactor) / maxNumPts) : 1;
+
+  var minSetSize = isBar ? 2 : 3;
+  if (setSize < minSetSize) {
     // Nothing should be filtered. Clear _filtered flags from previous rendering.
     for (var i = 0; i < seriesItems.length; i++) {
       dataItem = seriesItems[i];
@@ -24925,15 +25261,15 @@ DvtChartPlotAreaRenderer._filterPointsForSeries = function(chart, seriesIndex) {
 
     // Find the extreme points (min/max) of the set
     for (var j = i; j < Math.min(i + setSize, seriesItems.length); j++) {
-      dataValue = DvtChartDataUtils.getValue(chart, seriesIndex, j);
+      dataValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, j);
       dataItem = seriesItems[j];
       if (dataValue == null || dataItem == null)
         continue;
-      if (dataValue > maxValue) {
+      if ((!isBar || dataValue > 0) && (dataValue > maxValue)) { // for bar, unfilter the maxValue only if the dataValue is positive
         maxIndex = j;
         maxValue = dataValue;
       }
-      if (dataValue < minValue) {
+      if ((!isBar || dataValue < 0) && (dataValue < minValue)) { // for bar, unfilter the minValue only if the dataValue is negative
         minIndex = j;
         minValue = dataValue;
       }
@@ -24955,21 +25291,6 @@ DvtChartPlotAreaRenderer._filterPointsForSeries = function(chart, seriesIndex) {
 };
 
 /**
- * Returns whether the data item is filtered.
- * @param {dvt.Chart} chart
- * @param {number} seriesIndex
- * @param {number} groupIndex
- * @return {boolean}
- * @private
- */
-DvtChartPlotAreaRenderer._isDataItemFiltered = function(chart, seriesIndex, groupIndex) {
-  var dataItem = DvtChartDataUtils.getDataItem(chart, seriesIndex, groupIndex);
-  if (dataItem && dataItem['_filtered'])
-    return true;
-  return false;
-};
-
-/**
  * Creates and returns the coordinates for the specified series.
  * @param {dvt.Chart} chart The chart being rendered.
  * @param {number} seriesIndex The series being rendered.
@@ -24986,9 +25307,11 @@ DvtChartPlotAreaRenderer._getCoordsForSeries = function(chart, seriesIndex, avai
 
   // Loop through the groups
   var coords = [];
-  for (var groupIndex = 0; groupIndex < DvtChartDataUtils.getGroupCount(chart); groupIndex++) {
+  var minMaxGroupIndex = DvtChartDataUtils.getViewportMinMaxGroupIndex(chart, seriesIndex);
+  for (var groupIndex = minMaxGroupIndex['min'] - 1; groupIndex <= minMaxGroupIndex['max'] + 1; groupIndex++) {
     var group = DvtChartDataUtils.getGroup(chart, groupIndex);
-    var dataValue = DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex);
+    if (group == null)
+      continue;
 
     // Get the axis values
     var xValue = DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex);
@@ -24998,11 +25321,11 @@ DvtChartPlotAreaRenderer._getCoordsForSeries = function(chart, seriesIndex, avai
       yValue = DvtChartDataUtils.getLowValue(chart, seriesIndex, groupIndex);
     else if (type == 'high')
       yValue = DvtChartDataUtils.getHighValue(chart, seriesIndex, groupIndex);
-    else if (dataValue != null)
+    else if (DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex) != null)
       yValue = DvtChartDataUtils.getCumulativeValue(chart, seriesIndex, groupIndex);
 
     // A null or undefined value begins another line or area and skips this data item
-    if (yValue == null || isNaN(yValue) || !DvtChartDataUtils.isBLACItemInViewport(chart, seriesIndex, groupIndex)) {
+    if (yValue == null || isNaN(yValue) || !DvtChartStyleUtils.isDataItemRendered(chart, seriesIndex, groupIndex)) {
       // Skip this value since it's invalid
       coords.push(new DvtChartCoord(null, null, null, groupIndex, group, false));
       continue;
@@ -25021,7 +25344,7 @@ DvtChartPlotAreaRenderer._getCoordsForSeries = function(chart, seriesIndex, avai
       continue;
     }
 
-    var coord = new DvtChartCoord(xCoord, yCoord, yCoord, groupIndex, group, DvtChartPlotAreaRenderer._isDataItemFiltered(chart, seriesIndex, groupIndex));
+    var coord = new DvtChartCoord(xCoord, yCoord, yCoord, groupIndex, group, DvtChartDataUtils.isDataItemFiltered(chart, seriesIndex, groupIndex));
     coords.push(coord);
   }
 
@@ -25109,7 +25432,7 @@ DvtChartPlotAreaRenderer.convertAxisCoord = function(chart, coord, availSpace) {
  */
 DvtChartPlotAreaRenderer._extendClipGroup = function(chart) {
   var hasLineSeries = DvtChartTypeUtils.hasLineSeries(chart) || DvtChartTypeUtils.hasLineWithAreaSeries(chart);
-  if (hasLineSeries) {
+  if (hasLineSeries && !DvtChartTypeUtils.isSpark(chart)) { // Spark chart is already extended
     var lineWidth = DvtChartStyleUtils.getLineWidth(chart);
     var hasEdgeData = function(axis) {
       var axisInfo = axis.getInfo();
@@ -25469,8 +25792,8 @@ DvtChartRefObjRenderer._createReferenceArea = function(refObj, chart, plotAreaBo
   var bRadial = position == 'radial';
   var color = DvtChartRefObjUtils.getColor(refObj);
   var lineType = DvtChartRefObjUtils.getLineType(refObj);
-  var style = refObj['style'];
-  var className = refObj['className'];
+  var style = refObj['style'] || refObj['svgStyle'];
+  var className = refObj['className'] || refObj['svgClassName'];
   var shape;
 
   if (refObj['items'] != null && (axis == chart.yAxis || axis == chart.y2Axis)) { // REF AREA WITH MULTIPLE VALUES
@@ -25593,8 +25916,8 @@ DvtChartRefObjRenderer._createReferenceLine = function(refObj, chart, plotAreaBo
   var lineType = DvtChartRefObjUtils.getLineType(refObj);
   var color = DvtChartRefObjUtils.getColor(refObj);
   var stroke = new dvt.SolidStroke(color, 1, lineWidth);
-  var style = refObj['style'];
-  var className = refObj['className'];
+  var style = refObj['style'] || refObj['svgStyle'];
+  var className = refObj['className'] || refObj['svgClassName'];
   if (refObj['lineStyle'])
     stroke.setStyle(dvt.Stroke.convertTypeString(refObj['lineStyle']));
 
@@ -25705,7 +26028,7 @@ DvtChartRefObjRenderer._getAxisCoord = function(chart, axis, value) {
 
   return null;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Spark chart component.  This chart should never be instantiated directly.  Use the
@@ -26133,7 +26456,6 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
   chartOptions['translations'] = options['translations'];
 
   //**************************** Data Attributes *****************************/
-  var bFloatingBar = (options['type'] == 'floatingBar');
   var chartItems = [];
 
   // Loop through the data
@@ -26148,16 +26470,10 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
     // Parse the spark data item properties
     var chartItem = {};
     if (item instanceof Object) {
-      if (bFloatingBar) {
-        // floating bar support for backwards compat
-        chartItem['low'] = item['floatValue'];
-        chartItem['high'] = item['floatValue'] + item['value'];
-      }
-      else {
-        chartItem['value'] = item['value'];
-        chartItem['low'] = item['low'];
-        chartItem['high'] = item['high'];
-      }
+      chartItem['value'] = item['value'];
+      chartItem['low'] = item['low'];
+      chartItem['high'] = item['high'];
+
 
       // Time Axis Support
       if (item['date']) {
@@ -26180,11 +26496,11 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
       if (item['markerSize'])
         chartItem['markerSize'] = item['markerSize'];
 
-      if (item['className'])
-        chartItem['className'] = item['className'];
+      if (item['className'] || item['svgClassName'])
+        chartItem['svgClassName'] = item['className'] || item['svgClassName'];
 
-      if (item['style'])
-        chartItem['style'] = item['style'];
+      if (item['style'] || item['svgStyle'])
+        chartItem['svgStyle'] = item['style'] || item['svgStyle'];
     }
     else {
       // Item is just the value, wrap and push onto the array.
@@ -26234,7 +26550,7 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
   }
 
   // Add the data items into a data object
-  chartOptions['series'] = [{'items': chartItems, 'areaColor': options['areaColor'], 'className': options['className'], 'style': options['style'], 'areaClassName': options['areaClassName'], 'areaStyle': options['areaStyle'] }];
+  chartOptions['series'] = [{'items': chartItems, 'areaColor': options['areaColor'], 'svgClassName': (options['className'] || options['svgClassName']), 'svgStyle': (options['style'] || options['svgStyle']), 'areaSvgClassName': (options['areaClassName'] || options['areaSvgClassName']), 'areaStyle': (options['areaStyle'] || options['areaSvgStyle'])}];
 
   // Reference Objects
   if (options['referenceObjects'])
@@ -26249,7 +26565,7 @@ DvtSparkChartRenderer._convertOptionsObj = function(spark) {
     barSpacing = dvt.Agent.getDevicePixelRatio() > 1 ? 'subpixel' : 'pixel';
   chartOptions['__sparkBarSpacing'] = barSpacing;
 
-  chartOptions['type'] = bFloatingBar ? 'bar' : options['type'];
+  chartOptions['type'] = options['type'];
   chartOptions['animationOnDataChange'] = options['animationOnDataChange'];
   chartOptions['animationOnDisplay'] = options['animationOnDisplay'];
   chartOptions['emptyText'] = options['emptyText'];

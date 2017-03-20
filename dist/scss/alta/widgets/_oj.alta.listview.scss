@@ -23,6 +23,11 @@
 @if $includeListViewClasses != false {
   @include module-include-once("alta.listview") {
 
+        /* Styling addition for group items */
+        .oj-listview-group-item {
+            padding-top: 0.5715rem;
+            padding-bottom: 0.5715rem;
+        }
 
         /* Styling for the expand icon */
         .oj-listview-expand-icon{

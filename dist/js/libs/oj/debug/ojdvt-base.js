@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation', 'ojs/internal-deps/dvt/DvtToolkit', 'ojdnd', 'promise'], function(oj, $, comp, val, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number', 'ojs/internal-deps/dvt/DvtToolkit', 'ojdnd', 'promise'], function(oj, $, comp, val, dvt)
 {
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
@@ -303,22 +303,13 @@ oj.ColorAttributeGroupHandler = function(matchRules) {
   else {
     // Process the colors from the skin if not done already.
     if(!oj.ColorAttributeGroupHandler._colors) {
-      oj.ColorAttributeGroupHandler._colors = [];
-
       // Process the colors from the CSS.
-      var attrGpsDiv = $(document.createElement("div"));
-      attrGpsDiv.attr("style", "display:none;");
-      attrGpsDiv.attr("id", "attrGps");
-      $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
-      for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
-        var childDiv = $(document.createElement("div"));
-        childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
-        attrGpsDiv.append(childDiv); // @HTMLUpdateOK
-        var color = childDiv.css('color');
-        if (color)
-          oj.ColorAttributeGroupHandler._colors.push(color);
+      // To improve performance, append the divs for each style class first then process the colors for each div.
+      var attrGpsDiv = oj.ColorAttributeGroupHandler.createAttrDiv(); 
+      if (attrGpsDiv) {
+        oj.ColorAttributeGroupHandler.processAttrDiv(attrGpsDiv);
+        attrGpsDiv.remove();
       }
-      attrGpsDiv.remove();
     }
 
     // Clone and use the processed colors.
@@ -354,12 +345,51 @@ oj.ColorAttributeGroupHandler.prototype.getValueRamp = function() {
   return this._attributeValues;
 };
 
+/**
+ * Creates an element and appends a div for each style class
+ * @returns {Object} The element containing divs for each style class
+ * @static
+ * @export
+ */
+oj.ColorAttributeGroupHandler.createAttrDiv = function() {
+  if (oj.ColorAttributeGroupHandler._colors)
+    return null;
+    
+  var attrGpsDiv = $(document.createElement("div"));
+  attrGpsDiv.attr("style", "display:none;");
+  attrGpsDiv.attr("id", "attrGps");
+  $(document.body).append(attrGpsDiv); // @HTMLUpdateOK
+  for (var i = 0; i < oj.ColorAttributeGroupHandler._STYLE_CLASSES.length; i++) {
+    var childDiv = $(document.createElement("div"));
+    childDiv.addClass(oj.ColorAttributeGroupHandler._STYLE_CLASSES[i]);
+    attrGpsDiv.append(childDiv); // @HTMLUpdateOK
+  } 
+  return attrGpsDiv;
+};
+
+/**
+ * Processes the colors for each div on the given element
+ * @param {Object} attrGpsDiv The element containing divs for each style class
+ * @static
+ * @export
+ */
+oj.ColorAttributeGroupHandler.processAttrDiv = function(attrGpsDiv) {
+  oj.ColorAttributeGroupHandler._colors = [];
+  
+  var childDivs = attrGpsDiv.children();
+  for (var i = 0; i < childDivs.length; i++) {
+    var childDiv = $(childDivs[i]);
+    var color = childDiv.css('color');
+    if (color)
+      oj.ColorAttributeGroupHandler._colors.push(color);
+  }
+};
 var DvtStyleProcessor = {
   'CSS_TEXT_PROPERTIES':
     function(cssDiv) {
       var ignoreProperties = {};
       if (cssDiv) {
-        if (cssDiv.hasClass("oj-gauge-metric-label") && cssDiv.hasClass(cssDiv.parentNode, "oj-ledgauge")) {
+        if (cssDiv.hasClass("oj-gauge-metric-label")) {
           // Ignored because the size and color are fit to shape and based on background color.
           ignoreProperties['font-size'] = true;
           ignoreProperties['color'] = true;
@@ -378,10 +408,6 @@ var DvtStyleProcessor = {
   'CSS_BACKGROUND_PROPERTIES':
     function(cssDiv, styleClass, property, path) {
       return DvtStyleProcessor._buildCssBackgroundPropertiesObject(cssDiv);
-    },
-  'CSS_URL':
-    function(cssDiv) {
-      return DvtStyleProcessor._parseUrl(cssDiv);
     }
 };
 
@@ -403,18 +429,6 @@ DvtStyleProcessor._styleCache = {};
 
 DvtStyleProcessor.defaultStyleProcessor = function(cssDiv, property) {
   return cssDiv.css(property);
-};
-
-/**
- * @param {Object} cssDiv The element with style class or with some default style
- * @private
- */
-DvtStyleProcessor._parseUrl = function(cssDiv) {
-  var url = cssDiv.css('background-image');
-  if (url && url.indexOf('url(') !== -1)
-    return url.slice(url.indexOf('url(')+4, url.length-1).replace(/"/g,"");
-  else
-    return url;
 };
 
 /**
@@ -482,57 +496,85 @@ DvtStyleProcessor._buildTextCssPropertiesObject = function(cssDiv, ignorePropert
  * @param {Object} options The options object to merge CSS properties with
  * @param {Array} componentClasses The style classes associated with the component
  * @param {Object} childClasses Style classes associated with a component's children
- * @private
  */
 DvtStyleProcessor.processStyles = function(element, options, componentClasses, childClasses)
 {
-  // Add the component style classes to a hidden dummy div
-  var outerDummyDiv = $(document.createElement("div"));
-  outerDummyDiv.attr("style", "display:none;");
-  element.append(outerDummyDiv); // @HTMLUpdateOK
+  var outerDummyDiv = null;
+  var innerDummyDiv = null;
+  
   var styleClasses = '';
   for (var i=0; i<componentClasses.length; i++)
     styleClasses = styleClasses + componentClasses[i] + " ";
-  outerDummyDiv.attr("class", styleClasses);
-  $(document.body).append(outerDummyDiv); // @HTMLUpdateOK
-
-  // Add an inner dummy div to overwrite inherited values and prevent populating options object with them
-  var innerDummyDiv = $(document.createElement("div"));
-  innerDummyDiv.css("font-size", DvtStyleProcessor._INHERITED_FONT_SIZE);
-  innerDummyDiv.css("color", DvtStyleProcessor._INHERITED_FONT_COLOR);
-  innerDummyDiv.css("font-weight", DvtStyleProcessor._INHERITED_FONT_WEIGHT);
-  innerDummyDiv.css("font-style", DvtStyleProcessor._INHERITED_FONT_STYLE);
-  outerDummyDiv.append(innerDummyDiv); // @HTMLUpdateOK
-
+  
+  var styleDefinitions = {};
+  var styleDivs = {}
+  
   for (var styleClass in childClasses) {
     // Retrieve the definitions for the styleClass. Convert to an array if not already.
     var definitions = childClasses[styleClass];
     if(!(definitions instanceof Array))
       definitions = [definitions];
-
-    // Process the style definitions
-    DvtStyleProcessor._processStyle(innerDummyDiv, options, styleClass, definitions);
+    
+    // Performance: Only create these divs if we need to process uncached definitions
+    var hasUncachedProperty = DvtStyleProcessor._hasUncachedProperty(styleClass, definitions);
+    if (!innerDummyDiv && !outerDummyDiv && hasUncachedProperty) {
+      // Add the component style classes to a hidden dummy div
+      outerDummyDiv = $(document.createElement("div"));
+      outerDummyDiv.attr("style", "display:none;");
+      element.append(outerDummyDiv); // @HTMLUpdateOK
+      outerDummyDiv.attr("class", styleClasses);
+      $(document.body).append(outerDummyDiv); // @HTMLUpdateOK
+      
+      // Add an inner dummy div to overwrite inherited values and prevent populating options object with them
+      innerDummyDiv = $(document.createElement("div"));
+      innerDummyDiv.css("font-size", DvtStyleProcessor._INHERITED_FONT_SIZE);
+      innerDummyDiv.css("color", DvtStyleProcessor._INHERITED_FONT_COLOR);
+      innerDummyDiv.css("font-weight", DvtStyleProcessor._INHERITED_FONT_WEIGHT);
+      innerDummyDiv.css("font-style", DvtStyleProcessor._INHERITED_FONT_STYLE);
+      outerDummyDiv.append(innerDummyDiv); // @HTMLUpdateOK    
+    }
+    
+    // store style definitions to avoid recalculation in the next loop
+    styleDefinitions[styleClass] = definitions;
+    
+    // create cssDivs for styles to be resolved during processing where necessary 
+    if (hasUncachedProperty) 
+      styleDivs[styleClass] = DvtStyleProcessor._createStyleDivs(innerDummyDiv, styleClass, definitions);
   }
-
+  
+  // Performance: Process color attribute groups for components along with the component styles
+  var attrGpsDiv = oj.ColorAttributeGroupHandler.createAttrDiv(); 
+  
+  for (var styleClass in childClasses) {
+    DvtStyleProcessor._processStyle(styleDivs[styleClass], options, styleClass, styleDefinitions[styleClass]);
+  }
+  
+  // Performance: Process color attribute groups for components along with the component styles
+  if (attrGpsDiv) {
+    oj.ColorAttributeGroupHandler.processAttrDiv(attrGpsDiv);
+    attrGpsDiv.remove();
+  }
+  
   // Remove the dummy div when complete
-  outerDummyDiv.remove();
+  if (outerDummyDiv)
+    outerDummyDiv.remove();
 };
 
 /**
- * Resolves the css properties for a specified style class.
- * @param {Object} element The DOM node to add CSS styles to for processing.
- * @param {Object} options The options object to merge CSS properties with.
+ * Creates and returns a cssDiv for the specified style class if there are definitions that need to be evaluated
+ * @param {Object} parentElement The parent DOM node of the element that will be created to add CSS styles to for processing.
  * @param {string} styleClass The style class.
  * @param {Array} definitions Array of maps of CSS style attribute and values to process.
+ * @return {Object} The created cssDiv
  * @private
  */
-DvtStyleProcessor._processStyle = function(element, options, styleClass, definitions)
+DvtStyleProcessor._createStyleDivs= function(parentElement, styleClass, definitions)
 {
   // Ensure an entry for the styleClass exists in the cache.
   if(!DvtStyleProcessor._styleCache[styleClass])
     DvtStyleProcessor._styleCache[styleClass] = {};
 
-  // Process each definition.
+  // Create a cssDiv for each definition.
   var cssDiv = null;
   for (var i=0;i<definitions.length; i++) {
     var definition = definitions[i];
@@ -545,9 +587,32 @@ DvtStyleProcessor._processStyle = function(element, options, styleClass, definit
         if(!cssDiv) {
           cssDiv = $(document.createElement("div"));
           cssDiv.addClass(styleClass);
-          element.append(cssDiv); // @HTMLUpdateOK
+          parentElement.append(cssDiv); // @HTMLUpdateOK
         }
+      }
+    }
+  }
+  return cssDiv;  
+};
 
+/**
+ * Resolves the css properties for a specified style class.
+ * @param {Object} cssDiv The DOM node with addeed CSS styles to process.
+ * @param {Object} options The options object to merge CSS properties with.
+ * @param {string} styleClass The style class.
+ * @param {Array} definitions Array of maps of CSS style attribute and values to process.
+ * @private
+ */
+DvtStyleProcessor._processStyle = function(cssDiv, options, styleClass, definitions)
+{
+  for (var i=0;i<definitions.length; i++) {
+    var definition = definitions[i];
+    var property = definition['property'];
+    if(property) {
+      // Check if the style cache already has a resolved copy of the value
+      var value = DvtStyleProcessor._styleCache[styleClass][property];
+      
+      if(typeof value == 'undefined' && cssDiv) {
         // Resolve and store in the cache.
         value = DvtStyleProcessor._resolveStyle(cssDiv, property);
         DvtStyleProcessor._styleCache[styleClass][property] = value;
@@ -560,24 +625,19 @@ DvtStyleProcessor._processStyle = function(element, options, styleClass, definit
         var handler = DvtStyleProcessor[property];
         if(handler != null) {
           var optionsValue = path.getValue();
-          // For urls, just overwrite the previous value. DVTs don't currently
-          // expose options for urls coming from the CSS so we don't need
-          // to worry about merging.
-          if (property !== 'CSS_URL') {
-            var strValue = '';
-            if (optionsValue != null) {
-              var strOptionsValue = DvtStyleProcessor._getStyleString(optionsValue);
-              for (var attr in value) {
-                if (strOptionsValue.indexOf(attr) === -1)
-                  strValue += attr + ':' + value[attr] + ';';
-              }
-              strValue += strOptionsValue;
-            } else { // still need to convert cached value which is an object to a string
-              for (var attr in value)
+          var strValue = '';
+          if (optionsValue != null) {
+            var strOptionsValue = DvtStyleProcessor._getStyleString(optionsValue);
+            for (var attr in value) {
+              if (strOptionsValue.indexOf(attr) === -1)
                 strValue += attr + ':' + value[attr] + ';';
             }
-            value = strValue;
+            strValue += strOptionsValue;
+          } else { // still need to convert cached value which is an object to a string
+            for (var attr in value)
+              strValue += attr + ':' + value[attr] + ';';
           }
+          value = strValue;
         }
 
         // Override original value only if we have already merged the original value with the new value, such as for
@@ -625,6 +685,29 @@ DvtStyleProcessor._resolveStyle = function(cssDiv, property)
 };
 
 /**
+ * Helper function to verify if any style properties are not in the cache.
+ * @param {string} styleClass The style class.
+ * @param {Array} definitions The array of definitions for the style class.
+ * @return {boolean}
+ * @private
+ */
+DvtStyleProcessor._hasUncachedProperty = function(styleClass, definitions)
+{
+  var styleCache = DvtStyleProcessor._styleCache[styleClass];
+  if (!styleCache)
+    return true;
+    
+  for (var i = 0;i < definitions.length; i++) {
+    var property = definitions[i]['property'];
+    if(property) {
+      var value = styleCache[property];    
+      if(typeof value == 'undefined')
+        return true;
+    }
+  }
+  return false;
+};
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -642,6 +725,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._renderCount = 0;
     this._numDeferredObjs = 0;
     this._optionsCopy = null;
+    this._templateMap = {};
 
     // Append the component style classes to the element
     var componentStyles = this._GetComponentStyleClasses();
@@ -670,8 +754,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._context.setTooltipStyleClass('oj-dvt-tooltip');
     this._context.setDatatipStyleClass('oj-dvt-datatip');
 
+    // Pass back method for cleaning up renderer context
+    this._context.setFixContextCallback(this._FixRendererContext.bind(this));
+
     // Set the root font-family
     this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
+
+    this._context.setCustomElement(this._IsCustomElement());
 
     // Set high contrast mode if needed
     if ($(document.body).hasClass('oj-hicontrast'))
@@ -706,14 +795,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Allow superclass to process root attributes and context menus
     this._super();
 
-    this.element.attr("tabIndex", 0);
-
     // Resize Listener Support
     if(this.options['trackResize'] != 'off') {
       this._addResizeListener();
     }
 
-    this._processOptions();
+    this._ProcessOptions();
 
     // Render the component
     this._Render();
@@ -741,6 +828,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       var subId = this._ConvertLocatorToSubId(locator);
       return automation.getDomElementForSubId(subId);
     }
+    return null;
   },
 
   //** @inheritdoc */
@@ -751,6 +839,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       var subId = automation.getSubIdForDomElement(node);
       return subId ? this._ConvertSubIdToLocator(subId) : null;
     }
+    return null;
   },
 
   /**
@@ -787,7 +876,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @memberof oj.dvtBaseComponent
    */
   _ProcessStyles : function() {
-  	// Process selectors for this component
+    // Process selectors for this component
     DvtStyleProcessor.processStyles(this.element, this.options,
                                     this._GetComponentStyleClasses(),
                                     this._GetChildStyleClasses());
@@ -916,28 +1005,28 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Iso to date converter to be called for JS that requires Dates
     helpers['isoToDateConverter'] = function(input) {
-       if (typeof(input) == 'string') {
-         var dateWithTimeZone = oj.IntlConverterUtils.isoToDate(input);
-         var localIsoTime = dateWithTimeZone.toJSON() ? oj.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
-         return oj.IntlConverterUtils.isoToLocalDate(localIsoTime);
-       }
-       else
-         return input;
-     }
- 
-     // Date to iso converter to be called before passing to the date time converter
-     helpers['dateToIsoWithTimeZoneConverter'] = function(input) {
-       if (input instanceof Date) {
-         var timeZoneOffest = -1*input.getTimezoneOffset();
-         var offsetSign = (timeZoneOffest >= 0 ? "+" : "-");
-         var offsetHour = Math.floor(Math.abs(timeZoneOffest)/60);
-         var offsetMinutes = Math.abs(timeZoneOffest)%60;
-         var isoTimeZone =  offsetSign+(offsetHour.toString().length !== 2 ? "0"+offsetHour : offsetHour)+":"+ (offsetMinutes.toString().length !== 2 ? offsetMinutes+"0" : offsetMinutes);
-         return oj.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
-       }
-       else
-         return input;    
-     }
+      if (typeof(input) == 'string') {
+        var dateWithTimeZone = oj.IntlConverterUtils.isoToDate(input);
+        var localIsoTime = dateWithTimeZone.toJSON() ? oj.IntlConverterUtils.dateToLocalIso(dateWithTimeZone) : input;
+        return oj.IntlConverterUtils.isoToLocalDate(localIsoTime);
+      }
+      else
+        return input;
+    }
+
+    // Date to iso converter to be called before passing to the date time converter
+    helpers['dateToIsoWithTimeZoneConverter'] = function(input) {
+      if (input instanceof Date) {
+        var timeZoneOffest = -1*input.getTimezoneOffset();
+        var offsetSign = (timeZoneOffest >= 0 ? "+" : "-");
+        var offsetHour = Math.floor(Math.abs(timeZoneOffest)/60);
+        var offsetMinutes = Math.abs(timeZoneOffest)%60;
+        var isoTimeZone =  offsetSign+(offsetHour.toString().length !== 2 ? "0"+offsetHour : offsetHour)+":"+ (offsetMinutes.toString().length !== 2 ? offsetMinutes+"0" : offsetMinutes);
+        return oj.IntlConverterUtils.dateToLocalIso(input) + isoTimeZone;
+      }
+      else
+        return input;
+    }
 
     this._context.setLocaleHelpers(helpers);
   },
@@ -960,6 +1049,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Remove DOM resize listener
     this._removeResizeListener();
 
+    this._CleanAllTemplates();
+    
     // Remove children and clean up DOM changes
     this.element.children().remove();
     this.element.removeAttr('role').removeAttr('tabIndex').removeAttr('aria-activedescendant');
@@ -986,7 +1077,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else if(trackResize != 'off' && !this._resizeListener)
       this._addResizeListener();
 
-    this._processOptions();
+    this._ProcessOptions();
 
     // Render the component with the updated options.
     if(this._bUserDrivenChange) {
@@ -1061,13 +1152,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else if (type === 'touchHoldRelease' && this.options['contextMenu']) {
       this._OpenContextMenu($.Event(event['nativeEvent']), 'touch');
     }
-    else if (type === 'ready' && this._numDeferredObjs === 0) {
-      if (this._promiseResolve) {
-        this._promiseResolve(true);
-      }
-      this._ready = true;
-      this._promiseResolve = null;
-      this._promise = null;
+    else if (type === 'ready') {
+      // Handles case where two option sets occur and the second set
+      // containing deferred data. We don't want to prematurely resolve
+      // any when ready promises until the deferred data has finished.
+      if (this._numDeferredObjs === 0)
+        this._MakeReady();
     }
   },
 
@@ -1167,13 +1257,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
         // Skip the resize render if Promises are not fully resolved because
         // the component will be rerendered with the new width/height when all
         // Promises are fully resolved
-        if (!this._optionsCopy)
-          this._renderComponent(null);
+        if (this._numDeferredObjs === 0)
+          this._renderComponent(isResize);
       } else {
         // Component rendering will be done when all Promises are fully resolved
-        var deferredData = this._resolveDeferredData();
-        if (deferredData.length === 0)
-          this._renderComponent(this.options);
+        if (this._resolveDeferredDataItems())
+          this._renderComponent();
       }
 
       this._renderNeeded = false;
@@ -1260,42 +1349,6 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     return null;
   },
 
-
-  /**
-   * Adds getters for the properties on the specified map.
-   * @param {Object|null} map
-   * @memberof oj.dvtBaseComponent
-   * @instance
-   * @protected
-   */
-  _AddAutomationGetters: function(map) {
-    if(!map)
-      return;
-
-    // : Adds legacy getters to the object maps returned by the automation code. These getters are
-    // deprecated and will be removed in 1.2.0.
-    var props = {};
-    for (var key in map) {
-      this._addGetter(map, key, props);
-    }
-    Object.defineProperties(map, props);
-  },
-
-  /**
-   * Adds getter for the specified property on the specified properties map.
-   * @param {Object} map
-   * @param {string} key
-   * @param {Object} props The properties map onto which the getter will be added.
-   * @memberof oj.dvtBaseComponent
-   * @instance
-   * @private
-   */
-  _addGetter: function(map, key, props) {
-    var prefix = (key == 'selected') ? 'is' : 'get';
-    var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
-    props[getterName] = {'value': function() { return map[key] }};
-  },
-
   /**
    * Converts an indexPath array to a string of the form '[index0][index1]...[indexN]'.
    * @param {Array} indexPath
@@ -1375,138 +1428,120 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Returns an array of Promises containing deferred data options for this component.
-   * @return {Array}
+   * Returns an object containing the no clone paths for a component. For example,
+   * {'areaLayers': {'areaDataLayer': {'areas': true, 'markers': true}}} indicates
+   * that we should check this.options['areaLayers'][i]['areaDataLayer']['areas']
+   * and this.options['areaLayers'][i]['areaDataLayer']['markers']. The base implementation
+   * will handle the basic case where the deferred data path contains only top level data options.
+   * @return {Object}
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetComponentNoClonePaths : function() {
+    if (!this._noClonePaths) {
+      this._noClonePaths = {};
+      var self = this;
+      var rootPaths = this._GetComponentDeferredDataPaths()['root'];
+      if (rootPaths) {
+        rootPaths.forEach(function(path) {
+          self._noClonePaths[path] = true;
+        });
+      }
+    }
+    return this._noClonePaths;
+  },
+
+  /**
+   * Resolves the deferred data for a component and returns whether there is any deferred data to wait on.
+   * @return {boolean} True if all data has been resolved
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _resolveDeferredData : function() {
+  _resolveDeferredDataItems : function() {
     // Reset stored options copy so we get the updated copy
-    this._optionsCopy = null;
+    // Make a copy of options except for data options with the noClone parameter on DvtJsonUtils.
+    // Cloning shouldn't be expensive if we're skipping data.
+    this._optionsCopy =  dvt.JsonUtils.clone(this.options, null, this._GetComponentNoClonePaths());
+    this._numDeferredObjs = 0;
 
+    var self = this;
     var paths = this._GetComponentDeferredDataPaths();
     // Do an initial loop to determine if we need to copy the options object
     for (var path in paths) {
       var subpaths = paths[path];
-      for (var i = 0; i < subpaths.length; i++) {
+      subpaths.forEach(function(subpath) {
         if (path === 'root') {
-          if (this._copyOptions(this.options, subpaths[i]))
-            break;
+          self._resolveDeferredDataItem.bind(self)(self.options, self._optionsCopy, subpath);
         } else {
           // Deal with arrays suboptions that are arrays like legend's options['sections']
-          var suboptions = this.options[path];
+          var suboptions = self.options[path];
           if (suboptions) {
-            for (var j = 0; j < suboptions.length; j++) {
-              if (this._copyOptions(suboptions[j], subpaths[i]))
-                break;
-            }
+            for (var i = 0; i < suboptions.length; i++)
+              self._resolveDeferredDataItem.bind(self)(suboptions[i], self._optionsCopy[path][i], subpath);
           }
         }
-      }
+      });
     }
-
-    var deferredData = [];
-    // Reset the deferred objects to wait on
-    this._numDeferredObjs = 0;
-    // Only need update the cloned options object if one was created
-    if (this._optionsCopy) {
-      var self = this;
-      for (var path in paths) {
-        var subpaths = paths[path];
-        subpaths.forEach(function(subpath) {
-          var promise;
-          if (path === 'root') {
-            promise = self._getPromise(self._optionsCopy, subpath);
-            if (promise)
-              deferredData.push(promise);
-          } else {
-            // Deal with arrays suboptions that are arrays like legend's options['sections']
-            var suboptions = self._optionsCopy[path];
-            if (suboptions) {
-              for (var j = 0; j < suboptions.length; j++) {
-                promise = self._getPromise(suboptions[j], subpath);
-                if (promise)
-                  deferredData.push(promise);
-              }
-            }
-          }
-        });
-      }
-    }
-    return deferredData;
+    return this._numDeferredObjs === 0;
   },
 
   /**
-   * Returns true if a copy of the options object already exists or was created
-   * and false otherwise.
-   * @param {Object} options The option object to use
+   * Resolves a deferred data item for a given options object and option path.
+   * @param {Object} optionsFrom The option object to copy from
+   * @param {Object} optionsTo The option object to copy to
    * @param {string} path  The option path to use
-   * @return {boolean}
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _copyOptions : function(options, path) {
-    if (!this._optionsCopy) {
-      var optionValue = new DvtJsonPath(options, path).getValue();
-      if (optionValue && (optionValue instanceof Function || optionValue instanceof Promise))
-        this._optionsCopy = dvt.JsonUtils.clone(this.options);
-    }
-    return this._optionsCopy !== null;
-  },
-
-  /**
-   * Returns a Promise or null for the given option path.
-   * @param {Object} options The option object to use
-   * @param {string} path  The option path to use
-   * @return {Promise}
-   * @private
-   * @instance
-   * @memberof oj.dvtBaseComponent
-   */
-  _getPromise : function(options, path) {
-    var optionPath = new DvtJsonPath(options, path);
+  _resolveDeferredDataItem : function(optionsFrom, optionsTo, path) {
+    var optionPath = new DvtJsonPath(optionsFrom, path);
     var optionValue = optionPath.getValue();
-    // Call functions and update the option value, creating a Promise from the result
-    if (optionValue instanceof Function)
-      optionValue = Promise.resolve(optionValue(this._GetDataContext(options)));
-
-    // Save any promises and update the option path with the resolved value
-    // or an empty array if an error is thrown
-    if (optionValue && optionValue instanceof Promise) {
-      this._numDeferredObjs++;
+    if (optionValue instanceof Function) {
+      // Call functions and update the option value, creating a Promise from the result
+      optionValue = Promise.resolve(optionValue(this._GetDataContext(optionsFrom)));
+    }
+    else if (this._IsCustomElement() && Array.isArray(optionValue)) {
+      // For custom elements, the getter always should return a Promise for 
+      // data options so we just always convert arrays to Promises in the setter
+      optionValue = Promise.resolve(optionValue);
+      optionPath.setValue(optionValue, true);
+    }
+    
+    if (optionValue instanceof Promise) {
       var renderCount = this._renderCount;
       var self = this;
       optionValue.then(
         function(value) {
-          self._renderDeferredData(renderCount, optionPath, value);
+          self._renderDeferredData(renderCount, optionsTo, path, value);
         },
         function(reason) {
-          self._renderDeferredData(renderCount, optionPath, []);
+          self._renderDeferredData(renderCount, optionsTo, path, []);
         }
       );
-      return optionValue;
+      this._numDeferredObjs++;
     }
-    return null;
   },
 
   /**
    * Checks to see if all deferred data promises have been resolved or rejected,
-   * updates the options with the resolved value and renders the component when ready.
+   * updates the options copy with the resolved value and renders the component when ready.
    * @param {number} renderCount The render count when this Promise was evaluated
-   * @param {DvtJsonPath} optionPath The option path to update
+   * @param {Object} optionsTo The option object to copy to
+   * @param {string} path  The option path to use
    * @param {Object} value The value to update the option path with
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _renderDeferredData : function(renderCount, optionPath, value) {
+  _renderDeferredData : function(renderCount, optionsTo, path, value) {
     if (renderCount === this._renderCount) {
       this._numDeferredObjs--;
-      optionPath.setValue(value, true);
+      (new DvtJsonPath(optionsTo, path)).setValue(value, true);
       if (this._numDeferredObjs === 0) {
-        this._renderComponent(this._optionsCopy);
+        this._renderComponent();
         this._optionsCopy = null;
       }
     }
@@ -1514,12 +1549,15 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
   /**
    * Renders the component.
-   * @param {Object} options The component option object.
+   * @param {boolean} isResize True if we are rendering due to a resize event.
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _renderComponent : function(options) {
+  _renderComponent : function(isResize) {
+    // Cleanup
+    this._CleanAllTemplates();
+
     // If flowing layout is supported, resize may happen during render, but we
     // don't want the resize listener to be triggered as it causes double render.
     // Thus we should remove the resize listener temporarily.
@@ -1527,10 +1565,17 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     if (bRemoveResizeListener)
       this._removeResizeListener();
 
-    this._component.render(options, this._width, this._height);
+    this._component.render(isResize ? null : this._optionsCopy, this._width, this._height);
 
     if (bRemoveResizeListener)
       this._addResizeListener();
+
+    // Remove the tabindex from the element to disable keyboard handling if the component
+    // does not have a role on the parent element like for non-interactive legends
+    if (!this.element.attr("role"))
+      this.element.attr("tabindex", null);
+    else
+      this.element.attr("tabindex", 0);
   },
 
   /**
@@ -1581,25 +1626,174 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Called by component to declare rendering is not finished
+   * Called by component to declare rendering is not finished. This method currently handles the ready state
+   * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
+   * version of this component.
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
   _NotReady : function() {
+    // For component whenReady API
     this._ready = false;
+
+    // For page level BusyContext
+    // Only decrement ready state when there's no deferred data. Otherwise rendering will be blocked 
+    // until all deferred data are resolved and we will only get one ready state increment.
+    if (this._numDeferredObjs === 0) {
+      // If we've already registered a busy state with the page's busy context, don't need to do anything further
+      if (!this._readyResolveFunc) {
+        var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
+        var options = {'description' : "The component identified by '" + this.element.attr('id') + "' is being loaded."};
+        this._readyResolveFunc = busyContext.addBusyState(options);
+      }
+    }
+  },
+
+  /**
+   * Called by component to declare rendering is finished. This method currently handles the ready state
+   * for the component whenReady API, the page level BusyContext, and the static whenReady API for the custom element
+   * version of this component.
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _MakeReady : function() {
+    // For component whenReady API
+    if (this._promiseResolve) {
+      this._promiseResolve(true);
+      this._promiseResolve = null;
+    }
+    this._ready = true;
+    this._promise = null;
+
+    // For page level BusyContext
+    if (this._readyResolveFunc) {
+      this._readyResolveFunc();
+      this._readyResolveFunc = null;
+    }
   },
 
   /**
    * Sanitize options variables
-   * @private
+   * @protected
    * @memberof oj.dvtBaseComponent
    */
-  _processOptions: function() {
+  _ProcessOptions: function() {
     // Convert the tooltip to an object if the deprecated API structure is passed in
     var tooltip = this.options['tooltip'];
-    if(typeof tooltip === 'function') {
+    if (typeof tooltip === 'function') {
       this.options['tooltip'] = {'renderer' : tooltip};
+    }
+    else if (tooltip && tooltip['_renderer']) {
+      var self = this;
+      this.options['tooltip'] = {
+        'renderer' : this._GetTemplateRenderer(tooltip['_renderer'], 'tooltip'),
+        '_templateCleanup': function() { self._CleanTemplate('tooltip'); }
+      };
+    }
+  },
+
+  /**
+   * Creates a callback function that will be used as a custom renderer for a template that will be used directly.
+   * @param {Function} templateFunction Template function used to render a knockout template
+   * @param {string} templateName The name of the template
+   * @return {Function} A function that will be used as a custom renderer
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetTemplateRenderer: function(templateFunction, templateName) {
+    var self = this;
+    var templateRenderer = function (context) {
+      // Create a dummy div
+      var dummyDiv = document.createElement("div");
+      dummyDiv.style.display = "none";
+
+      // Call the ko template renderer with the dummy div and context
+      templateFunction({'parentElement': dummyDiv, 'context': context});
+
+      var elem = dummyDiv.children[0];
+      if (elem) {
+        // Save a reference to the dummyDiv for ko cleanup to prevent memory leaks
+        if (!self._templateMap[templateName])
+          self._templateMap[templateName] = [];
+        self._templateMap[templateName].push(dummyDiv);
+
+        dummyDiv.removeChild(elem);
+        $(dummyDiv).remove();
+        return elem;
+      }
+      return null;
+    };
+    return templateRenderer;
+  },
+
+  /**
+   * Creates a callback function that will be used as a custom renderer for data items.
+   * For components like ojDiagram and ojThematicMap that supports ko templates for stamping
+   * data items, the component will reparent the svg element so we have special dummyDiv handling
+   * for these cases.
+   * @param {Function} templateFunction Template function used to render a knockout template
+   * @param {string} templateName The name of the template
+   * @return {Function} A function that will be used as a custom renderer
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetTemplateDataRenderer: function(templateFunction, templateName) {
+    var self = this;
+    var templateRenderer = function (context) {
+      // Create a dummy div
+      var dummyDiv = document.createElement("div");
+      dummyDiv.style.display = "none";
+      dummyDiv._dvtcontext = self._context;
+      self.element.append(dummyDiv); // @HTMLUpdateOK
+
+      // Call the ko template renderer with the dummy div and context
+      templateFunction({'parentElement': dummyDiv, 'data': context['data']});
+
+      var elem = dummyDiv.children[0];
+      if (elem) {
+        // Save a reference to the dummyDiv for ko cleanup to prevent memory leaks
+        if (!self._templateMap[templateName])
+          self._templateMap[templateName] = [];
+        self._templateMap[templateName].push(dummyDiv);
+
+        // The dummy div can be removed for custom svg elements, but need to be
+        // kept around for stamped DVTs so the oj components aren't removed.
+        if (elem.namespaceURI === 'http://www.w3.org/2000/svg') {
+          dummyDiv.removeChild(elem);
+          $(dummyDiv).remove();
+          return elem;
+        } else {
+          return self._GetDvtComponent(elem);
+        }
+      }
+      return null;
+    };
+    return templateRenderer;
+  },
+
+  /**
+   * Cleans all templates stored by the component
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _CleanAllTemplates: function() {
+    for (var templateName in this._templateMap)
+      $(this._templateMap[templateName]).remove();
+    this._templateMap = {};
+  },
+
+  /**
+   * Cleans a specific template stored by the component
+   * @param {string} templateName The name of the template to clean
+   * @protected
+   * @memberof oj.dvtBaseComponent
+   */
+  _CleanTemplate: function(templateName) {
+    if (this._templateMap[templateName]) {
+      $(this._templateMap[templateName]).remove();
+      this._templateMap[templateName] = [];
     }
   }
 
@@ -1610,15 +1804,65 @@ var dvtBaseComponentMeta = {
   "properties": {
     "trackResize": {
       "type": "string"
+    },
+    "translations": {
+      "properties": {
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
     }
   },
-  "methods": {
-    "whenReady": {}
-  },
+  "methods": {},
   "extension": {
-    "_widgetName": "dvtBaseComponent"
+    _WIDGET_NAME: "dvtBaseComponent"
   }
 };
-oj.Components.registerMetadata('dvtBaseComponent', 'baseComponent', dvtBaseComponentMeta);
+oj.CustomElementBridge.registerMetadata('dvtBaseComponent', 'baseComponent', dvtBaseComponentMeta);
 })();
 });

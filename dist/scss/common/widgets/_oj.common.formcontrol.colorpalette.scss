@@ -1,0 +1,244 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.colorpalette.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";  
+
+@if $includeColorPaletteClasses != false  {
+  @include module-include-once("common.formcontrol.colorpalette") {
+
+   /* Color Palette */
+   /* --------------------------------------------------------------- */
+       
+   // This is to prevent the flash of unstyled content before the html becomes JET components.
+   @if $initialVisibility == hidden {
+     oj-colorpalette-container:not(.oj-complete) {
+       visibility: hidden;
+     }      
+   }
+
+   .oj-colorpalette  {
+     display: inline-block;
+   }
+
+   .oj-colorpalette-container  {
+     height: inherit;              /* required by ListView for scrollbar */
+   }
+
+   .oj-colorpalette-swatch-entry  {
+     display: inline-block;
+   }
+   
+   .oj-colorpalette-list .oj-colorpalette-swatch-entry {
+     @include oj-display-flex-property();
+     @include oj-align-items-property(center);
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatch,
+   .oj-colorpalette-list .oj-colorpalette-swatch-text {
+     @include oj-flex-shrink-property(0);
+   }
+
+   /* A palette color swatch  */
+   .oj-colorpalette-swatch-container,
+   .oj-colorpalette-swatch  {
+     vertical-align: middle;
+     display: inline-block;
+     border-style: solid;
+     box-sizing: border-box;
+   }
+   
+   .oj-colorpalette-swatch-container {
+     border-width: 3px;
+     border-color: transparent;
+     
+     /* reduce line height so extra small swatches remain square */
+     line-height: 0;
+   }
+   
+   .oj-colorpalette-swatch  {
+     border-width: 1px;
+     border-color: $colorPaletteSwatchInnerBorderColor;
+     background-clip: padding-box;
+     //tell the browser to print the background-color
+     -webkit-print-color-adjust: exact;
+   }
+   
+   .oj-colorpalette-swatch-none-icon {
+     background-color: #FFFFFF;
+     display: inline-block;
+     background-image: oj-common-image-url('colorPalette_none.svg');
+     background-repeat: no-repeat;
+     background-size: 100% 100%;
+     width: 100%;
+     height: 100%;
+     //tell the browser to print the background-image
+     -webkit-print-color-adjust: exact;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+     width:  $colorPaletteGridSwatchLargeSize;
+     height: $colorPaletteGridSwatchLargeSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg.oj-colorpalette-swatch-showlabel .oj-colorpalette-swatch {
+     width:  $colorPaletteGridSwatchXLargeSize;
+     height: $colorPaletteGridSwatchXLargeSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+     width: $colorPaletteGridSwatchSmallSize;
+     height: $colorPaletteGridSwatchSmallSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-xs .oj-colorpalette-swatch {
+     width: $colorPaletteGridSwatchXSmallSize;
+     height: $colorPaletteGridSwatchXSmallSize;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+     width: $colorPaletteListSwatchSmallWidth;
+     height: $colorPaletteListSwatchSmallHeight;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+      width: $colorPaletteListSwatchLargeWidth;
+      height: $colorPaletteListSwatchLargeHeight;
+   }
+
+   /*  Hover swatch  */
+   .oj-colorpalette-container .oj-listview-item.oj-hover .oj-colorpalette-swatch-container {
+     border-color: transparent;
+   }
+
+   /*  Selected swatch  */
+   .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch-container {
+     border-color: $colorPaletteSwatchOuterBorderColorSelected;
+   }
+   
+   .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch {
+     border-color: transparent;
+   }
+
+   /*  Disabled swatch  */
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-selected .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-selected .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-listview-item.oj-hover .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-listview-item.oj-hover .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
+     border-color: transparent;
+   }
+   
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
+     background-color: transparent;
+     background-image: none;
+   }
+   
+   .oj-colorpalette-container .oj-colorpalette-grid .oj-listview.oj-disabled .oj-listview-item.oj-selected {
+     background-color: transparent;
+   }
+  
+   .oj-colorpalette-swatch-text  {
+     display:block;
+     text-align:center;
+     color: $colorPaletteTextColor;
+     width: inherit;
+     max-width: inherit;
+     white-space: nowrap;
+     overflow:hidden;
+     text-overflow: ellipsis;
+   }
+  
+   .oj-colorpalette-grid .oj-colorpalette-swatch-text  {
+     font-size: $colorPaletteGridFontSize;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatch-text  {
+     font-size: $colorPaletteListFontSize;
+     display: inline-block;
+     @include oj-ltr() {
+       margin-left: 15px;
+     }
+     @include oj-rtl() {
+       margin-right: 15px;
+     }
+     max-width: 155px;
+     vertical-align: middle;
+   }
+
+   /*  Constrain text width for ellipsis generation  */
+  .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch-text  {
+     width:  $colorPaletteGridSwatchXLargeSize;
+     /* account for border of swatch container */
+     padding-left: 3px;
+     padding-right: 3px;
+  }
+
+   /*  Disabled  */
+  .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch,
+  .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-text  {
+     color: $textColorDisabled;
+     cursor: default;
+  }
+
+  .oj-colorpalette-container .oj-listview-item  {
+    background-size:0;     /* required to remove selection listitem borders */
+    background-image: none;
+    padding: 0;
+    border-width: 0;
+    cursor: pointer;
+  }
+  
+  //Decrease the height of the focus rect by an extra pixel so that it
+  //appears centered around the swatch.  Otherwise, the bottom extends
+  //one pixel further out than the other sides.
+  .oj-colorpalette-container .oj-listview-item.oj-focus-highlight::after {
+    height: calc(100% - 2px);
+  }
+
+  /*  Remove listview item background and outline  */
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+  .oj-colorpalette-container .oj-listview-item.oj-selected   {
+    background-color: transparent;
+    border-width: 0;
+    outline-style: none;
+  }
+
+  /*  Remove listview top/bottom borders  */
+  .oj-colorpalette-container .oj-listview {
+    border-style: none;
+  }
+
+  /*  Remove listview selection border  */
+  .oj-colorpalette-container .oj-listview-item.oj-selected  {
+    border-color: transparent;
+  }
+
+  /*  Remove listview item top border  */
+  .oj-colorpalette-container ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
+  .oj-colorpalette-container .oj-listview-item.oj-hover {
+    border-color: transparent;
+    border-width: 0;
+  }
+
+  .oj-colorpalette.oj-warning .oj-colorpalette-container {
+    border: $formControlMessagingBorderWidth solid $borderColorWarning;
+  }
+  
+  .oj-colorpalette.oj-invalid .oj-colorpalette-container {
+    border: $formControlMessagingBorderWidth solid $borderColorError;
+  }
+
+ }
+}

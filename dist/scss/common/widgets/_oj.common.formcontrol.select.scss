@@ -30,6 +30,7 @@
       width: 100%;
       // font size needs to be on the root, because max/min width is in em.
       font-size: $formControlTriggerFontSize;
+      @include oj-form-control-text-size-adjust($formControlTriggerFontSize);
 
       box-sizing: border-box; 
     }
@@ -37,12 +38,9 @@
     /* 
      * Suppress focus ring around the select box 
      */
-    .oj-select .oj-select-choice:focus {
+    .oj-select .oj-select-choice:not(.oj-focus-highlight):focus,
+    .oj-select .oj-select-choices:not(.oj-focus-highlight):focus {
       outline: none;
-    }
-
-    .oj-select .oj-select-choice.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
     }
 
     /* 
@@ -78,8 +76,9 @@
       box-sizing: border-box;
       @include oj-form-control-content;
       height: auto;
-      min-height: $formControlTriggerHeight;
+      min-height: $formControlTriggerHeight * 1.28;
       margin: 0;
+      
       position: relative;
       cursor: text;
       overflow: hidden;
@@ -100,32 +99,29 @@
     }
 
     /* 
-     * Applied to the multi-select search field which is an li to wrap the input
+     * Applied to the multi-select placeholder
      */
-    .oj-select-search-field {
+    .oj-select-multi .oj-select-default {
       margin-top: 5px;
       padding: 0;
-      white-space: nowrap; 
       line-height: $formControlTriggerHeight * 0.9;
+      color: $formControlPlaceholderColor; 
+      font-style: $formControlPlaceholderFontStyle;
     }
 
     /* 
      * Applied to the input field. Override default .oj-listbox-input
      */
     .oj-select-multi .oj-listbox-input {
+      background-color: $formControlBgColor;
       color: $formControlInputValueColor;
       display: inline-block;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis; 
       font-size: $formControlInputFontSize;
-      @include oj-placeholder()
-      {
-        color: $formControlPlaceholderColor;
-        // in Firefox the default opacity is not 1 for placeholder
-        opacity: 1;
-        font-style: $formControlPlaceholderFontStyle;
-      }
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
+      
       padding-top: 0;
       padding-bottom: 0;
       @include oj-ltr() {
@@ -393,14 +389,9 @@
     /* 
      * Applied to focus ring around the select box 
      */
-    .oj-select-select:focus {
+    .oj-select-select:not(.oj-focus-highlight):focus {
       outline: none;
     }
-
-    .oj-select-select.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
-    }
-
 
     //jet theme
     // trigger

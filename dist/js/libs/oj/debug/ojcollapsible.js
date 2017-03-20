@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
+define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimation'], 
        /*
         * @param {Object} oj 
         * @param {jQuery} $
@@ -162,6 +162,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * The type of event to expand/collapse the collapsible.
        * To expand the collapsible on hover, use "mouseover".
        *
+       * @deprecated
        * @expose
        * @memberof! oj.ojCollapsible
        * @instance
@@ -302,44 +303,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        *      if ($(event.target).is(".mySelector")) {} 
        * } );
        */
-      collapse : null,
-
-      /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention.  If the new value is the same as the previous value, no event will be fired.
-       *
-       * Currently there is one supported option, <code class="prettyprint">"expanded"</code>.  Additional
-       * options may be supported in the future, so listeners should verify which option is changing
-       * before taking any action.
-       *
-       * @expose
-       * @event
-       * @memberof! oj.ojCollapsible
-       * @instance
-       * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
-       * @property {string} ui.option the name of the option that is changing
-       * @property {boolean} ui.previousValue the previous value of the option
-       * @property {boolean} ui.value the current value of the option
-       * @property {Object} ui.optionMetadata information about the option that is changing
-       * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-       *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       *
-       * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
-       * $(".selector").ojCollapsible({
-       *   'optionChange': function (event, data) {}
-       * });
-       * @example <caption>Bind an event listener to the ojoptionchange event</caption>
-       * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       // verify that the component firing the event is a component of interest
-       *       if ($(event.target).is(".mySelector")) {
-       *           window.console.log("option that changed is: " + data['option']);
-       *       }
-       *   };
-       * });
-       */
-      optionChange: null
+      collapse : null
 
     },
 
@@ -358,16 +322,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       //don't fire event on initial render
       var elem = this.element[0];
-      this._expandCollapseHandler(
-      {
-        type : this.options.expanded ? "ojexpand" : "ojcollapse",
-        target : elem,
-        currentTarget : elem,
-        preventDefault : $.noop
-      });
+      this._expandCollapseHandler(this._createEventObject(elem, 
+        this.options.expanded ? "ojexpand" : "ojcollapse"));
 
       this._initialRender = undefined;
 
+    },
+
+    _createEventObject : function (element, type)
+    {
+      return {
+        type : type,
+        target : element,
+        currentTarget : element,
+        preventDefault : $.noop
+      };
     },
 
     // Override to set custom launcher
@@ -485,7 +454,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       {
         if (value === this.options.expanded)
           return;
-        this._setExpanded(value);
+
+        if (value)
+          this.expand(true);
+        else
+          this.collapse(true);
         return;
       }
 
@@ -631,19 +604,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
           'overflow-y': 'hidden',
           'display': 'none'
         });
-        this.wrapper.css('max-height', 0);
         content.attr("aria-hidden", "true");
       }
 
       this._setupEvents();
-    },
-
-    _setExpanded : function (expanded)
-    {
-      if (expanded)
-        this.expand(true);
-      else
-        this.collapse(true);
     },
 
     _setupEvents : function ()
@@ -684,8 +648,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       {
         this._on(this.element,
         {
-          "ojexpand" : this._expandCollapseHandler,
-          "ojcollapse" : this._expandCollapseHandler,
           "ojfocus" : this._focusHandler,
           "ojfocusout" : this._focusHandler
         });
@@ -702,7 +664,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     _tearDownEvents : function ()
     {
-      this._off(this.element.find(this._getExpandAreaSelector()));
+      var expandArea = this.element.find(this._getExpandAreaSelector());
+
+      this._RemoveHoverable(expandArea);
+      this._RemoveActiveable(expandArea);
+      this._off(expandArea);
 
       //remove wrapper listeners
       if (this.wrapper)
@@ -728,6 +694,42 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
     },
 
+    _calcEffectTime: function(jelem) {
+      var propertyStr = jelem.css('transitionProperty');
+      var delayStr = jelem.css('transitionDelay');
+      var durationStr = jelem.css('transitionDuration');
+      var propertyArray = propertyStr.split(',');
+      var delayArray = delayStr.split(',');
+      var durationArray = durationStr.split(',');
+      var propertyLen = propertyArray.length;
+      var delayLen = delayArray.length;
+      var durationLen = durationArray.length;
+      var maxTime = 0;
+      
+      for (var i = 0; i < propertyLen; i++)
+      {
+        var duration = durationArray[i % durationLen];
+        var durationMs = (duration.indexOf('ms') > -1) ? parseFloat(duration) : parseFloat(duration) * 1000;
+        if (durationMs > 0)
+        {
+          var delay = delayArray[i % delayLen];
+          var delayMs = (delay.indexOf('ms') > -1) ? parseFloat(delay) : parseFloat(delay) * 1000;
+
+          maxTime = Math.max(maxTime, delayMs + durationMs);
+        }
+      }
+
+      return maxTime + 100;  
+    },
+
+    _resolveTransition : function(wrapper) {
+      var self = this;
+
+      this._transitionTimer = setTimeout(function() {
+        self._transitionEndHandler();
+      }, self._calcEffectTime(wrapper));
+    },
+
     _expandCollapseHandler : function (event)
     {
       if (this._isDisabled())
@@ -736,70 +738,67 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       if (event.target !== this.element[0])
         return;
 
-      if (this._initialRender || !event.isDefaultPrevented())
+      if (this._initialRender || !event.isDefaultPrevented || !event.isDefaultPrevented())
       {
         var element = this.element,
             options = this.options,
             content = this.content,
-            wrapper = this.wrapper,
+            wrapper = this.wrapper,        
             isExpanded = (event.type === "ojexpand");
 
+        var self = this;
         event.preventDefault();
 
+        //fire option change event
+        if (! this._initialRender)
+         this._changeExpandedOption(isExpanded);
+
         // - expansion animation on initial render.
-        //skip animation
-        if (this._initialRender) {
-
-          // - collapsible shouldn't implement _init()
-          options.expanded = isExpanded;
-          if (isExpanded)
+        if (this._initialRender || document.hidden ||
+            this.element.hasClass("oj-collapsible-skip-animation")) {
+          if (! isExpanded)
           {
-            element.removeClass("oj-collapsed");
-            element.addClass("oj-expanded");
-
-            // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-            oj.Components.subtreeShown(wrapper[0]);
-          }
-          else
-          {
-            element.removeClass("oj-expanded");
-            element.addClass("oj-collapsed");
             wrapper.css('max-height', 0);
             wrapper.hide();
-
-            // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-            oj.Components.subtreeHidden(wrapper[0]);
           }
+          self._afterExpandCollapse(isExpanded, event);
         }
         // do animation
         else
         {
-          //fire option change event
-          this._changeExpandedOption(isExpanded, event);
-
           wrapper.contentHeight = wrapper.outerHeight();
+
+          // Add a busy state for the animation.  The busy state resolver will be invoked
+          // when the animation is completed
+          if (! this._animationResolve) 
+          {
+            var busyContext = oj.Context.getContext(element[0]).getBusyContext();
+            this._animationResolve = busyContext.addBusyState(
+              {"description" : "The collapsible id='" + 
+               this.element.attr('id') + "' is animating."});
+          }
+          this._transitionEnded = false;
 
           //expanding
           if (isExpanded)
           {
-            //James: set display:none on the wrapper when it is hidden and then remove display:none when its is shown.
+            //James: set display:none on the wrapper when it is hidden and then 
+            // remove display:none when its is shown.
             //This should trigger JAWS into refreshing the buffer.
             wrapper.show();
 
             setTimeout(function()
             {
-              wrapper.contentHeight += content.outerHeight(); // if closed, add inner height to content height
-              wrapper.addClass('oj-collapsible-transition').css(
-              {
-                'max-height': wrapper.contentHeight
-              });
-              element.removeClass("oj-collapsed");
-              element.addClass("oj-expanded");
+              // if closed, add inner height to content height
+              wrapper.contentHeight += content.outerHeight(); 
 
-              // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-              oj.Components.subtreeShown(wrapper[0]);
+              wrapper.addClass('oj-collapsible-transition')
+                .css({
+                  'max-height': wrapper.contentHeight
+                });
+              self._resolveTransition(wrapper);
 
-            }, 1);
+            }, 0);
           }
 
           //collapsing
@@ -812,38 +811,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
               'overflow-y': 'hidden'
             });
 
-            setTimeout(function()
-            {
-              // enable & start transition
-              wrapper.addClass('oj-collapsible-transition')
-                .css({
-                  'max-height': 0   //!important
-                });
+            // no transition when end state is the same
+            if (wrapper.contentHeight == 0) {
+              self._transitionEndHandler();
+            }
+            else {
+              setTimeout(function()
+              {
+                // enable & start transition
+                wrapper.addClass('oj-collapsible-transition')
+                  .css({
+                    'max-height': 0   //!important
+                  });
+                self._resolveTransition(wrapper);
 
-              element.removeClass("oj-expanded");
-              element.addClass("oj-collapsed");
-
-              // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-              oj.Components.subtreeHidden(wrapper[0]);
-
-            }, 10); // 10ms timeout is the secret ingredient for disabling/enabling transitions
-            // chrome only needs 1ms but FF needs ~10ms or it chokes on the first animation for some reason
+              }, 20);
+            }
           }
         }
-
-        this._getCollapsibleIcon().toggleClass(OPEN_ICON, isExpanded)
-            // logic or cause same icon for expanded/collapsed state would remove the oj-icon-class
-            .toggleClass(CLOSE_ICON, (! isExpanded || OPEN_ICON === CLOSE_ICON))
-          .end();
-
-        //aria
-        if (isExpanded)
-          this.content.removeAttr("aria-hidden")
-        else
-          this.content.attr("aria-hidden", "true");
-
-        this._findFirstFocusableInHeader().attr("aria-expanded", isExpanded);
-
       }
     },
 
@@ -892,6 +877,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * $( ".selector" ).ojCollapsible( "option", "expanded", true );
      *
      * @expose
+     * @deprecated
+     * @ignore
      * @memberof oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
@@ -911,9 +898,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       if (!vetoable || this._trigger("beforeExpand", event, eventData) !== false)
       {
-        this._trigger("expand", event, eventData);
-        //fire option change event in _expandCollapseHandler
-//        this._changeExpandedOption(true, event);
+        this._expandCollapseHandler(this._createEventObject(this.element[0], "ojexpand"));
       }
     },
 
@@ -925,6 +910,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
      * $( ".selector" ).ojCollapsible( "option", "expanded", false );
      *
      * @expose
+     * @deprecated
+     * @ignore
      * @memberof oj.ojCollapsible
      * @instance
      * @param {boolean} vetoable if event is vetoable
@@ -944,24 +931,30 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
 
       if (!vetoable || this._trigger("beforeCollapse", event, eventData) !== false)
       {
-        this._trigger("collapse", event, eventData);
-        //fire option change event in _expandCollapseHandler
-//        this._changeExpandedOption(false, event);
+        this._expandCollapseHandler(this._createEventObject(this.element[0], "ojcollapse"));
       }
     },
 
     _transitionEndHandler : function (event)
     {
+      if (this._transitionTimer) {
+        clearTimeout(this._transitionTimer);
+        this._transitionTimer = undefined;
+      }
+
+      if (this._transitionEnded)
+        return;
+
       if (this._isDisabled())
         return;
 
-      var propName = event.originalEvent? event.originalEvent.propertyName : null;
-
-      //TODO: fire expand and collapse here
+      var propName = event && event.originalEvent? event.originalEvent.propertyName : null;
       if (propName == "max-height")
       {
         event.preventDefault();
         event.stopPropagation();
+
+        this._transitionEnded = true;
       }
 
       //just completed a collapse transition
@@ -980,18 +973,79 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       }
 
       this.wrapper.removeClass("oj-collapsible-transition");
+      this._afterExpandCollapse(this.options.expanded, event);
+
+    },
+
+    _afterExpandCollapse : function (isExpanded, event)
+    {
+      var element = this.element,
+          wrapper = this.wrapper;
+
+      if (isExpanded)
+      {
+        element.removeClass("oj-collapsed");
+        element.addClass("oj-expanded");
+
+        // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
+        oj.Components.subtreeShown(wrapper[0]);
+      }
+      else
+      {
+        element.removeClass("oj-expanded");
+        element.addClass("oj-collapsed");
+
+        // - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
+        oj.Components.subtreeHidden(wrapper[0]);
+      }
+
+      this._getCollapsibleIcon().toggleClass(OPEN_ICON, isExpanded)
+      // logic or cause same icon for expanded/collapsed state would remove the oj-icon-class
+        .toggleClass(CLOSE_ICON, (! isExpanded || OPEN_ICON === CLOSE_ICON))
+        .end();
+
+      //aria
+      if (isExpanded)
+        this.content.removeAttr("aria-hidden")
+      else
+        this.content.attr("aria-hidden", "true");
+
+      this._findFirstFocusableInHeader().attr("aria-expanded", isExpanded);
+
+      // resolve/remove the component busy state
+      if (this._animationResolve) {
+        this._animationResolve();
+        this._animationResolve = null;
+      }
+
+      var eventData =
+      {
+        /** @expose */
+        header : this.header,
+        /** @expose */
+        content : this.content
+      };
+
+      if (! this._initialRender)
+      {
+        if (isExpanded) {
+           this._trigger("expand", event, eventData);
+        }
+        else {
+          this._trigger("collapse", event, eventData);
+        }
+      }
+
     },
 
     /**
      * @param {boolean} value
-     * @param {Event} originalEvent
      *
      * @private
      */
-    _changeExpandedOption: function(value, originalEvent)
+    _changeExpandedOption: function(value)
     {
-      this.option('expanded', value, {'_context': {originalEvent: originalEvent,
-                                                   writeback: true,
+      this.option('expanded', value, {'_context': {writeback: true,
                                                    internalSet: true}});
     },
 
@@ -1142,25 +1196,25 @@ var ojCollapsibleMeta = {
       "type": "boolean"
     },
     "expandArea": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["header", "disclosureIcon"]
     },
     "expanded": {
-      "type": "boolean"
-    },
-    "expandOn": {
-      "type": "string"
+      "type": "boolean",
+      "writeback": true
     }
   },
-  "methods": {
+  "events": {
+    "beforeCollapse": {},
+    "beforeExpand": {},
     "collapse": {},
-    "expand": {},
-    "refresh": {}
+    "expand": {}
   },
   "extension": {
-    "_widgetName": "ojCollapsible"
+    _WIDGET_NAME: "ojCollapsible"
   }
 };
-oj.Components.registerMetadata('ojCollapsible', 'baseComponent', ojCollapsibleMeta);
-oj.Components.register('oj-collapsible', oj.Components.getMetadata('ojCollapsible'));
+oj.CustomElementBridge.registerMetadata('oj-collapsible', 'baseComponent', ojCollapsibleMeta);
+oj.CustomElementBridge.register('oj-collapsible', {'metadata': oj.CustomElementBridge.getMetadata('oj-collapsible')});
 })();
 });

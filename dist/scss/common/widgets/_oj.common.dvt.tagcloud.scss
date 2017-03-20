@@ -16,6 +16,10 @@
       }      
     }
 
+    oj-tag-cloud {
+      display: block;
+    }
+
     .oj-tagcloud {
       @include oj-user-select-property(none);
       width:100%;

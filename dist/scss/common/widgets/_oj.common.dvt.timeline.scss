@@ -40,7 +40,6 @@
       color:$dvtTimelineItemDescriptionColor;
       white-space:nowrap;
       font-size:$smallFontSize;
-      font-family:$fontFamily;	
     }
     
     .oj-timeline-item-title {
@@ -48,7 +47,6 @@
       white-space:nowrap;
       font-size:$smallFontSize;
       font-weight:bold;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-major-axis-label {
@@ -56,7 +54,6 @@
       white-space:nowrap;
       font-size:$fontSize;
       font-weight:bold;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-major-axis-separator {
@@ -72,7 +69,6 @@
       color:$dvtTimelineMinorAxisLabelColor;
       white-space:nowrap;
       font-size:$smallFontSize;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-minor-axis-separator {
@@ -88,7 +84,6 @@
       white-space:nowrap;
       font-size:$smallFontSize;
       font-weight:bold;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-overview-window {
@@ -117,14 +112,12 @@
       white-space:nowrap;
       font-size:$fontSize;
       font-weight:bold;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-series-empty-text {
       color:$dvtTimelineSeriesEmptyTextColor;
       white-space:nowrap;
       font-size:$smallFontSize;
-      font-family:$fontFamily;
     }
     
     .oj-timeline-zoomin-icon {

@@ -19,6 +19,7 @@
 
         /* Styling for the listview widget container */
         .oj-listview {
+            display: block;
             position: relative;
             border-width: 1px 0;
             border-color: $dataGridBorderColor;
@@ -43,7 +44,8 @@
         .oj-listview-expand-icon:focus,
         .oj-listview-collapse-icon:focus,
         .oj-listview-group-item:focus,
-        .oj-listview-item-element:focus {
+        .oj-listview-item-element:focus,
+        .oj-listview-cell-element:focus {
             outline: none;
         }
 
@@ -218,6 +220,12 @@
             background-image: none;
         }
 
+        /* Styling for group item element that is sticky */
+        .oj-listview-group-item.oj-sticky {
+            position: -webkit-sticky;
+            top: 0;
+        }
+
         /* Styling for group item element that is pinned when scrolled */
         .oj-listview-group-item.oj-pinned {
             position: absolute;
@@ -257,6 +265,7 @@
         .oj-listview-card-layout .oj-listview-group {
             @include oj-display-flex-property();
             @include oj-flex-wrap-property(wrap);
+            margin-bottom: oj-shorthand-property-value-top($listViewCardMargin);
         }
 
         /* Styling for item when card layout is used */
@@ -265,15 +274,15 @@
             height: $listViewCardHeight;
             border: 1px solid $panelBorderColor;
             border-radius: $panelBorderRadius;
-            margin-top: oj-shorthand-property-value-top($listViewCardMargin);;
-            margin-bottom: oj-shorthand-property-value-bottom($listViewCardMargin);;
+            margin-top: oj-shorthand-property-value-top($listViewCardMargin);
+            margin-bottom: oj-shorthand-property-value-bottom($listViewCardMargin);
             @include oj-rtl() {
-                margin-right: oj-shorthand-property-value-left($listViewCardMargin);;
-                margin-left: oj-shorthand-property-value-right($listViewCardMargin);;
+                margin-right: oj-shorthand-property-value-left($listViewCardMargin);
+                margin-left: oj-shorthand-property-value-right($listViewCardMargin);
             }
             @include oj-ltr() {
-                margin-left: oj-shorthand-property-value-left($listViewCardMargin);;
-                margin-right: oj-shorthand-property-value-right($listViewCardMargin);;
+                margin-left: oj-shorthand-property-value-left($listViewCardMargin);
+                margin-right: oj-shorthand-property-value-right($listViewCardMargin);
             }
             background-size: 0;
             box-sizing: border-box;
@@ -301,13 +310,21 @@
             color: $iconColorHover;
         }
 
+        /* Styling for the container of the activity indicator for high watermark scrolling */
+        .oj-listview-card-layout li.oj-listview-loading-icon-container {
+            width: 100%;
+            border-style: none;
+        }
+
         /* Styling for the activity indicator for high watermark scrolling */
         .oj-listview-loading-icon {
+            display: block;
             width: 40px;
             height: 40px;
             margin: auto;
             @include oj-icon-content(
-                $icon: oj-image-url("pull_to_refresh_full.gif")
+                $icon: oj-image-url("pull_to_refresh_full.gif"),
+                $lowResProportion: 0.25
             );
         }
 

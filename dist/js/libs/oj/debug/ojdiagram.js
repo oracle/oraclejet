@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram','ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
 {
 /**
  * <table class="keyboard-table">
@@ -174,7 +174,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 
 /**
  * The knockout template used for stamping an SVG fragment or other data visualization as a diagram node. 
- * Only SVG fragments or data visualizations are currently supported.
+ * Only a single SVG element or DVT is supported when using knockout templates at this time.
  *
  * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
  * component option.
@@ -206,6 +206,148 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @type {string|null}
  * @default <code class="prettyprint">null</code>
  */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+///////////// ConversionDiagramDataSource //////////////////
+
+/**
+ * Internal implementation of the DiagramDataSource dedicated to convert
+ * 'nodes', 'links' and 'childNodes' options into DiagramDataSource object.
+ * @class oj.ConversionDiagramDataSource
+ * @extends oj.DiagramDataSource
+ * @classdesc JSON implementation of the oj.DiagramDataSource
+ * @param {Object} data JSON data object with following properties:
+ * @property {Array|Promise|Function=} nodes an array of nodes
+ * @property {Array|Promise|Function=} links an array of links
+ * @param {Object=} options the options set on this data source
+ * @param {Function=} options.childData Function callback to retrieve nodes and links for the specified parent.
+ *                      Function will return an array of nodes or
+ *                      a Promise that will resolve with an array of nodes
+ * @constructor
+ * @ignore
+ */
+oj.ConversionDiagramDataSource = function(data, options) {
+    this.childDataCallback = options ? options['childData'] : null;
+    oj.ConversionDiagramDataSource.superclass.constructor.call(this, data);
+};
+
+// Subclass from oj.DiagramDataSource
+oj.Object.createSubclass(oj.ConversionDiagramDataSource, oj.DiagramDataSource, "oj.ConversionDiagramDataSource");
+
+/**
+ * Returns child data for the given parent.
+ * The data include all immediate child nodes along with links whose endpoints
+ * both descend from the current parent node. 
+ * If all the links are available upfront, they can be returned as part of the
+ * top-level data (since all nodes descend from the diagram root).
+ * If lazy-fetching links is desirable, the most
+ * optimal way to return links is as part of the data of the
+ * nearest common ancestor of the link's endpoints.
+ *
+ * @param {Object|null} parentData An object that contains data for the parent node.
+ *                     If parentData is null, the method retrieves data for top level nodes.
+ * @return {Promise|IThenable} Promise resolves to a component object with the following structure:
+ * <ul>
+ *  <li>{Array<Object>} nodes An array of objects for the child nodes for the given parent</li>
+ *  <li>{Array<Object>} links An array of objects for the links for the given parent</li>
+ * </ul>
+ * @export
+ * @method
+ * @name getData
+ * @memberof! oj.ConversionDiagramDataSource
+ * @instance
+ * @ignore
+ */
+oj.ConversionDiagramDataSource.prototype.getData = function(parentData) {
+  if (parentData) { //retrieve child data
+    var childData = parentData['nodes'];
+    if (childData === undefined && this.childDataCallback) {
+      var childNodes = this.childDataCallback(parentData);
+      return Promise.resolve(childNodes).then(
+          function(values) {
+            return Promise.resolve({'nodes':values});
+          },
+          function(reason) {
+            return Promise.resolve({'nodes':[]});
+          }
+        );
+    }
+    else {
+      return Promise.resolve({'nodes': childData});
+    }
+  }
+  else { // retrieve top level data
+    if (this.data) {
+      var nodes = this.data['nodes'], 
+          links = this.data['links'];
+      if (nodes instanceof Function) {
+        nodes = nodes();
+      }
+      if (links instanceof Function) {
+        links = links();
+      }
+      return Promise.all([nodes, links]).then(
+        function(values) {
+          return Promise.resolve({'nodes':values[0],'links':values[1]});
+        },
+        function(reason) {
+          return Promise.resolve({'nodes':[],'links':[]});
+        }
+      );
+    }
+    else {
+      return Promise.resolve(null);
+    }
+  }
+};
+
+/**
+ * Retrieves number of child nodes
+ * @param {Object} nodeData A data object for the node in question.
+ *                          See node properties section.
+ * @return {number} Number of child nodes if child count is available.
+ *                  The method returns 0 for leaf nodes.
+ *                  The method returns -1 if the child count is unknown
+ *                  (e.g. if the children have not been fetched).
+ * @export
+ * @method
+ * @name getChildCount
+ * @memberof! oj.ConversionDiagramDataSource
+ * @instance
+ * @ignore
+ */
+oj.ConversionDiagramDataSource.prototype.getChildCount= function(nodeData) {
+  if (nodeData) {
+    var childData = nodeData['nodes'];
+    var count = Array.isArray(childData) ? childData.length :
+                childData === undefined && this.childDataCallback ? -1 :
+                0;
+    return count;
+  }
+  return -1;
+};
+
+/**
+ * Indicates whether the specified object contains links
+ * that should be discovered in order to display promoted links.
+ *
+ * @param {Object} nodeData A data object for the container node in question.
+ *                          See node properties section.
+ * @return {string} the valid values are "connected", "disjoint", "unknown"
+ * @export
+ * @method
+ * @name getDescendantsConnectivity
+ * @memberof! oj.ConversionDiagramDataSource
+ * @instance
+ * @ignore
+ */
+oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function(nodeData){
+  return "unknown";
+};
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -306,36 +448,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   widgetEventPrefix : "oj",
   options: {
     /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojDiagram({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojDiagram
-     * @instance
-     */
-    optionChange: null,
-    /**
      * Triggered immediately before any container node in the diagram is expanded.
      *
      * @property {Object} data event payload
@@ -426,45 +538,26 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   },
 
   //** @inheritdoc */
-  _Render: function(isResize) {
+  _ProcessOptions: function() {
+    this._super();
     this.options['_logger'] = oj.Logger;
     if (this.options['_templateFunction']) {
-      this.options['renderer'] = this._getTemplateRenderer(this.options['_templateFunction']);
+      this.options['renderer'] = this._GetTemplateDataRenderer(this.options['_templateFunction'], 'node');
     }
     if (this.options['renderer']) {
       this.options['_contextHandler'] = this._getContextHandler();
     }
-    return this._super(isResize);
-  },
-
-  /**
-   * Creates a callback function that will be used by DvtDiagramNode as a custom renderer
-   * @param {Function} templateFunction template function used to render knockout template
-   * @return {Function} a function that will be used by DvtDiagramNode as a custom renderer
-   * @private
-   * @instance
-   * @memberof oj.ojDiagram
-   */
-  _getTemplateRenderer: function(templateFunction) {
-    var thisRef = this;
-    var templateHandlerFunc = function (context) {
-      var dummyDiv = document.createElement("div");
-      dummyDiv.style.display = "none";
-      dummyDiv._dvtcontext = thisRef._context;
-      thisRef.element.append(dummyDiv);
-      templateFunction({'parentElement':dummyDiv, 'data': context['data']});
-      var elem = dummyDiv.children[0];
-      if (elem && elem.namespaceURI === 'http://www.w3.org/2000/svg') {
-        dummyDiv.removeChild(elem);
-        $(dummyDiv).remove();
-        return elem;
-      }
-      else if (elem) {
-        return thisRef._GetDvtComponent(elem);
-      }
-      return null;
-    };
-    return templateHandlerFunc;
+    //convert nodes, links and childNodes options to DiagramDataSource
+    if (this.options['nodes']) {
+      this.options['nodeProperties'] = this.options['nodeProperties'] ? 
+              this.options['nodeProperties'] : function(data){return data};
+      this.options['linkProperties'] = this.options['linkProperties'] ? 
+              this.options['linkProperties'] : function(data){return data};
+      this.options['data'] = 
+        new oj.ConversionDiagramDataSource(
+          {'nodes': this.options['nodes'],'links': this.options['links']},
+          {'childData': this.options['childNodes']});
+    }
   },
 
   /**
@@ -489,7 +582,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
         'type' :  'node',
         'label' : data ['label']
       };
-      return context;
+      return thisRef._FixRendererContext(context);
     }
     return contextHandlerFunc;
   },
@@ -727,6 +820,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   collapse: function(nodeId, vetoable) {
     var result = this._trigger("beforeCollapse", null, {'nodeId': nodeId});
     if (!vetoable || result !== false) {
+      this._NotReady();
       this._component.collapse(nodeId);
     }
   },
@@ -742,6 +836,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   expand: function(nodeId, vetoable) {
     var result = this._trigger("beforeExpand", null, {'nodeId': nodeId});
     if (!vetoable || result !== false) {
+      this._NotReady();
       this._component.expand(nodeId);
     }
   },
@@ -861,11 +956,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
       return context;
 
     return null;
-  },
-
-  //** @inheritdoc */
-  _GetComponentDeferredDataPaths : function() {
-    return {'root': ['nodes', 'links']};
   }
 });
 
@@ -874,7 +964,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
  * @name oj.DiagramUtils
  * 
  * @classdesc
- * <h3>Diagram Layout UUtilities</h3>
+ * <h3>Diagram Layout Utilities</h3>
  *
  * <p> DiagramUtils is a helper object that provides a function to generate a layout callback for ojDiagram out of JSON object. 
  * A JSON object contains positions for the nodes, paths for the links and properties for positioning a label for a node and a link.
@@ -1133,35 +1223,104 @@ oj.DiagramUtils._setLabelPosition = function(obj, labelLayout, offset) {
 var ojDiagramMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto","none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto","none"]
+    },
+    "data": {},
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties":{
+            "nodes":{
+              "type":"object",
+              "properties": {
+                "dataTypes": {
+                  "type": "Array<string>"
+                },
+                "drag": {},
+                "dragEnd": {},
+                "dragStart": {}
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties":{
+            "background" :{
+              "type":"object",
+              "properties": {
+                "dataTypes": {
+                  "type": "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }              
+            },
+            "nodes" :{
+              "type":"object",
+              "properties": {
+                "dataTypes": {
+                  "type": "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            },
+            "links" :{
+              "type":"object",
+              "properties": {
+                "dataTypes": {
+                  "type": "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            }
+          }
+          
+        }
+      }
     },
     "expanded": {
       "type": "Array<string>|string"
     },
     "focusRenderer": {},
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "hoverRenderer": {},
     "layout": {},
     "linkHighlightMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["linkAndNodes", "link"]
     },
-    "links": {
-      "type": "Array<object>"
-    },
+    "linkProperties":{},
     "maxZoom": {
       "type": "number"
     },
@@ -1169,38 +1328,208 @@ var ojDiagramMeta = {
       "type": "number"
     },
     "nodeHighlightMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["nodeAndIncomingLinks", "nodeAndOutgoingLinks", "nodeAndLinks", "node"]
     },
-    "nodes": {
-      "type": "Array<object>"
-    },
+    "nodeProperties": {},
     "panDirection": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["x", "y", "auto"]
     },
     "panning": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
+    },
+    "promotedLinkBehavior":{
+      "type": "string",
+      "enumValues": ["none", "lazy", "full"]
     },
     "renderer": {},
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "single", "multiple"]
     },
     "selectionRenderer": {},
     "styleDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "hoverBehaviorDelay": {
+          "type": "number"
+        },
+        "linkDefaults": {
+          "type": "object",
+          "properties": {
+            "linkDefaults": {
+              "color": {
+                "type": "string"
+              },
+              "endConnectorType": {
+                "type": "string",
+                "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
+              },
+              "labelStyle": {
+                "type": "object"
+              },
+              "startConnectorType": {
+                "type": "string",
+                "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
+              },
+              "svgStyle": {
+                "type": "object"
+              },
+              "width": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "nodeDefaults": {
+          "type": "object",
+          "properties": {
+            "nodeDefaults": {
+              "backgroundSvgStyle": {
+                "type": "object"
+              },
+              "containerSvgStyle": {
+                "type": "object"
+              },
+              "icon": {
+                "type": "object",
+                "properties": {
+                  "icon": {
+                    "borderColor": {
+                      "type": "string"
+                    },
+                    "borderWidth": {
+                      "type": "number"
+                    },
+                    "color": {
+                      "type": "string"
+                    },
+                    "halign": {
+                      "type": "string",
+                      "enumValues": ["left", "right", "center"]
+                    },
+                    "height": {
+                      "type": "number"
+                    },
+                    "pattern": {
+                      "type": "string",
+                      "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", 
+                                     "smallDiagonalRight", "smallDiamond", "smallTriangle",
+                                     "largeChecker", "largeCrosshatch", "largeDiagonalLeft",
+                                     "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
+                    },
+                    "shape": {
+                      "type": "string",
+                      "enumValues": ["circle", "square", "plus", "diamond", "triangleUp", "triangleDown", 
+                                      "human", "rectangle", "star"]
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "sourceHover": {
+                      "type": "string"
+                    },
+                    "sourceHoverSelected": {
+                      "type": "string"
+                    },
+                    "sourceSelected": {
+                      "type": "string"
+                    },
+                    "svgStyle": {
+                      "type": "object"
+                    },
+                    "valign": {
+                      "type": "string",
+                      "enumValues": ["top", "bottom", "center"]
+                    },
+                    "width": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "labelStyle": {
+                "type": "object"
+              },
+              "showDisclosure": {
+                "type": "string",
+                "enumValues": ["on", "off"]
+              }
+            }
+          }
+        },
+        "promotedLink": {
+          "type": "object",
+          "properties": {
+            "promotedLink": {
+              "color": {
+                "type": "string"
+              },
+              "endConnectorType": {
+                "type": "string",
+                "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
+              },
+              "startConnectorType": {
+                "type": "string",
+                "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
+              },
+              "svgStyle": {
+                "type": "object"
+              },
+              "width": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["touchStart", "auto"]
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "promotedLink": {
+          "type": "string"
+        },
+        "promotedLinkAriaDesc": {
+          "type": "string"
+        },
+        "promotedLinks": {
+          "type": "string"
+        }
+      }
     },
     "zooming": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "zoomRenderer": {}
+  },
+  "events": {
+    "beforeCollapse": {},
+    "beforeExpand": {},
+    "collapse": {},
+    "expand": {}
   },
   "methods": {
     "collapse": {},
@@ -1216,10 +1545,23 @@ var ojDiagramMeta = {
     "renderDefaultSelection": {}
   },
   "extension": {
-    "_widgetName": "ojDiagram"
+    _WIDGET_NAME: "ojDiagram"
   }
 };
-oj.Components.registerMetadata('ojDiagram', 'dvtBaseComponent', ojDiagramMeta);
-oj.Components.register('oj-diagram', oj.Components.getMetadata('ojDiagram'));
+var _ARRAY_REGEXP = /^\[.*\]/;
+var diagramParseFunction = function(value, name, meta, defaultParseFunction) {
+  if (name == "expanded") {
+    if (_ARRAY_REGEXP.test(value)) {
+      return JSON.parse(value);
+    }
+    return value;
+  }
+  else 
+    return defaultParseFunction(value);
+};
+oj.CustomElementBridge.registerMetadata('oj-diagram', 'dvtBaseComponent', ojDiagramMeta);
+oj.CustomElementBridge.register('oj-diagram', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-diagram'),
+  'parseFunction': diagramParseFunction});
 })();
 });

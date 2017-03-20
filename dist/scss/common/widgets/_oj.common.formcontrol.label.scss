@@ -125,6 +125,16 @@
          padding-left: 2px;
        }       
     }
+    
+    .oj-label-help-icon-anchor:hover,
+    .oj-label-help-icon-anchor:focus {
+      text-decoration: none;  //workaround for IE11 where underline appears on icon hover and focus    
+    }
+
+    // Suppress focus ring
+    .oj-label-help-icon-anchor:not(.oj-focus-highlight).oj-focus {
+      outline: none;
+    }
     // This is for when you don't want your labels to wrap, whether the label is inline or
     // on top.
     .oj-label.oj-label-nowrap {

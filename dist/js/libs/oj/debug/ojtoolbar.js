@@ -81,12 +81,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  * text editor, then the application should apply an <code class="prettyprint">aria-controls</code> attribute to the toolbar element, 
  * e.g. <code class="prettyprint">aria-controls="myTextEditor"</code>.
  * 
+ * <p>See the <a href="#styling-section">Styling</a> section for information on how to create accessible toolbar separators.
+ *
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio, 
  * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>, 
  * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which 
  * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user 
  * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio 
- * required of enabled content, it cannot be used to convey meaningful information.<p>
+ * required of enabled content, it cannot be used to convey meaningful information.</p>
  * 
  * 
  * <h3 id="styling-section">
@@ -94,54 +96,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
  * 
- * <p>The following CSS classes can be applied by the page author as needed.
- * 
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class</th>
- *       <th>Can be applied to</th>
- *       <th>Use</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-toolbar-separator</td>
- *       <td>A span in the toolbar serving as an accessible toolbar separator</td>
- *       <td>Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that 
- *           a separator is desirable.  Use the following markup for accessibility:
- *           <pre class="prettyprint">
- *           <code>&lt;span role="separator" aria-orientation="vertical" class="oj-toolbar-separator"></span>
- *           </code></pre>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-toolbar-top-border</td>
- *       <td>Toolbar's root element, or the oj-toolbars element</td>
- *       <td>Applies a top border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-toolbar-bottom-border</td>
- *       <td>Toolbar's root element, or the oj-toolbars element</td>
- *       <td>Applies a bottom border to the toolbar, or to the oj-toolbars element, in themes not having this border by default.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-toolbar-no-chrome</td>
- *       <td>Toolbar's root element, or the oj-toolbars element</td>
- *       <td>Removes "chrome" (background and border) from the toolbar(s), in themes having this chrome by default.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-toolbars</td>
- *       <td>An outer div representing a multiple toolbar layout</td>
- *       <td>Contains one or more oj-toolbar-row elements.</td>
- *     </tr>
- *     <tr>
- *       <td>oj-toolbar-row</td>
- *       <td>Child divs of the oj-toolbars element</td>
- *       <td>Each oj-toolbar-row div is a row containing one or more toolbars.</td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"stylingDoc"}
  * 
  * 
  * <h3 id="rtl-section">
@@ -389,8 +344,6 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      *   <li>After the reading direction (LTR vs. RTL) changes.</li>
      * </ul>
      * 
-     * <p>This method does not accept any arguments.
-     * 
      * @expose 
      * @memberof oj.ojToolbar
      * @instance
@@ -566,6 +519,11 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
     // No return value.
     _handleKeyDown: function(event, $button) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         switch (event.which) {
+            case $.ui.keyCode.UP:   // up arrow
+            case $.ui.keyCode.DOWN: // down arrow
+                if ( $button.attr("type")!="radio" )
+                    break;
+                // fall thru for radio only.  See comments below.
             case $.ui.keyCode.LEFT:  // left arrow
             case $.ui.keyCode.RIGHT: // right arrow
                 event.preventDefault();
@@ -576,20 +534,18 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
                     break;
                 
                 var oldIndex = $enabledButtons.index($button);
-                var increment = ((event.which == $.ui.keyCode.RIGHT) ^ this.isRtl) ? 1 : -1;
+                var increment = (event.which == $.ui.keyCode.DOWN || ((event.which == $.ui.keyCode.RIGHT) ^ this.isRtl)) ? 1 : -1;
                 var newIndex = (oldIndex+increment+length)%length; // wrap around if at start/end of toolbar
                 
-                // A11y office recommended treating radios like other buttons: Arrow moves focus without selecting, Spacebar selects, 
-                // which we prefer too.  Since we're using role='button', not 'radio', we don't need to follow the WAI-ARIA radio behavior 
-                // where Arrow moves focus and selects, Ctrl-Arrow moves focus without selecting.  
+                // When radios are inside an element with role=toolbar, WAI-ARIA doesn't specify how to reconcile its recommended 
+                // Toolbar behavior (left/right arrows move focus w/o selecting) and radio behavior (all 4 arrow keys both move focus
+                // and check/select that radio).  A11y office recommended treating radios in a Buttonset or Toolbar like other buttons: 
+                // Arrow moves focus without selecting, Spacebar selects, which we prefer too.  
+                // Previously we did that for only left/right arrows, and disabled up/down arrows, but since both native and WAI-ARIA-
+                // compliant radios support up/down arrows, and since JAWS automatically instructs the user to use up/down arrows even 
+                // when the radio group is inside a role=toolbar, we now support up/down arrows for radios via the fall-thru above
+                // (but still focus only, not select).
                 $enabledButtons.eq(newIndex).focus();
-                break;
-            case $.ui.keyCode.UP:   // up arrow
-            case $.ui.keyCode.DOWN: // down arrow
-                // Per above comment, treating radios like buttons, which have no native or WAI-ARIA-mandated up/down arrow behavior, 
-                // so disable native focus-and-select behavior.  
-                if ( $button.attr("type")=="radio" )
-                    event.preventDefault();
                 break;
             
             // Don't need Space/Enter handlers.  For all buttons except already-checked radios in some browsers, Space/Enter fire a click event 
@@ -637,8 +593,6 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * Removes the toolbar functionality completely. This will return the element back to its pre-init state, 
      * and remove the toolbar's focus management from the contained buttons.
      * 
-     * <p>This method does not accept any arguments.
-     * 
      * @method
      * @name oj.ojToolbar#destroy
      * @memberof oj.ojToolbar
@@ -683,6 +637,89 @@ oj.__registerWidget("oj.ojToolbar", $['oj']['baseComponent'], {
      * the individual buttons.
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+     * @memberof oj.ojToolbar
+     */
+
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * 
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-toolbar-separator</td>
+     *       <td>Separators should be placed around any buttonsets in the toolbar, and anywhere else in the toolbar that 
+     *           a separator is desirable.  For accessibility, additionally apply <code class="prettyprint">role</code> 
+     *           and <code class="prettyprint">aria-orientation</code> as shown.
+     *       </td>
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;div id="myToolbar" aria-label="Foo" aria-controls="bar">
+     *   &lt;button ...>&lt;/button>
+     *   &lt;span role="separator" aria-orientation="vertical"
+     *         class="oj-toolbar-separator">&lt;/span>
+     *   &lt;button ...>&lt;/button>
+     * &lt;/div>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-toolbar-top-border</td>
+     *       <td>Applies a top border to the toolbar, or to the <code class="prettyprint">oj-toolbars</code> element, 
+     *           in themes not having this border by default.</td>
+     *       <td rowspan=3>
+     * <pre class="prettyprint">
+     * <code>&lt;!-- These classes can be mixed and matched, and can also be applied to the 
+     *      oj-toolbars element seen in the next example. -->
+     * &lt;div id="myToolbar" aria-label="Foo" aria-controls="bar"
+     *      class="oj-toolbar-top-border oj-toolbar-bottom-border oj-toolbar-no-chrome">
+     *   &lt;!-- toolbar contents -->
+     * &lt;/div>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-toolbar-bottom-border</td>
+
+     *       <td>Applies a bottom border to the toolbar, or to the <code class="prettyprint">oj-toolbars</code> element, 
+     *           in themes not having this border by default.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-toolbar-no-chrome</td>
+     *       <td>Removes "chrome" (background and border) from the toolbar(s), in themes having this chrome by default.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-toolbars</td>
+     *       <td>An outer element representing a multiple toolbar layout. Contains one or more <code class="prettyprint">oj-toolbar-row</code> elements.</td>
+     *       <td rowspan=2>
+     * <pre class="prettyprint">
+     * <code>&lt;div class="oj-toolbars">
+     *   &lt;div class="oj-toolbar-row">
+     *     &lt;div id="toolbar1" ...>...&lt;/div>
+     *     &lt;div id="toolbar2" ...>...&lt;/div>
+     *   &lt;/div>
+     *   &lt;div class="oj-toolbar-row">
+     *     &lt;div id="toolbar3" ...>...&lt;/div>
+     *   &lt;/div>
+     * &lt;/div>
+     * </code></pre>
+     *       </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-toolbar-row</td>
+     *       <td>Each <code class="prettyprint">oj-toolbar-row</code> element is a row containing one or more toolbars.
+     *           These rows go inside an <code class="prettyprint">oj-toolbars</code> element.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojToolbar
      */
 });
@@ -752,10 +789,10 @@ var ojToolbarMeta = {
     "widget": {}
   },
   "extension": {
-    "_widgetName": "ojToolbar"
+    _WIDGET_NAME: "ojToolbar"
   }
 };
-oj.Components.registerMetadata('ojToolbar', 'baseComponent', ojToolbarMeta);
-oj.Components.register('oj-toolbar', oj.Components.getMetadata('ojToolbar'));
+oj.CustomElementBridge.registerMetadata('oj-toolbar', 'baseComponent', ojToolbarMeta);
+oj.CustomElementBridge.register('oj-toolbar', {'metadata': oj.CustomElementBridge.getMetadata('oj-toolbar')});
 })();
 });

@@ -21,6 +21,14 @@
 
 @if $includeRowExpanderClasses != false {
   @include module-include-once("alta.android.rowexpander") {
+    /* Styling for the expand icon */
+    .oj-rowexpander-expand-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
 
-   }
+    /* Styling for the collapse icon */
+    .oj-rowexpander-collapse-icon {
+      @extend .oj-fwk-icon-arrow03-s;
+    }
+  }
 }

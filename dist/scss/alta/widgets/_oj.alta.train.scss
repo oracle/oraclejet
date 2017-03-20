@@ -32,35 +32,38 @@
       @if $trainButtonContinuousConnectorDiameter != $trainButtonDiameter {
         bottom: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
         @include oj-ltr() {
-          right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;	  
+          right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
         }
         @include oj-rtl() {
           left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
         }
       }
     }
+    .oj-train-icon:before {
+      width: 9px; /* Needed for old versions of IE11 */
+    }
     
     .oj-train-icon.oj-confirmation {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_complete.png")
+        $icon: oj-common-image-url("alertModifier_complete.svg")
       );
     }
 
     .oj-train-icon.oj-info{
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_info.png")
+        $icon: oj-common-image-url("alertModifier_info.svg")
       );
     }
 
     .oj-train-icon.oj-warning {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_warning.png")
+        $icon: oj-common-image-url("alertModifier_warning.svg")
       );
     }
 
     .oj-train-icon.oj-error {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_error.png")
+        $icon: oj-common-image-url("alertModifier_error.svg")
       );
     }
    .oj-train-icon,

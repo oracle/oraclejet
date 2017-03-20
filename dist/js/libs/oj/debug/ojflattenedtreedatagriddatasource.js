@@ -282,6 +282,7 @@ oj.FlattenedTreeCellSet.prototype.getData = function(indexes)
         }
 
         Object.defineProperty(returnObj, 'data', {
+            enumerable: true,
             get: getter,
             set: setter
         });

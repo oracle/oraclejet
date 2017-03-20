@@ -96,39 +96,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  */
 oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
   {
-    widgetEventPrefix: "oj",
-    options: {
-      /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention. If the new value is the same as the previous value, no event will be fired.
-       *
-       * @property {Object} data event payload
-       * @property {string} data.option the name of the option that changed, i.e. "value"
-       * @property {Object} data.previousValue an Object holding the previous value of the option
-       * @property {Object} data.value an Object holding the current value of the option
-       * @property {Object} ui.optionMetadata information about the option that is changing
-       * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-       *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-       * $(".selector").ojTreemap({
-       *   'optionChange': function (event, data) {}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-       * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       window.console.log("option changing is: " + data['option']);
-       *   };
-       * });
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojTreemap
-       * @instance
-       */
-      optionChange: null
-    },
+  widgetEventPrefix : "oj",
+  options: {
+    /**
+     * Triggered immediately before any node in the treemap is drilled into. The drill event can be vetoed if the beforeDrill callback returns false.
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the drilled object
+     * @property {Object} data.data  the data object of the drilled node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojTreemap
+     * @instance
+     */
+    beforeDrill: null,
+    /**
+     * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
+     *
+     * @property {Object} data event payload
+     * @property {string} data.id the id of the drilled object
+     * @property {Object} data.data  the data object of the drilled node
+     * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojTreemap
+     * @instance
+     */
+    drill: null,
+  },
 
     //** @inheritdoc */
     _CreateDvtComponent: function(context, callback, callbackObj) {
@@ -179,8 +177,8 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
       var styleClasses = this._super();
       styleClasses['oj-treemap-attribute-type-text'] = {'path': 'styleDefaults/_attributeTypeTextStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-treemap-attribute-value-text'] = {'path': 'styleDefaults/_attributeValueTextStyle', 'property': 'CSS_TEXT_PROPERTIES'};
-      // TODO  add this once drilling is supported
-//    styleClasses['oj-treemapCurrentText '] = {'path' : '', 'property' : 'CSS_TEXT_PROPERTIES'};
+      styleClasses['oj-treemap-drill-text '] = {'path' : 'styleDefaults/_drillTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
+      styleClasses['oj-treemap-current-drill-text '] = {'path' : 'styleDefaults/_currentTextStyle', 'property' : 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-treemap-node'] = {'path': 'nodeDefaults/labelStyle', 'property': 'CSS_TEXT_PROPERTIES'};
       styleClasses['oj-treemap-node oj-hover'] = {'path': 'nodeDefaults/hoverColor', 'property': 'border-top-color'};
       styleClasses['oj-treemap-node oj-selected'] = [
@@ -209,7 +207,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _GetEventTypes : function() {
-      return ['optionChange'];
+      return ['optionChange', 'drill', 'beforeDrill'];
     },
 
     //** @inheritdoc */
@@ -252,11 +250,26 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
           this._UserOptionChange('isolatedNode', (isolatedNodes.length > 0) ? isolatedNodes[isolatedNodes.length] : null);
         }
       }
+      else if(type == 'drill') {
+        if(event['id'] && this._trigger('beforeDrill', null, {'id': event['id'], 'data': event['data'], 'component': event['component']})) {
+          this._UserOptionChange('rootNode', event['id']);
+          this._Render();
+          this._trigger('drill', null, {'id': event['id'], 'data': event['data'], 'component': event['component']});
+        }
+      }
       else {
         this._super(event);
       }
     },
-
+    
+    //** @inheritdoc */
+    _ProcessOptions: function() {
+      this._super();
+      var nodeContent = this.options['nodeContent'];
+      if (nodeContent && nodeContent['_renderer'])
+        nodeContent['renderer'] = this._GetTemplateRenderer(nodeContent['_renderer'], 'nodeContent');
+    },
+  
     //** @inheritdoc */
     _LoadResources : function() {
       // Ensure the resources object exists
@@ -285,23 +298,13 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @property {boolean} selected
      * @property {number} size
      * @property {string} tooltip
-     * @property {Function} getColor <b>Deprecated</b>: Use <code class="prettyprint">color</code> instead.
-     * @property {Function} getLabel <b>Deprecated</b>: Use <code class="prettyprint">label</code> instead.
-     * @property {Function} getSize <b>Deprecated</b>: Use <code class="prettyprint">size</code> instead.
-     * @property {Function} getTooltip <b>Deprecated</b>: Use <code class="prettyprint">tooltip</code> instead.
-     * @property {Function} isSelected <b>Deprecated</b>: Use <code class="prettyprint">selected</code> instead.
      * @return {Object|null} An object containing properties for the node, or null if none exists.
      * @expose
      * @instance
      * @memberof oj.ojTreemap
      */
     getNode: function(subIdPath) {
-      var ret = this._component.getAutomation().getNode(subIdPath);
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getNode(subIdPath);
     },
 
     /**
@@ -456,6 +459,10 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  *       <td><kbd>Ctrl + Enter</kbd></td>
  *       <td>Maximize/Restore on a group header.</td>
  *     </tr>
+ *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Drill on a node when <code class="prettyprint">drilling</code> is enabled.</td>
+ *     </tr>
  *   </tbody>
  * </table>
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
@@ -522,6 +529,27 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @type {string|null}
  * @default <code class="prettyprint">null</code>
  */
+
+/**
+ * The knockout template used to render the custom content of the leaf node.
+ *
+ * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
+ * component option. The following variables are also passed into the template:
+ *  <ul> 
+ *    <li>bounds: Object containing (x, y, width, height) of the bounds the node area. 
+ *    The x and y coordinates are relative to the top, left corner of the component.</li> 
+ *    <li>data: The data object for the node.</li> 
+ *    <li>id: The id of the node.</li> 
+ *    <li>component: The widget constructor for the treemap. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  </ul>
+ *
+ * @ojbindingonly
+ * @name nodeContent.template
+ * @memberof! oj.ojTreemap
+ * @instance
+ * @type {string|null}
+ * @default <code class="prettyprint">null</code>
+ */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
@@ -533,10 +561,12 @@ var ojTreemapMeta = {
       "type": "number"
     },
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationUpdateColor": {
       "type": "string"
@@ -544,67 +574,194 @@ var ojTreemapMeta = {
     "colorLabel": {
       "type": "string"
     },
+    "displayLevels": {
+      "type": "number"
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": ["on", "off"]
+    },
     "groupGaps": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["all", "none", "outer"]
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "hoverBehaviorDelay": {
-      "type": "number|string"
-    },
-    "isolatedNode": {
-      "type": "string"
+      "type": "number"
+    },    "isolatedNode": {
+      "type": "string",
+      "writeback": true
     },
     "layout": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["sliceAndDiceHorizontal", "sliceAndDiceVertical", "squarified"]
     },
     "nodeDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "groupLabelDisplay": {
+          "type": "string",
+          "enumValues": ["node", "off", "header"]
+        },
+        "header": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "hoverBackgroundColor": {
+              "type": "string"
+            },
+            "hoverInnerColor": {
+              "type": "string"
+            },
+            "hoverOuterColor": {
+              "type": "string"
+            },
+            "isolate": {
+              "type": "string",
+              "enumValues": ["on", "off"]
+            },
+            "labelHalign": {
+              "type": "string",
+              "enumValues": ["center", "end", "start"] 
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "selectedBackgroundColor": {
+              "type": "string"
+            },
+            "selectedInnerColor": {
+              "type": "string"
+            },
+            "selectedOuterColor": {
+              "type": "string"
+            },
+            "useNodeColor": {
+              "type": "string",
+              "enumValues": ["on", "off"]
+            }
+          }
+        },
+        "hoverColor": {
+          "type": "string"
+        },
+        "labelDisplay": {
+          "type": "string",
+          "enumValues": ["off", "node"]
+        },
+        "labelHalign": {
+          "type": "string",
+          "enumValues": ["start", "end", "center"]
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "labelValign": {
+          "type": "string",
+          "enumValues": ["top", "bottom", "center"]
+        },
+        "selectedInnerColor": {
+          "type": "string"
+        },
+        "selectedOuterColor": {
+          "type": "string"
+        }
+      }
     },
     "nodes": {
       "type": "Array<object>"
     },
+    "nodeContent": {
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
+    },
     "nodeSeparators": {
+      "type": "string",
+      "enumValues": ["bevels", "gap"]
+    },
+    "rootNode": {
       "type": "string"
     },
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "single", "multiple"]
     },
     "sizeLabel": {
       "type": "string"
     },
     "sorting": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
       "type": "string"
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelColor": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        },
+        "tooltipIsolate": {
+          "type": "string"
+        },
+        "tooltipRestore": {
+          "type": "string"
+        }
+      }
     }
+  },
+  "events": {
+    "beforeDrill": {},
+    "drill": {}
   },
   "methods": {
     "getContextByNode": {},
     "getNode": {}
   },
   "extension": {
-    "_widgetName": "ojTreemap"
+    _WIDGET_NAME: "ojTreemap"
   }
 };
-oj.Components.registerMetadata('ojTreemap', 'dvtBaseComponent', ojTreemapMeta);
-oj.Components.register('oj-treemap', oj.Components.getMetadata('ojTreemap'));
+oj.CustomElementBridge.registerMetadata('oj-treemap', 'dvtBaseComponent', ojTreemapMeta);
+oj.CustomElementBridge.register('oj-treemap', {'metadata': oj.CustomElementBridge.getMetadata('oj-treemap')});
 })();
+
 });

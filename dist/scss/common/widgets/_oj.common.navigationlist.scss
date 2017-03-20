@@ -238,6 +238,12 @@
             }
         }
 
+        .oj-navigationlist-vertical.oj-navigationlist-page-level .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
+        {
+          .oj-contrast-marker & {
+              color: $navigationListPageLevelItemContrastLabelColorSelected;
+          }
+        }
 
         /*borders for high contrast mode*/
 
@@ -615,6 +621,9 @@
             
             .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
                 background-color: $navigationListPageLevelItemBgColorSelected;
+                .oj-contrast-marker & {
+                  background-color: $navigationListPageLevelItemContrastBgColorSelected;
+                }
             }
         }
         
@@ -645,6 +654,9 @@
         
          .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
             background-color: $navigationListPageLevelItemBgColorSelected;
+            .oj-contrast-marker & {
+                background-color: $navigationListPageLevelItemContrastBgColorSelected;
+            }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
@@ -663,7 +675,7 @@
         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
             color: $navigationListPageLevelItemLabelColorSelected;
             .oj-contrast-marker & {
-                color: $navigationListItemContrastLabelColorSelected;
+                color: $navigationListPageLevelItemContrastLabelColorSelected;
             }
             font-weight: $navigationListPageLevelItemFontWeightSelected;
         }
@@ -672,7 +684,7 @@
         {
             color: $navigationListPageLevelItemIconColorSelected;
             .oj-contrast-marker & {
-                color: $navigationListItemContrastLabelColorSelected;
+                color: $navigationListPageLevelItemContrastLabelColorSelected;
             }
         }
         
@@ -687,6 +699,12 @@
           color: $navigationListItemIconColorHover;
             .oj-contrast-marker & {
                 color: $navigationListItemContrastLabelColorHover;
+            }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
+        {
+            .oj-contrast-marker & {
+                color: $navigationListPageLevelItemContrastLabelColorSelected;
             }
         }
         // bg and border colors for hover or active  are same.
@@ -715,8 +733,15 @@
         .oj-navigationlist-horizontal .oj-navigationlist-element {
                 @include oj-display-flex-property();
         }
+        
         .oj-navigationlist-horizontal .oj-navigationlist-item {
                 @include oj-flex-property(1 1 auto);
+        }
+
+        /* This is due to bug in IE 11 where setting flex-shrink:0 is needed to avoid truncation in item text which is needed for overflow feature. This work around breaks text-wrap functionality so enabling this only when no text wrap. We can remove this once IE 11 support dropped and can update docs saying text-wrap is supported with overflow. */
+
+        .oj-navigationlist-horizontal:not(.oj-navigationlist-item-text-wrap) .oj-navigationlist-item {
+                @include oj-flex-property(1 0 auto);
         }
 
         // UP
@@ -832,6 +857,9 @@
 
         .oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
             background-color: $navigationBarItemBgColorSelected;
+            .oj-contrast-marker & {
+              background-color: $navigationBarItemContrastBgColorSelected
+            }
         }
         .oj-navigationlist-horizontal .oj-navigationlist-item-label {
                 @include oj-align-self-property(center);
@@ -879,6 +907,9 @@
 
             .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon {
                 background-color: $navigationListItemIconOnlyBgColorHover;
+                .oj-contrast-marker & {
+                    background-color: $navigationListItemContrastBgColorHover;
+                }
             }
             .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item-icon
             {
@@ -893,6 +924,9 @@
             }
             .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
                 background-color: $navigationBarPageLevelItemBgColorSelected;
+                .oj-contrast-marker & {
+                  background-color: $navigationBarPageLevelItemContrastBgColorSelected
+                }
             }
         }
         /*End of  horizontal navigationlist styles icons only*/
@@ -925,7 +959,7 @@
         }
         
         .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
-           padding: $navigationBarStackedItemPadding;
+            padding: $navigationBarStackedItemPadding;
         }
 
             //Add Space between icon and text
@@ -975,17 +1009,29 @@
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationBarItemLabelColorDefault;
+            .oj-contrast-marker & {
+              color: $navigationListItemContrastLabelColorDefault;
+            }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
             color: $navigationBarItemIconColorDefault;
+            .oj-contrast-marker & {
+              color: $navigationListItemContrastLabelColorDefault;
+            }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
             color: $navigationBarItemLabelColorSelected;
+            .oj-contrast-marker & {
+              color: $navigationBarItemContrastLabelColorSelected;
+            }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationBarItemIconColorSelected;
+            .oj-contrast-marker & {
+                color: $navigationBarItemContrastLabelColorSelected;
+            }
         }
         .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected){
             background-color: transparent;
@@ -1062,8 +1108,8 @@
           }
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:last-of-type,
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:last-of-type{
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-navigationlist-item-last-child, 
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-navigationlist-item-last-child {  
 
           @include oj-ltr() {
             border-top-right-radius: $navigationListPageLevelItemBorderRadius;
@@ -1083,24 +1129,39 @@
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
             background-color: $navigationBarPageLevelItemBgColorSelected;
+            .oj-contrast-marker & {
+                background-color: $navigationBarPageLevelItemContrastBgColorSelected;
+            }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
             color: $navigationListPageLevelItemLabelColorDefault;
+            .oj-contrast-marker & {
+              color: $navigationListItemContrastLabelColorDefault;
+            }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
         {
             color: $navigationListPageLevelItemIconColorDefault;
+            .oj-contrast-marker & {
+              color: $navigationListItemContrastLabelColorDefault;
+            }
         }
 
-        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label{
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
             color: $navigationBarPageLevelItemLabelColorSelected;
             font-weight: $navigationListPageLevelItemFontWeightSelected;
+            .oj-contrast-marker & {
+              color: $navigationBarPageLevelItemContrastLabelColorSelected;
+            }
         }
 
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
         {
             color: $navigationBarPageLevelItemIconColorSelected;
+            .oj-contrast-marker & {
+                color: $navigationBarPageLevelItemContrastLabelColorSelected;
+            }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
             color: $navigationListItemIconColorHover;
@@ -1113,6 +1174,11 @@
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active:not(.oj-selected){
             background-color: $navigationListPageLevelItemBgColorActive;
+            @if $navigationListPageLevelItemBgColorActive != null {
+                .oj-contrast-marker & {
+                    background-color: $navigationListItemContrastBgColorHover;
+                }
+            }
         }
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
         .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active:not(.oj-selected) {
@@ -1318,8 +1384,34 @@
             }
         }
 
+        .oj-navigationlist-horizontal.oj-navigationlist-app-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+                color: $navigationBarItemContrastLabelColorSelected;
+            }
+        }
+        .oj-navigationlist-horizontal.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+                color: $navigationBarPageLevelItemContrastLabelColorSelected;
+            }
+        }
+        
+        .oj-navigationlist-vertical.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+                color: $navigationListPageLevelItemContrastLabelColorSelected;
+            }
+        }
+
         .oj-hier-icon {
             @extend .oj-fwk-icon-folderhierarchy;
+        }
+
+        .oj-navigationlist-has-icons .oj-navigationlist-overflow-item-icon {
+            display: block;
+        }
+
+        .oj-navigationlist-overflow-item-icon {
+           display: none;
+           font-size: 24px;
         }
 
         .oj-menu-item-icon.oj-navigationlist-level-indicator {

@@ -101,38 +101,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
 oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix : "oj",
-  options: {
-    /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojNBox({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojNBox
-     * @instance
-     */
-    optionChange: null
-  },
 
   //** @inheritdoc */
   _CreateDvtComponent : function(context, callback, callbackObj) {
@@ -924,16 +892,20 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
 var ojNBoxMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "cellContent": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["counts", "auto"]
     },
     "cellMaximize": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["off", "on"]
     },
     "cells": {
       "type": "Array<object>"
@@ -949,28 +921,36 @@ var ojNBoxMeta = {
       "type": "Array<string>"
     },
     "groupBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["acrossCells", "none", "withinCell"]
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "labelTruncation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["ifRequired", "on"]
     },
     "maximizedColumn": {
-      "type": "string"
+      "type": "string",
+      "writeback": true
     },
     "maximizedRow": {
-      "type": "string"
+      "type": "string",
+      "writeback": true
     },
     "nodes": {
       "type": "Array<object>"
@@ -985,24 +965,189 @@ var ojNBoxMeta = {
       "type": "Array<object>"
     },
     "rowsTitle": {
-      "type": "object"
+      "type": "string"
     },
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "single", "multiple"]
     },
     "styleDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "cellDefaults": {
+          "type": "object",
+          "properties": {
+            "labelHalign": {
+              "type": "string",
+              "enumValues": ["center", "end", "start"]
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "showCount": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            },
+            "svgStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "columnLabelStyle": {
+          "type": "object"
+        },
+        "columnsTitleStyle": {
+          "type": "object"
+        },
+        "hoverBehaviorDelay": {
+          "type": "number"
+        },
+        "nodeDefaults": {
+          "type": "object",
+          "properties": {
+            "borderColor": {
+              "type": "string"
+            },
+            "borderWidth": {
+              "type": "number"
+            },
+            "color": {
+              "type": "string"
+            },
+            "iconDefaults": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "borderWidth": {
+                  "type": "number"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "number"
+                },
+                "opacity": {
+                  "type": "number"
+                },
+                "pattern": {
+                  "type": "string",
+                  "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle",
+                                 "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
+                },
+                "shape": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "number"
+                }
+              }
+            },
+            "indicatorColor": {
+              "type": "string"
+            },
+            "indicatorIconDefaults": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "borderWidth": {
+                  "type": "number"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "number"
+                },
+                "opacity": {
+                  "type": "number"
+                },
+                "pattern": {
+                  "type": "string",
+                  "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle",
+                                 "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
+                },
+                "shape": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "number"
+                }
+              }
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "secondaryLabelStyle": {
+              "type": "object"
+            },
+          }
+        },
+        "rowLabelStyle": {
+          "type": "object"
+        },
+        "rowsTitleStyle": {
+          "type": "object"
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["touchStart", "auto"]
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "highlightedCount": {
+          "type": "string"
+        },
+        "labelAdditionalData": {
+          "type": "string"
+        },
+        "labelGroup": {
+          "type": "string"
+        },
+        "labelOther": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        }
+      }
     }
   },
+  "events": {},
   "methods": {
     "getCell": {},
     "getColumn": {},
@@ -1017,10 +1162,10 @@ var ojNBoxMeta = {
     "getRowsTitle": {}
   },
   "extension": {
-    "_widgetName": "ojNBox"
+    _WIDGET_NAME: "ojNBox"
   }
 };
-oj.Components.registerMetadata('ojNBox', 'dvtBaseComponent', ojNBoxMeta);
-oj.Components.register('oj-n-box', oj.Components.getMetadata('ojNBox'));
+oj.CustomElementBridge.registerMetadata('oj-n-box', 'dvtBaseComponent', ojNBoxMeta);
+oj.CustomElementBridge.register('oj-n-box', {'metadata': oj.CustomElementBridge.getMetadata('oj-n-box')});
 })();
 });

@@ -16,6 +16,10 @@
       }      
     }
 
+    oj-n-box {
+      display: block;
+    }
+
     .oj-nbox {
       // hide any selection effects on the actual component
       @include oj-user-select-property(none);

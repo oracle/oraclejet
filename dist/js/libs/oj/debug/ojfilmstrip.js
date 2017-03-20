@@ -459,13 +459,16 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * Specify the child item whose logical page should be displayed.  The
      * position of the item on the logical page is not guaranteed.
      * 
-     * <p>This option can be set to either the string id of the item or the 
-     * numeric 0-based index of the item.  
+     * <p>This option can be set to an object containing either string id of the item 
+     * or numeric 0-based index of the item or both.  If the object contains both 
+     * string id and numeric index, string id takes precedence.
+     * Directly setting a value of type string or number for this option is deprecated.  
+     * The value set must be an object containing the string id or numeric index or both.
      * 
      * <p>FilmStrip will automatically update the value of this option when the 
      * logical page is changed to be the first item on the new logical page.  
-     * When the value is updated automatically, preference will be given to use 
-     * a string id, if possible.  
+     * When the value is updated automatically, it will be an object containing 
+     * numeric index and string id, if available.
      * 
      * <p>When the component is resized, FilmStrip will preserve the value of 
      * this option to show the new logical page on which the item is located.  
@@ -473,12 +476,14 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * @expose 
      * @memberof! oj.ojFilmStrip
      * @instance
-     * @type {(string|number)}
-     * @default <code class="prettyprint">0</code>
+     * @type {Object}
+     * @default <code class="prettyprint">{"index" : 0}</code>
      *
      * @example <caption>Initialize the FilmStrip with the 
      * <code class="prettyprint">currentItem</code> option specified:</caption>
-     * $( ".selector" ).ojFilmStrip( { "currentItem": 3 } );
+     * $( ".selector" ).ojFilmStrip( { "currentItem": {"index" : 3} } ); (or)
+     * $( ".selector" ).ojFilmStrip( { "currentItem": {"id" : "thirdItemId"} } ); (or)
+     * $( ".selector" ).ojFilmStrip( { "currentItem": {"index" : 3, "id" : "thirdItemId"} } );
      * 
      * @example <caption>Get or set the <code class="prettyprint">currentItem</code> 
      * option after initialization:</caption>
@@ -486,9 +491,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * var currentItem = $( ".selector" ).ojFilmStrip( "option", "currentItem" );
      * 
      * // setter
-     * $( ".selector" ).ojFilmStrip( "option", "currentItem", 3 );
+     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"index" : 3} ); (or)
+     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"id" : "thirdItemId"} ); (or)
+     * $( ".selector" ).ojFilmStrip( "option", "currentItem", {"index" : 3, "id" : "thirdItemId"} );
      */
-    currentItem: 0,
+    currentItem: {"index" : 0},
     
     /**
      * Specify the placement of the navigation arrows.
@@ -642,7 +649,14 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     this.keyEventNamespace = this.eventNamespace + "Key";
     this.navArrowHoverableEventNamespace = this.eventNamespace + "NavArrowHoverable";
     
+    //Make sure currentItem is an object of (id, index)
+    options.currentItem = this._convertItemToObj(options.currentItem);
+    
     this._setup(true);
+    
+    //update the currentItem object in options.
+    this._populateItemObj(options.currentItem);
+    this.option(_CURRENT_ITEM, options.currentItem, {'_context': {internalSet: true, writeback: true}});
   },
 
   // This method currently runs at create, init, and refresh time (since refresh() is called by _init()).
@@ -972,7 +986,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         bRefresh = (options.arrowVisibility != value);
         break;
       case _CURRENT_ITEM:
-        if (options.currentItem != value)
+        //Make sure currentItem value is an object of (id, index)
+        value = this._convertItemToObj(value);
+        this._populateItemObj(value);
+        var currentItem = options.currentItem;
+        if (currentItem && value && 
+              (currentItem.id != value.id || currentItem.index != value.index))
         {
           newPageIndex = this._findPage(value);
           //throw error if item not found
@@ -1652,7 +1671,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       contentWrapper.css(this._getCssSizeAttr(), componentSize);
     
     var newPageIndex = 0;
-    if (options.currentItem || options.currentItem === 0)
+    if (options.currentItem)
       newPageIndex = this._findPage(options.currentItem, fitCount);
     
     if (pagingModel.getPageCount() != newPageCount || 
@@ -1894,16 +1913,15 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (currItemPage != pageIndex)
     {
       var newFirstItem = this._getFirstItemOnPage(pageIndex);
-      //FIX : only update currentItem option if the filmstrip
-      //is not empty
-      if (newFirstItem !== -1)
+      //FIX : only update currentItem option if the filmstrip is not empty
+      if (newFirstItem)
         this.option(_CURRENT_ITEM, newFirstItem, {'_context': {writeback: true}});
     }
   },
   
   /** 
    * Get the 0-based index of the specified item.
-   * @param {(string|number)} item String id or 0-based index of item.
+   * @param {Object} item The item object.
    * @returns {number} The 0-based index of the specified item, or -1 if not found.
    * @memberof oj.ojFilmStrip
    * @instance
@@ -1912,33 +1930,73 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   _getItemIndex: function(item)
   {
     var itemIndex = -1;
-    var items = this._getItems();
-    if (typeof item === "number") {
-      if (item >= 0 && item < items.length)
-        itemIndex = item;
-    }
-    else if (typeof item === "string") {
-      //security test
-      if (oj.DomUtils.isValidIdentifier(item))
-      {
+    if (item) {
+      var items = this._getItems();
+      // If the item contains both id and index, item id takes precedence.
+      if (item.id && oj.DomUtils.isValidIdentifier(item.id)) {
         for (var i = 0; i < items.length; i++)
         {
           var itemElem = items[i];
           var itemId = itemElem.id;
-          if (itemId && itemId.length > 0 && itemId === item)
+          if (itemId && itemId.length > 0 && itemId === item.id)
           {
             itemIndex = i;
             break;
           }
         }
       }
+      else if (item.index != null && item.index >= 0 && item.index < items.length) {
+        itemIndex = item.index;
+      }
     }
     return itemIndex;
   },
   
+   /** 
+   * Convert any 0-based numeric item index or string item id to an item object of (id, index).
+   * @param {(string|number|Object)} item String item id or numeric item index or an item object of (id, index).
+   * @returns {Object} The item object of (id, index).
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _convertItemToObj: function(item)
+  {
+    var itemObj = null;
+    if (typeof item === "object") {
+      itemObj = item;
+    }
+    else if (typeof item === "number") {
+      itemObj = {"index": item};
+    }
+    else if (typeof item === "string") {
+      itemObj = {"id": item};
+    }
+    return itemObj;
+  },
+   
+   /** 
+   * Populates the item object with valid id and index
+   * @param {Object} item The item object to populate.
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _populateItemObj: function(item)
+  {
+    if (item && this._pagingModel.getPage() >= 0) {
+      var index = this._getItemIndex(item);
+      item["index"] = index;
+      if (item["id"] == null && index !== -1) {
+        var items = this._getItems();
+        item["id"] = items[index].id;
+      }
+    }
+  },
+  
   /** 
    * Find the logical page containing the specified item.
-   * @param {(string|number)} item String id or 0-based index of item.
+   * @param {Object} item The item object.
    * @param {?number} itemsPerPage The number of items on each logical page.
    * @returns {number} The 0-based index of the logical page containing the item, 
    *          or -1 if not found.
@@ -1964,8 +2022,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @param {number} pageIndex 0-based index of the logical page.
    * @param {?number} pageCount Number of logical pages.
    * @param {?number} itemsPerPage Number of items on each logical page.
-   * @returns {(string|number)} The string id or 0-based index of item, with 
-   *          preference given to string id.
+   * @returns {Object} The first item object.
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
@@ -1985,10 +2042,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       {
         var firstItemOnPage = items[itemIndex];
         var firstId = firstItemOnPage.id;
-        return ((firstId && firstId.length > 0) ? firstId : itemIndex);
+        var firstItem = {"id" : firstId, "index" : itemIndex};
+        return firstItem;
       }
     }
-    return -1;
+    return null;
   },
   
   /** 
@@ -2389,7 +2447,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       if (Math.abs(diff) >= threshold)
       {
         var newPageIndex = bNext ? pageIndex + 1 : pageIndex - 1;
-        var newFirstItem = this._getFirstItemOnPage(newPageIndex);
         
         //hide the page that we're not scrolling to
         var pageToHide = bNext ? pageIndex - 1 : pageIndex + 1;
@@ -2751,34 +2808,42 @@ var _ADJACENT = "adjacent",
 var ojFilmStripMeta = {
   "properties": {
     "arrowPlacement": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["adjacent", "overlay"]
     },
     "arrowVisibility": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["visible", "hidden", "hover", "auto"]
     },
     "currentItem": {
-      "type": "string|number"
-    },
-    "disabled": {
-      "type": "boolean"
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
     },
     "maxItemsPerPage": {
       "type": "number"
     },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     }
   },
   "methods": {
     "getItemsPerPage": {},
     "getPagingModel": {},
-    "refresh": {}
   },
   "extension": {
-    "_widgetName": "ojFilmStrip"
+    _WIDGET_NAME: "ojFilmStrip"
   }
 };
-oj.Components.registerMetadata('ojFilmStrip', 'baseComponent', ojFilmStripMeta);
-oj.Components.register('oj-film-strip', oj.Components.getMetadata('ojFilmStrip'));
+oj.CustomElementBridge.registerMetadata('oj-film-strip', 'baseComponent', ojFilmStripMeta);
+oj.CustomElementBridge.register('oj-film-strip', {'metadata': oj.CustomElementBridge.getMetadata('oj-film-strip')});
 })();
 });

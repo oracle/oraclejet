@@ -21,6 +21,17 @@
 @import "../../common/widgets/oj.common.datagrid";
 
 @if $includeDataGridClasses != false {
-  @include module-include-once("alta.ios.datagrid") {     
+  @include module-include-once("alta.ios.datagrid") {
+
+    /* Styling for the sort ascending icon */
+    .oj-datagrid-sort-ascending-icon {
+      @extend .oj-fwk-icon-caret02-n;
+    }
+
+    /* Styling for the sort descending icon */
+    .oj-datagrid-sort-descending-icon {
+      @extend .oj-fwk-icon-caret02-s;
+    }
+
   }
 }

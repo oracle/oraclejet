@@ -744,7 +744,10 @@ dvt.NBox.prototype.getAutomation = function() {
  * @override
  */
 dvt.NBox.prototype.GetComponentDescription = function() {
-  return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NBOX', DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this));
+  if (DvtNBoxDataUtils.hasValidData(this))
+    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NBOX', DvtNBoxDataUtils.getColumnCount(this) * DvtNBoxDataUtils.getRowCount(this));
+  else
+    return dvt.Bundle.getTranslation(this.getOptions(), 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA');
 };
 
 /**
@@ -1387,6 +1390,7 @@ DvtNBoxDefaults.VERSION_1 = {
   'highlightMatch' : 'all',
   'highlightedCategories' : [],
   'touchResponse': 'auto',
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;'),
   'styleDefaults': {
     'animationDuration': 500,
     'hoverBehaviorDelay': 200,
@@ -4456,13 +4460,15 @@ DvtNBoxAutomation.prototype._compareCategories = function(arr1, arr2) {
  */
 DvtNBoxAutomation.prototype._getCellIndexFromValues = function(values) {
   var nBox = this.getComponent();
-  var colCount = DvtNBoxDataUtils.getColumnCount(nBox);
+  if (DvtNBoxDataUtils.hasValidData(nBox)) {
+    var colCount = DvtNBoxDataUtils.getColumnCount(nBox);
 
-  var rowIndex = DvtNBoxDataUtils.getRowIndex(nBox, values[0]);
-  var colIndex = DvtNBoxDataUtils.getColumnIndex(nBox, values[1]);
+    var rowIndex = DvtNBoxDataUtils.getRowIndex(nBox, values[0]);
+    var colIndex = DvtNBoxDataUtils.getColumnIndex(nBox, values[1]);
 
-  if (colIndex != null && rowIndex != null) {
-    return colIndex + colCount * rowIndex;
+    if (colIndex != null && rowIndex != null) {
+      return colIndex + colCount * rowIndex;
+    }
   }
   return null;
 };
@@ -4496,7 +4502,7 @@ DvtNBoxAutomation.prototype._getParentObject = function(displayable, type) {
  * @return {String} NBox property value for the key and attribute
  */
 DvtNBoxAutomation.prototype.getData = function(key, attribute) {
-  if (this._nBox) {
+  if (this._nBox && DvtNBoxDataUtils.hasValidData(this._nBox)) {
     if (key == 'rowsTitle') {
       //rows title
       if (this._nBox.getOptions()['rowsTitle'])
@@ -4593,17 +4599,19 @@ DvtNBoxAutomation.prototype._getGroupNodeData = function(groupData) {
  * @return {Object} NBox cell data object
  */
 DvtNBoxAutomation.prototype.getCell = function(rowValue, columnValue) {
-  var cellObj = DvtNBoxDataUtils.getCellByRowColumn(this._nBox, rowValue, columnValue);
-  if (cellObj) {
-    var cellIndex = cellObj.getCellIndex();
-    var data = {};
-    data['label'] = cellObj.getLabel();
-    data['background'] = cellObj.getBackground();
-    data['getNodeCount'] = function() {return cellObj.getNodeCount();};
-    data['rowValue'] = rowValue;
-    data['columnValue'] = columnValue;
-    data['cellIndex'] = cellIndex;
-    return data;
+  if (this._nBox && DvtNBoxDataUtils.hasValidData(this._nBox)) {
+    var cellObj = DvtNBoxDataUtils.getCellByRowColumn(this._nBox, rowValue, columnValue);
+    if (cellObj) {
+      var cellIndex = cellObj.getCellIndex();
+      var data = {};
+      data['label'] = cellObj.getLabel();
+      data['background'] = cellObj.getBackground();
+      data['getNodeCount'] = function() {return cellObj.getNodeCount();};
+      data['rowValue'] = rowValue;
+      data['columnValue'] = columnValue;
+      data['cellIndex'] = cellIndex;
+      return data;
+    }
   }
   return null;
 };
@@ -4616,7 +4624,7 @@ DvtNBoxAutomation.prototype.getCell = function(rowValue, columnValue) {
  */
 DvtNBoxAutomation.prototype.getCellNode = function(cellData, nodeIndex) {
   //If nodes are grouped then don't get node by index
-  if (this._nBox && !DvtNBoxDataUtils.getGrouping(this._nBox)) {
+  if (this._nBox && DvtNBoxDataUtils.hasValidData(this._nBox) && !DvtNBoxDataUtils.getGrouping(this._nBox)) {
     var cellObj = DvtNBoxDataUtils.getCellByRowColumn(this._nBox, cellData['rowValue'], cellData['columnValue']);
     var nodeData = cellObj.getNode(nodeIndex);
     return this._getNode(nodeData);
@@ -4790,15 +4798,20 @@ dvt.Obj.createSubclass(DvtNBoxRenderer, dvt.Obj);
  */
 DvtNBoxRenderer.render = function(nbox, container, availSpace) {
   DvtNBoxRenderer._renderBackground(nbox, container, availSpace);
-  DvtNBoxRenderer._renderLegend(nbox, container, availSpace);
-  DvtNBoxRenderer._adjustAvailSpace(availSpace);
+  if (DvtNBoxDataUtils.hasValidData(nbox)) {
+    DvtNBoxRenderer._renderLegend(nbox, container, availSpace);
+    DvtNBoxRenderer._adjustAvailSpace(availSpace);
 
-  DvtNBoxRenderer._renderTitles(nbox, container, availSpace);
-  DvtNBoxRenderer._adjustAvailSpace(availSpace);
-  DvtNBoxRenderer._renderCells(nbox, container, availSpace);
-  DvtNBoxRenderer._renderNodes(nbox, container, availSpace);
-  DvtNBoxRenderer._renderInitialSelection(nbox);
-  DvtNBoxRenderer._fixZOrder(nbox);
+    DvtNBoxRenderer._renderTitles(nbox, container, availSpace);
+    DvtNBoxRenderer._adjustAvailSpace(availSpace);
+    DvtNBoxRenderer._renderCells(nbox, container, availSpace);
+    DvtNBoxRenderer._renderNodes(nbox, container, availSpace);
+    DvtNBoxRenderer._renderInitialSelection(nbox);
+    DvtNBoxRenderer._fixZOrder(nbox);
+  } else {
+    //Render empty text
+    DvtNBoxRenderer._renderEmptyText(nbox, container, availSpace);
+  }
 };
 
 
@@ -6054,6 +6067,23 @@ DvtNBoxRenderer.getNodeOrderFunction = function(nbox) {
     }
   };
 };
+
+/**
+ * Renders the empty text for the component.
+ * @param {dvt.NBox} nbox the nbox component
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} availSpace The available space.
+ * @private
+ */
+DvtNBoxRenderer._renderEmptyText = function(nbox, container, availSpace) {
+  // Get the empty text string
+  var options = nbox.getOptions();
+  var emptyTextStr = dvt.Bundle.getTranslation(options, 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA');
+
+  dvt.TextUtils.renderEmptyText(container, emptyTextStr,
+      new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
+      nbox.getEventManager(), options['_statusMessageStyle']);
+};
 // Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
 
 
@@ -6643,8 +6673,10 @@ DvtNBoxCellRenderer.animateUpdate = function(animationHandler, oldCell, newCell)
   var rtl = dvt.Agent.isRightToLeft(newNBox.getCtx());
   var widthDiff = rtl ? 0 : newBackground.getWidth() - oldBackground.getWidth();
 
-  playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newBackground, newBackground.getFill, newBackground.setFill, newBackground.getFill());
-  newBackground.setFill(oldBackground.getFill());
+  if (!newBackground.getFill().equals(oldBackground.getFill())) {
+    playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newBackground, newBackground.getFill, newBackground.setFill, newBackground.getFill());
+    newBackground.setFill(oldBackground.getFill());
+  }
   playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newBackground, newBackground.getWidth, newBackground.setWidth, newBackground.getWidth());
   newBackground.setWidth(oldBackground.getWidth());
   playable.getAnimator().addProp(dvt.Animator.TYPE_NUMBER, newBackground, newBackground.getHeight, newBackground.setHeight, newBackground.getHeight());
@@ -7369,7 +7401,9 @@ DvtNBoxNodeRenderer._renderNodeBackground = function(nbox, node, nodeContainer, 
   nodeRect.setSolidFill(color);
   if (DvtNBoxStyleUtils.getNodeBorderColor(nbox, node) && DvtNBoxStyleUtils.getNodeBorderWidth(nbox, node))
     nodeRect.setSolidStroke(DvtNBoxStyleUtils.getNodeBorderColor(nbox, node), null, DvtNBoxStyleUtils.getNodeBorderWidth(nbox, node));
-  nodeRect.setStyle(node['style']).setClassName(node['className']);
+  var style = node['svgStyle'] || node['style'];
+  var className = node['svgClassName'] || node['className'];
+  nodeRect.setStyle(style).setClassName(className);
   nodeContainer.addChild(nodeRect);
   DvtNBoxDataUtils.setDisplayable(nbox, node, nodeRect, 'background');
 };
@@ -7443,7 +7477,9 @@ DvtNBoxNodeRenderer._renderNodeIndicator = function(nbox, node, nodeContainer, n
       indicatorMarker.setSolidFill(indicatorIconColor);
 
     //Set the Indicator marker custom style and class name
-    indicatorMarker.setStyle(indicatorIcon['style']).setClassName(indicatorIcon['className']);
+    var style = indicatorIcon['svgStyle'] || indicatorIcon['style'];
+    var className = indicatorIcon['svgClassName'] || indicatorIcon['className'];
+    indicatorMarker.setStyle(style).setClassName(className);
 
     // If indicatorIcon is too wide, add clip path
     if (indicatorIconWidthWithStroke > nodeLayout['indicatorSectionWidth']) {
@@ -7525,7 +7561,9 @@ DvtNBoxNodeRenderer._renderNodeIcon = function(nbox, node, nodeContainer, nodeLa
       iconMarker.setSolidFill(iconColor);
 
     //set the Icon Marker custom style and class name
-    iconMarker.setStyle(icon['style']).setClassName(icon['className']);
+    var style = icon['svgStyle'] || icon['style'];
+    var className = icon['svgClassName'] || icon['className'];
+    iconMarker.setStyle(style).setClassName(className);
 
     // If icon is on one of the ends, add clip path
     if (nodeLayout['indicatorSectionWidth'] == 0 || nodeLayout['labelSectionWidth'] == 0) {
@@ -7727,7 +7765,7 @@ DvtNBoxNodeRenderer.animateUpdate = function(animationHandler, oldNode, newNode)
 DvtNBoxNodeRenderer._animateFill = function(playable, oldNBox, newNBox, oldNode, newNode, displayableKey) {
   var oldDisplayable = DvtNBoxDataUtils.getDisplayable(oldNBox, oldNode.getData(), displayableKey);
   var newDisplayable = DvtNBoxDataUtils.getDisplayable(newNBox, newNode.getData(), displayableKey);
-  if (oldDisplayable && newDisplayable) {
+  if (oldDisplayable && newDisplayable && newDisplayable.getFill() instanceof dvt.SolidFill && !newDisplayable.getFill().equals(oldDisplayable.getFill())) {
     playable.getAnimator().addProp(dvt.Animator.TYPE_FILL, newDisplayable, newDisplayable.getFill, newDisplayable.setFill, newDisplayable.getFill());
     newDisplayable.setFill(oldDisplayable.getFill());
   }
@@ -8680,6 +8718,10 @@ dvt.Obj.createSubclass(DvtNBoxDataUtils, dvt.Obj);
  * @param {dvt.NBox} nbox the nbox component
  */
 DvtNBoxDataUtils.processDataObject = function(nbox) {
+  // If no data or unusable data, return
+  if (!DvtNBoxDataUtils.hasValidData(nbox))
+    return;
+
   var options = nbox.getOptions();
   var cells = options[dvt.NBoxConstants.CELLS];
   var cellMap = {};
@@ -8804,6 +8846,20 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
   }
 };
 
+/**
+ * Returns true if the specified nbox has valid row and column data.
+ * @param {dvt.NBox} nbox the nbox component
+ * @return {boolean} true if nbox has row and column data
+ */
+DvtNBoxDataUtils.hasValidData = function(nbox) {
+  var options = nbox.getOptions();
+  //Check if NBox has row and column data
+  if (!options || !options[dvt.NBoxConstants.ROWS] || options[dvt.NBoxConstants.ROWS].length < 1 ||
+      !options[dvt.NBoxConstants.COLUMNS] || options[dvt.NBoxConstants.COLUMNS].length < 1) {
+    return false;
+  }
+  return true;
+};
 
 /**
  * Gets the number of columns in the nbox
@@ -9745,9 +9801,9 @@ DvtNBoxStyleUtils.getRowLabelStyle = function(nbox, rowIndex) {
  */
 DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
   var options = nbox.getOptions();
-  var styleKey = DvtNBoxStyleUtils._getCellStyleKey(nbox, cellIndex);
-  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKey);
-  var nBoxCellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_' + styleKey];
+  var styleKeys = DvtNBoxStyleUtils._getCellStyleKeys(nbox, cellIndex);
+  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKeys[0], styleKeys[1]);
+  var nBoxCellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS]['_' + styleKeys[0]];
 
   var cellStyle = new dvt.CSSStyle();
   dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
@@ -9768,8 +9824,8 @@ DvtNBoxStyleUtils.getCellStyle = function(nbox, cellIndex) {
  * @return {object} the cell style object for the specified cell index
  */
 DvtNBoxStyleUtils.getCellStyleObject = function(nbox, cellIndex) {
-  var styleKey = DvtNBoxStyleUtils._getCellStyleKey(nbox, cellIndex);
-  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKey);
+  var styleKeys = DvtNBoxStyleUtils._getCellStyleKeys(nbox, cellIndex);
+  var cellStyleOption = DvtNBoxStyleUtils._getCellStyleOption(nbox, cellIndex, styleKeys[0], styleKeys[1]);
   if (cellStyleOption) {
     dvt.ArrayUtils.forEach(DvtNBoxStyleUtils._getCellStyleProperties(), function(entry) {
       delete cellStyleOption[dvt.CSSStyle.cssStringToObjectProperty(entry)];
@@ -9780,23 +9836,26 @@ DvtNBoxStyleUtils.getCellStyleObject = function(nbox, cellIndex) {
 };
 
 /**
- * Returns the cell style key based on the state of the cell
+ * Returns the cell style keys based on the state of the cell
  * @param {dvt.NBox} nbox the nbox displayable
  * @param {number} cellIndex the specified cell index
- * @return {string} cell style key based on the state of the cell
+ * @return {Array} style keys based on the state of the cell
  * @private
  */
-DvtNBoxStyleUtils._getCellStyleKey = function(nbox, cellIndex) {
+DvtNBoxStyleUtils._getCellStyleKeys = function(nbox, cellIndex) {
   var styleKey = dvt.NBoxConstants.STYLE;
+  var svgStyleKey = 'svgStyle';
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
   if (DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     styleKey = 'minimizedStyle';
+    svgStyleKey = 'minimizedSvgStyle';
   }
   else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     styleKey = 'maximizedStyle';
+    svgStyleKey = 'maximizedSvgStyle';
   }
-  return styleKey;
+  return [styleKey, svgStyleKey];
 };
 
 /**
@@ -9805,20 +9864,22 @@ DvtNBoxStyleUtils._getCellStyleKey = function(nbox, cellIndex) {
  * @param {dvt.NBox} nbox the nbox displayable
  * @param {number} cellIndex the specified cell index
  * @param {string} styleKey  style key based on the state of the cell
+ * @param {string} svgStyleKey  svg style key based on the state of the cell
  * @return {object} object representing cell style attributes
  * @private
  */
-DvtNBoxStyleUtils._getCellStyleOption = function(nbox, cellIndex, styleKey) {
+DvtNBoxStyleUtils._getCellStyleOption = function(nbox, cellIndex, styleKey, svgStyleKey) {
   var options = nbox.getOptions();
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
 
   //Cell style properites from public defaults
-  var cellDefault = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS][styleKey];
+  var cellStyleDefaults = options[dvt.NBoxConstants.STYLE_DEFAULTS][dvt.NBoxConstants.CELL_DEFAULTS];
+  var cellDefault = cellStyleDefaults[svgStyleKey] || cellStyleDefaults[styleKey];
   if (cellDefault && !(cellDefault instanceof Object)) {
     cellDefault = dvt.CSSStyle.cssStringToObject(cellDefault);
   }
   //Merge the properties from public defaults with cell style properties
-  var cellStyle = cell[styleKey];
+  var cellStyle = cell[svgStyleKey] || cell[styleKey];
   if (cellStyle) {
     if (!(cellStyle instanceof Object))
       cellStyle = dvt.CSSStyle.cssStringToObject(cellStyle);
@@ -9850,16 +9911,19 @@ DvtNBoxStyleUtils._getCellStyleProperties = function() {
  */
 DvtNBoxStyleUtils.getCellClassName = function(nbox, cellIndex) {
   var className = 'className';
+  var svgClassName = 'svgClassName';
   var maximizedRow = DvtNBoxDataUtils.getMaximizedRow(nbox);
   var maximizedColumn = DvtNBoxDataUtils.getMaximizedColumn(nbox);
   if (DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     className = 'minimizedClassName';
+    svgClassName = 'minimizedSvgClassName';
   }
   else if ((maximizedRow || maximizedColumn) && !DvtNBoxDataUtils.isCellMinimized(nbox, cellIndex)) {
     className = 'maximizedClassName';
+    svgClassName = 'maximizedSvgClassName';
   }
   var cell = DvtNBoxDataUtils.getCell(nbox, cellIndex);
-  return cell[className];
+  return (cell[svgClassName] || cell[className]);
 };
 
 

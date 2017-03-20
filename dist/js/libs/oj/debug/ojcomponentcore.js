@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojmessaging'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'jqueryui-amd/widget', 'jqueryui-amd/unique-id', 'jqueryui-amd/keycode', 'jqueryui-amd/focusable', 'jqueryui-amd/tabbable', 'ojs/ojmessaging', 'ojs/ojcustomelement'], function(oj, $)
 {
 /*
 ** Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
@@ -109,7 +109,7 @@ oj.Components.createDynamicPropertyGetter = function(callback)
  * </pre>
  * If widgetName is not specified, and if more than one widget is associated with the element,
  * the method will a return the widget that was created first.
- * @param {Element} element - HTML element
+ * @param {?Element|?Node} element - HTML element
  * @param {string=} widgetName - optional widget name
  * @return {Function|null} widget constructor
  * @export
@@ -270,12 +270,12 @@ oj.Components.__getDefaultOptions = function(hierarchyNames)
 /**
  * Retrieves the JET component element that
  * the node is in.
- * @param {Node|null} node - DOM node
- * @return {Node|null} componentElement - JET component element
+ * @param {?Element|?Node} node - DOM node
+ * @return {?Element|?Node} componentElement - JET component element
  * A component element is the DOM element on which the JET component is
  * initialized. It could be a custom element, composite element or a JQueryUI
  * element. The static methods take a component element, figure out what type it
- * is and then uses the appropriate syntax to make the specified method or property
+ * is and then use the appropriate syntax to make the specified method or property
  * call.
  * @export
 */
@@ -284,17 +284,29 @@ oj.Components.getComponentElementByNode = function(node)
   if (node == null){
     return null;
   }
-  if (node.getAttribute('data-oj-internal')){
+  var containingComposite = (oj.Composite ? oj.Composite.getContainingComposite(node) : null);
+  if (containingComposite){
+    return containingComposite;
+  }
+  if (node.hasAttribute('data-oj-internal')){
+    if (node.parentNode.hasAttribute('data-oj-surrogate-id')){ // internal component is a popup
+      node = document.querySelector('[data-oj-popup-' + node.id + '-parent]'); // retrieves popups parent element
+      return oj.Components.getComponentElementByNode(node);
+    }
     return oj.Components.getComponentElementByNode(node.parentNode);
   }
   if (_isComponentElement(node)){
     return node;
   }
   if (node.classList.contains('oj-component')){
-    node = $(node).find('.oj-component-initnode').not('[data-oj-internal]')[0] || node;
+    node = node.querySelector('.oj-component-initnode:not([data-oj-internal])') || node;
     if (oj.Components.getWidgetConstructor(node)){
       return node;
     }
+  }
+  if (node.hasAttribute('data-oj-containerid')){ // node is non-internal component popup e.g listbox
+      node = document.getElementById(node.getAttribute('data-oj-containerid'));
+      return oj.Components.getComponentElementByNode(node);
   }
   return oj.Components.getComponentElementByNode(node.parentNode);
 };
@@ -303,8 +315,8 @@ oj.Components.getComponentElementByNode = function(node)
  * Retrieves the subId of the node as
  * as part of a locator object i.e. at least
  * {subId: subIdOfNode}
- * @param {Element} componentElement - JET component element
- * @param {Element} node - DOM node
+ * @param {?Element} componentElement - JET component element
+ * @param {?Element} node - DOM node
  * @return {*} locator - object with at least a subId
  * or null if the node does not have a subId
  * @export
@@ -317,7 +329,7 @@ oj.Components.getSubIdByNode = function(componentElement, node)
 /**
  * Returns the component DOM node indicated
  * by the locator parameter.
- * @param {Element} componentElement - JET component element
+ * @param {?Element} componentElement - JET component element
  * @param {Object} locator - Object containing, at minimum,
  * a subId property, whose value is a string that identifies
  * a particular DOM node in this component.
@@ -333,7 +345,7 @@ oj.Components.getNodeBySubId = function(componentElement, locator)
 /**
  * Retrieves the specified option of
  * the specified JET component element
- * @param {Element} componentElement - JET component element
+ * @param {?Element} componentElement - JET component element
  * @param {string} option - option to retrieve
  * @return {*} value of option
  * @export
@@ -342,6 +354,10 @@ oj.Components.getComponentOption = function(componentElement, option)
 { 
   if (!_isComponentElement(componentElement)){
     throw new Error('node is not a component element');
+  } else if (_isCompositeOrCustom(componentElement)){
+    if (componentElement['getProperty']){
+      return componentElement['getProperty'].call(componentElement, option);
+    }
   } else {
     return oj.Components.getWidgetConstructor(componentElement)('option', option);
   }
@@ -350,7 +366,7 @@ oj.Components.getComponentOption = function(componentElement, option)
 /**
  * Sets the specified option of the specified
  * JET component element to the specified value
- * @param {Element} componentElement - JET component element
+ * @param {?Element} componentElement - JET component element
  * @param {string} option - option to set
  * @param {*} value - value to set option to
  * @export
@@ -359,6 +375,10 @@ oj.Components.setComponentOption = function(componentElement, option, value)
 { 
   if (!_isComponentElement(componentElement)){
     throw new Error('node is not a component element');
+  } else if (_isCompositeOrCustom(componentElement)){
+    if (componentElement['setProperty']){
+      componentElement['setProperty'].call(componentElement, option, value);
+    }
   } else {
     oj.Components.getWidgetConstructor(componentElement)('option', option, value);
   }
@@ -367,7 +387,7 @@ oj.Components.setComponentOption = function(componentElement, option, value)
 /**
  * Calls the specified JET component element's method
  * with the given arguments
- * @param {Element} componentElement - JET component element
+ * @param {?Element} componentElement - JET component element
  * @param {string} method - name of JET component element method to call
  * @param {...*} methodArguments - list of arguments to pass to method call
  * @return {*}
@@ -377,6 +397,10 @@ oj.Components.callComponentMethod = function(componentElement, method, methodArg
 {
   if (!_isComponentElement(componentElement)){
     throw new Error('node is not a component element');
+  } else if (_isCompositeOrCustom(componentElement)){
+    if (componentElement[method]){
+      return componentElement[method].apply(componentElement, [].slice.call(arguments, 2));
+    }
   } else {
     return oj.Components.getWidgetConstructor(componentElement).apply($(componentElement), [].slice.call(arguments, 1));
   }
@@ -457,9 +481,17 @@ function _accumulateValues(target, source, valueInArray)
 /**
  * @ignore
  */
+ function _isCompositeOrCustom(node)
+ {
+  return oj.BaseCustomElementBridge.isRegistered(node.tagName);
+ }
+
+/**
+ * @ignore
+ */
  function _isComponentElement(node)
  {
-  return oj.Components.getWidgetConstructor(node);
+  return (_isCompositeOrCustom(node) || oj.Components.getWidgetConstructor(node));
  }
 
 /**
@@ -476,379 +508,6 @@ var _OJ_WIDGET_NAMES_DATA = "oj-component-names";
  * @private
  */
 var _OJ_COMPONENT_NODE_CLASS = "oj-component-initnode";
-
-/**
- * Key used for storing a reference to the JQuery widget constructor.
- * @private
- */
-oj.Components._WIDGET_KEY = "_ojwidget";
-
-/**
- * Key used for storing a create object containing a Promise that is resolved when the element is upgraded.
- * @private
- */
-oj.Components._CREATE_KEY = "_createPromise";
-
-/**
- * Key used for storing a Promise resolve function within an element's _createPromise object.
- * @private
- */
-oj.Components._CREATE_RESOLVE_KEY = "_resolve";
-
-/**
- * Key used for storing a Promise resolve function within an element's _createPromise object.
- * @private
- */
-oj.Components._CREATE_PROMISE_KEY = "_promise";
-
-/**
- * Map of registered custom element names
- * @private
- */
-oj.Components._CUSTOM_ELEMENT_MAP = {};
-
-/**
- * Map of registered custom element names
- * @private
- */
-oj.Components._METADATA_MAP = {};
-
-/**
- * Registers component metadata merging it with the metadata from its superclass hierarchy as needed.
- * @param  {string} className       The component classname
- * @param  {string?} superclassName The component's superclass name
- * @param  {Object} metadata        The component metadata object
- * @ignore
- */
-oj.Components.registerMetadata = function(className, superclassName, metadata) 
-{
-  // Store metadata under element tag name for easy looking up binding
-  var elementName = oj.__AttributeUtils.propertyNameToAttribute(className.toLowerCase());
-  if (superclassName) 
-  {
-    var superName = oj.__AttributeUtils.propertyNameToAttribute(superclassName.toLowerCase());
-    var superMeta = oj.CollectionUtils.copyInto({}, oj.Components.getMetadata(superName), undefined, true);
-    oj.Components._METADATA_MAP[elementName] = oj.CollectionUtils.copyInto(superMeta, metadata, undefined, true);
-  } 
-  else 
-  {
-    oj.Components._METADATA_MAP[elementName] = metadata;
-  }
-};
-
-/**
- * Returns the metadata object for the given component.
- * @param  {string} tagName        The component tag name
- * @return {Object}                The component metadata object
- * @ignore
- */
-oj.Components.getMetadata = function(tagName) 
-{
-  return oj.Components._METADATA_MAP[tagName.toLowerCase()];
-};
-
-/**
- * Registers a component as a custom element.
- * @param {string} tagName The component tag name
- * @param {Object} metadata Object containing info like the widget name, whether component has an inner element, 
- *                             an outer wrapper, or default attributes, and the component metadata.
- * @ignore
- */
-oj.Components.register = function(tagName, metadata) 
-{
-  if (tagName && document.registerElement) 
-  {
-    var lowerTagName = tagName.toLowerCase();
-    if (!oj.Components._CUSTOM_ELEMENT_MAP[lowerTagName]) {
-      oj.Components._CUSTOM_ELEMENT_MAP[lowerTagName] = true;
-      var proto = oj.Components._getPrototype(metadata);
-      document.registerElement(lowerTagName, {'prototype': proto});
-    }
-  }
-};
-
-/**
- * Returns whether a JET component tag has been registered.
- * @param  {string}  tagName The tag name to look up
- * @return {boolean} True if the component module has been loaded and registered
- * @ignore
- */
-oj.Components.isRegistered = function(tagName) 
-{
-  if (tagName)
-    return oj.Components._CUSTOM_ELEMENT_MAP[tagName.toLowerCase()];
-  return false;
-};
-
-/**
- * Returns a Promise that is resolved when the custom element's prototype has been upgraded.
- * @param  {Element}  element The element to check
- * @return {Promise} The Promise that will be resolved when upgrade is complete
- * @ignore
- */
-oj.Components.getCreatePromise = function(element) 
-{
-  var createPromise = element[oj.Components._CREATE_KEY];
-  if (!createPromise) 
-  {
-    createPromise = {};
-    createPromise[oj.Components._CREATE_PROMISE_KEY] = new Promise(function (resolve, reject) {
-      createPromise[oj.Components._CREATE_RESOLVE_KEY] = resolve;
-    });
-    element[oj.Components._CREATE_KEY] = createPromise;
-  }
-  return createPromise[oj.Components._CREATE_PROMISE_KEY];
-};
-
-/**
- * Returns the prototype for the element.
- * @private
- */
-oj.Components._getPrototype = function(metadata) 
-{
-  var proto = Object.create(HTMLElement.prototype);
-
-  // Add properties and methods from metadata
-  var props = metadata['properties'];
-  var methods = metadata['methods'];
-
-  var widgetInfo = metadata['extension'];
-  var widgetName = widgetInfo['_widgetName'];
-
-  oj.Components._addComponentProperties(props, proto);
-  oj.Components._addComponentMethods(methods, proto);
-  oj.Components._addElementMethods(widgetName, props, widgetInfo, proto);
-
-  return proto;
-};
-
-/**
- * Add component metadata properties to the prototype.
- * @private
- */
-oj.Components._addComponentProperties = function(props, proto) 
-{
-  Object.keys(props).forEach(function(prop) {
-    oj.Components._addComponentProperty(prop, props[prop], proto);
-  });
-};
-
-/**
- * Add a component property to the prototype.
- * @private
- */
-oj.Components._addComponentProperty = function(prop, type, proto) 
-{
-  Object.defineProperty(proto, prop, 
-  {
-    'configurable': true,
-    'enumerable': true,
-    'get': function() 
-    {
-      return this[oj.Components._WIDGET_KEY]('option', prop);
-    },
-    'set': function(value) 
-    {
-      // Ignore sets where widget hasn't yet been instantiated, e.g. when
-      // the JET component sets properties during the widget creation
-      if (this[oj.Components._WIDGET_KEY])
-        this[oj.Components._WIDGET_KEY]('option', prop, value);
-    }
-  });
-};
-
-/**
- * Add component metadata methods to the prototype.
- * @private
- */
-oj.Components._addComponentMethods = function(methods, proto) 
-{
-  Object.keys(methods).forEach(function(method) 
-  {
-    var params = methods[method]['params'];
-    // Create argument list for method
-    var args = [];
-    if (params)
-    {
-      params.forEach(function(param) 
-      {
-        var arg = param['name'];
-        if (arg.indexOf('.') === -1)
-          args.push(arg); 
-      });
-    }
-
-    // ok to always return the result of calling the method? can do if check and branch if not
-    var main = "return this._ojwidget('" + method + (args.length > 0 ? ("', " + args.join()) : "'" ) + ");";
-    proto[method] = new Function(args, main);
-  });
-};
-
-/**
- * Add element methods for custom element lifecycle callbacks and private methods needed for binding.
- * This method will handle initializing the jQuery constructor with the component options.
- * @private
- */
-oj.Components._addElementMethods = function(widgetName, props, widgetInfo, proto) 
-{
-  // Add createdCallback lifecycle listener so bindings can track
-  proto['createdCallback'] = function() 
-  {
-    var createPromise = this[oj.Components._CREATE_KEY];
-    if (createPromise) 
-    {
-      // If the create promise object exists, check to see if it needs to be resolved
-      var resolveFunc = createPromise[oj.Components._CREATE_RESOLVE_KEY];
-      if (resolveFunc) 
-      {
-        resolveFunc();
-        delete this[oj.Components._CREATE_KEY][oj.Components._CREATE_RESOLVE_KEY];
-      }
-    } 
-    else 
-    {
-      // If a create promise has not been created, create it with a resolved promise
-      this[oj.Components._CREATE_KEY] = {};
-      this[oj.Components._CREATE_KEY][oj.Components._CREATE_PROMISE_KEY] = Promise.resolve();
-    }
-  };
-
-  // Add attachedCallback lifecycle listener to initialize jQuery widget with initial options when attached to DOM
-  proto['attachedCallback'] = function() 
-  {
-    // Check to see if the widget has been initialized
-    if (!this[oj.Components._WIDGET_KEY]) 
-    {  
-      var innerTagName = widgetInfo['_innerElement'];
-      var widgetElem = this;
-      // If component widget is bound to an inner child element like <ul> for <oj-list-view>, 
-      // create one only if the application does not provide it.
-      if (innerTagName)
-      {
-        var firstChild = this.firstElementChild;
-        if (firstChild && firstChild.tagName.toLowerCase() === innerTagName)
-        {
-          widgetElem = firstChild;
-        }
-        else
-        {
-          widgetElem = oj.Components._createInnerElem(innerTagName, this, widgetInfo['_defaultAttrs'], widgetInfo['_transferAttrs']);
-        }
-      }
-       
-      // Create initial options object
-      var widgetOptions = widgetInfo['_hasWrapper'] ? {'_wrapper': this} : {};
-      var self = this;
-      var hasExpressions = false;
-      Object.keys(props).forEach(function(prop) 
-      {
-        var attr = oj.__AttributeUtils.propertyNameToAttribute(prop);
-        if (self.hasAttribute(attr)) 
-        {
-          var val = self.getAttribute(attr);
-          var info = oj.__AttributeUtils.getExpressionInfo(val);
-          if (!info.expr) 
-          {
-            widgetOptions[prop] = oj.__AttributeUtils.coerceValue(prop, val, props[prop]['type']);
-          }
-          else 
-          {
-            hasExpressions = true;
-          }
-        }
-      });
-
-      // Set oj-complete style class if no expressions are found to make component visible
-      if (!hasExpressions)
-      {
-        this.classList.add('oj-complete');
-      }
-
-      widgetOptions['optionChange'] = function (event, data)
-      {
-        var params = {
-          'detail': {'value': data['value'], 'previousValue': data['previousValue']}
-        };
-        this.dispatchEvent(new CustomEvent(data['option'] + '-changed', params));
-      }
-
-      // Initialize jQuery object with options and pass element as wrapper if needed
-      $(widgetElem)[widgetName](widgetOptions);
-      this[oj.Components._WIDGET_KEY] = oj.Components.getWidgetConstructor(widgetElem, widgetName);
-    } 
-    else 
-    {
-      oj.Components.subtreeAttached(this);
-    }
-  };
-
-  // Add detatchedCallback lifecycle listener for cleanup
-  proto['detachedCallback'] = function() 
-  {
-    oj.Components.subtreeDetached(this);
-  };
-
-  // Add attributeChangedCallback lifecycle listener so we can fire events to binding
-  proto['attributeChangedCallback'] = function(attr, oldValue, newValue) 
-  {
-    var prop = oj.__AttributeUtils.attributeToPropertyName(attr);
-    var meta = props[prop];
-    // Only deal with element defined attribute changes
-    if (meta) {
-      var params = {
-        'detail': {'attribute': attr, 'value': newValue, 'previousValue': oldValue}
-      };
-      this.dispatchEvent(new CustomEvent('attribute-changed', params));
-
-      var info = oj.__AttributeUtils.getExpressionInfo(newValue);
-      if (!info.expr) 
-      {
-        this[prop] = oj.__AttributeUtils.coerceValue(prop, newValue, meta['type']);
-      }
-    }
-  };
-
-};
-
-/**
- * Processes additional metadata info like whether the component needs an outer wrapper
- * @private
- */
-oj.Components._createInnerElem = function(innerTag, element, defaultAttrs, transferAttrs) 
-{
-  var innerElem = document.createElement(innerTag);
-  element.appendChild(innerElem);
-
-  // Transfer any children
-  var children = [];
-  for (var i = 0; i < element.childNodes.length; i++)
-    children.push(element.childNodes[i]);
-  for (var i = 0; i < children.length; i++)
-    element.appendChild(children[i]);
-
-  // Add default attributes
-  if (defaultAttrs) 
-  {
-    for (var attr in defaultAttrs)
-      innerElem.setAttribute(attr, defaultAttrs[attr]);
-  }
-
-  // Transfer attributes
-  if (transferAttrs) 
-  {
-    transferAttrs.forEach(function(attr) 
-    {
-      if (element.hasAttribute(attr))
-        innerElem.setAttribute(attr, element.getAttribute(attr));
-    });
-  }
-
-  // Transfer any child elements from the custom element to the inner element
-  $(innerElem).append($(element).children());
-
-  return innerElem;
-};
-
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1022,31 +681,37 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     // Events
     /**
-     * <p>Triggered when any option changes. The event payload has the following properties:
+     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
+     * intervention.  If the new value is the same as the previous value, no event will be fired.  The event 
+     * listener will receive two parameters described below:
      *
      * @property {Event} event <code class="prettyprint">jQuery</code> event object
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed.
-     * @property {Object} data.previousValue - an Object holding the previous value of the option.
+     * @property {Object} ui event payload
+     * @property {string} ui.option the name of the option that changed.
+     * @property {Object} ui.previousValue - an Object holding the previous value of the option.
      * When previousValue is not a primitive type, i.e., is an Object, it may hold the same value as
      * the value property.
-     * @property {Object} data.value - an Object holding the current value of the option.
-     * @property {Object} data.optionMetadata information about the option that changed
-     * @property {string} data.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
+     * @property {Object} ui.value - an Object holding the current value of the option.
+     * @property {?Object} ui.subproperty - an Object holding information about the subproperty that changed.
+     * @property {string} ui.subproperty.path - the subproperty path that changed.
+     * @property {Object} ui.subproperty.previousValue - an Object holding the previous value of the subproperty.
+     * @property {Object} ui.subproperty.value - an Object holding the current value of the subproperty.
+     * @property {Object} ui.optionMetadata information about the option that changed
+     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
      *  <code class="prettyprint">"shouldNotWrite"</code>. For use by the JET writeback mechanism;
      *  'shouldWrite' indicates that the value should be written to the observable.
      *
      * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
      * // Foo is Button, InputText, etc.
      * $(".selector").ojFoo({
-     *   'optionChange': function (event, data) {}
+     *   'optionChange': function (event, ui) {}
      * });
      * @example <caption>Bind an event listener to the ojoptionchange event</caption>
      * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
+     *   'ojoptionchange': function (event, ui) {
      *       // verify that the component firing the event is a component of interest
      *       if ($(event.target).is(".mySelector")) {
-     *           window.console.log("option that changed is: " + data['option']);
+     *           window.console.log("option that changed is: " + ui['option']);
      *       }
      *   };
      * });
@@ -1293,6 +958,10 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     // Store widget name, so that oj.Components.getWidgetConstructor() can get widget from the element
     _storeWidgetName(this.element, this.widgetName);
+    
+    // namespace facilitates removing activeable and hoverable handlers handlers separately
+    this.activeableEventNamespace = this.eventNamespace + "activeable";
+    this.hoverableEventNamespace = this.eventNamespace + "hoverable";
   },
 
   /**
@@ -1319,6 +988,9 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     // namespace facilitates removing contextMenu handlers separately, if app clears the "contextMenu" option
     this.contextMenuEventNamespace = this.eventNamespace + "contextMenu";
+    // same for activeable and hoverable handlers
+    this.activeableEventNamespace = this.eventNamespace + "activeable";
+    this.hoverableEventNamespace = this.eventNamespace + "hoverable";
     this._setupContextMenu(true, null);
   },
 
@@ -1362,6 +1034,14 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @instance
    * @protected
    */
+
+   //  - remove JQUI memory leaks and CSS cruft introduced in 1.12 and 1.12.1
+  _setOptionClasses:  function() {}, 
+  _setOptionDisabled: function() {}, 
+  _classes:     function() {return "";},
+  _removeClass: function() {return this;},
+  _addClass:    function() {return this;},
+  _toggleClass: function() {return this;},
 
   /**
    * <p>Saves the element's attributes. This is called during _create.
@@ -1734,11 +1414,8 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @memberof oj.baseComponent
    */
 
-  // Subclasses that override this method and make it public can ojinclude these fragments as shown, rather 
-  // than copy/paste.  In your copy, remove the at-private, update the memberof, and add at-since.  (The method's doc 
-  // doesn't inherit, since it's marked private, so the fragments are needed.)  While a subclass could technically 
-  // extend the verbiage by adding its own verbiage after the ojinclude, please doc sub-id's in the subid's 
-  // section, not by extending this method doc.
+  // While a subclass could technically extend the verbiage by adding its own verbiage after the ojinclude, 
+  // please doc sub-id's in the subid's section, not by extending this method doc.
   /**
    * {@ojinclude "name":"getSubIdByNodeDesc"}
    *
@@ -1751,8 +1428,6 @@ $.widget('oj.' + _BASE_COMPONENT,
    * 
    * @example <caption>{@ojinclude "name":"getSubIdByNodeCaption"}</caption>
    * {@ojinclude "name":"getSubIdByNodeExample"}
-   *
-   * @private
    */
   getSubIdByNode: function(node)
   {
@@ -1921,7 +1596,11 @@ $.widget('oj.' + _BASE_COMPONENT,
     // Store subkey on the flags to let _setOption() know that dot notation was used
     if (subkey != null)
     {
-      flags = $.widget.extend({}, flags, {'subkey': subkey});
+      var subprop = {
+        'path': optionName,
+        'value': value
+      }
+      flags = $.widget.extend({}, flags, {'subkey': subkey, 'subproperty': subprop});
     }
 
     var context = flags ? flags['_context'] : null;
@@ -2092,6 +1771,22 @@ $.widget('oj.' + _BASE_COMPONENT,
         "optionMetadata" : optionMetadata
       };
 
+      var subkey = (flags == null) ? null : flags['subkey'];
+      // Walk previousValue object and find the subproperty previousValue
+      if (subkey)
+      {
+        var subprops = subkey.split('.');
+        var originalSubpropValue = originalValue;
+        subprops.forEach(function(subprop) {
+          if (!originalSubpropValue)
+            return;
+          originalSubpropValue = originalSubpropValue[subprop];
+        });
+        var subproperty = flags['subproperty'];
+        subproperty['previousValue'] = originalSubpropValue;
+        optionChangeData['subproperty'] = subproperty;
+      }
+
       if (extraData != null)
       {
         optionChangeData = $.extend({}, extraData, optionChangeData);
@@ -2130,7 +1825,7 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @param {string} type - component event type
    * @param {?Object} event - original event
    * @param {Object=} data - event data
-   * @return {!{proceed: boolean, event: $.Event}} 
+   * @return {!{proceed: boolean, event: ($.Event|CustomEvent)}} 
    *     proceed is true if the default action has not been prevented, false otherwise
    *     event is the new event that was triggered
    *
@@ -2138,23 +1833,129 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   _trigger2 : function (type, event, data)
   {
-    var prop, orig, callback = this.options[type];
-
     data = data || {};
-    event = $.Event(event, _OJ_COMPONENT_EVENT_OVERRIDES);
-    event.type = (this.widgetEventPrefix + type).toLowerCase();
 
-    // the original event may come from any element
-    // so we need to reset the target on the new event
-    event.target = this.element[0];
+    if (this._IsCustomElement()) {
+      return this._triggerCustomEvent(type, event, data);
+    }
+    else {
+      var callback = this.options[type];
 
-    this.element.trigger(event, data);
+      event = $.Event(event, _OJ_COMPONENT_EVENT_OVERRIDES);
+      event.type = (this.widgetEventPrefix + type).toLowerCase();
 
-    return {
-      'proceed': !($.isFunction(callback) && callback.apply(this.element[0], [event].concat(data)) === false || event.isDefaultPrevented()), 
-      'event': event
+      // the original event may come from any element
+      // so we need to reset the target on the new event
+      event.target = this.element[0];
+
+      this.element.trigger(event, data);
+
+      return {
+        'proceed': !($.isFunction(callback) && callback.apply(this.element[0], [event].concat(data)) === false || event.isDefaultPrevented()), 
+        'event': event
+      }
     }
   },
+
+  /**
+   * <p>Fires a CustomEvent instead of a jQuery event for when this component is created as a custom element.
+   * 
+   * @param {string} type - component event type
+   * @param {?Object} event - original event
+   * @param {Object} data - event data
+   * @return {!{proceed: boolean, event: CustomEvent}} 
+   *     proceed is true if the default action has not been prevented, false otherwise
+   *     event is the new event that was triggered
+   *
+   * @private
+   */
+  _triggerCustomEvent : function (type, event, data) {
+    var eventName, detail = {}, cancelable, rootElement = this._getRootElement();
+    if (type === 'optionChange') {
+      var property = oj.CustomElementBridge.getPropertyForAlias(rootElement, data['option']);
+      eventName = oj.__AttributeUtils.propertyNameToChangeEventType(property);
+
+      // Copy over component specific optionChange event properties, promoting those exposed
+      // in the optionMetadata to the top level alongside value/previousValue/subproperty. 
+      var keys = Object.keys(data);
+      for (var i = 0; i < keys.length; i++)
+      {
+        var key = keys[i];
+        if (key === 'option')
+        {
+          continue;
+        }
+        else if (key === 'optionMetadata')
+        {
+          // Do not expose optionMetadata for custom element property change events
+          // Instead, promote any component specific metadata to the top level.
+          var metaKeys = Object.keys(data[key]);
+          for (var j = 0; j < metaKeys.length; j++)
+          {
+            var metaKey = metaKeys[j];
+            if (metaKey === 'writeback' || metaKey === 'component')
+            {
+              continue;
+            }
+            else
+            {
+              detail[metaKey] = data[key][metaKey];
+            }
+          }
+        }
+        else
+        {
+          detail[key] = data[key];
+        }
+      }
+    }
+    else {
+      if (!oj.CustomElementBridge.isKnownEvent(rootElement, type)) {
+        return {'proceed':true, 'event':null};
+      }
+      cancelable = true;
+      eventName = oj.__AttributeUtils.eventTriggerToEventType(type);
+      detail = this._resolveJQueryObjects(data);
+    }
+    if (event) {
+      detail['originalEvent'] = event instanceof $.Event ? event.originalEvent : event;
+    }
+    var params = {'detail': detail};
+    if (cancelable)
+      params['cancelable'] = true;
+    var customEvent = new CustomEvent(eventName, params);
+    rootElement.dispatchEvent(customEvent);
+    return {'proceed':!customEvent.defaultPrevented, 'event':customEvent};
+  },
+
+  /**
+   * <p>Creates a shallow copy of the passed in object where any top-level JQuery objects have been resolved to their underlying objects.
+   * @param {Object} data the original object
+   * @return {Object} the resolved object copy
+   *
+   * @private
+   */
+  _resolveJQueryObjects: function(data) {
+    var resolved = oj.CollectionUtils.copyInto({}, data);
+    var val, key, keys = Object.keys(resolved);
+    for (var k = 0; k < keys.length; k++) {
+      key = keys[k];
+      val = resolved[key];
+      if (val && val instanceof $) {
+        if (val.length == 0) {
+          resolved[key] = null;
+        }          
+        else if (val.length == 1) {
+          resolved[key] = val[0];
+        }
+        else {
+          resolved = val.toArray();
+        }
+      }
+    }
+    return resolved;
+  },
+
 
   /**
    * <p>Sets contextMenu option from DOM if option not set.
@@ -2756,9 +2557,9 @@ $.widget('oj.' + _BASE_COMPONENT,
     var afterToggle = options['afterToggle'] || $.noop;
     var markerClass = "oj-hover";
 
-    element.on("mouseenter" + this.eventNamespace, 
+    element.on("mouseenter" + this.hoverableEventNamespace, 
                this._hoverStartHandler.bind(this, afterToggle))
-           .on("mouseleave" + this.eventNamespace, 
+           .on("mouseleave" + this.hoverableEventNamespace, 
                this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
   },
 
@@ -2775,29 +2576,34 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     if (element)
     {
-      $(element).off("mouseenter" + this.eventNamespace + " " + 
-                     "mouseleave" + this.eventNamespace);
+      element.off(this.hoverableEventNamespace);
     }
   },
 
   /**
-   * Add touch and mouse listners to toggle oj-active class
+   * Add touch and mouse listeners to toggle oj-active class
    *
    * @memberof oj.baseComponent
    * @instance
    * @protected
 
-   * @param {(!Object|!jQuery)} options This param can either be the element 
+   * @param {(!Object|!jQuery)} options This parameter can either be the element 
    * (convenience syntax for callers needing to 
    *   specify only the element(s) that would 
    *   otherwise have been passed as <code class="prettyprint">options.element</code>) 
    *   or an object supporting the following fields:
-   * @param {jQuery} options.element The element(s) to receive the <code class="prettyprint">oj-active</code> class on active
+   * @param {jQuery} options.element The element(s) to receive the 
+   * <code class="prettyprint">oj-active</code> class on active
    *   Required if <code class="prettyprint">afterToggle</code> is specified.
-   * @param {?function(string)} options.afterToggle Optional callback function called each time the active classes have been toggled, 
-   *   after the toggle.  The string "mouseenter" or "mouseleave" is passed, indicating whether the classes were added or removed. 
-   *   Components with consistency requirements, such as "<code class="prettyprint">oj-default</code> must be applied iff no state classes
-   *   such as <code class="prettyprint">oj-active</code> are applied," can enforce those rules in this callback.
+   * @param {?function(string)} options.afterToggle Optional callback function called each time 
+   *   the active classes have been toggled, after the toggle.  The event.type string is passed 
+   *   and indicates whether the classes were added or removed. The active classes are added on
+   *   "touchstart" or "mousedown" or "mouseenter" and the active classes are removed on 
+   *   "touchend" or "touchcancel" or "mouseup" or "mouseleave".
+   *   Components with consistency requirements, such as 
+   *   "<code class="prettyprint">oj-default</code> must be applied iff no state classes
+   *   such as <code class="prettyprint">oj-active</code> are applied," 
+   *   can enforce those rules in this callback.
    * @see #_RemoveActiveable
    */
   _AddActiveable: function(options)
@@ -2817,21 +2623,29 @@ $.widget('oj.' + _BASE_COMPONENT,
 
     if (oj.DomUtils.isTouchSupported())
     {
-      element.on("touchstart" + this.eventNamespace,
+      element.on("touchstart" + this.activeableEventNamespace,
                  this._activeStartHandler.bind(this, afterToggle))
-             .on("touchend" + this.eventNamespace + " " + 
-                 "touchcancel" + this.eventNamespace, 
+             .on("touchend" + this.activeableEventNamespace + " " + 
+                 "touchcancel" + this.activeableEventNamespace, 
                  this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
     }
 
-    element.on("mousedown" + this.eventNamespace, 
+    element.on("mousedown" + this.activeableEventNamespace, 
                  this._activeStartHandler.bind(this, afterToggle))
-           .on("mouseup" + this.eventNamespace, 
+           .on("mouseup" + this.activeableEventNamespace, 
+               this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle))
+           // mouseenter/mouseleave is for the case where you mousedown, then move mouse
+           // out of element, then move mouse back. We want oj-active to disappear when you move 
+           // outside and reappear when you move back.
+           .on("mouseenter" + this.activeableEventNamespace, 
+                 this._activeStartHandler.bind(this, afterToggle))
+           .on("mouseleave" + this.activeableEventNamespace, 
                this._hoverAndActiveEndHandler.bind(this, markerClass, afterToggle));
+
   },
 
   /**
-   * Remove touch and mouse listners that were registered in _AddActiveable
+   * Remove touch and mouse listeners that were registered in _AddActiveable
    *
    * @memberof oj.baseComponent
    * @instance
@@ -2843,25 +2657,50 @@ $.widget('oj.' + _BASE_COMPONENT,
   {
     if (element)
     {
-      $(element).off("touchstart" + this.eventNamespace + " " + 
-                     "touchend" + this.eventNamespace + " " + 
-                     "touchcancel" + this.eventNamespace + " " + 
-                     "mousedown" + this.eventNamespace + " " + 
-                     "mouseup" + this.eventNamespace);
+      element.off(this.activeableEventNamespace);
+      _lastActiveElement = null;
     }
   },
 
   /**
+   * Add oj-active style class and call the afterToggleFunction.
+   * Set _lastActiveElement to event.currentTarget on mousedown. Clear it on mouseup.
+   * _lastActiveElement is used to remove and add back oj-active on mouseleave and mouseenter
+   * if the mouse stays down.
    * @private
    */
   _activeStartHandler: function (afterToggleFunction, event)
   {
-    // do this for either touchstart or real mouseenter, but not mouse compatibility event
+
     var elem = $(event.currentTarget);
-    if (! elem.hasClass("oj-disabled") && (event.type === "touchstart" || this._isRealMouseEvent(event)))
-    {     
+   
+    // do nothing on mouseenter if _lastActiveElement ivar is not the currentTarget or child of
+    // currentTarget. Checking for the child is needed in case there are two nested 
+    // dom nodes that have set_AddActiveable. Since events bubble, the _lastActiveElement will
+    // be the outermost dom that got the mousedown event.
+    if (event.type === "mouseenter" && !this._isTargetInActiveElement(event.currentTarget))
+    {
+      return;
+    }
+    
+    // do this for either touchstart or real mouse events, but not mouse compatibility event
+    if (! elem.hasClass("oj-disabled") && 
+     (event.type === "touchstart" || this._isRealMouseEvent(event)))
+    {
       elem.addClass("oj-active");
       afterToggleFunction(event.type); 
+       
+      // If we get mousedown on the element, we want oj-active to be removed on mouseleave
+      // and added back on mouseenter if the mouse stays down.
+      if (event.type === "mousedown")
+      {
+        _lastActiveElement = event.currentTarget;
+                       
+        this.document.one( "mouseup", function() {
+          _lastActiveElement = null;
+        });
+
+      }
     }
   },
 
@@ -2880,13 +2719,37 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
+   * Remove markerClass and call the afterToggleFunction.
    * @private
    */
   _hoverAndActiveEndHandler: function (markerClass, afterToggleFunction, event)
   {
+    // for oj-active we don't care about mouseleave unless it was triggered when _lastActiveElement
+    // was set on the currentTarget. (see _activeStartHandler). If that's not the case, return.
+    if (markerClass === "oj-active" && event.type === "mouseleave" &&  
+        !this._isTargetInActiveElement(event.currentTarget))
+    {
+      return;
+    }
     $(event.currentTarget).removeClass(markerClass);
     afterToggleFunction(event.type);
   },
+  /**
+   * Returns true if the event target is _lastActiveElement or a child of _lastActiveElement.
+   * Checking for the child is needed in case there are two nested dom nodes that have set
+   * _AddActiveable. For example, inputDateTime -> the trigger root container and the trigger icon.
+   * We are only keeping track of the _lastActiveElement, which means the ancestor element will
+   * be stored in _lastActiveElement because the mouseleave event bubbles.
+   * @private
+   */
+  _isTargetInActiveElement: function (currentTarget)
+  {
+    return (_lastActiveElement === currentTarget || 
+      (_lastActiveElement != null && $.contains(_lastActiveElement, currentTarget)));
+  }, 
+
+   // We no longer use _hoverable, but should still override it to ensure the JQUI impl is not called.
+  _hoverable: function() {},
 
   // The internal JSDoc of the DomUtils version of this API refers to this doc, so if changes are made here, that doc 
   // must be updated as needed.
@@ -3398,7 +3261,106 @@ $.widget('oj.' + _BASE_COMPONENT,
       callback(proto);
       proto = Object.getPrototypeOf(proto);
     }
+  },
+
+  /**
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  _getRootElement: function() 
+  {
+    return this.OuterWrapper || this.element[0];
+  },
+
+  /**
+   * Determines whether the component is being rendered as a custom element.
+   * @return {boolean} True if the component is being rendered as a custom element
+   * 
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _IsCustomElement: function()
+  {
+    return oj.BaseCustomElementBridge.isRegistered(this._getRootElement().tagName);
+  },
+
+  /**
+   * Prepares a custom renderer context object for either the JQuery or custom element syntax,
+   * removing and exposing keys as needed.
+   * @param {Object} context The renderer context object.
+   * @return {Object} The cleaned up renderer context.
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _FixRendererContext: function(context)
+  {
+    if (this._IsCustomElement())
+    {
+      var contextCopy =  oj.CollectionUtils.copyInto({}, context, undefined, true);
+      // remove component or widget constructor references and expose element reference instead
+      delete contextCopy['component'];
+      contextCopy['componentElement'] = this._getRootElement();
+      return contextCopy;
+    }
+    return context;
+  },
+
+  /**
+   * Given an event, returns the appropriate event for the component syntax.
+   * For custom elements, if the event is a JQuery event, this method will return the
+   * unwrapped original event. 
+   * @param  {Object} event [description]
+   * @return {Object}
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _GetEventForSyntax: function (event)
+  {
+    if (this._IsCustomElement())
+    {
+      return event instanceof $.Event ? event.originalEvent : event;
+    }
+    return event;
   }
+
+  /**
+   * <p>The following CSS classes can be applied by the page author as needed.
+   * 
+   * @ojfragment ojStylingDocIntro - For use in the Styling section of the JSDoc, above the table of CSS classes .
+   * @memberof oj.baseComponent
+   */
+
+  /**
+   * Class
+   * 
+   * @ojfragment ojStylingDocClassHeader - For use in the "Class" <th> in the Styling section of the JSDoc.
+   * @memberof oj.baseComponent
+   */
+
+  /**
+   * Can be applied to
+   * 
+   * @ojfragment ojStylingDocApplyHeader - For use in the "Can be applied to" <th> in the Styling section of the JSDoc.
+   * @memberof oj.baseComponent
+   */
+
+  /**
+   * Description
+   * 
+   * @ojfragment ojStylingDocDescriptionHeader - For use in the "Description" <th> in the Styling section of the JSDoc.
+   * @memberof oj.baseComponent
+   */
+
+  /**
+   * Example
+   * 
+   * @ojfragment ojStylingDocExampleHeader - For use in the "Example" <th> in the Styling section of the JSDoc.
+   * @memberof oj.baseComponent
+   */
 
   /**
    * Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app 
@@ -3441,7 +3403,7 @@ delete $['fn'][_BASE_COMPONENT];
 // "private static members" shared by all components
 // -----------------------------------------------------------------------------
 
-// (no private statics currently)
+var _lastActiveElement;
 
 }() ); // end of BaseComponent wrapper function
 
@@ -3497,7 +3459,7 @@ oj.__registerWidget = function(name, base, prototype, isHidden)
 
     // Capitalization doesn't seem to matter with JQ pseudos, e.g. for the existing double-oj pseudo, both $(":oj-ojMenu") and $(":oj-ojmenu") work.
     // So, follow JQUI's pattern of using toLowerCase here, which will lowercase not only the "M' in "Menu", but also any camelcased chars after that.
-    $.expr[ ":" ][ modifiedFullName.toLowerCase() ] = function( elem ) {
+    $.expr[ "pseudos" ][ modifiedFullName.toLowerCase() ] = function( elem ) {
       return !!$.data( elem, fullName );
     };
   }
@@ -4428,7 +4390,7 @@ oj.DomUtils.unwrap = function(locator, replaceLocator)
   {
     if (arguments.length > 1)
     {
-      replaceLocator.replaceWith(locator);
+      replaceLocator.replaceWith(locator); // @HtmlUpdateOk
     }
     else
     {
@@ -4786,6 +4748,37 @@ oj.DomUtils.recentTouchEnd = (function()
   };
 })();
 
+/**
+ * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
+ * Note: This function adds event listeners only once per document load.
+ * 
+ * @return {boolean} boolean indicating whether a touch has recently been detected
+ */
+oj.DomUtils.recentTouchStart = (function()
+{
+  // This function is immediately executed and returns the recentTouchStart function
+  // and therefore only execute once per document load.
+
+  var touchTimestamp = 0;
+  // 800 because this is used to ignore mouseenter and focusin on 'press', and a 'press'
+  // is usually detected after 750ms.
+  var TOUCH_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + 50;
+
+  function _touchStartHandler() {
+    touchTimestamp = Date.now();
+  };
+
+  // --- Document listeners ---
+  document.addEventListener("touchstart", _touchStartHandler, true);
+
+  // --- The function assigned to oj.DomUtils.recentTouchStart ---
+
+  return function()
+  {
+    // must be at least TOUCH_THRESHOLD for the  delay
+    return (Date.now() - touchTimestamp) < TOUCH_THRESHOLD;
+  };
+})();
 
 // ------------------------------------------------------------------------------------------------
 // Recent pointer
@@ -5238,7 +5231,7 @@ oj.ComponentMessaging.prototype.close =  function ()
  * e.g., In PopupComponentMessaging.js:
  *  oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_TYPE.NOTEWINDOW, 
  *                              oj.PopupMessagingStrategy
- * @param {Array|undefined} artifactsForType (e.g., 'messages', 'title', 'validatorHints')
+ * @param {Array.<string>|undefined} artifactsForType (e.g., 'messages', 'title', 'validatorHints')
  * 
  * @private
  * @instance
@@ -5567,7 +5560,7 @@ oj.ComponentMessaging.prototype._reactivate = function ()
  * A base messaging strategy class that is initialized with a set of displayOptions. This object 
  * also provides helper methods for its subclasses.
  * 
- * @param {Array} displayOptions an array of messaging artifacts displayed.
+ * @param {Array.<string>} displayOptions an array of messaging artifacts displayed.
  * 
  * @constructor
  * @class oj.MessagingStrategy
@@ -5585,7 +5578,7 @@ oj.Object.createSubclass(oj.MessagingStrategy, oj.Object, "oj.MessagingStrategy"
  * Initializes the strategy based on the display options that specify the messaging artifacts that 
  * will be displayed by this strategy.
  * 
- * @param {Array} displayOptions an array of messaging artifacts displayed.
+ * @param {Array.<string>} displayOptions an array of messaging artifacts displayed.
  * @private
  */
 oj.MessagingStrategy.prototype.Init = function (displayOptions)
@@ -5624,7 +5617,7 @@ oj.MessagingStrategy.prototype.close = function ()
 /**
  * Reinitializes with the new display options and updates component messaging using the new content. 
  * 
- * @param {Array} newDisplayOptions
+ * @param {Array.<string>} newDisplayOptions
  * @private
  */
 oj.MessagingStrategy.prototype.reactivate = function (newDisplayOptions)
@@ -5815,7 +5808,7 @@ oj.MessagingStrategy.prototype._getMessagingContent = function ()
 /**
  * A messaging strategy that updates the component theming and accessibility attributes.
  * 
- * @param {Array} displayOptions .
+ * @param {Array.<string>} displayOptions .
  * @constructor
  * @extends {oj.MessagingStrategy}
  * @private
@@ -5904,7 +5897,7 @@ oj.DefaultMessagingStrategy.prototype.deactivate = function ()
 /**
  * A messaging strategy that uses html5 placeholder (for now) to set/remove placeholder content.
  * 
- * @param {Array} displayOptions an array of messaging artifacts displayed in the placeholder.
+ * @param {Array.<string>} displayOptions an array of messaging artifacts displayed in the placeholder.
  * @constructor
  * @extends {oj.MessagingStrategy}
  * @private
@@ -5923,7 +5916,7 @@ oj.Object.createSubclass(oj.PlaceholderMessagingStrategy, oj.MessagingStrategy, 
 /**
  * Initializer
  *  
- * @param {Array} displayOptions an array of messaging artifacts displayed in the notewindow.
+ * @param {Array.<string>} displayOptions an array of messaging artifacts displayed in the notewindow.
  * @private
  */
 oj.PlaceholderMessagingStrategy.prototype.Init = function (displayOptions) 
@@ -6226,6 +6219,392 @@ oj.FocusUtils.isFocusable = function (element)
 
   return false;
 };
+/**
+ * JET component custom element bridge
+ * @class
+ * @ignore
+ */
+oj.CustomElementBridge = {};
+
+/**
+ * Prototype for the JET component custom element bridge instance
+ */
+oj.CustomElementBridge.proto = Object.create(oj.BaseCustomElementBridge.proto);
+
+oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
+{
+  AddComponentMethods: function(proto) 
+  {
+    // Add subproperty getter/setter
+    proto['setProperty'] = function(prop, value) { 
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+      if (event) {
+        this[prop] = value;
+      }
+      else {
+        oj.CustomElementBridge._getPropertyAccessor(this, prop)(value); 
+      }
+    };
+    proto['getProperty'] = function(prop) { 
+      var event = oj.__AttributeUtils.eventListenerPropertyToEventType(prop);
+      return event ? this[prop] : oj.CustomElementBridge._getPropertyAccessor(this, prop)(); 
+    };
+  },
+
+  DefineMethodCallback: function (proto, method, methodMeta) 
+  {
+    proto[method] = function()
+    {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      return bridge._WIDGET.apply(this, [method].concat([].slice.call(arguments)));
+    };
+  },
+  
+  DefinePropertyCallback: function (proto, property, propertyMeta) 
+  {
+    var listener;
+    Object.defineProperty(proto, property, 
+    {
+      'enumerable': true,
+      'get': function() 
+      { 
+        return propertyMeta._eventListener ? listener : oj.CustomElementBridge._getPropertyAccessor(this, property)();
+      },
+      'set': function(value) 
+      {       
+        if (propertyMeta._eventListener) {
+          var event = oj.__AttributeUtils.eventListenerPropertyToEventType(property);
+          // Remove old event listener
+          if (listener) {
+            this.removeEventListener(event, listener);
+          }
+          listener = undefined;
+          if (value && value instanceof Function) {
+            // Add new event listener
+            this.addEventListener(event, value);
+            listener = value;
+          }
+        }
+        else {
+          oj.CustomElementBridge._getPropertyAccessor(this, property)(value);
+        }
+      }
+    });
+  },
+
+  GetMetadata: function(descriptor)
+  {
+    return descriptor['metadata'];
+  },
+
+  GetAliasForProperty: function(property)
+  {
+    // Aliasing only supported for top level properties
+    var alias = this._EXTENSION._ALIASED_PROPS;
+    if (alias && alias[property])
+      return alias[property];
+    return property;
+  },
+
+  HandleAttached: function(element)
+  {
+    if (!oj.Components.getWidgetConstructor(element))
+    {      
+      var props = this.METADATA['properties'] || {};
+      var parseFun = this.PARSE_FUNCTION;
+      oj.BaseCustomElementBridge.__InitProperties(element, this._PROPS, props, parseFun);
+      this.GetDelayedPropertiesPromise().resolvePromise();
+    }
+    else
+    {
+      oj.Components.subtreeAttached(element);
+    }
+  },
+
+  HandleAttributeChanged: function(element, attr, oldValue, newValue) 
+  {
+    var transferAttrs = this._EXTENSION._TRANSFER_ATTRS;
+    var transfer = transferAttrs && transferAttrs.indexOf(attr) !== -1;
+    if (transfer && this._TRANSFER_ELEM)
+    {
+      this._TRANSFER_ELEM.setAttribute(attr, newValue);
+    }
+  },
+
+  HandleBindingsApplied: function(element, bindingContext)
+  {
+    var innerDomFun = this._INNER_DOM_FUNCTION;
+    var widgetElem = oj.CustomElementBridge._getWidgetElement(element, innerDomFun ? innerDomFun(element) : this._EXTENSION._INNER_ELEM);
+
+    // Transfer attributes to child element if one exists
+    if (widgetElem !== element) 
+    {
+      // Stash a reference for future attribute change events
+      this._TRANSFER_ELEM = widgetElem;
+
+      // Transfer attributes that are supported on the inner element that are considered top level properties, 
+      // but don't need any special handling by the component itself, e.g. rows/cols for ojTextArea.  
+      // These attributes will be copied when set on the <oj-text-area> element to the inner <textarea> element.
+      var transferAttrs = this._EXTENSION._TRANSFER_ATTRS;
+      if (transferAttrs) 
+      {
+        for (var i = 0; i < transferAttrs.length; i++)
+        {
+          var attr = transferAttrs[i];
+          if (element.hasAttribute(attr))
+            this._TRANSFER_ELEM.setAttribute(attr, element.getAttribute(attr));
+        }
+      }
+    }
+
+    // Initialize jQuery object with options and pass element as wrapper if needed
+    var locator = $(widgetElem);
+    var widgetConstructor = $(widgetElem)[this._WIDGET_NAME].bind(locator);
+    widgetConstructor(this._PROPS);
+    this._WIDGET = widgetConstructor;
+
+    // Resolve the component busy state 
+    this.GetDelayedReadyPromise().resolvePromise();
+  },
+
+  HandleCreated: function(element) 
+  {
+    var descriptor = oj.BaseCustomElementBridge.__GetDescriptor(element.tagName);
+
+    this.METADATA = this.GetMetadata(descriptor);
+    this._EXTENSION = this.METADATA['extension'] || {};
+    this._INNER_DOM_FUNCTION = descriptor['innerDomFunction'];
+    this.PARSE_FUNCTION = descriptor['parseFunction'];
+    this._WIDGET_NAME = this._EXTENSION._WIDGET_NAME;
+    this._PROPS = (this._EXTENSION._INNER_ELEM || this._INNER_DOM_FUNCTION) ? {'_wrapper': element} : {};
+    // Create component to element property alias mapping for easy optionChange lookup
+    var aliasMap = this._EXTENSION._ALIASED_PROPS;
+    if (aliasMap)
+    {
+      this._COMPONENT_TO_ELEMENT_ALIASES = {};
+      var aliases = Object.keys(aliasMap);
+      var bridge = this;
+      aliases.forEach(function(alias) {
+        bridge._COMPONENT_TO_ELEMENT_ALIASES[aliasMap[alias]] = alias;
+      });
+    }
+    oj.CustomElementBridge._setupPropertyAccumulator(element, this._PROPS);
+  },
+
+  HandleDetached: function(element) 
+  {
+    oj.Components.subtreeDetached(element);
+  }
+
+});
+
+/*************************/
+/* PUBLIC STATIC METHODS */
+/*************************/
+
+/**
+ * Returns the metadata object for the given component.
+ * @param  {string} tagName        The component tag name
+ * @return {Object}                The component metadata object
+ * @ignore
+ */
+oj.CustomElementBridge.getMetadata = function(tagName) 
+{
+  return oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()];
+};
+
+/**
+ * Checks whether the specified event type was declared in the metadata for this custom element
+ * @param {Element} element the custom element
+ * @param {string} type the event type (e.g. "beforeExpand")
+ * @return {boolean} true if the event type was declared in the metadata, false otherwise
+ * @ignore
+ */
+oj.CustomElementBridge.isKnownEvent = function(element, type) 
+{
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  if (bridge)
+    return (bridge.METADATA['events'] && bridge.METADATA['events'][type]) != null;
+  return false;
+};
+
+/**
+ * Returns the custom element property for a given aliased component property which can be used
+ * for converting an internal optionChange event, e.g. returning readonly for oj-switch's readOnly
+ * property so we can fire a readonly-changed event instead of readOnly-changed.
+ * Will return the original property if there is no aliasing.
+ * @param {Element} element The custom element
+ * @param {string} property The component property
+ * @return {string}
+ * @ignore
+ */
+oj.CustomElementBridge.getPropertyForAlias = function(element, property) 
+{
+  // Aliasing only supported for top level properties
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  var alias = bridge._COMPONENT_TO_ELEMENT_ALIASES;
+  if (alias && alias[property])
+    return alias[property];
+  return property;
+};
+
+/**
+ * Registers a component as a custom element.
+ * @param {string} tagName The component tag name (all lower case), which should contain a dash '-' and not be a reserved tag name.     
+ * @param {Object} descriptor The registration descriptor. The descriptor will contain keys for metadata and other component overrides.
+ * @param {Object} descriptor.metadata The JSON object containing info like the widget name, whether component has an inner element, an outer wrapper, and the component metadata.
+ * @param {function(string, string, Object, function(string))} descriptor.parseFunction The function that will be called to parse attribute values.
+ * Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
+ * <ul>
+ *  <li>{string} value: The value to parse.</li>
+ *  <li>{string} name: The name of the attribute.</li>
+ *  <li>{Object} meta: The metadata object for the property which can include its type, default value, 
+ *      and any extensions that the composite has provided on top of the required metadata.</li>
+ *  <li>{function(string)} defaultParseFunction: The default parse function for the given attribute 
+ *      type which is used when a custom parse function isn't provided and takes as its parameters 
+ *      the value to parse.</li>
+ * </ul>
+ * @param {Element} descriptor.innerDomFunction The function that will be called to return the tag name of the inner DOM element, e.g. 'button' or 'a' 
+ * The innerDomFunction will take the following parameters:
+ * <ul>
+ *  <li>{Element} element: The component custom element.</li>
+ * </ul>
+ * @ignore
+ */
+oj.CustomElementBridge.register = function(tagName, descriptor)
+{
+  if (oj.BaseCustomElementBridge.__Register(tagName, descriptor, oj.CustomElementBridge.proto))
+  {
+    document.registerElement(tagName.toLowerCase(), {'prototype': oj.CustomElementBridge.proto.getPrototype(descriptor)});
+  }
+};
+
+/**
+ * Registers component metadata merging it with the metadata from its superclass hierarchy as needed.
+ * @param  {string} tagName       The component tag name
+ * @param  {string?} superclassName The component's superclass name
+ * @param  {Object} metadata        The component metadata object
+ * @ignore
+ */
+oj.CustomElementBridge.registerMetadata = function(tagName, superclassName, metadata) 
+{
+  metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, true);
+  if (superclassName) 
+  {
+    var superMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata(superclassName), undefined, true);
+    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = oj.CollectionUtils.copyInto(superMeta, metadata, undefined, true);
+  } 
+  else 
+  {
+    oj.CustomElementBridge._METADATA_MAP[tagName.toLowerCase()] = metadata;
+  }
+};
+
+/*****************************/
+/* NON PUBLIC STATIC METHODS */
+/*****************************/
+
+/**
+ * Returns a property accessor for setting/getting options
+ * @private
+ */
+oj.CustomElementBridge._getPropertyAccessor = function(element, property) 
+{
+  var optionAccessor = function(value)
+  {
+    var bridge = oj.BaseCustomElementBridge.getInstance(element);
+    var meta = oj.BaseCustomElementBridge.__GetPropertyMetadata(property, oj.BaseCustomElementBridge.getProperties(bridge));
+
+    if (value != undefined)
+    {
+      // Log an error when trying to set property for an undefined top level property
+      if (!meta && property.indexOf('.') === -1) 
+      {
+        oj.Logger.error("Ignoring property set for undefined property " + property + " on " + element.tagName);
+        return undefined;
+      }
+      oj.BaseCustomElementBridge.__CheckEnumValues(element, property, value, meta);
+    }
+
+    property = bridge.GetAliasForProperty(property);
+    return bridge._WIDGET.apply(this, ['option', property].concat([].slice.call(arguments)));
+  }
+  return optionAccessor.bind(element);
+};
+
+/**
+ * Returns the element that the widget constructor will be instantiated on which can be the custom element or a child element.
+ * @private
+ */
+oj.CustomElementBridge._getWidgetElement = function(element, innerTagName) 
+{
+  // If component widget is bound to an inner child element like <ul> for <oj-list-view>, 
+  // create one only if the application does not provide it.
+  var widgetElem = element;
+  if (innerTagName)
+  {
+    var firstChild = element.firstElementChild;
+    if (firstChild && firstChild.tagName.toLowerCase() === innerTagName)
+    {
+      widgetElem = firstChild;
+    }
+    else
+    {
+      widgetElem = document.createElement(innerTagName);
+      // Make a copy of the custom element children before appending the inner element
+      var children = [];
+      var nodeList = element.childNodes;
+      for (var i = 0; i < nodeList.length; i++)
+        children.push(nodeList[i]);
+      
+      element.appendChild(widgetElem); // @HtmlUpdateOk
+      // If we create the inner child element, check to see if there are any children
+      // to move like for <oj-button> which can have a child elements that should be moved to
+      // the newly created inner <button> element.
+      for (var i = 0; i < children.length; i++)
+      { 
+        widgetElem.appendChild(children[0]);
+      }
+    }
+  }
+  return widgetElem;
+};
+
+/**
+ * Setup a property accumaltor for tracking evaluated expressions
+ * @private
+ */
+oj.CustomElementBridge._setupPropertyAccumulator = function(element, widgetOptions) 
+{
+  // Add an element function that will track property values until expressions are all evaluated.
+  // This object will be replaced with the actual widget constructor.
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  bridge._WIDGET = function(method, prop, value)
+  {
+    // Allow property access before widget is created for element binding and dynamic element creation
+    if (method === 'option') 
+    {
+      if (!prop && !value)
+      {
+        return widgetOptions;
+      }
+      else
+      {
+        oj.BaseCustomElementBridge.__SetProperty(bridge.GetAliasForProperty.bind(bridge), widgetOptions, prop, value);
+        return widgetOptions[prop];
+      }
+    }
+    else
+      throw "Cannot access methods before " + element.tagName + " is attached to the DOM.";
+  }
+};
+
+/**
+ * Map of registered custom element names
+ * @private
+ */
+oj.CustomElementBridge._METADATA_MAP = {};
+
 // Copyright (c) 2013, Oracle and/or its affiliates.
 // All rights reserved.
 
@@ -6252,9 +6631,8 @@ oj.Test.ready = false;
  * Return the node found given the locator
  * @param {Object|string} locator A locator which is either a JSON string (to be parsed using $.parseJSON), or an Object with the following properties:
  *                                             element: the component's selector, determined by the test author when laying out the page
- *                                             component: optional - in the future there may be more than one component contained within a page element
  *                                             subId: the string, documented by the component, that the component expects in getNodeBySubId to locate a particular subcomponent
- *  @returns {Object} the subcomponent located by the subId string passed in locator, if found.
+ *  @returns {*} the subcomponent located by the subId string passed in locator, if found.
  */
 oj.Test.domNodeForLocator = function (locator) {
   var locObj = locator;
@@ -6270,14 +6648,13 @@ oj.Test.domNodeForLocator = function (locator) {
   if (locObj && locObj['element']) {
     var element = $(locObj['element']);
     if (element) {
-      var widgetConst = oj.Components.getWidgetConstructor(element[0], locObj['component']);
       delete locObj['element'];
-      return widgetConst("getNodeBySubId", locObj);
+      var id = /** @type {Object} */ (locObj);
+      return oj.Components.getNodeBySubId(element[0], id);
     }
   }
   return null;
 };
-
 
 /**
  * @return {number} total number of open popups
@@ -6321,25 +6698,24 @@ oj.Test.compareStackingContexts = function (el1, el2)
 (function() {
 var baseComponentMeta = {
   "properties": {
-    "contextMenu": {
-      "type": "string"
-    },
-    "rootAttributes": {
-      "type": "Object"
-    },
     "translations": {
       "type": "Object"
     }
   },
+  "events": {
+    "extension": {
+      _DEPRECATED_EVENTS: ['create', 'destroy']
+    }
+  },
   "methods": {
     "getNodeBySubId": {},
-    "option": {},
+    "getSubIdByNode": {},
     "refresh": {}
   },
   "extension": {
-    "_widgetName": "baseComponent"
+    _WIDGET_NAME: "baseComponent"
   }
 };
-oj.Components.registerMetadata('baseComponent', null, baseComponentMeta);
+oj.CustomElementBridge.registerMetadata('baseComponent', null, baseComponentMeta);
 })();
 });

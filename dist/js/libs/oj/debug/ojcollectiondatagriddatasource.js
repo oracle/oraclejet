@@ -317,6 +317,7 @@ oj.CollectionCellSet.prototype.getData = function(indexes)
     self = this;    
     returnObj = {}; 
     Object.defineProperty(returnObj, 'data', {
+        enumerable: true,        
         get: function(){ return model.get(columnKey); },
         set: function (newValue) { 
             model.set(columnKey, newValue, {'silent':true}); 

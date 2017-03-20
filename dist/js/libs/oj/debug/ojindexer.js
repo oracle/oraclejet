@@ -12,6 +12,275 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
        function(oj, $, Hammer)
 {
 
+/*jslint browser: true,devel:true*/
+/**
+ * The interface for oj.IndexerModel which should be implemented by all object instances
+ * bound to the data parameter for ojIndexer. 
+ * @export
+ * @interface
+ */
+oj.IndexerModel = function()
+{
+};
+
+// without the at-name tag, JSDoc tool prepends a "." to the field name for some reason, which messes up the QuickNav.
+/**
+ * Constant for the section that represents all non-letters including numbers and symbols.
+ * @export
+ * @expose
+ * @name SECTION_OTHERS
+ * @memberof! oj.IndexerModel
+ */
+oj.IndexerModel.SECTION_OTHERS = {'id': '__others__', 'label': oj.Translations.getTranslatedString('oj-ojIndexer.indexerOthers')};
+
+/**
+ * Make a section current in the Indexer.  The implementation should scroll the associated ListView so that the section becomes visible.
+ * @param {Object} section the current section
+ * @return {Promise} a Promise which when resolved will return the section that the associated ListView actually scrolls to.  
+ *                   For example, the implementation could choose to scroll to the next available section in ListView if no data 
+ *                   exists for that section.  
+ * @method
+ * @name setSection
+ * @memberof! oj.IndexerModel
+ * @instance
+ */
+
+/**
+ * Returns an array of objects each representing a section in the associated ListView.  The section object could either be
+ * a String or an object containing at least a 'label' field.  For example, the implementation may return an array of Strings 
+ * representing letters of the alphabet. Or it may return an array of objects each containing a 'label' field for the section 
+ * titles. 
+ * @return {Array.<Object>} an array of all indexable sections 
+ * @method
+ * @name getIndexableSections
+ * @memberof! oj.IndexerModel
+ * @instance
+ */
+
+/**
+ * Returns an array of objects each representing a section that does not have a corresponding section in the associated ListView.  
+ * It must be a subset of the return value of <code>getIndexableSections</code>.  Return null or undefined if there's nothing missing.
+ * @return {Array.<Object>} an array of missing sections
+ * @method
+ * @name getMissingSections
+ * @memberof! oj.IndexerModel
+ * @instance
+ */
+/**
+ * Implementation of the IndexerModel used by ListView.  This implementation groups the data based on the first letter of the 
+ * group header text and the alphabet of the current locale.
+ * @export
+ * @param {Object} listview the internal ListView instance
+ * @class oj.ListViewIndexerModel
+ * @implements oj.IndexerModel
+ * @classdesc Implementation of IndexerModel used by ListView. 
+ * @extends oj.EventSource
+ * @constructor
+ * @ignore
+ */
+oj.ListViewIndexerModel = function(listview)
+{
+    this.listview = listview;
+    this.Init();
+};
+
+// Subclass from oj.EventSource 
+oj.Object.createSubclass(oj.ListViewIndexerModel, oj.EventSource, "oj.ListViewIndexerModel");
+
+/**
+ * @export
+ * Returns the sections displayed by the Indexer.
+ * @returns {Array.<Object>} an array of sections
+ * @memberof! oj.ListViewIndexerModel
+ */
+oj.ListViewIndexerModel.prototype.getIndexableSections = function()
+{
+    var sections = this.listview.ojContext.getTranslatedString("indexerCharacters");
+    return sections.split("|");
+};
+
+/**
+ * @export
+ * Returns the sections that are missing in the associated ListView.    
+ * @return {Array.<Object>} an array of sections that are missing.
+ * @memberof! oj.ListViewIndexerModel
+ */
+oj.ListViewIndexerModel.prototype.getMissingSections = function()
+{
+    if (this.missingSections == null)
+    {
+        this.missingSections = this._getMissingSections();
+    }
+
+    return this.missingSections;
+};
+
+/**
+ * Returns the sections that are currently missing.
+ * @private
+ */
+oj.ListViewIndexerModel.prototype._getMissingSections = function()
+{
+    var results = [], groupItems, sections, i, section, found, content;
+
+    groupItems = this.listview._getGroupItemsCache();
+    if (groupItems != null)
+    {
+        sections = this.getIndexableSections();
+        for (i=0; i<sections.length; i++)
+        {
+            section = sections[i];
+            found = false;
+            groupItems.each(function(index) 
+            {
+                content = $(this).text();
+                if (content.length > 0 && content.charAt(0) == section)
+                {
+                    found = true;
+                    return false;
+                }            
+            });
+
+            if (!found)
+            {
+                results.push(section);
+            }
+        }
+    }
+
+    return results;
+};
+
+/**
+ * @export
+ * Sets the current section.  When associated with a ListView, this will scroll the ListView to the corresponding group header.
+ * @param {Object} section the current section
+ * @return {Promise} a Promise object which when resolve will return the section that the IndexerModel actually sets as current.
+ * @memberof! oj.ListViewIndexerModel
+ */
+oj.ListViewIndexerModel.prototype.setSection = function(section)
+{
+    if (section == oj.IndexerModel.SECTION_OTHERS)
+    {
+        return this._setOtherSection();
+    }
+    else
+    {
+        return this._setSection(section);
+    }
+};
+
+/**
+ * Sets the 'Other' section as current
+ * @private
+ */
+oj.ListViewIndexerModel.prototype._setOtherSection = function()
+{
+    var sections, self = this, match, groupItems, content, i, section;
+
+    sections = this.getIndexableSections();
+
+    return new Promise(function(resolve, reject) 
+    {
+        match = null;
+        groupItems = self.listview._getGroupItemsCache();
+        if (groupItems != null)
+        {
+            // find the group header that DOES NOT match ANY of the sections
+            groupItems.each(function(index) 
+            {
+                content = $(this).text();
+                for (i=0; i<sections.length; i++)
+                {
+                    section = sections[i];
+                    if (content.indexOf(section) == 0)
+                    {
+                        // skip and check next group header
+                        return true;
+                    }            
+                }
+
+                match = this;
+                return false;
+            });
+        }    
+
+        if (match)
+        {
+            self.listview._scrollToGroupHeader(match);
+            resolve(oj.IndexerModel.SECTION_OTHERS);
+        }
+        else
+        {
+            resolve(null);
+        }
+    });
+};
+
+/**
+ * Sets the specified section as current.
+ * @private
+ */
+oj.ListViewIndexerModel.prototype._setSection = function(section)
+{
+    var sections, index, self = this, match = null, groupHeader;
+
+    sections = this.getIndexableSections();
+    index = sections.indexOf(section);
+
+    return new Promise(function(resolve, reject) 
+    {
+        if (index == -1)
+        {
+            // if it's not even in the indexable sections, then we don't need to process anymore
+            resolve(null);
+        }
+        else
+        {
+            // try to find the group header, use the next section as needed
+            while (index < sections.length)
+            {
+                section = sections[index];
+                groupHeader = self._findGroupHeader(section);
+                if (groupHeader != null)
+                {
+                    self.listview._scrollToGroupHeader(groupHeader);
+                    match = section;
+                    break;
+                }
+
+                index++;
+            }
+
+            resolve(match);
+        }
+    });
+};
+
+/**
+ * Finds the group header with the specified section
+ * @private
+ */
+oj.ListViewIndexerModel.prototype._findGroupHeader = function(section)
+{
+    var match, groupItems, content;
+
+    groupItems = this.listview._getGroupItemsCache();
+    if (groupItems != null)
+    {
+        groupItems.each(function(index) 
+        {
+            content = $(this).text();
+            if (content.indexOf(section) == 0)
+            {
+                match = this;
+                return false;
+            }            
+        });
+    }
+
+    return match;
+};
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -42,8 +311,8 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  *   JET Indexer Component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#indexerOverview-section"></a>
  * </h3>
- * <p>Description: The JET Indexer is usually associated with a scrollable JET ListView.  It provides a list of prefixes/characters that 
- *                 corresponds to group headers in ListView.  When a prefix/character is selected the corresponding group header will be 
+ * <p>Description: The JET Indexer is usually associated with a scrollable JET ListView.  It provides a list of sections that 
+ *                 corresponds to group headers in ListView.  When a section is selected the corresponding group header will be 
  *                 scroll to the top of the ListView.
  * </p>
  * <h3 id="touch-section">
@@ -148,7 +417,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _destroy: function()
     {
-        var container, model;
+        var container;
 
         this._super();
         this._unsetAriaProperties();
@@ -157,12 +426,6 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         container = this._getIndexerContainer()[0];
         this._unregisterResizeListener(container);
         this._unregisterTouchHandler(container);
-
-        model = this._getIndexerModel();
-        if (model != null && this.m_indexerModelListener)
-        {
-            model.off(oj.IndexerModel.EventType['CHANGE'], this.m_indexerModelListener);
-        }
 
         oj.DomUtils.unwrap(this.element, $(container));
     },
@@ -219,10 +482,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     /**
      * Return the subcomponent node represented by the documented locator attribute values.
      * <p>
-     * To lookup the node that represents the specific prefix in the indexer the locator object should have the following:
+     * To lookup the node that represents the specific section in the indexer the locator object should have the following:
      * <ul>
-     * <li><b>subId</b>: 'oj-indexer-prefix'</li>
-     * <li><b>prefix</b>: the prefix in the indexer</li>
+     * <li><b>subId</b>: 'oj-indexer-section'</li>
+     * <li><b>section</b>: the id of the section in the indexer</li>
      * </ul>
      *
      * @expose
@@ -242,7 +505,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     getNodeBySubId: function(locator)
     {
-        var subId, prefix, prefixes, i, j, node, includes;
+        var subId, section, sections, i, j, node, data, includes;
  
         if (locator == null)
         {
@@ -250,27 +513,27 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         }
 
         subId = locator['subId'];
-        if (subId === 'oj-indexer-prefix')
+        if (subId === 'oj-indexer-section')
         {
-            prefix = locator['prefix'];
-            prefixes = this.element.children("li");
-            for (i=0; i<prefixes.length; i++)
+            section = locator['section'];
+            sections = this.element.children("li");
+            for (i=0; i<sections.length; i++)
             {
-                node = prefixes.get(i);
-                if ($(node).attr("data-range") == prefix)
+                node = sections.get(i);
+                data = $(node).data("data-range");
+                if (data == section)
                 {
                     return node;
                 }
                 else
                 {
-                    // it's a separator, check the prefixes included in the range
-                    includes = $(node).attr("data-includes");
+                    // it's a separator, check the sections included in the range
+                    includes = $(node).data("data-includes");
                     if (includes != null)
                     {
-                        includes = includes.split("|");
                         for (j=0; j<includes.length; j++)
                         {
-                            if (includes[j] == prefix)
+                            if (includes[j] == section)
                             {
                                 return node;
                             }
@@ -296,14 +559,14 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     getSubIdByNode: function(node)
     {
-        var prefix;
+        var section;
 
         if (node != null)
         {   
-            prefix = $(node).attr("data-range");
-            if (prefix != null)
+            section = $(node).data("data-range");
+            if (section != null)
             {
-                return {'subId': 'oj-indexer-prefix', 'prefix': prefix};
+                return {'subId': 'oj-indexer-section', 'section': section};
             }
         }
 
@@ -405,7 +668,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _createIndexerContent: function()
     {
-        var model, root, prefixes, availablePrefixes, prefixOthers, height, first, itemHeight, max, skip, i, prefix, item, last, others;
+        var model, root, sections, missingSections, sectionOthers, height, first, itemHeight, max, skip, i, section, item, last, others;
 
         model = this._getIndexerModel();
         if (model == null)
@@ -414,13 +677,16 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         }
 
         root = this.element;
-        prefixes = model.getIndexablePrefixes();
-        availablePrefixes = model.getPrefixes();
-        prefixOthers = this.getTranslatedString("indexerOthers");
+        sections = model.getIndexableSections();
+        if (model.getMissingSections)
+        {
+            missingSections = model.getMissingSections();
+        }
+        sectionOthers = this.getTranslatedString("indexerOthers");
         height = this.widget().outerHeight();
  
         // the first character is always present, use it to test height
-        first = this._createItem(prefixes[0], availablePrefixes);
+        first = this._createItem(sections[0], missingSections);
         root.append(first); // @HtmlUpdateOK
 
         itemHeight = first.outerHeight();
@@ -428,18 +694,18 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 
         // first +1 is to include the '#', second +1 is to include rendering of the symbol between letters
         this._getIndexerContainer().removeClass("oj-indexer-abbr");
-        skip = Math.floor((prefixes.length+1) / max) + 1;
+        skip = Math.floor((sections.length+1) / max) + 1;
         if (skip > 1)
         {
             // the height of item is a little different
             this._getIndexerContainer().addClass("oj-indexer-abbr");
         }
 
-        for (i=1+skip; i<prefixes.length; i=i+skip+1)
+        for (i=1+skip; i<sections.length; i=i+skip+1)
         {
             if (skip > 1)
             {
-                item = this._createSeparator(prefixes, i-skip, i-1);
+                item = this._createSeparator(sections, i-skip, i-1);
                 root.append(item); // @HtmlUpdateOK
             }
             else
@@ -447,17 +713,17 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
                 i--;
             }
 
-            prefix = prefixes[i];
-            item = this._createItem(prefix, availablePrefixes);
+            section = sections[i];
+            item = this._createItem(section, missingSections);
             root.append(item); // @HtmlUpdateOK
         }
 
         // the last character is always present
-        last = this._createItem(prefixes[prefixes.length-1], availablePrefixes);
+        last = this._createItem(sections[sections.length-1], missingSections);
         root.append(last); // @HtmlUpdateOK
 
         // the special others character is always present
-        others = this._createItem(prefixOthers);
+        others = this._createItem(sectionOthers);
         others.attr("data-others", "true");
         root.append(others); // @HtmlUpdateOK
     },
@@ -465,13 +731,17 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     /**
      * @private
      */
-    _createItem: function(prefix, availablePrefixes)
+    _createItem: function(section, missingSections)
     {
-        var item = $(document.createElement("li"));
-        item.attr("data-range", prefix)
-            .text(prefix);
+        var label, item;
 
-        if (availablePrefixes != null && availablePrefixes.indexOf(prefix) == -1)
+        label = section['label'] ? section['label'] : section;
+     
+        item = $(document.createElement("li"));
+        item.data("data-range", section)
+            .text(label);
+
+        if (missingSections != null && missingSections.indexOf(section) > -1)
         {
             item.addClass("oj-disabled");
         }            
@@ -482,19 +752,18 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     /**
      * @private
      */
-    _createSeparator: function(indexString, from, to)
+    _createSeparator: function(sections, from, to)
     {
-        var item, i, includes = "";
+        var item, i, includes = [];
 
         item = $(document.createElement("li"));
         item.addClass("oj-indexer-ellipsis")
-            .attr("data-range", indexString[from + Math.round((to-from)/2)]);
-        for (i=from; i<to; i++)
+            .data("data-range", sections[from + Math.round((to-from)/2)]);
+        for (i=from; i<=to; i++)
         {
-            includes = includes + indexString[i] + "|";
+            includes.push(sections[i]);
         }
-        includes = includes + indexString[to];
-        item.attr("data-includes", includes);
+        item.data("data-includes", includes);
         return item;
     },
     /**************************** end core rendering **********************************/
@@ -531,16 +800,6 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
                 self._handleBlur(event);
             }
         });
-
-        model = this._getIndexerModel();
-        if (model != null)
-        {
-            this.m_indexerModelListener = function()
-            {
-                self.refresh();
-            };
-            model.on(oj.IndexerModel.EventType['CHANGE'], this.m_indexerModelListener);
-        }
 
         this._focusable({
             'applyHighlight': true,
@@ -653,7 +912,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     _getIndexerModel: function()
     {
         var model = this.option("data");
-        if (model != null && (model.setPrefix == undefined || model.getIndexablePrefixes == undefined || model.getPrefixes == undefined))
+        if (model != null && (model.setSection == undefined || model.getIndexableSections == undefined))
         {
             throw "Invalid IndexerModel";
         }
@@ -667,28 +926,31 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _setCurrent: function(item)
     {
-        var prefix = item.attr("data-range");
+        var section = item.data("data-range");
         if (item.attr("data-others"))
         {
-            prefix = oj.IndexerModel.PREFIX_OTHERS;
+            section = oj.IndexerModel.SECTION_OTHERS;
         }    
 
-        this._setCurrentPrefix(prefix);
+        this._setCurrentSection(section);
     },
 
     /**
-     * Sets the prefix as current
-     * @param {string} prefix
+     * Sets the section as current
+     * @param {Object} section
      * @private
      */
-    _setCurrentPrefix: function(prefix)
+    _setCurrentSection: function(section)
     {
-        var self = this, item, val;
+        var self = this, busyContext, item, val;
+
+        busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
+        this.busyStateResolve = busyContext.addBusyState({'description': 'setCurrentSection'});
 
         // sets on the IndexerModel
-        this._getIndexerModel().setPrefix(prefix).then(function(val)
+        this._getIndexerModel().setSection(section).then(function(val)
         {
-            // the resolve value is the prefix that actually scrolls to
+            // the resolve value is the section that actually scrolls to
             if (val != null)
             {               
                 item = self._findItem(val);
@@ -697,6 +959,9 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
                     self._setFocus(item);
                 }
             }
+
+            self.busyStateResolve(null);
+            self.busyStateResolve = null;
         });
     },
 
@@ -707,24 +972,25 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _updateAriaProperties: function(item)
     {
-        var includes, val, valueText = "";
+        var includes, val, first, second, valueText = "";
 
-        includes = item.attr("data-includes");
+        includes = item.data("data-includes");
 
         if (includes != null)
         {
-            includes = includes.split("|");
             // length should always be > 0
             if (includes.length > 0)
             {
-                valueText = this.getTranslatedString("ariaInBetweenText", {"first": includes[0], "second": includes[includes.length-1]});
+                first = includes[0]['label'] ? includes[0]['label'] : includes[0];
+                second = includes[includes.length-1]['label'] ? includes[includes.length-1]['label'] : includes[includes.length-1];
+                valueText = this.getTranslatedString("ariaInBetweenText", {"first": first, "second": second});
             }
         }
         else
         {
-            val = item.attr("data-range");
-            // checks if it's the special others prefix
-            if (val === oj.IndexerModel.PREFIX_OTHERS)
+            val = item.data("data-range");
+            // checks if it's the special others section
+            if (val === oj.IndexerModel.SECTION_OTHERS)
             {
                 valueText = this.getTranslatedString("ariaOthersLabel");
             }
@@ -745,12 +1011,12 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     },
 
     /**
-     * Finds the item with the specified prefix
-     * @param {string} prefix
+     * Finds the item with the specified section
+     * @param {Object} section
      * @return {jQuery} the item, null if not found
      * @private
      */
-    _findItem: function(prefix)
+    _findItem: function(section)
     {
         var children, i, item, value, includes;
 
@@ -758,10 +1024,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         for (i=0; i<children.length; i++)
         {
             item = children.get(i);
-            value = $(item).attr("data-range");
-            includes = $(item).attr("data-includes");
+            value = $(item).data("data-range");
+            includes = $(item).data("data-includes");
 
-            if ((value != null && value == prefix) || (includes != null && includes.indexOf(prefix) > -1))
+            if ((value != null && value == section) || (includes != null && includes.indexOf(section) > -1))
             {
                 return $(item);
             }
@@ -819,7 +1085,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _registerTouchHandler: function(element)
     {    
-        var self = this, options, target, x, y, currentTarget, currentPrefix, currentY, previousY, delta, range, index, prefix;
+        var self = this, options, target, x, y, currentTarget, currentSection, currentY, previousY, delta, range, index, section;
         
         options = {
         "recognizers": [
@@ -839,7 +1105,7 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
             self._setCurrent($(target));
 
             currentTarget = target;
-            currentPrefix = target.getAttribute("data-range");
+            currentSection = $(target).data("data-range");
             currentY = y;
         })
         .on("panmove", function(event)
@@ -862,69 +1128,68 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
 
             if (currentTarget == target)
             {
-                range = target.getAttribute("data-includes");
-                // if the prefix is a range (dot), then try to set the next prefix inside the range current
+                range = $(target).data("data-includes");
+                // if the section is a range (dot), then try to set the next section inside the range current
                 // for example, if move on * which represents range BCD, if current is C then move up should go to B and move down should go to D
                 if (range != null)
                 {
-                    range = range.split("|");
-                    index = range.indexOf(currentPrefix);
-                    prefix = null;
+                    index = range.indexOf(currentSection);
+                    section = null;
                     if (delta > 0 && index < range.length-1)
                     {
-                        prefix = range[index+1];
+                        section = range[index+1];
                     }
                     else if (delta < 0 && index > 0)
                     {
-                        prefix = range[index-1];
+                        section = range[index-1];
                     }
 
-                    if (prefix != null)
+                    if (section != null)
                     {
-                        currentPrefix = prefix;
-                        self._setCurrentPrefix(prefix);                           
+                        currentSection = section;
+                        self._setCurrentSection(section);                           
                     }
                 }
             }
             else
             {
-                if (target.hasAttribute("data-range"))
+                if ($(target).data("data-range"))
                 {                 
-                    range = target.getAttribute("data-includes");
-                    prefix = null;
-                    // if the target is a range (dot), check to see if we should set the prefix to the beginning of
+                    range = $(target).data("data-includes");
+                    section = null;
+                    // if the target is a range (dot), check to see if we should set the section to the beginning of
                     // range or end of range.  For example, if you have A * E with * represents BCD, coming from A should go to B
                     // where as coming from E should go to D.
                     if (range != null)
                     {
                         if (delta > 0 && target == currentTarget.nextElementSibling)
                         {
-                            prefix = range[0];
+                            section = range[0];
                         }
                         else if (delta < 0 && target == currentTarget.previousElementSibling)
                         {
-                            prefix = range[range.length-1];
+                            section = range[range.length-1];
                         }
                     }         
 
-                    if (prefix == null)
+                    if (section == null)
                     {
-                        prefix = target.getAttribute("data-range");
+                        section = $(target).data("data-range");
                     }
 
                     currentTarget = target;
-                    currentPrefix = prefix;
+                    currentSection = section;
 
-                    self._setCurrentPrefix(currentPrefix);                           
+                    self._setCurrentSection(currentSection);                           
                 }
             }
         })
         .on("panend", function(event)
         {
             currentTarget = null;
-            currentPrefix = null;
+            currentSection = null;
             currentY = null;
-            prefix = null;
+            section = null;
         });
     },
 
@@ -982,17 +1247,17 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
  *   </thead>
  *   <tbody>
  *     <tr>
- *       <td rowspan = "3" nowrap>Indexer Prefix</td>
+ *       <td rowspan = "3" nowrap>Section</td>
  *       <td><kbd>DownArrow</kbd></td>
- *       <td>Move focus to the prefix below.</td>
+ *       <td>Move focus to the section below.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
- *       <td>Move focus to the prefix above.</td>
+ *       <td>Move focus to the section above.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Enter</kbd></td>
- *       <td>Selects the current prefix.  No op if the item is already selected.</td>
+ *       <td>Selects the current section.  No op if the section is already selected.</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -1007,306 +1272,16 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
  * <p>Sub-ID for the ojIndexer component.  See the <a href="#getNodeBySubId">getNodeBySubId</a>
  * method for details.</p>
  *
- * @ojsubid oj-indexer-prefix
+ * @ojsubid oj-indexer-section
  * @memberof oj.ojIndexer
  *
  * @example <caption>Get the node that represents the specified prefix 'A' in the indexer:</caption>
- * var node = $( ".selector" ).ojIndexer( "getNodeBySubId", {'subId': 'oj-indexer-prefix', 'prefix': 'A'} );
+ * var node = $( ".selector" ).ojIndexer( "getNodeBySubId", {'subId': 'oj-indexer-section', 'section': 'A'} );
  */
 
     });
 
 }() );
-/**
- * Implementation of the IndexerModel used by ListView.
- * @export
- * @param {Object} listview the internal ListView instance
- * @class oj.ListViewIndexerModel
- * @implements oj.IndexerModel
- * @classdesc Implementation of IndexerModel used by ListView. 
- * @extends oj.EventSource
- * @constructor
- * @ignore
- */
-oj.ListViewIndexerModel = function(listview)
-{
-    this.listview = listview;
-    this.Init();
-};
-
-// Subclass from oj.EventSource 
-oj.Object.createSubclass(oj.ListViewIndexerModel, oj.EventSource, "oj.ListViewIndexerModel");
-
-/**
- * @export
- * Returns the prefixes displayed by the Indexer.
- * @returns {Array.<string>} an array of prefixes
- * @memberof! oj.ListViewIndexerModel
- */
-oj.ListViewIndexerModel.prototype.getIndexablePrefixes = function()
-{
-    var prefixes = this.listview.ojContext.getTranslatedString("indexerCharacters");
-    return prefixes.split("|");
-};
-
-/**
- * @export
- * Returns the prefixes that are currently available.  When associated with a ListView, these prefixes are the ones that have a
- * corresponding group header.  Note that this set is based on the group headers that are currently fetched so it might not be complete.   
- * @return {Array.<string>} an array of prefixes that are available.
- * @memberof! oj.ListViewIndexerModel
- */
-oj.ListViewIndexerModel.prototype.getPrefixes = function()
-{
-    if (this.availablePrefixes == null)
-    {
-        this.availablePrefixes = this._getAvailablePrefixes();
-    }
-
-    return this.availablePrefixes;
-};
-
-/**
- * Returns the prefixes that are currently available.
- * @private
- */
-oj.ListViewIndexerModel.prototype._getAvailablePrefixes = function()
-{
-    var results = [];
-
-    var groupItems = this.listview._getGroupItemsCache();
-    if (groupItems != null)
-    {
-        var prefixes = this.getIndexablePrefixes();
-        for (var i=0; i<prefixes.length; i++)
-        {
-            var prefix = prefixes[i];
-            groupItems.each(function(index) 
-            {
-                var content = $(this).text();
-                if (content.indexOf(prefix) == 0)
-                {
-                    results.push(prefix);
-                    return false;
-                }            
-            });
-        }
-    }
-
-    return results;
-};
-
-/**
- * @export
- * Sets the current prefix.  When associated with a ListView, this will scroll the ListView to the corresponding group header.
- * @param {String} prefix the current prefix
- * @return {Promise} a Promise object which when resolve will return the prefix that the IndexerModel actually sets as current.
- * @memberof! oj.ListViewIndexerModel
- */
-oj.ListViewIndexerModel.prototype.setPrefix = function(prefix)
-{
-    if (prefix == oj.IndexerModel.PREFIX_OTHERS)
-    {
-        return this._setOtherPrefix();
-    }
-    else
-    {
-        return this._setPrefix(prefix);
-    }
-};
-
-/**
- * Sets the 'Other' prefix as current
- * @private
- */
-oj.ListViewIndexerModel.prototype._setOtherPrefix = function()
-{
-    var prefixes, self = this, match, groupItems, content, i, prefix;
-
-    prefixes = this.getIndexablePrefixes();
-
-    return new Promise(function(resolve, reject) 
-    {
-        match = null;
-        groupItems = self.listview._getGroupItemsCache();
-        if (groupItems != null)
-        {
-            // find the group header that DOES NOT match ANY of the prefixes
-            groupItems.each(function(index) 
-            {
-                content = $(this).text();
-                for (i=0; i<prefixes.length; i++)
-                {
-                    prefix = prefixes[i];
-                    if (content.indexOf(prefix) == 0)
-                    {
-                        // skip and check next group header
-                        return true;
-                    }            
-                }
-
-                match = this;
-                return false;
-            });
-        }    
-
-        if (match)
-        {
-            self.listview._scrollToGroupHeader(match);
-            resolve(oj.IndexerModel.PREFIX_OTHERS);
-        }
-        else
-        {
-            resolve(null);
-        }
-    });
-};
-
-/**
- * Sets the specified prefix as current.
- * @private
- */
-oj.ListViewIndexerModel.prototype._setPrefix = function(prefix)
-{
-    var prefixes, index, self = this, match = null, groupHeader;
-
-    prefixes = this.getIndexablePrefixes();
-    index = prefixes.indexOf(prefix);
-
-    return new Promise(function(resolve, reject) 
-    {
-        if (index == -1)
-        {
-            // if it's not even in the indexable prefixes, then we don't need to process anymore
-            resolve(null);
-        }
-        else
-        {
-            // try to find the group header, use the next prefix as needed
-            while (index < prefixes.length)
-            {
-                prefix = prefixes[index];
-                groupHeader = self._findGroupHeader(prefix);
-                if (groupHeader != null)
-                {
-                    self.listview._scrollToGroupHeader(groupHeader);
-                    match = prefix;
-                    break;
-                }
-
-                index++;
-            }
-
-            resolve(match);
-        }
-    });
-};
-
-/**
- * Finds the group header with the specified prefix
- * @private
- */
-oj.ListViewIndexerModel.prototype._findGroupHeader = function(prefix)
-{
-    var match, groupItems, content;
-
-    groupItems = this.listview._getGroupItemsCache();
-    if (groupItems != null)
-    {
-        groupItems.each(function(index) 
-        {
-            content = $(this).text();
-            if (content.indexOf(prefix) == 0)
-            {
-                match = this;
-                return false;
-            }            
-        });
-    }
-
-    return match;
-};
-
-/**
- * Fires a change event to its listeners
- * @protected
- */
-oj.ListViewIndexerModel.prototype.fireChangeEvent = function()
-{
-    this.availablePrefixes = null;
-    this.handleEvent(oj.IndexerModel.EventType['CHANGE'], {});
-};
-/*jslint browser: true,devel:true*/
-/**
- * The interface for oj.IndexerModel which should be implemented by all object instances
- * bound to the data parameter for ojIndexer. oj.IndexerModel implementations should
- * also support event subscription by extending oj.EventSource or oj.DataSource.
- * @export
- * @interface
- */
-oj.IndexerModel = function()
-{
-};
-
-/**
- * Constant for the prefix that represents all non-letters including numbers and symbols.
- * @export
- * @expose
- * @memberof! oj.IndexerModel
- * @instance
- */
-oj.IndexerModel.PREFIX_OTHERS = '__others__';
-
-/**
- * @export
- * Event types
- * @enum {string}
- */
-oj.IndexerModel.EventType =
-{
-    /**
-     * Triggered when the underlying model has changed.
-     */
-    'CHANGE': 'change'
-};
-
-/**
- * Sets the current prefix.  When associated with a ListView, this will scroll the ListView to the corresponding group header.
- * @param {String} prefix the current prefix
- * @return {Promise} a Promise object which when resolve will return the prefix that the IndexerModel actually sets as current.
- * @export
- * @expose
- * @memberof! oj.IndexerModel
- * @instance
- */
-oj.IndexerModel.prototype.setPrefix = function(prefix)
-{
-};
-
-/**
- * Returns the prefixes displayed by the Indexer.  For example, the alphabets of a particular language.
- * @returns {Array.<string>} an array of prefixes
- * @export
- * @expose
- * @memberof! oj.IndexerModel
- * @instance
- */
-oj.IndexerModel.prototype.getIndexablePrefixes = function()
-{
-};
-
-/**
- * Returns the prefixes that are currently available.  When associated with a ListView, these prefixes are the ones that have a
- * corresponding group header.  Note that this set is based on the group headers that are currently fetched so it might not be complete.   
- * @return {Array.<string>} an array of prefixes that are available.
- * @export
- * @expose
- * @memberof! oj.IndexerModel
- * @instance
- */
-oj.IndexerModel.prototype.getPrefixes = function()
-{
-};
 (function() {
 var ojIndexerMeta = {
   "properties": {
@@ -1315,16 +1290,14 @@ var ojIndexerMeta = {
   "methods": {
     "getNodeBySubId": {},
     "getSubIdByNode": {},
-    "refresh": {},
-    "widget": {}
+    "refresh": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'ul',
-    "_widgetName": "ojIndexer"
+    _INNER_ELEM: 'ul',
+    _WIDGET_NAME: "ojIndexer"
   }
 };
-oj.Components.registerMetadata('ojIndexer', 'baseComponent', ojIndexerMeta);
-oj.Components.register('oj-indexer', oj.Components.getMetadata('ojIndexer'));
+oj.CustomElementBridge.registerMetadata('oj-indexer', 'baseComponent', ojIndexerMeta);
+oj.CustomElementBridge.register('oj-indexer', {'metadata': oj.CustomElementBridge.getMetadata('oj-indexer')});
 })();
 });

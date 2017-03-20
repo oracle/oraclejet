@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'jqueryui-amd/position'], 
+define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'jqueryui-amd/position'], 
        function(oj, $)
 {
 
@@ -49,11 +49,31 @@ oj.PositionUtils.normalizeHorizontalAlignment = function(position, isRtl)
   {
     var propName = oj.PositionUtils._ALIGN_RULE_PROPERTIES[i];
     var align = target[propName];
-    if (align)
+    if (!align)
+      continue;
+
+    if (oj.StringUtils.isString(align))
+    {
       target[propName] = align.replace("start", (isRtl ? "right" : "left"))
                               .replace("end", (isRtl ? "left" : "right"))
                               .replace("<", (isRtl ? "+" : "-"))
                               .replace(">", (isRtl ? "-" : "+"));
+    }
+    else
+    {
+      for (var s = 0; s < oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES.length; s++)
+      {
+        var subPropName = oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES[s];
+        var subAlign = align[subPropName];
+        if (oj.StringUtils.isString(subAlign))
+        {
+            align[subPropName] = subAlign.replace("start", (isRtl ? "right" : "left"))
+                              .replace("end", (isRtl ? "left" : "right"))
+                              .replace("<", (isRtl ? "+" : "-"))
+                              .replace(">", (isRtl ? "-" : "+"));
+        }
+      }
+    }
   }
 
   return target;
@@ -143,6 +163,7 @@ oj.PositionUtils._normalizeEventForPosition = function(event)
 };
 
 oj.PositionUtils._ALIGN_RULE_PROPERTIES = ['my', 'at'];
+oj.PositionUtils._SUB_ALIGN_RULE_PROPERTIES = ['vertical', 'horizontal'];
 
 /**
  * A common utilty that is designed be be called for a jquery ui position "using" callback
@@ -270,6 +291,569 @@ oj.PositionUtils.isWithinViewport = function(element)
   return isWithinViewPort;
 };
 
+/**
+ * Mapping of horizontal-vertical (x,y) alignment positon to the corresponding css
+ * "transform-origin" attribute.
+ *
+ * horizontal: right, left, center
+ * vertical: top, bottom, middle
+ *
+ * @private
+ * @const
+ */
+oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES =
+    {
+      'right-top' : 'right top',
+      'right-middle' : 'right center',
+      'right-bottom' : 'right bottom',
+      'left-top' : 'left top',
+      'left-middle' : 'left center',
+      'left-bottom' : 'left bottom',
+      'center-top' : 'center top',
+      'center-middle' : 'center center',
+      'center-bottom' : 'center bottom'
+    };
+
+/**
+ * Data attribute key used to store the alignment of the popup relative
+ * to the aligning element - position.of
+ *
+ * @private
+ * @const
+ * @type {string}
+ */
+ oj.PositionUtils._ALIGN_MNEMONIC_DATA = "oj-popup-align-mnemonic"
+
+/**
+ * Pass the root popup element and the second argument of the jquery ui position utils using
+ * callback.  Stashes away the alignment hints returned by the position utility as a data property
+ * on the target jquery element.  The alignment hints are used to define the transform-origin
+ * of animation effects.
+ *
+ * @see oj.PositionUtils.addTransformOriginAnimationEffectsOption
+ * @param {jQuery} element popup root node
+ * @param {Object} props second argument to the jquery ui position "using" callback.
+ * @return {void}
+ */
+ oj.PositionUtils.captureTransformOriginAnimationEffectsOption =  function(element, props)
+ {
+   var alignMnemonic = [props["horizontal"], props["vertical"]].join("-");
+   element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA, alignMnemonic);
+ };
+
+/**
+ * Pass "open" or "close" animation effects.  Replaces occurances of
+ * "transformOrigin":"#myPositon" with a value that represents the popups alignment.
+ *
+ * @see oj.PositionUtils.captureTransformOriginAnimationEffectsOption
+ * @param {jQuery} element popup root node
+ * @param {string|Object|Array} effects animation instructions
+ * @returns {string|Object|Array} effects with the transformOrign property resolved
+ */
+oj.PositionUtils.addTransformOriginAnimationEffectsOption = function (element, effects)
+{
+  var effectsAsString;
+  var isEffectsTypeofString;
+
+  if (!oj.StringUtils.isString(effects))
+  {
+    isEffectsTypeofString = false;
+    effectsAsString = JSON.stringify(effects);
+  }
+  else
+  {
+    isEffectsTypeofString = true;
+    effectsAsString = effects;
+  }
+
+  var exp = /#myPosition/g;
+  if (effectsAsString.match(exp))
+  {
+    var alignMnemonic = /** @type {string} */ (element.data(oj.PositionUtils._ALIGN_MNEMONIC_DATA));
+    if (oj.StringUtils.isEmptyOrUndefined(alignMnemonic))
+      alignMnemonic = "center-middle";
+
+    var transformOrigin = oj.PositionUtils._ANIMATION_TRANSFORM_ORIGIN_RULES[alignMnemonic];
+
+    effectsAsString = effectsAsString.replace(exp, transformOrigin);
+
+    effects = isEffectsTypeofString ? effectsAsString :
+      /** @type {Object} */ (JSON.parse(effectsAsString));
+  }
+
+  return effects;
+};
+
+
+/**
+ * Splits the jquery UI vertical mnemonic into 3 groups.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX = /^(\w+)(\+|\-)?(\d+)?/;
+
+/**
+ * Verify vertical mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._VERTICAL_ENUM_TST_REGX = /^top$|^center$|^bottom$/;
+
+/**
+ * Verify horizontal mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX = /^start$|^left$|^center$|^end$|^right$/;
+
+/**
+ * Verify collision mnemonic.
+ * @private
+ * @constant {RegExp}
+ */
+oj.PositionUtils._COLLISION_ENUM_TST_REGX = /^none$|^flip$|^flipfit$|^fit$|^flipcenter$/;
+
+/**
+ * @private
+ * @param {string} token containing a position alignment rule
+ * @param {RegExp} testRegX regular expression to verify the token enumerations
+ * @returns {Array} array of two values [alignment, offset].
+ */
+oj.PositionUtils._parsePositionNmnemonic = function(token, testRegX)
+{
+  var data = [null, Number.NaN];
+  var groups = oj.PositionUtils._JQUI_MNEMONIC_GRP_REGX.exec(token);
+
+  if (groups[1] && testRegX.test(groups[1]))
+  {
+    data[0] = groups[1];
+
+    // has an offset prefiex by +|-
+    if (groups[2])
+    {
+      var offset = parseInt(groups[3], 10);
+      if (!isNaN(offset))
+      {
+        offset *= (groups[2] === "-" ? -1 : 1);
+        data[1] = offset;
+      }
+    }
+  }
+  return data;
+};
+
+/**
+ *
+ * @private
+ * @param {?} value that might be a json string
+ * @returns {?} returns an object if the value is a json string; otherwise,
+ *          a null value is returned.
+ */
+oj.PositionUtils._parseJSON = function(value)
+{
+  if (oj.StringUtils.isString(value) && /^{/.test(value) && /}$/.test(value))
+  {
+    try
+    {
+      return JSON.parse(value);
+    }
+    catch (e) {}
+  }
+
+  return null;
+}
+
+
+/**
+ * Converts a source "position.my" into a suitable state held by jet components.
+ *
+ * @param {Object} mySource postion.my to shape into a Jet position object
+ * @param {Object=} offsetSource position.offset
+ * @param {Object=} myDefault default values
+ * @returns {Object} internal position impl
+ * @private
+ */
+oj.PositionUtils._coerceMyToJet = function (mySource, offsetSource, myDefault)
+{
+  var obj = oj.PositionUtils._parseJSON(mySource);
+  if (obj)
+    mySource = obj;
+
+  obj = oj.PositionUtils._parseJSON(offsetSource);
+  if (obj)
+    offsetSource = obj;
+
+  if (!myDefault)
+    myDefault = {};
+
+  var myTarget = $.extend({}, myDefault);
+  var myOffsetTarget = {"x": 0, "y": 0};
+  if (offsetSource && "x" in offsetSource && "y" in offsetSource)
+  {
+    myOffsetTarget["x"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["x"]);
+    myOffsetTarget["y"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["y"]);
+  }
+
+  var groups;
+
+  if (oj.StringUtils.isString(mySource))  // jquery ui
+  {
+    // split horizontal and vertical tokens
+    var tokens = mySource.split(/\s/);
+
+    // parse horizontal
+    if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[0],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      // verify horizontal enum
+      if (groups[0])
+      {
+        myTarget["horizontal"] = groups[0];
+        if (!isNaN(groups[1]))
+          myOffsetTarget["x"] = groups[1];
+      }
+    }
+
+    // parse vertical
+    if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[1],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      // verify vertical enum
+      if (groups[0])
+      {
+        myTarget["vertical"] = groups[0];
+        if (!isNaN(groups[1]))
+          myOffsetTarget["y"] = groups[1];
+      }
+    }
+  }
+  else if (mySource)
+  {
+    // my is is in the jet position format
+    if ("horizontal" in mySource)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(mySource["horizontal"],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        myTarget["horizontal"] = groups[0];
+        if (!isNaN(groups[1]))
+          myOffsetTarget["x"] = groups[1];
+      }
+    }
+
+    if ("vertical" in mySource)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(mySource["vertical"],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        myTarget["vertical"] = groups[0];
+        if (!isNaN(groups[1]))
+          myOffsetTarget["y"] = groups[1];
+      }
+    }
+  }
+
+  return {"my": myTarget, "offset": myOffsetTarget};
+};
+
+/**
+ * Converts a source "position.at" into a suitable state held by jet components.
+ *
+ * @param {Object} atSource postion.at to shape into a Jet position object
+ * @param {Object=} atDefault default values
+ * @returns {Object} internal position impl
+ * @private
+ */
+oj.PositionUtils._coerceAtToJet = function (atSource, atDefault)
+{
+  var obj = oj.PositionUtils._parseJSON(atSource);
+  if (obj)
+    atSource = obj;
+
+  if (!atDefault)
+    atDefault = {};
+
+  var atTarget = $.extend({}, atDefault);
+  var groups;
+
+  if (oj.StringUtils.isString(atSource))  // jquery ui
+  {
+    // split horizontal and vertical tokens
+    var tokens = atSource.split(/\s/);
+
+    // parse horizontal
+    if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[0],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      // verify horizontal enum
+      if (groups[0])
+      {
+        atTarget["horizontal"] = groups[0];
+      }
+    }
+
+    // parse vertical
+    if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1]))
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[1],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      // verify vertical enum
+      if (groups[0])
+      {
+        atTarget["vertical"] = groups[0];
+      }
+    }
+  }
+  else if (atSource)
+  {
+    // my is is in the jet position format
+    if ("horizontal" in atSource)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(atSource["horizontal"],
+        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        atTarget["horizontal"] = groups[0];
+      }
+    }
+
+    if ("vertical" in atSource)
+    {
+      groups = oj.PositionUtils._parsePositionNmnemonic(atSource["vertical"],
+        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
+
+      if (groups[0])
+      {
+        atTarget["vertical"] = groups[0];
+      }
+    }
+  }
+
+  return {"at": atTarget};
+};
+
+/**
+ * Converts a source "position.collision" into a suitable state held by jet components.
+ *
+ * @param {string} collisionSource postion.collision to shape into a Jet position object
+ * @param {string=} collisionDefault default values
+ * @returns {Object} internal position impl
+ * @private
+ */
+oj.PositionUtils._coerceCollisionToJet = function (collisionSource, collisionDefault)
+{
+  var collisionTarget = collisionDefault;
+
+  if (oj.PositionUtils._COLLISION_ENUM_TST_REGX.test(collisionSource))
+  {
+    collisionTarget = collisionSource;
+  }
+
+  return {"collision": collisionTarget};
+};
+
+
+/**
+ * Converts a source "position.of" into a suitable state held by jet components.
+ *
+ * @param {Object} ofSource position.of
+ * @param {Object=} ofDefault default value
+ * @return {Object} internal postion object
+ * @private
+ */
+oj.PositionUtils._coerceOfToJet = function (ofSource, ofDefault)
+{
+  function _escapeId(id)
+  {
+    var targetId = [];
+    var regex = /\w|_|-/;
+
+    for (var i = 0; i < id.length; i++)
+    {
+      var c = id.substring(i, i + 1);
+      if (regex.test(c))
+        targetId.push(c);
+      else
+        targetId.push("\\" + c);
+    }
+    return targetId.join("");
+  }
+
+  var obj = oj.PositionUtils._parseJSON(ofSource);
+  if (obj)
+    ofSource = obj;
+
+  var targetOf = ofDefault;
+
+  if (oj.StringUtils.isString(ofSource))
+  {
+    targetOf = ofSource;          // assume a valid selector
+  }
+  else if ($.isWindow(ofSource))
+  {
+    targetOf = "window";
+  }
+  else if (ofSource instanceof Element || ofSource instanceof $)
+  {
+    ofSource = $(ofSource);
+    ofSource.uniqueId();
+    var id = ofSource.attr("id");
+    targetOf = "#" + _escapeId(id);
+  }
+  else if (ofSource instanceof Event || ofSource instanceof $.Event)
+  {
+    if ("pageX" in ofSource || "pageY" in ofSource)
+    {
+      targetOf = {};
+      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageX"]);
+      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["pageY"]);
+    }
+  }
+  else if (ofSource)
+  {
+    if ("x" in ofSource || "y" in ofSource)
+    {
+      targetOf = {};
+      targetOf["x"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["x"]);
+      targetOf["y"] = oj.DomUtils.getCSSLengthAsFloat(ofSource["y"]);
+    }
+  }
+
+  return {"of": targetOf};
+};
+
+/**
+ * Converts a source "position" into a suitable state held by jet components.
+ *
+ * @param {Object} source position
+ * @param {Object=} defaults for target position
+ * @return {Object} internal postion object
+ */
+oj.PositionUtils.coerceToJet = function (source, defaults)
+{
+  if (!source)
+    source = {};
+
+  var obj = oj.PositionUtils._parseJSON(source);
+  if (obj)
+    source = obj;
+
+  if (!defaults)
+    defaults = {};
+
+  function _coerceUsingToJet(usingSource, usingDefault)
+  {
+    var targetUsing = $.isFunction(usingSource) ? usingSource : usingDefault;
+    return {"using": targetUsing};
+  }
+
+  var myDefault = defaults["my"];
+  var atDefault = defaults["at"];
+  var collisionDefault = defaults["collision"];
+  var ofDefault = defaults["of"];
+  var usingDefault = undefined;  // to dangerous to inherit
+
+  var target = $.extend({},
+                 oj.PositionUtils._coerceMyToJet(source["my"], source["offset"], myDefault),
+                 oj.PositionUtils._coerceAtToJet(source["at"], atDefault),
+                 oj.PositionUtils._coerceCollisionToJet(source["collision"], collisionDefault),
+                 oj.PositionUtils._coerceOfToJet(source["of"], ofDefault),
+                 _coerceUsingToJet(source["using"], usingDefault));
+
+  return target;
+};
+
+
+/**
+ * Converts the jet position object into the jQuery UI object used by the position utility.
+ *
+ * @param {Object} source internal position object
+ * @return {Object} jQuery UI position Object
+ */
+oj.PositionUtils.coerceToJqUi = function (source)
+{
+  function alignToJqUi(align, direction)
+  {
+    var tokens = [];
+    if (source[align][direction])
+      tokens.push(source[align][direction]);
+    else
+      tokens.push("center");
+
+    if ("my" === align && source["offset"])
+    {
+      var offsetDirection = ("horizontal" === direction ? "x" : "y");
+      var offset = source["offset"][offsetDirection];
+      if (!isNaN(offset) && offset !== 0)
+      {
+        tokens.push(offset > 0 ? "+" : "");
+        tokens.push(Math.floor(offset).toString());
+      }
+    }
+
+    return tokens.join("");
+  }
+
+
+  var target = {};
+
+  // convert my and at
+  ["my","at"].forEach(function (align)
+    {
+      if (source[align])
+      {
+         var tokens = [];
+         tokens.push(alignToJqUi(align, "horizontal"));
+         tokens.push(" ");
+         tokens.push(alignToJqUi(align, "vertical"));
+         target[align] = tokens.join("");
+      }
+    });
+
+    // convert of
+    var ofSource = source["of"];
+    if (oj.StringUtils.isString(ofSource))
+    {
+      if ("window" === ofSource)
+        target["of"] = window;
+      else
+        target["of"] = ofSource;
+    }
+    else if (ofSource && !oj.StringUtils.isString(ofSource) && "x" in ofSource && "y" in ofSource)
+    {
+      var x = ofSource["x"];
+      var y = ofSource["y"];
+      var nativeEvent = document.createEvent("MouseEvents");
+      nativeEvent.initMouseEvent("click", true, true, window, 1, x, y, x, y,
+                                 false, false, false, false, 0, null);
+      target["of"] = $.Event(nativeEvent, {"pageX": x, "pageY": y});
+    }
+    else
+    {
+      target["of"] = ofSource;
+    }
+
+    if (source["collision"])
+      target["collision"] = source["collision"];
+
+    // convert using
+    if (source["using"])
+      target["using"] = source["using"];
+
+  return target;
+};
 
 /**
  *
@@ -391,10 +975,11 @@ $.ui.position["flipcenter"] =
  *
  * Outside of making the code closure compiler friendly, there is only
  * a single line difference.  It's noted with a bug number.
+ * @private
  */
-var origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
+var _origLeftFlipCollisionRule = $.ui.position["flip"]["left"];  //stash away the original left flip rule
 $.ui.position["flip"] = {
-  "left": origLeftFlipCollisionRule.bind(this),
+  "left": _origLeftFlipCollisionRule.bind(this),
   /**
    * @param {{top: number, left: number}} position
    * @param {{targetWidth: number,
@@ -547,7 +1132,7 @@ oj.PopupService.prototype.triggerOnDescendents = function (popup, event, argsArr
  */
 oj.PopupService.prototype.destroy = function ()
 {
-  delete oj.PopupService._popupService;
+  oj.PopupService._popupService = null;
 };
 
 /**
@@ -556,14 +1141,14 @@ oj.PopupService.prototype.destroy = function ()
  * @public
  */
 oj.PopupService.MODALITY =
-{
-  /** Type of popup that doesn't support modality */
-  NONE: "none",
-  /** Dialog that that blocks user input of the primary window.*/
-  MODAL: "modal",
-  /** Type of dialog that doesn't block user input of the primary window */
-  MODELESS: "modeless"
-};
+  {
+    /** Type of popup that doesn't support modality */
+    NONE : "none",
+    /** Dialog that that blocks user input of the primary window.*/
+    MODAL : "modal",
+    /** Type of dialog that doesn't block user input of the primary window */
+    MODELESS : "modeless"
+  };
 
 /**
  * Event names used to identify the {@link oj.PopupService.OPTION.EVENT} option
@@ -572,27 +1157,61 @@ oj.PopupService.MODALITY =
  * @public
  */
 oj.PopupService.EVENT =
-{
-  /**
-   * Event called by the popup service when the surrogate is removed in the document
-   * resulting in the popup getting implicitly closed and associated bound element
-   * is removed */
-  POPUP_REMOVE: "ojPopupRemove",
-  /**
-   * Event called when a parent popup is closed causing implicit closure of
-   * descendent popups.
-   */
-  POPUP_CLOSE: "ojPopupClose",
-  /**
-   * Event called on when a parent popup is refreshed triggering a cascade
-   * refresh on children.
-   */
-  POPUP_REFRESH: "ojPopupRefresh",
-  /**
-   * Event called to enforce auto dismissal rules specific to each popup category.
-   */
-  POPUP_AUTODISMISS: "ojPopupAutoDismiss"
-};
+  {
+    /**
+     * Event called by the popup service when the surrogate is removed in the document
+     * resulting in the popup getting implicitly closed and associated bound element
+     * is removed */
+    POPUP_REMOVE : "ojPopupRemove",
+    /**
+     * Event called when a parent popup is closed causing implicit closure of
+     * descendent popups.
+     */
+    POPUP_CLOSE : "ojPopupClose",
+    /**
+     * Event called on when a parent popup is refreshed triggering a cascade
+     * refresh on children.
+     */
+    POPUP_REFRESH : "ojPopupRefresh",
+    /**
+     * Event called to enforce auto dismissal rules specific to each popup category.
+     */
+    POPUP_AUTODISMISS : "ojPopupAutoDismiss",
+    /**
+     * Event called before the popup is open but after it has been reparented into the
+     * zorder container.  The callback should be used for implementing open animation.
+     * The callback function should return a Promise if animation is reqired or void/undefined
+     * if no animation is necessary. The callback is passed the open options
+     * {!Object.<oj.PopupService.OPTION, ?>} as the only argument.
+     * @since 3.0.0
+     */
+    POPUP_BEFORE_OPEN : "ojPopupBeforeOpen",
+    /**
+     * Event called after the popup is open. The callback should implement component
+     * open finalization actions such as triggering an open event.  The resultant of
+     * the callback function is void.  The callback is passed the
+     * open options {!Object.<oj.PopupService.OPTION, ?>} as the only argument.
+     */
+    POPUP_AFTER_OPEN : "ojPopupAfterOpen",
+    /**
+     * Event called before the popup is close.  When invoked, the popup dom is still
+     * located within the zorder container.  The callback is a good place to implement
+     * close animation. The callback should return a Promise if animation is required
+     * or void/undefined if no animation is required.  The callback is passed the
+     * close options {!Object.<oj.PopupService.OPTION, ?>} as the only argument.
+     * @since 3.0.0
+     */
+    POPUP_BEFORE_CLOSE : "ojPopupBeforeClose",
+    /**
+     * Event called after the popup is closed and reparented back into its original
+     * location within the document.  The callback is for close finalization logic.
+     * It's a good places to trigger a component close event. The resultant of the
+     * callback is expected to be void. The callback is passed the
+     * close options {!Object.<oj.PopupService.OPTION, ?>} as the only argument.
+     * @since 3.0.0
+     */
+    POPUP_AFTER_CLOSE : "ojPopupAfterClose"
+  };
 
 /**
  * Layer level used to identify the {@link oj.PopupService.OPTION.LAYER_LEVEL} option
@@ -601,18 +1220,17 @@ oj.PopupService.EVENT =
  * @public
  */
 oj.PopupService.LAYER_LEVEL =
-{
-   /**
-    * Option used by dialogs.  Dialogs are always top rooted.
-    */
-   TOP_LEVEL: "topLevel",
-
-   /**
-    * The default layer option.  Popups will be reparented to the nearest ancestor layer defined
-    * relative to the associated {@link oj.PopupService.OPTION.LAUNCHER}.
-    */
-   NEAREST_ANCESTOR: "nearestAncestor"
-};
+  {
+    /**
+     * Option used by dialogs.  Dialogs are always top rooted.
+     */
+    TOP_LEVEL : "topLevel",
+    /**
+     * The default layer option.  Popups will be reparented to the nearest ancestor layer defined
+     * relative to the associated {@link oj.PopupService.OPTION.LAUNCHER}.
+     */
+    NEAREST_ANCESTOR : "nearestAncestor"
+  };
 
 /**
  * Property names in the options property bag passed to popup service api.
@@ -622,50 +1240,56 @@ oj.PopupService.LAYER_LEVEL =
  * @see oj.PopupService#open
  */
 oj.PopupService.OPTION =
-{
-  /**
-   * Parameter holding the jQuery element that is the root of the popup.  This
-   * element is reparented into the zorder container when open. It is a required
-   * option.
-   */
-  POPUP: "popup",
-  /**
-   * Map of event names to callbacks.  The event names are defined by the
-   * {@link oj.PopupService.EVENT} enumerated type.
-   */
-  EVENTS: "events",
-  /**
-   * Defines the modal state of a popup.  The value of this attribute is defined
-   * by the {@link oj.PopupService.MODALITY} enumeration.
-   */
-  MODALITY: "modality",
-  /**
-   * The jQuery element that is associated with the popup being open.  The launcher
-   * is used to find the target popups reparented location within the zorder
-   * container when open.  This is an optional parameter.  Dialogs don't require a launcher.
-   */
-  LAUNCHER: "launcher",
-  /**
-   * The jQuery UI position object that defines where the popup should be aligned.
-   * This is an optional parameter.
-   */
-  POSITION: "position",
-
-  /**
-   * The CSS selector names applied to the layer for the target type of popup.  These
-   * selectors will define the stacking context for the popup and its children.  Multiple
-   * selector names should be delimited by a space similar to the syntax for the jquery
-   * addClass API.  This option is required.
-   */
-  LAYER_SELECTORS: "layerSelectors",
-
-  /**
-   * The initial level that the popup will be reparented to when open.  Dialogs are reparented
-   * into the top level.  Other types of popups will be parented to their nearest ancestor layer.
-   * The values of this attribute are defined by {@link oj.PopupService.LAYER_LEVEL}.
-   */
-  LAYER_LEVEL: "layerLevel"
-};
+  {
+    /**
+     * Parameter holding the jQuery element that is the root of the popup.  This
+     * element is reparented into the zorder container when open. It is a required
+     * option.
+     */
+    POPUP : "popup",
+    /**
+     * Map of event names to callbacks.  The event names are defined by the
+     * {@link oj.PopupService.EVENT} enumerated type.
+     */
+    EVENTS : "events",
+    /**
+     * Defines the modal state of a popup.  The value of this attribute is defined
+     * by the {@link oj.PopupService.MODALITY} enumeration.
+     */
+    MODALITY : "modality",
+    /**
+     * The jQuery element that is associated with the popup being open.  The launcher
+     * is used to find the target popups reparented location within the zorder
+     * container when open.  This is an optional parameter.  Dialogs don't require a launcher.
+     */
+    LAUNCHER : "launcher",
+    /**
+     * The jQuery UI position object that defines where the popup should be aligned.
+     * This is an optional parameter.
+     */
+    POSITION : "position",
+    /**
+     * The CSS selector names applied to the layer for the target type of popup.  These
+     * selectors will define the stacking context for the popup and its children.  Multiple
+     * selector names should be delimited by a space similar to the syntax for the jquery
+     * addClass API.  This option is required.
+     */
+    LAYER_SELECTORS : "layerSelectors",
+    /**
+     * The initial level that the popup will be reparented to when open.  Dialogs are reparented
+     * into the top level.  Other types of popups will be parented to their nearest ancestor layer.
+     * The values of this attribute are defined by {@link oj.PopupService.LAYER_LEVEL}.
+     */
+    LAYER_LEVEL : "layerLevel",
+    /**
+     * General purpose context that the "open" and "close" can add to the options and it will be
+     * passed thru to the corresponding "before" and "after" operations. Use this context to pass
+     * variables declared locally in the open to the associated before and after
+     * callbacks.
+     * @since 3.0.0
+     */
+    CONTEXT : "context"
+  };
 
 // -----------------------------------------------------------------------------
 
@@ -687,6 +1311,7 @@ oj.Object.createSubclass(oj.PopupServiceImpl, oj.PopupService, "oj.PopupServiceI
  * Establishes a popup to be open and managed by the framework.  Managed popups will
  * by reparented to the zorder container appended to the document body.  The
  * location within that container is determined by the launcher or modality options.
+ *
  * @param {!Object.<oj.PopupService.OPTION, ?>} options property bag for opening the popup
  * @return {void}
  * @instance
@@ -715,7 +1340,8 @@ oj.PopupServiceImpl.prototype.open = function (options)
 
   var modality = options[oj.PopupService.OPTION.MODALITY];
   if (!modality ||
-    !(oj.PopupService.MODALITY.MODELESS === modality || oj.PopupService.MODALITY.MODAL === modality))
+    !(oj.PopupService.MODALITY.MODELESS === modality ||
+      oj.PopupService.MODALITY.MODAL === modality))
     modality = oj.PopupService.MODALITY.NONE;
 
   var layerClass = options[oj.PopupService.OPTION.LAYER_SELECTORS];
@@ -724,27 +1350,97 @@ oj.PopupServiceImpl.prototype.open = function (options)
 
   var layerLevel = options[oj.PopupService.OPTION.LAYER_LEVEL];
   if (!layerLevel ||
-    !(oj.PopupService.LAYER_LEVEL.TOP_LEVEL === layerLevel || oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR === layerLevel))
+    !(oj.PopupService.LAYER_LEVEL.TOP_LEVEL === layerLevel ||
+      oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR === layerLevel))
     layerLevel = oj.PopupService.LAYER_LEVEL.NEAREST_ANCESTOR;
+
+  var beforeOpenCallback = events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN];
+  if (!beforeOpenCallback || !$.isFunction(beforeOpenCallback))
+    beforeOpenCallback = oj.PopupServiceImpl._defaultBeforeOpenCallback;
+
+  var afterOpenCallback = events[oj.PopupService.EVENT.POPUP_AFTER_OPEN];
 
   //set logical parent
   oj.DomUtils.setLogicalParent(popup, launcher);
 
-  oj.ZOrderUtils.addToAncestorLayer(popup, launcher, events, modality, layerClass, layerLevel);
+  oj.ZOrderUtils.addToAncestorLayer(popup, launcher, modality, layerClass, layerLevel);
+
+  var _finalize = function ()
+  {
+    try
+    {
+      popup.removeAttr("aria-hidden");
+
+      this._assertEventSink();
+      oj.Components.subtreeShown(popup[0]);
+
+    }
+    catch (e)
+    {
+      oj.Logger.error("Error opening popup:\n%o", e);
+    }
+    finally
+    {
+      // invoke the after open callback if one is provided.
+      if (afterOpenCallback)
+        afterOpenCallback(options);
+
+      // delay activating event callbacks until after open is resolved
+      // preventing a race condition
+      var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
+      oj.Assert.assertPrototype(layer, $);
+      oj.ZOrderUtils.applyEvents(layer, events);
+    }
+  };
+  _finalize = _finalize.bind(this);
+
+  var resultant;
+  try
+  {
+    resultant = beforeOpenCallback(options);
+  }
+  catch (e)
+  {
+    oj.Logger.error("Error before open popup:\n%o", e);
+  }
+  finally
+  {
+    if (resultant && resultant instanceof Promise)
+      resultant.then(_finalize);
+    else
+      _finalize();
+  }
+  ;
+};
+
+/**
+ * Default {@link oj.PopupService.EVENT.POPUP_BEFORE_OPEN} if one is not provided.
+ * @private
+ * @since 3.0.0
+ * @param {!Object.<oj.PopupService.OPTION, ?>} options property bag for closing the popup
+ * @return {Promise|void}
+ */
+oj.PopupServiceImpl._defaultBeforeOpenCallback = function (options)
+{
+  /** @type {!jQuery} */
+  var popup = options[oj.PopupService.OPTION.POPUP];
+  oj.Assert.assertPrototype(popup, $);
+
+  /** @type {Object} */
+  var position = options[oj.PopupService.OPTION.POSITION];
 
   popup.show();
-  popup.removeAttr("aria-hidden");
   if (position)
     popup["position"](position);
 
-  this._assertEventSink();
-  oj.Components.subtreeShown(popup[0]);
+  return void(0);
 };
 
 /**
  * Closes a open popup managed by the framework.  The popup element is reparented
  * to its original location within the document.  Any open descendent popups are
  * implicitly closed.
+ *
  * @param {!Object.<oj.PopupService.OPTION, ?>} options property bag for closing the popup
  * @return {void}
  * @instance
@@ -759,16 +1455,94 @@ oj.PopupServiceImpl.prototype.close = function (options)
   var popup = options[oj.PopupService.OPTION.POPUP];
   oj.Assert.assertPrototype(popup, $);
 
-  oj.ZOrderUtils.removeFromAncestorLayer(popup);
+  /** @type {!jQuery} */
+  var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
+  oj.Assert.assertPrototype(layer, $);
+
+  /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
+  var events = options[oj.PopupService.OPTION.EVENTS];
+  if (!events)
+    events = options[oj.PopupService.OPTION.EVENTS] = oj.ZOrderUtils.getEvents(layer);
+  else
+    events = $.extend(oj.ZOrderUtils.getEvents(layer), events);
+
+  // No events registered for the popup then it is already closing.
+  if (!events)
+    return;
+
+  var beforeCloseCallback = events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE];
+  if (!beforeCloseCallback || !$.isFunction(beforeCloseCallback))
+    beforeCloseCallback = oj.PopupServiceImpl._defaultBeforeCloseCallback;
+
+  var afterCloseCallback = events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE];
+
+  // Unregister events during before close callback
+  oj.ZOrderUtils.applyEvents(layer, {});
+
+  var _finalize = function ()
+  {
+    try
+    {
+      popup.hide();
+      popup.attr("aria-hidden", "true");
+      //reset position units
+      popup.css({"top" : "auto", "bottom" : "auto", "left" : "auto", "right" : "auto"});
+
+      oj.ZOrderUtils.removeFromAncestorLayer(popup);
+
+      //remove the logical parent
+      oj.DomUtils.setLogicalParent(popup, null);
+
+      this._assertEventSink();
+      oj.Components.subtreeHidden(popup[0]);
+    }
+    catch (e)
+    {
+      oj.Logger.error("Error closing popup:\n%o", e);
+    }
+    finally
+    {
+      if (afterCloseCallback && $.isFunction(afterCloseCallback))
+        afterCloseCallback(options);
+    }
+
+  };
+  _finalize = _finalize.bind(this);
+
+  var resultant;
+  try
+  {
+    resultant = beforeCloseCallback(options);
+  }
+  catch (e)
+  {
+    oj.Logger.error("Error before close popup:\n%o", e);
+  }
+  finally
+  {
+    if (resultant && resultant instanceof Promise)
+      resultant.then(_finalize);
+    else
+      _finalize();
+  }
+};
+
+/**
+ * Default {@link oj.PopupService.EVENT.POPUP_BEFORE_CLOSE} if one is not provided.
+ *
+ * @private
+ * @since 3.0.0
+ * @param {!Object.<oj.PopupService.OPTION, ?>} options property bag for closing the popup
+ * @return {Promise|void} undefined is returned indicating no animation (sync operation)
+ */
+oj.PopupServiceImpl._defaultBeforeCloseCallback = function (options)
+{
+  /** @type {!jQuery} */
+  var popup = options[oj.PopupService.OPTION.POPUP];
+  oj.Assert.assertPrototype(popup, $);
+
   popup.hide();
-  popup.attr("aria-hidden", "true");
-  popup.css({"top": "auto", "bottom": "auto", "left": "auto", "right": "auto"});  //reset position units
-
-  //remove the logical parent
-  oj.DomUtils.setLogicalParent(popup, null);
-
-  this._assertEventSink();
-  oj.Components.subtreeHidden(popup[0]);
+  return void(0);
 };
 
 /**
@@ -795,8 +1569,6 @@ oj.PopupServiceImpl.prototype.changeOptions = function (options)
 
   /** @type Object.<oj.PopupService.EVENT, function(...)> */
   var events = options[oj.PopupService.OPTION.EVENTS];
-  // Doesn't account for undefined
-  //oj.Assert.assertObjectOrNull(events);
   if (events)
     oj.ZOrderUtils.applyEvents(layer, events);
 
@@ -824,6 +1596,10 @@ oj.PopupServiceImpl.prototype.changeOptions = function (options)
  */
 oj.PopupServiceImpl.prototype.triggerOnDescendents = function (popup, event, argsArray)
 {
+  // if the popup is not open, there are not descendents
+  if (!oj.ZOrderUtils.isPopupOpen(popup))
+    return;
+
   var context = {};
   context['event'] = event;
   context['argsArray'] = argsArray;
@@ -879,7 +1655,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function ()
     docElement.removeEventListener("mousewheel", oj.PopupServiceImpl._refreshCallback, true);
     docElement.removeEventListener("DOMMouseScroll", oj.PopupServiceImpl._refreshCallback, true);
 
-    delete this._callbackEventFilter;
+    this._callbackEventFilter = null;
     for (var i = 0; i < oj.PopupServiceImpl._REDISTRIBUTE_EVENTS.length; i++)
     {
       var event = oj.PopupServiceImpl._REDISTRIBUTE_EVENTS[i];
@@ -890,7 +1666,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function ()
     if (simpleTapRecognizer)
     {
       simpleTapRecognizer.destroy();
-      delete this._simpleTapRecognizer;
+      this._simpleTapRecognizer = null;
     }
   }
   else if (hasPopupsOpen && !callbackEventFilter)
@@ -902,7 +1678,7 @@ oj.PopupServiceImpl.prototype._assertEventSink = function ()
     docElement.addEventListener("mousewheel", oj.PopupServiceImpl._refreshCallback, true);
     docElement.addEventListener("DOMMouseScroll", oj.PopupServiceImpl._refreshCallback, true);
 
-    callbackEventFilter = this._callbackEventFilter = $.proxy(this._eventFilterCallback, this);
+    callbackEventFilter = this._callbackEventFilter = this._eventFilterCallback.bind(this);
     for (var i = 0; i < oj.PopupServiceImpl._REDISTRIBUTE_EVENTS.length; i++)
     {
       var event = oj.PopupServiceImpl._REDISTRIBUTE_EVENTS[i];
@@ -942,7 +1718,7 @@ oj.PopupServiceImpl.prototype._eventFilterCallback = function (event)
 
   var defaultLayer = oj.ZOrderUtils.getDefaultLayer();
   if ("keydown" === event.type && oj.ZOrderUtils.hasModalDialogOpen() &&
-      !oj.DomUtils.isAncestor(defaultLayer[0], target[0]))
+    !oj.DomUtils.isAncestor(defaultLayer[0], target[0]))
   {
     // Inexpensive check to make sure that if a modal dialog is open,
     // we prevent a keydown outside the zorder layer that contains all
@@ -976,7 +1752,7 @@ oj.PopupServiceImpl.prototype._eventFilterCallback = function (event)
     if (lastFocusLayer)
     {
       lastFocusLayer.removeClass(oj.PopupServiceImpl._FOCUS_WITHIN_SELECTOR);
-      delete this._lastFocusLayer;
+      this._lastFocusLayer = null;
     }
   }
 
@@ -999,7 +1775,8 @@ oj.PopupServiceImpl.prototype._eventFilterCallback = function (event)
 
   // Wrap a native event in a jQuery.Event
   context["event"] = $.Event(event, props);
-  oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._redistributeVisitCallback, context);
+  oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._redistributeVisitCallback,
+    context);
 };
 
 /**
@@ -1043,14 +1820,14 @@ oj.PopupServiceImpl._refreshCallback = function (event)
 
   oj.PopupServiceImpl._refreshTimerId = window.setTimeout(function ()
   {
-    delete oj.PopupServiceImpl._refreshTimerId;
+    oj.PopupServiceImpl._refreshTimerId = Number.NaN;
     var defaultLayer = oj.ZOrderUtils.getDefaultLayer();
 
     if ($.isFunction(window.requestAnimationFrame))
     {
       oj.PopupServiceImpl._afRequestId = window.requestAnimationFrame(function ()
       {
-        delete oj.PopupServiceImpl._afRequestId;
+        oj.PopupServiceImpl._afRequestId = null;
         oj.ZOrderUtils.postOrderVisit(defaultLayer, oj.PopupServiceImpl._refreshVisitCallback);
       });
     }
@@ -1125,13 +1902,14 @@ oj.PopupServiceImpl._REDISTRIBUTE_EVENTS = ["focus", "mousedown", "keydown"];
  * @private
  * @type {Object}
  */
-oj.PopupServiceImpl._COPY_SAFE_EVENT_PROPERTIES = {'altKey':true, 'bubbles': true, 'cancelable':true, 'ctrlKey': true,
-                          'currentTarget': true,  'eventPhase': true, 'metaKey': true,
-                          'relatedTarget': true,  'shiftKey': true, 'target':true,  'timeStamp':true,
-                          'view': true, 'which': true, 'button': true, 'buttons':true, 'clientX': true,
-                          'clientY': true, 'offsetX': true, 'offsetY': true, 'pageX': true,
-                          'pageY': true,  'screenX': true, 'screenY': true, 'toElement': true,
-                          'char': true,  'charCode': true, 'key': true, 'keyCode': true};
+oj.PopupServiceImpl._COPY_SAFE_EVENT_PROPERTIES = {'altKey' : true, 'bubbles' : true,
+  'cancelable' : true, 'ctrlKey' : true,
+  'currentTarget' : true, 'eventPhase' : true, 'metaKey' : true,
+  'relatedTarget' : true, 'shiftKey' : true, 'target' : true, 'timeStamp' : true,
+  'view' : true, 'which' : true, 'button' : true, 'buttons' : true, 'clientX' : true,
+  'clientY' : true, 'offsetX' : true, 'offsetY' : true, 'pageX' : true,
+  'pageY' : true, 'screenX' : true, 'screenY' : true, 'toElement' : true,
+  'char' : true, 'charCode' : true, 'key' : true, 'keyCode' : true};
 /**
  * Milliseconds that is used to throttle processing of native resize, scroll and mousewheel
  * events. Dispatching refresh events to open popups will happen after the delay.
@@ -1170,7 +1948,7 @@ oj.ZOrderUtils.getFirstAncestorLayer = function (launcher)
 
   var parent = launcher;
   while (parent && parent.length > 0
-         && parent.attr("oj.ZOrderUtils._SURROGATE_ATTR") !== oj.ZOrderUtils._DEFAULT_LAYER_ID)
+    && parent.attr("oj.ZOrderUtils._SURROGATE_ATTR") !== oj.ZOrderUtils._DEFAULT_LAYER_ID)
   {
     if (oj.ZOrderUtils._hasSurrogate(parent[0]))
       return parent;
@@ -1210,20 +1988,20 @@ oj.ZOrderUtils.getDefaultLayer = function ()
  *
  * @param {!jQuery} popup root widget
  * @param {?jQuery} launcher associated with a popup
- * @param {!Object.<oj.PopupService.EVENT, function(...)>} events map of event name to callback
  * @param {!oj.PopupService.MODALITY} modality of the popup being open
  * @param {string} layerClass selector that defines the stacking context "z-index" of the popup
  * @param {oj.PopupService.LAYER_LEVEL} layerLevel defines where the popup will be reparented
  * @return {void}
  * @public
  */
-oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, events, modality, layerClass, layerLevel)
+oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, modality, layerClass, layerLevel)
 {
   var popupDom = popup[0];
   if (oj.ZOrderUtils._hasSurrogate(popupDom.parentNode))
     throw new Error("JET Popup is already open - id: " + popupDom.getAttribute("id"));
 
-  var ancestorLayer = oj.ZOrderUtils.getFirstAncestorLayer(layerLevel === oj.PopupService.LAYER_LEVEL.TOP_LEVEL ? null : launcher);
+  var ancestorLayer = oj.ZOrderUtils.getFirstAncestorLayer(layerLevel ===
+    oj.PopupService.LAYER_LEVEL.TOP_LEVEL ? null : launcher);
 
   var layer = $("<div>");
 
@@ -1236,18 +2014,17 @@ oj.ZOrderUtils.addToAncestorLayer = function (popup, launcher, events, modality,
 
   layer.attr("role", "presentation");
   layer.addClass(layerClass);
-  popup.after(layer);
+  popup.after(layer);  //@HtmlUpdateOk
 
   var surrogate = oj.ZOrderUtils._createSurrogate(layer);
 
   oj.Components.subtreeDetached(popupDom);
-  popup.appendTo(layer);
+  popup.appendTo(layer);  //@HtmlUpdateOk
 
-  layer.appendTo(ancestorLayer);
+  layer.appendTo(ancestorLayer);  //@HtmlUpdateOk
   oj.Components.subtreeAttached(popupDom);
 
   oj.ZOrderUtils.applyModality(layer, modality);
-  oj.ZOrderUtils.applyEvents(layer, events, surrogate);
 };
 
 /**
@@ -1276,7 +2053,8 @@ oj.ZOrderUtils.applyEvents = function (layer, events, surrogate)
 
   if (surrogate && events && $.isFunction(events[oj.PopupService.EVENT.POPUP_REMOVE]))
   {
-    // if the surrogate script element gets replaced in the dom it will trigger closure of the popup.
+    // if the surrogate script element gets replaced in the dom it will trigger closure of the
+    // popup.
     surrogate['surrogate']();
     surrogate['surrogate']("option", "beforeDestroy", events[oj.PopupService.EVENT.POPUP_REMOVE]);
   }
@@ -1309,7 +2087,16 @@ oj.ZOrderUtils.getEvents = function (layer)
 oj.ZOrderUtils._createSurrogate = function (layer)
 {
   /** @type {?} */
-  var surrogate = $("<script>");
+  var surrogate = $("<script>");  //@HtmlUpdateOk - Script tag is used as a placeholder in the
+                                  // document from where the popup is reparented when open.
+                                  // The script tag is used because it doesn't introduce layout.
+                                  // The script node is bound to a query headless component that
+                                  // invokes a listener when the subtree it is contained within
+                                  // is removed from the document.  The listener triggers implicit
+                                  // dismissal of the popup so the popup isn't orphaned from the
+                                  // original subtree. The script tag is internal to the framework.
+                                  // It is created when the popup is open and removed when the
+                                  // popup is closed.
 
   /** @type {?} */
   var layerId = layer.attr("id");
@@ -1318,7 +2105,7 @@ oj.ZOrderUtils._createSurrogate = function (layer)
   else
     surrogate.attr("id", [layerId, "surrogate"].join("_"));
 
-  surrogate.insertBefore(layer);
+  surrogate.insertBefore(layer);  //@HtmlUpdateOk
   var surrogateId = surrogate.attr('id');
   // loosely associate the popup to the surrogate element
   layer.attr(oj.ZOrderUtils._SURROGATE_ATTR, surrogateId);
@@ -1343,7 +2130,7 @@ oj.ZOrderUtils._removeSurrogate = function (layer)
 
   /** @type {jQuery} */
   var surrogate = $(document.getElementById(surrogateId));
-  layer.insertAfter(surrogate);
+  layer.insertAfter(surrogate);  //@HtmlUpdateOk
 
   surrogate['surrogate']("option", "beforeDestroy", null);
   surrogate.remove();
@@ -1474,7 +2261,7 @@ oj.ZOrderUtils._addOverlayToAncestorLayer = function (layer)
   else
     overlay.attr("id", [layerId, "overlay"].join("_"));
 
-  layer.before(overlay);
+  layer.before(overlay);  //@HtmlUpdateOk
 
   /** @type {?} */
   var overlayId = overlay.attr("id");
@@ -1513,14 +2300,14 @@ oj.ZOrderUtils._removeOverlayFromAncestorLayer = function (layer)
  * @see oj.ZOrderUtils.preOrderVisit
  */
 oj.ZOrderUtils.VISIT_RESULT =
-{
-  /** Continue to descend into current subtree. */
-  ACCEPT: 0,
-  /** Halt processing the subtree but contine visiting */
-  REJECT: 1,
-  /** Halt tree visit **/
-  COMPLETE: 2
-};
+  {
+    /** Continue to descend into current subtree. */
+    ACCEPT : 0,
+    /** Halt processing the subtree but contine visiting */
+    REJECT : 1,
+    /** Halt tree visit **/
+    COMPLETE : 2
+  };
 
 /**
  * Defines the visit traversal type.
@@ -1528,18 +2315,19 @@ oj.ZOrderUtils.VISIT_RESULT =
  * @private
  */
 oj.ZOrderUtils._VISIT_TRAVERSAL =
-{
-  /** The callback is invoked on the target popup before any children. */
-  PRE_ORDER: 0,
-  /** The callback is invoked on the target popup after first visiting all descendents. */
-  POST_ORDER: 1
-};
+  {
+    /** The callback is invoked on the target popup before any children. */
+    PRE_ORDER : 0,
+    /** The callback is invoked on the target popup after first visiting all descendents. */
+    POST_ORDER : 1
+  };
 
 /**
  * Visits all open popups invoking the callback function on the target popup after first
  * visiting all children in order of last open.
  * @param {!jQuery} layer to begin searching for popups
- * @param {function(!jQuery, !Object) : oj.ZOrderUtils.VISIT_RESULT} callback invoked for each child popup
+ * @param {function(!jQuery, !Object) : oj.ZOrderUtils.VISIT_RESULT} callback invoked for each
+ *        child popup
  * @param {Object=} context passed to the visit
  * @return {void}
  * @public
@@ -1558,7 +2346,8 @@ oj.ZOrderUtils.postOrderVisit = function (layer, callback, context)
  * Visits all open popups invoking the callback on the target popup before any
  * popups that are descendents.
  * @param {!jQuery} layer to begin searching for popups
- * @param {function(!jQuery, !Object) : oj.ZOrderUtils.VISIT_RESULT} callback invoked for each child popup
+ * @param {function(!jQuery, !Object) : oj.ZOrderUtils.VISIT_RESULT} callback invoked for each child
+ *         popup
  * @param {Object=} context passed to the visit
  * @return {void}
  * @public
@@ -1633,8 +2422,8 @@ oj.ZOrderUtils._visitTree = function (layer, callback, context)
 
 
 /**
- * Determines the target element is an open popup by checking for the {@link oj.ZOrderUtils._SURROGATE_ATTR}
- * attribute assigned to open popup layers.
+ * Determines the target element is an open popup by checking for the
+ * {@link oj.ZOrderUtils._SURROGATE_ATTR} attribute assigned to open popup layers.
  *
  * @param {!Element} element to check for a stand-in component
  * @return {boolean} <code>true</code> if the element is associated with a placeholder element
@@ -1689,8 +2478,8 @@ oj.ZOrderUtils._openPopupCountCallback = function (layer, context)
 };
 
 /**
- * Returns a jQuery set of all open popup layer dom elements.  Popups open last will appear at the end of the
- * set. Used by automated testing.
+ * Returns a jQuery set of all open popup layer dom elements.  Popups open last will appear at the
+ * end of the set. Used by automated testing.
  * @return {!jQuery} set of all open popup root elements managed by the popup service
  * @public
  */
@@ -1741,7 +2530,7 @@ oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
   oj.Assert.assertPrototype(el1, $);
   oj.Assert.assertPrototype(el2, $);
 
-  function describeStackingContext(element, allLevels) {
+  function describeStackingContext (element, allLevels) {
     var positions = ['absolute', 'relative', 'fixed'];
     var parents = element.parents();
 
@@ -1762,22 +2551,22 @@ oj.ZOrderUtils.compareStackingContexts = function (el1, el2)
       var zindex = oj.DomUtils.getCSSLengthAsInt(parent.css("z-index"));
       var order = $.inArray(parent[0], parent.parent().children());
       if ($.inArray(position, positions) > -1)
-        stack.push({'weight': [level++, zindex, order], 'order': [order]});
+        stack.push({'weight' : [level++, zindex, order], 'order' : [order]});
       else if (opacity < 1)
-        stack.push({'weight': [level++, 1, order], 'order': [order]});
+        stack.push({'weight' : [level++, 1, order], 'order' : [order]});
       else
       {
         if (!allLevels)
           continue;
         else
-          stack.push({'weight': [0, 0, order], 'order': [order]});
+          stack.push({'weight' : [0, 0, order], 'order' : [order]});
       }
     }
     return stack;
   }
   ;
 
-  function compareSets(n1, n2) {
+  function compareSets (n1, n2) {
     var maxLen = Math.max(n1.length, n2.length);
     for (var i = 0; i < maxLen; i++)
     {
@@ -1844,6 +2633,21 @@ oj.ZOrderUtils.eatEvent = function (event)
 };
 
 /**
+ * @public
+ * @param {jQuery} popup jQuery element
+ * @return {boolean} <code>true</code> if the popup is reparented into the zorder container
+ */
+oj.ZOrderUtils.isPopupOpen = function (popup)
+{
+  // only open popups will be associated with a surrogate via parent layer
+  var parent = popup.parent();
+  if (parent && parent.length === 1 && oj.ZOrderUtils._hasSurrogate(parent[0]))
+    return true;
+  else
+    return false;
+};
+
+/**
  * Key used to store the popup event callbacks on the popup layer
  * as a jQuery data property.
  * @const
@@ -1900,24 +2704,24 @@ oj.ZOrderUtils._OVERLAY_SELECTOR = "oj-component-overlay";
 // -----------------------------------------------------------------------------
 
 $.widget("oj.surrogate",
-{
-  options:
   {
-    'create': null,
-    'beforeDestroy': null
-  },
-  _create: function ()
-  {
-    this._super();
-    this.element.uniqueId();
-  },
-  _destroy: function ()
-  {
-    this._trigger("beforeDestroy");
-    this.element.removeUniqueId();
-    this._super();
-  }
-});
+    options :
+      {
+        'create' : null,
+        'beforeDestroy' : null
+      },
+    _create : function ()
+    {
+      this._super();
+      this.element.uniqueId();
+    },
+    _destroy : function ()
+    {
+      this._trigger("beforeDestroy");
+      this.element.removeUniqueId();
+      this._super();
+    }
+  });
 
 /**
  * @extends {oj.Object}
@@ -1947,7 +2751,7 @@ oj.Object.createSubclass(oj.SimpleTapRecognizer, oj.Object, "oj.SimpleTapRecogni
 oj.SimpleTapRecognizer.prototype.Init = function ()
 {
   oj.SimpleTapRecognizer.superclass.Init.call(this);
-  var eventHandlerCallback = this._eventHandlerCallback = $.proxy(this._eventHandler, this);
+  var eventHandlerCallback = this._eventHandlerCallback = this._eventHandler.bind(this);
 
   var docElement = document.documentElement;
   for (var i = 0; i < oj.SimpleTapRecognizer._TOUCHEVENTS.length; i++)
@@ -1971,7 +2775,7 @@ oj.SimpleTapRecognizer.prototype._eventHandler = function (event)
   }
   else if ("touchmove" === eventType || "touchcancel" === eventType)
   {
-    delete this._touchStartEvent;
+    this._touchStartEvent = null;
   }
   else if ("touchend" === eventType)
   {
@@ -1981,7 +2785,8 @@ oj.SimpleTapRecognizer.prototype._eventHandler = function (event)
       if (!isNaN(tapStart))
       {
         var now = new Date().getTime();
-        // if the period of ms between touchstart and touchend is less than the long touch thresshold, invoke the callback
+        // if the period of ms between touchstart and touchend is less than the long touch
+        // thresshold, invoke the callback
         if (now - tapStart < oj.SimpleTapRecognizer._PRESSHOLDTHRESSHOLD)
           tapCallback(this._touchStartEvent);
       }
@@ -1989,7 +2794,7 @@ oj.SimpleTapRecognizer.prototype._eventHandler = function (event)
         tapCallback(this._touchStartEvent);
     }
 
-    delete this._touchStartEvent;
+    this._touchStartEvent = null;
   }
 };
 
@@ -1999,14 +2804,15 @@ oj.SimpleTapRecognizer.prototype._eventHandler = function (event)
  */
 oj.SimpleTapRecognizer.prototype.destroy = function ()
 {
-  delete this._tapCallback;
+  this._tapCallback = null;
 
   var eventHandlerCallback = this._eventHandlerCallback;
-  delete this._eventHandlerCallback;
+  this._eventHandlerCallback = null;
 
   var docElement = document.documentElement;
   for (var i = 0; i < oj.SimpleTapRecognizer._TOUCHEVENTS.length; i++)
-    docElement.removeEventListener(oj.SimpleTapRecognizer._TOUCHEVENTS[i], eventHandlerCallback, true);
+    docElement.removeEventListener(oj.SimpleTapRecognizer._TOUCHEVENTS[i],
+      eventHandlerCallback, true);
 };
 
 /**
@@ -2037,7 +2843,7 @@ oj.SimpleTapRecognizer._PRESSHOLDTHRESSHOLD = 700;
  * @class Utility for handling popup voice over messages sent to a aria live region.
  * @ignore
  */
-oj.PopupLiveRegion = function() {
+oj.PopupLiveRegion = function () {
   this.Init();
 };
 
@@ -2090,7 +2896,10 @@ oj.PopupLiveRegion.prototype.announce = function (message)
   {
     var liveRegion = oj.PopupLiveRegion._getLiveRegion();
     liveRegion.children().remove();
-    $("<div>").text(message).appendTo(liveRegion);
+    $("<div>").text(message).appendTo(liveRegion);  //@HtmlUpdateOk - The "messsage" comes from a
+                                                    // translated string that can be overridden by
+                                                    // an option on the ojPopup.  The jquery "text"
+                                                    // function will escape script.
   }
 };
 
@@ -2099,15 +2908,16 @@ oj.PopupLiveRegion.prototype.announce = function (message)
  * @returns {jQuery} aria live region
  * @private
  */
-oj.PopupLiveRegion._getLiveRegion = function()
+oj.PopupLiveRegion._getLiveRegion = function ()
 {
   var liveRegion = $(document.getElementById(oj.PopupLiveRegion._POPUP_LIVE_REGION_ID));
   if (liveRegion.length === 0)
   {
     liveRegion = $("<div>");
-    liveRegion.attr({'id': oj.PopupLiveRegion._POPUP_LIVE_REGION_ID, 'role': 'log', 'aria-live': 'polite', 'aria-relevant': 'additions'});
+    liveRegion.attr({'id' : oj.PopupLiveRegion._POPUP_LIVE_REGION_ID, 'role' : 'log', 'aria-live'
+        : 'polite', 'aria-relevant' : 'additions'});
     liveRegion.addClass("oj-helper-hidden-accessible");
-    liveRegion.appendTo(document.body);
+    liveRegion.appendTo(document.body);  //@HtmlUpdateOk
   }
   return liveRegion;
 };
@@ -2132,7 +2942,7 @@ oj.PopupLiveRegion._POPUP_LIVE_REGION_ID = "__oj_popup_arialiveregion";
  * @param {function(!Event)} callback fired for activation of the skip link
  * @param {string=} id assigned to the skiplink component
  */
-oj.PopupSkipLink = function(sibling, message, callback, id)
+oj.PopupSkipLink = function (sibling, message, callback, id)
 {
   oj.Assert.assertPrototype(sibling, $);
   oj.Assert.assertString(message);
@@ -2154,22 +2964,22 @@ oj.Object.createSubclass(oj.PopupSkipLink, oj.Object, "oj.PopupSkipLink");
  * @instance
  * @protected
  */
-oj.PopupSkipLink.prototype.Init = function()
+oj.PopupSkipLink.prototype.Init = function ()
 {
   oj.PopupSkipLink.superclass.Init.call(this);
   var sibling = this._sibling;
   var callback = this._callback;
   var message = this._message;
-  delete this._message;
+  this._message = null;
   var id = this._id;
-  delete this._id;
+  this._id = null;
 
-  var link = $("<a>").attr({'tabindex':'-1', 'href': '#'});
+  var link = $("<a>").attr({'tabindex' : '-1', 'href' : '#'});
   if (!oj.StringUtils.isEmpty(id))
     link.attr("id", id);
   link.addClass("oj-helper-hidden-accessible");
   link.text(message);
-  link.insertAfter(sibling);
+  link.insertAfter(sibling);  //@HtmlUpdateOk
   link.on("click", callback);
   sibling.data(oj.PopupSkipLink._SKIPLINK_ATTR, link);
 };
@@ -2179,13 +2989,13 @@ oj.PopupSkipLink.prototype.Init = function()
  * @instance
  * @public
  */
-oj.PopupSkipLink.prototype.destroy = function()
+oj.PopupSkipLink.prototype.destroy = function ()
 {
   var sibling = this._sibling;
-  delete this._sibling;
+  this._sibling = null;
 
   var callback = this._callback;
-  delete this._callback;
+  this._callback = null;
 
   if (sibling)
   {
@@ -2205,7 +3015,7 @@ oj.PopupSkipLink.prototype.destroy = function()
  * @public
  * @return {jQuery} skip link
  */
-oj.PopupSkipLink.prototype.getLink = function()
+oj.PopupSkipLink.prototype.getLink = function ()
 {
   /** @type {?} */
   var sibling = this._sibling;
@@ -2224,4 +3034,240 @@ oj.PopupSkipLink.prototype.getLink = function()
  * @type {string}
  */
 oj.PopupSkipLink._SKIPLINK_ATTR = "oj-skiplink";
+
+/**
+ * @extends {oj.Object}
+ * @constructor
+ * @since 3.0.0
+ * @class Coordinate communications between an event being fulfilled and one or more promises
+ *        being resolved.  The window of time between the instance creation and the associated event
+ *        triggered is guarded by the {@link oj.BusyContext}.  The
+ *        @link{oj.PopupWhenReadyMediator#getWhenReadyPromise} promise will resolve when either the
+ *        target event is triggered or instance destroyed.
+ * @ignore
+ * @param {jQuery} element to subscribe on the event type triggered on completion of the operation
+ * @param {string} operation that completion will resolve one or more promises
+ * @param {string} widgetName component constructor
+ * @param {boolean} isCustomElement <code>true</code> if the widget is created as a custom element
+ */
+oj.PopupWhenReadyMediator = function (element, operation, widgetName, isCustomElement)
+{
+  this._element = element;
+  this._operation = operation;
+  this._widgetName = widgetName;
+  this._isCustomElement = isCustomElement ? true : false;
+
+  this.Init();
+};
+
+oj.Object.createSubclass(oj.PopupWhenReadyMediator, oj.Object, "oj.PopupWhenReadyMediator");
+
+/**
+ * Registers an event handler on the element associated with the target operation.
+ * The event handler will resolve one or more pending promises.  The convention
+ * is the operation will raise a "oj" + operation event upon completion. The
+ * event hander is one and done - unregistered after first delivery.
+ *
+ * @override
+ * @instance
+ * @protected
+ */
+oj.PopupWhenReadyMediator.prototype.Init = function ()
+{
+  oj.PopupWhenReadyMediator.superclass.Init.call(this);
+  this._resolvedQueue = [];
+  this._callback = this._eventHandler.bind(this);
+
+  var operation = this._operation;
+  var tokens = ["oj"];
+  if (this._isCustomElement)
+  {
+    tokens.push(operation.charAt(0).toUpperCase());
+    tokens.push(operation.slice(1));
+  }
+  else
+  {
+    tokens.push(operation);
+  }
+
+  var eventType = this._eventType = tokens.join("");
+  this._element.on(eventType, this._callback);
+
+  // Add a busy state for the pending operation.  The busy state resolver will
+  // be invoked when the resolved queue is delivered (operation completes).
+  var busyContext = oj.Context.getContext(this._element[0]).getBusyContext();
+  var options = {"description" : this._getBusyStateDescription.bind(this, this._element,
+      this._operation, this._widgetName)};
+  var resolve = busyContext.addBusyState(options);
+  this.AddPromiseExecutor(resolve);
+
+  // setup the when ready promise
+  this._whenReadyPromise = new Promise(this.AddPromiseExecutor.bind(this));
+};
+
+/**
+ * @private
+ * @param {jQuery} element to subscribe on the event type triggered on completion of the operation
+ * @param {string} operation that completion will resolve one or more promises
+ * @param {string} widgetName component constructor
+ * @returns {string} description of the busy state animation operation.
+ */
+oj.PopupWhenReadyMediator.prototype._getBusyStateDescription = function (element, operation,
+  widgetName)
+{
+  return widgetName + " identified by '" + element.attr('id') + "' is busy animating on " +
+    "the '" + operation + "' operation.";
+};
+
+/**
+ * Resolves the pending promises.
+ *
+ * @private
+ * @param {string=} operation override sent to the resolverdQueue
+ */
+oj.PopupWhenReadyMediator.prototype._deliverResolved = function (operation)
+{
+  // Critical section - the registered resolve queue is disconnect from the
+  // instance state so that a race condition will not occur - resolve promoise
+  // adding new operations to the same queue.
+
+  var resolvedQueue = this._resolvedQueue;
+  this._resolvedQueue = null;
+
+  operation = !operation ? this._operation : operation;
+  this._operation = null;
+
+  for (var i = 0; i < resolvedQueue.length; i++)
+  {
+    try
+    {
+      resolvedQueue[i](operation);
+    }
+    catch (e)
+    {
+      oj.Logger.error("Error resolving whenReady promises:\n%o", e);
+    }
+  }
+
+  this._whenReadyPromise = Promise.resolve("none");
+};
+
+/**
+ * Force delivery of unresolved promises.
+ */
+oj.PopupWhenReadyMediator.prototype.destroy = function ()
+{
+  // If the promise is swapped (component is destroyed)
+  // before the event is fired, resolve with a "none" operation.
+  var operation = this._operation;
+  if (this._resolvedQueue)
+    this._deliverResolved("none");
+
+  if (this._callback)
+  {
+    var eventType = this._eventType;
+    this._element.off(eventType, this._callback);
+  }
+
+  this._callback = null;
+  this._element = null;
+  this._operation = null;
+  this._whenReadyPromise = null;
+  this._widgetName = null;
+  this._eventType = null;
+};
+
+/**
+ * @returns {Promise} returns an instance of the current whenReadyPromise
+ */
+oj.PopupWhenReadyMediator.prototype.getWhenReadyPromise = function ()
+{
+  return this._whenReadyPromise;
+};
+
+/**
+ * Event handler associated with completion of the target operation.
+ * @private
+ * @param {jQuery.Event} event
+ */
+oj.PopupWhenReadyMediator.prototype._eventHandler = function (event)
+{
+  if (event.target === this._element[0])
+  {
+    this._element.off(event.type, this._callback);
+    this._deliverResolved();
+    this._callback = null;
+  }
+};
+
+/**
+ * @private
+ * @return {string} Returns the pending operation
+ */
+oj.PopupWhenReadyMediator.prototype._getPendingOperation = function ()
+{
+  return this._operation ? this._operation : "none";
+};
+
+/**
+ * A function that will be passed to other functions via the arguments resolve and reject.
+ * The resolve function will be invoked when the event associated with completion of the
+ * target operation is delivered to the target element.
+ *
+ * @protected
+ * @param {Function} resolve resultant function that will resovle a promise executor
+ * @param {Function=} reject (not interested in the reject)
+ */
+oj.PopupWhenReadyMediator.prototype.AddPromiseExecutor = function (resolve, reject)
+{
+  if (this._resolvedQueue)
+    this._resolvedQueue.push(resolve);
+};
+
+/**
+ * Checks to see if there is a pending "open" or "close" operation.  If pending and it
+ * is the same as the requested operation, the request silently fails.  If the current
+ * operation is the inverse operation, we queue the current operation after the pending
+ * operation is resolved.
+ *
+ * @param {Object} widgetInstance this mediator is negotiating on behalf of
+ * @param {string} operation currently requested
+ * @param {string} methodName that should be invoked on the widgetInstance if the operation is the
+ *                 inverse of the pending operation
+ * @param {Array} methodArgs passed to a queue method invocation
+ * @returns {boolean} <code>true</code> if a "close" or "open" operation is pending completion.
+ */
+oj.PopupWhenReadyMediator.prototype.isOperationPending = function (widgetInstance, operation,
+  methodName, methodArgs)
+{
+  var isPending = false;
+  var widgetName = this._widgetName;
+  var pendingOperation = this._getPendingOperation();
+  if (operation === pendingOperation)
+  {
+    // Same request is already pending. Silently fail.
+    oj.Logger.info("An %s instance invoked a '%s' operation while pending animation of " +
+      "the same type of operation.  The second request will be ignored.", widgetName,
+      operation);
+    isPending = true;
+  }
+  else if ("none" !== pendingOperation)
+  {
+    oj.Logger.info("An %s instance invoked a '%s' operation while pending animation of a " +
+      "'%s' operation. The second request will be invoked after the pending operation " +
+      "completes."
+      , widgetName, operation, pendingOperation);
+
+    // Queue the operation after the pending operation has completed
+    // register another resolve promise with the mediator that will be
+    // call when the pending operation finishes.
+    var promise = new Promise(this.AddPromiseExecutor.bind(this));
+    promise.then(function ()
+    {
+      this[methodName].apply(this, methodArgs);
+    }.bind(widgetInstance));
+    isPending = true;
+  }
+  return isPending;
+};
 });

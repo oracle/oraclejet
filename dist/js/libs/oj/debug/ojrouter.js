@@ -21,33 +21,18 @@ define(['ojs/ojcore', 'knockout', 'signals', 'promise'], function(oj, ko, signal
 (function() {
 "use strict";
 /**
- * Hold the base URL.
- * Initialized using oj.Router.defaults['baseUrl'] or on the first sync() or go()
+ * Hold the value of the oj.Router.defaults.baseUrl property.
  * @private
- * @type {string}
+ * @type {!string}
  */
-var _ojBaseUrl;
+var _baseUrlProp = '/';
+
 /**
  * Hold the title before being modified by router
  * @private
  * @type {?string}
  */
 var _originalTitle;
-/**
- * Hold the current page, usually 'index.html'
- * @private
- * @const
- * @type {string}
- */
-var _thisPage = (function() {
-      var result = '',
-          url = window.location.pathname;
-      if (url.indexOf('.html', url.length - '.html'.length) !== -1) {
-         result = url.split('/').pop();
-      }
-
-      return result;
-   }());
 
 /**
  * Hold the url adapter to be used.
@@ -88,6 +73,30 @@ var _TITLE_SEP = ' | ';
 var _MAX_URL_LENGTH = 1024;
 
 /**
+ * Name of the window event used to listen to the browser history changes
+ * @private
+ * @const
+ * @type {string}
+ */
+var _POPSTATE = 'popstate';
+
+/**
+ * Name of the property of the object in the Promise returned by go() or sync()
+ * @private
+ * @const
+ * @type {string}
+ */
+var _HAS_CHANGED = 'hasChanged';
+
+/**
+ * Object commonly used as return value for go() or sync()
+ * @private
+ * @const
+ * @type {{hasChanged:boolean}}
+ */
+var _NO_CHANGE_OBJECT = { 'hasChanged': false };
+
+/**
  * Flag set to true when oj.Router is initialized
  * @private
  * @type {boolean}
@@ -114,6 +123,13 @@ var _transitionQueue = [];
  * @private
  */
 var _queuePromise;
+
+/**
+ * A shortcut to access window.location
+ * @private
+ */
+var _location = window.location;
+
 /**
  * The instance of the root router.
  * @private
@@ -123,26 +139,6 @@ var _queuePromise;
 var rootRouter;
 
 /**
- * Retrieve current URL without the hash part
- * @private
- * @return {!string}
- */
-function getUrl() {
-   return window.location.href.split('#')[0];
-}
-
-/**
- * Calculate the base URL, the href without the page reference at the end.
- * @private
- * @return {!string}
- */
-function getBaseUrl() {
-   var url = getUrl();
-   // Retrieve the part of the URL up to the last '/'
-   return url.substring(0, url.lastIndexOf('/'));
-}
-
-/**
  * Return key/value object of query parameters.
  * @private
  * @return {!Object.<string, string>}
@@ -150,6 +146,9 @@ function getBaseUrl() {
 function parseQueryParam(queryString) {
    var params = {},
        keyValPairs;
+
+   // Remove starting '?'
+   queryString = queryString.split('?')[1];
 
    if (queryString) {
       keyValPairs = queryString.split('&');
@@ -172,13 +171,38 @@ function parseQueryParam(queryString) {
 }
 
 /**
+ * Build an URL by replacing portion of the existing URL. Portion that can be replaces are
+ * pathname and search field. Use the extraState to build the new state param.
+ * @private
+ * @param  {!Object} pieces
+ * @param  {!Object.<string, Object>} extraState
+ * @return {!string}
+ */
+function _buildUrl(pieces, extraState) {
+   var parser = document.createElement('a');
+   parser.href = _location.href;
+
+   if (pieces.search !== undefined) {
+      parser.search = pieces.search;
+   }
+
+   if (pieces.pathname !== undefined) {
+      parser.pathname = pieces.pathname;
+   }
+
+   // Add or replace the existing state param
+   parser.search = putStateParam(parser.search, extraState);
+
+   return parser.href.replace(/\?$/, ''); // Remove trailing ? for IE
+}
+
+/**
  * Return the {@link oj.RouterState} object for a specific router given a state id.
  * @private
  * @param {oj.Router} router The router object.
  * @param {string} stateId The state id.
  * @return {oj.RouterState | undefined} The state object.
  */
- //
 function getStateFromId(router, stateId) {
    var state;
 
@@ -194,17 +218,6 @@ function getStateFromId(router, stateId) {
       });
    }
    return state;
-}
-
-/**
- * Retrieve the short URL, the current URL without the base URL.
- * @private
- * @return {!string} the short URL
- */
-function getShortUrl() {
-   var shortUrl = getUrl();
-
-   return shortUrl.replace(_ojBaseUrl, '');
 }
 
 /**
@@ -274,6 +287,41 @@ function _getChildRouter(router, value) {
 }
 
 /**
+ * Only keep changes where the value doesn't match the router state
+ * @param {!Array.<{router:!oj.Router, value:string}>} states
+ * @return {!Array.<{router:!oj.Router, value:string}>}
+ */
+function _filterNewState(states) {
+   var newStates = states.filter(function(state) {
+      return (state.value !== state.router._stateId());
+   });
+
+   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
+      oj.Logger.info('Potential changes are: ');
+      newStates.forEach(function(change) {
+         oj.Logger.info('   { router: %s, value: %s }',
+                        getRouterFullName(change.router),
+                        change.value);
+      });
+   }
+
+   return newStates;
+}
+
+/**
+ * Update the bookmarkable data
+ * @private
+ * @this {!Object.<string, Object>}
+ * @param {!{router:!oj.Router, value:string}} change
+ */
+function _updateBookmarkableData(change) {
+   var ex = this[change.router._name];
+   if (ex !== undefined) {
+      change.router._extra = ex;
+   }
+}
+
+/**
  * Return true if the current transition is cancelled.
  * See queuing of transaction in _queueTransaction
  * @private
@@ -286,8 +334,8 @@ function isTransitionCancelled() {
 /**
  * Encode and compress the a state object. This is used for bookmarkable data.
  * @private
- * @param {!Object} extraState
- * @return {string}
+ * @param {!Object.<string, Object>} extraState
+ * @return {!string}
  * @throws An error if bookmarkable state is too big.
  */
 function encodeStateParam(extraState) {
@@ -317,10 +365,13 @@ function encodeStateParam(extraState) {
 
 /**
  * Decompress and decode the state param from the URL.  This is used for bookmarkable data.
+ * @private
  * @param {!string} param
+ * @return {!Object.<string, Object>}
  * @throws An error if parsing fails or format is invalid.
  */
 function decodeStateParam(param) {
+   var extraState;
    // First character is the compression type. Right now only 0 and 1 are supported.
    // 0 for no compression, 1 for LZW
    var compressionType = param.charAt(0);
@@ -337,29 +388,54 @@ function decodeStateParam(param) {
       throw new Error('Error retrieving bookmarkable data. Format is invalid');
    }
 
-   return JSON.parse(param);
+   extraState = /** @type {!Object.<string, Object>} */ (JSON.parse(param));
+
+   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
+      var name;
+      oj.Logger.info('Bookmarkable data: ');
+      for (name in extraState) {
+         oj.Logger.info('   { router: %s, value: %s }', name, extraState[name]);
+      }
+   }
+
+   return extraState;
 }
 
 /**
- * Build the state param and add it to the URL.
+ * Replace the state param in the URL.
+ * @private
  * @param {!string} url the url to which the param will be added
- * @param {Object} extraState the object to be stored in the param
- * @return {string} the URL with the state param
+ * @param {!Object.<string, Object>} extraState the object to be stored in the param
+ * @return {!string} the URL with the new state param
  */
-function addStateParam(url, extraState) {
-   if (extraState && Object.getOwnPropertyNames(extraState).length > 0) {
-      var sep;
-      if (url.indexOf('?') === -1) {
-         sep = '?';
-      }
-      else {
-         sep = '&';
+function putStateParam(url, extraState) {
+   var stateParam = '';
+   var startSegment, endSegment;
+   var start = url.indexOf(_ROUTER_PARAM);
+
+   if (start !== -1) {
+      var end = url.indexOf('&', start);
+      if (end === -1) {
+         end = url.length;
       }
 
-      url +=  sep + encodeStateParam(extraState);
+      startSegment = url.substring(0, start);
+      endSegment = url.substr(end);
+   }
+   else {
+      startSegment = url + ((url.indexOf('?') === -1) ? '?' : '&');
+      endSegment = '';
    }
 
-   return url;
+   if (extraState && Object.getOwnPropertyNames(extraState).length > 0) {
+      stateParam = encodeStateParam(extraState);
+   }
+   else {
+      // Remove the '?' or '&'
+      startSegment = startSegment.substring(0, startSegment.length -1);
+   }
+
+   return startSegment + stateParam + endSegment;
 }
 
 /**
@@ -387,17 +463,20 @@ function _findRouterForStateId(router, sId, parentStateId) {
 }
 
 /**
- * Build an array of current states for the tree of routers from root to leaf
+ * Traverse the tree of routers and build an array of state made of the router and the current
+ * state value.
+ * The first item of the array is the root and the last is the leaf.
+ * @private
  * @param  {oj.Router} router
  */
-function buildSelected(router) {
+function _buildAllCurrentState(router) {
    var states = [];
 
    if (router._currentState()) {
-      states.push({router: router, stateId: router._stateId() });
+      states.push({ router: router, stateId: router._stateId() });
 
-      router._childRouters.forEach(function(child){
-         states = states.concat(buildSelected(child));
+      router._childRouters.forEach(function (child) {
+         states = states.concat(_buildAllCurrentState(child));
       });
    }
 
@@ -458,18 +537,74 @@ function dispatchTransitionedToState(param) {
 }
 
 /**
+ * Takes an array of changes from parsing and appends other changes needed to be done.
+ * 1) All cascading default state
+ * 2) All the state that need to become undefined
+ * @private
+ * @param {!Array.<{router:!oj.Router, value:string}>} states
+ * @return {!Array.<{router:!oj.Router, value:string}>}
+ */
+function _appendOtherChanges(states) {
+   var lastItem = states[states.length -1];
+   var router, value;
+
+   // If there is a state, starts with it
+   if (lastItem) {
+      router = lastItem.router;
+      value = lastItem.value;
+   }
+   // Otherwise, starts at the root router
+   else {
+      router = rootRouter;
+      value = rootRouter._defaultStateId;
+      if (value) {
+         states.push({ value: value, router: router });
+      }
+   }
+
+   // Append all the default states all the way to the leaf router
+   while (!!(router = _getChildRouter(router, value))) {
+      value = router._defaultStateId;
+      if (value) {
+         states.push({ value: value, router: router });
+      }
+   }
+
+   var currentStates = _buildAllCurrentState(rootRouter);
+   var undef = [];
+
+   // Build an array of all the state to become undefined due to the parent state changing. The
+   // order of execution is leaf first.
+   currentStates.forEach(function (select, i) {
+      var change = states[i];
+
+      // Only insert change for a different router since the undef change will already happen when
+      // a router transition to a different state.
+      if  (!change || select.router !== change.router) {
+         undef.unshift(select);
+      }
+   });
+
+   // The order of execution is exit(undef) from leaf to root followed by enter from root to leaf
+   states = undef.concat(states);
+
+   return states;
+}
+
+/**
  * Build an array of objects by visiting the parent hierarchy.
  * Each element of the array represent the state of a router.
+ * @private
  * @param {!oj.Router} router
  * @param {!string} path
- * @return {Array.<{router:oj.Router, stateId:string}>}
+ * @return {!Array.<{router:!oj.Router, value:string}>}
  */
-function _buildState(router, path) {
+function _buildStateFromPath(router, path) {
    var newStates = [],
        routers = [],
        rt = router,
        parts = path.split('/'),
-       i, sId, parent, parentStateId, canDefault;
+       sId, parent, parentStateId;
 
    // Since path is absolute, it always starts with '/', so remove the first
    // element (empty string)
@@ -482,7 +617,7 @@ function _buildState(router, path) {
    }
 
    // Traverse path and routers simultaneously.
-   while (sId = parts.shift()) {
+   while (!!(sId = parts.shift())) {
       rt = routers.shift();
 
       if (!rt) {
@@ -491,7 +626,7 @@ function _buildState(router, path) {
          // Router doesn't exist, save deferredPath and stop
          if (!rt) {
             _deferredPath = path;
-            break;
+            return newStates;
          }
       }
       else {
@@ -504,21 +639,10 @@ function _buildState(router, path) {
 
       newStates.push({
          router: rt,
-         stateId: sId
+         value: sId
       });
       parent = rt;
       parentStateId = sId;
-   }
-
-   // If a default state is defined, simplify the URL by removing param
-   canDefault = true;
-   for (i = newStates.length - 1; (i >= 0) && canDefault; i--) {
-      if (newStates[i].stateId === newStates[i].router._defaultStateId) {
-         newStates[i].stateId = null;
-      }
-      else {
-         canDefault = false;
-      }
    }
 
    return newStates;
@@ -697,7 +821,10 @@ function _update(change, origin) {
 
    return Promise.resolve().
       then(function() {
-         oj.Logger.info('Updating state of %s to %s.', getRouterFullName(change.router), change.value);
+         if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
+            oj.Logger.info('Updating state of %s to %s.',
+               getRouterFullName(change.router), change.value);
+         }
       }).
       // Execute exit on the current state
       then(oldState ? oldState._exit : undefined).
@@ -738,11 +865,13 @@ function _update(change, origin) {
 
 /**
  * Update the state of all routers in the change array.
+ * @private
  * @param {Object} updateObj
+ * @return {!Promise}
  */
 function _updateAll(updateObj) {
    if (!updateObj) {
-      return { 'hasChanged': false };
+      return Promise.resolve(_NO_CHANGE_OBJECT);
    }
 
    var sequence = Promise.resolve().then(function() {
@@ -770,74 +899,35 @@ function _updateAll(updateObj) {
 }
 
 /**
- *
- * @param {!string} url
- * @return {!Array.<{value:string, router:!oj.Router}>}
- * @throws Error when parsing of query param fails.
+ * Update the state using the current URL.
+ * @private
+ * @param {string=} origin the transition origin
+ * @return a Promise that resolves when the routers state are updated
  */
-function _parseUrlAndCompare(url) {
-   var extra = {}, name,
-       search = url.split('?')[1] || '',
-       allChanges, reducedChanges;
-
-   oj.Logger.info('Parsing: %s', url);
-   url = _urlAdapter.cleanUrl(url);
-
-   // Retrieve the extra state from request param oj_Router
-   var stateStr = search.split(_ROUTER_PARAM)[1];
-   if (stateStr) {
-      stateStr = stateStr.split('&')[0];
-      extra = decodeStateParam(stateStr);
-   }
-
-   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
-      oj.Logger.info('Bookmarkable data: ');
-      for (name in extra) {
-         oj.Logger.info('   { router: %s, value: %s }', name, extra[name]);
-      }
-   }
-
-   allChanges = _urlAdapter.parse(url);
-   reducedChanges = allChanges.filter(function(change) {
-      // Update the bookmarkable data
-      var ex = extra[change.router._name];
-      if (ex !== undefined) {
-         change.router._extra = ex;
-      }
-
-      // Only keep changes where the value doesn't match the router state
-      return (change.value !== change.router._stateId());
-   });
-
-   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
-      oj.Logger.info('Potential changes are: ');
-      reducedChanges.forEach(function(change) {
-         oj.Logger.info('   { router: %s, value: %s }',
-                        getRouterFullName(change.router),
-                        change.value);
-      });
-   }
-
-   return reducedChanges;
-}
-
-/**
- * Use to update the state with the given URL.
- * Parse the new URL and update state.
- * @param {!string} url
- * @param {string=} origin
- */
-function parseAndUpdate(url, origin) {
+function parseAndUpdate(origin) {
    var allChanges;
 
    try {
-      allChanges = _parseUrlAndCompare(url);
+      allChanges = _urlAdapter.parse();
+
+      // Only keep changes where the value doesn't match the router state
+      allChanges = _filterNewState(allChanges);
    }
    catch (error) {
       return Promise.reject(error);
    }
 
    return _canEnter(allChanges, origin).then(_updateAll);
+}
+
+function _logTransition(action, transition) {
+   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
+      var path = transition.path ? 'path=' + transition.path : '';
+      var deferString = transition.deferredHandling ? 'deferredHandling=true' : '';
+      var router = transition.router ? getRouterFullName(transition.router) : 'null';
+      oj.Logger.info('>> %s: origin=%s router=%s %s %s',
+         action, transition.origin, router, path, deferString);
+   }
 }
 
 /**
@@ -848,22 +938,24 @@ function parseAndUpdate(url, origin) {
  * @return A Promise that resolves when the router is done with the state transition.
  */
 function _executeTransition(transition) {
-   oj.Logger.info('>> Executing: path=%s, url=%s, origin=%s', transition.path,
-      transition.url, transition.origin);
 
-   if (transition.url !== undefined) {
+   _logTransition('Executing', transition);
+
+   if (!transition.deferredHandling) {
       // if the transition originate from a sync call, don't call canExit
       if (transition.origin === 'sync') {
-         return parseAndUpdate(transition.url);
+         return parseAndUpdate();
       }
-      return _canExit(transition.router).then(function (canExit) {
-         if (canExit) {
-            return parseAndUpdate(transition.url, transition.origin);
-         }
-         return { 'hasChanged': false };
-      });
+      else if (transition.origin === 'popState') {
+         return _canExit(transition.router).then(function (canExit) {
+            if (canExit) {
+               return parseAndUpdate(transition.origin);
+            }
+            return Promise.resolve(_NO_CHANGE_OBJECT);
+         });
+      }
    }
-   return transition.router._go(transition.path || null, transition.replace);
+   return transition.router._go(transition);
 }
 
 /**
@@ -874,11 +966,11 @@ function _resolveTransition() {
    var transition = _transitionQueue[0],
        promise;
 
-   oj.Logger.info('>> Resolving: path=%s, url=%s', transition.path, transition.url);
+   _logTransition('Resolving', transition);
 
    if (transition.cancel) {
-      oj.Logger.info('>> Cancelled: path=%s, url=%s', transition.path, transition.url);
-      promise = Promise.resolve({ 'hasChanged': false });
+      _logTransition('Cancelled', transition);
+      promise = Promise.resolve(_NO_CHANGE_OBJECT);
    }
    else {
       promise = _executeTransition(transition);
@@ -886,8 +978,8 @@ function _resolveTransition() {
 
    return promise.then(function(params) {
       var done = _transitionQueue.shift();
-      oj.Logger.info('>> Done with: path=%s, url=%s', done.path, done.url);
-      if (params['hasChanged'] === true) {
+      _logTransition('Done with', done);
+      if (params[_HAS_CHANGED] === true) {
          // Build the window title that will appear in the browser history
          var titleInfo = _buildTitle(rootRouter);
          var title;
@@ -915,8 +1007,8 @@ function _resolveTransition() {
       return params;
    }, function(error) {
       _transitionQueue = [];
-      oj.Logger.error('Error when executing transition: %s', error.message);
-      dispatchTransitionedToState({ 'hasChanged': false });
+      oj.Logger.error('Error when executing transition: %o', (error || 'Unknown'));
+      dispatchTransitionedToState(_NO_CHANGE_OBJECT);
       return Promise.reject(error);
    });
 }
@@ -931,9 +1023,10 @@ function _resolveTransition() {
 function _queueTransition(transition) {
    var lastTransition, length;
 
+   _logTransition('Queuing  ', transition);
+
    // Push new transition at the end. Current transition is always at index 0
    length = _transitionQueue.push(transition);
-   oj.Logger.info('>> Queue transition for path=%s, url=%s', transition.path, transition.url);
 
    // Simple case when the transition is the only one in the queue.
    if (length === 1) {
@@ -943,8 +1036,8 @@ function _queueTransition(transition) {
    else {
       lastTransition = _transitionQueue[length-2];
       // Don't cancel transitions from popstate event or for deferred path
-      if (!lastTransition.url && !lastTransition.deferredHandling) {
-         oj.Logger.info('>> Cancelling: path=%s', lastTransition.path);
+      if (!lastTransition.deferredHandling) {
+         _logTransition('Cancelling', lastTransition);
          lastTransition.cancel = true;
       }
       _queuePromise = _queuePromise.then(_resolveTransition);
@@ -953,7 +1046,6 @@ function _queueTransition(transition) {
    return _queuePromise;
 }
 
-// 
 /**
  * @class
  * @requires ojs/ojcore
@@ -1379,7 +1471,7 @@ function handlePopState() {
    var sId = rootRouter._stateId();
    var subRouter = null;
 
-   oj.Logger.info('Handling popState event with URL: %s', window.location.href);
+   oj.Logger.info('Handling popState event with URL: %s', _location.href);
 
    // First retrieve the sub-router associated with the current state, if there is one.
    if (sId) {
@@ -1392,10 +1484,7 @@ function handlePopState() {
       }
    }
 
-   _queueTransition({ router: subRouter, url: getShortUrl(), origin: 'popState' }).
-   then(null, function(error) {
-      oj.Logger.error('Error while changing state in handlePopState: %s', error.message);
-   });
+   _queueTransition({ router: subRouter, origin: 'popState' });
 }
 
 /**
@@ -1533,14 +1622,14 @@ oj.Router.prototype.stateFromIdCallback = function(stateId) {
  * See the Router {@link oj.Router#defaultStateId|defaultStateId} property.
  * @param {(string|function():string)=} option.title the string to be used for the title of the page.
  * See the {@link oj.RouterState#title} property.
- * @param {(function(): boolean|function(): Promise)=} option.canEnter A callback that either
+ * @param {(function(): boolean|function(): Promise.<boolean>)=} option.canEnter A callback that either
  * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
  * The default value is a method that always returns true.
  * See the {@link oj.RouterState#canEnter} property.
  * @param {(function()|function(): Promise)=} option.enter A callback or the
  * promise of a callback which execute when entering this state.
  * See the {@link oj.RouterState#enter} property.
- * @param {(function(): boolean|function(): Promise)=} option.canExit  A callback that either
+ * @param {(function(): boolean|function(): Promise.<boolean>)=} option.canExit  A callback that either
  * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
  * The default value is a method that always returns true.
  * See the {@link oj.RouterState#canExit} property.
@@ -1619,35 +1708,33 @@ function _initialize() {
       if (!_urlAdapter) {
          _urlAdapter = new oj.Router.urlPathAdapter();
       }
-      if (!_ojBaseUrl) {
-         _ojBaseUrl = getBaseUrl();
-      }
+
+      _urlAdapter.init(_baseUrlProp);
+
       _originalTitle = window.document.title;
 
       /**
        * Listen to URL changes caused by back/forward button
        * using the popstate event. Call handlePopState to dispatch the change of URL.
        */
-      window.addEventListener('popstate', handlePopState, false);
+      window.addEventListener(_POPSTATE, handlePopState, false);
 
       oj.Logger.info('Initializing rootInstance.');
-      oj.Logger.info('Base URL is %s', _ojBaseUrl);
-      oj.Logger.info('This page is %s', _thisPage);
-      oj.Logger.info('Current URL is %s', window.location.href);
+      oj.Logger.info('Base URL is %s', _baseUrlProp);
+      oj.Logger.info('Current URL is %s', _location.href);
 
       _initialized = true;
    }
 }
 
 /**
- * Go is used to transition to a new state. In version 1.1 the argument was a
- * state id. In this release the syntax has been extended to accept a path of
- * state ids separated by a slash. The path can be absolute or relative.<br>
+ * Go is used to transition to a new state using a path made of state ids separated by a slash.  The
+ * path can be absolute or relative.<br>
  * <br>
  * Example of valid path:
  * <ul>
  *   <li><code class="prettyprint">router.go('home')</code>: transition router
- *    to state id 'home' (1.1 syntax)</li>
+ *    to state id 'home'</li>
  *   <li><code class="prettyprint">router.go('/book/chapt2')</code>: transition
  *    the root instance to state id 'book' and the child router to state id
  *    'chapt2'</li>
@@ -1655,12 +1742,18 @@ function _initialize() {
  *   router to state id 'chapt2' and child router to state id 'edit'</li>
  * </ul>
  * <br>
- * If the stateIdPath argument is undefined, go to the default state of the
- * router.<br>
+ * If the stateIdPath argument is <code class="prettyprint">undefined</code> or an empty string, go
+ * transition to the default state of the router.<br>
  * A {@link oj.Router.transitionedToState|transitionedToState} signal is
  * dispatched when the state transition has completed.
  * @param {string=} stateIdPath A path of ids representing the state to
  * transition to.
+ * @param {Object=} options - an object with additional information on how to execute the transition.
+ * @param {string} options.historyUpdate Specify how the transition should act on the browser
+ * history. If this property is not specified, a new URL is added to the history.<br>
+ * <b><i>Supported Values:</i></b><br>
+ * <code class="prettyprint">'skip'</code>: does not update the history with the new URL<br>
+ * <code class="prettyprint">'replace'</code>: modifies the current history with the new URL
  * @return {!Promise.<{hasChanged: boolean}>} A Promise that resolves when the
  * router is done with the state transition.<br>
  * When the promise is fullfilled, the parameter value is an object with the property
@@ -1697,33 +1790,43 @@ function _initialize() {
  *       oj.Logger.error('Transition to default state failed: ' + error.message);
  *    }
  * );
+ * @example <caption>Transition a router to state id 'stepB' without updating the URL:</caption>
+ * wizardRouter.go('stepB', { historyUpdate: 'skip' });
  */
-oj.Router.prototype.go = function(stateIdPath) {
+oj.Router.prototype.go = function(stateIdPath, options) {
    _initialize();
 
-   return _queueTransition({ router: this, path: stateIdPath, origin: 'go' });
+   options = options || [];
+
+   return _queueTransition({ router: this, path: stateIdPath, origin: 'go',
+                             historyUpdate: options['historyUpdate'] });
 };
 
 /**
- * Internal go that takes a flag for push or replace URL.
+ * Internal go used by _executeTransition
  * @private
- * @param {?string} stateIdPath A path of ids representing the state to
- * transition to.
- * @param {boolean=} replace push or replace
+ * @param  {Object} transition An object with properties describing the transition
  * @return {*} A Promise that resolves when the routing is done
  */
-oj.Router.prototype._go = function(stateIdPath, replace) {
+oj.Router.prototype._go = function(transition) {
    var path,
-       newUrl,
        newStates,
-       useDefault = true;
+       useDefault = true,
+       stateIdPath = transition.path,
+       replace = false,
+       skip = false;
+
+   switch (transition.historyUpdate) {
+      case 'skip':
+         skip = true;
+         break;
+      case 'replace':
+         replace = true;
+   }
 
    if (stateIdPath) {
       if (typeof stateIdPath === 'string') {
-         // Empty path string means use default
-         if (stateIdPath.length > 0) {
-            useDefault = false;
-         }
+         useDefault = false;
       }
       else {
          return Promise.reject(new Error('Invalid object type for state id.'));
@@ -1731,14 +1834,14 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
    }
 
    if (useDefault) {
-      stateIdPath = this._defaultStateId || null;
+      stateIdPath = this._defaultStateId;
       if (!stateIdPath) {
          // No default defined, so nowhere to go.
          if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
             oj.Logger.info('Undefined state id with no default id on router %s',
                         getRouterFullName(this));
          }
-         return Promise.resolve({ 'hasChanged': false });
+         return Promise.resolve(_NO_CHANGE_OBJECT);
       }
    }
 
@@ -1758,45 +1861,45 @@ oj.Router.prototype._go = function(stateIdPath, replace) {
    oj.Logger.info('Destination path: %s', path);
 
    try {
-      newStates = _buildState(this, path);
+      newStates = _buildStateFromPath(this, path);
+      newStates = _appendOtherChanges(newStates);
    }
    catch (err) {
       return Promise.reject(err);
    }
 
-   newUrl = _urlAdapter.buildUrlFromStates(newStates);
+   // It is important that we do not call canEnter on state that we not going to enter so
+   // only keep changes where the value doesn't match the current router state.
+   // reducedState is an array of object with 2 properties, value and router.
+   var reducedState = _filterNewState(newStates);
 
-   if (oj.Logger.option('level') === oj.Logger.LEVEL_INFO) {
-      oj.Logger.info('Going to URL %s on router %s', newUrl, getRouterFullName(this));
-   }
-
-   var shortUrl = _urlAdapter.cleanUrl(getShortUrl());
-
-   var _changeState = function(canExit) {
-      if (canExit) {
-         return parseAndUpdate(newUrl).
-            then(function(params) {
-               if (params['hasChanged']) {
-                  var fullUrl = _ojBaseUrl + newUrl;
-                  oj.Logger.info('%s URL to %s', replace ? 'Replacing' : 'Pushing', fullUrl);
-                  window.history[replace ? 'replaceState' : 'pushState'](null, '', fullUrl);
+   // Only transition if replace is true or if the new state is different.
+   // When replace is true, it is possible the states are the same (by example when going to the
+   // default state of a child router) but the transition still need to be executed.
+   if (replace || reducedState.length > 0) {
+      oj.Logger.info('Deferred mode or new state is different.');
+      return _canExit(this).then(function (canExit) {
+         if (canExit) {
+            // Only calls canEnter callback on state that are changing
+            return _canEnter(reducedState).then(_updateAll).then(function(params) {
+               if (params[_HAS_CHANGED]) {
+                  if (skip) {
+                     oj.Logger.info('Skip history update.');
+                  }
+                  else {
+                     var url = _urlAdapter.buildUrlFromStates(newStates);
+                     oj.Logger.info('%s URL to %s', replace ? 'Replacing' : 'Pushing', url);
+                     window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
+                  }
                }
                return params;
             });
-      }
-      return { 'hasChanged': false };
-   };
-
-   // Do not do anything if the new URL is the same.
-   // This compare URLs without the bookmarkable data.
-   // When replace is true, it is possible the new URL is the same (by example when going to the
-   // default state of a child router) but the transition still need to be executed.
-   if (replace || _urlAdapter.cleanUrl(newUrl) !== shortUrl) {
-      oj.Logger.info('Deferred mode or new URL is different.');
-      return _canExit(this).then(_changeState);
+         }
+         return Promise.resolve(_NO_CHANGE_OBJECT);
+      });
    }
 
-   return Promise.resolve({ 'hasChanged': false });
+   return Promise.resolve(_NO_CHANGE_OBJECT);
 };
 
 /**
@@ -1847,10 +1950,7 @@ oj.Router.prototype.store = function(data) {
       nextLevel = undefined;
    }
 
-   var url = _ojBaseUrl + _urlAdapter.cleanUrl(getShortUrl());
-   url = addStateParam(url, extraState);
-
-   window.history.replaceState(null, '', url);
+   window.history.replaceState(null, '', _buildUrl({}, extraState));
 };
 
 /**
@@ -1893,13 +1993,13 @@ oj.Router.prototype.dispose = function() {
 
    // If this is the root, clean up statics
    if (!this._parentRouter) {
-      _ojBaseUrl = '';
-      _urlAdapter = {};
+      _baseUrlProp = '/'; // Restore the default value
+      _urlAdapter = null;
       this._name = _DEFAULT_ROOT_NAME;
       // Restore title
       window.document.title = _originalTitle;
 
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener(_POPSTATE, handlePopState);
       oj.Router._transitionedToState.removeAll();
       _initialized = false;
    }
@@ -1988,18 +2088,25 @@ Object.defineProperties(oj.Router, {
  * @property {Object} urlAdapter an instance of the url adapter to use. If not specified, the router
  * will be using the path url adapter. Possible values are an instance of
  * {@link oj.Router.urlPathAdapter} or {@link oj.Router.urlParamAdapter}.
- * @property {string} baseUrl the base URL to be used for relative URL addresses. If not specified,
- * it is the current URL without the document.
- * For example <code class="prettyprint">http://www.example.com/myApp</code>. This is needed
- * to properly parse the URL.
+ * @property {string} baseUrl the base URL to be used for relative URL addresses. The value can be
+ * absolute or relative.  If not specified, the default value is '/'.<br>
+ * <b>Warning</b>: When using the {@link oj.Router.urlPathAdapter|path URL adapter} it is necessary
+ * to set the base URL if your application is not using <code class="prettyprint">index.html</code>
+ * or is not starting at the root folder. Using the base URL is the only way the router can retrieve
+ * the part of the URL representing the state.<br>
  * @property {string} rootInstanceName the name used for the root router. If not defined,
  * the name is 'root'. This is used by the {@link oj.Router.urlParamAdapter|urlParamAdapter} to build
  * the URL in the form of <code class="prettyprint">/index.html?root=book</code>.
  * @export
  * @example <caption>Change the default URL adapter to the urlParamAdapter</caption>
  * oj.Router.defaults['urlAdapter'] = new oj.Router.urlParamAdapter();
- * @example <caption>Change the default base URL</caption>
- * oj.Router.defaults['baseUrl'] = 'http://www.example.com/myApp';
+ * @example <caption>Set the base URL for an application located at the root and a starting page
+ * named <code class="prettyprint">index.html</code>. This is the default.</caption>
+ * oj.Router.defaults['baseUrl'] = '/';
+ * @example <caption>Set the base URL for an application with a page named
+ * <code class="prettyprint">main.html</code> and located in the
+ * <code class="prettyprint">/myApp</code> folder.</caption>
+ * oj.Router.defaults['baseUrl'] = '/myApp/main.html';
  * @example <caption>Change the default root router name to 'id'</caption>
  * oj.Router.defaults['rootInstanceName'] = 'id';
  */
@@ -2024,17 +2131,19 @@ Object.defineProperties(oj.Router.defaults, {
    },
    'baseUrl': {
       get: function() {
-         if (!_ojBaseUrl) {
-            _ojBaseUrl = getBaseUrl();
-         }
-         return _ojBaseUrl;
+         return _baseUrlProp;
       },
       set: function(baseUrl) {
          if (_initialized) {
             throw new Error('Incorrect operation. Cannot change base URL after calling sync() or go().');
          }
-         // Assumption is _ojBaseUrl does not have a trailing /
-         _ojBaseUrl = baseUrl.replace(/\/$/, '');
+         if (!baseUrl) {
+            _baseUrlProp = '/';
+         }
+         else {
+            // Remove anything after ? or #
+            _baseUrlProp = baseUrl.match(/[^?#]+/)[0];
+         }
       },
       enumerable: true,
       readonly: false
@@ -2119,14 +2228,16 @@ Object.defineProperties(oj.Router.defaults, {
  *
  */
 oj.Router.sync = function() {
-   var transition;
+   var transition = { router: rootRouter, origin: 'sync' };
 
    _initialize();
 
-   oj.Logger.info('Entering sync.');
+   oj.Logger.info('Entering sync with URL: %s', _location.href);
 
    if (_deferredPath) {
-      transition = { router: rootRouter, path: _deferredPath, deferredHandling: true, replace: true };
+      transition.path = _deferredPath;
+      transition.deferredHandling = true;
+      transition.historyUpdate = 'replace';
       _deferredPath = undefined;
       return _queueTransition(transition);
    }
@@ -2142,7 +2253,6 @@ oj.Router.sync = function() {
       });
    }
 
-   transition = { router: rootRouter, url: getShortUrl(), origin: 'sync' };
    return _queueTransition(transition);
 };
 
@@ -2165,52 +2275,71 @@ oj.Router.sync = function() {
  * @export
  */
 oj.Router.urlPathAdapter = function () {
+
+   /**
+    * Variable to store the base path. This is used to retrieve the portion of the path
+    * representing the routers state.
+    * @ignore
+    * @type {!string}
+    */
+   var _basePath = '';
+
+   /**
+    * Initialize the adapter given the baseUrlProp.
+    * For the urlPathAdapter, retrieve the potential file name to handle application with
+    * index.html in their URL.
+    * @ignore
+    * @param {!string} baseUrlProp the value of oj.Router.defaults.baseUrl
+    */
+   this.init = function(baseUrlProp) {
+      // Use the browser parser to get the pathname. It works with absolute or relative URL.
+      var parser = document.createElement('a');
+      parser.href = baseUrlProp;
+
+      var path = parser.pathname;
+      path = path.replace(/^([^\/])/,'/$1');  // Should always start with slash (for IE)
+
+      // Normalize the base path. Always ends with a '/'
+      if (path.slice(-1) !== '/') {
+         path = path + '/';
+      }
+
+      _basePath = path;
+   };
+
    /**
     * Construct an array of states where each item is an object made of a router and
     * the new state for it.
     * @ignore
-    * @param {string} url
     * @return {!Array.<{value:string, router:!oj.Router}>}
+    * @throws Error when parsing of router param fails.
     */
-   this.parse = function(url) {
+   this.parse = function() {
       var router = rootRouter,
-          segments = url.split('/'),
-      //    states = buildSelected(router),
+          // To retrieve the portion of the path representing the routers state,
+          // remove the base portion of the path.
+          path =  _location.pathname.replace(_basePath, ''),
+          segments = path.split('/'),
           changes = [],
-      //    undef = [],
-          value;
+          stateStr, value;
 
-      // Array of path segments. Variable url always starts with '/', so remove the first element.
-      segments.shift();
+      oj.Logger.info('Parsing: %s', path);
 
-      do {
-         value = segments.shift();
-         if (value) {
-            if (value.length === 0 || /\.html$/i.test(value)) {
-               value = undefined;
-            }
-         }
-
-         value = value || router._defaultStateId;
-
-      //   if (value) {
-      //      changes.push({ value: value, router: router, stateId: value });
-      //   }
+      while (router && (value = segments.shift())) {
          changes.push({ value: value, router: router });
-
          router = _getChildRouter(router, value);
-      } while (router);
+      }
 
-      // Order is exit(undef) from leaf to root followed by enter from root to leaf
-      // states.forEach(function(select, i) {
-      //    var change = changes[i];
+      changes = _appendOtherChanges(changes);
 
-      //    if  (!change || select.router !== change.router) {
-      //       undef.unshift(select);
-      //    }
-      // });
-
-      // return undef.concat(changes);
+      // Retrieve the extra state from request param oj_Router
+      stateStr = _location.search.split(_ROUTER_PARAM)[1];
+      if (stateStr) {
+         stateStr = stateStr.split('&')[0];
+         if (stateStr) {
+            changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr));
+         }
+      }
 
       return changes;
    };
@@ -2218,66 +2347,40 @@ oj.Router.urlPathAdapter = function () {
    /**
     * Given an ordered array of states, build the URL representing all
     * the states.
-    * Always starts with a '/': /index.html, /book/chapter2
+    * Never starts with a '/': "book"  "book/chapter2"
     * @ignore
-    * @param {Array.<{router:oj.Router, stateId:string}>} newStates
+    * @param {!Array.<{router:!oj.Router, value:string}>} newStates
     * @return {!string} the URL representing the states
     */
    this.buildUrlFromStates = function(newStates) {
-      var newUrl = '',
+      var ns,
+          canDefault = false,
+          pathname = '',
           extraState = {}; // Compound object of all extra states
 
-      // Build the new URL
-      newStates.forEach(function(ns) {
-         if (ns.stateId) {
-            newUrl += '/' + ns.stateId;
+
+      // Build the new URL by walking the array of states backward in order to eliminate
+      // the default state from the URL. As soon as a value is not the default, stops the removal.
+      while (!!(ns = newStates.pop())) {
+         if (ns.value) {
+            if (canDefault || (ns.value !== ns.router._defaultStateId)) {
+               if (pathname === '') {
+                  pathname = ns.value;
+               }
+               else {
+                  pathname = ns.value + '/' + pathname;
+               }
+               canDefault = true;
+            }
          }
+
+         // Build an object made of the extra data of each router
          if (ns.router._extra !== undefined) {
             extraState[ns.router._name] = ns.router._extra;
          }
-      });
-
-      // No page or this page are aliases.
-      if (newUrl === '') {
-         // 
-         newUrl = '/' + _thisPage;
       }
 
-      try {
-         newUrl = addStateParam(newUrl, extraState);
-      }
-      catch (err) {
-         oj.Logger.error('Error while building URL: %s', err);
-      }
-
-      return newUrl;
-   };
-
-   /**
-    * Return the significant part of an URL.
-    * @ignore
-    * @param {!string} url
-    * @return {!string} the short URL
-    */
-   this.cleanUrl = function(url) {
-      return url.split('?')[0];
-   };
-
-   /**
-    * Return extra query param
-    * @ignore
-    * @param {string} url
-    * @return {!Object.<string, string>}
-    */
-   this.getQueryParam = function(url) {
-      var queryIndex = url.indexOf('?'),
-          queryString = null;
-
-      if (queryIndex !== -1) {
-         queryString = url.substr(queryIndex + 1);
-      }
-
-      return parseQueryParam(queryString);
+      return _buildUrl({ pathname: _basePath + pathname }, extraState);
    };
 };
 
@@ -2297,46 +2400,49 @@ oj.Router.urlPathAdapter = function () {
  */
 oj.Router.urlParamAdapter = function () {
    /**
+    * Initialize the adapter.
+    * @ignore
+    */
+    this.init = function() {
+      // No-op
+    };
+
+   /**
     * Construct an array of states where each item is an object made of a router and
     * the new state for it.
     * @ignore
-    * @param {string} url
     * @return {!Array.<{value:string, router:!oj.Router}>}
+    * @throws Error when parsing of router param fails.
     */
-   this.parse = function(url) {
-      var params = this.getQueryParam(url),
+   this.parse = function() {
+      var search = _location.search,
+          params = parseQueryParam(search),
           router = rootRouter,
-      //    states = buildSelected(router),
           changes = [],
-      //    undef = [],
-          value;
+          stateStr, value;
 
-      do {
+      oj.Logger.info('Parsing: %s', search);
+
+      while (router) {
          value = params[router._name];
          if (value) {
             value = value[0];
-            delete params[router._name];
          }
 
          value = value || router._defaultStateId;
-      //   if (value) {
-      //      changes.push({ value: value, router: router, stateId: value });
-      //   }
-
-		   changes.push({ value: value, router: router });
+         if (value) {
+            changes.push({ value: value, router: router });
+         }
          router = _getChildRouter(router, value);
-      } while (router);
+      }
 
-      // // Order is exit(undef) from leaf to root followed by enter from root to leaf
-      // states.forEach(function(select, i) {
-      //    var change = changes[i];
+      changes = _appendOtherChanges(changes);
 
-      //    if  (!change || select.router !== change.router) {
-      //       undef.unshift(select);
-      //    }
-      // });
-
-      // return undef.concat(changes);
+      // Retrieve the extra state from oj_Router param
+      stateStr = params[_ROUTER_PARAM];
+      if (stateStr) {
+         changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr));
+      }
 
       return changes;
    };
@@ -2344,72 +2450,41 @@ oj.Router.urlParamAdapter = function () {
    /**
     * Given an ordered array of states, build the URL representing all
     * the states.
-    * Always starts with a '/': /index.html, /book/chapter2
+    * Never starts with a '/': "index.html", "book/chapter2"
     * @ignore
-    * @param {Array.<{router:oj.Router, stateId:string}>} newStates
+    * @param {!Array.<{router:!oj.Router, value:string}>} newStates
     * @return {!string} the URL representing the states
     * @throws An error if bookmarkable state is too big.
     */
    this.buildUrlFromStates = function(newStates) {
-      var newUrl = '/' + _thisPage,
-          extraState = {}, // Compound object of all extra states
-          sep = '?';
+      var ns,
+          canDefault = false,
+          search = '',
+          extraState = {}; // Compound object of all extra states
 
-      // Build the new URL
-      newStates.forEach(function(ns) {
-         if (ns.stateId) {
-            newUrl += sep + ns.router._name + '=' + ns.stateId;
-            sep = '&'; // From now on, use this separator
+      // Build the new URL by walking the array of states backward in order to eliminate
+      // the default state from the URL. As soon as a value is not the default, stops the removal.
+      while (!!(ns = newStates.pop())) {
+         if (ns.value) {
+            if (canDefault || (ns.value !== ns.router._defaultStateId)) {
+               search = '&' + ns.router._name + '=' + ns.value + search;
+               canDefault = true;
+            }
          }
+
+         // Build an object made of the extra data of each router
          if (ns.router._extra !== undefined) {
             extraState[ns.router._name] = ns.router._extra;
          }
-      });
-
-      try {
-         newUrl = addStateParam(newUrl, extraState);
-      }
-      catch (err) {
-         oj.Logger.error('Error while building URL: %s', err);
       }
 
-      return newUrl;
+      // Replace first parameter separator from '&' to '?'
+      if (search) {
+         search = '?' + search.substr(1);
+      }
+
+      return _buildUrl({ search: search }, extraState);
    };
-
-   /**
-    * Return the significant part of an URL.
-    * @ignore
-    * @param {!string} url
-    * @return {!string} the short URL
-    */
-   this.cleanUrl = function(url) {
-      var index = url.indexOf(_ROUTER_PARAM);
-      if (index !== -1) {
-         return url.substr(0, index - 1);
-      }
-      return url;
-   };
-
-   /**
-    * Return extra query param
-    * @ignore
-    * @param {string} url
-    * @return {!Object.<string, string>}
-    */
-   this.getQueryParam = function(url) {
-      var queryIndex = url.indexOf('?'),
-          queryString = null,
-          params = {};
-
-      if (queryIndex !== -1) {
-         queryString = url.substr(queryIndex + 1);
-         params = parseQueryParam(queryString);
-      }
-
-      // 
-      return params;
-   };
-
 
 };
 
@@ -2448,15 +2523,17 @@ return rootRouter;
     * See the {@link oj.RouterState#value} property.
     * @param {boolean=} options.isDefault true if this state is the default.
     * See the {@link oj.Router#defaultStateId|defaultStateId} property.
-    * @param {(function(): boolean|function(): Promise)=} options.canEnter A callback that either
-    * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
+    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canEnter A callback that
+    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+    * will continue.
     * The default value is a method that always returns true.
     * See the {@link oj.RouterState#canEnter} property.
     * @param {(function()|function(): Promise)=} options.enter A callback or
     * the promise of a callback which execute when entering this state.
     * See the {@link oj.RouterState#enter} property.
-    * @param {(function(): boolean|function(): Promise)=} options.canExit  A callback that either
-    * returns a boolean or the Promise of a boolean. If the boolean is true the transition will continue.
+    * @param {(function(): boolean|function(): Promise.<boolean>)=} options.canExit  A callback that
+    * either returns a boolean or the Promise of a boolean. If the boolean is true the transition
+    * will continue.
     * The default value is a method that always returns true.
     * See the {@link oj.RouterState#canExit} property.
     * @param {(function()|function(): Promise)=} options.exit A callback or
@@ -2483,7 +2560,7 @@ return rootRouter;
        * current state of the router does not change.
        * The default value is a method that always returns true.
        * @name oj.RouterState#canEnter
-       * @type {function():boolean|function():Promise}
+       * @type {function():boolean|function():Promise.<boolean>}
        */
       this._canEnter = options['canEnter'];
       if (this._canEnter) {
@@ -2509,7 +2586,7 @@ return rootRouter;
        * current state of the router does not change.
        * The default value is a method that always returns true.
        * @name oj.RouterState#canExit
-       * @type {function():boolean|function():Promise}
+       * @type {function():boolean|function():Promise.<boolean>}
        */
       this._canExit = options['canExit'];
       if (this._canExit) {

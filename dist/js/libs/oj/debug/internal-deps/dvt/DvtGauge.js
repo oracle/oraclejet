@@ -7,7 +7,7 @@ define(['./DvtToolkit', './DvtAxis'], function(dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -78,6 +78,16 @@ DvtGauge.prototype.SetOptions = function(options) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }
+
+  //  - Disable gradient overlay by default for IE
+  if (dvt.Agent.isPlatformIE() && this.Options['visualEffects'] == 'auto')
+    this.Options['visualEffects'] = 'none';
+
+  if (options['className'])
+    this.Options['svgClassName'] = options['className'];
+
+  if (options['style'])
+    this.Options['svgStyle'] = options['style'];
 };
 
 
@@ -368,11 +378,14 @@ DvtGauge.prototype.__processValueChangeMove = function(x, y) {
   // Only process the update if there is data to update
   if (this._oldValue != null) {
     // Update the data value and re-render
-    this.Options['value'] = DvtGaugeRenderer.adjustForStep(this.Options, this.GetValueAt(x, y));
-    this.renderUpdate();
+    var newValue = DvtGaugeRenderer.adjustForStep(this.Options, this.GetValueAt(x, y));
+    if (newValue != this.Options['value']) {
+      this.Options['value'] = newValue;
+      this.renderUpdate();
 
-    // Fire the value change input event
-    this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, this.Options['value'], false));
+      // Fire the value change input event
+      this.dispatchEvent(dvt.EventFactory.newValueChangeEvent(this._oldValue, this.Options['value'], false));
+    }
   }
 };
 
@@ -618,7 +631,7 @@ DvtGaugeDefaults.SKIN_ALTA = {
   'color': '#393737',
   'metricLabel': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
-  'title': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
+  'label': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
   '_thresholdColors': ['#ed6647', '#fad55c', '#68c182']
 };
 
@@ -640,7 +653,7 @@ DvtGaugeDefaults.VERSION_1 = {
     'textType': 'number'
   },
   '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
-  'title': {
+  'label': {
     'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_SKYROS),
     'position': 'auto'
   },
@@ -1276,12 +1289,12 @@ DvtGaugeStyleUtils.getDialIndicator = function(indicatorType) {
 };
 
 /**
- * Determines if the gauge has a title
+ * Determines if the gauge has a label
  * @param {object} options The options object
- * @return {Boolean} Returns true if the title is rendered
+ * @return {Boolean} Returns true if the label is rendered
  */
-DvtGaugeStyleUtils.hasTitle = function(options) {
-  return !!options['title']['text'];
+DvtGaugeStyleUtils.hasLabel = function(options) {
+  return !!options['label']['text'];
 };
 /**
  * Renderer for DvtGauge.
@@ -1307,24 +1320,24 @@ DvtGaugeRenderer.renderEmptyText = function(gauge, container, availSpace) {
     emptyTextStr = dvt.Bundle.getTranslation(options, 'labelInvalidData', dvt.Bundle.UTIL_PREFIX, 'INVALID_DATA', null);
 
   // Set font size
-  var labelStyle = options['_statusMessageStyle'];
-  if (!labelStyle.getStyle('font-size'))
-    labelStyle.setStyle('font-size', '13px');
+  var metricLabelStyle = options['_statusMessageStyle'];
+  if (!metricLabelStyle.getStyle('font-size'))
+    metricLabelStyle.setStyle('font-size', '13px');
 
   if (gauge instanceof dvt.StatusMeterGauge) {
-    var labelColor = labelStyle.getStyle('color');
-    labelColor = labelColor ? labelColor : '#333333';
-    labelStyle.setStyle('color', labelColor);
+    var metricLabelColor = metricLabelStyle.getStyle('color');
+    metricLabelColor = metricLabelColor ? metricLabelColor : '#333333';
+    metricLabelStyle.setStyle('color', metricLabelColor);
   }
 
   dvt.TextUtils.renderEmptyText(container, emptyTextStr,
       new dvt.Rectangle(availSpace.x, availSpace.y, availSpace.w, availSpace.h),
-      gauge.getEventManager(), labelStyle);
+      gauge.getEventManager(), metricLabelStyle);
 };
 
 
 /**
- * Formats gauge label.
+ * Formats gauge metricLabel.
  * @param {float} value The value to render into.
  * @param {Object} gauge The gauge.
  * @return {string} The formatted metric label string
@@ -1338,7 +1351,7 @@ DvtGaugeRenderer.getFormattedMetricLabel = function(value, gauge) {
   var scaling = options['metricLabel']['scaling'];
   var autoPrecision = options['metricLabel']['autoPrecision'] ? options['metricLabel']['autoPrecision'] : 'on';
   var isPercent = options['metricLabel']['textType'] == 'percent';
-  return DvtGaugeRenderer._formatLabelValue(value, gauge, converter, scaling, autoPrecision, isPercent);
+  return DvtGaugeRenderer._formatMetricLabelValue(value, gauge, converter, scaling, autoPrecision, isPercent);
 };
 
 
@@ -1361,22 +1374,22 @@ DvtGaugeRenderer.formatTickLabelValue = function(value, gauge) {
     scaling = options['tickLabel']['scaling'];
 
   var autoPrecision = options['tickLabel']['autoPrecision'] ? options['tickLabel']['autoPrecision'] : 'on';
-  return DvtGaugeRenderer._formatLabelValue(value, gauge, converter, scaling, autoPrecision, isPercent);
+  return DvtGaugeRenderer._formatMetricLabelValue(value, gauge, converter, scaling, autoPrecision, isPercent);
 };
 
 
 /**
- * Formats gauge label.
+ * Formats gauge metricLabel.
  * @param {float} value The value to render into.
  * @param {Object} gauge The gauge.
  * @param {object} converter The converter object to use for formatting
  * @param {string} scaling The scale used for formatting the number
  * @param {string} autoPrecision "on" if auto precision should be applied otherwise "off"; if null or undefined then auto precision is applied.
- * @param {boolean} isPercent Specifies whether we should use percent formatting for this label.
- * @return {string} The formatted string value for this label
+ * @param {boolean} isPercent Specifies whether we should use percent formatting for this metricLabel.
+ * @return {string} The formatted string value for this metricLabel
  * @private
  */
-DvtGaugeRenderer._formatLabelValue = function(value, gauge, converter, scaling, autoPrecision, isPercent) {
+DvtGaugeRenderer._formatMetricLabelValue = function(value, gauge, converter, scaling, autoPrecision, isPercent) {
   var options = gauge.getOptions();
 
   var minValue = options['min'];
@@ -1439,10 +1452,75 @@ DvtGaugeRenderer.getTooltipString = function(gauge) {
     return threshold['shortDesc'];
   else if (options['shortDesc'] != null)
     return options['shortDesc'];
-  else if (options['title']['text'])
-    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [options['title']['text'], metricValue]);
+  else if (options['label']['text'])
+    return dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [options['label']['text'], metricValue]);
   else // Use the formatted metric label
     return metricValue;
+};
+
+/**
+ * Renders the metricLabel into the specified area.
+ * @param {DvtGauge} gauge The gauge being rendered.
+ * @param {dvt.Container} container The container to render into.
+ * @param {dvt.Rectangle} bounds The available bounds for rendering.
+ * @param {color} color MetricLabel color
+ * @param {string} halign The horizontal alignment
+ * @param {string} valign The vertical alignment
+ * @param {boolean=} isRenderedByDefault Whether the metricLabel is rendered by default. Defaults to false.
+ * @return {boolean} Return true if the label is rendered
+ */
+DvtGaugeRenderer.renderMetricLabel = function(gauge, container, bounds, color, halign, valign, isRenderedByDefault) {
+  var options = gauge.getOptions();
+  var rendered = false;
+
+  // Create and position the metricLabel
+  if (options['metricLabel']['rendered'] == 'on' || (isRenderedByDefault && options['metricLabel']['rendered'] != 'off')) {
+    var metricLabelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
+    var minString = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
+    var maxString = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
+
+    // Create the label and align
+    var metricLabel = new dvt.OutputText(gauge.getCtx(), metricLabelString, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+    metricLabel.setCSSStyle(options['metricLabel']['style']);
+    var size = options['metricLabel']['style'].getStyle('font-size');
+    size = size ? parseInt(size) : null;
+    if (!size) {
+      size = DvtGaugeRenderer.calcLabelFontSize([metricLabelString, minString, maxString], metricLabel, bounds);
+      metricLabel.setTextString(metricLabelString);
+      metricLabel.setFontSize(size);
+    }
+
+    if (valign == 'top') {
+      metricLabel.setY(bounds.y);
+      metricLabel.alignTop();
+    }
+    else if (valign == 'middle') {
+      dvt.TextUtils.centerTextVertically(metricLabel, bounds.y + bounds.h / 2);
+    }
+    else if (valign == 'bottom') {
+      metricLabel.setY(bounds.y + bounds.h);
+      metricLabel.alignBottom();
+    }
+
+    if (halign == 'center')
+      metricLabel.alignCenter();
+    else if (halign == 'left') {
+      metricLabel.setX(bounds.x);
+      metricLabel.alignLeft();
+    }
+    else if (halign == 'right') {
+      metricLabel.setX(bounds.x + bounds.w);
+      metricLabel.alignRight();
+    }
+
+    // Set color
+    if (color != null)
+      metricLabel.setSolidFill(color);
+
+    // Truncate if needed, null is returned if the label doesn't fit
+    rendered = dvt.TextUtils.fitText(metricLabel, bounds.w, bounds.h, container);
+  }
+  return rendered;
 };
 
 /**
@@ -1451,112 +1529,47 @@ DvtGaugeRenderer.getTooltipString = function(gauge) {
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {color} color Label color
- * @param {string} halign The horizontal alignment
  * @param {string} valign The vertical alignment
- * @param {boolean=} isRenderedByDefault Whether the label is rendered by default. Defaults to false.
- * @return {boolean} Return true if the title is rendered
+ * @return {boolean} Return true if the label is rendered
  */
-DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, halign, valign, isRenderedByDefault) {
+DvtGaugeRenderer.renderLabel = function(gauge, container, bounds, color, valign) {
   var options = gauge.getOptions();
   var rendered = false;
 
-  // Create and position the label
-  if (options['metricLabel']['rendered'] == 'on' || (isRenderedByDefault && options['metricLabel']['rendered'] != 'off')) {
-    var labelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
-    var minString = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
-    var maxString = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
-
-    // Create the label and align
-    var label = new dvt.OutputText(gauge.getCtx(), labelString, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
-    label.setCSSStyle(options['metricLabel']['style']);
-    var size = options['metricLabel']['style'].getStyle('font-size');
-    size = size ? parseInt(size) : null;
-    if (!size) {
-      size = DvtGaugeRenderer.calcLabelFontSize([labelString, minString, maxString], label, bounds);
-      label.setTextString(labelString);
-      label.setFontSize(size);
-    }
-
-    if (valign == 'top') {
-      label.setY(bounds.y);
-      label.alignTop();
-    }
-    else if (valign == 'middle') {
-      dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
-    }
-    else if (valign == 'bottom') {
-      label.setY(bounds.y + bounds.h);
-      label.alignBottom();
-    }
-
-    if (halign == 'center')
-      label.alignCenter();
-    else if (halign == 'left') {
-      label.setX(bounds.x);
-      label.alignLeft();
-    }
-    else if (halign == 'right') {
-      label.setX(bounds.x + bounds.w);
-      label.alignRight();
-    }
-
-    // Set color
-    if (color != null)
-      label.setSolidFill(color);
-
-    // Truncate if needed, null is returned if the label doesn't fit
-    rendered = dvt.TextUtils.fitText(label, bounds.w, bounds.h, container);
-  }
-  return rendered;
-};
-
-/**
- * Renders the title into the specified area.
- * @param {DvtGauge} gauge The gauge being rendered.
- * @param {dvt.Container} container The container to render into.
- * @param {dvt.Rectangle} bounds The available bounds for rendering.
- * @param {color} color Title color
- * @param {string} valign The vertical alignment
- * @return {boolean} Return true if the title is rendered
- */
-DvtGaugeRenderer.renderTitle = function(gauge, container, bounds, color, valign) {
-  var options = gauge.getOptions();
-  var rendered = false;
-
-  // Create and position the label
-  if (DvtGaugeStyleUtils.hasTitle(options)) {
-    var titleString = options['title']['text'];
-    var titleStyle = options['title']['style'];
-    var title = new dvt.MultilineText(gauge.getCtx(), titleString);
-    var fontStyle = titleStyle.clone();
-    title.setCSSStyle(titleStyle);
-    var size = titleStyle.getStyle('font-size');
+  // Create and position the metricLabel
+  if (DvtGaugeStyleUtils.hasLabel(options)) {
+    var labelString = options['label']['text'];
+    var labelStyle = options['label']['style'];
+    var label = new dvt.MultilineText(gauge.getCtx(), labelString);
+    var fontStyle = labelStyle.clone();
+    label.setCSSStyle(labelStyle);
+    var size = labelStyle.getStyle('font-size');
     size = size ? parseInt(size) : null;
     if (!size) {
       // Calculate font size
-      var tempTitle = new dvt.OutputText(gauge.getCtx(), titleString, 0, 0);
-      tempTitle.setCSSStyle(titleStyle);
-      size = tempTitle.getOptimalFontSize(bounds);
+      var tempLabel = new dvt.OutputText(gauge.getCtx(), labelString, 0, 0);
+      tempLabel.setCSSStyle(labelStyle);
+      size = tempLabel.getOptimalFontSize(bounds);
       fontStyle.setFontSize('font-size', size.toString());
     }
     // Set color
     if (color != null)
       fontStyle.setStyle('color', color);
 
-    title.setCSSStyle(fontStyle);
-    rendered = dvt.TextUtils.fitText(title, bounds.w, bounds.h, gauge);
+    label.setCSSStyle(fontStyle);
+    rendered = dvt.TextUtils.fitText(label, bounds.w, bounds.h, gauge);
 
-    var textHeight = dvt.TextUtils.getTextHeight(title);
+    var textHeight = dvt.TextUtils.getTextHeight(label);
     if (valign == 'top')
-      title.setY(bounds.y);
+      label.setY(bounds.y);
     else if (valign == 'bottom')
-      title.setY(bounds.y + bounds.h - textHeight);
+      label.setY(bounds.y + bounds.h - textHeight);
     else
-      title.setY(bounds.y + bounds.h / 2 - textHeight / 2);
+      label.setY(bounds.y + bounds.h / 2 - textHeight / 2);
 
-    title.setX(bounds.x + bounds.w / 2);
-    title.alignCenter();
-    container.addChild(title);
+    label.setX(bounds.x + bounds.w / 2);
+    label.alignCenter();
+    container.addChild(label);
   }
   return rendered;
 };
@@ -1604,7 +1617,7 @@ DvtGaugeRenderer.adjustForStep = function(options, value) {
   }
   return value;
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -1650,6 +1663,12 @@ dvt.LedGauge.prototype.Init = function(context, callback, callbackObj, bStaticRe
  * @override
  */
 dvt.LedGauge.prototype.SetOptions = function(options) {
+  // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
+  options = dvt.JsonUtils.clone(options);
+
+  if (options['title'])
+    options['label'] = options['title'];
+
   // Combine the user options with the defaults and store
   dvt.LedGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 
@@ -1761,41 +1780,41 @@ DvtLedGaugeRenderer.render = function(gauge, container, width, height) {
     // Render the visual effects
     DvtLedGaugeRenderer._renderVisualEffects(gauge, container, bounds);
 
-    // Render the title on top of the LED
-    var bTitleRendered = false;
-    var labelColor = dvt.ColorUtils.getContrastingTextColor(DvtGaugeStyleUtils.getColor(gauge));
-    if (DvtGaugeStyleUtils.hasTitle(options)) {
-      var titleValign = 'middle';
-      var titleBounds = DvtLedGaugeRenderer._getLabelBounds(gauge, container, bounds);
+    // Render the label on top of the LED
+    var bLabelRendered = false;
+    var metricLabelColor = dvt.ColorUtils.getContrastingTextColor(DvtGaugeStyleUtils.getColor(gauge));
+    if (DvtGaugeStyleUtils.hasLabel(options)) {
+      var labelValign = 'middle';
+      var labelBounds = DvtLedGaugeRenderer._getMetricLabelBounds(gauge, container, bounds);
       if (options['metricLabel']['rendered'] == 'on') {
-        titleBounds.y = titleBounds.y + titleBounds.h * .6;
-        titleBounds.h = titleBounds.h * .4;
-        titleValign = 'top';
+        labelBounds.y = labelBounds.y + labelBounds.h * .6;
+        labelBounds.h = labelBounds.h * .4;
+        labelValign = 'top';
       }
-      // Use the specified label color unless in high contrast mode
-      if (!dvt.Agent.isHighContrast() && options['title']['style'].getStyle('color') != null) {
-        bTitleRendered = DvtGaugeRenderer.renderTitle(gauge, container, titleBounds, null, titleValign);
+      // Use the specified metricLabel color unless in high contrast mode
+      if (!dvt.Agent.isHighContrast() && options['label']['style'].getStyle('color') != null) {
+        bLabelRendered = DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, null, labelValign);
       }
       else {
-        bTitleRendered = DvtGaugeRenderer.renderTitle(gauge, container, titleBounds, labelColor, titleValign);
+        bLabelRendered = DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, metricLabelColor, labelValign);
       }
     }
 
-    // Render the label on top of the LED
+    // Render the metricLabel on top of the LED
     if (options['metricLabel']['rendered'] == 'on') {
-      var labelBounds = DvtLedGaugeRenderer._getLabelBounds(gauge, container, bounds);
+      var metricLabelBounds = DvtLedGaugeRenderer._getMetricLabelBounds(gauge, container, bounds);
       var valign = 'middle';
-      if (bTitleRendered) {
-        labelBounds.h = labelBounds.h * .55;
+      if (bLabelRendered) {
+        metricLabelBounds.h = metricLabelBounds.h * .55;
         valign = 'bottom';
       }
 
-      // Use the specified label color unless in high contrast mode
+      // Use the specified metricLabel color unless in high contrast mode
       if (!dvt.Agent.isHighContrast() && options['metricLabel']['style'].getStyle('color') != null) {
-        DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, null, 'center', valign);
+        DvtGaugeRenderer.renderMetricLabel(gauge, container, metricLabelBounds, null, 'center', valign);
       }
       else {
-        DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, labelColor, 'center', valign);
+        DvtGaugeRenderer.renderMetricLabel(gauge, container, metricLabelBounds, metricLabelColor, 'center', valign);
       }
     }
   }
@@ -1898,8 +1917,8 @@ DvtLedGaugeRenderer._renderShape = function(gauge, container, bounds) {
     shape.setSolidStroke(borderColor);
 
   // Custom style and class
-  shape.setClassName(options['className']);
-  shape.setStyle(options['style']);
+  shape.setClassName(options['svgClassName']);
+  shape.setStyle(options['svgStyle']);
 
   // rotate the shape if needed
   var rotation = isSkyros ? options['rotation'] + 90 : options['rotation'];
@@ -2155,14 +2174,14 @@ DvtLedGaugeRenderer._renderOverlayCircle = function(gauge, container, bounds) {
 };
 
 /**
- * Find correct label bounds
+ * Find correct metricLabel bounds
  * @param {dvt.LedGauge} gauge The gauge being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} bounds The bounds of the shape.
- * @return {dvt.Rectangle} Bounds for the label
+ * @return {dvt.Rectangle} Bounds for the metricLabel
  * @private
  */
-DvtLedGaugeRenderer._getLabelBounds = function(gauge, container, bounds) {
+DvtLedGaugeRenderer._getMetricLabelBounds = function(gauge, container, bounds) {
   var options = gauge.getOptions();
   var type = options['type'];
   var rotation = (options['rotation'] % 90 == 0) ? options['rotation'] : 0;
@@ -2249,7 +2268,7 @@ DvtLedGaugeRenderer._getLabelBounds = function(gauge, container, bounds) {
   }
   return new dvt.Rectangle(newX, newY, newWidth, newHeight);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -2300,6 +2319,20 @@ dvt.StatusMeterGauge.prototype.Init = function(context, callback, callbackObj) {
  * @override
  */
 dvt.StatusMeterGauge.prototype.SetOptions = function(options) {
+  // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
+  options = dvt.JsonUtils.clone(options);
+
+  if (options['title'])
+    options['label'] = options['title'];
+
+  if (options['plotArea']) {
+    if (options['plotArea']['className'])
+      options['plotArea']['svgClassName'] = options['plotArea']['className'];
+
+    if (options['plotArea']['style'])
+      options['plotArea']['svgStyle'] = options['plotArea']['style'];
+  }
+
   // Combine the user options with the defaults and store
   dvt.StatusMeterGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
@@ -2434,7 +2467,7 @@ DvtStatusMeterGaugeRenderer.render = function(gauge, container, width, height) {
       // Render metric label outside of plot area. Metric labels within the plot area are handled within
       // the renderShape function.
       if (DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options))
-        DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea(gauge, container, bounds);
+        DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea(gauge, container, bounds);
 
       DvtStatusMeterGaugeRenderer._renderShape(gauge, container, bounds);
     }
@@ -2459,7 +2492,7 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
   var containerBounds = bounds.clone();
   var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var percentFill = 0;
-  var labelBounds = null;
+  var metricLabelBounds = null;
   var value = options['value'];
   var innerRadius = options['innerRadius'];
   var thresholds = options['thresholds'];
@@ -2473,7 +2506,7 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
   gauge.cy = bounds.h / 2;
   // Determine start quadrant and end quadrent
   if (angleExtentRads != 2 * Math.PI) {
-    labelBounds = DvtStatusMeterGaugeRenderer._adjustCenterAndBounds(gauge, innerRadius, startAngleRads, angleExtentRads, endAngle, bounds, isRTL);
+    metricLabelBounds = DvtStatusMeterGaugeRenderer._adjustCenterAndBounds(gauge, innerRadius, startAngleRads, angleExtentRads, endAngle, bounds, isRTL);
     maxInnerDiameter = gauge.maxInnerDiameter;
   }
   maxDiameter = maxDiameter ? maxDiameter : Math.min(bounds.w, bounds.h);
@@ -2485,33 +2518,33 @@ DvtStatusMeterGaugeRenderer._renderCircularGauge = function(gauge, container, bo
     innerRadiusLength += spaceWidth;
     outerRadius -= spaceWidth;
   }
-  // Add Label first
-  var labelHalign = 'center';
-  var labelValign = 'middle';
-  if (!labelBounds) {
+  // Add metric label first
+  var metricLabelHalign = 'center';
+  var metricLabelValign = 'middle';
+  if (!metricLabelBounds) {
     maxInnerDiameter = Math.min(bounds.w, bounds.h) * innerRadius;
     // Center label bounds within the space available.
-    labelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (5 / 7));
+    metricLabelBounds = new dvt.Rectangle(bounds.x + bounds.w / 2 - maxInnerDiameter * (3 / 7), bounds.y + bounds.h / 2 - maxInnerDiameter * (2.5 / 7), maxInnerDiameter * (6 / 7), maxInnerDiameter * (5 / 7));
   }
 
-  var bTitleRendered = false;
-  if (DvtGaugeStyleUtils.hasTitle(options)) {
-    var titleValign = 'middle';
-    var titleSpace = new dvt.Rectangle(labelBounds.x, labelBounds.y, labelBounds.w, labelBounds.h);
-    // If both the title and metricLabel are rendered 1/3 of the available space is allocated for the title
+  var bLabelRendered = false;
+  if (DvtGaugeStyleUtils.hasLabel(options)) {
+    var labelValign = 'middle';
+    var labelSpace = new dvt.Rectangle(metricLabelBounds.x, metricLabelBounds.y, metricLabelBounds.w, metricLabelBounds.h);
+    // If both the label and metricLabel are rendered 1/3 of the available space is allocated for the label
     if (options['metricLabel']['rendered'] != 'off') {
-      titleSpace.y = titleSpace.y + titleSpace.h * .6;
-      titleSpace.h = titleSpace.h * .4;
-      titleValign = 'top';
+      labelSpace.y = labelSpace.y + labelSpace.h * .6;
+      labelSpace.h = labelSpace.h * .4;
+      labelValign = 'top';
     }
-    bTitleRendered = DvtGaugeRenderer.renderTitle(gauge, container, titleSpace, null, titleValign);
-    if (bTitleRendered && options['metricLabel']['rendered'] != 'off') {
-      labelBounds.h = labelBounds.h * .55;
-      labelValign = 'bottom';
+    bLabelRendered = DvtGaugeRenderer.renderLabel(gauge, container, labelSpace, null, labelValign);
+    if (bLabelRendered && options['metricLabel']['rendered'] != 'off') {
+      metricLabelBounds.h = metricLabelBounds.h * .55;
+      metricLabelValign = 'bottom';
     }
 
   }
-  DvtGaugeRenderer.renderLabel(gauge, container, labelBounds, null, labelHalign, labelValign, true);
+  DvtGaugeRenderer.renderMetricLabel(gauge, container, metricLabelBounds, null, metricLabelHalign, metricLabelValign, true);
 
   var startAngle = startAngleRads;
   var angleExtent = percentFill * angleExtentRads;
@@ -2721,8 +2754,8 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   if (borderColor)
     shape.setSolidStroke(borderColor);
 
-  shape.setClassName(options['className']);
-  shape.setStyle(options['style']);
+  shape.setClassName(options['svgClassName']);
+  shape.setStyle(options['svgStyle']);
 
   // Add the shape
   if (bRender)
@@ -2771,16 +2804,16 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   }
 
   // Render the metric label within the plot area bounds
-  var labelPosition = options['metricLabel']['position'];
-  if (options['metricLabel']['rendered'] == 'on' && !DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options) && !DvtGaugeStyleUtils.hasTitle(options)) {
+  var metricLabelPosition = options['metricLabel']['position'];
+  if (options['metricLabel']['rendered'] == 'on' && !DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options) && !DvtGaugeStyleUtils.hasLabel(options)) {
     var indicatorPoints = {x1: indicatorX1, x2: indicatorX2, y1: indicatorY1, y2: indicatorY2};
     var plotAreaPoints = {x1: plotX1, x2: plotX2, y1: plotY1, y2: plotY2};
-    DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea(gauge, container, bounds, color, labelPosition, indicatorPoints, plotAreaPoints);
+    DvtStatusMeterGaugeRenderer._renderMetricLabelInsidePlotArea(gauge, container, bounds, color, metricLabelPosition, indicatorPoints, plotAreaPoints);
   }
 
-  // Render the title
-  else if (DvtGaugeStyleUtils.hasTitle(options)) {
-    DvtStatusMeterGaugeRenderer._renderTitle(gauge, container, bounds, labelPosition);
+  // Render the label
+  else if (DvtGaugeStyleUtils.hasLabel(options)) {
+    DvtStatusMeterGaugeRenderer._renderLabel(gauge, container, bounds, metricLabelPosition);
   }
 };
 
@@ -2871,139 +2904,139 @@ DvtStatusMeterGaugeRenderer._renderPlotAreaVisualEffects = function(gauge, conta
     gradient = new dvt.LinearGradientFill(gradientAngle, arColors, [1, 1], [0, 1]);
   }
   shape.setFill(gradient);
-  shape.setClassName(options['plotArea']['className']);
-  shape.setStyle(options['plotArea']['style']);
+  shape.setClassName(options['plotArea']['svgClassName']);
+  shape.setStyle(options['plotArea']['svgStyle']);
 };
 
 
 /**
- * Renders the label into the specified area for vertical/horizontal status meter gauges with the label outside the plotarea.
+ * Renders the metricLabel into the specified area for vertical/horizontal status meter gauges with the metricLabel outside the plotarea.
  * Updates the bounds after rendering to reserve space for the labels.
  * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @private
  */
-DvtStatusMeterGaugeRenderer._renderLabelOutsidePlotArea = function(gauge, container, bounds) {
+DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, container, bounds) {
   var options = gauge.getOptions();
   var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var isVert = options['orientation'] == 'vertical';
-  var label = new dvt.OutputText(gauge.getCtx(), '');
-  var labelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
-  var labelGap = options['__layout']['labelGap'];
-  var labelStyle = options['metricLabel']['style'];
+  var metricLabel = new dvt.OutputText(gauge.getCtx(), '');
+  var metricLabelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
+  var metricLabelGap = options['__layout']['labelGap'];
+  var metricLabelStyle = options['metricLabel']['style'];
 
   // Backward compatibility
-  var labelColor = labelStyle.getStyle('color');
-  labelColor = labelColor ? labelColor : '#333333';
+  var metricLabelColor = metricLabelStyle.getStyle('color');
+  metricLabelColor = metricLabelColor ? metricLabelColor : '#333333';
 
-  var maxLabelDims = null;
-  label.setCSSStyle(labelStyle);
-  label.setSolidFill(labelColor);
+  var maxMetricLabelDims = null;
+  metricLabel.setCSSStyle(metricLabelStyle);
+  metricLabel.setSolidFill(metricLabelColor);
 
   if (isVert && options['metricLabel']['rendered'] == 'on') {
     var bound = options['max'] > 0 ? options['max'] : options['min'];
     var maxValue = DvtGaugeRenderer.getFormattedMetricLabel(bound, gauge);
-    var maxLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
-    maxLabel.setCSSStyle(labelStyle);
-    var computedLabelBounds = new dvt.Rectangle(bounds.x, bounds.y + .8 * bounds.h, bounds.w, .2 * (bounds.h));
-    var size = labelStyle.getStyle('font-size');
-    size = size ? parseInt(size) : maxLabel.getOptimalFontSize(computedLabelBounds);
-    maxLabelDims = maxLabel.measureDimensions();
-    bounds.h -= maxLabelDims.h;
-    alignCoord = bounds.y - maxLabelDims.h;
-    var labelSpace = maxLabelDims.w;
-    label.setFontSize(size);
-    label.setTextString(labelString);
-    label.setX(bounds.x + bounds.w / 2);
-    label.setY(bounds.y + bounds.h);
-    bounds.h -= labelGap;
-    label.alignCenter();
-    dvt.TextUtils.fitText(label, bounds.w, bounds.h, container);
+    var maxMetricLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
+    maxMetricLabel.setCSSStyle(metricLabelStyle);
+    var computedMetricLabelBounds = new dvt.Rectangle(bounds.x, bounds.y + .8 * bounds.h, bounds.w, .2 * (bounds.h));
+    var size = metricLabelStyle.getStyle('font-size');
+    size = size ? parseInt(size) : maxMetricLabel.getOptimalFontSize(computedMetricLabelBounds);
+    maxMetricLabelDims = maxMetricLabel.measureDimensions();
+    bounds.h -= maxMetricLabelDims.h;
+    alignCoord = bounds.y - maxMetricLabelDims.h;
+    var metricLabelSpace = maxMetricLabelDims.w;
+    metricLabel.setFontSize(size);
+    metricLabel.setTextString(metricLabelString);
+    metricLabel.setX(bounds.x + bounds.w / 2);
+    metricLabel.setY(bounds.y + bounds.h);
+    bounds.h -= metricLabelGap;
+    metricLabel.alignCenter();
+    dvt.TextUtils.fitText(metricLabel, bounds.w, bounds.h, container);
   }
-  // Allocate space for the horizontal label
+  // Allocate space for the horizontal metricLabel
   else if (!isVert && options['metricLabel']['rendered'] == 'on') {
     // Check if the metric label's height will fit
-    var size = labelStyle.getStyle('font-size');
-    var minLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
-    var maxLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
+    var size = metricLabelStyle.getStyle('font-size');
+    var minMetricLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
+    var maxMetricLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
     if (size === undefined && bounds.h < 18) {
-      size = DvtGaugeRenderer.calcLabelFontSize([labelString, minLabel, maxLabel], label, bounds);
+      size = DvtGaugeRenderer.calcMetricLabelFontSize([metricLabelString, minMetricLabel, maxMetricLabel], metricLabel, bounds);
     }
     size = size ? parseInt(size) : 13;
-    label.setFontSize(size);
+    metricLabel.setFontSize(size);
 
-    var alignCoord;// The horizontal alignment point for the label
+    var alignCoord;// The horizontal alignment point for the metricLabel
     // Allocate space to the right for positive values and any values with plotArea
     if (options['max'] > 0 || options['plotArea']['rendered'] != 'off' || !((options['plotArea']['rendered'] == 'auto') && (options['thresholdDisplay'] == 'onIndicator'))) {
       var bound = options['max'] > 0 ? options['max'] : options['min'];
       var maxValue = DvtGaugeRenderer.getFormattedMetricLabel(bound, gauge);
-      var maxLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
-      maxLabel.setCSSStyle(labelStyle);
-      maxLabel.setFontSize(size);
-      maxLabelDims = maxLabel.measureDimensions();
-      maxLabelDims.w = Math.min(maxLabelDims.w, bounds.w);
-      // Align the label
-      alignCoord = isRTL ? bounds.x + maxLabelDims.w : bounds.x + bounds.w;
-      labelSpace = maxLabelDims.w;
+      var maxMetricLabel = new dvt.OutputText(gauge.getCtx(), maxValue);
+      maxMetricLabel.setCSSStyle(metricLabelStyle);
+      maxMetricLabel.setFontSize(size);
+      maxMetricLabelDims = maxMetricLabel.measureDimensions();
+      maxMetricLabelDims.w = Math.min(maxMetricLabelDims.w, bounds.w);
+      // Align the metricLabel
+      alignCoord = isRTL ? bounds.x + maxMetricLabelDims.w : bounds.x + bounds.w;
+      metricLabelSpace = maxMetricLabelDims.w;
 
       if (isRTL) {
         // Allocate to the left
-        bounds.x += (maxLabelDims.w + labelGap);
-        bounds.w -= (maxLabelDims.w + labelGap);
+        bounds.x += (maxMetricLabelDims.w + metricLabelGap);
+        bounds.w -= (maxMetricLabelDims.w + metricLabelGap);
       }
       else {// Allocate to the right
-        bounds.w -= (maxLabelDims.w + labelGap);
+        bounds.w -= (maxMetricLabelDims.w + metricLabelGap);
       }
     }
 
     // Allocate space to the left for negative values
     if (options['min'] < 0 && options['plotArea']['rendered'] != 'on' && !(options['plotArea']['rendered'] == 'auto' && (options['thresholdDisplay'] == 'onIndicator'))) {
       var minValue = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
-      var minLabel = new dvt.OutputText(gauge.getCtx(), minValue);
-      minLabel.setCSSStyle(labelStyle);
-      minLabel.setFontSize(size);
-      var minLabelDims = minLabel.measureDimensions();
+      var minMetricLabel = new dvt.OutputText(gauge.getCtx(), minValue);
+      minMetricLabel.setCSSStyle(metricLabelStyle);
+      minMetricLabel.setFontSize(size);
+      var minMetricLabelDims = minMetricLabel.measureDimensions();
 
-      // Align the label
+      // Align the metricLabel
       if (options['value'] < 0 || options['max'] <= 0) {
-        alignCoord = isRTL ? bounds.x + bounds.w : bounds.x + minLabelDims.w;
-        labelSpace = minLabelDims.w;
+        alignCoord = isRTL ? bounds.x + bounds.w : bounds.x + minMetricLabelDims.w;
+        metricLabelSpace = minMetricLabelDims.w;
       }
 
       // Update the allocated space
       if (isRTL) // Allocate to the right
-        bounds.w -= (minLabelDims.w + labelGap);
+        bounds.w -= (minMetricLabelDims.w + metricLabelGap);
       else {
         // Allocate to the left
-        bounds.x += (minLabelDims.w + labelGap);
-        bounds.w -= (minLabelDims.w + labelGap);
+        bounds.x += (minMetricLabelDims.w + metricLabelGap);
+        bounds.w -= (minMetricLabelDims.w + metricLabelGap);
       }
     }
     // Create and position the text
-    label.setTextString(labelString);
-    label.setX(alignCoord);
-    dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
-    label.alignRight();
+    metricLabel.setTextString(metricLabelString);
+    metricLabel.setX(alignCoord);
+    dvt.TextUtils.centerTextVertically(metricLabel, bounds.y + bounds.h / 2);
+    metricLabel.alignRight();
 
     // Truncate to fit
-    dvt.TextUtils.fitText(label, labelSpace, bounds.h, container);
+    dvt.TextUtils.fitText(metricLabel, metricLabelSpace, bounds.h, container);
   }
 };
 
 /**
- * Renders the label into the specified area for vertical/horizontal status meter gauges with the label inside the plotarea.
+ * Renders the metricLabel into the specified area for vertical/horizontal status meter gauges with the metricLabel inside the plotarea.
  * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} bounds The available bounds for rendering.
  * @param {string} color The color of the background
- * @param {string} labelPosition The position of the label
+ * @param {string} metricLabelPosition The position of the metricLabel
  * @param {object} indicator An object containing the indicator x1, y1, x2, y2.
  * @param {object} plotArea An object containing the plotArea x1, y1, x2, y2.
- * @param {boolean} repeatedTry Specifies if this is the second try to fit the label into available space
+ * @param {boolean} repeatedTry Specifies if this is the second try to fit the metricLabel into available space
  * @private
  */
-DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, container, bounds, color, labelPosition, indicator, plotArea, repeatedTry) {
+DvtStatusMeterGaugeRenderer._renderMetricLabelInsidePlotArea = function(gauge, container, bounds, color, metricLabelPosition, indicator, plotArea, repeatedTry) {
   var options = gauge.getOptions();
   var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var isVert = options['orientation'] == 'vertical';
@@ -3011,25 +3044,25 @@ DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, contain
   var hAlignment = 'center';
   var vAlignment = 'middle';
 
-  var labelSpace = new dvt.Rectangle(Math.min(indicator.x1, indicator.x2), Math.min(indicator.y1, indicator.y2),
+  var metricLabelSpace = new dvt.Rectangle(Math.min(indicator.x1, indicator.x2), Math.min(indicator.y1, indicator.y2),
       Math.abs(indicator.x2 - indicator.x1), Math.abs(indicator.y2 - indicator.y1));
-  var labelColor = options['metricLabel']['style'].getStyle('color');
-  if (labelPosition == 'center') {
-    labelColor = labelColor ? labelColor : dvt.ColorUtils.getContrastingTextColor(color);
+  var metricLabelColor = options['metricLabel']['style'].getStyle('color');
+  if (metricLabelPosition == 'center') {
+    metricLabelColor = metricLabelColor ? metricLabelColor : dvt.ColorUtils.getContrastingTextColor(color);
     if (isVert) {
-      labelSpace.h -= labelSpace.w;
-      labelSpace.y += (labelSpace.w / 2);
+      metricLabelSpace.h -= metricLabelSpace.w;
+      metricLabelSpace.y += (metricLabelSpace.w / 2);
     }
     else {
-      labelSpace.w -= labelSpace.h;
-      labelSpace.x += (labelSpace.h / 2);
+      metricLabelSpace.w -= metricLabelSpace.h;
+      metricLabelSpace.x += (metricLabelSpace.h / 2);
     }
   }
-  else if (labelPosition == 'insideIndicatorEdge') {
-    labelColor = labelColor ? labelColor : dvt.ColorUtils.getContrastingTextColor(color);
+  else if (metricLabelPosition == 'insideIndicatorEdge') {
+    metricLabelColor = metricLabelColor ? metricLabelColor : dvt.ColorUtils.getContrastingTextColor(color);
     if (isVert) {
-      labelSpace.h -= labelSpace.w;
-      labelSpace.y += (labelSpace.w / 2);
+      metricLabelSpace.h -= metricLabelSpace.w;
+      metricLabelSpace.y += (metricLabelSpace.w / 2);
       if (!plotAreaRendered && indicator.y1 > indicator.y2) {
         vAlignment = 'bottom';
       }
@@ -3038,8 +3071,8 @@ DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, contain
       }
     }
     else {
-      labelSpace.w -= labelSpace.h;
-      labelSpace.x += (labelSpace.h / 2);
+      metricLabelSpace.w -= metricLabelSpace.h;
+      metricLabelSpace.x += (metricLabelSpace.h / 2);
       if (isRTL) {
         if (!plotAreaRendered && indicator.x1 < indicator.x2) {
           hAlignment = 'right';
@@ -3058,117 +3091,117 @@ DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea = function(gauge, contain
       }
     }
   }
-  else if (labelPosition == 'outsideIndicatorEdge') {
+  else if (metricLabelPosition == 'outsideIndicatorEdge') {
     if (isVert) {
-      labelSpace.h = Math.abs(plotArea.y1 - indicator.y1) - labelSpace.w;
-      labelSpace.y = plotArea.y1 + (labelSpace.w / 2);
+      metricLabelSpace.h = Math.abs(plotArea.y1 - indicator.y1) - metricLabelSpace.w;
+      metricLabelSpace.y = plotArea.y1 + (metricLabelSpace.w / 2);
       vAlignment = 'bottom';
       if (!plotAreaRendered && indicator.y1 > indicator.y2) {
-        labelSpace.h = Math.abs(plotArea.y1 - indicator.y1) - labelSpace.w;
-        labelSpace.y = indicator.y1 + (labelSpace.w / 2);
+        metricLabelSpace.h = Math.abs(plotArea.y1 - indicator.y1) - metricLabelSpace.w;
+        metricLabelSpace.y = indicator.y1 + (metricLabelSpace.w / 2);
         vAlignment = 'top';
       }
     }
     else {
       if (isRTL) {
         if (!plotAreaRendered && indicator.x1 < indicator.x2) {
-          labelSpace.w = Math.abs(plotArea.x2 - indicator.x2) - labelSpace.h;
-          labelSpace.x = indicator.x2 + (labelSpace.h / 2);
+          metricLabelSpace.w = Math.abs(plotArea.x2 - indicator.x2) - metricLabelSpace.h;
+          metricLabelSpace.x = indicator.x2 + (metricLabelSpace.h / 2);
           hAlignment = 'left';
 
         }
         else {
-          labelSpace.w = Math.abs(plotArea.x1 - indicator.x2) - labelSpace.h;
-          labelSpace.x = plotArea.x1 + (labelSpace.h / 2);
+          metricLabelSpace.w = Math.abs(plotArea.x1 - indicator.x2) - metricLabelSpace.h;
+          metricLabelSpace.x = plotArea.x1 + (metricLabelSpace.h / 2);
           hAlignment = 'right';
         }
       }
       else {
         if (!plotAreaRendered && indicator.x1 > indicator.x2) {
-          labelSpace.w = Math.abs(plotArea.x1 - indicator.x2) - labelSpace.h;
-          labelSpace.x = plotArea.x1 + (labelSpace.h / 2);
+          metricLabelSpace.w = Math.abs(plotArea.x1 - indicator.x2) - metricLabelSpace.h;
+          metricLabelSpace.x = plotArea.x1 + (metricLabelSpace.h / 2);
           hAlignment = 'right';
         }
         else {
-          labelSpace.w = Math.abs(plotArea.x2 - indicator.x2) - labelSpace.h;
-          labelSpace.x = indicator.x2 + (labelSpace.h / 2);
+          metricLabelSpace.w = Math.abs(plotArea.x2 - indicator.x2) - metricLabelSpace.h;
+          metricLabelSpace.x = indicator.x2 + (metricLabelSpace.h / 2);
           hAlignment = 'left';
         }
       }
     }
   }
-  var labelRendered = DvtGaugeRenderer.renderLabel(gauge, container, labelSpace, labelColor, hAlignment, vAlignment);
-  // If the label didn't fit, try to fit it into another section
-  if (!labelRendered && !repeatedTry) {
-    if (labelPosition == 'outsideIndicatorEdge') {
-      DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea(gauge, container, bounds, color, 'insideIndicatorEdge', indicator, plotArea, true);
+  var metricLabelRendered = DvtGaugeRenderer.renderMetricLabel(gauge, container, metricLabelSpace, metricLabelColor, hAlignment, vAlignment);
+  // If the metricLabel didn't fit, try to fit it into another section
+  if (!metricLabelRendered && !repeatedTry) {
+    if (metricLabelPosition == 'outsideIndicatorEdge') {
+      DvtStatusMeterGaugeRenderer._renderMetricLabelInsidePlotArea(gauge, container, bounds, color, 'insideIndicatorEdge', indicator, plotArea, true);
     }
-    else if (labelPosition == 'insideIndicatorEdge' || labelPosition == 'center') {
-      DvtStatusMeterGaugeRenderer._renderLabelInsidePlotArea(gauge, container, bounds, color, 'outsideIndicatorEdge', indicator, plotArea, true);
+    else if (metricLabelPosition == 'insideIndicatorEdge' || metricLabelPosition == 'center') {
+      DvtStatusMeterGaugeRenderer._renderMetricLabelInsidePlotArea(gauge, container, bounds, color, 'outsideIndicatorEdge', indicator, plotArea, true);
     }
   }
 };
 
 /**
- * Renders the title for vertical/horizontal status meter gauges.
+ * Renders the label for vertical/horizontal status meter gauges.
  * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
  * @param {dvt.Container} container The container to render into.
  * @param {dvt.Rectangle} bounds The available bounds for rendering.
- * @param {string} labelPosition The position of the label
+ * @param {string} metricLabelPosition The position of the metricLabel
  * @private
  */
-DvtStatusMeterGaugeRenderer._renderTitle = function(gauge, container, bounds, labelPosition) {
+DvtStatusMeterGaugeRenderer._renderLabel = function(gauge, container, bounds, metricLabelPosition) {
   var isRTL = dvt.Agent.isRightToLeft(gauge.getCtx());
   var options = gauge.getOptions();
   var isVert = options['orientation'] == 'vertical';
-  var titleSpace = new dvt.Rectangle(bounds.x, bounds.y, isVert ? bounds.w : bounds.w - bounds.h, isVert ? bounds.h - bounds.w : bounds.h);
-  var titleString = options['title']['text'];
+  var labelSpace = new dvt.Rectangle(bounds.x, bounds.y, isVert ? bounds.w : bounds.w - bounds.h, isVert ? bounds.h - bounds.w : bounds.h);
+  var labelString = options['label']['text'];
   if (!DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea(options) && options['metricLabel']['rendered'] == 'on') {
-    var labelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
-    titleString = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [titleString, labelString]);
+    var metricLabelString = DvtGaugeRenderer.getFormattedMetricLabel(options['value'], gauge);
+    labelString = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [labelString, metricLabelString]);
   }
-  var titleStyle = options['title']['style'];
-  var fontStyle = titleStyle.clone();
-  var size = titleStyle.getStyle('font-size');
+  var labelStyle = options['label']['style'];
+  var fontStyle = labelStyle.clone();
+  var size = labelStyle.getStyle('font-size');
   if (!size) {
     // Calculate font size
-    var tempTitle = new dvt.OutputText(gauge.getCtx(), titleString, 0, 0);
-    tempTitle.setCSSStyle(titleStyle);
-    tempTitle.setTextString(titleString);
+    var tempLabel = new dvt.OutputText(gauge.getCtx(), labelString, 0, 0);
+    tempLabel.setCSSStyle(labelStyle);
+    tempLabel.setTextString(labelString);
     // Make size calculations based on the available height not width to have consistent size on same sized gauges
     // for horizontal gauges. For vertical gauges make calculations based on width
     if (isVert)
-      size = tempTitle.getOptimalFontSize(new dvt.Rectangle(titleSpace.x, titleSpace.y, titleSpace.w, Number.MAX_VALUE));
+      size = tempLabel.getOptimalFontSize(new dvt.Rectangle(labelSpace.x, labelSpace.y, labelSpace.w, Number.MAX_VALUE));
     else
-      size = tempTitle.getOptimalFontSize(new dvt.Rectangle(titleSpace.x, titleSpace.y, Number.MAX_VALUE, titleSpace.h));
+      size = tempLabel.getOptimalFontSize(new dvt.Rectangle(labelSpace.x, labelSpace.y, Number.MAX_VALUE, labelSpace.h));
   }
-  var title = new dvt.MultilineText(gauge.getCtx(), titleString);
+  var label = new dvt.MultilineText(gauge.getCtx(), labelString);
   fontStyle.setFontSize('font-size', size.toString());
-  title.setCSSStyle(fontStyle);
-  dvt.TextUtils.fitText(title, titleSpace.w, titleSpace.h, gauge);
-  if (options['title']['position'] == 'center' || (options['title']['position'] == 'auto' && isVert)) {
-    dvt.TextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
-    title.setX(bounds.x + bounds.w / 2);
-    title.alignCenter();
+  label.setCSSStyle(fontStyle);
+  dvt.TextUtils.fitText(label, labelSpace.w, labelSpace.h, gauge);
+  if (options['label']['position'] == 'center' || (options['label']['position'] == 'auto' && isVert)) {
+    dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
+    label.setX(bounds.x + bounds.w / 2);
+    label.alignCenter();
   }
   else {
-    dvt.TextUtils.centerTextVertically(title, bounds.y + bounds.h / 2);
+    dvt.TextUtils.centerTextVertically(label, bounds.y + bounds.h / 2);
     if (!isVert && isRTL) {
-      title.setX(bounds.x + bounds.w - titleSpace.h / 2);
-      title.alignRight();
+      label.setX(bounds.x + bounds.w - labelSpace.h / 2);
+      label.alignRight();
     }
     else if (!isVert && !isRTL)
     {
-      title.setX(bounds.x + titleSpace.h / 2);
-      title.alignLeft();
+      label.setX(bounds.x + labelSpace.h / 2);
+      label.alignLeft();
     }
     else if (isVert) {
-      title.setY(bounds.y + bounds.h - title.getDimensions().h - titleSpace.w / 2);
-      title.setX(bounds.x + bounds.w / 2);
-      title.alignCenter();
+      label.setY(bounds.y + bounds.h - label.getDimensions().h - labelSpace.w / 2);
+      label.setX(bounds.x + bounds.w / 2);
+      label.alignCenter();
     }
   }
-  container.addChild(title);
+  container.addChild(label);
 };
 /**
  * Returns the location of the point on the arc with the specified radius
@@ -3225,8 +3258,8 @@ DvtStatusMeterGaugeRenderer._drawCircularArc = function(gauge, container, bounds
     shape.setSolidStroke(plotAreaBorderColor);
   }
   var options = gauge.getOptions();
-  shape.setClassName(isPlotArea ? options['plotArea']['className'] : options['className']);
-  shape.setStyle(isPlotArea ? options['plotArea']['style'] : options['style']);
+  shape.setClassName(isPlotArea ? options['plotArea']['svgClassName'] : options['svgClassName']);
+  shape.setStyle(isPlotArea ? options['plotArea']['svgStyle'] : options['svgStyle']);
   container.addChild(shape);
 };
 
@@ -3354,12 +3387,12 @@ DvtStatusMeterGaugeRenderer.getAngleQuadrant = function(angle, bStart) {
  * @private
  */
 DvtStatusMeterGaugeRenderer._hasMetricLabelOutsidePlotArea = function(options) {
-  var labelPosition = options['metricLabel']['position'];
-  return labelPosition == 'auto' || labelPosition == 'outsidePlotArea' || (labelPosition == 'withTitle' && !DvtGaugeStyleUtils.hasTitle(options));
+  var metricLabelPosition = options['metricLabel']['position'];
+  return metricLabelPosition == 'auto' || metricLabelPosition == 'outsidePlotArea' || ((metricLabelPosition == 'withLabel' || metricLabelPosition == 'withTitle') && !DvtGaugeStyleUtils.hasLabel(options));
 };
 
 /**
- * Adjust the bounds of the rendered circular gauge shape when the angleExtent is less than 360. Returns the label bounds.
+ * Adjust the bounds of the rendered circular gauge shape when the angleExtent is less than 360. Returns the metricLabel bounds.
  * @param {dvt.StatusMeterGauge} gauge The gauge being rendered.
  * @param {Number} innerRadius
  * @param {Number} startAngleRads
@@ -3547,9 +3580,9 @@ DvtStatusMeterGaugeRenderer._renderCenterContent = function(gauge, options, boun
     if (!customContent)
       return;
     var newOverlay = context.createOverlayDiv();
-    newOverlay.appendChild(customContent);
+    newOverlay.appendChild(customContent); // @HtmlUpdateOk
     gauge.centerDiv = newOverlay;
-    parentDiv.appendChild(newOverlay);
+    parentDiv.appendChild(newOverlay); // @HtmlUpdateOk
 
     // Invoke the overlay attached callback if one is available.
     var callback = context.getOverlayAttachedCallback();
@@ -3723,7 +3756,7 @@ DvtStatusMeterGaugeCircularIndicator.prototype.setAnimationParams = function(par
   if (params && params.length == 5)
     this.setPath(params[0], params[1], params[2], params[3], params[4]);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 
 
@@ -3774,6 +3807,9 @@ dvt.DialGauge.prototype.Init = function(context, callback, callbackObj) {
  * @override
  */
 dvt.DialGauge.prototype.SetOptions = function(options) {
+  // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
+  options = dvt.JsonUtils.clone(options);
+
   var backgroundType = options['background'];
   var indicatorType = options['indicator'];
 
@@ -4462,7 +4498,7 @@ DvtDialGaugeIndicator.prototype.setAnimationParams = function(params) {
   if (params && params.length == 1)
     this.setAngle(params[0]);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
  * Rating Gauge component.  This class should never be instantiated directly.  Use the
@@ -4505,6 +4541,40 @@ dvt.RatingGauge.prototype.Init = function(context, callback, callbackObj) {
  * @override
  */
 dvt.RatingGauge.prototype.SetOptions = function(options) {
+  // NOTE: This extra clone should be removed once we stop supporting the deprecated attrs
+  options = dvt.JsonUtils.clone(options);
+
+  if (options['changedState']) {
+    if (options['changedState']['className'])
+      options['changedState']['svgClassName'] = options['changedState']['className'];
+
+    if (options['changedState']['style'])
+      options['changedState']['svgStyle'] = options['changedState']['style'];
+  }
+
+  if (options['hoverState']) {
+    if (options['hoverState']['className'])
+      options['hoverState']['svgClassName'] = options['hoverState']['className'];
+
+    if (options['hoverState']['style'])
+      options['hoverState']['svgStyle'] = options['hoverState']['style'];
+  }
+
+  if (options['selectedState']) {
+    if (options['selectedState']['className'])
+      options['selectedState']['svgClassName'] = options['selectedState']['className'];
+
+    if (options['selectedState']['style'])
+      options['selectedState']['svgStyle'] = options['selectedState']['style'];
+  }
+
+  if (options['unselectedState']) {
+    if (options['unselectedState']['className'])
+      options['unselectedState']['svgClassName'] = options['unselectedState']['className'];
+
+    if (options['unselectedState']['style'])
+      options['unselectedState']['svgStyle'] = options['unselectedState']['style'];
+  }
   // Combine the user options with the defaults and store
   dvt.RatingGauge.superclass.SetOptions.call(this, this.Defaults.calcOptions(options));
 };
@@ -4861,32 +4931,32 @@ DvtRatingGaugeRenderer.render = function(gauge, container, width, height) {
       'borderColor': options['unselectedState']['borderColor'],
       'visualEffects': options['visualEffects'],
       'source': options['unselectedState']['source'],
-      'className': options['unselectedState']['className'],
-      'style': options['unselectedState']['style']};
+      'svgClassName': options['unselectedState']['svgClassName'],
+      'svgStyle': options['unselectedState']['svgStyle']};
     var selectedOptions = {'value': 0,
       'type': options['selectedState']['shape'],
       'color': selectedColor,
       'borderColor': selectedBorderColor,
       'visualEffects': options['visualEffects'],
       'source': options['selectedState']['source'],
-      'className': options['selectedState']['className'],
-      'style': options['selectedState']['style']};
+      'svgClassName': options['selectedState']['svgClassName'],
+      'svgStyle': options['selectedState']['svgStyle']};
     var changedOptions = {'value': 0,
       'type': options['changedState']['shape'],
       'color': changedColor,
       'borderColor': changedBorderColor,
       'visualEffects': options['visualEffects'],
       'source': options['changedState']['source'],
-      'className': options['changedState']['className'],
-      'style': options['changedState']['style']};
+      'svgClassName': options['changedState']['svgClassName'],
+      'svgStyle': options['changedState']['svgStyle']};
     var hoverOptions = {'value': 0,
       'type': options['hoverState']['shape'],
       'color': options['hoverState']['color'],
       'borderColor': options['hoverState']['borderColor'],
       'visualEffects': options['visualEffects'],
       'source': options['hoverState']['source'],
-      'className': options['hoverState']['className'],
-      'style': options['hoverState']['style']};
+      'svgClassName': options['hoverState']['svgClassName'],
+      'svgStyle': options['hoverState']['svgStyle']};
 
     if (options['unselectedState']['shape'] == 'dot') {
       unselectedOptions['type'] = 'circle';
@@ -4949,8 +5019,8 @@ DvtRatingGaugeRenderer._createShapes = function(gauge, container, stateOptions) 
 
     if (shape) {
       // Custom style and class
-      shape.setClassName(options['className']);
-      shape.setStyle(options['style']);
+      shape.setClassName(options['svgClassName']);
+      shape.setStyle(options['svgStyle']);
       var use = new dvt.Use(context, x, y, shape);
       shapesContainer.addChild(use);
     }

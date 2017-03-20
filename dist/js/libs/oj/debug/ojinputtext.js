@@ -116,6 +116,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   
   _BLUR_HANDLER_KEY: "blur",
   _KEYDOWN_HANDLER_KEY: "keydown",
+  _KEYUP_HANDLER_KEY: "keyup",
   _INPUT_HANDLER_KEY: "input",
   _DROP_HANDLER_KEY: "drop",
   
@@ -265,7 +266,8 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * set it as an element's attribute.
      * 
      * @example <caption>Initialize component with <code class="prettyprint">readOnly</code> option:</caption>
-     * $(".selector").ojInputNumber({"readOnly": true});
+     * // Foo is InputText, InputPassword, TextArea, etc.
+     * $(".selector").ojFoo({"readOnly": true});
      * 
      * @expose 
      * @type {boolean|undefined}
@@ -273,7 +275,186 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @instance
      * @memberof! oj.inputBase
      */
-    readOnly: false
+    readOnly: false,
+    /** 
+     * Whether the component is required or optional. When required is set to true, an implicit 
+     * required validator is created using the validator factory - 
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+     * 
+     * Translations specified using the <code class="prettyprint">translations.required</code> option 
+     * and the label associated with the component, are passed through to the options parameter of the 
+     * createValidator method. 
+     * 
+     * <p>
+     * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+     * the component may clear messages and run validation, based on the current state it's in. </br>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on 
+     * the option value. This is to ensure errors are not flagged unnecessarily.
+     * <ul>
+     *   <li>if there is a deferred validation error, then 
+     *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then 
+     * component messages are cleared but no deferred validation is run.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then 
+     * component messages are cleared and normal validation is run using the current display value. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared. These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * 
+     * </p>
+     * 
+     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This is the default.
+     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * input's label will render a required icon. Additionally a required validator - 
+     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+     * An explicit required validator can be set by page authors using the validators option. 
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+     * $(".selector").ojFoo({required: true}); // Foo is InputText, InputPassword, TextArea, etc.<br/>
+     * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
+     * &lt;input type="text" value= "foobar" required/><br/>
+     * // retreiving the required option returns true
+     * $(".selector").ojFoo("option", "required"); // Foo is InputText, InputPassword, TextArea, etc.<br/>
+     * 
+     * @example <caption>Customize messages and hints used by implicit required validator when 
+     * <code class="prettyprint">required</code> option is set:</caption> 
+     * &lt;!-- Foo is InputText, InputPassword, TextArea, etc. -->
+     * &lt;input type="text" value="foobar" required data-bind="ojComponent: {
+     *   component: 'ojFoo', 
+     *   value: password, 
+     *   translations: {'required': {
+     *                 hint: 'custom: enter at least 3 alphabets',
+     *                 messageSummary: 'custom: \'{label}\' is Required', 
+     *                 messageDetail: 'custom: please enter a valid value for \'{label}\''}}}"/>
+     * @expose 
+     * @access public
+     * @instance
+     * @default when the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * @memberof oj.inputBase
+     * @type {boolean}
+     * @default false
+     * @since 0.7
+     * @see #translations
+     */
+    required: false,
+        /** 
+     * List of validators used by component when performing validation. Each item is either an 
+     * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
+     * properties listed below. Implicit validators created by a component when certain options 
+     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
+     * validators specified through this option. At runtime when the component runs validation, it 
+     * combines the implicit validators with the list specified through this option. 
+     * <p>
+     * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
+     * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
+     * option. 
+     * </p>
+     * 
+     * <p>
+     * When <code class="prettyprint">validators</code> option changes due to programmatic 
+     * intervention, the component may decide to clear messages and run validation, based on the 
+     * current state it is in. </br>
+     * 
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to 
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the 
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages -
+     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
+     * and full validation run using the display value on the component. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does 
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.  These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * </p>
+     * 
+     * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can 
+     * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer 
+     * to {@link oj.ValidatorFactory}. <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
+     * @property {Object=} options - optional Object literal of options that the validator expects. 
+     * <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
+
+     * 
+     * @example <caption>Initialize the component with validator object literal:</caption>
+     * // Foo is InputText, InputPassword, TextArea, etc.
+     * $(".selector").ojFoo({
+     *   validators: [{
+     *     type: 'length', 
+     *     options: {min: 5, max: 10}
+     *   }],
+     * });
+     * 
+     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
+     * to instantiate a range validator for numbers.
+     * 
+     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
+     * var validator2 = new MyCustomValidator({'foo': 'B'});
+     * // Foo is InputText, InputPassword, TextArea, etc.
+     * $(".selector").ojFoo({
+     *   value: "abc", 
+     *   validators: [validator1, validator2]
+     * });
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof oj.inputBase
+     * @type {Array|undefined}
+     */    
+    validators: undefined
   },
   
   /**
@@ -381,6 +562,8 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
         options = ["disabled", "readOnly"],
         self = this;
     
+    this._refreshRequired(this.options['required']);
+    
     if(this._CLASS_NAMES) 
     {
       this.element.addClass(this._CLASS_NAMES);
@@ -402,6 +585,111 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     
     return ret;
   },
+  /**
+   * Whether the component is required.
+   * 
+   * @return {boolean} true if required; false
+   * 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   * @override
+   */
+  _IsRequired : function () 
+  {
+    return this.options['required'];
+  },
+  /**
+   * Performs post processing after required option is set by taking the following steps.
+   * 
+   * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+   * run full validation with UI value (we don't know if the UI error is from a required validator 
+   * or something else);<br/>
+   * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+   * updated<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * 
+   * - if component is invalid and has messagesHidden -> required: false -> clear component 
+   * errors; no deferred validation is run.<br/>
+   * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+   * errors unnecessarily)<br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @param {string} option
+   * 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+  
+  /**
+   * When validators option changes, take the following steps.
+   * 
+   * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+   * - if component is valid -> validators changes -> no change<br/>
+   * - if component is invalid has messagesShown -> validators changes -> clear all component 
+   * messages and re-run full validation on displayValue. if there are no errors push value to 
+   * model;<br/>
+   * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change 
+   * the required-ness of component <br/>
+   * - messagesCustom is not cleared.<br/>
+   * 
+   * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern, 
+   * etc. Components can call this method when these options change.
+   * 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,
+  /**
+   * Performs post processing after converter option changes by taking the following steps.
+   * 
+   * - always push new converter hint to messaging <br/>
+   * - if component has no errors -> refresh UI value<br/>
+   * - if component is invalid has messagesShown -> clear all component errors and run full 
+   * validation using display value. <br/>
+   * &nbsp;&nbsp;- if there are validation errors, value is not pushed to model; messagesShown is 
+   * updated.<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * - if component is invalid has messagesHidden -> refresh UI value. no need to run deferred 
+   * validations. <br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionConverter : oj.EditableValueUtils._AfterSetOptionConverter, 
+  /**
+   * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
+   * Called when convterer option changes 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected 
+   */
+  _ResetConverter : oj.EditableValueUtils._ResetConverter,  
+  /**
+   * Returns the normalized converter instance.
+   * 
+   * @return {Object} a converter instance or null
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected 
+   */
+  _GetConverter : oj.EditableValueUtils._GetConverter,    
+  /**
+   * This returns an array of all validators 
+   * normalized from the validators option set on the component. <br/>
+   * @return {Array} of validators. 
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   */
+  _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
   
   _processDisabledReadOnly : function (key, value) 
   {
@@ -427,7 +715,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    * @override
    */
-  _setOption : function (key, value)
+  _setOption : function (key, value, flags)
   {
     var retVal = this._superApply(arguments);
     
@@ -442,9 +730,42 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       this._AfterSetOptionValidators();
     }
     
+
+    
     return retVal;
   },
-  
+  /**
+   * Performs post processing after _SetOption() is called. Different options when changed perform
+   * different tasks. See _AfterSetOption[OptionName] method for details.
+   *
+   * @param {string} option
+   * @param {Object|string=} previous
+   * @param {Object=} flags
+   * @protected
+   * @memberof! oj.inputBase
+   * @instance
+   */
+  _AfterSetOption : function (option, previous, flags)
+  {
+    this._superApply(arguments);
+    switch (option)
+    {         
+      case "readOnly":
+        this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.readOnlyOptionOptions);
+        break;
+      case "required":
+        this._AfterSetOptionRequired(option);
+        break;
+      case "validators":
+        this._AfterSetOptionValidators(option);
+        break;
+      case "converter":
+        this._AfterSetOptionConverter(option);
+        break;           
+      default:
+        break;
+    }
+  },
   /**
    * @ignore
    * @protected
@@ -454,7 +775,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   {
     var ret = this._superApply(arguments);
 
-    this.element.off("blur drop keydown input");
+    this.element.off("blur drop keydown keyup input");
     
     if(this._inputHelper) 
     {
@@ -482,23 +803,26 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       
       var blurHandler = $.proxy(this._onBlurHandler, this),
           keyDownHandler = $.proxy(this._onKeyDownHandler, this),
+          keyUpHandler = $.proxy(this._onKeyUpHandler, this),
           inputHandler = $.proxy(this._onInputHandler, this),
           dropHandler = function() 
                         {
                           this.focus();
                         };
       
-      this.element.on("blur", blurHandler);
-      this.element.on("keydown", keyDownHandler);
-      this.element.on("input", inputHandler);
+      this.element.on(this._BLUR_HANDLER_KEY, blurHandler);
+      this.element.on(this._KEYDOWN_HANDLER_KEY, keyDownHandler);
+      this.element.on(this._KEYUP_HANDLER_KEY, keyUpHandler);
+      this.element.on(this._INPUT_HANDLER_KEY, inputHandler);
       
       //other than FF when a drop is dispatched focus is placed back on the element
       //this would cause difference in behavior of the observable change [as set within blur], so in order to provide
       //consisteny placing the focus on the element after the drop
-      this.element.on("drop", dropHandler);
+      this.element.on(this._DROP_HANDLER_KEY, dropHandler);
       
       this._eventHandlers[this._BLUR_HANDLER_KEY] = blurHandler;
       this._eventHandlers[this._KEYDOWN_HANDLER_KEY] = keyDownHandler;
+      this._eventHandlers[this._KEYUP_HANDLER_KEY] = keyUpHandler;
       this._eventHandlers[this._INPUT_HANDLER_KEY] = inputHandler;
       this._eventHandlers[this._DROP_HANDLER_KEY] = dropHandler;
     }
@@ -508,7 +832,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       //meaning either it is readOnly or is disabled, remove the handlers if they were attached previously
       if(this._eventHandlers) 
       {
-        var eventEntries = [this._BLUR_HANDLER_KEY, this._KEYDOWN_HANDLER_KEY, 
+        var eventEntries = [this._BLUR_HANDLER_KEY, this._KEYDOWN_HANDLER_KEY, this._KEYUP_HANDLER_KEY,
           this._INPUT_HANDLER_KEY, this._DROP_HANDLER_KEY];
         
         for(var i=0, j=eventEntries.length; i < j; i++) 
@@ -572,13 +896,24 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   /**
    * Invoked when keydown is triggered of the this.element
    * 
+   * @ignore
+   * @protected
+   * @param {Event} event
+   */
+  _onKeyDownHandler : function (event) 
+  {
+  },
+
+  /**
+   * Invoked when keydown is triggered of the this.element
+   * 
    * When of keyCode is of Enter, invoke _SetValue on it
    * 
    * @ignore
    * @protected
    * @param {Event} event
    */
-  _onKeyDownHandler : function (event) 
+  _onKeyUpHandler : function (event) 
   {
     if(event.keyCode === $.ui.keyCode.ENTER) 
     {
@@ -646,6 +981,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * We might need this extra wrapper if the component has input+triggers (like inputDate).
    * 
    * @protected
+   * @ignore
    * @return {jQuery}
    */
   _WrapElement : function () 
@@ -673,7 +1009,7 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       
       describedBy += " " + helperDescribedById;
       this.element.attr("aria-describedby", describedBy);
-      this._inputHelper = $("<div class='oj-helper-hidden-accessible' id='" + helperDescribedById + "'>" + this._EscapeXSS(this.getTranslatedString(this._INPUT_HELPER_KEY)) + "</div>");
+      this._inputHelper = $("<div class='oj-helper-hidden-accessible' aria-hidden='true' id='" + helperDescribedById + "'>" + this._EscapeXSS(this.getTranslatedString(this._INPUT_HELPER_KEY)) + "</div>");
       
       //@HTMLUpdateOK
       this._AppendInputHelperParent().append(this._inputHelper);
@@ -727,6 +1063,28 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     
     return $.extend(this._defaultRegExpValidator, ret);
   },
+  /**
+   * Whether the a value can be set on the component. For example, if the component is 
+   * disabled or readOnly then setting value on component is a no-op. 
+   * 
+   * @see #_SetValue
+   * @return {boolean}
+   * @memberof! oj.inputBase
+   * @override
+   * @instance
+   * @protected
+   */
+    _CanSetValue: function ()
+    {
+      var readOnly;
+      var superCanSetValue = this._super();
+
+      if (!superCanSetValue)
+        return false;
+
+      readOnly = this.options['readOnly'] || false;
+      return (readOnly) ? false : true;
+    },
     /**
    * Toggles css selector on the widget. E.g., when readOnly option changes, 
    * the oj-read-only selector needs to be toggled.
@@ -797,14 +1155,69 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     
     this._rtl = this._GetReadingDirection() === "rtl";
     
+    this._refreshRequired(this.options['required']);
+     
     return retVal;
   },
-  
+  /**
+   * @memberof! oj.inputBase
+   * @instance
+   * @private
+   */
+  _refreshRequired : oj.EditableValueUtils._refreshRequired, 
+
   getNodeBySubId: function(locator)
   {
     return this._super(locator);
   },
 
+    
+  /**
+   * Validates the component's display value using the converter and all validators registered on 
+   * the component and updates the <code class="prettyprint">value</code> option by performing the 
+   * following steps. 
+   * 
+   * <p>
+   * <ol> 
+   * <li>All messages are cleared, including custom messages added by the app. </li>
+   * <li>If no converter is present then processing continues to next step. If a converter is 
+   * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
+   * the <code class="prettyprint">messagesShown</code> option is updated and method returns false.</li>
+   * <li>If there are no validators setup for the component the <code class="prettyprint">value</code> 
+   * option is updated using the display value and the method returns true. Otherwise all 
+   * validators are run in sequence using the parsed value from the previous step. The implicit 
+   * required validator is run first if the component is marked required. When a validation error is 
+   * encountered it is remembered and the next validator in the sequence is run. </li>
+   * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
+   * option is updated and method returns false. If there were no errors, then the 
+   * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+   * </ol>
+   * 
+   * @returns {boolean} true if component passed validation, false if there were validation errors.
+   * 
+   * @example <caption>Validate component using its current value.</caption>
+   * // validate display value. 
+   * $(.selector).ojInputText('validate');
+   * 
+   * @method
+   * @access public
+   * @expose
+   * @instance
+   * @memberof! oj.inputBase
+   * @since 0.7
+   */
+  validate : oj.EditableValueUtils.validate,
+
+  /**
+   * Called to find out if aria-required is unsupported.
+   * @memberof! oj.inputBase
+   * @instance
+   * @protected
+   */
+  _AriaRequiredUnsupported : function()
+  {
+    return false;
+  },
   /**
    * Returns a <code class="prettyprint">jQuery</code> object containing the element visually 
    * representing the component, excluding the label associated with the it. 
@@ -967,6 +1380,28 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
      * @type {string|undefined}
      */
     pattern: ""
+
+    // Events
+
+    /**
+     * Triggered when the ojInputPassword is created.
+     *
+     * @event
+     * @name create
+     * @memberof oj.ojInputPassword
+     * @instance
+     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @property {Object} ui Currently empty
+     *
+     * @example <caption>Initialize the ojInputPassword with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputPassword({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     */
+    // create event declared in superclass, but we still want the above API doc
   },
 
   getNodeBySubId: function(locator)
@@ -1201,6 +1636,28 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @type {string|undefined}
      */
     pattern: ""
+
+    // Events
+
+    /**
+     * Triggered when the ojTextArea is created.
+     *
+     * @event
+     * @name create
+     * @memberof oj.ojTextArea
+     * @instance
+     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @property {Object} ui Currently empty
+     *
+     * @example <caption>Initialize the ojTextArea with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojTextArea({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     */
+    // create event declared in superclass, but we still want the above API doc
   },
 
   getNodeBySubId: function(locator)
@@ -1445,6 +1902,28 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
      * @type {string|undefined}
      */
     pattern: ""
+
+    // Events
+
+    /**
+     * Triggered when the ojInputText is created.
+     *
+     * @event
+     * @name create
+     * @memberof oj.ojInputText
+     * @instance
+     * @property {Event} event <code class="prettyprint">jQuery</code> event object
+     * @property {Object} ui Currently empty
+     *
+     * @example <caption>Initialize the ojInputText with the <code class="prettyprint">create</code> callback specified:</caption>
+     * $( ".selector" ).ojInputText({
+     *     "create": function( event, ui ) {}
+     * });
+     *
+     * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+     * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+     */
+    // create event declared in superclass, but we still want the above API doc
   },
 
   getNodeBySubId: function(locator)
@@ -1565,87 +2044,107 @@ var inputBaseMeta = {
       "readOnly": true,
       "writeback": true
     },
-    "readOnly": {
+    "readonly": {
       "type": "boolean"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "validators": {
+      "type": "Array"
     }
   },
   "methods": {
     "refresh": {},
-    "widget": {}
+    "widget": {},
+    "validate": {}
   },
   "extension": {
-    // Boolean indicating whether a widget needs a wrapping element, e.g. ojInputNumber would set this to true.
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "inputBase"
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "inputBase"
   }
 };
-oj.Components.registerMetadata('inputBase', 'editableValue', inputBaseMeta);
+oj.CustomElementBridge.registerMetadata('inputBase', 'editableValue', inputBaseMeta);
 })();
 
 (function() {
 var ojInputPasswordMeta = {
   "properties": {
-    "pattern": {
+    /*"pattern": {
       "type": "string"
-    },
+    },*/
     "value": {
       "type": "string",
       "writeback": true
     }
   },
   "methods": {},
+  "events": {
+    "create": {},
+    "destroy": {}
+  },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojInputPassword"
+    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojInputPassword",
+    _TRANSFER_ATTRS: ['aria-label', 'autocomplete', 'autofocus', 'inputmode', 'name']
   }
 };
-oj.Components.registerMetadata('ojInputPassword', 'inputBase', ojInputPasswordMeta);
-oj.Components.register('oj-input-password', oj.Components.getMetadata('ojInputPassword'));
+oj.CustomElementBridge.registerMetadata('oj-input-password', 'inputBase', ojInputPasswordMeta);
+oj.CustomElementBridge.register('oj-input-password', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-password')});
 })();
 
 (function() {
 var ojInputTextMeta = {
   "properties": {
-    "pattern": {
+    /*"pattern": {
       "type": "string"
-    },
+    },*/
     "value": {
       "type": "string",
       "writeback": true
     }
   },
   "methods": {},
+  "events": {
+    "create": {},
+    "destroy": {}
+  },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojInputText"
+    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojInputText",
+    _TRANSFER_ATTRS: ['aria-label', 'autocomplete', 'autofocus', 'inputmode', 'list', 'name', 'spellcheck']
   }
 };
-oj.Components.registerMetadata('ojInputText', 'inputBase', ojInputTextMeta);
-oj.Components.register('oj-input-text', oj.Components.getMetadata('ojInputText'));
+oj.CustomElementBridge.registerMetadata('oj-input-text', 'inputBase', ojInputTextMeta);
+oj.CustomElementBridge.register('oj-input-text', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-text')});
 })();
 
 (function() {
 var ojTextAreaMeta = {
   "properties": {
-    "pattern": {
+    /*"pattern": {
       "type": "string"
-    },
+    },*/
     "value": {
       "type": "string",
       "writeback": true
     }
   },
   "methods": {},
+  "events": {
+    "create": {},
+    "destroy": {}
+  },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'textarea',
-    "_widgetName": "ojTextArea"
+    _ALIASED_PROPS: {"readonly": "readOnly"},
+    _INNER_ELEM: 'textarea',
+    _WIDGET_NAME: "ojTextArea",
+    _TRANSFER_ATTRS: ['aria-label', 'autocomplete', 'autofocus', 'inputmode', 'name', 'spellcheck', 'rows']
   }
 };
-oj.Components.registerMetadata('ojTextArea', 'inputBase', ojTextAreaMeta);
-oj.Components.register('oj-text-area', oj.Components.getMetadata('ojTextArea'));
+oj.CustomElementBridge.registerMetadata('oj-text-area', 'inputBase', ojTextAreaMeta);
+oj.CustomElementBridge.register('oj-text-area', {'metadata': oj.CustomElementBridge.getMetadata('oj-text-area')});
 })();
 });

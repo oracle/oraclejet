@@ -18,10 +18,13 @@
         visibility: hidden;
       }      
     }
-
+    oj-train {
+      display: block;
+    }
+    
     .oj-train{
       white-space: nowrap;
-      text-align: center
+      text-align: center;
     }
 
     .oj-train-wrapper {
@@ -270,7 +273,6 @@
 
     .oj-train-icon {
       position: absolute;
-      aria-hidden: true;
       bottom:0;
       @include oj-ltr() {
         right: 0;	  

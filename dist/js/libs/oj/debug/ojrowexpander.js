@@ -605,6 +605,8 @@ oj.FlattenedTreeDataSource.prototype.Init = function()
     // we have to react if the underlying TreeDataSource has changed
     this.m_wrapped.on('change', this._handleModelEvent.bind(this));
 
+    this.m_busy = false;
+
     // retrieves the fetch size against the underlying data source
     this.m_fetchSize = parseInt(this.m_options['fetchSize'], 10);
     if (isNaN(this.m_fetchSize))
@@ -666,6 +668,10 @@ oj.FlattenedTreeDataSource.prototype.Destroy = function()
     delete this.m_cache;
     delete this.m_expandedKeys;
     delete this.m_collapsedKeys;
+    if (this.m_queue)
+    {
+        delete this.m_queue;
+    }
 
     // unload listener
     this.m_wrapped.off('change');
@@ -777,6 +783,8 @@ oj.FlattenedTreeDataSource.prototype._getFetchSizeToUse = function(count)
  */ 
 oj.FlattenedTreeDataSource.prototype.fetchRows = function(range, callbacks)
 {
+    this.m_busy = true;
+
     // check if we should fetch rows from descendants result set or walk the tree
     // to retrieve children
     if (this._isExpandAll())
@@ -846,6 +854,8 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
                 {
                     callbacks['success'].call(null, nodeSet);
                 }
+                // busy not handled by the _handleFetchSuccess in this case
+                this.m_busy = false;                                    
             }
             else
             {
@@ -862,6 +872,8 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
                     {
                         callbacks['success'].call(null, nodeSet);
                     }
+                    // busy not handled by the _fetchFromAncestors in this case
+                    this.m_busy = false; 
                 }
             }
             return;
@@ -928,6 +940,8 @@ oj.FlattenedTreeDataSource.prototype._handleFetchError = function(status, callba
     {
         callbacks['error'].call(null, status);
     }
+
+    this.m_busy = false;
 };
 
 /**
@@ -990,6 +1004,12 @@ oj.FlattenedTreeDataSource.prototype._handleFetchSuccess = function(nodeSet, par
 
             this._syncExpandRows(queue, prevNodeSetInfo);
         }
+    }
+
+    // reset flag except the case when there's more rows to expand
+    if (queue === undefined)
+    {
+        this.m_busy = false;
     }
 };
 
@@ -1250,13 +1270,18 @@ oj.FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess = function(n
             }
             callbacks['success'].call(null, nodeSet);
         }
-
-        return;
+    }
+    else
+    {
+        // the only case we'll ended up here is if the max count has been reached or
+        // for some reason the caller is asking for count = 0
+        this.handleMaxCountReached(range, callbacks);
     }
 
-    // the only case we'll ended up here is if the max count has been reached or
-    // for some reason the caller is asking for count = 0
-    this.handleMaxCountReached(range, callbacks);
+    this.m_busy = false;
+
+    // process any outstanding operations
+    this._processQueue();
 };
 
 /**
@@ -1372,7 +1397,9 @@ oj.FlattenedTreeDataSource.prototype.expand = function(rowKey)
  */
 oj.FlattenedTreeDataSource.prototype._expand = function(rowKey, options)
 {
-    var count, fetchSize, maxCount, refIndex, queue, prevNodeSetInfo;
+    var count, fetchSize, maxCount, refIndex, prevNodeSetInfo;
+
+    this.m_busy = true;
 
     count = this.m_wrapped.getChildCount(rowKey);
     fetchSize = this._getFetchSizeToUse(count);
@@ -1403,6 +1430,43 @@ oj.FlattenedTreeDataSource.prototype._expand = function(rowKey, options)
 };
 
 /**
+ * Process any outstanding operation
+ * @private
+ */
+oj.FlattenedTreeDataSource.prototype._processQueue = function()
+{
+    var i, op;
+
+    if (this.m_queue && this.m_queue.length > 0)
+    {
+        for (i=this.m_queue.length-1; i>=0; i--)
+        {
+            op = this.m_queue[i];
+            this.collapse(op["key"]);            
+        }
+
+        // clear the queue
+        this.m_queue.length = 0;
+    }
+};
+
+/**
+ * Queue an operation to be process later
+ * @param {string} op the operation
+ * @param {Object} rowKey the row key where the operation is to be apply
+ * @private
+ */
+oj.FlattenedTreeDataSource.prototype._queueOp = function(op, rowKey)
+{
+    if (this.m_queue == null)
+    {
+        this.m_queue = [];
+    }
+
+    this.m_queue.push({"op": op, "key": rowKey});
+};
+
+/**
  * Collapse the specified row.
  * @param {Object} rowKey the key of the row to collapse
  * @export
@@ -1411,8 +1475,20 @@ oj.FlattenedTreeDataSource.prototype.collapse = function(rowKey)
 {
     var rowIndex, parent, count, depth, lastIndex, i, j, keys;
 
+    // if in the middle of fetch, queue up the operation
+    if (this.m_busy)
+    {
+        this._queueOp("collapse", rowKey);
+        return;
+    }
+
     rowIndex = this.getIndex(rowKey) + 1;
     parent = this._getEntry(rowIndex-1);
+    // could happen if parent node has already collapsed
+    if (parent == null)
+    {
+        return;
+    }
 
     // keeping track of how many rows to remove
     count = 0;
@@ -1688,6 +1764,7 @@ oj.FlattenedTreeDataSource.prototype.handleExpandSuccess = function(rowKey, node
                 callbacks['success'].call(null, nodeSet);
                 
                 // we are done at this point, we don't fire insert events
+                this.m_busy = false;
                 return;
             }
             else
@@ -1723,6 +1800,8 @@ oj.FlattenedTreeDataSource.prototype.handleExpandSuccess = function(rowKey, node
                 this.handleEvent("expand", {'rowKey':prevNodeSetInfo['keys'][j]});
             }
         }
+
+        this.m_busy = false;
 
         // fire event
         this.handleEvent("expand", {'rowKey':rowKey});
@@ -1761,6 +1840,13 @@ oj.FlattenedTreeDataSource.prototype.handleExpandSuccess = function(rowKey, node
 
         // expand any child rows that should be expanded
         this._syncExpandRows(queue, prevNodeSetInfo);
+    }
+
+    this.m_busy = false;
+
+    if (queue && queue.length == 0)
+    {
+        this._processQueue();
     }
 };
 
@@ -2109,6 +2195,8 @@ oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function(range, cal
     {
         callbacks['error'].call(null);
     }
+    
+    this.m_busy = false;    
 };
 
 /**
@@ -2282,6 +2370,14 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
  *
  * <p>The location of the row expander will be reversed in RTL reading direction.</p>
  * <p>As with any JET component, in the unusual case that the directionality (LTR or RTL) changes post-init, the component containing the row expander (JET Table or JET DataGrid) must be <code class="prettyprint">refresh()</code>ed.
+ *
+ * <h3 id="perf-section">
+ *   Performance
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#perf-section"></a>
+ * </h3>
+ *
+ * <h4>Initial expansion</h4>
+ * <p>To specify initial expanded rows with RowExpander, it is recommended that applications do this through the initial options in oj.FlattenedTreeDataSource, especially for expanding all rows initially.</p>
  */
 oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 {
@@ -2300,6 +2396,27 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                  *
                  */
                 context: null,
+                /**
+                 * Specifies if the row expander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
+                 * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
+                 *
+                 * @expose
+                 * @memberof! oj.ojRowExpander
+                 * @instance
+                 * @type {boolean|null}
+                 * @default <code class="prettyprint">null</code>
+                 *
+                 * @example <caption>Initialize the row expander with the <code class="prettyprint">expanded</code> option specified:</caption>
+                 * $( ".selector" ).ojRowExpander( { "expanded": true } );
+                 *
+                 * @example <caption>Get or set the <code class="prettyprint">expanded</code> option, after initialization:</caption>
+                 * // getter
+                 * var expanded = $( ".selector" ).ojRowExpander( "option", "expanded" );
+                 *
+                 * // setter
+                 * $( ".selector" ).ojRowExpander( "option", "expanded", true );
+                 */
+                 expanded: null,
                 /**
                  * Triggered when a expand is performed on the row expander
                  *
@@ -2385,10 +2502,19 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     _initContent : function ()
     {
         var self = this, context;
-
+        
         context = this.options['context'];
-        //component now widget constructor
-        this.component = typeof context['component'] === 'function' ? context['component']('instance') : context['component'];        
+        //component now widget constructor or non existent
+        if (context['component'] != null)
+        {
+            this.component = typeof context['component'] === 'function' ? context['component']('instance') : context['component'];
+        }
+        else if (context['componentElement'])
+        {
+            var widgetElem = context['componentElement'];
+            widgetElem = $(widgetElem).hasClass('oj-component-initnode') ? widgetElem : $(widgetElem).find('.oj-component-initnode')[0];
+            this.component = oj.Components.getWidgetConstructor(widgetElem)('instance');
+        }
         this.datasource = context['datasource'];
 
         //root hidden so subtract 1
@@ -2430,7 +2556,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
             // listen for key down event from host component
             this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-            $(this.component.element).on('ojkeydown', this.handleKeyDownCallback);
+            this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
 
             // listens for expand and collapse event from flattened datasource
             // this could be due to user clicks, keyboard shortcuts or programmatically
@@ -2439,19 +2565,54 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
             this.datasource.on("expand", this.handleExpandCallback, this);
             this.datasource.on("collapse", this.handleCollapseCallback, this);
+
+            // if expanded option is explicitly specified, make sure it's in sync with current state
+            this._initExpanded();
         }
         else if (this.iconState === 'leaf')
         {
             // we'll still need to handle ctrl+alt+5 for leaf node
             // listen for key down event from host component
             this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-            $(this.component.element).on('ojkeydown', this.handleKeyDownCallback);
+            this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
             $(this.icon).attr('tabindex', -1);
         }
 
         // listen for active key change event from host component
         this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);        
+        if (this.component._IsCustomElement())
+        {
+            $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);  
+        }
+        else
+        {
+            $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);              
+        }
+    },
+    /**
+     * Sync initial state of expanded with context/FlattenedTreeModel
+     * @private
+     */
+    _initExpanded: function()
+    {
+        var expanded = this.options['expanded'];
+        if (expanded != null)
+        {
+            if (expanded && this.iconState === 'collapsed')
+            {
+                this._expand();
+            }
+            else if (!expanded && this.iconState === 'expanded')
+            {
+                this._collapse();
+            }
+        }
+        else
+        {
+            // make sure expanded value reflect the current state
+            // we don't want to trigger option change event in this case
+            this.options['expanded'] = this.iconState === 'collapsed' ? false : true;
+        }
     },
     /**
      * Refresh the row expander having made external modifications
@@ -2485,7 +2646,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     _destroy: function()
     {
         // unregister keydown and active key change handlers
-        $(this.component.element).off('ojkeydown', this.handleKeyDownCallback);
+        this.component.element.get(0).removeEventListener('ojkeydown', this.handleKeyDownCallback, true);
         $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
 
         // unregister expand/collapse events
@@ -2494,6 +2655,36 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 
         this.element.removeClass(this.classNames['root']);
         this.element.empty();
+    },
+    /**
+     * Expand the current row expander
+     * @return {boolean} true if the expand is processed, false if it's a no op.
+     * @private
+     */
+    _expand: function()
+    {
+        if (this.iconState === 'collapsed')
+        {
+            this._loading();
+            this.datasource.expand(this.rowKey);
+            return true;
+        }
+        return false;
+    },
+    /**
+     * Collapse the current row expander
+     * @return {boolean} true if the collapse is processed, false if it's a no op.
+     * @private
+     */
+    _collapse: function()
+    {
+        if (this.iconState === 'expanded')
+        {
+            this._loading();
+            this.datasource.collapse(this.rowKey);
+            return true;
+        }
+        return false;
     },
     /**
      * Sets a single option value
@@ -2505,7 +2696,15 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */
     _setOption: function(key, value, flags)
     {
+        if (key == 'expanded' && (flags['_context'] == null || flags['_context']['internalSet'] != true))
+        {
+            value ? this._expand() : this._collapse();
+            // don't update option, it will be update when the operation completed via expand/collapse event
+            return;
+        }
+
         this._super(key, value, flags);
+
         // refresh if context is updated
         if (key == 'context' && flags['_context'] != null && flags['_context']['internalSet'] != true)
         {
@@ -2641,12 +2840,16 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     /**
      * Handles active key change event from host component (ojDataGrid or ojTable)
      * @param {Event} event
-     * @param {Object} ui
+     * @param {Object|null|number=} ui
      * @private
      */
     _handleActiveKeyChangeEvent: function(event, ui)
     {
         var rowKey, previousRowKey, context, state;
+        if (ui == null)
+        {
+            ui = event.detail;
+        }        
         if (ui['currentCell'] != null)
         {
             rowKey = ui['currentCell']['type'] == 'cell' ? ui['currentCell']['keys']['row'] :  ui['currentCell']['key'];
@@ -2686,36 +2889,48 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
     },
     /**
      * Handles keydown event from host component (ojDataGrid or ojTable)
+     * No longer returns a boolean but rather prevents default if appropriate
      * @param {Event} event
-     * @param {Object} ui
-     * @return {boolean} false if the event was processed here and should not be handled by the container
      * @private
      */
-    _handleKeyDownEvent: function(event, ui)
+    _handleKeyDownEvent: function(event)
     {
         var rowKey, code, context, ancestorInfo, ancestors, i;
-
-        rowKey = ui['rowKey'];
+        var targetContext = oj.Components.getWidgetConstructor(this.component.element.get(0))('getContextByNode', event.target);
+        
+        if (targetContext == null)
+        {
+            return;
+        }
+        
+        rowKey = targetContext['key'];
+        if (rowKey == null)
+        {
+            rowKey = targetContext['keys']['row'];
+        }
         if (this.rowKey === rowKey)
         {
-            event = event['originalEvent'];
             code = event.keyCode || event.which;
             // ctrl (or equivalent) is pressed
             if (oj.DomUtils.isMetaKeyPressed(event))
             {
                 // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
                 // consume the event as it's processed
-                if (code == $.ui.keyCode.RIGHT && this.iconState === 'collapsed')
+                if (code == $.ui.keyCode.RIGHT)
                 {
-                    this._loading();
-                    this.datasource.expand(this.rowKey);
-                    return false;
+                    if (this._expand())
+                    {
+                        event.preventDefault();
+                        return;
+                    }
                 }
-                else if (code == $.ui.keyCode.LEFT && this.iconState === 'expanded')
+                else if (code == $.ui.keyCode.LEFT)
                 {
-                    this._loading();
-                    this.datasource.collapse(this.rowKey);
-                    return false;
+                    if (this._collapse())
+                    {
+                        event.preventDefault();
+                        return;
+                    }
                 }
                 else if (event.altKey && code == this.constants.NUM5_KEY)
                 {
@@ -2738,7 +2953,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
                 }
             }
         }
-        return true;        
+        return;        
     },
     /**
      * Put row expander in a loading state.  This is called during expand/collapse.
@@ -2750,6 +2965,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         this.iconState = 'loading';
         this._setIconStateClass();
     },
+    
     /**
      * Handle an expand event coming from the datasource,
      * update the icon and the aria-expand property
@@ -2765,8 +2981,16 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this.iconState = 'expanded';
             this._setIconStateClass();
             this._ariaExpanded(true);
-            this._trigger('expand', null, {'rowKey': rowKey});
             this._updateContextState('expanded');
+
+            // if the event is triggered by initial setting of expanded, we should not 
+            // fire expand or option change event
+            var expanded = this.options['expanded'];
+            if (expanded == null || (expanded != null && !expanded))
+            {                
+                this._trigger('expand', null, {'rowKey': rowKey});
+                this._updateExpandedState(true);
+            }
         }
     },
     /**
@@ -2784,9 +3008,26 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
             this.iconState = 'collapsed';
             this._setIconStateClass();
             this._ariaExpanded(false);
-            this._trigger('collapse', null, {'rowKey': rowKey});
             this._updateContextState('collapsed');            
+
+            // if the event is triggered by initial setting of expanded, we should not 
+            // fire expand or option change event
+            var expanded = this.options['expanded'];
+            if (expanded == null || (expanded != null && expanded))
+            {
+                this._trigger('collapse', null, {'rowKey': rowKey});
+                this._updateExpandedState(false);
+            }
         }
+    },
+    /**
+     * Update the expanded option
+     * @param {boolean} expanded
+     * @private
+     */
+    _updateExpandedState: function(expanded)
+    {
+        this._setOption('expanded', expanded, {'changed':true, '_context': {'internalSet': true}});
     },
     /**
      * Update context state
@@ -2798,8 +3039,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         var context = this.options['context'];
         context['state'] = newState;
         // need to reuse the same object so mark it as changed ourselves
-        this._setOption('context', context, {'changed':true, '_context': {'internalSet': true}});
-        
+        this._setOption('context', context, {'changed':true, '_context': {'internalSet': true}});        
     },
     /**
      * Fire the expand or collapse on the datasource and the oj event on the widget
@@ -2986,7 +3226,10 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
 var ojRowExpanderMeta = {
   "properties": {
     "context": {
-      "type": "Object"
+      "type": "object"
+    },
+    "expanded": {
+        "type": "boolean"
     }
   },
   "methods": {
@@ -2994,11 +3237,15 @@ var ojRowExpanderMeta = {
     "getSubIdByNode": {},
     "refresh": {}
   },
+  "events": {
+    "collapse": {},
+    "expand": {}
+  },
   "extension": {
-    "_widgetName": "ojRowExpander"
+    _WIDGET_NAME: "ojRowExpander"
   }
 };
-oj.Components.registerMetadata('ojRowExpander', 'baseComponent', ojRowExpanderMeta);
-oj.Components.register('oj-row-expander', oj.Components.getMetadata('ojRowExpander'));
+oj.CustomElementBridge.registerMetadata('oj-row-expander', 'baseComponent', ojRowExpanderMeta);
+oj.CustomElementBridge.register('oj-row-expander', {'metadata': oj.CustomElementBridge.getMetadata('oj-row-expander')});
 })();
 });

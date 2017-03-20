@@ -15,6 +15,10 @@
         visibility: hidden;
       }      
     }
+    
+    oj-picto-chart {
+      display: inline-block;
+    }
 
     .oj-pictochart {
       @include oj-user-select-property(none);

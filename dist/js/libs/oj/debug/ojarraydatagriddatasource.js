@@ -1259,6 +1259,7 @@ oj.ArrayCellSet.prototype.getData = function(indexes)
     columnIndex = indexes['column'];
     returnObj = {};
     Object.defineProperty(returnObj, 'data', {
+        enumerable: true,        
         get: function(){return self.m_callback._getCellData(rowIndex, columnIndex)}, 
         set: function (newValue) { self.m_callback._setCellData(rowIndex, columnIndex, newValue)}
     });

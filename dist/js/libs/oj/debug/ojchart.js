@@ -112,22 +112,76 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
   },
 
   /**
-   * Returns a SparkChartDataItem object for automation testing verification.
-   * @param {String} itemIndex The dataItem index
-   * @return {Object} The spark chart data item with the given item index
+   * Returns an object with the following properties for automation testing verification of the data item with
+   * the specified item index.
+   * @param {number} itemIndex The item index
+   * @property {string} borderColor
+   * @property {string} color
+   * @property {Date} date
+   * @property {number} high The high value for a range item
+   * @property {number} low  The low value for a range item
+   * @property {number} value
+   * @property {Function} getBorderColor <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">borderColor</code> instead.
+   * @property {Function} getColor <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">color</code> instead.
+   * @property {Function} getDate <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">date</code> instead.
+   * @property {Function} getFloatValue <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">low</code> instead.
+   * @property {Function} getHigh <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">high</code> instead.
+   * @property {Function} getLow <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">low</code> instead.
+   * @property {Function} getValue <b>Deprecated in 3.0.0</b>: Use <code class="prettyprint">value</code> instead.
+   * @return {Object|null} An object containing properties for the data item, or null if none exists.
    * @expose
    * @instance
    * @memberof oj.ojSparkChart
    */
   getDataItem: function(itemIndex) {
-    var auto = this._component.getAutomation();
-    return new oj.SparkChartDataItem(auto.getDataItem(itemIndex));
+    var ret = this._component.getAutomation().getDataItem(itemIndex);
+
+    // : Provide backwards compatibility for getters until 1.2.0.
+    this._AddAutomationGetters(ret);
+    if (ret)
+      ret['getFloatValue'] = ret['getLow'];
+
+    return ret;
   },
 
   //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
     return {'root': ['items']};
-  }
+  },
+
+  /**
+   * Adds getters for the properties on the specified map. 
+   * @param {Object|null} map
+   * @memberof oj.ojSparkChart
+   * @instance
+   * @protected
+   */
+  _AddAutomationGetters: function(map) {
+    if(!map)
+      return;
+
+    // These getters are deprecated in 3.0.0
+    var props = {};
+    for (var key in map) {
+      this._addGetter(map, key, props);
+    }
+    Object.defineProperties(map, props);
+  },
+
+  /**
+   * Adds getter for the specified property on the specified properties map.
+   * @param {Object} map
+   * @param {string} key
+   * @param {Object} props The properties map onto which the getter will be added.
+   * @memberof oj.ojSparkChart
+   * @instance
+   * @private
+   */
+  _addGetter: function(map, key, props) {
+    var prefix = (key == 'selected') ? 'is' : 'get';
+    var getterName = prefix + key.charAt(0).toUpperCase() + key.slice(1);
+    props[getterName] = {'value': function() { return map[key] }};
+  },
 });
 
 /**
@@ -500,79 +554,6 @@ oj.__registerWidget('oj.ojSparkChart', $['oj']['dvtBaseComponent'],
  */
 
 /**
- * An object used for automation verification of spark chart data items
- * Applications should not create this object.
- * @param {Object} data An object containing verification data
- * @constructor
- * @export
- */  
-oj.SparkChartDataItem = function(data) {
-  this._data = data;
-};
-
-/**
- * Returns the border color of a spark chart data item
- * @returns {String} The data item border color
- * @export
- */
-oj.SparkChartDataItem.prototype.getBorderColor = function() {
-  return this._data ? this._data['borderColor'] : null;
-};
-
-/**
- * Returns the color of a spark chart data item
- * @returns {String} The data item color
- * @export
- */
-oj.SparkChartDataItem.prototype.getColor = function() {
-  return this._data ? this._data['color'] : null;
-};
-
-/**
- * Returns the date of a spark chart data item.
- * @returns {Date} The data item date
- * @export
- */
-oj.SparkChartDataItem.prototype.getDate = function() {
-  return this._data ? this._data['date'] : null;
-};
-
-/**
- * Returns the float value of a spark chart data item. Only applies to floatingBar sparkChart types.
- * @returns {Number} The data item float value
- * @export
- */
-oj.SparkChartDataItem.prototype.getFloatValue = function() {
-  return this.getLow();
-};
-
-/**
- * Returns the low value of a spark chart data item.
- * @returns {Number} The data item low value
- * @export
- */
-oj.SparkChartDataItem.prototype.getLow = function() {
-  return this._data ? this._data['low'] : null;
-};
-
-/**
- * Returns the high value of a spark chart data item.
- * @returns {Number} The data item high value
- * @export
- */
-oj.SparkChartDataItem.prototype.getHigh = function() {
-  return this._data ? this._data['high'] : null;
-};
-
-/**
- * Returns the value of a spark chart data item.
- * @returns {Number} The data item value
- * @export
- */
-oj.SparkChartDataItem.prototype.getValue = function() {
-  return this._data ? this._data['value'] : null;
-};
-/**
  * <p>This component has no touch interaction.  </p>
  *
  *
@@ -699,58 +680,18 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
     widgetEventPrefix: "oj",
     options: {
       /**
-       * Triggered when a category of data items is hidden or shown.
-       *
-       * @property {Object} ui event payload
-       * @property {Object} ui.category the category that was filtered on
-       * @property {string} ui.type specifies whether the category is being filtered 'in' or 'out'
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">categoryFilter</code> callback specified:</caption>
-       * $(".selector").ojChart({
-       *   "categoryFilter": function(event, ui){}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryfilter</code> event:</caption>
-       * $(".selector").on("ojcategoryfilter", function(event, ui){});
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">hiddenCategories</code> property instead.
-       */
-      categoryFilter: null,
-      /**
-       * Triggered when a category of data items is highlighted.
-       *
-       * @property {Object} ui event payload
-       * @property {Array} ui.categories the categories that are being highlighted
-       * @property {string} ui.type specifies whether highlighting is being turned 'on' or 'off'
-       *
-       * @example <caption>Initialize the component with the <code class="prettyprint">categoryHighlight</code> callback specified:</caption>
-       * $(".selector").ojChart({
-       *   "categoryHighlight": function(event, ui){}
-       * });
-       *
-       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcategoryhighlight</code> event:</caption>
-       * $(".selector").on("ojcategoryhighlight", function(event, ui){});
-       *
-       * @expose
-       * @event
-       * @memberof oj.ojChart
-       * @instance
-       * @deprecated Use the <code class="prettyprint">optionChange</code> listener to detect changes to the <code class="prettyprint">highlightedCategories</code> property instead.
-       */
-      categoryHighlight: null,
-
-      /**
        * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention. If the new value is the same as the previous value, no event will be fired.
+       * intervention.  If the new value is the same as the previous value, no event will be fired.  The event 
+       * listener will receive two parameters described below:
        *
-       * @property {Object} data event payload
-       * @property {string} data.option the name of the option that changed, i.e. "value"
-       * @property {Object} data.previousValue an Object holding the previous value of the option
-       * @property {Object} data.value an Object holding the current value of the option
+       * @property {Object} ui event payload
+       * @property {string} ui.option the name of the option that changed, i.e. "value"
+       * @property {Object} ui.previousValue an Object holding the previous value of the option
+       * @property {Object} ui.value - an Object holding the current value of the option.
+       * @property {?Object} ui.subproperty - an Object holding information about the subproperty that changed.
+       * @property {string} ui.subproperty.path - the subproperty path that changed.
+       * @property {Object} ui.subproperty.previousValue - an Object holding the previous value of the subproperty.
+       * @property {Object} ui.subproperty.value - an Object holding the current value of the subproperty.
        * @property {Object} ui.optionMetadata information about the option that is changing
        * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
        *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
@@ -761,17 +702,17 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * @property {number} ui.optionMetadata.yMax the maximum y value of a marquee selection
        * @property {number} ui.optionMetadata.yMin the minimum y value of a marquee selection
        * @property {Object} ui.optionMetadata.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
-       * @property {Array} ui.optionMetadata.selectionData an array of objects with data, seriesData and groupData corresponding to the selected items in ui.value
+       * @property {Array} ui.optionMetadata.selectionData an array of objects with data, seriesData and groupData corresponding to the selected items in data.value
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
        * $(".selector").ojChart({
-       *   'optionChange': function (event, data) {}
+       *   'optionChange': function (event, ui) {}
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
        * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       window.console.log("option changing is: " + data['option']);
+       *   'ojoptionchange': function (event, ui) {
+       *       window.console.log("option changing is: " + ui['option']);
        *   };
        * });
        *
@@ -785,25 +726,31 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       /**
        * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
        *
-       * @property {Object} ui event payload
-       * @property {Array} ui.items an array containing objects describing the selected data items
-       * @property {string} ui.items.id the id of the data item, if one was specified
-       * @property {string} ui.items.group the group of the data item
-       * @property {string} ui.items.series the series of the data item
-       * @property {string} ui.endGroup the end group of a marquee selection on a chart with categorical axis
-       * @property {string} ui.startGroup the start group of a marquee selection on a chart with categorical axis
-       * @property {number} ui.xMax the maximum x value of a marquee selection
-       * @property {number} ui.xMin the minimum x value of a marquee selection
-       * @property {number} ui.yMax the maximum y value of a marquee selection
-       * @property {number} ui.yMin the minimum y value of a marquee selection
+       * @property {Object} data event payload
+       * @property {Array} data.items an array containing the string ids of the selected data items for the custom element syntax. For the old syntax, an
+       *                              array of objects with the following properties. This array of objects syntax is deprecated in 3.0.0 and 
+       *                              will be changed to an array of strings in 5.0.0.
+       * @property {string} data.items.id <b>Deprecated in 3.0.0</b>
+       * @property {string} data.items.group <b>Deprecated in 3.0.0</b>
+       * @property {string} data.items.series <b>Deprecated in 3.0.0</b>
+       * @property {Array}  data.selectionData an array containing objects describing the selected data items
+       * @property {object} data.selectionData.data the data of the item, if one was specified
+       * @property {Array} data.selectionData.groupData the group data of the item
+       * @property {object} data.selectionData.seriesData the series data of the item
+       * @property {string} data.endGroup the end group of a marquee selection on a chart with categorical axis
+       * @property {string} data.startGroup the start group of a marquee selection on a chart with categorical axis
+       * @property {number} data.xMax the maximum x value of a marquee selection
+       * @property {number} data.xMin the minimum x value of a marquee selection
+       * @property {number} data.yMax the maximum y value of a marquee selection
+       * @property {number} data.yMin the minimum y value of a marquee selection
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">selectInput</code> callback specified:</caption>
        * $(".selector").ojChart({
-       *   "selectInput": function(event, ui){}
+       *   "selectInput": function(event, data){}
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojselectinput</code> event:</caption>
-       * $(".selector").on("ojselectinput", function(event, ui){});
+       * $(".selector").on("ojselectinput", function(event, data){});
        *
        * @expose
        * @event
@@ -815,21 +762,21 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       /**
        * Triggered after the viewport is changed due to a zoom or scroll operation.
        *
-       * @property {Object} ui event payload
-       * @property {string} ui.endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} ui.startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} ui.xMax the maximum x value of the new viewport
-       * @property {number} ui.xMin the minimum x value of the new viewport
-       * @property {number} ui.yMax the maximum y value of the new viewport
-       * @property {number} ui.yMin the minimum y value of the new viewport
+       * @property {Object} data event payload
+       * @property {string} data.endGroup the end group of the new viewport on a chart with categorical axis
+       * @property {string} data.startGroup the start group of the new viewport on a chart with categorical axis
+       * @property {number} data.xMax the maximum x value of the new viewport
+       * @property {number} data.xMin the minimum x value of the new viewport
+       * @property {number} data.yMax the maximum y value of the new viewport
+       * @property {number} data.yMin the minimum y value of the new viewport
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">viewportChange</code> callback specified:</caption>
        * $(".selector").ojChart({
-       *   "viewportChange": function(event, ui){}
+       *   "viewportChange": function(event, data){}
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojviewportchange</code> event:</caption>
-       * $(".selector").on("ojviewportchange", function(event, ui){});
+       * $(".selector").on("ojviewportchange", function(event, data){});
        *
        * @expose
        * @event
@@ -843,21 +790,21 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
        * situations where the component cannot determine whether the viewport change gesture is still in progress, such
        * as with mouse wheel zoom interactions. Standard viewportChange events are fired in these cases.
        *
-       * @property {Object} ui event payload
-       * @property {string} ui.endGroup the end group of the new viewport on a chart with categorical axis
-       * @property {string} ui.startGroup the start group of the new viewport on a chart with categorical axis
-       * @property {number} ui.xMax the maximum x value of the new viewport
-       * @property {number} ui.xMin the minimum x value of the new viewport
-       * @property {number} ui.yMax the maximum y value of the new viewport
-       * @property {number} ui.yMin the minimum y value of the new viewport
+       * @property {Object} data event payload
+       * @property {string} data.endGroup the end group of the new viewport on a chart with categorical axis
+       * @property {string} data.startGroup the start group of the new viewport on a chart with categorical axis
+       * @property {number} data.xMax the maximum x value of the new viewport
+       * @property {number} data.xMin the minimum x value of the new viewport
+       * @property {number} data.yMax the maximum y value of the new viewport
+       * @property {number} data.yMin the minimum y value of the new viewport
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">viewportChangeInput</code> callback specified:</caption>
        * $(".selector").ojChart({
-       *   "viewportChangeInput": function(event, ui){}
+       *   "viewportChangeInput": function(event, data){}
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojviewportchangeinput</code> event:</caption>
-       * $(".selector").on("ojviewportchangeinput", function(event, ui){});
+       * $(".selector").on("ojviewportchangeinput", function(event, data){});
        *
        * @expose
        * @event
@@ -869,22 +816,22 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       /**
        * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
        *
-       * @property {Object} ui event payload
-       * @property {string} ui.id the id of the drilled object
-       * @property {string} ui.series the series id of the drilled object, if applicable
-       * @property {string} ui.group the group id of the drilled object, if applicable
-       * @property {Object} ui.data  the data object of the drilled item
-       * @property {Object} ui.seriesData the data for the series of the drilled object
-       * @property {Array} ui.groupData an array of data for the group the drilled object belongs to. For hierarchcal groups, it will be an array of outermost to innermost group data related to the drilled object
-       * @property {Object} ui.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
+       * @property {Object} data event payload
+       * @property {string} data.id the id of the drilled object
+       * @property {string} data.series the series id of the drilled object, if applicable
+       * @property {string} data.group the group id of the drilled object, if applicable
+       * @property {Object} data.data  the data object of the drilled item
+       * @property {Object} data.seriesData the data for the series of the drilled object
+       * @property {Array} data.groupData an array of data for the group the drilled object belongs to. For hierarchcal groups, it will be an array of outermost to innermost group data related to the drilled object
+       * @property {Object} data.component the widget constructor for the chart. The 'component' is bound to the associated jQuery element so can be called directly as a function
        *
        * @example <caption>Initialize the component with the <code class="prettyprint">drill</code> callback specified:</caption>
        * $(".selector").ojChart({
-       *   "drill": function(event, ui){}
+       *   "drill": function(event, data){}
        * });
        *
        * @example <caption>Bind an event listener to the <code class="prettyprint">ojdrill</code> event:</caption>
-       * $(".selector").on("ojdrill", function(event, ui){});
+       * $(".selector").on("ojdrill", function(event, data){});
        *
        * @expose
        * @event
@@ -939,6 +886,21 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
       // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
       // support for the old subId syntax in 1.2.0.
       return subId;
+    },
+
+
+    //** @inheritdoc */
+    _ProcessOptions: function() {
+      this._super();
+      var center = this.options['pieCenter'];
+      if (center && center['_renderer'])
+        center['renderer'] = this._GetTemplateRenderer(center['_renderer'], 'center');
+      
+      var selection = this.options['selection'];
+      // The array<object> type is deprecated since 2.1.0 so for custom elements 
+      // we are breaking selection in order to push developers to use the correct syntax
+      if(this._IsCustomElement() && selection && typeof selection[0] == 'object')
+        this.options['selection'] = null;
     },
 
     //** @inheritdoc */
@@ -1047,8 +1009,7 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
 
     //** @inheritdoc */
     _GetEventTypes : function() {
-      return ['categoryFilter', 'categoryHighlight', 'drill', 'optionChange', 'selectInput',
-              'viewportChange', 'viewportChangeInput'];
+      return ['drill', 'optionChange', 'selectInput', 'viewportChange', 'viewportChangeInput'];
     },
 
     //** @inheritdoc */
@@ -1095,9 +1056,14 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
           var selectedItems = [];
           var selectionData = [];
           for (var i = 0; i < selection.length; i++) {
-            var selectedItem = {'id': selection[i]['id'],
-              'series': selection[i]['series'],
-              'group': selection[i]['group']};
+            var selectedItem;
+            if (this._IsCustomElement())
+              selectedItem = selection[i]['id'];
+            else {
+              selectedItem = {'id': selection[i]['id'],
+                'series': selection[i]['series'],
+                'group': selection[i]['group']};
+            }
             var selectedItemData = {'data': selection[i]['data'],
               'seriesData': selection[i]['seriesData'],
               'groupData': selection[i]['groupData']};
@@ -1121,16 +1087,6 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
             this._trigger('selectInput', null, selectPayload);
           }
         }
-      }
-      else if (type === 'categoryHide' || type === 'categoryShow') {
-        var filterType = (type === 'categoryHide') ? 'out' : 'in';
-        this._trigger('categoryFilter', null, {'category': event['category'], 'type': filterType});
-        this._UserOptionChange('hiddenCategories', event['hiddenCategories']);
-      }
-      else if (type === 'categoryHighlight') {
-        var highlightType = event['categories'] && event['categories'].length > 0 ? 'on' : 'off';
-        this._trigger('categoryHighlight', null, {'categories': event['categories'], 'type': highlightType});
-        this._UserOptionChange('highlightedCategories', event['categories']);
       }
       else if (type === 'viewportChange') {
         var viewportChangePayload = {'endGroup': event['endGroup'], 'startGroup': event['startGroup'],
@@ -1288,30 +1244,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      * @property {number} x
      * @property {number} y
      * @property {number} z
-     * @property {Function} getBorderColor <b>Deprecated</b>: Use <code class="prettyprint">borderColor</code> instead.
-     * @property {Function} getColor <b>Deprecated</b>: Use <code class="prettyprint">color</code> instead.
-     * @property {Function} getGroup <b>Deprecated</b>: Use <code class="prettyprint">group</code> instead.
-     * @property {Function} getLabel <b>Deprecated</b>: Use <code class="prettyprint">label</code> instead.
-     * @property {Function} getSeries <b>Deprecated</b>: Use <code class="prettyprint">series</code> instead.
-     * @property {Function} getTargetValue <b>Deprecated</b>: Use <code class="prettyprint">targetValue</code> instead.
-     * @property {Function} getTooltip <b>Deprecated</b>: Use <code class="prettyprint">tooltip</code> instead.
-     * @property {Function} getValue <b>Deprecated</b>: Use <code class="prettyprint">value</code> instead.
-     * @property {Function} getX <b>Deprecated</b>: Use <code class="prettyprint">x</code> instead.
-     * @property {Function} getY <b>Deprecated</b>: Use <code class="prettyprint">y</code> instead.
-     * @property {Function} getZ <b>Deprecated</b>: Use <code class="prettyprint">z</code> instead.
-     * @property {Function} isSelected <b>Deprecated</b>: Use <code class="prettyprint">selected</code> instead.
      * @return {Object|null} An object containing properties for the data item, or null if none exists.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getDataItem: function(seriesIndex, groupIndex) {
-      var ret = this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getDataItem(seriesIndex, groupIndex);
     },
 
     /**
@@ -1323,20 +1262,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      * @property {number} bounds.width
      * @property {number} bounds.height
      * @property {string} title
-     * @property {Function} getBounds <b>Deprecated</b>: Use <code class="prettyprint">bounds</code> instead.
-     * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
      * @return {Object} An object containing properties for the chart legend.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getLegend: function() {
-      var ret = this._component.getAutomation().getLegend();
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getLegend();
     },
 
     /**
@@ -1347,19 +1279,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      * @property {number} bounds.y
      * @property {number} bounds.width
      * @property {number} bounds.height
-     * @property {Function} getBounds <b>Deprecated</b>: Use <code class="prettyprint">bounds</code> instead.
      * @return {Object} An object containing properties for the chart plot area.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getPlotArea: function() {
-      var ret = this._component.getAutomation().getPlotArea();
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getPlotArea();
     },
 
     /**
@@ -1377,20 +1303,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      *   <code class="prettyprint">refresh</code> after invoking this function.
      * @property {number} getPreferredSize.width
      * @property {number} getPreferredSize.height
-     * @property {Function} getBounds <b>Deprecated</b>: Use <code class="prettyprint">bounds</code> instead.
-     * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
      * @return {Object} An object containing properties for the x axis.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getXAxis: function() {
-      var ret = this._component.getAutomation().getXAxis();
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getXAxis();
     },
 
     /**
@@ -1408,20 +1327,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      *   <code class="prettyprint">refresh</code> after invoking this function.
      * @property {number} getPreferredSize.width
      * @property {number} getPreferredSize.height
-     * @property {Function} getBounds <b>Deprecated</b>: Use <code class="prettyprint">bounds</code> instead.
-     * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
      * @return {Object} An object containing properties for the y axis.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getYAxis: function() {
-      var ret = this._component.getAutomation().getYAxis();
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getYAxis();
     },
 
     /**
@@ -1439,20 +1351,13 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
      *   <code class="prettyprint">refresh</code> after invoking this function.
      * @property {number} getPreferredSize.width
      * @property {number} getPreferredSize.height
-     * @property {Function} getBounds <b>Deprecated</b>: Use <code class="prettyprint">bounds</code> instead.
-     * @property {Function} getTitle <b>Deprecated</b>: Use <code class="prettyprint">title</code> instead.
      * @return {Object} An object containing properties for the y2 axis.
      * @expose
      * @instance
      * @memberof oj.ojChart
      */
     getY2Axis: function() {
-      var ret = this._component.getAutomation().getY2Axis();
-
-      // : Provide backwards compatibility for getters until 1.2.0.
-      this._AddAutomationGetters(ret);
-
-      return ret;
+      return this._component.getAutomation().getY2Axis();
     },
 
     /**
@@ -1503,137 +1408,1414 @@ oj.__registerWidget('oj.ojChart', $['oj']['dvtBaseComponent'],
 var ojChartMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "slideToLeft", "slideToRight", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "alphaFade", "zoom", "none"]
     },
     "coordinateSystem": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["polar", "cartesian"]
     },
     "dataCursor": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off", "auto"]
     },
     "dataCursorBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["smooth", "snap", "auto"]
     },
     "dataCursorPosition": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "number"
+        },
+        "y2": {
+          "type": "number"
+        }
+      },
+      "writeback": true
     },
     "dataLabel": {},
     "dnd": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "groups": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "drag": {},
+                "dragEnd": {},
+                "dragStart": {}
+              }
+            },
+            "items": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "drag": {},
+                "dragEnd": {},
+                "dragStart": {}
+              }
+            },
+            "series": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "drag": {},
+                "dragEnd": {},
+                "dragStart": {}
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "legend": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            },
+            "plotArea": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            },
+            "xAxis": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            },
+            "y2Axis": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            },
+            "yAxis": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  type: "Array<string>"
+                },
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
+            }
+          }
+        }
+      }
     },
     "dragMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["pan", "zoom", "select", "off", "user"]
     },
     "drilling": {
-      "type": "string"
-    },
-    "footnote": {
-      "type": "object"
+      "type": "string",
+      "enumValues": ["on", "seriesOnly", "groupsOnly", "off"]
     },
     "groups": {
-      "type": "Array<object>|Array<string>"
+      "type": "Array<object>"
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "hideAndShowBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["withRescale", "withoutRescale", "none"]
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "initialZooming": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["first", "last", "none"]
     },
     "legend": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "maxSize": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string",
+          "enumValues": ["start", "end", "bottom", "top", "auto"]
+        },
+        "referenceObjectSection": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "titleHalign": {
+              "type": "string",
+              "enumValues": ["center", "end", "start"]
+            },
+            "titleStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off", "auto"]
+        },
+        "scrolling": {
+          "type": "string",
+          "enumValues": ["off", "asNeeded"]
+        },
+        "sections": {
+          "type": "Array<object>"
+        },
+        "seriesSection": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "titleHalign": {
+              "type": "string",
+              "enumValues": ["center", "end", "start"]
+            },
+            "titleStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "size": {
+          "type": "string"
+        },
+        "symbolHeight": {
+          "type": "number"
+        },
+        "symbolWidth": {
+          "type": "number"
+        },
+        "textStyle": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "titleHalign": {
+          "type": "string"
+        },
+        "titleStyle": {
+          "type": "string"
+        }
+      }
     },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     },
     "otherThreshold": {
       "type": "number"
     },
     "overview": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "object"
+        },
+        "height": {
+          "type": "string"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        }
+      }
     },
     "pieCenter": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "renderer": {},
+        "scaling": {
+          "type": "string",
+          "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+        }
+      }
     },
     "pieCenterLabel": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "object"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     },
     "plotArea": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "borderWidth": {
+          "type": "number"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        }
+      }
     },
     "polarGridShape": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["polygon", "circle"]
     },
     "selection": {
-      "type": "Array<string>|Array<object>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["single", "multiple", "none"]
     },
     "series": {
       "type": "Array<object>"
     },
     "sorting": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["ascending", "descending", "off"]
     },
     "splitDualY": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off", "auto"]
     },
     "splitterPosition": {
       "type": "number"
     },
     "stack": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "stackLabel": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "styleDefaults": {
-      "type": "object"
-    },
-    "subtitle": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animationDownColor": {
+          "type": "string"
+        },
+        "animationDuration": {
+          "type": "number"
+        },
+        "animationIndicators": {
+          "type": "string",
+          "enumValues": ["none", "all"]
+        },
+        "animationUpColor": {
+          "type": "string"
+        },
+        "barGapRatio": {
+          "type": "number"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "borderWidth": {
+          "type": "number"
+        },
+        "boxPlot": {
+          "type": "object",
+          "properties": {
+            "medianSvgClassName": {
+              "type": "string"
+            },
+            "medianSvgStyle": {
+              "type": "object"
+            },
+            "whiskerSvgClassName": {
+              "type": "string"
+            },
+            "whiskerEndSvgClassName": {
+              "type": "string"
+            },
+            "whiskerEndLength": {
+              "type": "string"
+            },
+            "whiskerEndSvgStyle": {
+              "type": "object"
+            },
+            "whiskerSvgStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "colors": {
+          "type": "Array<string>"
+        },
+        "dataCursor": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "markerColor": {
+              "type": "string"
+            },
+            "markerDisplayed": {
+              "type": "string",
+              "enumValues": ["on", "off"]
+            },
+            "markerSize": {
+              "type": "number"
+            }
+          }
+        },
+        "dataItemGaps": {
+          "type": "string"
+        },
+        "dataLabelPosition": {
+          "type": "Array<string>",
+          "enumValues": ["center", "outsideSlice", "aboveMarker", "belowMarker", "beforeMarker",
+                         "afterMarker", "insideBarEdge", "outsideBarEdge", "none", "auto"]
+        },
+        "dataLabelStyle": {
+          "type": "Array<string>"
+        },
+        "funnelBackgroundColor": {
+          "type": "string"
+        },
+        "groupSeparators": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off"]
+            }
+          }
+        },
+        "hoverBehaviorDelay": {
+          "type": "number"
+        },
+        "lineStyle": {
+          "type": "string",
+          "enumValues": ["dotted", "dashed", "solid"]
+        },
+        "lineType": {
+          "type": "string",
+          "enumValues": ["straight", "curved", "stepped", "centerStepped", "segmented", "centerSegmented", "none", "auto"]
+        },
+        "lineWidth": {
+          "type": "number"
+        },
+        "markerColor": {
+          "type": "string"
+        },
+        "markerDisplayed": {
+          "type": "string",
+          "enumValues": ["on", "off", "auto"]
+        },
+        "markerShape": {
+          "type": "string",
+          "enumValues": ["square", "circle", "diamond", "plus", "triangleDown",
+                         "triangleUp", "human", "star", "auto"]
+        },
+        "markerSize": {
+          "type": "number"
+        },
+        "marqueeBorderColor": {
+          "type": "string"
+        },
+        "marqueeColor": {
+          "type": "string"
+        },
+        "maxBarWidth": {
+          "type": "number"
+        },
+        "otherColor": {
+          "type": "string"
+        },
+        "patterns": {
+          "type": "Array<string>"
+        },
+        "pieFeelerColor": {
+          "type": "string"
+        },
+        "pieInnerRadius": {
+          "type": "number"
+        },
+        "selectionEffect": {
+          "type": "string",
+          "enumValues": ["explode", "highlightAndExplode", "highlight"]
+        },
+        "seriesEffect": {
+          "type": "string",
+          "enumValues": ["color", "pattern", "gradient"]
+        },
+        "shapes": {
+          "type": "Array<string>"
+        },
+        "stackLabelStyle": {
+          "type": "string"
+        },
+        "stockFallingColor": {
+          "type": "string"
+        },
+        "stockRangeColor": {
+          "type": "string"
+        },
+        "stockRisingColor": {
+          "type": "string"
+        },
+        "stockVolumeColor": {
+          "type": "string"
+        },
+        "threeDEffect": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        },
+        "tooltipLabelStyle": {
+          "type": "string"
+        },
+        "tooltipValueStyle": {
+          "type": "string"
+        }
+      }
     },
     "timeAxisType": {
-      "type": "string"
-    },
-    "title": {
-      "type": "object"
+      "type": "string",
+      "enumValues": ["enabled", "mixedFrequency", "skipGaps", "disabled", "auto"]
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
     },
     "touchResponse": {
       "type": "string"
     },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelClose": {
+          "type": "string"
+        },
+        "labelDate": {
+          "type": "string"
+        },
+        "labelDefaultGroupName": {
+          "type": "string"
+        },
+        "labelGroup": {
+          "type": "string"
+        },
+        "labelHigh": {
+          "type": "string"
+        },
+        "labelLow": {
+          "type": "string"
+        },
+        "labelOpen": {
+          "type": "string"
+        },
+        "labelOther": {
+          "type": "string"
+        },
+        "labelPercentage": {
+          "type": "string"
+        },
+        "labelQ1": {
+          "type": "string"
+        },
+        "labelQ2": {
+          "type": "string"
+        },
+        "labelQ3": {
+          "type": "string"
+        },
+        "labelSeries": {
+          "type": "string"
+        },
+        "labelTargetValue": {
+          "type": "string"
+        },
+        "labelValue": {
+          "type": "string"
+        },
+        "labelVolume": {
+          "type": "string"
+        },
+        "labelX": {
+          "type": "string"
+        },
+        "labelY": {
+          "type": "string"
+        },
+        "labelZ": {
+          "type": "string"
+        },
+        "tooltipPan": {
+          "type": "string"
+        },
+        "tooltipSelect": {
+          "type": "string"
+        },
+        "tooltipZoom": {
+          "type": "string"
+        }
+      }
+    },
     "type": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["line", "area", "lineWithArea", "stock", "boxPlot", "combo", "pie", "scatter", "bubble", "funnel", "pyramid", "bar"]
     },
     "valueFormats": {
-      "type": "Array<object>"
+      "type": "object",
+      "properties": {
+        "series": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "group": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "x": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "y": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "y2": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "z": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "targetValue": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "low": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "high": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "open": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "close": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "volume": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "q1": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "q2": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "q3": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "label": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "xAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "axisLine": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off"]
+            }
+          }
+        },
+        "baselineScaling": {
+          "type": "string",
+          "enumValues": ["min", "zero"]
+        },
+        "dataMax": {
+          "type": "number"
+        },
+        "dataMin": {
+          "type": "number"
+        },
+        "majorTick": {
+          "type": "object",
+          "properties": {
+            "baselineColor": {
+              "type": "string",
+              "enumValues": ["inherit", "auto"]
+            },
+            "baselineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "baselineWidth": {
+              "type": "number"
+            },
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            }
+          }
+        },
+        "max": {
+          "type": "string"
+        },
+        "maxSize": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "minorStep": {
+          "type": "number"
+        },
+        "minorTick": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            }
+          }
+        },
+        "minStep": {
+          "type": "number"
+        },
+        "referenceObjects": {
+          "type": "Array<object>"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["off", "on"]
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["log", "linear"]
+        },
+        "size": {
+          "type": "string"
+        },
+        "step": {
+          "type": "number"
+        },
+        "tickLabel": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["off", "on"]
+            },
+            "rotation": {
+              "type": "string",
+              "enumValues": ["none", "auto"]
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "style": {
+              "type": "object"
+            }
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "titleStyle": {
+          "type": "object"
+        },
+        "viewportEndGroup": {
+          "type": "string"
+        },
+        "viewportMax": {
+          "type": "string"
+        },
+        "viewportMin": {
+          "type": "string"
+        },
+        "viewportStartGroup": {
+          "type": "string"
+        }
+      }
     },
     "y2Axis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "alignTickMarks": {
+          "type": "string",
+          "enumValues": ["off", "on"]
+        },
+        "axisLine": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            }
+          }
+        },
+        "baselineScaling": {
+          "type": "string",
+          "enumValues": ["min", "zero"]
+        },
+        "dataMax": {
+          "type": "number"
+        },
+        "dataMin": {
+          "type": "number"
+        },
+        "majorTick": {
+          "type": "object",
+          "properties": {
+            "baselineColor": {
+              "type": "string",
+              "enumValues": ["inherit", "auto"]
+            },
+            "baselineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "baselineWidth": {
+              "type": "number"
+            },
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["off", "on", "auto"]
+            }
+          }
+        },
+        "max": {
+          "type": "number"
+        },
+        "maxSize": {
+          "type": "string"
+        },
+        "min": {
+          "type": "number"
+        },
+        "minorStep": {
+          "type": "number"
+        },
+        "minorTick": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "auto", "off"]
+            }
+          }
+        },
+        "minStep": {
+          "type": "number"
+        },
+        "position": {
+          "type": "string",
+          "enumValues": ["start", "end", "top", "bottom", "auto"]
+        },
+        "referenceObjects": {
+          "type": "Array<object>"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["off", "on"]
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["log", "linear"]
+        },
+        "size": {
+          "type": "string"
+        },
+        "step": {
+          "type": "number"
+        },
+        "tickLabel": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "position": {
+              "type": "string",
+              "enumValues": ["inside", "outisde"]
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["off", "on"]
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "style": {
+              "type": "object"
+            }
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "titleStyle": {
+          "type": "object"
+        }
+      }
     },
     "yAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "axisLine": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["off", "on", "auto"]
+            }
+          }
+        },
+        "baselineScaling": {
+          "type": "string",
+          "enumValues": ["min", "zero"]
+        },
+        "dataMax": {
+          "type": "number"
+        },
+        "dataMin": {
+          "type": "number"
+        },
+        "majorTick": {
+          "type": "object",
+          "properties": {
+            "baselineColor": {
+              "type": "string",
+              "enumValues": ["inherit", "auto"]
+            },
+            "baselineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "baselineWidth": {
+              "type": "number"
+            },
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            }
+          }
+        },
+        "max": {
+          "type": "number"
+        },
+        "maxSize": {
+          "type": "string"
+        },
+        "min": {
+          "type": "number"
+        },
+        "minorStep": {
+          "type": "number"
+        },
+        "minorTick": {
+          "type": "object",
+          "properties": {
+            "lineColor": {
+              "type": "string"
+            },
+            "lineStyle": {
+              "type": "string",
+              "enumValues": ["dotted", "dashed", "solid"]
+            },
+            "lineWidth": {
+              "type": "number"
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["on", "off", "auto"]
+            }
+          }
+        },
+        "minStep": {
+          "type": "number"
+        },
+        "position": {
+          "type": "string",
+          "enumValues": ["start", "end", "top", "bottom", "auto"]
+        },
+        "referenceObjects": {
+          "type": "Array<object>"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["off", "on"]
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["log", "linear"]
+        },
+        "size": {
+          "type": "string"
+        },
+        "step": {
+          "type": "number"
+        },
+        "tickLabel": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "position": {
+              "type": "string",
+              "enumValues": ["inside", "outside"]
+            },
+            "rendered": {
+              "type": "string",
+              "enumValues": ["off", "on"]
+            },
+            "scaling": {
+              "type": "string",
+              "enumValues": ["none", "auto", "thousand", "million", "billion", "trillion", "quadrillion"]
+            },
+            "style": {
+              "type": "object"
+            }
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "titleStyle": {
+          "type": "object"
+        },
+        "viewportMax": {
+          "type": "number"
+        },
+        "viewportMin": {
+          "type": "number"
+        }
+      }
     },
     "zoomAndScroll": {
       "type": "string"
@@ -1651,18 +2833,23 @@ var ojChartMeta = {
     "getPlotArea": {},
     "getSeries": {},
     "getSeriesCount": {},
-    "getTitle": {},
     "getValuesAt": {},
     "getXAxis": {},
     "getY2Axis": {},
     "getYAxis": {}
   },
+  "events": {
+    "drill": {},
+    "viewportChange": {},
+    "selectInput": {},
+    "viewportChangeInput": {}
+  },
   "extension": {
-    "_widgetName": "ojChart"
+    _WIDGET_NAME: "ojChart"
   }
 };
-oj.Components.registerMetadata('ojChart', 'dvtBaseComponent', ojChartMeta);
-oj.Components.register('oj-chart', oj.Components.getMetadata('ojChart'));
+oj.CustomElementBridge.registerMetadata('oj-chart', 'dvtBaseComponent', ojChartMeta);
+oj.CustomElementBridge.register('oj-chart', {'metadata': oj.CustomElementBridge.getMetadata('oj-chart')});
 })();
 
 (function() {
@@ -1672,27 +2859,30 @@ var ojSparkChartMeta = {
       "type": "number"
     },
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
-    "areaClassName": {
+    "areaSvgClassName": {
       "type": "string"
     },
     "areaColor": {
       "type": "string"
     },
-    "areaStyle": {
+    "areaSvgStyle": {
       "type": "object"
     },
     "barGapRatio": {
       "type": "number"
     },
     "baselineScaling": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["zero", "min"]
     },
-    "className": {
+    "svgClassName": {
       "type": "string"
     },
     "color": {
@@ -1705,16 +2895,18 @@ var ojSparkChartMeta = {
       "type": "string"
     },
     "items": {
-      "type": "Array<object>|Array<number>"
+      "type": "Array<number>"
     },
     "lastColor": {
       "type": "string"
     },
     "lineStyle": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dotted", "dashed", "solid"]
     },
     "lineType": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["curved", "stepped", "centerStepped", "segmented", "centerSegmented", "none", "straight"]
     },
     "lineWidth": {
       "type": "number"
@@ -1723,7 +2915,8 @@ var ojSparkChartMeta = {
       "type": "string"
     },
     "markerShape": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["square", "circle", "diamond", "plus", "triangleDown", "triangleUp", "human", "auto"]
     },
     "markerSize": {
       "type": "number"
@@ -1731,27 +2924,30 @@ var ojSparkChartMeta = {
     "referenceObjects": {
       "type": "Array<object>"
     },
-    "style": {
+    "svgStyle": {
       "type": "object"
     },
     "tooltip": {
       "type": "object"
     },
     "type": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["line", "lineWithArea", "bar", "line"]
     },
     "visualEffects": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "auto"]
     }
   },
   "methods": {
     "getDataItem": {}
   },
   "extension": {
-    "_widgetName": "ojSparkChart"
+    _WIDGET_NAME: "ojSparkChart"
   }
 };
-oj.Components.registerMetadata('ojSparkChart', 'dvtBaseComponent', ojSparkChartMeta);
-oj.Components.register('oj-spark-chart', oj.Components.getMetadata('ojSparkChart'));
+oj.CustomElementBridge.registerMetadata('oj-spark-chart', 'dvtBaseComponent', ojSparkChartMeta);
+oj.CustomElementBridge.register('oj-spark-chart', {'metadata': oj.CustomElementBridge.getMetadata('oj-spark-chart')});
 })();
+
 });

@@ -117,7 +117,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * and <code class="prettyprint">aria-orientation</code>.
    * <p>
    * It is up to the application developer to associate the label with the slider input component.
-   * There are three ways to do this:
+   * There are several ways to do this:
    * <ul>
    * <li>
    * Set an <code class="prettyprint">aria-labelledby</code> on the slider
@@ -129,6 +129,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * </li>
    * <li>
    * Set an <code class="prettyprint">aria-label</code> on the slider input.
+   * </li>
+   * <li>
+   * Use Javascript to update the <code class="prettyprint">aria-labelledby</code> attributes on the slider thumbs.
    * </li>
    * </ul>
    *
@@ -173,114 +176,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    *   Styling
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
    * </h3>
-   * Several CSS classes are defined to implement the slider's style. The key classes are
-   * the following:
+   * {@ojinclude "name":"stylingDoc"}
    *
    * <p>
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Class</th>
-   *       <th>Description</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-slider</td>
-   *       <td>Top level slider class. </td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-slider-thumb</td>
-   *       <td>Styles the slider thumb.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-slider-bar</td>
-   *       <td>Styles the slider bar. The slider bar spans the full width of a
-   *        horizontal slider.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-slider-bar-value</td>
-   *       <td>Styles the slider bar value. The slider bar value is the colored (blue by default)
-   *       part of the slider bar.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-slider-horizontal</td>
-   *       <td>This class is present when the slider is oriented horizontally.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-slider-vertical</td>
-   *       <td>This class is present when the slider is oriented vertically.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-focus-highlight</td>
-   *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * <p>
-   * To change the thickness of the bars of a vertical slider, change the
-   * <code class="prettyprint">height</code>, and also change the
-   * <code class="prettyprint">margin-top</code>
-   * to be negative half of the height.
-   * For example, the following sets a horizontal slider's height to 4px:
-   *
-   * <pre class="prettyprint">
-   * <code>
-   *.oj-slider-horizontal .oj-slider-bar, .oj-slider-horizontal .oj-slider-bar-value {
-   *  height:4px;
-   *  top: 50%;
-   *  margin-top:-2px;
-   * }
-   * </code></pre>
-   *
-   * <p>
-   * To increase the horizontal slider's bar thickness to 8px, use the following CSS definition:
-   *
-   * <pre class="prettyprint">
-   * <code>
-   *.oj-slider-horizontal .oj-slider-bar, .oj-slider-horizontal .oj-slider-bar-value {
-   *  height:8px;
-   *  top: 50%;
-   *  margin-top:-4px;
-   * }
-   * </code></pre>
-   *
-   * <p>
-   * Another consideration when altering the slider bar thickness is the definition of the click
-   * area. The slider CSS defines an expanded bar click area, so that it is not necessary to
-   * click exactly on the bar to reposition the slider thumb. This expanded click area is
-   * especially important for thin bars. Below we show the default definition of the expanded
-   * slider bar click area:
-   *
-   * <pre class="prettyprint">
-   * <code>
-   *.oj-slider-bar:after {
-   *  content: '';
-   *  position: absolute;
-   *  top: -16px;
-   *  bottom: -16px;
-   *  left: -16px;
-   *  right: -16px;
-   * }
-   * </code></pre>
-   *
-   * <p>
-   * As the bar thickness increases, it is recommended that you decrease the additional hit area
-   * on the bar. (By half of the increase in thickness). So when we increase the bar thickness
-   * from 4px to 8px, we would want to adjust the above constants from -16px to -14px:
-   *
-   * <pre class="prettyprint">
-   * <code>
-   *.oj-slider-bar:after {
-   *  content: '';
-   *  position: absolute;
-   *  top: -14px;
-   *  bottom: -14px;
-   *  left: -14px;
-   *  right: -14px;
-   * }
-   * </code></pre>
    *
    * <!-- - - - - Above this point, the tags are for the class.
    *              Below this point, the tags are for the constructor (initializer). - - - - -->
@@ -533,6 +431,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     // number of pages in a slider
     // (how many times can you page up/down to go through the whole range)
     _numPages: 5,
+    _defaultElementId: null,
 
     _sliderDisplayValue: null,
 
@@ -654,9 +553,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         // Check if the <input> has aria-label=""
         //
 
-        var ariaLabelString = this.element.attr('aria-label');
+        var ariaLabelString;
+
+        if (this.OuterWrapper) 
+          ariaLabelString = this._elementWrapped.attr('aria-label');
+        else
+          ariaLabelString = this.element.attr('aria-label');
+
         if (ariaLabelString) {
-          // console.log("aria-label " + ariaLabelString);
 
           thumb = this._elementWrapped.find('.oj-slider-thumb');
 
@@ -670,8 +574,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       // If <input> has aria-labelledby set, then look for label it is referring to.
       var queryResult = this._getAriaLabelledByElementLocal();
       if (queryResult !== null && queryResult.length !== 0) {
-        // console.log("found labelledby");
-        // console.log("label id is " + queryResult.attr("id"));
         return queryResult;
       }
 
@@ -684,18 +586,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     },
 
     _getAriaLabelForElementLocal: function () {
-      var id = this.element.prop('id');
+
+      var id;
+      if (this.OuterWrapper) 
+        id = this._elementWrapped.prop('id');
+      else
+        id = this.element.prop('id');
+
       if (id !== undefined) {
         var labelQuery = "label[for='" + id + "']";
-
-        // console.log("label id is " + $(labelQuery).attr("id"));
 
         var jqLabelQuery = $(labelQuery);
         if (jqLabelQuery.length > 0) return jqLabelQuery;
 
         var spanQuery = "span[for='" + id + "']";
-
-        // console.log("span id is " + $(spanQuery).attr("id"));
 
         if ($(spanQuery).length !== 0) {
           return $(spanQuery);
@@ -708,7 +612,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       // look for a label with an id equal to the value of aria-labelledby.
       // .prop does not work for aria-labelledby. Need to use .attr to find
       // aria-labelledby.
-      var ariaId = this.element.attr('aria-labelledby');
+
+      var ariaId;
+      if (this.OuterWrapper) 
+        ariaId = this._elementWrapped.attr('aria-labelledby');
+      else
+        ariaId = this.element.attr('aria-labelledby');
 
       if (ariaId !== undefined) {
         var labelQuery = "label[id='" + ariaId + "']";
@@ -758,7 +667,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     },
 
     _getElementId: function () {
-      return (this.element[0].id);
+
+      if (this.OuterWrapper) {
+        if (!this._elementWrapped[0].id)
+          this._elementWrapped.uniqueId()
+        return (this._elementWrapped[0].id);
+      }
+      else {
+        if (!this.element[0].id)
+          this.element.uniqueId();
+        return (this.element[0].id);
+      }
     },
 
     //
@@ -885,12 +804,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       var classes = 'oj-slider-bar';
 
-      if (this._isVertical()) {
-        classes += ' oj-slider-vertical';
-      } else {
-        classes += ' oj-slider-horizontal';
-      }
-
       $(this._barback).attr('id', barId);
       this._barback.addClass(classes);
 
@@ -921,7 +834,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       var options = this.options;
 
       if (options.type) {
-        if (!this.options.value) {
+        if (this.options.value == null) {
           //
           // If the value options was never set,
           // then initialize the value using valueMin (for a single-thumbbed slider)
@@ -1016,7 +929,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      */
     _setupEvents: function () {
       if (this._CanSetValue()) {
-        this._hoverable(this._elementWrapped);
+        this._AddHoverable(this._elementWrapped);
       }
 
       this._thumbs.toArray().forEach(
@@ -1085,6 +998,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       if (this._range) this._range.remove();
       if (this._sliderContainer) this._sliderContainer.remove();
+
+      if (this.OuterWrapper) {
+        this._elementWrapped.removeUniqueId()
+        this._RemoveHoverable(this._elementWrapped);
+      } else  {
+        this.element.removeUniqueId();
+        this._RemoveHoverable(this.element);
+      }
+
     },
 
     //
@@ -1330,8 +1252,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       fracThumb = (pixelMouse / pixelTotal);
 
-      // console.log("pos " + pos + " pctMouse " + fracThumb);
-
       fracThumb = this._getOrientationAdjustedFrac(fracThumb);
 
       return fracThumb;
@@ -1344,8 +1264,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 
       fracThumb = this._getFracFromThumb(thumb);
 
-      // console.log("_getNormValueFromThumb percent: " + fracThumb);
-
       valueTotal = this._valueMax() - this._valueMin();
 
       if (this._isRTL() && !this._isVertical()) {
@@ -1355,7 +1273,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       valueMouse = this._valueMin() + fracThumb * valueTotal;
 
       var trimmedValue = this._trimAlignValue(valueMouse);
-      // console.log("_getNormValueFromThumb valueMouse: " + valueMouse + " " + trimmedValue);
 
       return trimmedValue;
     },
@@ -1379,7 +1296,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     },
 
     _slide: function (event, index, newValParam, rawOnly) {
-      // console.log("_slide: options.value " + this.options.value + " newVal " + newVal);
+
       var otherVal;
 
       if (this._multipleThumbs) {
@@ -1409,20 +1326,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     //
     _setSingleValue: function (event, newValue, rawOnly) {
       this._newValue = this._trimAlignValue(newValue);
-      // console.log("setSingleValue " + newValue + " -> " + this._newValue);
-      // this._change(event, 0 );
-      // console.log("setSingleValue options.value = " + this.options.value)
+      this._SetRawValue(this._newValue, event);
       if (!rawOnly) {
         this._SetValue(this._newValue, event);
         this._updateUI();
       }
-      this._SetRawValue(this._newValue, event);
 
       return;
     },
 
     _change: function (event, index, rawOnly) {
-      // console.log("_change from " + this.options.value + " to newValue " + this._newValue);
 
       if (this._multipleThumbs) {
         // store the last change values for creating draggable containment
@@ -1453,7 +1366,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       vals = this.options.value.slice();
 
       for (i = 0; i < vals.length; i += 1) {
-        // console.log("**********  " + i + " " + vals[i]);
         vals[i] = this._trimAlignValue(vals[i]);
       }
 
@@ -1492,7 +1404,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     //
     _setMultiValue: function (event, index, newValue, rawOnly) {
       this._newMultiValue[index] = this._trimAlignValue(newValue);
-      // console.log(index + " _setMultiValue " + this._newValue);
       this._change(event, index, rawOnly);
       if (!rawOnly) this._updateUI();
       return;
@@ -1506,6 +1417,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
           if (!isNaN(value[0])) {
             this._multipleThumbs = true;
             coercedValue = value;
+            // verify that the array values are all within range.
+            for (var index = 0; index < coercedValue.length; index += 1) {
+              this._checkValueBounds(coercedValue[index], this._valueMin(), this._valueMax());
+            }
           } else {
             //
             // Don't set multipleThumbs if the value is not a number
@@ -1513,15 +1428,42 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
             //
             this._multipleThumbs = false;
             coercedValue = this._parse(key, value[0]);
+            // verify that the new value is within range.
+            this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
           }
         } else {
           this._multipleThumbs = false;
           coercedValue = this._parse(key, value);
+          // verify that the new value is within range.
+          this._checkValueBounds(coercedValue, this._valueMin(), this._valueMax());
         }
       }
 
       if (key === 'max' || key === 'min') {
         coercedValue = this._parse(key, value);
+
+        if (key === 'min') {
+          this._checkMinMax(coercedValue, this._valueMax());
+          // check all thumbs against the new min.
+          if (!this._multipleThumbs) {
+            this._checkValueBounds(this._getSingleValue(), coercedValue, this._valueMax());
+          } else {
+            for (var index = 0; index < coercedValue.length; index += 1) {
+              this._checkValueBounds(this._getMultiValues(index), coercedValue, this._valueMax());
+            }
+          }
+        } else if (key === 'max') {
+          this._checkMinMax(this._valueMin(), coercedValue);
+          // check all thumbs against the new max
+          if (!this._multipleThumbs) {
+            this._checkValueBounds(this._getSingleValue(), this._valueMin(), coercedValue);
+          } else {
+            for (var index = 0; index < coercedValue.length; index += 1) {
+              this._checkValueBounds(this._getMultiValues(index), this._valueMin(), coercedValue);
+            }
+          }
+        }
+
       } else if (key === 'step') {
         coercedValue = this._parseStep(value);
       } else {
@@ -1710,12 +1652,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
             // console.log(i + " Refresh value " + valPercent);
 
             if (!this._isVertical()) {
-              $(thumb)['css']({ left: valPercent + '%' });
+              thumb['css']({ left: valPercent + '%' });
             } else {
-              $(thumb)['css']({ top: (100 - valPercent) + '%' });
+              thumb['css']({ top: (100 - valPercent) + '%' });
             }
 
-            $(thumb).attr('aria-valuenow', this._getMultiValues(i));
+            if (!thumb.hasClass('oj-active')) {
+              thumb.attr('aria-valuenow', this._getMultiValues(i));
+              thumb.attr('aria-valuemin', valueMin);
+              thumb.attr('aria-valuemax', valueMax);
+            }
             this._setRangeMultiThumb(valPercent, i);
           },
           this
@@ -1741,8 +1687,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
           this._thumb['css']({ top: (100 - valPercent) + '%' });
         }
 
-        $(this._thumb).attr('aria-valuenow', value);
-
+        //
+        // note - we don't want to continuously update aria values,
+        // otherwise it causes unwanted screen reader chatter.
+        // see .
+        //
+        if (!$(this._thumb).hasClass('oj-active')) {
+          $(this._thumb).attr('aria-valuenow', value);
+          $(this._thumb).attr('aria-valuemin', valueMin);
+          $(this._thumb).attr('aria-valuemax', valueMax);
+        }
         this._setRange(valPercent);
       }
     },
@@ -1986,6 +1940,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
             this._change(event, index, false);
 
             $(event.target).removeClass('oj-active');
+            this._updateUI(true);
 
             this._thumbIndex = null;
             break;
@@ -2066,20 +2021,42 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         throw new Error(this.getTranslatedString('noValue'));
       }
 
-      // now make sure min < max, else throw an Error
-      if (opts['min'] != null && opts['max'] != null) {
-        if (opts['max'] < opts['min']) {
-          throw new Error(this.getTranslatedString('maxMin'));
-        }
+      this._checkMinMax(opts['min'], opts['max']);
 
-        // Make sure value is within min and max
-        if (opts['value'] < opts['min'] || opts['value'] > opts['max']) {
+      // Make sure value is within min and max
+      if (Array.isArray(opts['value'])) {
+        for (var index = 0; index < opts['value'].length; index += 1) {
+          this._checkValueBounds(opts['value'][index], opts['min'], opts['max']);
+        }
+      } else {
+        this._checkValueBounds(opts['value'], opts['min'], opts['max']);
+      }
+    },
+
+    // function that will throw an error if the value is not between min and max
+    _checkValueBounds: function(value, min, max) {
+      if (min != null) {
+        if (value < min) {
+          throw new Error(this.getTranslatedString('valueRange'));
+        }
+      }
+      if (max != null) {
+        if (value > max) {
           throw new Error(this.getTranslatedString('valueRange'));
         }
       }
     },
 
-    getNodeBySubId: function (locator) {
+    // throw an error if min > max
+    _checkMinMax: function(min, max) {
+      if (min != null && max != null) {
+        if (min > max) {
+          throw new Error(this.getTranslatedString('maxMin'));
+        }
+      }
+    },
+
+    getNodeBySubId: function(locator) {
       if (locator == null) {
         return this.element ? this.element[0] : null;
       }
@@ -2358,8 +2335,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       // Do not allow dragging on a disabled thumb.
       if (this.options.disabled) return;
 
-      // console.log("_makeDraggable");
-
       if (this._multipleThumbs) {
         this._thumbs.toArray().forEach(
 
@@ -2509,7 +2484,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone
      * gesture doc
      * @memberof oj.ojSlider
+     */
+
+    /**
+     * Several CSS classes are defined to implement the slider's style. The key classes are
+     * the following:
      *
+     * <p>
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Class</th>
+     *       <th>Description</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-slider</td>
+     *       <td>Top level slider class. </td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-slider-thumb</td>
+     *       <td>Styles the slider thumb.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-slider-bar</td>
+     *       <td>Styles the slider bar. The slider bar spans the full width of a
+     *        horizontal slider.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-slider-bar-value</td>
+     *       <td>Styles the slider bar value. The slider bar value is the colored (blue by default)
+     *       part of the slider bar.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-slider-horizontal</td>
+     *       <td>This class is present when the slider is oriented horizontally.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-slider-vertical</td>
+     *       <td>This class is present when the slider is oriented vertically.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>oj-focus-highlight</td>
+     *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojSlider
      */
 
     /// ///////////////     SUB-IDS     //////////////////
@@ -2567,8 +2591,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
 (function() {
 var ojSliderMeta = {
   "properties": {
-    "disabled": {
-      "type": "boolean"
+    "distance": {
+      "type": "number"
     },
     "max": {
       "type": "number"
@@ -2597,12 +2621,28 @@ var ojSliderMeta = {
   },
   "methods": {},
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojSlider"
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojSlider"
   }
 };
-oj.Components.registerMetadata('ojSlider', 'editableValue', ojSliderMeta);
-oj.Components.register('oj-slider', oj.Components.getMetadata('ojSlider'));
+var _ARRAY_REGEXP = /^\[.*\]/;
+var sliderParseFunction = function(value, name, meta, defaultParseFunction) {
+
+  if (name === "rawValue" || name === "value") {
+    if (_ARRAY_REGEXP.test(value)) {
+      return JSON.parse(value);
+    }
+  }
+  return defaultParseFunction(value);
+};
+  oj.CustomElementBridge.registerMetadata('oj-slider', 'editableValue', ojSliderMeta);
+//  oj.CustomElementBridge.register('oj-slider', {'metadata': oj.CustomElementBridge.getMetadata('oj-slider')});
+
+oj.CustomElementBridge.register('oj-slider', {
+  'metadata': oj.CustomElementBridge.getMetadata('oj-slider'),
+  'parseFunction': sliderParseFunction});
+  
 })();
+
+
 });

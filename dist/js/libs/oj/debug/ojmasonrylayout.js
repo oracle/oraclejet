@@ -4394,24 +4394,30 @@ MasonryLayoutCommon._PHASE_SHOW = 3;
 (function() {
 var ojMasonryLayoutMeta = {
   "properties": {
-    "disabled": {
-      "type": "boolean"
-    },
     "reorderHandle": {
       "type": "string"
     }
   },
   "methods": {
     "insertTile": {},
-    "refresh": {},
     "removeTile": {},
     "resizeTile": {}
   },
+  "events": {
+    "beforeInsert": {},
+    "beforeRemove": {},
+    "beforeReorder": {},
+    "beforeResize": {},
+    "insert": {},
+    "remove": {},
+    "reorder": {},
+    "resize": {},
+  },
   "extension": {
-    "_widgetName": "ojMasonryLayout"
+    _WIDGET_NAME: "ojMasonryLayout"
   }
 };
-oj.Components.registerMetadata('ojMasonryLayout', 'baseComponent', ojMasonryLayoutMeta);
-oj.Components.register('oj-masonry-layout', oj.Components.getMetadata('ojMasonryLayout'));
+oj.CustomElementBridge.registerMetadata('oj-masonry-layout', 'baseComponent', ojMasonryLayoutMeta);
+oj.CustomElementBridge.register('oj-masonry-layout', {'metadata': oj.CustomElementBridge.getMetadata('oj-masonry-layout')});
 })();
 });

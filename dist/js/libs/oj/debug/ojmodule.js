@@ -80,6 +80,16 @@ oj.ModuleBinding.defaults =
       var pendingViewId = -1;
       var cacheHolder;
       var endCommentNode;
+      var busyStateResolver;
+      
+      function resolveBusyState()
+      {
+        if (busyStateResolver)
+        {
+          busyStateResolver();
+          busyStateResolver = null;
+        }
+      }
 
       var invokeModelDispose = function(model)
       {
@@ -102,6 +112,7 @@ oj.ModuleBinding.defaults =
           var model = cache[keys[i]].model;
           invokeModelDispose(model);
         }
+        resolveBusyState();
         
         // Knockout will call ko.cleanNode on all child nodes including the cacheHolder 
       };
@@ -131,8 +142,11 @@ oj.ModuleBinding.defaults =
         }
       };
       
+      var contextElement = element;
+      
       if (element.nodeType === 8) //comment
       {
+        contextElement = element.parentElement;
         ko.virtualElements.setDomNodeChildren(element, []); // remove all child nodes of the virtual element
         endCommentNode = element.nextSibling;
       }
@@ -140,6 +154,16 @@ oj.ModuleBinding.defaults =
       ko.computed(function ()
       {
         pendingViewId++;
+        
+        if (!busyStateResolver)
+        {
+          
+          var busyContext = oj.Context.getContext(contextElement).getBusyContext();
+          busyStateResolver = busyContext.addBusyState(
+                  {'description' : "ojModule binding on a node with the Id " + element.id + 
+                   "is loading the module. Binding evaluator: " + valueAccessor.toString()});
+
+        }
         
         var isInitial = pendingViewId === 0;
         
@@ -229,6 +253,7 @@ oj.ModuleBinding.defaults =
                   
                   if (model == null)
                   {
+                    resolveBusyState();
                     throw "createViewFunction option cannot be used when the ViewModel is null";
                   }
                   
@@ -236,6 +261,7 @@ oj.ModuleBinding.defaults =
                   
                   if (viewMethod == null)
                   {
+                    resolveBusyState();
                     throw "function specified by the createViewFunction option was not found on the ViewModel";
                   }
                   
@@ -255,6 +281,7 @@ oj.ModuleBinding.defaults =
             }
             else
             {
+              resolveBusyState();
               throw new Error('View name must be specified');
             }
           }
@@ -263,6 +290,7 @@ oj.ModuleBinding.defaults =
         
         if (viewPromise == null)
         {
+          resolveBusyState();
           throw new Error('ojModule is missing a View');
         }
         
@@ -297,10 +325,11 @@ oj.ModuleBinding.defaults =
             
             if (view == null)
             {
+              resolveBusyState();
               throw "The module's View was resolved to null";
             }
             
-            var nodes = _getDomNodes(view);
+            var nodes = _getDomNodes(view, resolveBusyState);
             var model = values[1];
             
             var saveInCache = false;
@@ -414,6 +443,7 @@ oj.ModuleBinding.defaults =
             {
               _invokeLifecycleListener(lifecycleListener, 'transitionCompleted', [element, valueAccessor, model]);
               _invokeViewModelMethod(model, 'transitionCompletedHandler', [element, valueAccessor]);
+              resolveBusyState();
             };
             
             
@@ -451,6 +481,7 @@ oj.ModuleBinding.defaults =
            
             if (reason != null)
             {
+              resolveBusyState();
               oj.Logger.error(reason);
               // Additionally log the stack trace for the original error
               /*if (reason instanceof Error)
@@ -769,7 +800,7 @@ oj.ModuleBinding.defaults =
   /**
    * @ignore 
    */
-  function _getDomNodes(content)
+  function _getDomNodes(content, resolveBusyState)
   {
     if (typeof content === 'string')
     {
@@ -785,6 +816,7 @@ oj.ModuleBinding.defaults =
     }
     else
     {
+      resolveBusyState();
       throw "The View (" + content + ") has an unsupported type";
     }
     return content;

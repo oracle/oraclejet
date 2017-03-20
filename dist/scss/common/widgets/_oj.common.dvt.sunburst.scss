@@ -15,6 +15,10 @@
       }      
     }
 
+    oj-sunburst {
+      display: block;
+    }
+
     .oj-sunburst {
       @include oj-user-select-property(none);
       width:400px;
@@ -56,9 +60,19 @@
       font-size: $fontSize;
     }
 
-    .oj-sunburst-current-text { 
+    .oj-sunburst-current-drill-text { 
       color: $textColor;
       font-size: $fontSize;
+    }
+    
+    .oj-sunburst-drill-text { 
+      color: $dvtSunburstDrillTextColor;
+      font-size: $fontSize;
+      text-decoration: $linkTextDecoration;
+    }
+    
+    .oj-sunburst-drill-text.oj-hover {
+      text-decoration: $linkTextDecorationHover;
     }
 
     .oj-sunburst-node {

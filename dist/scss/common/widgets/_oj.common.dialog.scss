@@ -269,10 +269,26 @@
        @extend .oj-fwk-icon-cross;
     }
 
+    // DIALOG animation defaults
+    //----------------------------------
+    $dialogAnimationDefaults: ();
+ 
+    @if ($dialogOpenAnimation) {
+      $dialogAnimationDefaults: map-merge($dialogAnimationDefaults, (open: $dialogOpenAnimation));
+    }
+ 
+    @if ($dialogCloseAnimation) {
+      $dialogAnimationDefaults: map-merge($dialogAnimationDefaults, (close: $dialogCloseAnimation));
+    }
+    
     // option defaults
     //----------------------------------
     $dialogDefaultOptions: ();
  
+    @if ($dialogAnimationDefaults) {
+      $dialogDefaultOptions: map-merge($dialogDefaultOptions, (animation: $dialogAnimationDefaults));
+    }
+
     @if ($dialogResizeBehaviorOptionDefault) {
       $dialogDefaultOptions: map-merge($dialogDefaultOptions, (resizeBehavior: $dialogResizeBehaviorOptionDefault));
     }

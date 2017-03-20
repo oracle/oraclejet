@@ -536,6 +536,8 @@ DvtPictoChartEventManager.prototype.OnClickInternal = function(event) {
   if (!obj)
     return;
 
+  this.processActionEvent(obj);
+
   // Only drill if not selectable. If selectable, drill with double click.
   if (!(obj.isSelectable && obj.isSelectable()))
     this.processDrillEvent(obj);
@@ -564,6 +566,8 @@ DvtPictoChartEventManager.prototype.HandleTouchHoverEndInternal = function(event
   if (!obj)
     return;
 
+  this.processActionEvent(obj);
+
   // Only drill if not selectable. If selectable, drill using double click.
   if (!(obj.isSelectable && obj.isSelectable()))
     this.processDrillEvent(obj);
@@ -576,6 +580,8 @@ DvtPictoChartEventManager.prototype.HandleTouchClickInternal = function(event) {
   var obj = this.GetLogicalObject(event.target);
   if (!obj)
     return;
+
+  this.processActionEvent(obj);
 
   // Only drill if not selectable. If selectable, drill using double click.
   if (!(obj.isSelectable && obj.isSelectable()))
@@ -605,6 +611,15 @@ DvtPictoChartEventManager.prototype.HandleTouchDblClickInternal = function(event
 DvtPictoChartEventManager.prototype.processDrillEvent = function(obj) {
   if (obj instanceof DvtPictoChartItem && obj.isDrillable())
     this.FireEvent(dvt.EventFactory.newDrillEvent(obj.getId()));
+};
+
+/**
+ * Processes an action on the specified object.
+ * @param {DvtLogicalObject} obj The object that was clicked.
+ */
+DvtPictoChartEventManager.prototype.processActionEvent = function(obj) {
+  if (obj && obj.getAction && obj.getAction())
+    this.FireEvent(dvt.EventFactory.newActionEvent('action', obj.getAction(), obj.getId()));
 };
 /**
  * Default values and utility functions for component versioning.
@@ -729,7 +744,7 @@ DvtPictoChartImageMarker.prototype._setAnimationParams = function(params) {
   this.setWidth(params[2]);
   this.setHeight(params[3]);
 };
-// Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * PictoChartItem
  * @param {dvt.PictoChart} picto
@@ -847,7 +862,7 @@ DvtPictoChartItem.prototype.getBorderWidth = function() {
  * @return {string}
  */
 DvtPictoChartItem.prototype.getClassName = function() {
-  return this._item['className'];
+  return this._item['className'] || this._item['svgClassName'];
 };
 
 /**
@@ -855,7 +870,7 @@ DvtPictoChartItem.prototype.getClassName = function() {
  * @return {object}
  */
 DvtPictoChartItem.prototype.getStyle = function() {
-  return this._item['style'];
+  return this._item['style'] || this._item['svgStyle'];
 };
 
 /**
@@ -904,6 +919,14 @@ DvtPictoChartItem.prototype.getName = function() {
  */
 DvtPictoChartItem.prototype.getId = function() {
   return this._id;
+};
+
+/**
+ * Return the action string for the item, if any exists
+ * @return {string}
+ */
+DvtPictoChartItem.prototype.getAction = function() {
+  return this._item['action'];
 };
 
 /**
@@ -1320,8 +1343,11 @@ DvtPictoChartShapeMarker.prototype.animateUpdate = function(handler, oldMarker) 
 
   // Color animation
   var endFill = this.getFill();
-  this.setFill(oldMarker.getFill().clone());
-  animator.addProp(dvt.Animator.TYPE_FILL, this, this.getFill, this.setFill, endFill);
+  var startFill = oldMarker.getFill().clone();
+  if (!startFill.equals(endFill)) {
+    this.setFill(startFill);
+    animator.addProp(dvt.Animator.TYPE_FILL, this, this.getFill, this.setFill, endFill);
+  }
 
   // Position and size animation
   var endParams = this._getAnimationParams();

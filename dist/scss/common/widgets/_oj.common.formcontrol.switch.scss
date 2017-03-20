@@ -244,19 +244,9 @@
 		}
 	}
 
-        .oj-switch-thumb:focus {
-                outline:none; // e.g. Chrome adds blue outline to focused element
-         }
-
-         // The oj-focus-highlight class applies focus styling that may not be desirable
-         // when the focus results from pointer interaction (touch or mouse), but which is
-         // needed for accessibility when the focus occurs by a non-pointer mechanism, for
-         // example keyboard or initial page load.
-         // See also the $focusHighlightPolicy variable, which controls when this 
-         // class is set.
-         .oj-switch-thumb.oj-focus-highlight {
-               @include oj-browser-focus-outline-approximation($primaryTextColor);
-         }
-			
+	.oj-switch-thumb:not(.oj-focus-highlight):focus {
+		outline:none;
+	}
+			 
  }
 }

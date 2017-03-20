@@ -16,6 +16,10 @@
       }      
     }
 
+    oj-diagram {
+      display: block;
+    }
+
     // top level diagram styles
     .oj-diagram {
       @include oj-user-select-property(none);
@@ -33,7 +37,7 @@
     .oj-diagram-node.oj-hover {
       border-top-color:$dvtDiagramNodeBorderColorHover;
       border-bottom-color: $dvtBorder2Color;
-    }    
+    }
 
     // applied to the selected diagram node
     .oj-diagram-node.oj-selected {

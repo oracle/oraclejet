@@ -164,7 +164,8 @@
      */
     .oj-pulltorefresh-icon-full {
         @include oj-icon-content(
-             $icon: url($pullToRefreshImageDir + "pull_to_refresh_full.gif")
+             $icon: url($pullToRefreshImageDir + "pull_to_refresh_full.gif"),
+             $lowResProportion: 0.25
         ); 
     }
   }

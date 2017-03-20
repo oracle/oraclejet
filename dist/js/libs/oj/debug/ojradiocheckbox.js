@@ -134,8 +134,8 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   {
     this.element.toggleClass("oj-selected", checked);
     this.$label.toggleClass("oj-selected", checked);
-    if (this.$choiceRow)
-      this.$choiceRow.toggleClass("oj-selected", checked);
+    if (this.$choiceItem)
+      this.$choiceItem.toggleClass("oj-selected", checked);
   },
   /**
    * Returns a jQuery object containing the element visually representing the checkbox. 
@@ -239,34 +239,26 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
         this.$label = this._getLabelsForElement();
         this.$label.addClass("oj-radio-label");
     }	
-    this.$choiceRow = this._getChoiceRow();
+    this.$choiceItem = this._getChoiceItem();
     
     var self = this;
     this._focusable( this.element );
-    if (this.$choiceRow) {
-      this._AddHoverable({
-        'element': this.$choiceRow
-      });
-      this._AddActiveable({
-        'element': this.$choiceRow
-      });
+    if (this.$choiceItem) {
+      this._AddHoverable(this.$choiceItem);
+      this._AddActiveable(this.$choiceItem);
 
       // the input gets focus on keyboard tabbing. It bubbles up, so in case the 
       // input element is hidden (e.g., in the native themes the input is hidden and an image is 
-      // shown instead), we need to set the focus selectors on the oj-choice-row so
+      // shown instead), we need to set the focus selectors on the oj-choice-item so
       // we can style the checked image.
       this._focusable({
-        'element': this.$choiceRow,
+        'element': this.$choiceItem,
         'applyHighlight': true
       });
     }
 
-    this._AddHoverable({
-      'element': this.$label
-      });
-    this._AddActiveable({
-      'element': this.$label
-      });
+    this._AddHoverable(this.$label);
+    this._AddActiveable(this.$label);
     
     // loop through each label to add dom and styles
     $.each(self.$label, function ()
@@ -350,9 +342,9 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
 
       this.$label.removeClass("oj-enabled")
        .addClass("oj-disabled");
-      if (this.$choiceRow) 
+      if (this.$choiceItem) 
       {
-        this.$choiceRow.removeClass("oj-enabled").addClass("oj-disabled");
+        this.$choiceItem.removeClass("oj-enabled").addClass("oj-disabled");
       }
     }
     else // option not set to disabled. nor is parent. On refresh this is ok, since we get it from the option.
@@ -364,9 +356,9 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       .addClass("oj-enabled");
       this.$label.addClass("oj-enabled")
       .removeClass("oj-disabled"); 
-      if (this.$choiceRow)
+      if (this.$choiceItem)
       {
-        this.$choiceRow.addClass("oj-enabled").removeClass("oj-disabled");
+        this.$choiceItem.addClass("oj-enabled").removeClass("oj-disabled");
       }
     }
   },
@@ -427,7 +419,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       // the labelFor query will return []. In that case, look for the label as a sibling of 
       // the element
       $labelSibling = this.element.siblings(labelForQuery);
-      $allLabels.add($labelSibling);
+      $allLabels = $allLabels.add($labelSibling); //.add() method creates a new set and leaves the original set unchanged
     } 
 
     if ($allLabels.length === 0)
@@ -444,20 +436,23 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
    * @private
    * @returns {Object|null}
    */
-  _getChoiceRow: function()
+  _getChoiceItem: function()
   {
-    var choiceRow;
+    var choiceItem;
     if (this.$label)
     {
-      choiceRow = this.$label.parent();
-      if (choiceRow && (choiceRow.hasClass("oj-choice-row") || choiceRow.hasClass("oj-choice-row-inline")))
+      choiceItem = this.$label.parent();
+      // oj-choice-row and oj-choice-row-inline have been deprecated on December 7, 2016 in
+      // version 3.0.0. Use oj-choice-item instead.
+      if (choiceItem && (choiceItem.hasClass("oj-choice-item") || 
+      choiceItem.hasClass("oj-choice-row") || choiceItem.hasClass("oj-choice-row-inline")))
       {
-        return choiceRow;
+        return choiceItem;
       }
     }
 
     oj.Logger.warn("The radioset/checkboxset's input and label dom should be wrapped in a dom " +
-      "node with class 'oj-choice-row' or 'oj-choice-row-inline'");
+      "node with class 'oj-choice-item'");
     return null;
   },
   /**
@@ -514,10 +509,10 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
   _destroy : function ()
   {  
     var ret = this._super();
-    if (this.$choiceRow)
+    if (this.$choiceItem)
     {
-      this._RemoveHoverable(this.$choiceRow);
-      this._RemoveActiveable(this.$choiceRow);
+      this._RemoveHoverable(this.$choiceItem);
+      this._RemoveActiveable(this.$choiceItem);
     }
     this._RemoveHoverable(this.$label);
     this._RemoveActiveable(this.$label);
@@ -534,8 +529,8 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     {
       this.$label.removeClass("oj-enabled oj-disabled oj-selected oj-radio-label");
     }
-    if (this.$choiceRow)
-      this.$choiceRow.removeClass("oj-enabled oj-disabled oj-selected");
+    if (this.$choiceItem)
+      this.$choiceItem.removeClass("oj-enabled oj-disabled oj-selected");
     
     var self = this;
 

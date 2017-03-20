@@ -2,6 +2,50 @@
 @import "../../utilities/oj.utilities";
 
 
+
+
+//*****************************************************************************
+// On iphone safari if zooming is not disabled then 
+// form controls auto zoom when you click on them if their
+// text size is not 16px. This mixin attempts to avoid that behavior by
+// setting -webkit-text-size-adjust to a percentage where the font size 
+// is a minimum of 16px.
+// 
+// @param {Number} $formControlFontSize - font size of form control, 
+//               only rem or px values are valid, value otherwise ignored
+//*****************************************************************************
+@mixin oj-form-control-text-size-adjust($formControlFontSize) 
+{
+
+  @if ($formControlTextSizeAdjust)
+  {
+    @if (unit($formControlFontSize) == 'rem') 
+    {
+      $formControlFontSize: oj-rem-to-px($formControlFontSize, $rootFontSize);
+    }
+
+    @if (unit($formControlFontSize) == 'px')
+    {
+      @if ($formControlFontSize < 16px)
+      {
+
+        @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+          @media #{$responsiveQuerySmallOnly} {
+            & {
+              -webkit-text-size-adjust: ceil(16px/$formControlFontSize * 100) * 1%;
+            }
+          }
+        }
+        
+      }
+    } 
+    @else
+    {
+        @warn $formControlFontSize + ' was passed to oj-form-control-text-size-adjust(), only px and rem units allowed, therefore no text-size-adjust value applied';
+    }
+  }
+}
+
 // form controls
 //----------------------------------
 
@@ -128,6 +172,7 @@
     & .oj-textarea-nocomp,
     & .oj-inputnumber-input,
     & .oj-inputsearch-input,
+    & .oj-select-select,
     & .oj-select .oj-select-choice,
     & .oj-select .oj-select-choices,
     & .oj-combobox .oj-combobox-choice,
@@ -138,16 +183,56 @@
   }
 }
 
+// If you are using a form control inside of your cell, like in a datagrid-cell
+// or table cell, and you want to override its font-size, you can use this mixin
+// so that you don't have to write all the selectors in your own .scss file.
+//
+// Usage Example:
+//
+//  .oj-datagrid-cell.oj-form-control-inherit {
+//    @include oj-form-control-font-size-override(
+//      $fontSize: 16px);
+//   }
+//
+@mixin oj-form-control-font-size-override($fontSize:null) {
+  @if ($fontSize != null) {
+    & .oj-inputtext-input,
+    & .oj-inputtext-nocomp,
+    & .oj-inputpassword-input,
+    & .oj-inputpassword-nocomp,
+    & .oj-textarea-input,
+    & .oj-textarea-nocomp,
+    & .oj-inputnumber-input,
+    & .oj-inputsearch-input,
+    & .oj-select-select,    
+    & .oj-select .oj-select-choice,
+    & .oj-select .oj-select-choices,
+    & .oj-combobox .oj-combobox-choice,
+    & .oj-combobox .oj-combobox-choices,
+    & .oj-combobox .oj-combobox-input,
+    & .oj-inputdatetime .oj-inputdatetime-input, {
+      font-size: #{$fontSize};          
+    }
+  }
+}
+
 // This allows the form control to inherit styles from the container.
 // Usage Example:
 //  .oj-form-control-inherit .oj-inputnumber-input { @include oj-form-control-inherit();}
-@mixin oj-form-control-inherit() {
-  text-align:inherit;
+@mixin oj-form-control-inherit() { 
   color: inherit;
   height: 100%;
   width: 100%;
-  background-color: inherit;
+  // use transparent because IE11/Edge doesn't inherit doesn't work with inputs
+  background-color: transparent;
   border-width: 0;
+  @include oj-ltr() {
+    text-align:inherit;
+  }
+
+  @include oj-rtl() {
+    text-align:inherit;
+  }  
 }
 
 // returns the difference between the bottom border width on focus and the bottom border width

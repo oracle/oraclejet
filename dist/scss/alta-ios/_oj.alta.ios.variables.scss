@@ -1,5 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
+@import "../utilities/oj.utilities.units";
+
 // WARNING:
 // iOS theme UNDER DEVELOPMENT!
 // currently defining iOS overrides for alta web values so need to import alta web var files
@@ -39,8 +41,6 @@ $border1Color:       #e7e7e9 !default;
 $border2Color:       #d5dfe5 !default;
 $border3Color:       #c8c8c8 !default;
 $border4Color:       #c8cfd5 !default;
-// todo: should I just replace where I see border5color with border2color instead of
-//       assigning border5color to border2Color?
 $border5Color:       $border2Color !default;
 $border6Color:       #000000 !default;
 $border7Color:       #ffffff !default;
@@ -51,7 +51,6 @@ $border8Color:       #4f4f4f !default;
 //----------------------------------
 $interaction1Color: #0572ce !default;
 $interaction2Color: #ebeced !default;
-// todo: this color is quite dark, may cause contrast ratio issues
 $interaction3Color: #dcdcde !default;
 $interaction4Color: #c2ddf7 !default;
 $interaction5Color: #d4d4d6 !default;
@@ -68,11 +67,11 @@ $interaction7Color: #fafaeb !default;
 $rootFontSize:    1em !default;  // 16px
 
 $fontSize:         1rem !default;
-$smallestFontSize: .75rem   !default; // 12px when root 16px
-$smallFontSize:    .875rem  !default; // 14px when root 16px
-$mediumFontSize:   1.25rem !default;  // 20px when root 16px
-$largeFontSize:    1.5rem  !default;  // 24px when root 16px
-$largestFontSize:  1.75rem !default;  // 28px when root 16px
+$smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 16px) !default; 
+$smallFontSize:    oj-px-to-rem(14px, $baseFontSize: 16px) !default; 
+$mediumFontSize:   oj-px-to-rem(20px, $baseFontSize: 16px) !default; 
+$largeFontSize:    oj-px-to-rem(24px, $baseFontSize: 16px) !default;  
+$largestFontSize:  oj-px-to-rem(28px, $baseFontSize: 16px) !default;  
 
 
 // text colors
@@ -172,14 +171,14 @@ $menuTextOnlyJustifyContent:         center !default;
 // these vars apply to menu items in a menu where at least one item has a start icon (as opposed to submenu icon) :
 $menuIconSize:                       24px !default; // per theming discussion, force it to size required by spec, but don't grow/shrink via rems in case of artifacts, and DO scale the surrounding space via rems.
 // Per UX, the 4px ((32-24)/2) of spacing on either side of the icon, seen in the iOS spec, is part of the 10px spacing on either side.
-$menuIconToEdgePadding:              0.625rem !default; // 10px @16px font
-$menuTextToIconPadding:              0.5rem !default; // 8px @16px font. Per UX, decrease the 10px to 8px, so looks like 10px in UX's screen measuring tool
+$menuIconToEdgePadding:              oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+$menuTextToIconPadding:              oj-px-to-rem(8px, $baseFontSize: 16px) !default; // Per UX, decrease the 10px to 8px, so looks like 10px in UX's screen measuring tool
 
 // Padding on both left and right of submenu icon:
 // Spec only provides the "after" spacing of 10px, which we use for the "before" spacing value as well.  Per UX, decrease the 10px to 6px, 
 // to make it look like 10px in UX's screen measuring tool.  That 4px difference probably consists of the same 2px needed for (regular) 
 // icon margin, and another 2px for the fact that the submenu caret doesn't extend to the edge of the icon canvas.
-$menuSubmenuIconPadding:             0.375rem !default; // 6px @16px font. 
+$menuSubmenuIconPadding:             oj-px-to-rem(6px, $baseFontSize: 16px) !default;
 
 
 // menu parts
@@ -216,10 +215,10 @@ $menuDividerBorderColor:             $menuItemBorderColor !default;
 //----------------------------------
 
 // sheet menus (.oj-menu-sheet)
-$menuSheetFontSize:                  1.5rem !default; // 24px @16px font
+$menuSheetFontSize:                  oj-px-to-rem(24px, $baseFontSize: 16px) !default;
 $menuSheetBorderRadius:              12px !default;
 $menuSheetBgColor:                   transparent !default;
-$menuSheetMarginHorizontal:          0.75rem !default; // 12px @16px font
+$menuSheetMarginHorizontal:          oj-px-to-rem(12px, $baseFontSize: 16px) !default;
 $menuSheetMarginBottom:              12px; // value must be 0, px, or %, e.g. 0, 10px, 5%
 
 // sheet menu items (.oj-menu-item) and their anchors
@@ -245,39 +244,39 @@ $menuSheetDividerBorderColor:        transparent !default;
 //----------------------------------------------------------------
 
 $buttonFontWeight:   normal !default;
-$buttonBorderRadius: $smallBorderRadius !default; // 2px
+$buttonBorderRadius: $largeBorderRadius !default; // 5px
 
-$buttonHeight:       2.250rem !default; // 36px when root is 16px
-$buttonSmallHeight:  $buttonHeight * 0.694 !default; // 25px when root is 16px
-$buttonLargeHeight:  $buttonHeight * 1.111 !default; // 40px when root is 16px
-$buttonXlargeHeight: $buttonHeight * 1.3 !default; // not spec'd.  Common has 1.5, and iOS multipliers run smaller, so say 1.3
+$buttonHeight:       oj-px-to-rem(36px, $baseFontSize: 16px) !default;
+$buttonSmallHeight:  $buttonHeight * (26px/36px) !default;
+$buttonLargeHeight:  $buttonHeight * (52px/36px) !default;
+$buttonXlargeHeight: $buttonHeight * (62px/36px) !default;
 
-$buttonFontSize:       1.063rem !default; // 17px when root 16px
+$buttonFontSize:       oj-px-to-rem(18px, $baseFontSize: 16px) !default;
 $buttonSmallFontSize:  $smallFontSize !default; // 14px when root 16px
-$buttonLargeFontSize:  1.125rem !default; // 18px when root 16px
-//$buttonXlargeFontSize: not spec'd.  In AltaWeb is 2px bigger than large, so go with 1.250rem = 20px since iOS large is 18px. 1.250rem is iOS's $mediumFontSize, which is what we inherit from Common, so don't specify here.
+$buttonLargeFontSize:  oj-px-to-rem(20px, $baseFontSize: 16px) !default;
+$buttonXlargeFontSize: oj-px-to-rem(22px, $baseFontSize: 16px) !default;
 
 
 // button padding
 //----------------------------------
 
 // Horiz space between text and edge of button when no intervening icon.
-$buttonTextToEdgePadding:       0.875rem !default; // 14px when root 16px
-$buttonSmallTextToEdgePadding:  0.625rem !default; // 10px when root 16px
-$buttonLargeTextToEdgePadding:  1.250rem !default; // 20px when root 16px
+$buttonTextToEdgePadding:       oj-px-to-rem(14px, $baseFontSize: 16px) !default;
+$buttonSmallTextToEdgePadding:  oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+$buttonLargeTextToEdgePadding:  oj-px-to-rem(20px, $baseFontSize: 16px) !default;
 $buttonXlargeTextToEdgePadding: $buttonLargeTextToEdgePadding !default; // no spec, so make same as large
 
 // Horiz space between text and icon.
-$buttonIconToTextPadding:       0.625rem !default; // 10px when root 16px
-$buttonSmallIconToTextPadding:  0.188rem !default; // 3px when root 16px
+$buttonIconToTextPadding:       oj-px-to-rem(8px, $baseFontSize: 16px) !default; 
+$buttonSmallIconToTextPadding:  oj-px-to-rem(6px, $baseFontSize: 16px) !default; 
 $buttonLargeIconToTextPadding:  $buttonIconToTextPadding !default;
-$buttonXlargeIconToTextPadding: $buttonLargeIconToTextPadding !default; // no spec, so make same as large
+$buttonXlargeIconToTextPadding: oj-px-to-rem(12px, $baseFontSize: 16px) !default; 
 
 // Horiz space between icon and edge of button when text also showing.
-$buttonIconToEdgePadding:        0.625rem !default; // 10px when root 16px
-$buttonSmallIconToEdgePadding:   0.188rem !default; // 3px when root 16px
-$buttonLargeIconToEdgePadding:   1.125rem !default; // 18px when root 16px
-$buttonXlargeIconToEdgePadding:  $buttonLargeIconToEdgePadding !default; // no spec, so make same as large
+$buttonIconToEdgePadding:        oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+$buttonSmallIconToEdgePadding:   oj-px-to-rem(3px, $baseFontSize: 16px) !default;
+$buttonLargeIconToEdgePadding:   oj-px-to-rem(18px, $baseFontSize: 16px) !default;
+$buttonXlargeIconToEdgePadding:  oj-px-to-rem(30px, $baseFontSize: 16px) !default;
 
 // Horiz space between icon and edge of button when icon only.
 $buttonIconOnlyPadding:       $buttonIconToEdgePadding !default;
@@ -290,17 +289,16 @@ $buttonXlargeIconOnlyPadding: $buttonXlargeIconToEdgePadding !default;
 //----------------------------------
 
 // default
-$buttonBgColor:                   $interaction1Color !default; // #0572ce
-$buttonTextColor:                 $contrastTextColor !default; // #ffffff
-$buttonIconColor:                 $buttonTextColor !default; // #ffffff
-$buttonBorderColor:               $buttonBgColor!default; // #0572ce
+$buttonBgColor:                   $interaction1Color !default;
+$buttonTextColor:                 $contrastTextColor !default;
+$buttonIconColor:                 $buttonTextColor !default;
+$buttonBorderColor:               $buttonBgColor!default;
 $buttonBgImage:                   none !default;
 $buttonTextShadow:                none !default;
 $buttonBoxShadow:                 none !default;
 
 // hover
-// NOTE: no hover spec, so all hover variables are made-up.
-$buttonBgColorHover:              lighten($buttonBgColor, 6%) !default;
+$buttonBgColorHover:              darken($interaction4Color, 14%) !default;
 $buttonBorderColorHover:          $buttonBgColorHover !default;
 $buttonTextColorHover:            $buttonTextColor !default;
 
@@ -313,14 +311,16 @@ $buttonIconColorHover:            $buttonTextColorHover !default;
 $buttonBorderColorHover:          $buttonBgColorHover !default;
 
 // active
-$buttonTextColorActive:           $buttonTextColor !default; // #ffffff
+$buttonTextColorActive:           $buttonTextColor !default;
 
 // selected
+$buttonBgColorSelected:			  darken($buttonBgColor, 15%) !default;
 
 // selected and hovered
-// No "selected and hovered" spec, so handling is arbitrary
-$buttonTextColorSelectedHover:    darken($buttonTextColor, 15%) !default;
+$buttonTextColorSelectedHover:    $contrastTextColor !default;
 $buttonIconColorSelectedHover:    $buttonTextColorSelectedHover !default;
+$buttonBgColorSelectedHover:      $interaction4Color !default;
+$buttonBorderColorSelectedHover:  $buttonBgColorSelectedHover !default;
 
 // disabled
 
@@ -364,7 +364,9 @@ $buttonHalfChromeTextColorSelected:       $buttonTextColor !default;
 $buttonHalfChromeBgColorSelected:         $buttonHalfChromeTextColor !default;
 
 // half chrome selected and hovered
-$buttonHalfChromeTextColorSelectedHover:  darken($buttonTextColor, 20%) !default;
+$buttonHalfChromeTextColorSelectedHover:  $buttonTextColor !default;
+$buttonHalfChromeBgColorSelectedHover:    $buttonBgColorHover !default;
+$buttonHalfChromeBorderColorSelectedHover:  $buttonHalfChromeBgColorSelectedHover !default;
 
 // half chrome disabled
 $buttonHalfChromeTextColorDisabled:       #000000 !default;
@@ -372,7 +374,6 @@ $buttonHalfChromeIconColorDisabled:       $buttonHalfChromeTextColorDisabled !de
 $buttonHalfChromeOpacityDisabled:         0.3 !default;
 
 // half chrome disabled and selected
-$buttonHalfChromeBgColorSelectedDisabled: $buttonHalfChromeBgColorSelected!default;
 
 // outlined
 
@@ -383,17 +384,19 @@ $buttonOutlinedChromeBorderColor:             $buttonOutlinedChromeTextColor !de
 // outlined hover
 
 // outlined active
-$buttonOutlinedChromeBgColorActive:           transparentize($buttonOutlinedChromeTextColor, 0.85) !default;
-$buttonOutlinedChromeBorderColorActive:       $buttonOutlinedChromeBorderColor !default;
+$buttonOutlinedChromeTextColorActive:         $buttonTextColor !default;
+$buttonOutlinedChromeIconColorActive:         $buttonOutlinedChromeTextColorActive !default;
+$buttonOutlinedChromeBgColorActive:           $buttonBgColorSelected !default;
+$buttonOutlinedChromeBorderColorActive:       $buttonOutlinedChromeBgColorActive !default;
 $buttonOutlinedChromeOpacityActive:           1 !default;
 
 // outlined selected
 
 // outlined selected and hovered
+$buttonOutlinedChromeBgColorSelectedHover:      $buttonBgColorHover !default;
+$buttonOutlinedChromeBorderColorSelectedHover:  $buttonOutlinedChromeBgColorSelectedHover !default;
 
 // outlined disabled
-$buttonOutlinedChromeTextColorDisabled:       $buttonOutlinedChromeTextColor !default;
-$buttonOutlinedChromeIconColorDisabled:       $buttonOutlinedChromeTextColorDisabled !default;
 $buttonOutlinedChromeOpacityDisabled:         $opacityDisabled !default;
 
 // outlined disabled and selected
@@ -403,7 +406,6 @@ $buttonOutlinedChromeOpacityDisabled:         $opacityDisabled !default;
 //----------------------------------
 
 // $buttonPrimaryColor not used b/c primary==default color for now.
-$buttonConfirmColor:  #168100 !default;
 
 
 // BUTTONSET
@@ -427,11 +429,11 @@ $buttonsetEqualWidthChromingList: full outlined !default; // default should be e
 
 $dialogBorderRadius:        12px !default;
 
-$dialogHeaderPadding:       1.438rem .875rem .1875rem !default;
-$dialogBodyPadding:         .1875rem .875rem .875rem !default;
+$dialogHeaderPadding:       oj-px-to-rem(23px, $baseFontSize: 16px) oj-px-to-rem(14px, $baseFontSize: 16px) oj-px-to-rem(3px, $baseFontSize: 16px) !default;
+$dialogBodyPadding:         oj-px-to-rem(3px, $baseFontSize: 16px) oj-px-to-rem(14px, $baseFontSize: 16px) oj-px-to-rem(14px, $baseFontSize: 16px) !default;
 $dialogFooterPadding:       0 !default; 
 
-$dialogHeaderFontSize:      1.125rem !default;
+$dialogHeaderFontSize:      oj-px-to-rem(18px, $baseFontSize: 16px) !default;
 $dialogHeaderTextAlign:     center !default;
 $dialogHeaderBgColor:       transparent !default;
 
@@ -449,8 +451,8 @@ $dialogFooterIntegrateButtons:  true !default;
 
 // FORM CONTROLS
 //----------------------------------------------------------------
-$formControlInputHeight: 1.938rem !default; // 31px when root is 16px
-$formControlTriggerHeight: $formControlInputHeight; // 31px when root is 16px
+$formControlInputHeight: oj-px-to-rem(31px, $baseFontSize: 16px) !default; 
+$formControlTriggerHeight: $formControlInputHeight; 
 
 $formControlLargeMaxWidth:  100% !default;
 $formControlMediumMaxWidth: 100% !default;
@@ -471,7 +473,7 @@ $formControlBorderWidth:   0 !default;
 //default
 $formControlBgColor:       transparent        !default;
 $formControlBorderColor:   $interaction1Color !default;
-$formControlInputFontSize: 1.0625rem           !default; // 17px when root 16px
+$formControlInputFontSize: oj-px-to-rem(17px, $baseFontSize: 16px) !default; 
 $formControlTriggerValueColor: $interaction1Color !default;
 
 // active
@@ -493,7 +495,7 @@ $formControlLabelRequiredChar: '' !default;
 //----------------------------------
 
 // gutter (padding) between the inline label and the control
-$formControlLabelInlineGutter:     .625rem !default; // 10px when root is 16px
+$formControlLabelInlineGutter:     oj-px-to-rem(10px, $baseFontSize: 16px) !default; 
 
 
 // form layout
@@ -517,7 +519,7 @@ $formLayoutFieldInlineAlign: end !default;
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //----------------------------------------------------------------
-$textAreaLineHeight:                  1.4375rem           !default; // 23px when root 16px
+$textAreaLineHeight:                  oj-px-to-rem(23px, $baseFontSize: 16px) !default; 
 
 //INPUT SEARCH
 //--------------------------------------------------------------
@@ -532,8 +534,8 @@ $inputNumberInputToButtonMargin: 10px !default;
 
 // RADIOSET AND CHECKBOXSET
 // ios has input rendered as a background image and label comes before image
-$radioCheckboxRenderInputAs: backgroundImage !default;
 $radioCheckboxLabelPosition: start !default;
+$radioCheckboxImageHeightWidth: 1rem !default;
 
 // radioset and checkboxset states
 //------------------------------------
@@ -740,27 +742,30 @@ $navigationListPageLevelItemIconColorSelected: $contrastTextColor !default;
 $navigationListPageLevelItemBgColorActive: $background6Color !default;
 
 //Sizing
-$navigationListItemStartEndPadding:         0.625rem !default; //10px when root font 16px
+$navigationListItemStartEndPadding:         oj-px-to-rem(10px, $baseFontSize: 16px) !default; 
 $navigationListIconOnlyIconStartEndPadding: 10px !default;
 $navigationListPageLevelItemBorderRadius: 4px !default;
 $navigationListPageLevelItemBorderWidth: 1px !default;
 $navigationListPageLevelIconOnlyItemBorderWidth: 1px !default;
-$navigationListPageLevelItemMinHeight: 1.75rem !default; // 28px when root font size is 16px
-$navigationListPageLevelItemFontSize: 0.8125rem !default;//13px when root font size is 16px
+$navigationListPageLevelItemMinHeight: oj-px-to-rem(28px, $baseFontSize: 16px)  !default; 
+$navigationListPageLevelItemFontSize: oj-px-to-rem(13px, $baseFontSize: 16px)  !default;
 
 $navigationBarIconOnlyItemMargin: 0 !default;
 $navigationBarItemBorderWidth: 0 0 0 0  !default;
-$navigationBarMinHeight: 2.75rem !default;//44 px height when root font 16px
-$navigationBarStackedIconMinHeight: 3.0625rem !default; //49 px height when root font 16px
-$navigationBarFontSize: 0.625rem !default;//10px px when root font is 16px
+$navigationBarMinHeight: oj-px-to-rem(44px, $baseFontSize: 16px)  !default;
+$navigationBarStackedIconMinHeight: oj-px-to-rem(49px, $baseFontSize: 16px)  !default; 
+$navigationBarFontSize: oj-px-to-rem(10px, $baseFontSize: 16px)  !default;
 $navigationBarItemPadding: 0 $navigationListItemStartEndPadding 0 !default;
 $navigationBarIconMargin: 5px 4px 4px;
 
 $navigationBarPageLevelItemBorderWidth: 1px !default;
 $navigationBarPageLevelIconOnlyItemBorderWidth: 1px !default;
-$navigationBarPageLevelItemFontSize: 0.8125rem !default; //13 px when root font is 16px
-$navigationBarPageLevelItemStackedIconMinHeight: 3.9375rem !default;//63px when root font is 16px
-$navigationBarPageLevelItemMinHeight: 1.8125rem !default; //29px when root font is 16px;
+$navigationBarPageLevelItemFontSize: oj-px-to-rem(13px, $baseFontSize: 16px)  !default; 
+$navigationBarPageLevelItemStackedIconMinHeight: oj-px-to-rem(63px, $baseFontSize: 16px)  !default;
+$navigationBarPageLevelItemMinHeight: oj-px-to-rem(29px, $baseFontSize: 16px)  !default; 
+
+$navigationBarItemContrastBgColorSelected:         #ffffff !default;
+$navigationBarItemContrastLabelColorSelected:      #313334 !default;
 
 // END of NavigationList variables
 
@@ -786,17 +791,34 @@ $listViewDrillIconColor: #bababc !default;
 
 // DATAGRID
 //----------------------------------------------------------------
-// Cells - Default
-$dataGridCellBorderColor:                   $border2Color !default;
-// Cells - Focus
-$dataGridCellBgColorFocus:                  $interaction3Color !default;
-$dataGridCellBorderColorFocus:              #bababc !default;
-// Cells - Selected
+$dataGridBorderColor:                       $border2Color !default;
+$dataGridBgColor:                           $background1Color !default;
+
+// Headers
+$dataGridHeaderTextColor:                   darken($headerTextColor, 1%) !default;
+$dataGridHeaderFontSize:                    $smallFontSize !default;
+$dataGridHeaderBgColor:                     $background1Color !default;
+// Headers - Hover
+$dataGridHeaderBgColorHover:                adjust-color($interaction5Color, $lightness: 8%, $saturation: 5%) !default;
+// Headers - Selected
+$dataGridHeaderBgColorSelected:             adjust-color($interaction3Color, $lightness: -13%, $saturation: -1%) !default;
+
+// Cells
+$dataGridCellPadding:                       oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+$dataGridCellFontSize:                      $fontSize !default;
+$dataGridCellJustifyContent:                center !default;
+// Cells - Hover
+$dataGridCellBgColorHover:                  adjust-color($interaction2Color, $lightness: 4.7%, $saturation: -5%) !default;
+// Cells - Selected 
 $dataGridCellBgColorSelected:               $interaction3Color !default;
-$dataGridCellBorderColorSelected:           $dataGridCellBorderColorFocus !default;
+$dataGridCellBorderColorSelected:           adjust-color($border1Color, $lightness: -17.5%, $saturation: -3%) !default;
 // Cells - Selected Inactive (selected but focus outside the component)
-$dataGridCellBgColorSelectedInactive:       $interaction3Color !default;
-$dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColorFocus !default;
+$dataGridCellBgColorSelectedInactive:       $dataGridCellBgColorSelected !default;
+$dataGridCellBorderColorSelectedInactive:   $dataGridCellBorderColorSelected !default;
+
+// Rows - Height is now dependent on the default form control height
+$dataGridRowHeight:                         max($formControlInputHeight, oj-px-to-rem(43px, $baseFontSize: 16px)) !default;
+$dataGridColumnWidth:                       oj-px-to-rem(68px, $baseFontSize: 16px) !default; 
 
 // INDEXER
 //----------------------------------------------------------------
@@ -810,9 +832,9 @@ $indexerTextColor:      $interaction1Color !default;
 // APPLICATION LAYOUT - MOBILE PATTERN VARIABLES
 //-------------------------------------------------------------
 // Padding
-$appLayoutHybridPadding: 0.625rem !default;
+$appLayoutHybridPadding: oj-px-to-rem(10px, $baseFontSize: 16px)  !default;
 // Header
-$appLayoutHybridHeaderTitleFontSize: 1.125rem !default; // 18px when root 16px
+$appLayoutHybridHeaderTitleFontSize: oj-px-to-rem(18px, $baseFontSize: 16px)  !default; 
 $appLayoutHybridHeaderBorderColor: $border2Color !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
@@ -821,6 +843,5 @@ $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
 //----------------------------------------
 // options
 $offcanvasDisplayModeOptionDefault: push !default;
-
 
 @import "../common/oj.common.variables";

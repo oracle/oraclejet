@@ -70,7 +70,7 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
     oj.PullToRefreshUtils.tearDownPullToRefresh(element);
 
     outer = $(document.createElement("div")).addClass("oj-pulltorefresh-outer");
-    oj.PullToRefreshUtils._renderAccessibleLink(outer, refreshFunc, options);
+    oj.PullToRefreshUtils._renderAccessibleLink(element, outer, refreshFunc, options);
 
     // create the element containing the content
     content = $(document.createElement("div")).addClass("oj-pulltorefresh-panel");    
@@ -228,7 +228,7 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
         }
         else
         {
-            oj.PullToRefreshUtils._handleRelease(event, content, refreshFunc);
+            oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
         }
     });
 };
@@ -257,9 +257,9 @@ oj.PullToRefreshUtils._handlePull = function(event, content, options)
     $.data(content[0], "data-panelheight", content.outerHeight());
 };
 
-oj.PullToRefreshUtils._handleRelease = function(event, content, refreshFunc)
+oj.PullToRefreshUtils._handleRelease = function(event, element, content, refreshFunc)
 {
-    var height, icon, lastIconClass, listener;
+    var height, icon, lastIconClass, busyContext, busyStateResolve, listener;
 
     height = $.data(content[0], "data-panelheight");
     content.addClass("oj-pulltorefresh-transition")
@@ -282,6 +282,10 @@ oj.PullToRefreshUtils._handleRelease = function(event, content, refreshFunc)
         icon.addClass("oj-pulltorefresh-icon-full");
     }
 
+    // register busy state with host as the context, note you can't pull again until release is done
+    busyContext = oj.Context.getContext(element).getBusyContext();
+    busyStateResolve = busyContext.addBusyState({'description': 'PullToRefresh:handleRelease'});
+
     refreshFunc().then(function(val)
     {
         listener = function()
@@ -295,6 +299,9 @@ oj.PullToRefreshUtils._handleRelease = function(event, content, refreshFunc)
 
             // clear the text, otherwise voice over will allow text to be focusable
             content.prev().text("");
+
+            // clear busy state
+            busyStateResolve(null);
         }
 
         // change text to complete
@@ -348,7 +355,7 @@ oj.PullToRefreshUtils._createDefaultContent = function(content, primaryText, sec
            .attr("aria-hidden", "true");
 
     icon = $(document.createElement("div"));
-    icon.addClass("oj-pulltorefresh-icon oj-pulltorefresh-icon-initial");
+    icon.addClass("oj-icon oj-pulltorefresh-icon oj-pulltorefresh-icon-initial");
     iconContainer = $(document.createElement("div"));
     iconContainer.addClass("oj-pulltorefresh-icon-container");
 
@@ -415,7 +422,7 @@ oj.PullToRefreshUtils._showHideDefaultText = function(content, show)
  * Renders link to provide accessible way to refresh content
  * @private
  */
-oj.PullToRefreshUtils._renderAccessibleLink = function(panel, refreshFunc, options)
+oj.PullToRefreshUtils._renderAccessibleLink = function(element, panel, refreshFunc, options)
 {
     var link, content, status;
 
@@ -442,7 +449,7 @@ oj.PullToRefreshUtils._renderAccessibleLink = function(panel, refreshFunc, optio
         {
             content = panel.children().last();
             oj.PullToRefreshUtils._handlePull(event, content, options);
-            oj.PullToRefreshUtils._handleRelease(event, content, refreshFunc);
+            oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
 
             refreshFunc();
         });

@@ -21,12 +21,6 @@
 
 @if $includeMessagingClasses != false {
   @include module-include-once("alta.messaging") {
-    // alta theme doesn't have a border around the radioset/checkboxset, so it needs to 
-    // detach even though the border-radius is 0. other themes have a border, so we don't
-    // detach, so that logic is in common.
-    .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
-    .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
-      margin-top: 5px;
-    } 
+   
   }
 }

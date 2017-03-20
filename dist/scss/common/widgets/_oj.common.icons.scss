@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.icons.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -10,14 +10,14 @@
 $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
 
-// this function is needed because 
+// this function is needed because
 // escaped unicode not output when using vars
 // https://github.com/sass/sass/issues/659
 // https://github.com/FortAwesome/Font-Awesome/pull/6728
 // http://www.sassmeister.com/gist/2c5975d9b52afa8a68f6
-// expects the var passed in to be 
-// assigned to a string without a slash, 
-// for example 
+// expects the var passed in to be
+// assigned to a string without a slash,
+// for example
 // $foo: "e60a";
 // prepend-slash($foo);
 @function oj-prepend-slash($char)
@@ -42,12 +42,12 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     /*--------------------------------------------------------------------
     /  Generic style that can be used for widget images
-    /  You can use the mixin ("oj-icon-content") to generate 
+    /  You can use the mixin ("oj-icon-content") to generate
     /  a class with additions/overrides
-    / 
-    /  For example let's say you used the mixin ("oj-icon-content") to 
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
     /  generate a class ".binky-icon". You
-    /  could then put class="oj-icon binky-icon" on your dom element. 
+    /  could then put class="oj-icon binky-icon" on your dom element.
     --------------------------------------------------------------------*/
     .oj-fwk-icon,
     %oj-component-icon-placeholder {
@@ -58,41 +58,41 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
              // the alta icon font was designed to look best at 16px
              $fontSize:   16px,
              $fontFamily: 'Alta Icon Font',
-             $color:      $iconColor); 
+             $color:      $iconColor);
       }
     }
-    
+
     // extend %oj-component-icon-placeholder;
-    // If you need the same css properties as .oj-component-icon, 
+    // If you need the same css properties as .oj-component-icon,
     // extend %oj-component-icon-placeholder, not .oj-component-icon.
     .oj-component-icon {
       @extend %oj-component-icon-placeholder;
-    }    
- 
+    }
+
     /*--------------------------------------------------------------------
-    /  Generic style that can be used for images 
-    /  App developers can use the mixin ("oj-icon-content") to generate 
+    /  Generic style that can be used for images
+    /  App developers can use the mixin ("oj-icon-content") to generate
     /  a class with additions/overrides
-    / 
-    /  For example let's say you used the mixin ("oj-icon-content") to 
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
     /  generate a class ".binky-icon". You
-    /  could then put class="oj-icon binky-icon" on your dom element. 
+    /  could then put class="oj-icon binky-icon" on your dom element.
     --------------------------------------------------------------------*/
     .oj-icon {
-      @include oj-icon-base(                         
-           $height: 16px,                                               
-           $width:  16px);       
-    }                              
-     
+      @include oj-icon-base(
+           $height: 16px,
+           $width:  16px);
+    }
+
     // we support two generic classes for getting icon font colors
     //   1. oj-clickable-icon
     //   2. oj-clickable-icon-nocontext
     //
-    // these classes, when used in conjunction with an anchor tag and/or 
-    // marker classes like oj-default, oj-hover, oj-active, oj-selected, 
+    // these classes, when used in conjunction with an anchor tag and/or
+    // marker classes like oj-default, oj-hover, oj-active, oj-selected,
     // and oj-disabled will use the $iconColor* variables
     //
-    // oj-clickable-icon is optionally contextual, meaning the anchor 
+    // oj-clickable-icon is optionally contextual, meaning the anchor
     // or marker style can be on an ancestor. For example this will work
     //
     //   <div class="oj-default">
@@ -103,7 +103,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     //   </a>
     //
     //
-    // oj-clickable-icon-nocontext is not contextual, instead it must go on the 
+    // oj-clickable-icon-nocontext is not contextual, instead it must go on the
     // same tag as seen below (oj-clickable-icon would also work in the examples below).
     //
     //   <span class="oj-default oj-clickable-icon-nocontext demo-icon-font demo-icon-gear"></span>
@@ -167,15 +167,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       opacity: $opacityDisabled;
     }
 
-    
+
     .oj-fwk-icon-load {
       @include oj-icon-content(
-          $icon: oj-common-image-url("node_anim.gif")
+        $icon: oj-common-image-url("node_anim.gif")
       );
     }
 
 
-    
+
     .oj-fwk-icon-status-error2,
     .oj-fwk-icon-status-warning2,
     .oj-fwk-icon-status-info2,
@@ -187,26 +187,33 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     .oj-fwk-icon-status-confirmation2 {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_complete.png")
+        $icon: oj-common-image-url("alertModifier_complete.svg")
       );
     }
 
     .oj-fwk-icon-status-info2 {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_info.png")
+        $icon: oj-common-image-url("alertModifier_info.svg")
       );
     }
 
     .oj-fwk-icon-status-warning2 {
       @include oj-icon-content(
-        $icon: oj-common-image-url("alertModifier_warning.png")
+        $icon: oj-common-image-url("alertModifier_warning.svg")
       );
     }
-    
+
     .oj-fwk-icon-status-error2 {
       @include oj-icon-content(
-          $icon: oj-common-image-url("alertModifier_error.png")
+          $icon: oj-common-image-url("alertModifier_error.svg")
       );
+    }
+
+    .oj-fwk-icon-status-confirmation2:before,
+    .oj-fwk-icon-status-info2:before,
+    .oj-fwk-icon-status-warning2:before,
+    .oj-fwk-icon-status-error2:before {
+      width: 9px; /* Needed for old versions of IE11 */
     }
 
 
@@ -215,7 +222,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       width:  16px;
       height: 16px;
 
-      // if the page font size happens to 
+      // if the page font size happens to
       // be larger than the icon not setting the
       // font size can cause padding above the icon.
       // for example if the page font is 18px and the
@@ -227,28 +234,28 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-fwk-icon-status-confirmation {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-        $icon: oj-image-url("stat_confirm_16.png")
+        $icon: oj-image-url("stat_confirm_16.svg")
       );
     }
 
     .oj-fwk-icon-status-info {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-        $icon: oj-image-url("stat_info_16.png")
+        $icon: oj-image-url("stat_info_16.svg")
       );
     }
 
     .oj-fwk-icon-status-warning {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-        $icon: oj-image-url("stat_warn_16.png")
+        $icon: oj-image-url("stat_warn_16.svg")
       );
     }
 
     .oj-fwk-icon-status-error {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-          $icon: oj-image-url("stat_error_16.png")
+          $icon: oj-image-url("stat_error_16.svg")
       );
     }
 
@@ -256,22 +263,32 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-fwk-icon-folder-open {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-          $icon: oj-image-url("hier_folderopen_16_mono.png")
+          $icon: oj-image-url("hier_folderopen_16_mono.svg")
       );
     }
 
     .oj-fwk-icon-folder-collapsed {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-          $icon: oj-image-url("hier_folderclose_16_mono.png")
+          $icon: oj-image-url("hier_folderclose_16_mono.svg")
       );
     }
 
     .oj-fwk-icon-document {
       @extend %default-icon-file-size;
       @include oj-icon-content(
-          $icon: oj-image-url("hier_leaf_16_mono.png")
+          $icon: oj-image-url("hier_leaf_16_mono.svg")
       );
+    }
+
+    .oj-fwk-icon-status-confirmation:before,
+    .oj-fwk-icon-status-info:before,
+    .oj-fwk-icon-status-warning:before,
+    .oj-fwk-icon-status-error:before,
+    .oj-fwk-icon-folder-open:before,
+    .oj-fwk-icon-folder-collapsed:before,
+    .oj-fwk-icon-document:before {
+      width: 16px; /* Needed for old versions of IE11 */
     }
 
     /* Icon Font Icons =========== */
@@ -294,6 +311,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
     .oj-fwk-icon-calendar:before {
       content: oj-prepend-slash($oj-fwk-icon-calendar);
+    }
+    .oj-fwk-icon-calendar-clock:before {
+      content: oj-prepend-slash($oj-fwk-icon-calendarclock);
     }
     .oj-fwk-icon-clock:before {
       content: oj-prepend-slash($oj-fwk-icon-clock);
@@ -322,13 +342,13 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
         content: oj-prepend-slash($oj-fwk-icon-checkmark);
       }
     }
-    
+
     @if global-variable-exists(oj-fwk-icon-info) and $oj-fwk-icon-info != '' {
       .oj-fwk-icon-info:before {
         content: $oj-fwk-icon-info;
       }
     }
-   
+
     @if global-variable-exists(oj-fwk-icon-warning) and $oj-fwk-icon-warning != '' {
       .oj-fwk-icon-warning:before {
         content: $oj-fwk-icon-warning;
@@ -349,8 +369,13 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
 
     @if global-variable-exists(oj-fwk-icon-dots-vertical) and $oj-fwk-icon-dots-vertical != '' {
-      .oj-fwk-icon-dots-vertical:before {
+      .oj-fwk-icon-dots-vertical:before,
+      .oj-fwk-icon-dots-horizontal:before {
         content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
+      }
+      .oj-fwk-icon-dots-horizontal:before{
+        content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
+        @include oj-transform-property(rotate(-90deg));
       }
     }
 
@@ -386,6 +411,14 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       .oj-fwk-icon-arrowtail-e:before {
         @extend .oj-fwk-icon-arrowtail-w;
         @include oj-transform-property(scale(-1, 1));
+      }
+      .oj-fwk-icon-arrowtail-n:before {
+        @extend .oj-fwk-icon-arrowtail-w;
+        @include oj-transform-property(rotate(90deg));
+      }
+      .oj-fwk-icon-arrowtail-s:before {
+        @extend .oj-fwk-icon-arrowtail-w;
+        @include oj-transform-property(scale(-1, 1) rotate(-90deg));
       }
 
       // bidi
@@ -474,7 +507,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
           @extend .oj-fwk-icon-arrow-ne:before
         }
       }
-    
+
       // bidi
       .oj-fwk-icon-arrow-n-end:before {
         @include oj-ltr() {
@@ -819,5 +852,3 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
   }
 }
-
-

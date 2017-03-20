@@ -109,36 +109,6 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 {
   widgetEventPrefix : "oj",
   options: {
-    /**
-     * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-     * intervention. If the new value is the same as the previous value, no event will be fired.
-     *
-     * @property {Object} data event payload
-     * @property {string} data.option the name of the option that changed, i.e. "value"
-     * @property {Object} data.previousValue an Object holding the previous value of the option
-     * @property {Object} data.value an Object holding the current value of the option
-     * @property {Object} ui.optionMetadata information about the option that is changing
-     * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-     *                    <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-     *
-     * @example <caption>Initialize the component with the <code class="prettyprint">optionChange</code> callback:</caption>
-     * $(".selector").ojPictoChart({
-     *   'optionChange': function (event, data) {}
-     * });
-     *
-     * @example <caption>Bind an event listener to the <code class="prettyprint">ojoptionchange</code> event:</caption>
-     * $(".selector").on({
-     *   'ojoptionchange': function (event, data) {
-     *       window.console.log("option changing is: " + data['option']);
-     *   };
-     * });
-     *
-     * @expose
-     * @event
-     * @memberof oj.ojPictoChart
-     * @instance
-     */
-    optionChange: null,
 
     /**
      * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
@@ -472,13 +442,15 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 var ojPictoChartMeta = {
   "properties": {
     "animationDuration": {
-      "type": "number|string"
+      "type": "number"
     },
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "popIn", "alphaFade", "zoom", "none"]
     },
     "columnCount": {
       "type": "number"
@@ -487,31 +459,37 @@ var ojPictoChartMeta = {
       "type": "number"
     },
     "drilling": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "hiddenCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightedCategories": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "highlightMatch": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["any", "all"]
     },
     "hoverBehavior": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["dim", "none"]
     },
     "hoverBehaviorDelay": {
-      "type": "number|string"
-    },
-    "items": {
+      "type": "number"
+    },    "items": {
       "type": "Array<object>"
     },
     "layout": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     },
     "layoutOrigin": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["topEnd", "bottomStart", "bottomEnd", "topStart"]
     },
     "rowCount": {
       "type": "number"
@@ -520,14 +498,29 @@ var ojPictoChartMeta = {
       "type": "number"
     },
     "selection": {
-      "type": "Array<string>"
+      "type": "Array<string>",
+      "writeback": true
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["single", "multiple", "none"]
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
+    },
+    "translations": {
+      "properties": {
+        "componentName": {
+          "type": "string"
+        }
+      }
     }
+  },
+  "events": {
+    "drill": {}
   },
   "methods": {
     "getContextByNode": {},
@@ -535,10 +528,11 @@ var ojPictoChartMeta = {
     "getItemCount": {}
   },
   "extension": {
-    "_widgetName": "ojPictoChart"
+    _WIDGET_NAME: "ojPictoChart"
   }
 };
-oj.Components.registerMetadata('ojPictoChart', 'dvtBaseComponent', ojPictoChartMeta);
-oj.Components.register('oj-picto-chart', oj.Components.getMetadata('ojPictoChart'));
+oj.CustomElementBridge.registerMetadata('oj-picto-chart', 'dvtBaseComponent', ojPictoChartMeta);
+oj.CustomElementBridge.register('oj-picto-chart', {'metadata': oj.CustomElementBridge.getMetadata('oj-picto-chart')});
 })();
+
 });

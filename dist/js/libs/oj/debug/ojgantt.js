@@ -39,21 +39,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  *     tasks: [{
  *       id: 't1_1',
  *       label:'Label 1-1',
- *       start: new Date('2016-01-12').getTime(),
- *       end: new Date('2016-02-22').getTime()
+ *       start: new Date('2016-01-12').toISOString(),
+ *       end: new Date('2016-02-22').toISOString()
  *     }, {
  *       id: 't1_2',
  *       label:'Label 1-2',
- *       start: new Date('2016-03-02').getTime(),
- *       end: new Date('2016-05-21').getTime()
+ *       start: new Date('2016-03-02').toISOString(),
+ *       end: new Date('2016-05-21').toISOString()
  *     }]
  *   }, {
  *     id: 'r2',
  *     tasks: [{
  *       id: 't2_1',
  *       label:'Label 2',
- *       start: new Date('2016-02-01').getTime(),
- *       end: new Date('2016-04-10').getTime()
+ *       start: new Date('2016-02-01').toISOString(),
+ *       end: new Date('2016-04-10').toISOString()
  *     }]
  *   }]
  * }"/>
@@ -66,6 +66,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/i
  * </h3>
  *
  * {@ojinclude "name":"a11yDoc"}
+ *
+ * <h3 id="formats-section">
+ *   Date and Time Formats
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#formats-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"formatsDoc"}
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -260,42 +267,34 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
 
     // Zoom Control Icons
     styleClasses['oj-gantt-zoomin-icon'] = [
-      {'path': '_resources/zoomIn', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomin-icon oj-hover'] = [
-      {'path': '_resources/zoomIn_h', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_h_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_h_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomin-icon oj-active'] = [
-      {'path': '_resources/zoomIn_a', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_a_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_a_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomin-icon oj-disabled'] = [
-      {'path': '_resources/zoomIn_d', 'property': 'CSS_URL'},
       {'path': '_resources/zoomIn_d_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomIn_d_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomout-icon'] = [
-      {'path': '_resources/zoomOut', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomout-icon oj-hover'] = [
-      {'path': '_resources/zoomOut_h', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_h_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_h_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomout-icon oj-active'] = [
-      {'path': '_resources/zoomOut_a', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_a_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_a_bc', 'property': 'border-color'}
     ];
     styleClasses['oj-gantt-zoomout-icon oj-disabled'] = [
-      {'path': '_resources/zoomOut_d', 'property': 'CSS_URL'},
       {'path': '_resources/zoomOut_d_bgc', 'property': 'background-color'},
       {'path': '_resources/zoomOut_d_bc', 'property': 'border-color'}
     ];
@@ -320,12 +319,6 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   },
 
   //** @inheritdoc */
-  _GetEventTypes : function() 
-  {
-    return ['optionChange', 'viewportChange'];
-  },
-
-  //** @inheritdoc */
   _GetTranslationMap: function() 
   {
     // The translations are stored on the options object.
@@ -345,12 +338,16 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     this._super();
 
     var resources = this.options['_resources'];
-    var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
 
-    resources['converterFactory'] = converterFactory;
-    
-    // first day of week; locale specific
-    resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
+    // zoom control icon images
+    resources['zoomIn'] = 'oj-gantt-zoomin-icon';
+    resources['zoomIn_h'] = 'oj-gantt-zoomin-icon oj-hover';
+    resources['zoomIn_a'] = 'oj-gantt-zoomin-icon oj-active';
+    resources['zoomIn_d'] = 'oj-gantt-zoomin-icon oj-disabled';
+    resources['zoomOut'] = 'oj-gantt-zoomout-icon';
+    resources['zoomOut_h'] = 'oj-gantt-zoomout-icon oj-hover';
+    resources['zoomOut_a'] = 'oj-gantt-zoomout-icon oj-active';
+    resources['zoomOut_d'] = 'oj-gantt-zoomout-icon oj-disabled';
   },
 
   //** @inheritdoc */
@@ -383,8 +380,27 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
   },
 
   //** @inheritdoc */
+  _GetComponentNoClonePaths: function() {
+    var noClonePaths = this._super();
+
+    // Date time options as of 3.0.0 only support number and string types
+    // e.g. Date object type is not supported. However,
+    // during the options cloning,
+    // Date objects are automatically converted to number by default.
+    // We want to specify that they are to remain Date objects so that
+    // we can handle them in our code later on. Note that data paths are not
+    // cloned (see _GetComponentDeferredDataPaths)
+    noClonePaths['start'] = true;
+    noClonePaths['end'] = true;
+    noClonePaths['viewportStart'] = true;
+    noClonePaths['viewportEnd'] = true;
+    noClonePaths['referenceObjects'] = {'value': true};
+    return noClonePaths;
+  },
+
+  //** @inheritdoc */
   _GetComponentDeferredDataPaths : function() {
-    return {'root': ['rows']};
+    return {'root': ['rows', 'dependencies']};
   },
 
   /**
@@ -551,6 +567,55 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  */
 
 /**
+ *<p>The Gantt supports a simplified version of the ISO 8601 extended date/time format. The format is as follows: <font color="#4B8A08">YYYY-MM-DDTHH:mm:ss.sssZ</font></p>
+ *<table  class="keyboard-table">
+ *<thead>
+ *<tr>
+ *<th>Symbol</th>
+ *<th>Description</th>
+ *<th>Values</th>
+ *<th>Examples</th>
+ *</tr>
+ *</thead>
+ *<tbody>
+ *<tr>
+ *<td><font color="#4B8A08">-, :, .,T</font></td><td>Characters actually in the string. T specifies the start of a time.</td><td></td><td></td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">YYYY</font></td><td>Year</td><td></td><td rowspan="3">2013-03-22<br>2014-02</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">MM</font></td><td>Month</td><td>01 to 12</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">DD</font></td><td>Day of the month</td><td>01 to 31</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">HH</font></td><td>Hours</td><td>00 to 24</td><td rowspan="3">2013-02-04T15:20Z<br>2013-02-10T15:20:45.300Z</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">mm</font></td><td>Minutes</td><td>00 to 59</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">ss</font></td><td>Seconds. The seconds and milliseconds are optional if a time is specified.</td><td>00 to 59</td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">sss</font></td><td>Milliseconds</td><td>00 to 999</td><td></td>
+ *</tr>
+ *<tr>
+ *<td><font color="#4B8A08">Z</font></td><td>The value in this position can be one of the following. If the value is omitted, character 'Z' should be used to specify UTC time.<br><ul><li><b>Z</b> indicates UTC time.</li><li><b>+hh:mm</b> indicates that the input time is the specified offset after UTC time.</li><li><b>-hh:mm</b> indicates that the input time is the absolute value of the specified offset before UTC time.</li></ul></td><td></td><td>2013-02-04T15:20:00-07:00<br>2013-02-04T15:20:00+05:00<br>2013-02-04T15:20:00Z</td>
+ *</tr>
+ *</tbody>
+ *</table>
+ *<p>The ISO format support short notations where the string must only include the date and not time, as in the following formats: YYYY, YYYY-MM, YYYY-MM-DD.</p>
+ *<p>The ISO format does not support time zone names. You can use the Z position to specify an offset from UTC time. If you do not include a value in the Z position, UTC time is used. The correct format for UTC should always include character 'Z' if the offset time value is omitted. The date-parsing algorithms are browser-implementation-dependent and, for example, the date string '2013-02-27T17:00:00' will be parsed differently in Chrome vs Firefox vs IE.</p>
+ *<p>You can specify midnight by using 00:00, or by using 24:00 on the previous day. The following two strings specify the same time: 2010-05-25T00:00Z and 2010-05-24T24:00Z.</p>
+ *
+ * @ojfragment formatsDoc
+ * @memberof oj.ojGantt
+ */
+
+/**
  *<p>The application is responsible for populating the <code class="prettyprint">aria-label</code> attribute on the component element, and the <code class="prettyprint">shortDesc</code> value in the component options object with meaningful descriptors when the component does not provide a default descriptor. Meaningful descriptors may include information on non-interactive elements such as reference objects to ensure its description is read out by screenreaders. Since component terminology for keyboard and touch shortcuts can conflict with those of the application, it is the application's responsibility to provide these shortcuts, possibly via a help popup.</p>
  *
  * @ojfragment a11yDoc
@@ -643,34 +708,102 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
 var ojGanttMeta = {
   "properties": {
     "animationOnDataChange": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "animationOnDisplay": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["auto", "none"]
     },
     "axisPosition": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["bottom", "top"]
     },
     "dependencies": {
       "type": "Array<object>"
     },
     "end": {
-      "type": "number"
+      "type": "string"
     },
     "gridlines": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "horizontal": {
+          "type": "string",
+          "enumValues": ["hidden", "visible", "auto"]
+        },
+        "vertical": {
+          "type": "string",
+          "enumValues": ["hidden", "visible", "auto"]
+        }
+      }
     },
     "majorAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "properties": {
+            "days": {},
+            "default": {},
+            "hours": {},
+            "minutes": {},
+            "months": {},
+            "quarters": {},
+            "seconds": {},
+            "weeks": {},
+            "years": {}
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+        },
+        "zoomOrder": {
+          "type": "Array<string>"
+        }
+      }
     },
     "minorAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "properties": {
+            "days": {},
+            "default": {},
+            "hours": {},
+            "minutes": {},
+            "months": {},
+            "quarters": {},
+            "seconds": {},
+            "weeks": {},
+            "years": {}
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
+        },
+        "zoomOrder": {
+          "type": "Array<string>"
+        }
+      }
     },
     "referenceObjects": {
       "type": "Array<object>"
     },
     "rowAxis": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "maxWidth": {
+          "type": "string"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": ["on", "off"]
+        }
+      }
     },
     "rows": {
       "type": "Array<object>"
@@ -679,35 +812,168 @@ var ojGanttMeta = {
       "type": "Array<string>"
     },
     "selectionMode": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["single", "multiple", "none"]
     },
     "start": {
-      "type": "number"
+      "type": "string"
     },
     "taskDefaults": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "borderRadius": {
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        },
+        "labelPosition": {
+          "type": "string",
+          "enumValues": ["single", "innerCenter", "innerStart", "innerEnd", "none", "end"]
+        }
+      }
     },
     "tooltip": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "renderer": {}
+      }
+    },
+    "translations": {
+      "type": "object",
+      "properties": {
+        "accessibleDependencyInfo": {
+          "type": "string"
+        },
+        "accessibleDurationDays": {
+          "type": "string"
+        },
+        "accessibleDurationHours": {
+          "type": "string"
+        },
+        "accessibleMilestoneInfo": {
+          "type": "string"
+        },
+        "accessiblePredecessorInfo": {
+          "type": "string"
+        },
+        "accessibleRowInfo": {
+          "type": "string"
+        },
+        "accessibleSuccessorInfo": {
+          "type": "string"
+        },
+        "accessibleTaskInfo": {
+          "type": "string"
+        },
+        "componentName": {
+          "type": "string"
+        },
+        "finishFinishDependencyAriaDesc": {
+          "type": "string"
+        },
+        "finishStartDependencyAriaDesc": {
+          "type": "string"
+        },
+        "labelEnd": {
+          "type": "string"
+        },
+        "labelLabel": {
+          "type": "string"
+        },
+        "labelRow": {
+          "type": "string"
+        },
+        "labelStart": {
+          "type": "string"
+        },
+        "startFinishDependencyAriaDesc": {
+          "type": "string"
+        },
+        "startStartDependencyAriaDesc": {
+          "type": "string"
+        },
+        "tooltipZoomIn": {
+          "type": "string"
+        },
+        "tooltipZoomOut": {
+          "type": "string"
+        }
+      }
     },
     "valueFormats": {
-      "type": "Array<object>"
+      "type": "object",
+      "properties": {
+        "row": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "start": {
+          "type": "object",
+          "properties": {
+            "converter": {},
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "end": {
+          "type": "object",
+          "properties": {
+            "converter": {},
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "label": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": ["auto", "off"]
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "viewportEnd": {
-      "type": "number"
+      "type": "string"
     },
     "viewportStart": {
-      "type": "number"
+      "type": "string"
     }
   },
   "methods": {
-    "whenReady": {}
+    "getContextByNode": {}
+  },
+  "events": {
+    "viewportChange": {}
   },
   "extension": {
-    "_widgetName": "ojGantt"
+    _WIDGET_NAME: "ojGantt"
   }
 };
-oj.Components.registerMetadata('ojGantt', 'dvtTimeComponent', ojGanttMeta);
-oj.Components.register('oj-gantt', oj.Components.getMetadata('ojGantt'));
+oj.CustomElementBridge.registerMetadata('oj-gantt', 'dvtTimeComponent', ojGanttMeta);
+oj.CustomElementBridge.register('oj-gantt', {'metadata': oj.CustomElementBridge.getMetadata('oj-gantt')});
 })();
 });

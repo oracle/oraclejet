@@ -1,0 +1,109 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.colorspectrum.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";  
+
+@if $includeColorSpectrumClasses != false  {
+  @include module-include-once("common.formcontrol.colorspectrum") {
+
+
+   /* Color  Spectrum */
+   /* --------------------------------------------------------------- */
+       
+   // This is to prevent the flash of unstyled content before the html becomes JET components.
+   @if $initialVisibility == hidden {
+     oj-colorspectrum-container:not(.oj-complete) {
+       visibility: hidden;
+     }      
+   }
+
+   .oj-colorspectrum {
+     display: inline-block;
+     position: relative;
+   }
+
+
+   /*  The spectrum rectangle containing the saturation/luminosity spectrum for the hue */
+   .oj-colorspectrum-spectrum {
+      width: $colorSpectrumSize;
+      height: $colorSpectrumSize;
+      border-color: $colorSpectrumBorderColor;
+      border-style: solid;
+      border-width: 1px;
+      margin-right: 15px;
+      box-sizing: border-box;
+      margin-top: $colorSpectrumThumbSize/2;
+      margin-left: $colorSpectrumThumbSize/2;
+      display: inline-block;
+   }
+
+   .oj-colorspectrum-container {
+     white-space: nowrap;
+   }
+
+   .oj-colorspectrum-container > .oj-slider-vertical {
+     display: inline-block;
+     vertical-align: top;
+   }
+
+   /*  Horizontal opacity slider  */
+   .oj-colorspectrum-container > .oj-slider-horizontal {
+     display: block;
+   }
+
+
+   /*  Horizontal opacity slider  - length  */
+   .oj-colorspectrum-container  > .oj-slider-horizontal > .oj-slider-container {
+     width: $colorSpectrumSize;
+   }
+
+   /*  Vertical Hue slider  - height  */
+   .oj-colorspectrum-container > .oj-slider-vertical > .oj-slider-container {
+      height: $colorSpectrumSize;
+   }
+
+   /*  Remove bottom margins from sliders  */
+   html .oj-colorspectrum-container .oj-form-control 
+   {
+      margin-bottom: 0;
+   }
+
+   /*  Spectrum thumb   */
+   .oj-colorspectrum-thumb {
+      width: $colorSpectrumThumbSize;
+      height: $colorSpectrumThumbSize;
+      border-radius: $colorSpectrumThumbSize;
+      border-width: $colorSpectrumThumbBorderWidth;
+      border-color: $colorSpectrumThumbBorderColor;
+      border-style: solid;
+      background-color: transparent;
+      cursor: pointer;
+      box-shadow: $colorSpectrumThumbBoxShadow;
+      box-sizing: border-box;
+   }
+
+   .oj-colorspectrum-thumb:not(.oj-focus-highlight):focus {
+      outline: none;
+   }
+
+   .oj-colorspectrum.oj-disabled .oj-colorspectrum-thumb {
+      border-color: $colorspectrumThumbBorderColorDisabled;
+   }
+
+   .oj-colorspectrum.oj-warning .oj-colorspectrum-container {
+      border: $formControlMessagingBorderWidth solid $borderColorWarning;
+   }
+   
+   .oj-colorspectrum.oj-invalid .oj-colorspectrum-container {
+      border: $formControlMessagingBorderWidth solid $borderColorError;
+   }
+
+
+   /* --------------------------------------------------------------- */
+
+ }
+}

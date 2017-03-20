@@ -1,9 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
- x="0px" y="0px" width="20px" height="20px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve">
-<g opacity="0.8">
-<path fill="#FFFFFF" d="M10,19c-4.96,0-9-4.04-9-9c0-4.96,4.04-9,9-9c4.96,0,9,4.04,9,9C19,14.96,14.96,19,10,19z"/>
-<path d="M10,2c4.41,0,8,3.59,8,8s-3.59,8-8,8s-8-3.59-8-8S5.59,2,10,2 M10,0C4.48,0,0,4.48,0,10s4.48,10,10,10s10-4.48,10-10
-		S15.52,0,10,0L10,0z"/>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><g opacity=".8"><path fill="#FFF" d="M10 19c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9z"/><path d="M10 2c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0z"/></g></svg>

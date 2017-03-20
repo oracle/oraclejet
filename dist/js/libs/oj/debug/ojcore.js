@@ -3,8 +3,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['require', 'ojL10n!ojtranslations/nls/ojtranslations', 'promise'], function(require, ojt)
+define(['require', 'ojL10n!ojtranslations/nls/ojtranslations', 'promise'], function(require, ojt, promise)
 {
+    promise['polyfill']();
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -45,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "2.3.0",
-  'build' : "3",
-  'revision': "30989",
+  'version': "3.0.0",
+  'build' : "14",
+  'revision': "32945",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -405,7 +406,6 @@ oj.CHECKPOINT_MANAGER.dump = function (regexp)
  * is called, <code>this</code> is the class' constructor.  This allows class
  * initialization implementations to be shared in some cases.
  * </p>
- * @author Blake Sullivan
  */
 
 
@@ -856,8 +856,43 @@ oj.Object._compareArrayValues = function (array1, array2)
   return true;
 }
 
-//Shadow comparion of two arrays, order needn't be same, but no duplicates
-oj.Object._compareSet = function (array1, array2)
+//Comparion of two Objects containing id and or index properties. 
+//Note: it returns false if one is an id and other is an index
+//if ids are the same, index will be ignored if there is only one is provided
+oj.Object._compareIdIndexObject = function (obj1, obj2)
+{
+  if ((typeof obj1 === "number" && typeof obj2 === "number") ||
+      (typeof obj1 === "string" && typeof obj2 === "string"))
+  {
+    return obj1 == obj2;
+  }
+
+  if (typeof obj1 === "object" && typeof obj2 === "object")
+  {
+    if (obj1["id"] && obj2["id"])
+    {
+      if (obj1["id"] != obj2["id"])
+        return false;
+
+      if (obj1["index"] && obj2["index"])
+        return obj1["index"] == obj2["index"];
+
+      return true;
+    }
+    else if (obj1["index"] && obj2["index"])
+    {
+      return obj1["index"] == obj2["index"];
+    }
+  }
+
+  return false;  
+};
+
+
+//Comparion of two arrays containing ids, indexes, or objects where each object has id, 
+//index or both properties.
+//order needn't be same but no duplicates
+oj.Object._compareArrayIdIndexObject = function (array1, array2)
 {
   //null and [] are equals
   if (!array1)
@@ -871,14 +906,21 @@ oj.Object._compareSet = function (array1, array2)
 
   for (var i = 0; i < array1.length; i++)
   {
-    if ((array1[i] != array2[i]) &&
-        ((array1.indexOf(array2[i]) == -1 ||
-          array2.indexOf(array1[i]) == -1)))
+    var found = false;
+    for (var j = 0; j < array2.length; j++)
+    {
+      if (oj.Object._compareIdIndexObject (array1[i], array2[j]))
+      {
+        found = true;
+        break;
+      }
+    }
+    if (! found)
       return false;
   }
 
   return true;
-}
+};
 
 
 oj.Object.__innerEquals = function (obj1, obj2) {
@@ -1035,7 +1077,6 @@ oj.__isAmdLoaderPresent = function()
  * Assertion utilities.
  * The container is expected to have already initialized the oj.Assert Object before this
  * code is executed and initialized the oj.Assert.DEBUG flag/
- * @author Blake Sullivan
  * @constant {Object|Boolean} DEBUG <code>true</code> if assertions are enabled.
  * @export
  * @ignore
@@ -2443,7 +2484,7 @@ oj.ResponsiveUtils = function() {};
 
 /**
  * <p>In the jet sass files there are variables for
- * responsive screen sizes, these look something like</p>
+ * responsive screen widths, these look something like</p>
  *  <ul>
  *    <li>$screenSmallRange:  0, 767px;</li>
  *    <li>$screenMediumRange: 768px, 1023px;</li>
@@ -2488,6 +2529,9 @@ oj.ResponsiveUtils.SCREEN_RANGE ={
 
 /**
  * <p>In the jet sass files there are variables for
+ * responsive screen widths,
+ * see {@link oj.ResponsiveUtils.SCREEN_RANGE} for details.
+ * The jet sass files also has variables for
  * responsive queries like $responsiveQuerySmallUp,
  * $responsiveQuerySmallOnly, $responsiveQueryMediumUp, etc.</p>
  *
@@ -2498,81 +2542,81 @@ oj.ResponsiveUtils.SCREEN_RANGE ={
  */
 oj.ResponsiveUtils.FRAMEWORK_QUERY_KEY = {
    /**
-   * matches small and up screens
+   * Matches screen width small and wider
    * @expose
    * @constant
    */
    SM_UP: "sm-up",
    /**
-   * matches medium and up screens
+   * matches screen width medium and wider
    * @expose
    * @constant
    */
    MD_UP: "md-up",
    /**
-   * matches large and up screens
+   * matches screen width large and wider
    * @expose
    * @constant
    */
    LG_UP: "lg-up",
    /**
-   * matches extra large and up screens
+   * matches screen width extra-large and wider
    * @expose
    * @constant
    */
    XL_UP: "xl-up",
    /**
-   * matches xxl and up screens
+   * matches screen width extra-extra-large and wider
    * @expose
    * @constant
    */
    XXL_UP: "xxl-up",
 
    /**
-   * matches small screens only
+   * matches screen width small only
    * @expose
    * @constant
    */
    SM_ONLY: "sm-only",
    /**
-   * matches medium screens only
+   * matches screen width medium only
    * @expose
    * @constant
    */
    MD_ONLY: "md-only",
    /**
-   * matches large screens only
+   * matches screen width large only
    * @expose
    * @constant
    */
    LG_ONLY: "lg-only",
    /**
-   * matches extra large screens only
+   * matches screen width extra-large only
    * @expose
    * @constant
    */
    XL_ONLY: "xl-only",
 
    /**
-   * matches medium and down screens
+   * matches screen width medium and narrower
    * @expose
    * @constant
    */
    MD_DOWN: "md-down",
    /**
-   * matches large and down screens
+   * matches screen width large and narrower
    * @expose
    * @constant
    */
    LG_DOWN: "lg-down",
    /**
-   * matches extra large and down screens
+   * matches screen width extra-large and narrower
    * @expose
    * @constant
    */
    XL_DOWN: "xl-down",
    /**
-   * matches high resolution screems
+   * matches high resolution screens
    * @expose
    * @constant
    */
@@ -3226,6 +3270,7 @@ oj.Translations._getBundle = function()
  * Internally used by the {@link oj.BusyContext} to track a components state
  * while it is performing a task such as animation or fetching data.
  *
+ * @ignore
  * @constructor
  * @param {Function|Object|undefined} description of the component and cause
  *        of the busy state
@@ -3251,7 +3296,10 @@ oj.BusyState = function (description)
    * @private
    * @type {string}
    */
-  this._id = this._addedWaitTs.toString(36) + "_" + Math.random().toString(36);
+  this._id = this._addedWaitTs.toString(36) + "_" + Math.random().toString(36); //@RandomNumberOk -
+  // random number concatinated to the current timestamp is used for a unique id for a local Map
+  // key. This random number is not used use as a cryptography key.
+
 };
 
 Object.defineProperties(oj.BusyState.prototype,
@@ -3279,33 +3327,33 @@ Object.defineProperties(oj.BusyState.prototype,
       {
         "get" : function ()
         {
-          if ($.isFunction(this._description))
-            return this._description();
-          else if (this._description)
-            return this._description.toString();
-          else
-            return undefined;
+          if (this._description)
+          {
+            if (this._description instanceof Function)
+              return this._description();
+            else
+              return this._description.toString();
+          }
+
         },
         "enumerable" : true
       }
   });
 
 /**
- * @public
  * @override
  * @returns {string} returns the value of the object as a string
  */
 oj.BusyState.prototype.toString = function ()
 {
-  var buff = "oj.BusyState";
+  var buff = "Busy state: [decsription=";
 
-  //using the collection syntax here to access id, description properties to make the
-  //closure compiler happy.
+  var description = this["description"];
 
-  buff += " [id=" + this["id"];
-
-  if (this["description"])
-    buff += ", description=" + this["description"];
+  if (description != null)
+  {
+    buff += description;
+  }
 
   var elapsed = oj.BusyState._getTs() - this._addedWaitTs;
   buff += ", elapsed=" + elapsed + "]";
@@ -3313,17 +3361,6 @@ oj.BusyState.prototype.toString = function ()
   return buff;
 };
 
-/**
- * @public
- * @param {Object} target object to compare
- * @returns {boolean} <code>true</code> if the "id" and "description" properties
- *           are equal
- */
-oj.BusyState.prototype.equals = function (target)
-{
-  // using this syntax to make the closure compiler happy.
-  return this["id"] === target["id"] && this["description"] === target["description"];
-};
 
 /**
  * @private
@@ -3347,29 +3384,32 @@ oj.BusyState._getTs = function ()
 
 /**
  * This context tracks busy states of components.  Busy states, include but are
- * not limited to, animation and data fetch.  Initially this context will be
- * scoped for the page but in the future the scopes could be at the module
- * or composite component level.
+ * not limited to, animation and data fetch.
  *
+ * This cnstructor should never be invoked by the application code directly
+ * @param {Element=} hostNode DOM element associated with this busy context
  * @export
  * @constructor
  * @since 2.1.0
  * @class Framework service for querying the busy state of components on the page.
  */
-oj.BusyContext = function ()
+oj.BusyContext = function (hostNode)
 {
-  this.Init();
+  this.Init(hostNode);
 };
 
 oj.Object.createSubclass(oj.BusyContext, oj.Object, "oj.BusyContext");
 
 /**
+ * @param {Element=} hostNode DOM element associated with this busy context
  * @instance
  * @protected
  */
-oj.BusyContext.prototype.Init = function ()
+oj.BusyContext.prototype.Init = function (hostNode)
 {
   oj.BusyContext.superclass.Init.call(this);
+  
+  this._hostNode = hostNode;
 
   /**
    * Busy states cache.
@@ -3412,7 +3452,6 @@ oj.BusyContext.prototype.Init = function ()
      */
     resolveMasterWhenReadyPromise : function ()
     {
-      this._clearAllSlaveTimeouts();
       if (this._masterWhenReadyPromiseResolver)
         this._masterWhenReadyPromiseResolver(true);
       this._masterWhenReadyPromise = null;
@@ -3422,41 +3461,33 @@ oj.BusyContext.prototype.Init = function ()
      * Returns a promise that will resolve when the master promise resolves or reject when
      * the slave timeout promise rejects.
      *
-     * @param {?} statesMap
+     * @param {Promise} master
+     * @param {Function} generateErrorCallback
      * @param {number} timeout
      * @returns {Promise}
      * @ignore
      * @private
      */
-    getSlaveTimeoutPromise : function (statesMap, timeout)
+    getSlaveTimeoutPromise : function (master, generateErrorCallback, timeout)
     {
       var timer;
       var slaveTimeoutPromise = new Promise(function (resolve, reject)
       {
         timer = window.setTimeout(function ()
         {
-          // There could be a bit of a race condition here with the logging and the use of
-          // Promise.race.  The timer could expire and log a rejection even though the master
-          // promised resolved slightly sooner.
-
-          oj.BusyContext._log(statesMap);
-          oj.Logger.info("BusyContext.whenReady: rejected");
-          var busyStates = oj.BusyContext._values(statesMap);
-          var error = new Error("whenReady timeout of " + timeout +
-            "ms expired with the following busy states: " + busyStates.join(", "));
-          error["busyStates"] = busyStates;
-          reject(error);
+          reject(generateErrorCallback());
         }, timeout);
       });
       this._slaveTimeoutPromiseTimers.push(timer);
 
-      //closure compiler doesn't recognize "Promise.race".
-      return Promise["race"]([this.getMasterWhenReadyPromise(), slaveTimeoutPromise]);
+      // When the master promise is resolved, all timers may be cleared
+      return Promise.race([master, slaveTimeoutPromise])
+                                  .then(this._clearAllSlaveTimeouts.bind(this));
     },
     /**
      * Clears all window timeout timeers that are slave when ready promises.
      *
-     * @returns {void}
+     * @returns {boolean}
      * @ignore
      * @private
      */
@@ -3466,6 +3497,8 @@ oj.BusyContext.prototype.Init = function ()
       this._slaveTimeoutPromiseTimers = [];
       for (var i = 0; i < slaveTimeoutPromiseTimers.length; i++)
         window.clearTimeout(slaveTimeoutPromiseTimers[i]);
+        
+      return true;
     },
     /**
      * Promise executor function passed as the single master promise constructor.  Captures the
@@ -3567,11 +3600,13 @@ oj.BusyContext.prototype.addBusyState = function (options)
   var statesMap = this._statesMap;
 
   /** @type {oj.BusyState} */
-  var busyState = new oj.BusyState(options["description"]);
+  var busyState = new oj.BusyState(options[oj.BusyContext._DESCRIPTION]);
 
   oj.Logger.info(">> " + busyState);
 
   statesMap.set(busyState.id, busyState);
+  
+  this._addBusyStateToParent();
 
   oj.Logger.info("BusyContext.addBusyState: end");
 
@@ -3595,25 +3630,61 @@ oj.BusyContext.prototype.whenReady = function (timeout)
   oj.Logger.info("BusyContext.whenReady: start, timeout:%d", timeout);
   /** @type {?} */
   var statesMap = this._statesMap;
-
-  if (statesMap.size === 0)
+  
+  var mediator = this._mediator;
+  
+  var promise =  oj.BusyContext._BOOTSTRAP_MEDIATOR.whenReady().then(
+    function()
+    {
+      if (statesMap.size === 0)
+      {
+        // no busy states, promise resolves immediately
+        oj.Logger.info("BusyContext.whenReady: resolved");
+        return Promise.resolve(true);
+      }
+      else
+      {
+        return mediator.getMasterWhenReadyPromise(); 
+      }
+    }
+  
+  );
+  
+  if (!isNaN(timeout))
   {
-    // no busy states, promise resolves immediately
-    oj.Logger.info("BusyContext.whenReady: resolved");
-    return Promise.resolve(true);
+    var handleTimeout = function() 
+    {
+       oj.Logger.info("BusyContext.whenReady: rejected");
+       
+       var error;
+       var expiredText = "whenReady timeout of " + timeout + "ms expired ";
+       
+       if (!oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady())
+       {
+          error = new Error(expiredText + 'while the application is loading.' +
+          ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
+          ' Application bootstrap busy state is released by calling' +
+          ' "oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();".');
+       }
+       else
+       {
+          oj.BusyContext._log(statesMap);
+         
+          var busyStates = oj.BusyContext._values(statesMap);
+          error = new Error(expiredText + "with the following busy states: " + busyStates.join(", "));
+          error["busyStates"] = busyStates;
+       }
+       
+       return error;
+      
+    };
+    promise = mediator.getSlaveTimeoutPromise(promise, handleTimeout, timeout);
   }
-  else
-  {
-    var mediator = this._mediator;
-    var promise;
-    if (isNaN(timeout))
-      promise = mediator.getMasterWhenReadyPromise();
-    else
-      promise = mediator.getSlaveTimeoutPromise(statesMap, timeout);
+  
 
-    oj.Logger.info("BusyContext.whenReady: end");
-    return promise;
-  }
+  oj.Logger.info("BusyContext.whenReady: end");
+  return promise;
+  
 };
 
 /**
@@ -3624,10 +3695,15 @@ oj.BusyContext.prototype.whenReady = function (timeout)
 oj.BusyContext.prototype.isReady = function ()
 {
   oj.Logger.info("BusyContext.isReady: start");
-  var statesMap = this._statesMap;
-
-  var rtn = statesMap.size === 0;
-  oj.BusyContext._log(statesMap);
+  var rtn = false;
+  
+  if (oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady())
+  {
+    var statesMap = this._statesMap;
+  
+    rtn = statesMap.size === 0;
+    oj.BusyContext._log(statesMap);
+  }
 
   oj.Logger.info("BusyContext.isReady: end");
   return rtn;
@@ -3658,6 +3734,7 @@ oj.BusyContext.prototype._removeBusyState = function (busyState)
     var mediator = this._mediator;
     oj.Logger.info("BusyContext._removeBusyState: resolving whenReady promises");
     mediator.resolveMasterWhenReadyPromise();
+    this._resolveBusyStateForParent();
   }
 
   oj.Logger.info("BusyContext._removeBusyState: end");
@@ -3704,36 +3781,124 @@ oj.BusyContext.prototype._removeBusyState = function (busyState)
  */
 oj.BusyContext.prototype.applicationBoostrapComplete = function ()
 {
-  if (!("oj_whenReady" in window) || !window["oj_whenReady"])
-  {
-    oj.Logger.info("BusyContext.applicationBoostrapComplete: strategy not enabled.");
-    return;
-  }
-
-  var bootstrapWhenReadyResolver = this._bootstrapWhenReadyResolver;
-  this._bootstrapWhenReadyResolver = null;
-  if (bootstrapWhenReadyResolver)
-    bootstrapWhenReadyResolver();
-  else
-    oj.Logger.warning("BusyContext.applicationBoostrapComplete already invoked.");
+  oj.BusyContext._BOOTSTRAP_MEDIATOR.notifyComplete();
 };
+
 
 /**
  * @ignore
- * @returns {void}
  */
-oj.BusyContext.prototype.__bootstrapAddBusyState = function ()
+oj.BusyContext.prototype._getParentBusyContext = function()
 {
-  // called from a static block in Context.js.  Function is not exported and ignored from JSDoc.
-  if (!("oj_whenReady" in window) || !window["oj_whenReady"])
-    return;
+  if (this._hostNode)
+  {
+    var parentContext =  oj.Context.getContext(this._hostNode.parentElement);
+    if (parentContext)
+    {
+      return parentContext.getBusyContext();
+    }
+  }
+  
+  return null;
+}
 
-  var options = {"description" : 'Application loading.' +
-      ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
-      ' Application bootstrap busy state is released by calling' +
-      ' "oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();".'};
-  this._bootstrapWhenReadyResolver = this.addBusyState(options);
-};
+/**
+ * @ignore
+ */
+oj.BusyContext.prototype._addBusyStateToParent = function()
+{
+  if (!this._parentNotified)
+  {
+    this._parentNotified = true;
+    
+    var parentContext = this._getParentBusyContext();
+    if (parentContext)
+    {
+      var opts = {};
+      opts[oj.BusyContext._DESCRIPTION] = this._getCompoundDescription.bind(this);
+      this._parentResolveCallback = parentContext.addBusyState(opts);
+    }
+  }
+}
+
+/**
+ * @ignore
+ */
+oj.BusyContext.prototype._resolveBusyStateForParent = function()
+{
+  this._parentNotified = false;
+  if (this._parentResolveCallback)
+  {
+    this._parentResolveCallback();
+    this._parentResolveCallback = null;
+  }
+}
+
+/**
+ * @ignore
+ */
+oj.BusyContext.prototype._getCompoundDescription = function()
+{
+  var busyStates = oj.BusyContext._values(this._statesMap);
+  return ('[' + busyStates.join(", ") + ']');
+}
+
+/**
+ * @ignore
+ */
+oj.BusyContext._DESCRIPTION = "description";
+
+
+oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
+{
+  var _tracking;
+  var _readyPromise;
+  var _resolveCallback;
+  
+  if (typeof window !== 'undefined')
+  {
+    _tracking = window["oj_whenReady"];
+  }
+  
+  this.whenReady = function()
+  {
+    if (_readyPromise)
+    {
+      return _readyPromise;
+    }
+    
+    if (!_tracking)
+    {
+      _readyPromise = Promise.resolve(true);
+    }
+    else
+    {
+      _readyPromise = new Promise(
+        function(resolve, reject)
+        {
+          _resolveCallback = resolve;
+        }
+      );
+    }
+    return _readyPromise;
+  }
+  
+  this.isReady = function()
+  {
+    return !_tracking;
+  }
+  
+  this.notifyComplete = function()
+  {
+    _tracking = false;
+    if (_resolveCallback)
+    {
+      _resolveCallback(true);
+    }
+  }
+  
+})();
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3746,42 +3911,75 @@ oj.BusyContext.prototype.__bootstrapAddBusyState = function ()
  */
 
 /**
- * This is a general purpose context.  Initially it only exposes the BusyContext
- * that keeps track of components that are currently animating or fetching data.
- * In the future this context might be expanded for other purposes.  Instances
- * of contexts might be further scoped to modules and composite components.
- * Initially the single BusyContext will be scoped for the page.
- *
+ * The constructor should never be invoked by an application directly. Use 
+ * {@link oj.Context.getPageContext} and {@link oj.Context.getContext} APIs to
+ * retrieve an instance of the context.
+ * @param {Element=} node DOM node where the context should be created
  * @export
  * @constructor
  * @since 2.1.0
- * @class Context scoped for the page.  Exposes additional contexts.
+ * @class This is a general purpose context. Initially it only exposes the BusyContext
+ * that keeps track of components that are currently animating or fetching data.
+ * In the future this context might be expanded for other purposes.
  */
-oj.Context = function ()
+oj.Context = function (node)
 {
-  this.Init();
+  this.Init(node);
 };
 
 oj.Object.createSubclass(oj.Context, oj.Object, "oj.Context");
 
 /**
+ * @param {Element=} node DOM node where the context should be created
  * @instance
  * @protected
  */
-oj.Context.prototype.Init = function ()
+oj.Context.prototype.Init = function (node)
 {
   oj.Context.superclass.Init.call(this);
+  this._node = node;
 };
 
 /**
- * Returns a context that is scoped as per the node.
- * @param {Element} node DOM element used to provide the correct context
- * @returns {oj.Context} context object scoped per the target node
+ * Returns the closest enclosing JET context for a node.
+ * Any DOM element may be designated by the page author as a host of JET context.
+ * The designation must be expressed in HTML markup by specifying the "data-oj-context"
+ * attribute on the host element: 
+ 
+ * <pre class="prettyprint">
+ * &lt;div data-oj-context>&lt;div>
+ * </pre>
+ * 
+ * This method will walk up the element hierarchy starting with the source node to 
+ * find an element that has the data-oj-context attribute. If no such element is found,
+ * the page context will be returned.
+ * If the JET context is established on a particular element, the {@link oj.BusyContext} 
+ * associated with that context will be tracking busy states for that element and
+ * its subtree
+ * 
+ * @param {Element} node DOM element whose enclosing context will be provided
+ * @return {oj.Context} context object scoped per the target node
+ * @since 2.2.0
+ * @export
  */
 oj.Context.getContext = function(node)
 {
-  // this method is not exported as customer facing API yet.
-  // initial impl will default to the page context.
+  while(node)
+  {
+    var context = node[oj.Context._OJ_CONTEXT_INSTANCE];
+    if (context)
+    {
+      return context;
+    }
+    if (node.hasAttribute(oj.Context._OJ_CONTEXT_ATTRIBUTE))
+    {
+      context = new oj.Context(node);
+      Object.defineProperty(node, oj.Context._OJ_CONTEXT_INSTANCE, 
+                                                        {'value': context});
+      return context;
+    }
+    node = node.parentElement;
+  }
   return oj.Context.getPageContext();
 };
 
@@ -3807,36 +4005,21 @@ oj.Context.getPageContext = function ()
 oj.Context.prototype.getBusyContext = function ()
 {
   if (!this._busyContext)
-    this._busyContext = new oj.BusyContext();
+    this._busyContext = new oj.BusyContext(this._node);
 
   return this._busyContext;
 };
 
-// If the app has opt'd in on the strategy, add a busy state for the purpose of blocking
-// until the app bootstrap has completed.
-//
-// ignore if running in a JS context that doesn't have the global window object defined
-if (typeof window !== 'undefined')
-  oj.Context.getPageContext().getBusyContext().__bootstrapAddBusyState();
-// CustomEvent()
-(function () {  
-  if (typeof window === 'undefined' || (typeof window['CustomEvent'] === "function")) {
-    return;
-  }
+/**
+ * @ignore
+ */
+oj.Context._OJ_CONTEXT_ATTRIBUTE = "data-oj-context";
+
+oj.Context._OJ_CONTEXT_INSTANCE = "__ojContextInstance";
+
   
-  function CustomEvent (event, params) {
-    params = params || {bubbles: false, cancelable: false, detail: undefined};
-    
-    var evt = document.createEvent('CustomEvent');
-    
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail );
-    return evt;
-   }
+  
 
-  CustomEvent.prototype = window.Event.prototype;
-
-  window['CustomEvent'] = CustomEvent;
-})();
 (function()
 {
 
@@ -3896,6 +4079,75 @@ if (typeof window !== 'undefined')
         return '-' + match.toLowerCase();
       }
     );
+  }
+
+  /**
+   * @ignore
+   * @param {string} type event type (e.g. ojBeforeExpand)
+   * @return {string} event listener property name (e.g. onOjBeforeExpand)
+   */
+  oj.__AttributeUtils.eventTypeToEventListenerProperty = function(type)
+  {
+    return 'on' + type.substr(0,1).toUpperCase() + type.substr(1);
+  }
+
+  /**
+   * @ignore
+   * @param {string} property event listener property name (onOjBeforeExpand)
+   * @return {string|null} event type (e.g. ojBeforeExpand)
+   */
+  oj.__AttributeUtils.eventListenerPropertyToEventType = function(property)
+  {
+    if (/^on[A-Z]/.test(property)) {
+      return property.substr(2,1).toLowerCase() + property.substr(3);
+    }
+    return null;
+  }
+
+  /**
+   * @ignore
+   * @param {string} name property name (e.g. expanded)
+   * @return {string} change event type (e.g. expandedChanged)
+   */
+  oj.__AttributeUtils.propertyNameToChangeEventType = function(name)
+  {
+    return name + 'Changed';
+  }
+
+  /**
+   * @ignore
+   * @param {string} type change event type (e.g. expandedChanged)
+   * @return {string|null} propertyName (e.g. expanded)
+   */
+  oj.__AttributeUtils.changeEventTypeToPropertyName = function(type)
+  {
+    if (/Changed$/.test(type)) {
+      return type.substr(0, type.length - 7);
+    }
+    return null;
+  }
+
+  /**
+   * @ignore
+   * @param {string} trigger event trigger (e.g. beforeExpand)
+   * @return {string} event type (e.g. ojBeforeExpand)
+   */
+  oj.__AttributeUtils.eventTriggerToEventType = function(trigger)
+  {
+    return 'oj' + trigger.substr(0,1).toUpperCase() + trigger.substr(1);
+  }
+
+  /**
+   * @ignore
+   * @param {string} type event type (e.g. ojBeforeExpand)
+   * @return {string|null} event trigger (e.g. beforeExpand)
+   */
+  oj.__AttributeUtils.eventTypeToEventTrigger = function(type)
+  {
+    if (/^oj[A-Z]/.test(type)) {
+      return type.substr(2,1).toLowerCase() + type.substr(3);
+    }
+    return null;
   }
   
   /**
@@ -3957,8 +4209,8 @@ if (typeof window !== 'undefined')
   
   
   
-  var _ATTR_EXP = /(?:\{\{\s*)([^\s]+)(?:\s*\}\})/;
-  var _ATTR_EXP_RO = /(?:\[\[\s*)([^\s]+)(?:\s*\]\])/;
+  var _ATTR_EXP = /(?:\{\{)(.+)(?:\}\})/;
+  var _ATTR_EXP_RO = /(?:\[\[)(.+)(?:\]\])/;
   
 })();
 

@@ -423,8 +423,13 @@ oj.TreeDndContext.prototype._dragStart =  function(e)
    if ( ((! dnd.reorder) && (!dnd.dragFromEnabled)) || 
         $node.hasClass(TreeUtils._OJ_DISABLED) || this.component._isTreeDisabled())
    {
-     e.preventDefault() ;                           // drag not allowed.
+     e.preventDefault() ;          // drag not allowed.
      return ;
+   }
+
+   //  If node types have been defined, check that a move is permitted for this node type.
+   if (! this.component._canTypedNodeMove($node, "move")) {
+     return false;                 // drag not allowed.
    }
 
    //  Add dragged node(s) to transfer data.  If dragged node is selected,
@@ -886,7 +891,7 @@ oj.TreeDndContext.prototype._addInternalNode =  function()
   {
     this._internalNode = $("<li class='" + TreeUtils._OJ_TEMPNODE + " oj-tree-node oj-tree-leaf oj-valid-drop' id='" + TreeUtils._OJ_TEMPNODE + "'><ins class='oj-tree-icon'></ins><a href='#'><ins class='oj-tree-icon'></ins><span class='oj-tree-title'></span></a></li>");
   }
-  this.component._$container_ul.append(this._internalNode) ;
+  this.component._$container_ul.append(this._internalNode) ;       // @HtmlUpdateOk
 };
 
 
@@ -966,7 +971,7 @@ oj.TreeDndContext.prototype._dndEnter = function (obj)
      if (vars.r && vars.r.length && vars.r.hasClass(TreeUtils._OJ_COLLAPSED))
      { 
        // if the node is closed - open it, then recalculate
-       dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms);
+       dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms);     // @HtmlUpdateOk
      }
    }
 
@@ -1643,7 +1648,7 @@ oj.TreeDndContext.prototype._setDragImage = function(dt, $nodes)
      el = $nodes[i].cloneNode(true);
      el.style.marginLeft  = 0;
      el.style.paddingLeft = 0;
-     ul.append(el);
+     ul.append(el);                // @HtmlUpdateOk
    }
 
    elem = $dragImg[0] ;
@@ -2200,7 +2205,12 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                                                   // yes
           obj._this._data.ui.touchEvent = false ; // ensure touchEvent flag is off
           if (s == "shift+f10") {                 // note the active node if shift+F10
-            obj._this._data.menu.activenode = obj._this._data.ui.hovered ;
+            obj._this._data.menu.activeNode = obj._this._data.ui.hovered ;
+            //  - if no hovered node (maybe a click and then mouse off the
+            // node), use the last selected node.
+            if (! obj._this._data.menu.activeNode) {                               // 
+              obj._this._data.menu.activeNode = obj._this._data.ui.lastSelected ;  // 
+            }
           }
           else  if (obj._handler[s]) {            // check if matching handler function
               e.preventDefault() ;
@@ -3746,31 +3756,6 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
                 move : null,
 
                 /**
-                  * Triggered whenever a supported component option changes, whether due to user interaction
-                  * or programmatic intervention.  If the new value is the same as the previous value, no
-                  * event will be fired.
-                  *
-                  * Currently there is one supported option, <code class="prettyprint">"selection"</code>, which
-                  * reflects the current selection status of the Tree.  Additional options may be supported in
-                  * the future, so listeners should verify which option is changing before taking any action.
-                  *
-                  * @expose
-                  * @event
-                  * @memberof oj.ojTree
-                  * @instance
-                  * @property {Event} event <code class="prettyprint">jQuery</code> event object
-                  * @property {Object} ui Parameters
-                  * @property {string} ui.option the name of the option that is changing
-                  * @property {Array}  ui.previousValue the previous value of the option
-                  * @property {Array}  ui.value the current value of the option
-                  * @property {Object} ui.optionMetadata information about the option that is changing
-                  * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
-                  *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
-                  *
-                  */
-                 optionChange: null,
-
-                /**
                   * Triggered when one or more tree nodes have been pasted into the tree via the context menu.
                   *
                   * @expose
@@ -3938,6 +3923,7 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
         }
 
         $ul.css('max-height', hNow + "px") ;       // set the current height
+        this._overflow = $ul.css('overflow') ;     // note for reset in _transitionEnd()
         $ul.css('overflow', 'hidden') ;
 
         if (! bSlideUp) {
@@ -4019,18 +4005,22 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
       */
      _transitionEnd : function($ul, node)
      {
-        if (node.hasClass(TreeUtils._OJ_COLLAPSED)) {        // end collapse
+        if (node.hasClass(TreeUtils._OJ_COLLAPSED)) {   // end collapse
           $ul[0].style.display = "none";
 $ul.css('max-height', '') ;   //JRM
           this._emitEvent({ "obj" : node }, "collapse");
           this["after_close"](node);
         }
-        else {                                              // end expand
+        else {                                          // end expand
           $ul[0].style.display = "block";
           $ul.css('max-height', '') ;
-//          $ul.css('overflow', 'hidden') ;        // from _expand()
           this._emitEvent({ "obj" : node }, "expand");
 //        this["after_open"](node);
+        }
+
+        if (this._overflow) {
+          $ul.css('overflow', this._overflow) ;         // restore, 'hidden' was set in _slide()
+          this._overflow = null ;
         }
      },
 
@@ -4680,7 +4670,7 @@ $ul.css('max-height', '') ;   //JRM
        * @override
        * @memberof oj.ojTree
        * @param {Element} node  child DOM element of a node.<p>
-       * @return {string|null} the subid for the DOM element, or <code class="prettyprint">null</code> if not found.<p>
+       * @return {Object|null}  an object with a "subId" property containing the subid for the DOM element, or <code class="prettyprint">null</code> if not found.<p>
        */
      getSubIdByNode: function(node)
      {
@@ -4901,6 +4891,7 @@ $ul.css('max-height', '') ;   //JRM
         // If the tree was constructed from existing user markup found in the div,
         // reinstate that markup to reset the div to its original state pre tree create.
         if (this._data.html.markup_ul) {
+          this._unTransformElemIds(this._data.html.markup_ul);   // reset to original user id's
           this._$container.append(this._data.html.markup_ul) ;        //@HTMLUpdateOK
           this._data.html.markup_div.remove() ;
           this._data.html.markup_div        = false ;
@@ -5648,6 +5639,11 @@ $ul.css('max-height', '') ;   //JRM
      {
         if (! is_prepared) {
           obj = this._getNode(obj) ;
+
+          var rslt = this._emitEvent({"obj" : obj, "func": "move"}, "before") ;
+          if (typeof rslt == "boolean" && (!rslt)) {
+            return false ;
+          }
         }
 
         if ((obj.hasClass && obj.hasClass(TreeUtils._OJ_DISABLED)) || this._data.core.locked) {
@@ -5791,6 +5787,31 @@ $ul.css('max-height', '') ;   //JRM
          }
 
          return ret;
+      },
+
+      /**
+        *  Check if a node has been typed and the type definition inhibits moving.
+        *  @return {boolean} false if the node is inhibited from being moved, else true.
+        *  @private
+        */
+      _canTypedNodeMove : function($node, func)
+      {
+         var types, type, ret = true ;
+
+         types = this.options["types"] ;
+         if (types) {
+           types = types["types"];
+           if (types) { 
+             type  = this._getType($node);            // "type" attr name for node
+             if (((types[type] && typeof types[type][func] !== "undefined") ||
+                 (types["default"] && typeof types["default"][func] !== "undefined")) &&
+                 (this._check(func, $node) === false)) {
+               ret = false;
+             }
+           }
+         }
+
+         return ret ;
       },
 
 
@@ -6482,7 +6503,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      _hover : function(node)
      {
-       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
+       if (this._data.menu.activeNode) {     //TDO. why is this needed for shift-f10 on a node
          return ;                            // near the bottom. A bogus mousenter for a node
        }                                     // near the middle is received
 
@@ -6516,7 +6537,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      _dehover : function()
      {
-       if (this._data.menu.activenode) {     //TDO. why is this needed for shift-f10 on a node
+       if (this._data.menu.activeNode) {     //TDO. why is this needed for shift-f10 on a node
          return ;                            // near the bottom. A bogus mousenter for a node
        }                                     // near the middle is received
 
@@ -6573,6 +6594,7 @@ $ul.css('max-height', '') ;   //JRM
        var _this    = this;
 
        this._save_opened();
+       this._saveSelected() ;
        if (!node) {
           node = -1;
        }
@@ -6607,7 +6629,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      _refresh_ui : function (obj)
      {
-        this["saveSelected"]();
+        this._saveSelected() ;
         this._refresh_core(obj) ;
      },
 
@@ -6863,8 +6885,11 @@ $ul.css('max-height', '') ;   //JRM
      },
 
 
-     //  Rselect nodes as of last savedSelected()
-     "reselect" : function ()
+     /**
+       *  Rselect nodes as of last savedSelected()
+       *  @private
+       */
+     _reselect : function ()
      {
         var _this = this,
             s     = this._data.ui.toSelect;
@@ -6872,7 +6897,13 @@ $ul.css('max-height', '') ;   //JRM
         s = $.map($.makeArray(s), function (n) {
                            return "#" + n.toString().replace(/^#/,"")
                                                     .replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"); });
-        // this.deselect_all(); WHY deselect, breaks plugin state notifier?
+        // Clear selection option
+        if (s && s.length) {
+          this.options["selection"].length = 0 ;  // forget the noted selections
+          this._data.ui.selected.length = $() ;
+        }
+
+        // Reapply the selections
         $.each(s, function (i, val)
                    {
                       if (val && val !== "#")  {
@@ -6884,11 +6915,14 @@ $ul.css('max-height', '') ;   //JRM
                                            {
                                              return this["parentNode"];
                                            });
-        this._emitEvent(null, "reselect", true);
+//      this._emitEvent(null, "reselect", true);
      },
 
-     // Save selection state - see also reselect()
-     "saveSelected" : function ()
+     /**
+       * Save selection state - see also _reselect()
+       * @private
+       */
+     _saveSelected : function ()
      {
         var _this = this,
             ui    =  this._data.ui ;
@@ -6900,7 +6934,7 @@ $ul.css('max-height', '') ;   //JRM
                       ui.toSelect.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"));
                      }
                   });
-        this._emitEvent(ui.toSelect, "savedselected", true);
+//     this._emitEvent(ui.toSelect, "savedselected", true);
      },
 
 
@@ -8927,12 +8961,12 @@ $ul.css('max-height', '') ;   //JRM
                         }.bind(this))
              .bind("_treereopen", function ()
                 {
-                  this["reselect"]();
+                  this._reselect();
                 }.bind(this))
              .bind("_treeget_rollback", function ()
                 {
                   this["dehover"]();
-                  this["saveSelected"]();
+                  this._saveSelected();
                 }.bind(this))
 /*   Not used in V1
              .bind("_treeset_rollback", $.proxy(function ()
@@ -9106,11 +9140,6 @@ $ul.css('max-height', '') ;   //JRM
          // from it if it needs to, because the <ul> has been cloned and the id's will
          // therefore be duplicated.
          // TDO - we need to have a better way to do this.
-         this._data.html.markup_div  = $("<div id='" +
-                                       USER_UL_ID_PREFIX + this._getIndex() +
-                                       "' style='display:none'>").append(this._data.html.markup_ul) ;   //@HTMLUpdateOK
-         this._$container.after(this._data.html.markup_div) ;                                           //@HTMLUpdateOK
-       }
 
        this._data.html.markup      = this._data.html.markup_ul.find(" > li");   // user's <li>'s
        this._data.html.cloneMarkup = this._data.html.markup.clone(true);        // our clone of the <li>'s
@@ -9124,6 +9153,51 @@ $ul.css('max-height', '') ;   //JRM
                                                   return this.nodeType == 3;
                                                  })
                                              .remove();
+
+
+         this._transformElemIds(this._data.html.markup_ul) ;     // make user's markup id's unique 
+
+         this._data.html.markup_div  = $("<div id='" +
+                                       USER_UL_ID_PREFIX + this._getIndex() +
+                                       "' style='display:none'>").append(this._data.html.markup_ul) ;   //@HTMLUpdateOK
+         this._$container.after(this._data.html.markup_div) ;                                           //@HTMLUpdateOK
+       }
+     },
+
+
+     /**
+       *  Transform the supplied element Id attributes to make them unique. The tree index is prepended
+       *  withe tree index.
+       *  @private
+       */
+     _transformElemIds : function(markup)
+     {
+        var $nodes = $(markup).find("li"),
+            index  = this._getIndex() ;
+
+        $nodes.each(function(i, node) {
+            node.setAttribute("id", index + "_" + node.getAttribute("id")) ;
+        });
+     },
+
+
+     /**
+       *  Untransform the supplied element Id attributes by removing the prepended tree index
+       *  (see _transformElemIds).
+       *  @private
+       */
+     _unTransformElemIds : function(markup)
+     {
+        var id, n,
+            $nodes = $(markup).find("li"),
+            index  = this._getIndex() ;
+
+        $nodes.each(function(i, node) {
+            id = node.getAttribute("id") ;
+            n  = id.indexOf("_") ;
+            id = id.substr(n+1) ;             // original user id follows the underscore
+            node.setAttribute("id", id) ;
+        });
      },
 
 
@@ -9253,7 +9327,7 @@ $ul.css('max-height', '') ;   //JRM
                       _addSheet({ str : icons_css, title : "oj-tree-types" });
                     }
                    }, this))
-               .bind("ojbefore", $.proxy(function (e, data)
+               .bind("ojbefore", function (e, data)
                   {
                      var s,
                          ty,
@@ -9272,18 +9346,15 @@ $ul.css('max-height', '') ;   //JRM
                        if (!data["item"] || (!data["item"]["tagName"] && !data["item"]["jquery"]))  {
                          return;
                        }
-                       s   = this.options["types"]["types"];
-                       ty  = this._getType(item);             // get "type" attr name for node
 
-                       if (( (s[ty] && typeof s[ty][func] !== "undefined") ||
-                             (s["default"] && typeof s["default"][func] !== "undefined")
-                            ) && this._check(func, item) === false)  {
+                       if (! this._canTypedNodeMove(item, func)) {
                          e.stopImmediatePropagation();
                          return false;
                        }
                      }
 
-                  }, this));
+                  }.bind(this));
+
      },
 
      /**
@@ -9380,13 +9451,9 @@ if ((! newVal) && (! this.options["contextMenu"])) {
  }
 }
 
-       if ((! newVal) && (! this.options["contextMenu"])) {
-         return ;
-       }
-
        menu =  newVal || this.options["contextMenu"] ;
        if (!menu) {
-         return ;      // unknown
+         return ;
        }
 
        var $m = $(menu) ;                    // get the user's <ul> list
@@ -9437,7 +9504,6 @@ if ((! newVal) && (! this.options["contextMenu"])) {
           this._crrm_paste(this._data.menu.node, id);
         }
         else if (id === "ojtreeremove") {
-//        if (this["isSelected"](this._data.menu.node)) {
           if (this._isSelected(this._data.menu.node)) {
             this._crrm_remove();
           }
@@ -9466,24 +9532,24 @@ if ((! newVal) && (! this.options["contextMenu"])) {
     _NotifyContextMenuGesture: function(menu, event, eventType)
      {
         //this._trace("_NotifyContextMenuGesture() eventType=" + eventType + " event.type=" + event.type) ;
-        var keyboard = (eventType === 'keyboard') ;
+        var keyboard = (eventType === 'keyboard'),
+            textElem, $nodeElem ;
 
         if ((event.type != "contextmenu") && (!keyboard) && (eventType != 'touch')) {
           return ;
         }
 
         //  Get the tree node acted on
-        this._data.menu.node  = keyboard? this._data.ui.hovered : $(event.target);
-        var textElem          = this._data.menu.node.find('.oj-tree-title')[0] ;  // the node text <span>
+        //  - if no hovered node, use the last selected node
+        this._data.menu.node       = keyboard? (this._data.ui.hovered || this._data.menu.activeNode) : $(event.target);
+        this._data.menu.activeNode = null ;    // clear keyboard active node
 
-        this._data.menu.activenode = null ;    // clear keyboard active node
-
-        if (! this._data.menu.node) {          // is there an active (hovered) node ?
+        if (! this._data.menu.node) {          // is there an active (hovered) or last selected node ?
           event.preventDefault() ;
           return ;
         }
 
-        var $nodeElem = keyboard? this._data.menu.node : this._data.menu.node.closest("li") ;
+        $nodeElem = keyboard? this._data.menu.node : this._data.menu.node.closest("li") ;
         //console.log("_NotifyContextMenuGesture node=" + $nodeElem.attr("id"));
 
         this._data.menu.treeDivId = this._data.menu.node.closest("div").attr("id") ;
@@ -9491,8 +9557,8 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         var openOptions = {"launcher" : this._$container_ul};
         if (keyboard) {
           // Set position relative to the node in the SHIFT+F10 case.
-          // Set here to avoid conflicting with user override in before open event
-
+          // Set here to avoid conflicting with user override in "before open" event
+          textElem  = this._data.menu.node.find('.oj-tree-title')[0] ;  // the node text <span>
           openOptions["position"] = { "of" : textElem } ;
         }
 
@@ -9516,7 +9582,6 @@ if ((! newVal) && (! this.options["contextMenu"])) {
                  else {
                    $item.removeClass(TreeUtils._OJ_DISABLED) ;
                  }
-//                 this._data.menu.$container.ojMenu("refresh") ;
                  refresh = true ;
                }
              }
@@ -9886,7 +9951,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         data.menu.$elemPasteAfter  = false ;   // the menu "Paste" After element
         data.menu.$elemPasteBefore = false ;   // the menu "Paste Before" element
         data.menu.node         = false ;   // the tree node the menu was activated on
-        data.menu.activenode   = false ;   // active node for shift-F10
+        data.menu.activeNode   = false ;   // active node for shift-F10
 
 
         //  Keyboard support
@@ -10315,7 +10380,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
        var $menuContainer = this._data.menu.$container ;
        var _this          = this ;
 
-       $menuContainer.on("ojselect", $.proxy(this._handleContextMenuSelect, this));
+       $menuContainer.on("ojselect", this._handleContextMenuSelect.bind(this));
 
        // If there are any ojTree built in menu item ids, construct the menu items
        var listItems = $menuContainer.find("[data-oj-command]");
@@ -10392,6 +10457,7 @@ if ((! newVal) && (! this.options["contextMenu"])) {
          var key = _arMenuKeyMap[cmd] ;
          return '<a href="#">' + this._getString(key) + '</a>';
      },
+
 
      /**
        *  Menu "cut" functionality
@@ -10827,7 +10893,7 @@ _this._done = false ;
      {
         var node = (elem? this._getNode(elem) : null), // get tree node from the sub-element
             type, parent, parentType,
-            subid = null;
+            request = null, subId = null;
 
         if (node && (node != -1) && node.length && node.hasClass(OJT_NODE)) {
           if (elem.tagName && elem.parentNode) {
@@ -10836,25 +10902,30 @@ _this._done = false ;
             parentType = parent.tagName ;
 
             if (type === "SPAN") {
-              subid = "title" ;
+              request = "title" ;
             }
             else if (type === "A") {
-              subid = "link" ;
+              request = "link" ;
             }
             else if (type === "INS") {
-              //  Determine whether subid is a node icon, or a parent disclosure icon
+              //  Determine whether subId is a node icon, or a parent disclosure icon
               elem = $(elem) ;
               if ((parentType === "LI") && elem.hasClass(OJT_DISC)) {
-                subid = "disclosure" ;
+                request = "disclosure" ;
               }
               else if ((parentType === "A") && elem.hasClass(OJT_NICON)) {
-                subid = "icon" ;
+                request = "icon" ;
               }
             }
           }
         }
 
-        return subid ;
+        if (request) {
+          subId = "oj-tree-node['#" + node.attr("id") + "']['" + request + "']" ;
+          return {'subId': subId} ;
+        }
+
+        return null ;
      },
 
      /**
@@ -11006,7 +11077,7 @@ _this._done = false ;
      */
 ,  _trace : function(s, level)
    {
-     this._emitEvent({ "obj" : {"msg" : s }}, "trace", true);
+//     this._emitEvent({ "obj" : {"msg" : s }}, "trace", true);
 //   console.log(s) ;
 //   if (level === 1) {
 //     console.log(s) ;
@@ -11060,7 +11131,7 @@ _this._done = false ;
      * @memberof oj.ojTree
      *
      * @example <caption>Get the node icon for the Tree node with Id "#home":</caption>
-     * var node = $( ".selector" ).ojTree( "getNodeBySubId", {"subId": "oj-tree-node['#home']['icon]" } );
+     * var node = $( ".selector" ).ojTree("getNodeBySubId", {"subId": "oj-tree-node['#home']['icon]" } );
      */
 
     /**
@@ -11076,7 +11147,7 @@ _this._done = false ;
      * @memberof oj.ojTree
      *
      * @example <caption>Get the disclosure icon DOM node for the Tree node with Id "#home":</caption>
-     * var node = $( ".selector" ).ojTree( "getNodeBySubId", {"subId": "oj-tree-node['#home']['disclosure]" } );
+     * var node = $( ".selector" ).ojTree("getNodeBySubId", {"subId": "oj-tree-node['#home']['disclosure]" } );
      */
 
     /**
@@ -11091,7 +11162,7 @@ _this._done = false ;
      * @memberof oj.ojTree
      *
      * @example <caption>Get the text title DOM node for the Tree node with Id "#home":</caption>
-     * var node = $( ".selector" ).ojTree( "getNodeBySubId", {"subId": "oj-tree-node['#home']['title]" } );
+     * var node = $( ".selector" ).ojTree("getNodeBySubId", {"subId": "oj-tree-node['#home']['title]" } );
      */
 
     /**
@@ -11106,7 +11177,7 @@ _this._done = false ;
      * @memberof oj.ojTree
      *
      * @example <caption>Get the link DOM node for the Tree node with Id "#home":</caption>
-     * var node = $( ".selector" ).ojTree( "getNodeBySubId", {"subId": "oj-tree-node['#home']['link]" } );
+     * var node = $( ".selector" ).ojTree("getNodeBySubId", {"subId": "oj-tree-node['#home']['link]" } );
      */
 
 

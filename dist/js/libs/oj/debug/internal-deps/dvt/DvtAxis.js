@@ -1273,7 +1273,7 @@ DvtAxisRenderer._renderLabelsTangent = function(axis, axisInfo, availSpace) {
 
 
 /**
- * Creates and adds a DvtText object to a container. Will truncate and add tooltip as necessary.
+ * Creates and adds a dvt.Text object to a container. Will truncate and add tooltip as necessary.
  * @param {dvt.EventManager} eventManager
  * @param {dvt.Container} container The container to add the text object to.
  * @param {String} textString The text string of the text object.
@@ -1698,7 +1698,7 @@ dvt.AxisInfo.prototype.getOptions = function() {
  * Returns an array containing the tick labels for this axis.
  * @param {dvt.Context} context
  * @param {Number} levelIdx The level index (optional). 0 indicates the first level, 1 the second, etc. If skipped, 0 (the first level) is assumed.
- * @return {Array} The Array of DvtText objects.
+ * @return {Array} The Array of dvt.Text objects.
  */
 dvt.AxisInfo.prototype.getLabels = function(context, levelIdx) {
   return null; // subclasses should override
@@ -1707,7 +1707,7 @@ dvt.AxisInfo.prototype.getLabels = function(context, levelIdx) {
 
 /**
  * Returns the title for this axis.
- * @return {DvtText} The DvtText object, if it exists.
+ * @return {dvt.Text} The dvt.Text object, if it exists.
  */
 dvt.AxisInfo.prototype.getTitle = function() {
   return this._title;
@@ -1715,7 +1715,7 @@ dvt.AxisInfo.prototype.getTitle = function() {
 
 /**
  * Sets the title for this axis.
- * @param {DvtText} title The axis title.
+ * @param {dvt.Text} title The axis title.
  */
 dvt.AxisInfo.prototype.setTitle = function(title) {
   this._title = title;
@@ -1907,7 +1907,7 @@ dvt.AxisInfo.prototype.isLabelRotated = function() {
 
 
 /**
- * Creates a DvtText instance for the specified text label.
+ * Creates a dvt.Text instance for the specified text label.
  * @param {dvt.Context} context
  * @param {string} label The label string.
  * @param {number} coord The coordinate for the text.
@@ -2081,9 +2081,9 @@ dvt.AxisInfo.prototype.getTickLabelHeight = function() {
 
 /**
  * Checks the labels for the axis and skips them as necessary.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
- * @return {Array} The array of DvtText labels for the axis.
+ * @return {Array} The array of dvt.Text labels for the axis.
  * @protected
  */
 dvt.AxisInfo.prototype.SkipLabels = function(labels, labelDims) {
@@ -2108,9 +2108,9 @@ dvt.AxisInfo.prototype.SkipLabels = function(labels, labelDims) {
 
 /**
  * Checks the labels for the tangential axis and skips them as necessary.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
- * @return {Array} The array of DvtText labels for the tangential axis.
+ * @return {Array} The array of dvt.Text labels for the tangential axis.
  * @protected
  */
 dvt.AxisInfo.prototype.SkipTangentialLabels = function(labels, labelDims) {
@@ -2144,7 +2144,7 @@ dvt.AxisInfo.prototype.SkipTangentialLabels = function(labels, labelDims) {
 
 /**
  * Returns an array of dvt.Rectangle objects that describe the x, y, width, height of the axis labels.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {dvt.Container} container
  * @return {Array} An array of dvt.Rectangle objects
  * @protected
@@ -2173,7 +2173,7 @@ dvt.AxisInfo.prototype.GetLabelDims = function(labels, container) {
 /**
  * Returns an array of dvt.Rectangle objects that contains a conservative guess the x, y, width, height of the axis labels.
  * Assumes that the labels are center-middle aligned.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {dvt.Container} container
  * @param {Number} fudgeFactor (optional) A factor the would be multiplied to the text width. If not provided, assumed to be 1.
  * @param {Number} level (optional) Used for group axis hierarchical labels
@@ -2647,6 +2647,10 @@ dvt.DataAxisInfo.prototype._getUnboundedCoordAt = function(value) {
     return null;
 
   var ratio = (value - this._minValue) / (this._maxValue - this._minValue);
+
+  // : Make sure the the ratio is not way too large so the browser does not fail to render
+  ratio = Math.max(Math.min(1000, ratio), -1000);
+
   return this._minCoord + (ratio * (this._maxCoord - this._minCoord));
 };
 
@@ -2726,6 +2730,7 @@ dvt.DataAxisInfo.prototype._calcAxisExtents = function() {
 
   var scaleUnit = this._calcAxisScale((this._globalMin != null ? this._globalMin : this._dataMin),
                                       (this._globalMax != null ? this._globalMax : this._dataMax));
+  scaleUnit = Math.max(scaleUnit, this._minMajorIncrement);
 
   // If there's only a single value on the axis, we need to adjust the
   // this._dataMin and this._dataMax to produce a nice looking axis with around 6 ticks.
@@ -2748,8 +2753,7 @@ dvt.DataAxisInfo.prototype._calcAxisExtents = function() {
     }
     else if (!this._zeroBaseline && this._globalMax != null) {
       this._globalMin = this._globalMax;
-      while (this._globalMin >= this._dataMin)
-        this._globalMin -= scaleUnit;
+      this._globalMin -= scaleUnit * (Math.floor((this._globalMin - this._dataMin) / scaleUnit) + 1);
     }
     else {
       this._globalMin = (Math.ceil(this._dataMin / scaleUnit) - 1) * scaleUnit;
@@ -2773,8 +2777,7 @@ dvt.DataAxisInfo.prototype._calcAxisExtents = function() {
     }
     else if (!this._zeroBaseline) {
       this._globalMax = this._globalMin;
-      while (this._globalMax <= this._dataMax)
-        this._globalMax += scaleUnit;
+      this._globalMax += scaleUnit * (Math.floor((this._dataMax - this._globalMax) / scaleUnit) + 1);
     }
     else {
       this._globalMax = (Math.floor(this._dataMax / scaleUnit) + 1) * scaleUnit;
@@ -2807,7 +2810,6 @@ dvt.DataAxisInfo.prototype._calcAxisExtents = function() {
 
   // Calculate major and minor gridlines
   this._calcMajorMinorIncr(scaleUnit);
-
 };
 
 
@@ -3108,11 +3110,11 @@ dvt.GroupAxisInfo.prototype._processGroupWidthRatios = function() {
 
 /**
  * Rotates the labels of the horizontal axis by 90 degrees and skips the labels if necessary.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {dvt.Container} container
  * @param {number} overflow How much overflow the rotated labels will have.
  * @param {number} level The level the labels array corresponds to
- * @return {Array} The array of DvtText labels for the axis.
+ * @return {Array} The array of dvt.Text labels for the axis.
  * @private
  */
 dvt.GroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow, level) {
@@ -3177,8 +3179,8 @@ dvt.GroupAxisInfo.prototype._rotateLabels = function(labels, container, overflow
  * Checks if any label should be re-wrapped due to overlap and re-wraps text if needed to minimize overlap.
  * Updates remaining space available for wrapping hierarchical labels.
  * @param {dvt.Context} context
- * @param {Array} labelDims An array of DvtText dimensions for the axis.
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labelDims An array of dvt.Text dimensions for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {Boolean} isRotated Whether or not labels are horizontal and rotated, or vertical.
  * @param {Boolean} isHierarchical Whether or not axis has hierarchical labels
  * @return {Boolean} Whether or not labels were re-wrapped
@@ -3222,7 +3224,7 @@ dvt.GroupAxisInfo.prototype._sanitizeWrappedText = function(context, labelDims, 
 /**
  * Updates the maximum lines labels will be allowed to have to minimize overlap
  * @param {Array} labelDims An arry of the current label dimensions
- * @param {Array} labels An array of DvtText labels for the axis.
+ * @param {Array} labels An array of dvt.Text labels for the axis.
  * @param {Boolean} isRotated Whether or not the axis is horizontal
  * @return {Boolean} Whether or not labels will need to be re-wrapped
  * @private
@@ -3269,7 +3271,7 @@ dvt.GroupAxisInfo.prototype.isLabelRotated = function(level) {
  * Sets the start/end overflow of the axis.
  * @param {number} startOverflow How much the first label overflows beyond the start coord.
  * @param {number} endOverflow How much the last label overflows beyonod the end coord.
- * @param {array} labels An array of DvtText labels for a specific level. The x coordinated of the labels will be recalculated.
+ * @param {array} labels An array of dvt.Text labels for a specific level. The x coordinated of the labels will be recalculated.
  * @private
  */
 dvt.GroupAxisInfo.prototype._setOverflow = function(startOverflow, endOverflow, labels) {
@@ -3377,7 +3379,14 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
     var levels = this._levelsArray[level];
 
     // if autoRotate, increase performance by only generating a subset of labels to begin with, as majority will be skipped.
-    var increment = autoRotate ? Math.max(1, Math.floor(dvt.GroupAxisInfo._ROTATE_THRESHOLD / (2 * Math.max(1, groupWidth)))) : 1;
+    var increment = 1;
+    if (autoRotate) {
+      increment = dvt.GroupAxisInfo._ROTATE_THRESHOLD / (2 * groupWidth);
+      if (this.Options['_duringZoomAndScroll']) {
+        increment *= 4;  // during animation, the labels can be more sparse to increase performance
+      }
+      increment = Math.max(1, Math.floor(increment));
+    }
 
     for (var i = 0; i < levels.length; i += increment) {
       if (levels[i]) {
@@ -3751,6 +3760,9 @@ dvt.GroupAxisInfo.prototype.isDrillable = function(index, level) {
 dvt.GroupAxisInfo.prototype.getGroup = function(index, level) {
   if (index < 0 || index > this.getGroupCount() - 1)
     return null;
+
+  if (this._numLevels == 1) // skip the expensive computation below
+    return this.getGroupAt(index);
 
   var groupLabels = [];
   if (level == null)
@@ -5408,7 +5420,7 @@ dvt.TimeAxisInfo.prototype._getLabelOverflow = function(coord, labelLength, isSt
 
 /**
  * Skip labels greedily. Delete all labels that overlap with the last rendered label.
- * @param {Array} labels An array of DvtText labels for the axis. This array will be modified by the method.
+ * @param {Array} labels An array of dvt.Text labels for the axis. This array will be modified by the method.
  * @param {Array} labelDims An array of dvt.Rectangle objects that describe the x, y, height, width of the axis labels.
  * @param {boolean} isStartAligned Whether or not the labels are text-anchored start, assumes center alignment if false.
  * @param {boolean} isRTL Whether or not the context is right to left.
@@ -5565,8 +5577,8 @@ dvt.TimeAxisInfo.prototype._skipLabelsUniform = function(labelInfos, labels, con
 
 /**
  * Format the alignments of the vertical axis labels and skip them accordingly so that level1 and level2 don't overlap.
- * @param {Array} labels1 An array of level 1 DvtText labels for the axis. This array will be modified by the method.
- * @param {Array} labels2 An array of level 2 DvtText labels for the axis. This array will be modified by the method.
+ * @param {Array} labels1 An array of level 1 dvt.Text labels for the axis. This array will be modified by the method.
+ * @param {Array} labels2 An array of level 2 dvt.Text labels for the axis. This array will be modified by the method.
  * @param {dvt.Container} container
  * @private
  */

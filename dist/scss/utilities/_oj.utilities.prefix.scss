@@ -136,6 +136,13 @@
           column-width: $columnWidthValue; 
 }
 
+@mixin oj-column-gap-property ($columnGapValue)
+{
+  -webkit-column-gap: $columnGapValue; 
+     -moz-column-gap: $columnGapValue; 
+          column-gap: $columnGapValue; 
+}
+
 @mixin oj-break-inside-property ($breakInsideValue)
 {
   // -moz-column-break-inside doesn't work on FF 24 on windows

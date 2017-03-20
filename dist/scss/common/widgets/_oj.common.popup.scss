@@ -79,6 +79,15 @@
     .oj-popup-no-chrome > .oj-popup-content {
       padding: 0;
     }
+    // Disable the focus ring if the popup was open from a mouse gesture
+    .oj-popup:not(.oj-focus-highlight):focus {
+      outline:none;
+    }
+    
+    .oj-popup.oj-focus-highlight {
+      @include oj-browser-focus-outline-approximation($primaryTextColor);
+    }
+    
     .oj-popup-tail {
       position: absolute;
       pointer-events: none;
@@ -171,6 +180,18 @@
       display: block;
     }
     
+    // POPUP animation defaults
+    //----------------------------------
+    $popupAnimationDefaults: ();
+ 
+    @if ($popupOpenAnimation) {
+      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (open: $popupOpenAnimation));
+    }
+ 
+    @if ($popupCloseAnimation) {
+      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (close: $popupCloseAnimation));
+    }
+
     // option defaults
     //----------------------------------
     $popupDefaultOptions: ();
@@ -178,7 +199,11 @@
     @if ($popupModalityOptionDefault) {
       $popupDefaultOptions: map-merge($popupDefaultOptions, (modality: $popupModalityOptionDefault));
     }
- 
+
+    @if ($popupAnimationDefaults) {
+      $popupDefaultOptions: map-merge($popupDefaultOptions, (animation: $popupAnimationDefaults));
+    }
+
     // component default options selector 
     .oj-popup-option-defaults {
       font-family: oj-json-from-map($popupDefaultOptions);

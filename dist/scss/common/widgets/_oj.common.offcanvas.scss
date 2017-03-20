@@ -183,20 +183,12 @@
     /* 
      * Suppress focus ring
      */
-    .oj-offcanvas-start:focus,
-    .oj-offcanvas-end:focus,
-    .oj-offcanvas-top:focus,
-    .oj-offcanvas-bottom:focus {
+    .oj-offcanvas-start:not(.oj-focus-highlight):focus,
+    .oj-offcanvas-end:not(.oj-focus-highlight):focus,
+    .oj-offcanvas-top:not(.oj-focus-highlight):focus,
+    .oj-offcanvas-bottom:not(.oj-focus-highlight):focus {
       outline: none;
     }
-
-    .oj-offcanvas-start.oj-focus-highlight,
-    .oj-offcanvas-end.oj-focus-highlight,
-    .oj-offcanvas-top.oj-focus-highlight,
-    .oj-offcanvas-bottom.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
-    }
-
 
     /*
      * applied to the offcanvas on the start edge when displayMode is overlay

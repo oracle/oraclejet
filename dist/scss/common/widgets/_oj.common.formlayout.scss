@@ -172,7 +172,7 @@
   
 
   
-  @if ($radioCheckboxRenderInputAs == 'backgroundImage') {
+  @if (oj-strip-unit($radioCheckboxRowHeight) > 2.6) {
     // radioset/checkboxset are inline-top aligned, but they need to be
     // a couple pixels higher than other input components to have the label
     // line up with the first radio's label
@@ -180,7 +180,7 @@
     .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
     .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
     .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
-      margin-top: .6rem;
+      margin-top: $radioCheckboxRowHeight/5;
       margin-bottom: 0;
     }
   } @else {
@@ -192,7 +192,7 @@
     .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-radioset-label,
     .#{$selectorPrefix}-label-inline.oj-checkboxset-label,
     .#{$selectorPrefix}-labels-inline > .oj-flex > .oj-flex-item > .oj-checkboxset-label {
-      margin-top: 1px;
+      margin-top: $radioCheckboxRowHeight/10;
       margin-bottom: 0;
     }   
   }
@@ -261,10 +261,12 @@
     // approximately the same heights.
     .oj-form-cols-labels-inline { 
       @include oj-column-width-property($formLayoutLabelsInlineColumnWidth);
+      @include oj-column-gap-property($formLayoutLabelsInlineColumnGap);
     } 
 
     .oj-form-cols { 
       @include oj-column-width-property($formLayoutColumnWidth);
+      @include oj-column-gap-property($formLayoutColumnGap);
     } 
 
     // set the max number of columns to 2

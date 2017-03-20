@@ -30,6 +30,7 @@
       width: 100%;
       // font size needs to be on the root, because max/min width is in em.
       font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
     }
 
     /* 
@@ -71,6 +72,7 @@
       white-space: nowrap;
       text-overflow: ellipsis; 
       font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
       @include oj-placeholder()
       {
         color: $formControlPlaceholderColor;
@@ -104,6 +106,7 @@
 
       line-height: inherit;
       font-size: $formControlInputFontSize;
+      @include oj-form-control-text-size-adjust($formControlInputFontSize);
 
       @include oj-ltr() {
         padding-left: oj-shorthand-property-value-left($inputSearchIconPadding);
@@ -118,8 +121,7 @@
     /*
      * Styling for focus state
      */
-    .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus
-      .oj-inputsearch-choice {
+    .oj-inputsearch:not(.oj-disabled):not(.oj-read-only).oj-focus .oj-inputsearch-choice {
       @include oj-form-control-content-focus;
       @include oj-form-control-content-focus-padding;
     }

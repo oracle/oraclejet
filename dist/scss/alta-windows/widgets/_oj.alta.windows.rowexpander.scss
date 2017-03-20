@@ -21,6 +21,14 @@
 
 @if $includeRowExpanderClasses != false {
   @include module-include-once("alta.windows.rowexpander") {
+    /* Styling for the expand icon */
+    .oj-rowexpander-expand-icon {
+      @extend .oj-fwk-icon-caret02-s;
+    }
 
+    /* Styling for the collapse icon */
+    .oj-rowexpander-collapse-icon {
+      @extend .oj-fwk-icon-caret02-n;
+    }
    }
 }

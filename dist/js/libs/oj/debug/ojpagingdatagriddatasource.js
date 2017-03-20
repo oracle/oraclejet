@@ -351,6 +351,7 @@ oj.PagingDataGridDataSource.prototype._handleChange = function(options) {
     {
         case 'refresh':
             this._startIndex = 0;
+            this._page = 0;            
             // pass the refresh event through to the data grid and the paging control
             this.handleEvent("change", {'operation': 'sync', 'pageSize': this._pageSize});  
             this.handleEvent(oj.PagingTableDataSource.EventType['REFRESH'], null);

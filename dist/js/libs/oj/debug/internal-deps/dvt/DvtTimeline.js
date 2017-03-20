@@ -2220,9 +2220,9 @@ DvtTimelineEventManager.prototype.addListeners = function(displayable)
 /**
  * @override
  */
-DvtTimelineEventManager.prototype.removeListeners = function(displayable)
+DvtTimelineEventManager.prototype.RemoveListeners = function(displayable)
 {
-  DvtTimelineEventManager.superclass.removeListeners.call(this, displayable);
+  DvtTimelineEventManager.superclass.RemoveListeners.call(this, displayable);
   if (!dvt.Agent.isTouchDevice())
   {
     // IE does not always fire the appropriate mouseover and mouseout events, so use mouseenter instead
@@ -2519,6 +2519,8 @@ dvt.Timeline.prototype._bundleTimeAxisOptions = function(options)
     this._timeAxisOptions['converter'] = minorAxisOptions['converter'];
     this._timeAxisOptions['zoomOrder'] = minorAxisOptions['zoomOrder'];
     this._timeAxisOptions['style'] = minorAxisOptions['style'];
+    if (minorAxisOptions['svgStyle'])
+      this._timeAxisOptions['style'] = minorAxisOptions['svgStyle'];
   }
 };
 
@@ -2682,6 +2684,8 @@ dvt.Timeline.prototype.applyStyleValues = function()
   {
     this._overviewSize = this._isVertical ? DvtTimelineStyleUtils.getOverviewWidth() : DvtTimelineStyleUtils.getOverviewHeight();
     var overviewStyle = this.Options['overview']['style'];
+    if (this.Options['overview']['svgStyle'])
+      overviewStyle = this.Options['overview']['svgStyle'];
     if (overviewStyle)
     {
       var splits = overviewStyle.split(';');
@@ -3278,6 +3282,10 @@ dvt.Timeline.prototype._handleResize = function(width, height)
   }
   else
     DvtTimelineRenderer._renderEmptyText(this);
+
+  // if not animating, we are done rendering
+  if (!this.Animation)
+    this.RenderComplete();
 };
 
 dvt.Timeline.prototype.HandleKeyDown = function(event)
@@ -3754,12 +3762,11 @@ dvt.Timeline.prototype.getAutomation = function()
 };
 
 /**
- * Removes all children from the timeline's canvas.
+ * @override
  */
-dvt.Timeline.prototype.clearTimeline = function()
+dvt.Timeline.prototype.clearComponent = function()
 {
-  if (this._canvas)
-    this._canvas.removeChildren();
+  dvt.Timeline.superclass.clearComponent.call(this);
   this.clearOverview();
 };
 
@@ -3916,7 +3923,7 @@ DvtTimelineDefaults.VERSION_1 = {
       'titleStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: bold; color: #000000; white-space: nowrap;')
     },
     'majorAxis': {
-      'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: bold; color: #4f4f4f; background-color: rgba(249,249,249,0.8); white-space: nowrap;'),
+      'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: bold; color: #4f4f4f; white-space: nowrap;'),
       'separatorColor': '#bcc7d2'
     },
     'minorAxis': {
@@ -3940,7 +3947,7 @@ DvtTimelineDefaults.VERSION_1 = {
       'backgroundColor': '#f9f9f9',
       'colors': dvt.CSSStyle.COLORS_ALTA,
       'emptyTextStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: normal; color: #333333; white-space: nowrap;'),
-      'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; color: #252525; background-color: rgba(249,249,249,0.8); white-space: nowrap;')
+      'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; color: #252525; white-space: nowrap;')
     }
   }
 };
@@ -3976,6 +3983,8 @@ DvtTimelineParser.prototype.parse = function(options)
   else
     ret.selectionMode = 'none';
   ret.inlineStyle = options['style'];
+  if (options['svgStyle'])
+    ret.inlineStyle = options['svgStyle'];
 
   var minorAxis = options['minorAxis'];
   if (minorAxis)
@@ -4224,6 +4233,13 @@ DvtTimelineRenderer._renderSeriesLabels = function(timeline)
       if (seriesLabel != null)
       {
         var seriesLabelStyle = DvtTimelineStyleUtils.getSeriesLabelStyle(timeline.Options);
+        var seriesLabelBackgroundStyle = new dvt.CSSStyle(DvtTimelineStyleUtils.getSeriesLabelBackgroundStyle());
+        if (series._style)
+        {
+          var backgroundColor = series._style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+          if (backgroundColor)
+            seriesLabelBackgroundStyle.setStyle(dvt.CSSStyle.BACKGROUND_COLOR, backgroundColor);
+        }
         var seriesLabelElem = new dvt.OutputText(context, seriesLabel, 0, 0, 'sl_s' + i);
         seriesLabelElem.setCSSStyle(seriesLabelStyle);
 
@@ -4238,7 +4254,8 @@ DvtTimelineRenderer._renderSeriesLabels = function(timeline)
 
         var seriesLabelPadding = DvtTimelineStyleUtils.getSeriesLabelPadding();
         var backgroundRect = new dvt.Rect(context, 0, 0, width + seriesLabelPadding * 2, dim.h + seriesLabelPadding * 2, 'slb_s' + i);
-        backgroundRect.setCSSStyle(seriesLabelStyle);
+        backgroundRect.setCSSStyle(seriesLabelBackgroundStyle);
+        backgroundRect.setAlpha(DvtTimelineStyleUtils.getSeriesLabelBackgroundOpacity());
         backgroundRect.setCornerRadius(3);
 
         if (!timeline.isVertical())
@@ -4393,6 +4410,16 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
         dates.push(currentDate.getTime());
       }
     }
+    var seriesAxisLabelStyle = DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options);
+    var seriesAxisLabelPadding = DvtTimelineStyleUtils.getSeriesAxisLabelPadding();
+    var seriesAxisLabelBackgroundStyle = new dvt.CSSStyle(DvtTimelineStyleUtils.getSeriesAxisLabelBackgroundStyle());
+    if (timeline._series[0] && timeline._series[0]._style)
+    {
+      var backgroundColor = timeline._series[0]._style.getStyle(dvt.CSSStyle.BACKGROUND_COLOR);
+      if (backgroundColor)
+        seriesAxisLabelBackgroundStyle.setStyle(dvt.CSSStyle.BACKGROUND_COLOR, backgroundColor);
+    }
+    var seriesAxisLabelBackgroundOpacity = DvtTimelineStyleUtils.getSeriesAxisLabelBackgroundOpacity();
     for (var i = 0; i < labels.length; i++)
     {
       var label = labels[i];
@@ -4405,16 +4432,16 @@ DvtTimelineRenderer._renderSeriesTimeAxis = function(timeline, startPos, endPos,
       if (!isRTL)
       {
         if (timeline.isVertical())
-          var labelElem = DvtTimelineRenderer._addLabel(context, container, 5, label, maxLength, currentPos + 18, DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options), 'o_label' + currentPos + '_s0', true, DvtTimelineStyleUtils.getSeriesAxisLabelPadding(), timeline._majorAxisLabels, isRTL);
+          var labelElem = DvtTimelineRenderer._addLabel(context, container, 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
         else
-          labelElem = DvtTimelineRenderer._addLabel(context, container, currentPos + 5, label, maxLength, timeline._seriesSize - 2, DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options), 'o_label' + currentPos + '_s0', true, DvtTimelineStyleUtils.getSeriesAxisLabelPadding(), timeline._majorAxisLabels, isRTL);
+          labelElem = DvtTimelineRenderer._addLabel(context, container, currentPos + 5, label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
       }
       else
       {
         if (timeline.isVertical())
-          labelElem = DvtTimelineRenderer._addLabel(context, container, timeline._canvasSize - 5, label, maxLength, currentPos + 18, DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options), 'o_label' + currentPos + '_s0', true, DvtTimelineStyleUtils.getSeriesAxisLabelPadding(), timeline._majorAxisLabels, isRTL);
+          labelElem = DvtTimelineRenderer._addLabel(context, container, timeline._canvasSize - 5, label, maxLength, currentPos + 18, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
         else
-          labelElem = DvtTimelineRenderer._addLabel(context, container, length - (currentPos + 5), label, maxLength, timeline._seriesSize - 2, DvtTimelineStyleUtils.getSeriesAxisLabelStyle(timeline.Options), 'o_label' + currentPos + '_s0', true, DvtTimelineStyleUtils.getSeriesAxisLabelPadding(), timeline._majorAxisLabels, isRTL);
+          labelElem = DvtTimelineRenderer._addLabel(context, container, length - (currentPos + 5), label, maxLength, timeline._seriesSize - 2, seriesAxisLabelStyle, 'o_label' + currentPos + '_s0', true, seriesAxisLabelBackgroundStyle, seriesAxisLabelBackgroundOpacity, seriesAxisLabelPadding, timeline._majorAxisLabels, isRTL);
       }
       labelElem.time = dates[i];
     }
@@ -4759,7 +4786,7 @@ DvtTimelineRenderer._renderEmptyText = function(timeline)
   else
     emptyTextStr = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
 
-  timeline.clearTimeline();
+  timeline.clearComponent();
   dvt.TextUtils.renderEmptyText(timeline._canvas, emptyTextStr,
       new dvt.Rectangle(0, 0, timeline._backgroundWidth, timeline._backgroundHeight),
       timeline.EventManager, DvtTimelineStyleUtils.getEmptyTextStyle(timeline.Options));
@@ -4776,13 +4803,15 @@ DvtTimelineRenderer._renderEmptyText = function(timeline)
  * @param {type} labelStyle
  * @param {type} id
  * @param {type} renderBackground
+ * @param {type} backgroundLabelStyle
+ * @param {type} backgroundLabelOpacity
  * @param {type} labelPadding
  * @param {type} labelList
  * @param {type} isRTL
  * @private
  * @return {dvt.OutputText}
  */
-DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLength, y, labelStyle, id, renderBackground, labelPadding, labelList, isRTL)
+DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLength, y, labelStyle, id, renderBackground, backgroundLabelStyle, backgroundLabelOpacity, labelPadding, labelList, isRTL)
 {
   var label = new dvt.OutputText(context, text, pos, 0, id);
   if (labelStyle != null)
@@ -4804,8 +4833,9 @@ DvtTimelineRenderer._addLabel = function(context, container, pos, text, maxLengt
     else
       x = pos - width + 2 * labelPadding;
     var backgroundRect = new dvt.Rect(context, x - labelPadding, y - labelPadding, width, dim.h + labelPadding * 2, 'ob_' + id);
-    backgroundRect.setCSSStyle(labelStyle);
+    backgroundRect.setCSSStyle(backgroundLabelStyle);
     backgroundRect.setCornerRadius(3);
+    backgroundRect.setAlpha(backgroundLabelOpacity);
     container.addChild(backgroundRect);
     if (labelList)
       labelList.push(backgroundRect);
@@ -4853,6 +4883,20 @@ DvtTimelineStyleUtils._DEFAULT_AXIS_SEPARATOR_STYLE = 'color:#bcc7d2;';
 DvtTimelineStyleUtils._DEFAULT_SERIES_STYLE = 'background-color:#f9f9f9;';
 
 /**
+ * The default Series label background style.
+ * @const
+ * @private
+ */
+DvtTimelineStyleUtils._DEFAULT_SERIES_LABEL_BACKGROUND_STYLE = 'background-color:#f9f9f9';
+
+/**
+ * The default Series label background opacity.
+ * @const
+ * @private
+ */
+DvtTimelineStyleUtils._DEFAULT_SERIES_LABEL_BACKGROUND_OPACITY = 0.8;
+
+/**
  * The default Series label spacing.
  * @const
  * @private
@@ -4872,6 +4916,20 @@ DvtTimelineStyleUtils._DEFAULT_SERIES_LABEL_PADDING = 2;
  * @private
  */
 DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_SEPARATOR_STYLE = 'color:#bcc7d2';
+
+/**
+ * The default Series Axis label background style.
+ * @const
+ * @private
+ */
+DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_LABEL_BACKGROUND_STYLE = 'background-color:#f9f9f9';
+
+/**
+ * The default Series Axis label background opacity.
+ * @const
+ * @private
+ */
+DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_LABEL_BACKGROUND_OPACITY = 0.8;
 
 /**
  * The default Series Axis label padding.
@@ -5075,6 +5133,24 @@ DvtTimelineStyleUtils.getSeriesLabelStyle = function(options)
 {
   //Style Defaults
   return options['styleDefaults']['series']['labelStyle'];
+};
+
+/**
+ * Gets the series label background style.
+ * @return {string} The series label background style.
+ */
+DvtTimelineStyleUtils.getSeriesLabelBackgroundStyle = function()
+{
+  return DvtTimelineStyleUtils._DEFAULT_SERIES_LABEL_BACKGROUND_STYLE;
+};
+
+/**
+ * Gets the series label background opacity.
+ * @return {number} The series label background opacity.
+ */
+DvtTimelineStyleUtils.getSeriesLabelBackgroundOpacity = function()
+{
+  return DvtTimelineStyleUtils._DEFAULT_SERIES_LABEL_BACKGROUND_OPACITY;
 };
 
 /**
@@ -5425,6 +5501,24 @@ DvtTimelineStyleUtils.getOverviewHandleTextureColor = function()
 DvtTimelineStyleUtils.getSeriesAxisLabelStyle = function(options)
 {
   return options['styleDefaults']['majorAxis']['labelStyle'];
+};
+
+/**
+ * Gets the series axis label background style.
+ * @return {string} The series axis label background style.
+ */
+DvtTimelineStyleUtils.getSeriesAxisLabelBackgroundStyle = function()
+{
+  return DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_LABEL_BACKGROUND_STYLE;
+};
+
+/**
+ * Gets the series axis label background opacity.
+ * @return {number} The series axis label background opacity.
+ */
+DvtTimelineStyleUtils.getSeriesAxisLabelBackgroundOpacity = function()
+{
+  return DvtTimelineStyleUtils._DEFAULT_SERIES_AXIS_LABEL_BACKGROUND_OPACITY;
 };
 
 /**
@@ -6589,8 +6683,6 @@ DvtTimelineSeriesItemRenderer._renderBubble = function(item, series, container, 
     container.addChild(bubbleContainer);
 
   bubbleContainer.setAriaRole('group');
-  item._updateAriaLabel();
-
   series._callbackObj.EventManager.associate(bubbleContainer, item);
 };
 
@@ -6662,6 +6754,9 @@ DvtTimelineSeriesItemRenderer._displayBubble = function(item, series, overflowOf
   }
   else
     bubbleContainer.setTranslate(transX, transY);
+
+  // apply the aria label that corresponds to the current zoom level
+  item._updateAriaLabel();
 };
 
 /**
@@ -7258,11 +7353,26 @@ DvtTimelineSeriesNode.prototype.setDurationFillColor = function(durationFillColo
 
 DvtTimelineSeriesNode.prototype.getLabel = function()
 {
-  if (this.getEndTime() != null)
-    return 'Start Time: ' + new Date(this.getStartTime()).toLocaleString() + '; End Time: ' + new Date(this.getEndTime()).toLocaleString() + '; Title: ' +
-        this.getTitle() + '; Description: ' + this.getDescription();
-  else
-    return 'Time: ' + new Date(this.getStartTime()).toLocaleString() + '; Title: ' + this.getTitle() + '; Description: ' + this.getDescription();
+  var options = this._timeline.getOptions();
+  var start = this.getStartTime();
+  var formattedStart = this._timeline.getTimeAxis().formatDate(new Date(start), null, 'general');
+  var itemDesc = dvt.Bundle.getTranslation(options, 'accessibleItemStart', dvt.Bundle.UTIL_PREFIX, 'ITEM_START', [formattedStart]);
+
+  var end = this.getEndTime();
+  if (end && end != start)
+  {
+    var formattedEnd = this._timeline.getTimeAxis().formatDate(new Date(end), null, 'general');
+    itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemEnd', dvt.Bundle.UTIL_PREFIX, 'ITEM_END', [formattedEnd]);
+  }
+
+  var title = this.getTitle();
+  if (title && title != '')
+    itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemTitle', dvt.Bundle.UTIL_PREFIX, 'ITEM_TITLE', [title]);
+
+  var description = this.getDescription();
+  if (description && description != '')
+    itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemDesc', dvt.Bundle.UTIL_PREFIX, 'ITEM_DESC', [description]);
+  return itemDesc;
 };
 
 DvtTimelineSeriesNode.prototype.getWidth = function()
@@ -7524,6 +7634,8 @@ DvtTimelineSeriesParser.prototype.parse = function(options, oldItems)
   ret.end = new Date(options['end']).getTime();
 
   ret.inlineStyle = options['style'];
+  if (options['svgStyle'])
+    ret.inlineStyle = options['svgStyle'];
   // end of stuff from superclass parser...
 
   ret.scale = options['scale'];
@@ -7695,6 +7807,8 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
 
   ret.data = data;
   ret.style = data['style'];
+  if (data['svgStyle'])
+    ret.style = data['svgStyle'];
   ret.action = data['action'];
   ret.durationFillColor = data['durationFillColor'];
 

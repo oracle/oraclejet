@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'promise'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, $)
 {
 
 /**
@@ -14,6 +14,56 @@ define(['ojs/ojcore', 'jquery', 'promise'], function(oj, $)
 
 /**
  * Utility methods for animating elements.
+ *
+ * <h3 id="custom-animation-section">
+ *   Customizing Animation
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#custom-animation-section"></a>
+ * </h3>
+ *
+ * <p>Applications can customize animations triggered by actions in some components by listening for <code class="prettyprint">animateStart/animateEnd</code>
+ *    events and override action specific animations.  See the documentation of individual components for support details of <code
+ *    class="prettyprint">animateStart/animateEnd</code> events and the associated actions.</p>
+ * <p>To customize an animation, applications first listen to <code class="prettyprint">animateStart</code> event and cancel the default animation.  Then
+ *    specify the new animation in one of several ways:</p>
+ * <ul>
+ *   <li>Call one of the animation effect methods in oj.AnimationUtils.
+ *   <li>Call a 3rd-party animation function with a Javascript API, such as jQuery, GreenSock, Velocity.js, etc.
+ *   <li>Define action specific CSS style classes on the animated item.
+ * </ul>
+ *
+ * @example <caption>Customize a default "open" animation with oj.AnimationUtils method:</caption>
+ * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
+ *   if (ui.action == "open") {
+ *     event.preventDefault();
+ *     oj.AnimationUtils.slideIn(ui.element).then(ui.endCallback);
+ *   }
+ * });
+ *
+ * @example <caption>Customize a default "close" animation with jQuery method:</caption>
+ * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
+ *   if (ui.action == "close") {
+ *     event.preventDefault();
+ *     $(ui.element).fadeOut(ui.endCallback);
+ *   }
+ * });
+ *
+ * @example <caption>Customize a default "update" animation with CSS style classes:</caption>
+ * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
+ *   if (ui.action == "update") {
+ *     event.preventDefault();
+ *     ui.endCallback();
+ *   }
+ * });
+ *
+ * @example
+ * .selector .oj-animate-update {
+ *   color: red;
+ * }
+ * .selector .oj-animate-update.oj-animate-update-active {
+ *   transition: color 1s;
+ *   color: black;
+ * }
+ *
  * @namespace
  * @export
  */
@@ -333,11 +383,17 @@ oj.AnimationUtils._fillEmptyOptions = function(targetOptions, sourceOptions)
  *                        in oj.AnimationUtils, or an object that specifies the
  *                        effect method and its options, such as:
  *                        {'effect': 'fadeOut', 'endOpacity': 0.5}, or an array of the above.
+ * @param {jQuery=} component  the component that contains the HTML element
+ *                             to animate.  If this is specified, animation events will
+ *                             be triggered on the component via jQuery UI _trigger(),
+ *                             so that listeners specified as event options will work.
+ *                             If this is not specified, animation events will be triggered
+ *                             on the animated HTML element via jQuery trigger().
  * @return {Promise} a promise that will be resolved when the animation ends
  * @export
  * @ignore
  */
-oj.AnimationUtils.startAnimation = function(element, action, effects)
+oj.AnimationUtils.startAnimation = function(element, action, effects, component)
 {
   var promise = new Promise(
     function(resolve, reject)
@@ -353,7 +409,16 @@ oj.AnimationUtils.startAnimation = function(element, action, effects)
           jelem.removeClass(fromMarker);
           jelem.removeClass(toMarker);
           resolve(true);
-          jelem.trigger('ojanimateend', {'action': action});
+          
+          var ui = {'action': action, 'element': element};
+          if (component)
+          {
+            component._trigger('animateEnd', null, ui);
+          }
+          else
+          {
+            jelem.trigger('ojanimateend', ui);
+          }
         }
       };
       var eventCallback = function() {
@@ -368,10 +433,22 @@ oj.AnimationUtils.startAnimation = function(element, action, effects)
       // Trigger ojanimatestart event so that app can prevent default animation 
       // and define custom effect in JS
       var event = $.Event('ojanimatestart');
-      jelem.trigger(event, {'action': action, 'endCallback': eventCallback});
+      var ui = {'action': action, 'element': element, 'endCallback': eventCallback};
+      var defaultPrevented;
+
+      if (component)
+      {
+        // _trigger() returns false if preventDefault has been called
+        defaultPrevented = !component._trigger('animateStart', null, ui);
+      }
+      else
+      {
+        jelem.trigger(event, ui);
+        defaultPrevented = event.isDefaultPrevented();
+      }
 
       // Continue animation handling if app didn't preventDefault
-      if (!event.isDefaultPrevented())
+      if (!defaultPrevented)
       {
         var effectArray = [].concat(effects);
         var promiseArray = [];
@@ -503,7 +580,7 @@ oj.AnimationUtils._fade = function(element, options, effect, startOpacity, endOp
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
@@ -529,7 +606,7 @@ oj.AnimationUtils.fadeIn = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
@@ -555,12 +632,16 @@ oj.AnimationUtils.fadeOut = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.direction direction to expand. Valid values are "height", "width", or "both". Default is "height".
+ * @param {string=} options.startMaxHeight starting max-height value to expand from.  Default is "0".
+ * @param {string=} options.endMaxHeight ending max-height value to expand to.  Default is natural element height.
+ * @param {string=} options.startMaxWidth starting max-width value to expand from.  Default is "0".
+ * @param {string=} options.endMaxWidth starting max-width value to expand to.  Default is natural element width.
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -572,6 +653,11 @@ oj.AnimationUtils.expand = function(element, options)
 
 /**
  * Animaton effect method for collapsing a HTML element.
+ * <p>When using this method to hide an element, the element should not have any border
+ * or padding, because border and padding are visible even if the element's height
+ * is set to 0. The use of "box-sizing: border-box" style doesn't change this behavior.
+ * If the element needs border and padding, create a wrapper element around it and
+ * call this method on the wrapper element instead.</p>
  *
  * @param {Element} element  the HTML element to animate
  * @param {Object} options Options applicable to the specific animation effect.
@@ -580,12 +666,16 @@ oj.AnimationUtils.expand = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.direction direction to collapse. Valid values are "height", "width", or "both". Default is "height".
+ * @param {string=} options.startMaxHeight starting max-height value to collapse from.  Default is natural element height.
+ * @param {string=} options.endMaxHeight ending max-height value to collapse to.  Default is "0".
+ * @param {string=} options.startMaxWidth starting max-width value to collapse from.  Default is natural element width.
+ * @param {string=} options.endMaxWidth starting max-width value to collapse to.  Default is "0".
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -604,8 +694,8 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
 
   var direction = options['direction'] || "height";
   var ele = $(element);
-  var width = ele.width();
-  var height = ele.height();
+  var width = ele.outerWidth();
+  var height = ele.outerHeight();
 
   var maxWidth = ele.css("maxWidth");
   var maxHeight = ele.css("maxHeight");
@@ -625,14 +715,21 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
   var transProps = [];  
   if(direction === "both" || direction === "height") 
   {
-    fromCSS['maxHeight'] = isExpand ? 0 : height;
-    toStateCSS['maxHeight'] = isExpand ? height : 0;
+    var startMaxHeight = options['startMaxHeight'] || (isExpand ? 0 : height);
+    var endMaxHeight = options['endMaxHeight'] || (isExpand ? height : 0);
+
+    fromCSS['maxHeight'] = startMaxHeight;
+    toStateCSS['maxHeight'] = endMaxHeight;
     transProps.push('maxHeight');
   }
+
   if(direction === "both" || direction === "width") 
   {
-    fromCSS['maxWidth'] = isExpand ? 0 : width;
-    toStateCSS['maxWidth'] = isExpand ? width : 0;
+    var startMaxWidth = options['startMaxWidth'] || (isExpand ? 0 : width);
+    var endMaxWidth = options['endMaxWidth'] || (isExpand ? width : 0);
+
+    fromCSS['maxWidth'] = startMaxWidth;
+    toStateCSS['maxWidth'] = endMaxWidth;
     transProps.push('maxWidth');
   }
 
@@ -649,7 +746,7 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
@@ -675,7 +772,7 @@ oj.AnimationUtils.zoomIn = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
@@ -723,17 +820,17 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
  *                                    Set to "all" to persist the inline style.  Default is "none".
- * @param {string=} options.direction direction of the slide. Valid values are "left", "top", "right", "bottom", "start", and "end". Default is "start".
+ * @param {string=} options.direction Direction of the slide. Valid values are "left", "top", "right", "bottom", "start", and "end". Default is "start".
  *                                    This option is ignored if either offsetX or offsetY is specified.
- * @param {number=} options.offsetX the offset on the x-axis to translate from. If moving in a horizontal direction, default to element width. 
- * Otherwise, default to 0.
- * @param {number=} options.offsetY the offset on the y-axis to translate from. If moving in a vertical direction, default to element height. 
- * Otherwise, default to 0.
+ * @param {string=} options.offsetX The offset on the x-axis to translate from. This value must be a number followed by a unit such as "px", "em", etc.
+ *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
+ * @param {string=} options.offsetY The offset on the y-axis to translate from. This value must be a number followed by a unit such as "px", "em", etc.
+ *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -753,17 +850,17 @@ oj.AnimationUtils.slideIn = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
  *                                    Set to "all" to persist the inline style.  Default is "none".
- * @param {string=} options.direction direction of the slide. Valid values are "left", "top", "right", "bottom", "start", and "end". Default is "start".
+ * @param {string=} options.direction Direction of the slide. Valid values are "left", "top", "right", "bottom", "start", and "end". Default is "start".
  *                                    This option is ignored if either offsetX or offsetY is specified.
- * @param {number=} options.offsetX the offset on the x-axis to translate to. If moving in a horizontal direction, default to element width. 
- * Otherwise, default to 0.
- * @param {number=} options.offsetY the offset on the y-axis to translate to. If moving in a vertical direction, default to element height. 
- * Otherwise, default to 0.
+ * @param {string=} options.offsetX The offset on the x-axis to translate to. This value must be a number followed by a unit such as "px", "em", etc.
+ *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
+ * @param {string=} options.offsetY The offset on the y-axis to translate to. This value must be a number followed by a unit such as "px", "em", etc.
+ *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -849,7 +946,7 @@ oj.AnimationUtils._slide = function(element, options, isIn)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string} options.offsetX Horizontal offset of the ripple center, with a unit of either "px" or "%".
@@ -1018,8 +1115,53 @@ oj.AnimationUtils._removeRipple = function(element, options)
           });
 };
 
+oj.AnimationUtils._calcBackfaceAngle = function(angle)
+{
+  var backfaceAngle;
+  var expr = /^([\+\-]?\d*\.?\d*)(.*)$/;
+  var matchArray = angle.match(expr);
+  var amount = parseFloat(matchArray[1]);
+  var unit = matchArray[2];
+
+  switch (unit)
+  {
+    case 'deg': backfaceAngle = (amount - 180) + unit; break;
+    case 'grad': backfaceAngle = (amount - 200) + unit; break;
+    case 'rad': backfaceAngle = (amount - 3.1416) + unit; break;
+    case 'turn': backfaceAngle = (amount - 0.5) + unit; break;
+    default: console.log('Unknown angle unit in flip animation: ' + unit); break;
+  }
+  
+  return backfaceAngle;
+};
+
 oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngle)
 {
+  // Handle the case where the element has children to represent front and back
+  // faces.  We need to flip the children instead of the parent since IE doesn't
+  // support preserve-3d style, which works on other browsers.
+  if (options && options['flipTarget'] == 'children')
+  {
+    var promises = [];
+    var children = $(element).children();
+    var childOptions;
+
+    var frontOptions = $.extend({}, options);
+    delete frontOptions['flipTarget'];
+
+    var backOptions = $.extend({}, frontOptions);
+    backOptions['startAngle'] = oj.AnimationUtils._calcBackfaceAngle(options['startAngle'] || startAngle);
+    backOptions['endAngle'] = oj.AnimationUtils._calcBackfaceAngle(options['endAngle'] || endAngle);
+    
+    for (var i = 0; i < children.length; i++)
+    {
+      childOptions = $(children[i]).hasClass('oj-animation-backface') ? backOptions : frontOptions;
+      promises.push(oj.AnimationUtils._flip(children[i], childOptions, effect, startAngle, endAngle));
+    }
+
+    return Promise.all(promises);
+  }
+
   options = oj.AnimationUtils._mergeOptions(effect, options);
 
   var fromCss = {};
@@ -1077,7 +1219,7 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
@@ -1089,7 +1231,12 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
  *                                              mirrored image of the front face. If set to "hidden", the back face is invisible.  Default is "hidden".
  * @param {string=} options.perspective  The 3D perspective for the element. Default is "2000px". A smaller value makes the 3D effect more pronounced during rotation.
  * @param {string=} options.transformOrigin  The axis location for the rotation. Refer to CSS transform-origin for valid values. Default is "center".
- *
+ * @param {string=} options.flipTarget  The target for flipping.  Valid values are "element" and "children".  Default is "element".
+ *                                      <p>Set to "element" to flip the element itself.</p>
+ *                                      <p>Set to "children" to flip the children of the element.  This is used when the element is a card-like structure that
+ *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
+ *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
+ *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
  * @export
  * @memberof oj.AnimationUtils
  */
@@ -1108,19 +1255,24 @@ oj.AnimationUtils.flipIn = function(element, options)
  * (by specifying ms as the unit). Default is "0s".
  * @param {string=} options.duration The duration that an animation should take to complete. This may be 
  * specified in either seconds (by specifying s as the unit) or milliseconds (by specifying ms as the unit). 
- * Default is "0s".
+ * Default is "400ms".
  * @param {string=} options.timingFunction  One of the valid values for either CSS transition-timing-function or CSS 
  * animation-timing-function. Default is "ease".
  * @param {string=} options.persist  Valid values are "none" and "all".  Set to "none" to remove the inline style being animated at the end of animation.  
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.axis  The axis of the rotation. Valid values are "x" and "y". Default is "y".
- * @param {string=} options.startAngle  The starting angle of the rotation. Refer to CSS rotate() transform for valid values. Default is "0deg", which shows the back face of the element.
- * @param {string=} options.endAngle  The ending angle of the rotation. Refer to CSS rotate() transform for valid values. Default is "180deg", which shows the front face of the element.
+ * @param {string=} options.startAngle  The starting angle of the rotation. Refer to CSS rotate() transform for valid values. Default is "0deg", which shows the front face of the element.
+ * @param {string=} options.endAngle  The ending angle of the rotation. Refer to CSS rotate() transform for valid values. Default is "180deg", which shows the back face of the element.
  * @param {string=} options.backfaceVisibility  The visibility of the back face when facing the user. Valid values are "visible" and "hidden". If set to "visible", the back face shows a 
  *                                              mirrored image of the front face. If set to "hidden", the back face is invisible.  Default is "hidden".
  * @param {string=} options.perspective  The 3D perspective for the element. Default is "2000px". A smaller value makes the 3D effect more pronounced during rotation.
  * @param {string=} options.transformOrigin  The axis location for the rotation. Refer to CSS transform-origin for valid values. Default is "center".
- *
+ * @param {string=} options.flipTarget  The target for flipping.  Valid values are "element" and "children".  Default is "element".
+ *                                      <p>Set to "element" to flip the element itself.</p>
+ *                                      <p>Set to "children" to flip the children of the element.  This is used when the element is a card-like structure that
+ *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
+ *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
+ *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
  * @export
  * @memberof oj.AnimationUtils
  */

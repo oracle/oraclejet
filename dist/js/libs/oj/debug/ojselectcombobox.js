@@ -185,6 +185,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           }
         });
     },
+    
+    //_ComboUtils
+    getSearchText: function(event)
+    {
+      var searchText;
+      // - start typing 1 letter on select box, but 2 letters displayed on searchbox
+      //In case of chrome/IE, typed key is added on search element as we move focus from select element to search
+      //But this is not happening on firefox and hence we need to set it as part of select element's event
+      //and kill the event to avoid duplicate charecters on search field later in IE/chrome.
+      //Dropdown popup will be opened on up/down/left/right arrows so excluding those as search text.
+
+      var keycode = event.which || event.keyCode;
+      if (event && event.type == "keydown" &&
+        (keycode == 32 || // spacebar
+          (keycode > 47 && keycode < 58) || // number keys
+          (keycode > 64 && keycode < 91) || // letter keys
+          (keycode > 95 && keycode < 112) || // numpad keys
+          (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
+          (keycode > 218 && keycode < 223))) // [\]' (in order)
+      {
+        searchText = String.fromCharCode(event.which);
+        //keydown event always return uppercase letter
+        if (!event.shiftKey)
+          searchText = searchText.toLowerCase();
+        // - select and combobox stop keyboard event propegation
+        event.preventDefault();
+      }
+      return searchText;
+    },
 
     //_ComboUtils
     /*
@@ -286,7 +315,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     killEvent: function(event)
     {
       event.preventDefault();
-      event.stopPropagation();
     },
 
     //_ComboUtils
@@ -878,6 +906,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         
         if (ojcomp !== undefined)
         {
+          // Move the element outside the container to its original place
+          ojcomp.container.after(element); //@HTMLUpdateOK
           ojcomp.container.remove();
           ojcomp.dropdown.remove();
           element
@@ -1074,8 +1104,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
                       if (pos >= 0) {
                         var spannode = document.createElement("span");
                         spannode.className = highlighterClass;
-                        var middlebit = node.splitText(pos);
-                        var endbit = middlebit.splitText(pat.length);
+                        // - issue with ojselect component when filtering certain lower case char
+                        //This is a temporary fix to avoid exceptions. 
+                        //For real fix, we need to know the beginning and ending offset of the match.
+                        var middlebit = node.splitText(Math.min(pos, node.data.length));
+                        var endbit = middlebit.splitText(Math.min(pat.length, middlebit.data.length));
                         var middleclone = middlebit.cloneNode(true);
 
                         spannode.appendChild(middleclone); // @HTMLUpdateOK
@@ -1949,6 +1982,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         choice,
         data;
 
+        var searchBox = this.dropdown.find(".oj-listbox-search");
+        var searchVisible = (searchBox && ! searchBox.attr("aria-hidden"));
+
         if (arguments.length === 0)
         {
           // If no argumnets passed then currently highlighted 
@@ -1958,6 +1994,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           {
             curSelected = choices.children(".oj-hover")
               .closest(".oj-listbox-result");
+          }
+          // - acc: screenreader not reading ojselect items
+          if (searchVisible) {
+            this._updateMatchesCount(curSelected.text());
           }
           return choices.get().indexOf(curSelected[0]);
         }
@@ -1973,11 +2013,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         
         if (choice.hasClass("oj-listbox-result-with-children"))
         {
-          choice.children(".oj-listbox-result-label").addClass("oj-hover");
+          var sels = choice.children(".oj-listbox-result-label");
+          sels.addClass("oj-hover");
+          // - acc: screenreader not reading ojselect items
+          if (searchVisible) {
+            this._updateMatchesCount(sels.text());
+          }
         }
         else
         {
           choice.addClass("oj-hover");
+          // - acc: screenreader not reading ojselect items
+          if (searchVisible) {
+            this._updateMatchesCount(choice.text());
+          }
         }
 
         // ensure assistive technology can determine the active choice
@@ -2149,11 +2198,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
             this.context = (!data || data.context === undefined) ? null : data.context;
             // create a default choice and prepend it to the list
 
-            if ((!data || data.results.length === 0) 
+            if ((!data || data.results.length === 0 || this._isDataSelected(data)) 
               && _ComboUtils.checkFormatter(self.ojContext, opts.formatNoMatches, "formatNoMatches"))
             {
-              if ((this._classNm === "oj-select" && this.opts['multiple'] !== true)
-                || this.header)
+              if (this._classNm === "oj-select" || this.header)
               {
                 var li = $("<li>");
                 li.addClass("oj-listbox-no-results");
@@ -2405,10 +2453,66 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       },
 
       //_AbstractOjChoice
+      _showSearchBox : function (searchText)
+      {
+        var focusOnSearchBox = false;
+        var searchBox = this.dropdown.find(".oj-listbox-search");
+        if (searchBox)
+        {
+          //hide and show the search box
+          if (this._hasSearchBox())
+          {
+            this.dropdown.find(".oj-listbox-search-wrapper")
+              .removeClass("oj-helper-hidden-accessible");
+
+            $(searchBox).removeAttr("aria-hidden");
+            this.search.val(searchText);
+            focusOnSearchBox = true;
+
+          }
+          else
+          {
+            this.dropdown.find(".oj-listbox-search-wrapper")
+              .addClass("oj-helper-hidden-accessible");
+
+            $(searchBox).attr("aria-hidden", "true");
+
+          }
+        }
+
+        //if search box is being displayed, focus on the search box otherwise focus on the select box
+        _ComboUtils._focus(focusOnSearchBox ? this.search : this.selection);
+
+        ///disable "click" on spyglass
+        if (focusOnSearchBox)
+        {
+          var self = this;
+          searchBox.find(".oj-listbox-spyglass-box").on("mouseup click", function (e)
+          {
+            self.search.focus();
+            // - select and combobox stop keyboard event propegation
+            e.preventDefault();
+          });
+        }
+
+      },
+
+      //_AbstractOjChoice
       _hasSearchBox : function ()
       {
-        return (this.opts.minimumResultsForSearch !== undefined &&
-          this.container._hasSearchBox !== undefined);
+        var threshold = this.opts.minimumResultsForSearch;
+        var len;
+        if (this.opts['list'])
+          len = $("#"+this.opts['list']).find("li").length;
+        else
+          len = this.datalist ? this.datalist[0].length : (this.opts.options ? this.opts.options.length: 0);
+          
+        return (len > threshold || this._userTyping);
+      },
+      
+      _isDataSelected : function (data)
+      {
+        return false;
       },
 
       _findItem: function(list, value)
@@ -2803,8 +2907,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
 
         this._initContainerWidth();
 
-        this.opts.element.hide()
-            .attr("aria-hidden", true);
+        this.opts.element.hide().attr("aria-hidden", true);
+        this.container.append(this.opts.element); //@HTMLUpdateOK
 
         this._setPlaceholder();
 
@@ -3349,7 +3453,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           .attr("aria-expanded", false)
           .removeAttr("aria-haspopup")
           .removeAttr("aria-owns");
-//          .removeAttr("aria-controls");
 
         this.search
           .attr("aria-expanded", false)
@@ -3376,29 +3479,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       {
         _OjSingleSelect.superclass._opening.apply(this, arguments);
 
-        var searchText;
-        // - start typing 1 letter on select box, but 2 letters displayed on searchbox
-        //In case of chrome/IE, typed key is added on search element as we move focus from select element to search
-        //But this is not happening on firefox and hence we need to set it as part of select element's event
-        //and kill the event to avoid duplicate charecters on search field later in IE/chrome.
-        //Dropdown popup will be opened on up/down/left/right arrows so excluding those as search text.
-
-        var keycode = event.which || event.keyCode;
-        if(event && event.type == "keydown" &&
-           (keycode == 32 || // spacebar 
-            (keycode > 47 && keycode < 58)   || // number keys
-            (keycode > 64 && keycode < 91)   || // letter keys
-            (keycode > 95 && keycode < 112)  || // numpad keys
-            (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
-            (keycode > 218 && keycode < 223)))   // [\]' (in order)
-        {
-          searchText = String.fromCharCode(event.which);
-          //keydown event always return uppercase letter
-          if (! event.shiftKey)
-            searchText = searchText.toLowerCase();
-          // - select and combobox stop keyboard event propegation
-          event.preventDefault();
-        }
+        var searchText = _ComboUtils.getSearchText(event);
 
         //select: focus still stay on the selectBox if open dropdown by mouse click
         this._showSearchBox(searchText);
@@ -3429,8 +3510,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           this.selection
             .attr("aria-expanded", true)
             .attr("aria-haspopup", "dialog")
-            .attr("aria-owns", this.dropdown.attr("id"));
-//            .attr("aria-controls", this.dropdown.attr("id"));
+            .attr("aria-owns", this.results.attr("id"));
 
           this.search
             .attr("aria-expanded", true)
@@ -3504,17 +3584,11 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           value = Array.isArray(value)? value[0]: value;
           selectedVal = this.opts.id(selected);
 
-          if(value !== selectedVal)
-          {
-            //no previous value
-            if (value === undefined || value === null) {
-              this.ojContext.options['value'] = Array.isArray(selectedVal)? selectedVal : [selectedVal];
-            }
-            //fire optionChange event
-            else {
-              this.setVal(Array.isArray(selectedVal)? selectedVal : [selectedVal]);
-            }
+          // - the selected option of the ojselect not reflected in the value variable
+          if(value !== selectedVal) {
+            this.ojContext._setInitialSelectedValue(selectedVal);
           }
+
           this._updateSelection(selected);
           this.close();
         }
@@ -3603,7 +3677,9 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       _containerKeydownHandler : function (e)
       {
         // - strange text show up after type in "<" in the select component
+        // - keyboard handling issues
         if ((_ComboUtils.KEY.isControl(e) && e.which != _ComboUtils.KEY.SHIFT) || 
+            (e.which == _ComboUtils.KEY.SHIFT) || 
             _ComboUtils.KEY.isFunctionKey(e))
         {
           return;
@@ -3634,8 +3710,25 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 
         _OjSingleSelect.superclass._containerKeydownHandler.apply(this, arguments);
 
-        if (this._userTyping && !this._opened())
-          this.open(e);
+        
+        if (this._userTyping) {
+          // - ojselect search box does not appear when i start typing
+          if (this._opened()) {
+
+            var searchBox = this.dropdown.find(".oj-listbox-search");
+            if ($(searchBox).attr("aria-hidden") === "true") {
+
+              var searchText = _ComboUtils.getSearchText(e);                
+              if (searchText) {
+                this._showSearchBox(searchText);
+                this._updateResults();
+              }
+            }
+          }
+          else {
+            this.open(e);
+          }
+        }
 
       },
 
@@ -3649,64 +3742,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           return true;
         }
         return false;
-      },
-
-      //_OjSingleSelect
-      _showSearchBox : function (searchText)
-      {
-        var focusOnSearchBox = false;
-        var searchBox = this.dropdown.find(".oj-listbox-search");
-        if (searchBox)
-        {
-          //hide and show the search box
-          if (this._hasSearchBox())
-          {
-            this.dropdown.find(".oj-listbox-search-wrapper")
-              .removeClass("oj-helper-hidden-accessible");
-
-            $(searchBox).removeAttr("aria-hidden");
-            this.search.val(searchText);
-            focusOnSearchBox = true;
-
-          }
-          else
-          {
-            this.dropdown.find(".oj-listbox-search-wrapper")
-              .addClass("oj-helper-hidden-accessible");
-
-            $(searchBox).attr("aria-hidden", "true");
-
-          }
-        }
-
-        //if search box is being displayed, focus on the search box otherwise focus on the select box
-        _ComboUtils._focus(focusOnSearchBox ? this.search : this.selection);
-
-        ///disable "click" on spyglass
-        if (focusOnSearchBox)
-        {
-          var self = this;
-          searchBox.find(".oj-listbox-spyglass-box").on("mouseup click", function (e)
-          {
-            self.search.focus();
-            // - select and combobox stop keyboard event propegation
-            e.preventDefault();
-          });
-        }
-
-      },
-
-      //_OjSingleSelect
-      _hasSearchBox : function ()
-      {
-        var threshold = this.opts.minimumResultsForSearch;
-        var len;
-        if (this.opts['list'])
-          len = $("#"+this.opts['list']).find("li").length;
-        else
-          len = this.datalist ? this.datalist[0].length : (this.opts.options ? this.opts.options.length: 0);
-          
-        return (len > threshold || this._userTyping);
       }
 
     }
@@ -3739,114 +3774,220 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 /**
  * @private
  */
-  var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
+var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
+  {
+    _prepareOpts : function ()
     {
-      _prepareOpts : function ()
+      var opts = _AbstractMultiChoice.superclass._prepareOpts.apply(this, arguments),
+      self = this;
+
+      var tagName = opts.element.get(0).tagName.toLowerCase();
+      if ((tagName === "input" && opts.element.attr("list")) ||
+        (tagName === "select" && opts.element.children().length > 0) ||
+        opts["list"])
       {
-        var opts = _AbstractMultiChoice.superclass._prepareOpts.apply(this, arguments),
-        self = this;
+        var eleName = opts['list'] ? "li" : "option";
 
-        var tagName = opts.element.get(0).tagName.toLowerCase();
-        if ((tagName === "input" && opts.element.attr("list")) ||
-             (tagName === "select" && opts.element.children().length > 0) ||
-             opts["list"])
+        // install the selection initializer
+        opts.initSelection = function (element, callback)
         {
-          var eleName = opts['list'] ? "li" : "option";
-          
-          // install the selection initializer
-          opts.initSelection = function (element, callback)
+          var data = [];
+          if (self.getVal())
           {
-            var data = [];
-            if (self.getVal())
+            var selected;
+            var ids = self.getVal();
+            for (var i = 0; i < ids.length; i++)
             {
-              var selected;
-              var ids = self.getVal();
-              for (var i = 0; i < ids.length; i++)
-              {
-                var id = ids[i];
-                selected = element.find(eleName).filter(function ()
-                  {
-                    if (eleName === "option")
-                      return this.value === id;
-                    else if (eleName === "li")
-                      return this.getAttribute("oj-data-value") === id;
-                  }
-                  );
-                if(selected && selected.length)
-                {
-                    data.push(self._optionToData(selected));
-                }else{
-                   // If user entered value which is not listed in predefiend options
-                  data.push({'value':id,'label':id});
-                }
-
-              }
-            }
-            // don't do this for select since it returns the first option as selected by default
-            else if (tagName !== "select") 
-            {
-              var selected;
+              var id = ids[i];
               selected = element.find(eleName).filter(function ()
                 {
                   if (eleName === "option")
-                    return this.selected;
+                    return this.value === id;
                   else if (eleName === "li")
-                    return this.getAttribute("oj-data-selected") === true;
+                    return this.getAttribute("oj-data-value") === id;
                 }
                 );
-              _ComboUtils.each2(selected, function (i, elm)
+              if (selected && selected.length)
               {
-                data.push(self._optionToData(elm));
+                data.push(self._optionToData(selected));
+              }
+              else if (self._elemNm === "ojcombobox")
+              {
+                // If user entered value which is not listed in predefiend options
+                data.push({'value' : id, 'label' : id});
+              }
+
+            }
+          }
+          // don't do this for select since it returns the first option as selected by default
+          else if (tagName !== "select")
+          {
+            var selected;
+            selected = element.find(eleName).filter(function ()
+              {
+                if (eleName === "option")
+                  return this.selected;
+                else if (eleName === "li")
+                  return this.getAttribute("oj-data-selected") === true;
+              }
+              );
+            _ComboUtils.each2(selected, function (i, elm)
+            {
+              data.push(self._optionToData(elm));
+            }
+            );
+          }
+          callback(data);
+        };
+      }
+      else if ("options" in opts)
+      {
+        if ($.isFunction(opts.options))
+        {
+          // install default initSelection when applied to hidden input and data is remote
+          opts.initSelection = function (element, callback)
+          {
+            var findOptions = function (results, optionValues)
+            {
+              var foundOptions = [];
+              for (var i = 0, l = results.length; i < l; i++)
+              {
+                var result = results[i];
+                var idx = optionValues.indexOf(opts.id(result));
+                if (idx >= 0)
+                {
+                  foundOptions.push(result);
+                }
+
+                if (result.children)
+                {
+                  var childOptions = findOptions(result.children, optionValues);
+                  if (childOptions && childOptions.length)
+                    $.merge(foundOptions, childOptions);
+                }
+              }
+
+              return foundOptions;
+            };
+
+            var ids = self.getVal();
+            //search in data by array of ids, storing matching items in a list
+            var matches = [];
+
+            // This data will be saved after querying the options.
+            var queryResult = _ComboUtils.getLastQueryResult(self);
+            if (queryResult)
+            {
+              matches = findOptions(queryResult, ids);
+            }
+
+            var reorderOptions = function ()
+            {
+              // Reorder matches based on the order they appear in the ids array because right now
+              // they are in the order in which they appear in data array.
+              // If not found in the current result, then will check in the saved current item.
+              var ordered = [];
+              for (var i = 0; i < ids.length; i++)
+              {
+                var id = ids[i];
+                var found = false;
+                for (var j = 0; j < matches.length; j++)
+                {
+                  var match = matches[j];
+                  if (id === opts.id(match))
+                  {
+                    ordered.push(match);
+                    matches.splice(j, 1);
+                    found = true;
+                    break;
+                  }
+                }
+                if (!found)
+                {
+                  // currentItem will hold the selected object with value and label.
+                  // Which updated everytime value is changed.
+                  var currentItem = self.currentItem;
+                  if (currentItem && currentItem.length)
+                  {
+                    for (var k = 0; k < currentItem.length; k++)
+                    {
+                      if (id === opts.id(currentItem[k]))
+                      {
+                        ordered.push(currentItem[k]);
+                        found = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (!found && self._elemNm === "ojcombobox")
+                  {
+                    //If user entered value which is not listed in predefiend options
+                    ordered.push({'value' : id, 'label' : id});
+                  }
+                }
+              }
+
+              callback(ordered);
+            };
+
+            // valueChangeTrigger will have one of the values from
+            // _ComboUtils._ValueChangeTriggerTypes, which represents the
+            // what triggered the value change. But if value is programmatically
+            // updated this will be null. So if valueChangeTrigger is null
+            // querying for the options again as component will not have list
+            // of options in case value is updated programmatically.
+            if (!self.valueChangeTrigger)
+            {
+              opts.query(
+              {
+                value : ids,
+                callback : function (queryResult)
+                {
+                  if (queryResult && queryResult.results)
+                  {
+                    var results = findOptions(queryResult.results, ids);
+                    if (results && results.length)
+                      $.merge(matches, results);
+                  }
+                  reorderOptions();
+                }
               }
               );
             }
-            callback(data);
+            else
+            {
+              reorderOptions();
+            }
           };
         }
-        else if ("options" in opts)
+        else
         {
-          if ($.isFunction(opts.options))
+          // install default initSelection when applied to hidden input and data is local
+          opts.initSelection = function (element, callback)
           {
-            // install default initSelection when applied to hidden input and data is remote
-            opts.initSelection = function (element, callback)
+            var ids = self.getVal();
+            //search in data by array of ids, storing matching items in a list
+            var matches = [];
+            opts.query(
             {
-              var findOptions = function(results, optionValues)
+              matcher : function (term, text, el)
               {
-                var foundOptions = [];
-                for (var i = 0, l = results.length; i < l; i++)
+                var is_match = $.grep(ids, function (id)
+                  {
+                    return id === opts.id(el);
+                  }
+                  ).length;
+                if (is_match)
                 {
-                  var result = results[i];
-                  var idx = optionValues.indexOf(opts.id(result));
-                  if (idx >= 0) {
-                    foundOptions.push(result);
-                  }
-
-                  if (result.children) {
-                    var childOptions = findOptions(result.children, optionValues);
-                    if (childOptions && childOptions.length)
-                      $.merge(foundOptions, childOptions);
-                  }
+                  matches.push(el);
                 }
-
-                return foundOptions;
-              };
-
-              var ids = self.getVal();
-              //search in data by array of ids, storing matching items in a list
-              var matches = [];
-
-              // This data will be saved after querying the options.
-              var queryResult = _ComboUtils.getLastQueryResult(self);
-              if (queryResult)
+                return is_match;
+              },
+              callback : !$.isFunction(callback) ? $.noop : function ()
               {
-                matches = findOptions(queryResult, ids);
-              }
-
-              var reorderOptions = function()
-              {
-                // Reorder matches based on the order they appear in the ids array because right now
-                // they are in the order in which they appear in data array.
-                // If not found in the current result, then will check in the saved current item.
+                // reorder matches based on the order they appear in the ids array because right now
+                // they are in the order in which they appear in data array
                 var ordered = [];
                 for (var i = 0; i < ids.length; i++)
                 {
@@ -3863,751 +4004,627 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
                       break;
                     }
                   }
-                  if(!found){
-                    // currentItem will hold the selected object with value and label.
-                    // Which updated everytime value is changed.
-                    var currentItem = self.currentItem;
-                    if (currentItem && currentItem.length) {
-                      for (var k = 0; k < currentItem.length; k++) {
-                        if (id === opts.id(currentItem[k])) {
-                          ordered.push(currentItem[k]);
-                          found = true;
-                          break;
-                        }
-                      }
-                    }
-
-                    if (!found) {
-                      //If user entered value which is not listed in predefiend options
-                      ordered.push({'value':id,'label':id});
-                    }
+                  if (!found && self._elemNm === "ojcombobox")
+                  {
+                    //If user entered value which is not listed in predefiend options
+                    ordered.push({'value' : id, 'label' : id});
                   }
                 }
-
                 callback(ordered);
-              };
-
-              // valueChangeTrigger will have one of the values from 
-              // _ComboUtils._ValueChangeTriggerTypes, which represents the
-              // what triggered the value change. But if value is programmatically
-              // updated this will be null. So if valueChangeTrigger is null 
-              // querying for the options again as component will not have list
-              // of options in case value is updated programmatically. 
-              if (!self.valueChangeTrigger)
-              {
-                opts.query(
-                {
-                  value: ids,
-                  callback: function(queryResult)
-                  {
-                    if (queryResult && queryResult.results)
-                    {
-                      var results = findOptions(queryResult.results, ids);
-                      if (results && results.length)
-                        $.merge(matches, results);
-                    }
-                    reorderOptions();
-                  } 
-                });
-              }
-              else {
-                reorderOptions();
-              }
-            };
-          }
-          else
-          {
-          // install default initSelection when applied to hidden input and data is local
-            opts.initSelection = opts.initSelection || function (element, callback)
-            {
-              var ids = self.getVal();
-              //search in data by array of ids, storing matching items in a list
-              var matches = [];
-              opts.query(
-              {
-                matcher : function (term, text, el)
-                {
-                  var is_match = $.grep(ids, function (id)
-                    {
-                      return id === opts.id(el);
-                    }
-                    ).length;
-                  if (is_match)
-                  {
-                    matches.push(el);
-                  }
-                  return is_match;
-                },
-                callback : !$.isFunction(callback) ? $.noop : function ()
-                {
-                  // reorder matches based on the order they appear in the ids array because right now
-                  // they are in the order in which they appear in data array
-                  var ordered = [];
-                  for (var i = 0; i < ids.length; i++)
-                  {
-                    var id = ids[i];
-                    var found = false;
-                    for (var j = 0; j < matches.length; j++)
-                    {
-                      var match = matches[j];
-                      if (id === opts.id(match))
-                      {
-                        ordered.push(match);
-                        matches.splice(j, 1);
-                        found = true;
-                        break;
-                      }
-                    }
-                    if(!found){
-                      //If user entered value which is not listed in predefiend options
-                      ordered.push({'value':id,'label':id});
-                    }
-                  }
-                  callback(ordered);
-                }
-              }
-              );
-            };
-          }
-        }
-        return opts;
-      },
-
-      _selectChoice : function (choice)
-      {
-        var selected = this.container.find("." + this._classNm + "-selected-choice.oj-focus");
-        if (selected.length && choice && choice[0] == selected[0])
-        {}
-
-        else
-        {
-          if (selected.length)
-          {
-            this.opts.element.trigger("choice-deselected", selected);
-          }
-          selected.removeClass("oj-focus");
-          if (choice && choice.length)
-          {
-            this.close();
-            choice.addClass("oj-focus");
-            this.container.find("." +this._classNm + "-description").text(choice.attr("valueText") + ". Press back space to delete.")
-            .attr("aria-live", "assertive");
-            this.opts.element.trigger("choice-selected", choice);
-          }
-        }
-      },
-
-      _destroy : function ()
-      {
-        $("label[for='" + this.search.attr('id') + "']")
-        .attr('for', this.opts.element.attr("id"));
-        _AbstractMultiChoice.superclass._destroy.apply(this, arguments);
-      },
-
-      _initContainer : function ()
-      {
-        var selector = "." + this._classNm + "-choices",
-        selection,
-        idSuffix = _ComboUtils.nextUid(),
-        elementLabel;
-
-        this.searchContainer = this.container.find("." + this._classNm + "-search-field");
-        this.selection = selection = this.container.find(selector);
-
-        var _this = this;
-        this.selection.on("click", "." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)", function (e)
-        {
-          _this.search[0].focus(); //Fixed??
-          _this._selectChoice($(this));
-        }
-        );
-
-        elementLabel = $("label[for='" + this.opts.element.attr("id") + "']");
-        if (!elementLabel.attr("id"))
-          elementLabel.attr('id', this._classNm + "-label-" + idSuffix);
-
-        // add aria associations
-        selection.find("." + this._classNm + "-input").attr("id", this._classNm + "-input-" + idSuffix);
-        if (!this.results.attr("id"))
-          this.results.attr("id", "oj-listbox-results-" + idSuffix);
-        this.search.attr("aria-owns", this.results.attr("id"));
-        this.search.attr("aria-labelledby", elementLabel.attr("id"));
-        this.opts.element.attr("aria-labelledby", elementLabel.attr("id"));
-
-        if (this.search.attr('id'))
-          elementLabel.attr('for', this.search.attr('id'));
-          
-        if (this.opts.element.attr("aria-label"))
-          this.search.attr("aria-label", this.opts.element.attr("aria-label"));
-          
-        if (this.opts.element.attr("aria-controls"))
-          this.search.attr("aria-controls", this.opts.element.attr("aria-controls"));
-
-        this.search.attr("tabindex", this.elementTabIndex);
-        this.keydowns = 0;
-        this.search.on("keydown", this._bind(function (e)
-          {
-            if (!this._isInterfaceEnabled())
-              return;
-
-            ++this.keydowns;
-            var selected = selection.find("." + this._classNm + "-selected-choice.oj-focus");
-            var prev = selected.prev("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)");
-            var next = selected.next("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)");
-            var pos = _ComboUtils.getCursorInfo(this.search);
-
-            if (selected.length &&
-              (e.which == _ComboUtils.KEY.LEFT || e.which == _ComboUtils.KEY.RIGHT || e.which == _ComboUtils.KEY.BACKSPACE || e.which == _ComboUtils.KEY.DELETE || e.which == _ComboUtils.KEY.ENTER))
-            {
-              var selectedChoice = selected;
-              if (e.which == _ComboUtils.KEY.LEFT && prev.length)
-              {
-                selectedChoice = prev;
-              }
-              else if (e.which == _ComboUtils.KEY.RIGHT)
-              {
-                selectedChoice = next.length ? next : null;
-              }
-              else if (e.which === _ComboUtils.KEY.BACKSPACE)
-              {
-                this._unselect(selected.first(), e);
-                this.search.width(10);
-                selectedChoice = prev.length ? prev : next;
-              }
-              else if (e.which == _ComboUtils.KEY.DELETE)
-              {
-                this._unselect(selected.first(), e);
-                this.search.width(10);
-                selectedChoice = next.length ? next : null;
-              }
-              else if (e.which == _ComboUtils.KEY.ENTER)
-              {
-                selectedChoice = null;
-              }
-
-              this._selectChoice(selectedChoice);
-              // - select and combobox stop keyboard event propegation
-              e.preventDefault();
-              if (!selectedChoice || !selectedChoice.length)
-              {
-                this.open();
-              }
-              return;
-            }
-            else if (((e.which === _ComboUtils.KEY.BACKSPACE && this.keydowns == 1)
-                 || e.which == _ComboUtils.KEY.LEFT) && (pos.offset == 0 && !pos.length))
-            {
-              this._selectChoice(selection.find("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)").last());
-              // - select and combobox stop keyboard event propegation
-              e.preventDefault();
-              return;
-            }
-            else
-            {
-              this._selectChoice(null);
-            }
-
-            if (this._opened())
-            {
-              switch (e.which)
-              {
-              case _ComboUtils.KEY.UP:
-              case _ComboUtils.KEY.DOWN:
-                this._moveHighlight((e.which === _ComboUtils.KEY.UP) ? -1 : 1);
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
-              case _ComboUtils.KEY.ENTER:
-                this._selectHighlighted(null, e);
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
-              case _ComboUtils.KEY.TAB:
-                this.close(e);
-                return;
-              case _ComboUtils.KEY.ESC:
-                this._cancel(e);
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
               }
             }
-
-            if (e.which === _ComboUtils.KEY.TAB || _ComboUtils.KEY.isControl(e) || _ComboUtils.KEY.isFunctionKey(e)
-               || e.which === _ComboUtils.KEY.ESC)
-            {
-              return;
-            }
-            
-            // when user typed in text and hit enter, we don't want to open drop down
-            if (e.which === _ComboUtils.KEY.ENTER && this.search.val() && this._elemNm === "ojcombobox")
-              return;
-            
-            switch (e.which)
-            {
-              case _ComboUtils.KEY.UP:
-              case _ComboUtils.KEY.DOWN:
-                this.open();
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
-              case _ComboUtils.KEY.PAGE_UP:
-              case _ComboUtils.KEY.PAGE_DOWN:
-                // prevent the page from scrolling
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
-              case _ComboUtils.KEY.ENTER:
-                // prevent form from being submitted
-                // - select and combobox stop keyboard event propegation
-                e.preventDefault();
-                return;
-            }
-          }
-          ));
-
-        this.search.on("keyup", this._bind(function (e)
-          {
-            this.keydowns = 0;
-          }
-          ));
-		  
-		this.search.on("input", this._bind(function (e) 
-		  {
-		    this.ojContext._SetRawValue(this.search.val(), e);
-		  }
-		  ));
-
-        this.search.on("blur keyup", this._bind(function (e)
-          {
-            if(e.type === 'keyup' && e.keyCode !== 10 && e.keyCode !== 13) return;
-
-              if (this.opts["manageNewEntry"] && this.search.val() && this.results.find(".oj-hover").length <= 0) {
-                var data = this.opts["manageNewEntry"](this.search.val());
-
-              var trigger = e.type === "blur"
-                ? _ComboUtils.ValueChangeTriggerTypes.BLUR
-                : _ComboUtils.ValueChangeTriggerTypes.ENTER_PRESSED;
-              var options = {
-                trigger: trigger
-              };
-
-              this._onSelect(data, options, e);
-            }
-            this.search.removeClass(this._classNm + "-focused");
-            this.container.removeClass("oj-focus");
-            this._selectChoice(null);
-            if (!this._opened())
-              this._clearSearch();
-            e.stopImmediatePropagation();
-          }
-          ));
-
-        this.container.on("click touchstart", selector, this._bind(function (e)
-          {
-            if (!this._isInterfaceEnabled())
-              return;
-            if ($(e.target).closest("." + this._classNm + "-selected-choice").length > 0)
-            {
-              // clicked inside a selected choice, do not open
-              return;
-            }
-            this._selectChoice(null);
-            if (this._opened())
-            {
-              this.close(e);
-            } else {
-              this.open();
-              this._focusSearch();
-            }
-            e.preventDefault();
-          }
-          ));
-
-        this.container.on("focus", selector, this._bind(function ()
-          {
-            if (!this._isInterfaceEnabled())
-              return;
-          }
-          ));
-
-        this._initContainerWidth();
-        this.opts.element.hide()
-                  .attr("aria-hidden", true);
-
-        // set the placeholder if necessary
-        this._clearSearch();
-      },
-
-      _enableInterface : function ()
-      {
-        if (_AbstractMultiChoice.superclass._enableInterface.apply(this, arguments))
-        {
-          this.search.prop("disabled", !this._isInterfaceEnabled());
-        }
-      },
-
-      _initSelection : function ()
-      {
-        var data;
-        if ((this.getVal() === null || this.getVal().length === 0) && (this._classNm === "oj-select" || this.opts.element.text() === ""))
-        {
-          this._updateSelection([]);
-          this.close();
-          // set the placeholder if necessary
-          this._clearSearch();
-        }
-        if (this.datalist || (this.getVal() !== null && this.getVal().length))
-        {
-          var self = this,
-          element;
-          if (this.datalist)
-            element = this.datalist;
-          else
-            element = this.opts.element;
-          this.opts.initSelection.call(null, element, function (data)
-          {
-            if (data !== undefined && data !== null && data.length !== 0)
-            {
-              self._updateSelection(data);
-              self.close();
-              // set the placeholder if necessary
-              self._clearSearch();
-            }
-          }
-          );
-        }
-      },
-
-      _clearSearch : function ()
-      {
-        var placeholder = this._getPlaceholder(),
-        maxWidth = this._getMaxSearchWidth();
-
-        if (placeholder !== undefined && (!this.getVal() || this.getVal().length === 0))
-        {
-          this.search.attr("placeholder", placeholder);
-          // stretch the search box to full width of the container so as much of the placeholder is visible as possible
-          // we could call this._resizeSearch(), but we do not because that requires a sizer and we do not want to create one so early because of a firefox bug, see #944
-          this.search.val("").width(maxWidth > 0 ? maxWidth : this.container.css("width"));
-
-          //  when the component is pre-created, the input box would get the default size
-          this.searchContainer.width("100%");
-        }
-        else
-        {
-          this.search.attr("placeholder", "");
-          this.search.val("").width(10);
-
-          // reset the search container, so the input doesn't go to the next line if there is still room
-          this.searchContainer.width("auto");
-        }
-      },
-
-      _opening : function (event, dontUpdateResults)
-      {
-        //if beforeExpand is not cancelled
-        // beforeExpand event will be triggered in base class _shouldOpen method
-        this._resizeSearch();
-        _AbstractMultiChoice.superclass._opening.apply(this, arguments);
-        this._focusSearch();
-
-        if (!dontUpdateResults)
-          this._updateResults(true);
-
-        this.search.focus();
-      },
-
-      close : function (event)
-      {
-        if (!this._opened())
-          return;
-        _AbstractMultiChoice.superclass.close.apply(this, arguments);
-      },
-
-      _focus : function ()
-      {
-        this.close();
-        this.search.focus();
-      },
-
-      _updateSelection : function (data)
-      {
-        var ids = [],
-        filtered = [],
-        self = this;
-
-        // filter out duplicates
-        $(data).each(function ()
-        {
-          if (ids.indexOf(self.id(this)) < 0)
-          {
-            ids.push(self.id(this));
-            filtered.push(this);
-          }
-        }
-        );
-        data = filtered;
-        this.selection.find("." + this._classNm + "-selected-choice").remove();
-        $(data).each(function ()
-        {
-          self._addSelectedChoice(this);
-        }
-        );
-
-        // Storing this data so that it will be used when setting the display value.
-        this.currentItem = data;
-
-        this.opts.element.val(ids.length === 0 ? "" : ids.join(this.opts.separator));
-
-        self._postprocessResults();
-      },
-
-      _onSelect : function (data, options, event)
-      {
-        if (!this._triggerSelect(data))
-        {
-          return;
-        }
-
-        var context;
-        if (options && options.trigger) {
-          context = {
-            optionMetadata: {
-              "trigger": options.trigger
-            }
+            );
           };
         }
+      }
+      return opts;
+    },
 
-        //selection will be added when _SetValue is called
-        //this._addSelectedChoice(data);
-        var id = this.id(data);
-        //Clone the value before invoking setVal(), otherwise it will not trigger change event.
-        var val = this.getVal() ? this.getVal().slice(0) : [];
-
-        // If the component is invalid, we will not get all the values matching the displayed value
-        if (!this.ojContext.isValid())
-          val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
-
-        $(data).each(function() {
-            if (val.indexOf(id) < 0) {
-                val.push(id);
-            }
-        });
-        this.setVal(val, event, context);
-        if (this.select || !this.opts.closeOnSelect)
-          this._postprocessResults(data, false, this.opts.closeOnSelect === true);
-        if (this.opts.closeOnSelect)
-        {
-          this.close(event);
-          this.search.width(10);
-        }
-
-        if (!options || !options.noFocus)
-          this._focusSearch();
-      },
-
-      _cancel : function (event)
+    _selectChoice : function (choice)
+    {
+      var selected = this.container.find("." + this._classNm + "-selected-choice.oj-focus");
+      if (selected.length && choice && choice[0] == selected[0])
+      {}
+      else
       {
-        this.close(event);
-        this._focusSearch();
-      },
-
-      _addSelectedChoice : function (data)
-      {
-        var enableChoice = !data.locked,
-        enabledItem = $(
-            "<li class='" + this._classNm + "-selected-choice'>" +
-            "    <div></div>" +
-            "    <a href='#' onclick='return false;' role='button' aria-label='remove' class='" + this._classNm + "-clear-entry " +
-            "      oj-component-icon oj-clickable-icon-nocontext " + this._classNm + "-clear-entry-icon' tabindex='-1'>" +
-            "    </a>" +
-            "</li>"),
-        disabledItem = $(
-            //"<li class='oj-combobox-selected-choice oj-combobox-locked'>" +
-            "<li class='" + this._classNm + "-selected-choice " + this._classNm + "-locked'>" +
-            "<div></div>" +
-            "</li>");
-        var choice = enableChoice ? enabledItem : disabledItem,
-        id = this.id(data),
-        formatted;
-
-        formatted = this.opts.formatSelection(data);
-        if (formatted !== undefined)
+        if (selected.length)
         {
-          choice.find("div").addClass(this._classNm+"-selected-choice-label").text(formatted);
-          choice.find("." + this._classNm + "-clear-entry").attr("aria-label", formatted + " remove");
-          choice.attr("valueText", formatted);
+          this.opts.element.trigger("choice-deselected", selected);
         }
-        if (enableChoice)
+        selected.removeClass("oj-focus");
+        if (choice && choice.length)
         {
-          choice.find("." + this._classNm + "-clear-entry")
-          .on("mousedown", _ComboUtils.killEvent)
-          .on("click dblclick", this._bind(function (e)
+          if (this._elemNm === "ojcombobox")
+            this.close();
+          choice.addClass("oj-focus");
+          this.container.find("." + this._classNm + "-description").text(choice.attr("valueText") + ". Press back space to delete.")
+          .attr("aria-live", "assertive");
+          this.opts.element.trigger("choice-selected", choice);
+        }
+      }
+    },
+
+    _destroy : function ()
+    {
+      $("label[for='" + this.search.attr('id') + "']")
+      .attr('for', this.opts.element.attr("id"));
+      _AbstractMultiChoice.superclass._destroy.apply(this, arguments);
+    },
+
+    _initContainer : function ()
+    {
+      var selector = "." + this._classNm + "-choices",
+      selection,
+      idSuffix = _ComboUtils.nextUid(),
+      elementLabel;
+
+      this.searchContainer = this.container.find("." + this._classNm + "-search-field");
+      this.selection = selection = this.container.find(selector);
+
+      var _this = this;
+      this.selection.on("click", "." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)", function (e)
+      {
+        if (this._elemNm === "ojcombobox")
+          _this.search[0].focus(); //Fixed??
+        _this._selectChoice($(this));
+      }
+      );
+
+      elementLabel = $("label[for='" + this.opts.element.attr("id") + "']");
+      if (!elementLabel.attr("id"))
+        elementLabel.attr('id', this._classNm + "-label-" + idSuffix);
+      
+      this._contentElement = (this._elemNm === "ojcombobox") ? this.search : this.selection;
+
+      // add aria associations
+      selection.find("." + this._classNm + "-input").attr("id", this._classNm + "-input-" + idSuffix);
+      if (!this.results.attr("id"))
+        this.results.attr("id", "oj-listbox-results-" + idSuffix);
+      this._contentElement.attr("aria-owns", this.results.attr("id"));
+      this._contentElement.attr("aria-labelledby", elementLabel.attr("id"));
+      this.opts.element.attr("aria-labelledby", elementLabel.attr("id"));
+
+      if (this.search.attr('id'))
+        elementLabel.attr('for', this.search.attr('id'));
+
+      if (this.opts.element.attr("aria-label"))
+        this._contentElement.attr("aria-label", this.opts.element.attr("aria-label"));
+
+      if (this.opts.element.attr("aria-controls"))
+        this._contentElement.attr("aria-controls", this.opts.element.attr("aria-controls"));
+
+      this._contentElement.attr("tabindex", this.elementTabIndex);
+      this.keydowns = 0;
+      // Add keydown keyup handler on the select box for ojselect
+      if (this._elemNm === "ojselect") 
+      {
+        this.selection.on("keydown", this._bind(this._containerKeydownHandler));
+        this.selection.on("keyup", this._bind(function (e)
+        {
+          this.keydowns = 0;
+        }
+        ));
+      };
+      this.search.on("keydown", this._bind(this._containerKeydownHandler));
+
+      this.search.on("keyup", this._bind(function (e)
+        {
+          this.keydowns = 0;
+        }
+        ));
+
+      this.search.on("input", this._bind(function (e)
+        {
+          this.ojContext._SetRawValue(this.search.val(), e);
+        }
+        ));
+
+      this.search.on("blur keyup", this._bind(function (e)
+        {
+          if (e.type === 'keyup' && e.keyCode !== 10 && e.keyCode !== 13)
+            return;
+
+          if (this.opts["manageNewEntry"] && this.search.val() && this.results.find(".oj-hover").length <= 0)
+          {
+            var data = this.opts["manageNewEntry"](this.search.val());
+
+            var trigger = e.type === "blur"
+               ? _ComboUtils.ValueChangeTriggerTypes.BLUR
+               : _ComboUtils.ValueChangeTriggerTypes.ENTER_PRESSED;
+            var options =
             {
-              if (!this._isInterfaceEnabled())
-                return;
+              trigger : trigger
+            };
 
-              $(e.target).closest("." + this._classNm + "-selected-choice").fadeOut('fast', this._bind(function ()
-                {
-                  this._unselect($(e.target), e);
-                  this.selection.find("." + this._classNm + "-selected-choice.oj-focus").removeClass("oj-focus");
-                  this.close(e);
-                  this._focusSearch();
-                }
-                )).dequeue();
-              _ComboUtils.killEvent(e);
-            }
-            ));
+            this._onSelect(data, options, e);
+          }
+          this.search.removeClass(this._classNm + "-focused");
+          this.container.removeClass("oj-focus");
+          this._selectChoice(null);
+          if (!this._opened())
+            this._clearSearch();
+          e.stopImmediatePropagation();
         }
-        choice.data(this._elemNm, data);
+        ));
 
-        // searchContainer is initialized in _initContainer() method.
-        // And this can not be changed by an external developer. It is constructed by component only.
-        choice.insertBefore(this.searchContainer); // @HtmlUpdateOk
+      this.container.on("click touchstart", selector, this._bind(function (e)
+        {
+          if (!this._isInterfaceEnabled())
+            return;
+          if ($(e.target).closest("." + this._classNm + "-selected-choice").length > 0)
+          {
+            // clicked inside a selected choice, do not open
+            return;
+          }
+          this._selectChoice(null);
+          if (this._opened())
+          {
+            this.close(e);
+          }
+          else
+          {
+            this.open(e);
+            if (this._elemNm === "ojcombobox" || this._hasSearchBox())
+              this._focusSearch();
+          }
+          e.preventDefault();
+        }
+        ));
 
-      },
+      this.container.on("focus", selector, this._bind(function ()
+        {
+          if (!this._isInterfaceEnabled())
+            return;
+        }
+        ));
 
-      _unselect : function (selected, event)
+      this._initContainerWidth();
+      this.opts.element.hide().attr("aria-hidden", true);
+      this.container.append(this.opts.element); //@HTMLUpdateOK
+
+      // set the placeholder if necessary
+      this._clearSearch();
+    },
+
+    _containerKeydownHandler : function (e)
+    {
+      if (!this._isInterfaceEnabled())
+        return;
+
+      ++this.keydowns;
+      var selected = this.selection.find("." + this._classNm + "-selected-choice.oj-focus");
+      var prev = selected.prev("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)");
+      var next = selected.next("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)");
+      var pos = (this._elemNm === "ojselect" && !this._userTyping) ? _ComboUtils.getCursorInfo(this.selection) : _ComboUtils.getCursorInfo(this.search);
+
+      if (selected.length &&
+        (e.which == _ComboUtils.KEY.LEFT || e.which == _ComboUtils.KEY.RIGHT || e.which == _ComboUtils.KEY.BACKSPACE || e.which == _ComboUtils.KEY.DELETE || e.which == _ComboUtils.KEY.ENTER))
       {
-        var val = this.getVal() ? this.getVal().slice(0) : [],
-        data,
-        index;
-        selected = selected.closest("." + this._classNm + "-selected-choice");
-
-        if (selected.length === 0)
+        var selectedChoice = selected;
+        if (e.which == _ComboUtils.KEY.LEFT && prev.length)
         {
-          //TODO: translation string
-          throw "Invalid argument: " + selected + ". Must be ." + this._classNm + "-selected-choice";
+          selectedChoice = prev;
         }
-        data = selected.data(this._elemNm);
-        if (!data)
+        else if (e.which == _ComboUtils.KEY.RIGHT)
         {
-          // prevent a race condition when the 'x' is clicked really fast repeatedly the event can be queued
-          // and invoked on an element already removed
+          selectedChoice = next.length ? next : null;
+        }
+        else if (e.which === _ComboUtils.KEY.BACKSPACE)
+        {
+          this._unselect(selected.first(), e);
+          this._resetSearchWidth();
+          selectedChoice = prev.length ? prev : next;
+        }
+        else if (e.which == _ComboUtils.KEY.DELETE)
+        {
+          this._unselect(selected.first(), e);
+          this._resetSearchWidth();
+          selectedChoice = next.length ? next : null;
+        }
+        else if (e.which == _ComboUtils.KEY.ENTER)
+        {
+          selectedChoice = null;
+        }
+
+        this._selectChoice(selectedChoice);
+        e.preventDefault();
+        if (!selectedChoice || !selectedChoice.length)
+        {
+          this.open(e);
+        }
+        return;
+      }
+      else if (((e.which === _ComboUtils.KEY.BACKSPACE && this.keydowns == 1)
+           || e.which == _ComboUtils.KEY.LEFT) && (pos.offset == 0 && !pos.length))
+      {
+        this._selectChoice(this.selection.find("." + this._classNm + "-selected-choice:not(." + this._classNm + "-locked)").last());
+        e.preventDefault();
+        return;
+      }
+      else
+      {
+        this._selectChoice(null);
+      }
+
+      if (this._opened())
+      {
+        switch (e.which)
+        {
+        case _ComboUtils.KEY.UP:
+        case _ComboUtils.KEY.DOWN:
+          this._moveHighlight((e.which === _ComboUtils.KEY.UP) ? -1 : 1);
+          e.preventDefault();
+          return;
+        case _ComboUtils.KEY.ENTER:
+          this._selectHighlighted(null, e);
+          e.preventDefault();
+          return;
+        case _ComboUtils.KEY.TAB:
+          this.close(e);
+          return;
+        case _ComboUtils.KEY.ESC:
+          this._cancel(e);
+          e.preventDefault();
           return;
         }
-
-        // If the component is invalid, we will not get all the values matching the displayed value
-        if (!this.ojContext.isValid())
-          val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
-
-        while ((index = val.indexOf(this.id(data))) >= 0)
-        {
-          val.splice(index, 1);
-          this.setVal(val, event);
-          if (this.select)
-            this._postprocessResults();
-        }
-        selected.remove();
-      },
-
-      _postprocessResults : function (data, initial, noHighlightUpdate)
-      {
-        var val = (this.getVal() &&  (this.opts.element.val() || this.ojContext.isValid())) ? this.getVal() : [],
-        choices = this.results.find(".oj-listbox-result"),
-        compound = this.results.find(".oj-listbox-result-with-children"),
-        self = this;
-
-        _ComboUtils.each2(choices, function (i, choice)
-        {
-          var id = self.id(choice.data(self._elemNm));
-          if (val && val.indexOf(id) >= 0)
-          {
-            choice.addClass("oj-selected");
-            // mark all children of the selected parent as selected
-            choice.find(".oj-listbox-result-selectable").addClass("oj-selected");
-          }
-        }
-        );
-        _ComboUtils.each2(compound, function (i, choice)
-        {
-          // hide an optgroup if it doesnt have any selectable children
-          if (!choice.is(".oj-listbox-result-selectable")
-             && choice.find(".oj-listbox-result-selectable:not(.oj-selected)").length === 0)
-          {
-            choice.addClass("oj-selected");
-          }
-        }
-        );
-
-        if (!choices.filter('.oj-listbox-result:not(.oj-selected)').length > 0)
+        // bring up the search box if user started typing after the drop down is already opened
+        if (this._userTyping === false) {
+          this._userTyping = true;
           this.close();
-      },
-
-      _getMaxSearchWidth : function ()
-      {
-        return this.selection.width() - _ComboUtils.getSideBorderPadding(this.search);
-      },
-
-      _textWidth : function (text) {
-        var textSpan = document.createElement("span"),
-            textNode = document.createTextNode(text);
-
-        textSpan.style.display = "none";
-        textSpan.appendChild(textNode); //@HTMLUpdateOK
-        $('body').append(textSpan); //@HTMLUpdateOK
-        var width = $('body').find('span:last').width();
-        $('body').find('span:last').remove();
-        return width;
-      },
-
-      _resizeSearch : function ()
-      {
-        var minimumWidth,
-        left,
-        maxWidth,
-        containerLeft,
-        searchWidth,
-        sideBorderPadding = _ComboUtils.getSideBorderPadding(this.search);
-
-        minimumWidth = this._textWidth(this.search.val()) + 10;
-        left = this.search.offset().left;
-        maxWidth = this.selection.width();
-        containerLeft = this.selection.offset().left;
-        searchWidth = maxWidth - (left - containerLeft) - sideBorderPadding;
-        if (searchWidth < minimumWidth)
-        {
-          searchWidth = maxWidth - sideBorderPadding;
         }
-        if (searchWidth < 40)
-        {
-          searchWidth = maxWidth - sideBorderPadding;
-        }
-        if (searchWidth <= 0)
-        {
-          searchWidth = minimumWidth;
-        }
-        this.search.width(Math.floor(searchWidth));
-      },
-
-      setVal : function (val, event, context)
-      {
-        var unique;
-        unique = [];
-
-        if (typeof val === "string")
-          val = _ComboUtils.splitVal(val, this.opts.separator);
-        // filter out duplicates
-        for(var i =0; i < val.length; i++)
-        {
-          if (unique.indexOf(val[i]) < 0)
-            unique.push(val[i]);
-        }
-
-        var options = { doValueChangeCheck: false };
-        if (context)
-          options["_context"] = context;
-
-        this.ojContext._SetValue(unique, event, options);
-        if (this.ojContext.isValid() || unique.length === 0)
-          this.opts.element.val(unique.length === 0 ? "" : unique.join(this.opts.separator));
-
-        this.search.attr("aria-activedescendant", this.opts.element.attr("id"));
       }
-    }
-    );
 
+      if (e.which === _ComboUtils.KEY.TAB || _ComboUtils.KEY.isControl(e) || _ComboUtils.KEY.isFunctionKey(e)
+         || e.which === _ComboUtils.KEY.ESC)
+      {
+        return;
+      }
+
+      // when user typed in text and hit enter, we don't want to open drop down
+      if (e.which === _ComboUtils.KEY.ENTER && this.search.val() && this._elemNm === "ojcombobox")
+        return;
+
+      switch (e.which)
+      {
+      case _ComboUtils.KEY.UP:
+      case _ComboUtils.KEY.DOWN:
+        this.open(e);
+        e.preventDefault();
+        return;
+      case _ComboUtils.KEY.PAGE_UP:
+      case _ComboUtils.KEY.PAGE_DOWN:
+        // prevent the page from scrolling
+        e.preventDefault();
+        return;
+      case _ComboUtils.KEY.ENTER:
+        // prevent form from being submitted
+        e.preventDefault();
+        return;
+      }
+      
+      // ojselect: used by select
+      this._userTyping = true;
+    },
+
+    _enableInterface : function ()
+    {
+      if (_AbstractMultiChoice.superclass._enableInterface.apply(this, arguments))
+      {
+        this.search.prop("disabled", !this._isInterfaceEnabled());
+      }
+    },
+
+    _initSelection : function ()
+    {
+      var data;
+      if ((this.getVal() === null || this.getVal().length === 0) && (this._classNm === "oj-select" || this.opts.element.text() === ""))
+      {
+        this._updateSelection([]);
+        this.close();
+        // set the placeholder if necessary
+        this._clearSearch();
+      }
+      if (this.datalist || (this.getVal() !== null && this.getVal().length))
+      {
+        var self = this,
+        element;
+        if (this.datalist)
+          element = this.datalist;
+        else
+          element = this.opts.element;
+        this.opts.initSelection.call(null, element, function (data)
+        {
+          if (data !== undefined && data !== null && data.length !== 0)
+          {
+            self._updateSelection(data);
+            self.close();
+            // set the placeholder if necessary
+            self._clearSearch();
+          }
+        }
+        );
+      }
+    },
+
+    close : function (event)
+    {
+      if (!this._opened())
+        return;
+      _AbstractMultiChoice.superclass.close.apply(this, arguments);
+    },
+
+    _focus : function ()
+    {
+      this.close();
+      this.search.focus();
+    },
+
+    _updateSelection : function (data)
+    {
+      var ids = [],
+      filtered = [],
+      self = this;
+
+      // filter out duplicates
+      $(data).each(function ()
+      {
+        if (ids.indexOf(self.id(this)) < 0)
+        {
+          ids.push(self.id(this));
+          filtered.push(this);
+        }
+      }
+      );
+      data = filtered;
+      this.selection.find("." + this._classNm + "-selected-choice").remove();
+      this.selection.find(".oj-select-default").remove();
+      $(data).each(function ()
+      {
+        self._addSelectedChoice(this);
+      }
+      );
+
+      // Storing this data so that it will be used when setting the display value.
+      this.currentItem = data;
+
+      this.opts.element.val(ids.length === 0 ? "" : ids.join(this.opts.separator));
+
+      self._postprocessResults();
+    },
+
+    _onSelect : function (data, options, event)
+    {
+      if (!this._triggerSelect(data))
+      {
+        return;
+      }
+
+      var context;
+      if (options && options.trigger)
+      {
+        context =
+        {
+          optionMetadata :
+          {
+            "trigger" : options.trigger
+          }
+        };
+      }
+
+      //selection will be added when _SetValue is called
+      //this._addSelectedChoice(data);
+      var id = this.id(data);
+      //Clone the value before invoking setVal(), otherwise it will not trigger change event.
+      var val = this.getVal() ? this.getVal().slice(0) : [];
+
+      // If the component is invalid, we will not get all the values matching the displayed value
+      if (!this.ojContext.isValid())
+        val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
+
+      $(data).each(function ()
+      {
+        if (val.indexOf(id) < 0 && id !== "")
+        {
+          val.push(id);
+        }
+      }
+      );
+      this.setVal(val, event, context);
+      if (this.select || !this.opts.closeOnSelect)
+        this._postprocessResults(data, false, this.opts.closeOnSelect === true);
+      if (this.opts.closeOnSelect)
+      {
+        this.close(event);
+        this._resetSearchWidth();
+      }
+
+      if ((!options || !options.noFocus) && this._elemNm === "ojcombobox")
+        this._focusSearch();
+    },
+
+    _cancel : function (event)
+    {
+      this.close(event);
+      if (this._elemNm === "ojcombobox")
+        this._focusSearch();
+    },
+
+    _addSelectedChoice : function (data)
+    {
+      var enableChoice = !data.locked,
+      enabledItem = $(
+          "<li class='" + this._classNm + "-selected-choice'>" +
+          "    <div></div>" +
+          "    <a href='#' onclick='return false;' role='button' aria-label='remove' class='" + this._classNm + "-clear-entry " +
+          "      oj-component-icon oj-clickable-icon-nocontext " + this._classNm + "-clear-entry-icon' tabindex='-1'>" +
+          "    </a>" +
+          "</li>"),
+      disabledItem = $(
+          //"<li class='oj-combobox-selected-choice oj-combobox-locked'>" +
+          "<li class='" + this._classNm + "-selected-choice " + this._classNm + "-locked'>" +
+          "<div></div>" +
+          "</li>");
+      var choice = enableChoice ? enabledItem : disabledItem,
+      id = this.id(data),
+      formatted;
+
+      formatted = this.opts.formatSelection(data);
+      if (formatted !== undefined)
+      {
+        choice.find("div").addClass(this._classNm + "-selected-choice-label").text(formatted);
+        choice.find("." + this._classNm + "-clear-entry").attr("aria-label", formatted + " remove");
+        choice.attr("valueText", formatted);
+      }
+      if (enableChoice)
+      {
+        choice.find("." + this._classNm + "-clear-entry")
+        .on("mousedown", _ComboUtils.killEvent)
+        .on("click dblclick", this._bind(function (e)
+          {
+            if (!this._isInterfaceEnabled())
+              return;
+
+            $(e.target).closest("." + this._classNm + "-selected-choice").fadeOut('fast', this._bind(function ()
+              {
+                this._unselect($(e.target), e);
+                this.selection.find("." + this._classNm + "-selected-choice.oj-focus").removeClass("oj-focus");
+                this.close(e);
+                if (this._elemNm === "ojcombobox")
+                  this._focusSearch();
+              }
+              )).dequeue();
+            _ComboUtils.killEvent(e);
+          }
+          ));
+      }
+      choice.data(this._elemNm, data);
+
+      // searchContainer is initialized in _initContainer() method.
+      // And this can not be changed by an external developer. It is constructed by component only.
+      if (this._elemNm === "ojcombobox")
+        choice.insertBefore(this.searchContainer); // @HtmlUpdateOk
+      else
+        this.selection.append(choice); // @HtmlUpdateOk
+
+    },
+
+    _unselect : function (selected, event)
+    {
+      var val = this.getVal() ? this.getVal().slice(0) : [],
+      data,
+      index;
+      selected = selected.closest("." + this._classNm + "-selected-choice");
+
+      if (selected.length === 0)
+      {
+        //TODO: translation string
+        throw "Invalid argument: " + selected + ". Must be ." + this._classNm + "-selected-choice";
+      }
+      data = selected.data(this._elemNm);
+      if (!data)
+      {
+        // prevent a race condition when the 'x' is clicked really fast repeatedly the event can be queued
+        // and invoked on an element already removed
+        return;
+      }
+
+      // If the component is invalid, we will not get all the values matching the displayed value
+      if (!this.ojContext.isValid())
+        val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
+      while ((index = val.indexOf(this.id(data))) >= 0)
+      {
+        val.splice(index, 1);
+        this.setVal(val, event);
+        if (this.select)
+          this._postprocessResults();
+      }
+      selected.remove();
+    },
+
+    _postprocessResults : function (data, initial, noHighlightUpdate)
+    {
+      var val = (this.getVal() && (this.opts.element.val() || this.ojContext.isValid())) ? this.getVal() : [],
+      choices = this.results.find(".oj-listbox-result"),
+      compound = this.results.find(".oj-listbox-result-with-children"),
+      self = this;
+
+      _ComboUtils.each2(choices, function (i, choice)
+      {
+        var id = self.id(choice.data(self._elemNm));
+        if (val && val.indexOf(id) >= 0)
+        {
+          choice.addClass("oj-selected");
+          // mark all children of the selected parent as selected
+          choice.find(".oj-listbox-result-selectable").addClass("oj-selected");
+        }
+      }
+      );
+      _ComboUtils.each2(compound, function (i, choice)
+      {
+        // hide an optgroup if it doesnt have any selectable children
+        if (!choice.is(".oj-listbox-result-selectable")
+           && choice.find(".oj-listbox-result-selectable:not(.oj-selected)").length === 0)
+        {
+          choice.addClass("oj-selected");
+        }
+      }
+      );
+
+      if (!choices.filter('.oj-listbox-result:not(.oj-selected)').length > 0 && this._classNm !== "oj-select")
+        this.close();
+    },
+    
+    _isDataSelected : function (data)
+    {
+      var val = this.getVal();
+      
+      if (!val || val.length == 0)
+        return false;
+      
+      var results = data.results;
+      for (var i=0; i < results.length; i++) 
+      {
+        if (val.indexOf(this.id(results[i])) == -1)
+          return false;
+      }
+      
+      return true;
+    },
+    
+    _resetSearchWidth : function ()
+    {
+      //do nothing. subclass override
+    },
+
+    setVal : function (val, event, context)
+    {
+      var unique;
+      unique = [];
+
+      if (typeof val === "string")
+        val = _ComboUtils.splitVal(val, this.opts.separator);
+      // filter out duplicates
+      for (var i = 0; i < val.length; i++)
+      {
+        if (unique.indexOf(val[i]) < 0)
+          unique.push(val[i]);
+      }
+
+      var options =
+      {
+        doValueChangeCheck : false
+      };
+      if (context)
+        options["_context"] = context;
+
+      this.ojContext._SetValue(unique, event, options);
+      if (this.ojContext.isValid() || unique.length === 0)
+        this.opts.element.val(unique.length === 0 ? "" : unique.join(this.opts.separator));
+
+      this.search.attr("aria-activedescendant", this.opts.element.attr("id"));
+    }
+  }
+  );
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -4635,33 +4652,124 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 /**
  * @private
  */
-  var _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice,
+var _OjMultiCombobox = _ComboUtils.clazz(_AbstractMultiChoice,
+  {
+    _elemNm : "ojcombobox",
+    _classNm : "oj-combobox",
+
+    _createContainer : function ()
     {
-      _elemNm : "ojcombobox",
-      _classNm : "oj-combobox",
+      var container = $(document.createElement("div")).attr(
+        {
+          "class" : "oj-combobox oj-combobox-multi oj-component"
+        }
+        ).html([
+            "<ul class='oj-combobox-choices'>",
+            "  <li class='oj-combobox-search-field'><span style='display:none'>&nbsp;</span>",
+            "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
+            "  </li>",
+            "</ul>",
+            "<div class='oj-combobox-description oj-helper-hidden-accessible'/>",
+            "<div class='oj-listbox-drop oj-listbox-drop-multi' style='display:none'>",
+            "   <ul class='oj-listbox-results' role='listbox'>",
+            "   </ul>",
+            "</div>"].join("")); //@HTMLUpdateOK
+      return container;
+    },
 
-      _createContainer : function ()
+    _opening : function (event, dontUpdateResults)
+    {
+      //if beforeExpand is not cancelled
+      // beforeExpand event will be triggered in base class _shouldOpen method
+      this._resizeSearch();
+      _OjMultiCombobox.superclass._opening.apply(this, arguments);
+      this._focusSearch();
+
+      if (!dontUpdateResults)
+        this._updateResults(true);
+
+      this.search.focus();
+    },
+
+    _clearSearch : function ()
+    {
+      var placeholder = this._getPlaceholder(),
+      maxWidth = this._getMaxSearchWidth();
+
+      if (placeholder !== undefined && (!this.getVal() || this.getVal().length === 0))
       {
-        var container = $(document.createElement("div")).attr(
-          {
-            "class" : "oj-combobox oj-combobox-multi oj-component"
-          }
-          ).html([
-              "<ul class='oj-combobox-choices'>",
-              "  <li class='oj-combobox-search-field'><span style='display:none'>&nbsp;</span>",
-              "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-combobox-input'>",
-              "  </li>",
-              "</ul>",
-              "<div class='oj-combobox-description oj-helper-hidden-accessible'/>",
-              "<div class='oj-listbox-drop oj-listbox-drop-multi' style='display:none'>",
-              "   <ul class='oj-listbox-results' role='listbox'>",
-              "   </ul>",
-              "</div>"].join("")); //@HTMLUpdateOK
-        return container;
-      }
-    }
-  );
+        this.search.attr("placeholder", placeholder);
+        // stretch the search box to full width of the container so as much of the placeholder is visible as possible
+        // we could call this._resizeSearch(), but we do not because that requires a sizer and we do not want to create one so early because of a firefox bug, see #944
+        this.search.val("").width(maxWidth > 0 ? maxWidth : this.container.css("width"));
 
+        //  when the component is pre-created, the input box would get the default size
+        this.searchContainer.width("100%");
+      }
+      else
+      {
+        this.search.attr("placeholder", "");
+        this.search.val("").width(10);
+
+        // reset the search container, so the input doesn't go to the next line if there is still room
+        this.searchContainer.width("auto");
+      }
+    },
+    
+    _resetSearchWidth : function ()
+    {
+      this.search.width(10);
+    },
+
+    _getMaxSearchWidth : function ()
+    {
+      return this.selection.width() - _ComboUtils.getSideBorderPadding(this.search);
+    },
+
+    _textWidth : function (text)
+    {
+      var textSpan = document.createElement("span"),
+      textNode = document.createTextNode(text);
+
+      textSpan.style.display = "none";
+      textSpan.appendChild(textNode); //@HTMLUpdateOK
+      $('body').append(textSpan); //@HTMLUpdateOK
+      var width = $('body').find('span:last').width();
+      $('body').find('span:last').remove();
+      return width;
+    },
+
+    _resizeSearch : function ()
+    {
+      var minimumWidth,
+      left,
+      maxWidth,
+      containerLeft,
+      searchWidth,
+      sideBorderPadding = _ComboUtils.getSideBorderPadding(this.search);
+
+      minimumWidth = this._textWidth(this.search.val()) + 10;
+      left = this.search.offset().left;
+      maxWidth = this.selection.width();
+      containerLeft = this.selection.offset().left;
+      searchWidth = maxWidth - (left - containerLeft) - sideBorderPadding;
+      if (searchWidth < minimumWidth)
+      {
+        searchWidth = maxWidth - sideBorderPadding;
+      }
+      if (searchWidth < 40)
+      {
+        searchWidth = maxWidth - sideBorderPadding;
+      }
+      if (searchWidth <= 0)
+      {
+        searchWidth = minimumWidth;
+      }
+      this.search.width(Math.floor(searchWidth));
+    }
+
+  }
+  );
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -4675,46 +4783,116 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
  * General Public License version 2 (the "GPL License"). You may choose either license to govern your
  * use of this software only upon the condition that you accept all of the terms of either the Apache
  * License or the GPL License.
- * 
+ *
  * You may obtain a copy of the Apache License and the GPL License at:
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
  * http://www.gnu.org/licenses/gpl-2.0.html
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the
  * Apache License or the GPL Licesnse is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the Apache License and the GPL License for
  * the specific language governing permissions and limitations under the Apache License and the GPL License.
  */
-  /**
+/**
  * @private
  */
-  var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
-    {
-      _elemNm : "ojselect",
-      _classNm : "oj-select",
+var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
+  {
+    _elemNm : "ojselect",
+    _classNm : "oj-select",
+    _userTyping : false,
 
-      _createContainer : function ()
+    _createContainer : function ()
+    {
+      var container = $(document.createElement("div")).attr(
+        {
+          "class" : "oj-select oj-select-multi oj-component"
+        }
+        ).html([//@HTMLUpdateOK
+            "<ul class='oj-select-choices' tabindex='0' role='combobox' ",
+            "  aria-autocomplete='none' aria-expanded='false'>",
+            "</ul>",
+            "<div class='oj-listbox-drop' style='display:none' role='dialog'>",
+
+            "  <div class='oj-listbox-search-wrapper'>",
+
+            "  <div class='oj-listbox-search'>",
+            "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off'",
+            "           spellcheck='false' class='oj-listbox-input' title='Search field' ",
+            "           role='combobox' aria-expanded='false' aria-autocomplete='list' />",
+
+            "    <span class='oj-listbox-spyglass-box'>",
+            "      <span class='oj-component-icon oj-clickable-icon-nocontext oj-listbox-search-icon' role='presentation'>",
+            "       <b role='presentation'></b></span>",
+            "    </span>",
+            "  </div>",
+
+            "  </div>",
+
+            "   <ul class='oj-listbox-results' role='listbox'>",
+            "   </ul>",
+            "</div>",
+
+            "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"
+          ].join(""));
+      return container;
+    },
+    
+    _containerKeydownHandler : function (e)
+    {
+      _OjMultiSelect.superclass._containerKeydownHandler.apply(this, arguments);
+
+      if (this._userTyping && !this._opened())
+        this.open(e);
+    },
+
+    _opening : function (event, dontUpdateResults)
+    {
+      //if beforeExpand is not cancelled
+      // beforeExpand event will be triggered in base class _shouldOpen method
+      _OjMultiSelect.superclass._opening.apply(this, arguments);
+      
+      var searchText = _ComboUtils.getSearchText(event);
+
+      //select: focus still stay on the selectBox if open dropdown by mouse click
+      this._showSearchBox(searchText);
+
+      if (!dontUpdateResults)
       {
-        var container = $(document.createElement("div")).attr(
-          {
-            "class" : "oj-select oj-select-multi oj-component"
-          }
-          ).html([ //@HTMLUpdateOK
-              "<ul class='oj-select-choices'>",
-              "  <li class='oj-select-search-field'><span style='display:none'>&nbsp;</span>",
-              "    <input type='text' role='combobox' aria-expanded='false' aria-autocomplete='list' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='oj-listbox-input'>",
-              "  </li>",
-              "</ul>",
-              "<div class='oj-select-description oj-helper-hidden-accessible'/>",
-              "<div class='oj-listbox-drop oj-listbox-drop-multi' style='display:none'>",
-              "   <ul class='oj-listbox-results' role='listbox'>",
-              "   </ul>",
-              "</div>"].join(""));
-        return container;
-      }      
+        if (searchText)
+          this._updateResults();
+        else
+          this._updateResults(true);
+      }
+    },
+    
+    close : function (event)
+    {
+      // reset _userTyping after drop down is closed
+      if (this._userTyping === true)
+        this._userTyping = false;
+      
+      _OjMultiSelect.superclass.close.apply(this, arguments);
+      
+      if (event && (! (event instanceof MouseEvent) ||
+          event.target == this.selection || event.target == this.search))
+        _ComboUtils._focus(this.selection);
+    },
+
+    _clearSearch : function ()
+    {
+      var placeholder = this._getPlaceholder();
+
+      if (placeholder && (!this.getVal() || this.getVal().length === 0))
+      {
+        this.selection.append("<li class='oj-select-default'>" + placeholder + "</li>");
+      }
     }
+
+  }
   );
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -5202,7 +5380,185 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * @since 1.2.1
        * @readonly
        */
-      rawValue: undefined    
+      rawValue: undefined,
+      /** 
+      * Whether the component is required or optional. When required is set to true, an implicit 
+      * required validator is created using the validator factory - 
+      * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+      * 
+      * Translations specified using the <code class="prettyprint">translations.required</code> option 
+      * and the label associated with the component, are passed through to the options parameter of the 
+      * createValidator method. 
+      * 
+      * <p>
+      * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+      * the component may clear messages and run validation, based on the current state it's in. </br>
+      *  
+      * <h4>Running Validation</h4>
+      * <ul>
+      * <li>if component is valid when required is set to true, then it runs deferred validation on 
+      * the option value. This is to ensure errors are not flagged unnecessarily.
+      * <ul>
+      *   <li>if there is a deferred validation error, then 
+      *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+      * </ul>
+      * </li>
+      * <li>if component is invalid and has deferred messages when required is set to false, then 
+      * component messages are cleared but no deferred validation is run.
+      * </li>
+      * <li>if component is invalid and currently showing invalid messages when required is set, then 
+      * component messages are cleared and normal validation is run using the current display value. 
+      * <ul>
+      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+      *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+      *   option. 
+      *   </li>
+      *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+      *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+      *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+      * </ul>
+      * </li>
+      * </ul>
+      * 
+      * <h4>Clearing Messages</h4>
+      * <ul>
+      * <li>Only messages created by the component are cleared. These include ones in 
+      * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+      *  options.</li>
+      * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+      * </ul>
+      * 
+      * </p>
+      * 
+      * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+      * This is the default.
+      * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+      * input's label will render a required icon. Additionally a required validator - 
+      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+      * An explicit required validator can be set by page authors using the validators option. 
+      * 
+      * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+      * $(".selector").ojCombobox({required: true});<br/>
+      * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
+      * &lt;input id="combobox" list="browsers" required/><br/>
+      * // retreiving the required option returns true
+      * $(".selector").ojCombobox("option", "required");<br/>
+      * 
+      * @example <caption>Customize messages and hints used by implicit required validator when 
+      * <code class="prettyprint">required</code> option is set:</caption> 
+      * &lt;input id="combobox" list="browsers" required data-bind="ojComponent: {
+      *   component: 'ojCombobox', 
+      *   value: password, 
+      *   translations: {'required': {
+      *                 hint: 'custom: enter at least 3 alphabets',
+      *                 messageSummary: 'custom: \'{label}\' is Required', 
+      *                 messageDetail: 'custom: please enter a valid value for \'{label}\''}}}"/\>
+      * @expose 
+      * @access public
+      * @instance
+      * @default when the option is not set, the element's required property is used as its initial 
+      * value if it exists.
+      * @memberof! oj.ojCombobox
+      * @type {boolean}
+      * @default false
+      * @since 0.7
+      * @see #translations
+      */
+      required: false,
+    /** 
+     * List of validators used by component when performing validation. Each item is either an 
+     * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
+     * properties listed below. Implicit validators created by a component when certain options 
+     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
+     * validators specified through this option. At runtime when the component runs validation, it 
+     * combines the implicit validators with the list specified through this option. 
+     * <p>
+     * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
+     * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
+     * option. 
+     * </p>
+     * 
+     * <p>
+     * When <code class="prettyprint">validators</code> option changes due to programmatic 
+     * intervention, the component may decide to clear messages and run validation, based on the 
+     * current state it is in. </br>
+     * 
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to 
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the 
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages -
+     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
+     * and full validation run using the display value on the component. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does 
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.  These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * </p>
+     * 
+     * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can 
+     * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer 
+     * to {@link oj.ValidatorFactory}. <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
+     * @property {Object=} options - optional Object literal of options that the validator expects. 
+     * <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
+
+     * 
+     * @example <caption>Initialize the component with validator object literal:</caption>
+     * $(".selector").ojCombobox({
+     *   validators: [{
+     *     type: 'regExp', 
+     *     options : {
+     *       pattern: '[a-zA-Z0-9]{3,}'
+     *     }
+     *   }],
+     * });
+     * 
+     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
+     * to instantiate a range validator for numbers.
+     * 
+     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
+     * var validator2 = new MyCustomValidator({'foo': 'B'});
+     * $(".selector").ojCombobox({
+     *   value: "option1,option2", 
+     *   validators: [validator1, validator2]
+     * });
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof! oj.ojCombobox
+     * @type {Array|undefined}
+     */    
+      validators: undefined     
 
       /**
        * The type of value is an array, and an array will always be returned from the component.
@@ -5235,6 +5591,27 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * @type {string|Array}
        */
 
+      // Events
+
+      /**
+       * Triggered when the ojCombobox is created.
+       *
+       * @event
+       * @name create
+       * @memberof oj.ojCombobox
+       * @instance
+       * @property {Event} event <code class="prettyprint">jQuery</code> event object
+       * @property {Object} ui Currently empty
+       *
+       * @example <caption>Initialize the ojCombobox with the <code class="prettyprint">create</code> callback specified:</caption>
+       * $( ".selector" ).ojCombobox({
+       *     "create": function( event, ui ) {}
+       * });
+       *
+       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+       */
+      // create event declared in superclass, but we still want the above API doc
     },
 
     /**
@@ -5251,6 +5628,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
     {
       return this.combobox.container;
     },
+
 
     /**
      * @override
@@ -5293,7 +5671,111 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           this.options['value'] = value;
       }
     },
-
+   /**
+    * Whether the component is required.
+    * 
+    * @return {boolean} true if required; false
+    * 
+    * @memberof! oj.ojCombobox
+    * @instance
+    * @protected
+    * @override
+    */
+    _IsRequired : function () 
+    {
+      return this.options['required'];
+    },
+    /**
+     * Performs post processing after required option is set by taking the following steps.
+     * 
+     * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+     * run full validation with UI value (we don't know if the UI error is from a required validator 
+     * or something else);<br/>
+     * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+     * updated<br/>
+     * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+     * listen to optionChange(value) to clear custom errors.<br/>
+     * 
+     * - if component is invalid and has messagesHidden -> required: false -> clear component 
+     * errors; no deferred validation is run.<br/>
+     * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+     * errors unnecessarily)<br/>
+     * - messagesCustom is never cleared<br/>
+     * 
+     * @param {string} option
+     * 
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+    /**
+     * When validators option changes, take the following steps.
+     * 
+     * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+     * - if component is valid -> validators changes -> no change<br/>
+     * - if component is invalid has messagesShown -> validators changes -> clear all component 
+     * messages and re-run full validation on displayValue. if there are no errors push value to 
+     * model;<br/>
+     * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change 
+     * the required-ness of component <br/>
+     * - messagesCustom is not cleared.<br/>
+     * 
+     * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern, 
+     * etc. Components can call this method when these options change.
+     * 
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,   
+    /**
+     * Performs post processing after converter option changes by taking the following steps.
+     * 
+     * - always push new converter hint to messaging <br/>
+     * - if component has no errors -> refresh UI value<br/>
+     * - if component is invalid has messagesShown -> clear all component errors and run full 
+     * validation using display value. <br/>
+     * &nbsp;&nbsp;- if there are validation errors, value is not pushed to model; messagesShown is 
+     * updated.<br/>
+     * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+     * listen to optionChange(value) to clear custom errors.<br/>
+     * - if component is invalid has messagesHidden -> refresh UI value. no need to run deferred 
+     * validations. <br/>
+     * - messagesCustom is never cleared<br/>
+     * 
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionConverter : oj.EditableValueUtils._AfterSetOptionConverter, 
+    /**
+     * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
+     * Called when convterer option changes 
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected 
+     */
+    _ResetConverter : oj.EditableValueUtils._ResetConverter,    
+    /**
+     * Returns the normalized converter instance.
+     * 
+     * @return {Object} a converter instance or null
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected 
+     */
+    _GetConverter : oj.EditableValueUtils._GetConverter,    
+    /**
+     * This returns an array of all validators 
+     * normalized from the validators option set on the component. <br/>
+     * @return {Array} of validators. 
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     */
+    _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
+  
     _setup : function ()
     {
       var opts = {},
@@ -5306,8 +5788,25 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       this.combobox = multiple ? new _OjMultiCombobox() : new _OjSingleCombobox();
 
       this.combobox._init(opts);
+      this._refreshRequired(this.options['required']);
     },
+    /**
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @private 
+     */
+    _refreshRequired : oj.EditableValueUtils._refreshRequired,    
 
+    /**
+     * Called to find out if aria-required is unsupported.
+     * @memberof! oj.ojCombobox
+     * @instance
+     * @protected
+     */
+    _AriaRequiredUnsupported : function()
+    {
+      return false;
+    },
     /**
      * @override
      * @private
@@ -5334,8 +5833,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       this.combobox._destroy();
       this._setup();
       this._SetRootAttributes();
-      // re-apply oj-required on container
-      this._Refresh("required", this.options['required']);
     },
 
     /**
@@ -5382,6 +5879,36 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
           this.combobox._disable();
         else
           this.combobox._enable();
+      }
+    },
+    /**
+      * Performs post processing after _SetOption() is called. Different options when changed perform
+      * different tasks. See _AfterSetOption[OptionName] method for details.
+      *
+      * @param {string} option
+      * @param {Object|string=} previous
+      * @param {Object=} flags
+      * @protected
+      * @memberof! oj.ojCombobox
+      * @instance
+      * @override
+      */
+    _AfterSetOption : function (option, previous, flags)
+    {
+      this._superApply(arguments);
+      switch (option)
+      {
+        case "required":
+          this._AfterSetOptionRequired(option);
+          break;
+        case "validators":
+          this._AfterSetOptionValidators(option);
+          break;
+        case "converter":
+          this._AfterSetOptionConverter(option);
+          break;   
+        default:
+          break;
       }
     },
 
@@ -5538,7 +6065,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
      * @override
      * @protected
      * @memberof! oj.ojCombobox
-     * @return {Object} jquery element which represents the content.
+     * @return {jQuery} jquery element which represents the content.
      */
     _GetContentElement : function ()
     {
@@ -5974,15 +6501,14 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * The search box is always displayed when the results size is greater than
        * the threshold, otherwise the search box is initially turned off.
        * However, the search box is displayed as soon as the user starts typing.
-       * This property only applies to single-select.
        *
        * @expose
        * @memberof! oj.ojSelect
        * @instance
        * @type {number}
-       * @default <code class="prettyprint">10</code>
+       * @default <code class="prettyprint">15</code>
        */
-      minimumResultsForSearch : 10,
+      minimumResultsForSearch : 15,
 
 
       /**
@@ -6098,6 +6624,92 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * @default <code class="prettyprint">null</code>
        */
       pickerAttributes: null,
+      
+      /** 
+       * Whether the component is required or optional. When required is set to true, an implicit 
+       * required validator is created using the validator factory - 
+       * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+       * 
+       * Translations specified using the <code class="prettyprint">translations.required</code> option 
+       * and the label associated with the component, are passed through to the options parameter of the 
+       * createValidator method. 
+       * 
+       * <p>
+       * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+       * the component may clear messages and run validation, based on the current state it's in. </br>
+       *  
+       * <h4>Running Validation</h4>
+       * <ul>
+       * <li>if component is valid when required is set to true, then it runs deferred validation on 
+       * the option value. This is to ensure errors are not flagged unnecessarily.
+       * <ul>
+       *   <li>if there is a deferred validation error, then 
+       *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+       * </ul>
+       * </li>
+       * <li>if component is invalid and has deferred messages when required is set to false, then 
+       * component messages are cleared but no deferred validation is run.
+       * </li>
+       * <li>if component is invalid and currently showing invalid messages when required is set, then 
+       * component messages are cleared and normal validation is run using the current display value. 
+       * <ul>
+       *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+       *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+       *   option. 
+       *   </li>
+       *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+       *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+       *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+       * </ul>
+       * </li>
+       * </ul>
+       * 
+       * <h4>Clearing Messages</h4>
+       * <ul>
+       * <li>Only messages created by the component are cleared. These include ones in 
+       * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+       *  options.</li>
+       * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+       * </ul>
+       * 
+       * </p>
+       * 
+       * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+       * This is the default.
+       * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+       * input's label will render a required icon. Additionally a required validator - 
+       * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+       * An explicit required validator can be set by page authors using the validators option. 
+       * 
+       * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+       * $(".selector").ojSelect({required: true}); <br/>
+       * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
+       * &lt;select required/><br/>
+       * // retreiving the required option returns true
+       * $(".selector").ojSelect("option", "required");<br/>
+       * 
+       * @example <caption>Customize messages and hints used by implicit required validator when 
+       * <code class="prettyprint">required</code> option is set:</caption> 
+       * &lt;select type="text" value="foobar" required data-bind="ojComponent: {
+       *   component: 'ojSelect', 
+       *   value:  'Chrome', 
+       *   required: true,
+       *   translations: {'required': {
+       *                 hint: 'custom: you must enter something',
+       *                 messageSummary: 'custom: \'{label}\' is Required', 
+       *                 messageDetail: 'custom: please enter a valid value for \'{label}\''}}}"/>
+       * @expose 
+       * @access public
+       * @instance
+       * @default when the option is not set, the element's required property is used as its initial 
+       * value if it exists.
+       * @memberof! oj.ojSelect
+       * @type {boolean}
+       * @default false
+       * @since 0.7
+       * @see #translations
+       */
+      required: false,
 
       /**
        * Triggered immediately before the Select drop down is expanded.
@@ -6181,6 +6793,28 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
        * @memberof! oj.ojSelect
        * @type {Array}
        */
+
+      // Events
+
+      /**
+       * Triggered when the ojSelect is created.
+       *
+       * @event
+       * @name create
+       * @memberof oj.ojSelect
+       * @instance
+       * @property {Event} event <code class="prettyprint">jQuery</code> event object
+       * @property {Object} ui Currently empty
+       *
+       * @example <caption>Initialize the ojSelect with the <code class="prettyprint">create</code> callback specified:</caption>
+       * $( ".selector" ).ojSelect({
+       *     "create": function( event, ui ) {}
+       * });
+       *
+       * @example <caption>Bind an event listener to the <code class="prettyprint">ojcreate</code> event:</caption>
+       * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
+       */
+      // create event declared in superclass, but we still want the above API doc
     },
 
     /**
@@ -6212,7 +6846,71 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       this._super();
       this._setup();
     },
-
+    /**
+      * Performs post processing after _SetOption() is called. Different options when changed perform
+      * different tasks. See _AfterSetOption[OptionName] method for details.
+      *
+      * @param {string} option
+      * @param {Object|string=} previous
+      * @param {Object=} flags
+      * @protected
+      * @memberof! oj.ojSelect
+      * @instance
+      * @override
+      */
+    _AfterSetOption : function (option, previous, flags)
+    {
+      this._superApply(arguments);
+      switch (option)
+      {
+        case "required":
+          this._AfterSetOptionRequired(option);
+          break;
+        default:
+          break;
+      }
+    },
+    
+    /**
+     * Whether the component is required.
+     * 
+     * @return {boolean} true if required; false
+     * 
+     * @memberof! oj.ojSelect
+     * @instance
+     * @protected
+     * @override
+     */
+    _IsRequired : function () 
+    {
+      return this.options['required'];
+    },
+    
+    /**
+     * Performs post processing after required option is set by taking the following steps.
+     * 
+     * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+     * run full validation with UI value (we don't know if the UI error is from a required validator 
+     * or something else);<br/>
+     * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+     * updated<br/>
+     * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+     * listen to optionChange(value) to clear custom errors.<br/>
+     * 
+     * - if component is invalid and has messagesHidden -> required: false -> clear component 
+     * errors; no deferred validation is run.<br/>
+     * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+     * errors unnecessarily)<br/>
+     * - messagesCustom is never cleared<br/>
+     * 
+     * @param {string} option
+     * 
+     * @memberof! oj.ojSelect
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired, 
+    
     // native renderMode
     _nativeSetDisabled : function (disabled)
     {
@@ -6290,6 +6988,10 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
         'applyHighlight': true
       });
 
+      // - the selected option of the ojselect not reflected in the value variable
+      if (! this.options.value && ! this._HasPlaceholderSet())
+        this._setInitialSelectedValue(this._nativeFindFirstEnabledOptionValue());
+
       //add a change listener
       element.change(this._nativeChangeHandler.bind(this));
     },
@@ -6320,10 +7022,21 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 
     },
 
+    // - the selected option of the ojselect not reflected in the value variable
+    _setInitialSelectedValue : function (selectedVal)
+    {
+      this._SetValue(Array.isArray(selectedVal)? selectedVal : [selectedVal], 
+                     null, {doValueChangeCheck: false,
+                            '_context': {internalSet: true, writeback: true},
+                            'changed': true,
+                           });
+    },
+
     //ojselect
     _setup : function ()
     {
       this._isNative() ? this._nativeSetup() : this._jetSetup();
+      this._refreshRequired(this.options['required']);
     },
 
     /**
@@ -6348,10 +7061,24 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       //re apply root attributes settings
       this._SetRootAttributes();
 
-      // re-apply oj-required on container
-      this._Refresh("required", this.options.required);
     },
+    /**
+     * @memberof! oj.ojSelect
+     * @instance
+     * @private 
+     */
+    _refreshRequired : oj.EditableValueUtils._refreshRequired,
 
+    /**
+     * Called to find out if aria-required is unsupported.
+     * @memberof! oj.ojSelect
+     * @instance
+     * @protected
+     */
+    _AriaRequiredUnsupported : function()
+    {
+      return false;
+    },
     /**
      * @override
      * @private
@@ -6546,11 +7273,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
             this.element[0].selectedIndex = 0;
             this.element.addClass("oj-select-default");
           }
-          else {
-            var children = this.element.children();
-            if (children.length > 0)
-              this.options.value = [children.first().attr("value")];
-          }
         }
         else {
           this.element.val(displayValue);
@@ -6673,8 +7395,9 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
         for (var i = 0; i < value.length; i++) {
           if (this.select)
           {
-            //Note multi select doesn't have a validate method
-            if (this.options['multiple'] || this.select.opts.validate(element, value[i]))
+            //Note: both multi select and remote data cases, the validate function is not available
+            if (! this.select.opts.validate ||
+                this.select.opts.validate(element, value[i]))
               newArr.push(value[i]);
           }
           else
@@ -6918,7 +7641,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
  */
 
 /**
- * <p>Sub-ID for the search input field. For a single select, it's only visible when the results size is greater than the minimumResultsForSearch threshold or when user starts typing into the select box. This Sub-Id is not available in the native renderMode.</p>
+ * <p>Sub-ID for the search input field. It's only visible when the results size is greater than the minimumResultsForSearch threshold or when user starts typing into the select box. This Sub-Id is not available in the native renderMode.</p>
  * @ojsubid oj-select-input
  * @memberof oj.ojSelect
  *
@@ -6996,13 +7719,8 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
             break;
           case "oj-select-input":
           case "oj-listbox-input":
-            if (this.options['multiple'] === true) 
-              node = this.widget().find(".oj-listbox-input")[0];
-            else
-            {
-              if (dropdown)
-                node = dropdown.find(".oj-listbox-input")[0];
-            }
+            if (dropdown)
+              node = dropdown.find(".oj-listbox-input")[0];
             break;
           case "oj-select-choice":
           case "oj-select-chosen":
@@ -7129,7 +7847,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
      * @override
      * @protected
      * @memberof! oj.ojSelect
-     * @return {Object} jquery element which represents the content.
+     * @return {jQuery} jquery element which represents the content.
      */
     _GetContentElement : function ()
     {
@@ -7356,7 +8074,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           }
       };
 
-      var value = this.id(data).length === 0 ? [] : this.id(data)
+      var value = this.id(data);
+      if (!value || value.length === 0)
+      {
+        // If the value is entered by user (not by selecting an option) then 
+        // only 'label' will be present in the data object.
+        value = data['label'] ? data['label'] : [];
+      }
+
       var parsed = this.ojContext._Validate(value, event, options);
       if (parsed === undefined || !this.ojContext.isValid())
       {
@@ -7438,24 +8163,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
    * </h3>
    * 
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>Class(es)</th>
-   *       <th>Description</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-listbox-header</td>
-   *       <td>Optional. Custom header options can be added to the drop down through this styling.</td>
-   *     </tr>
-   *     <tr>
-   *       <td>oj-listbox-highlighter-section</td>
-   *       <td>Optional. Styling to control the which part of the option label has to be considered for highlighting.</td>
-   *     </tr>
-   *   </tbody>
-   * </table>
+   * {@ojinclude "name":"stylingDoc"}
    *
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -7558,6 +8266,90 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @type {string|null|undefined}
        */    
       placeholder: undefined,
+      /** 
+        * Whether the component is required or optional. When required is set to true, an implicit 
+        * required validator is created using the validator factory - 
+        * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+        * 
+        * Translations specified using the <code class="prettyprint">translations.required</code> option 
+        * and the label associated with the component, are passed through to the options parameter of the 
+        * createValidator method. 
+        * 
+        * <p>
+        * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+        * the component may clear messages and run validation, based on the current state it's in. </br>
+        *  
+        * <h4>Running Validation</h4>
+        * <ul>
+        * <li>if component is valid when required is set to true, then it runs deferred validation on 
+        * the option value. This is to ensure errors are not flagged unnecessarily.
+        * <ul>
+        *   <li>if there is a deferred validation error, then 
+        *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+        * </ul>
+        * </li>
+        * <li>if component is invalid and has deferred messages when required is set to false, then 
+        * component messages are cleared but no deferred validation is run.
+        * </li>
+        * <li>if component is invalid and currently showing invalid messages when required is set, then 
+        * component messages are cleared and normal validation is run using the current display value. 
+        * <ul>
+        *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+        *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+        *   option. 
+        *   </li>
+        *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+        *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+        *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+        * </ul>
+        * </li>
+        * </ul>
+        * 
+        * <h4>Clearing Messages</h4>
+        * <ul>
+        * <li>Only messages created by the component are cleared. These include ones in 
+        * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+        *  options.</li>
+        * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+        * </ul>
+        * 
+        * </p>
+        * 
+        * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+        * This is the default.
+        * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+        * input's label will render a required icon. Additionally a required validator - 
+        * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+        * An explicit required validator can be set by page authors using the validators option. 
+        * 
+        * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+        * $(".selector").ojInputSearch({required: true});<br/>
+        * @example <caption>Initialize <code class="prettyprint">required</code> option from html attribute 'required':</caption>
+        * &lt;input list="browsers" required/><br/>
+        * // retreiving the required option returns true
+        * $(".selector").ojInputSearch("option", "required");<br/>
+        * 
+        * @example <caption>Customize messages and hints used by implicit required validator when 
+        * <code class="prettyprint">required</code> option is set:</caption> 
+        * &lt;input list="browsers" required data-bind="ojComponent: {
+        *   component: 'ojInputSearch', 
+        *   value: password, 
+        *   translations: {'required': {
+        *                 hint: 'custom: enter at least 3 alphabets',
+        *                 messageSummary: 'custom: \'{label}\' is Required', 
+        *                 messageDetail: 'custom: please enter a valid value for \'{label}\''}}}"/\>
+        * @expose 
+        * @access public
+        * @instance
+        * @default when the option is not set, the element's required property is used as its initial 
+        * value if it exists.
+        * @memberof! oj.ojInputSearch
+        * @type {boolean}
+        * @default false
+        * @since 0.7
+        * @see #translations
+        */
+       required: false,
 
       /**
        * The id of the html list for the InputSearch.
@@ -7826,20 +8618,25 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       rawValue: undefined, 
 
       /**
-       * Fired whenever a supported component option changes, whether due to user interaction or programmatic
-       * intervention.  If the new value is the same as the previous value, no event will be fired.
+       * Fired whenever a component option changes, whether due to user interaction or programmatic
+       * intervention.  If the new value is the same as the previous value, no event will be fired.  The event 
+       * listener will receive two parameters described below:
        *
        * @expose
        * @event
        * @memberof! oj.ojInputSearch
        * @instance
        * @property {Event} event <code class="prettyprint">jQuery</code> event object
-       * @property {Object} ui Parameters
+       * @property {Object} ui event payload
        * @property {string} ui.option the name of the option that is changing
        * @property {Object} ui.previousValue - an Object holding the previous value of the option.
        * When previousValue is not a primitive type, i.e., is an Object, it may hold the same value as
        * the value property.
        * @property {Object} ui.value - an Object holding the current value of the option.
+       * @property {?Object} ui.subproperty - an Object holding information about the subproperty that changed.
+       * @property {string} ui.subproperty.path - the subproperty path that changed.
+       * @property {Object} ui.subproperty.previousValue - an Object holding the previous value of the subproperty.
+       * @property {Object} ui.subproperty.value - an Object holding the current value of the subproperty.
        * @property {Object} ui.optionMetadata information about the option that is changing
        * @property {string} ui.optionMetadata.writeback <code class="prettyprint">"shouldWrite"</code> or
        *           <code class="prettyprint">"shouldNotWrite"</code>.  For use by the JET writeback mechanism.
@@ -7852,14 +8649,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *
        * @example <caption>Initialize component with the <code class="prettyprint">optionChange</code> callback</caption>
        * $(".selector").ojInputSearch({
-       *   'optionChange': function (event, data) {
-       *        if (data['option'] === 'value') { // handle value change }
+       *   'optionChange': function (event, ui) {
+       *        if (ui['option'] === 'value') { // handle value change }
        *    }
        * });
        * @example <caption>Bind an event listener to the ojoptionchange event</caption>
        * $(".selector").on({
-       *   'ojoptionchange': function (event, data) {
-       *       window.console.log("option that changed is: " + data['option']);
+       *   'ojoptionchange': function (event, ui) {
+       *       window.console.log("option that changed is: " + ui['option']);
        *   };
        * });
        */
@@ -7905,7 +8702,101 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        *   };
        * });
        */
-      update: null
+      update: null,
+    /** 
+     * List of validators used by component when performing validation. Each item is either an 
+     * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
+     * properties listed below. Implicit validators created by a component when certain options 
+     * are present (e.g. <code class="prettyprint">required</code> option), are separate from 
+     * validators specified through this option. At runtime when the component runs validation, it 
+     * combines the implicit validators with the list specified through this option. 
+     * <p>
+     * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
+     * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
+     * option. 
+     * </p>
+     * 
+     * <p>
+     * When <code class="prettyprint">validators</code> option changes due to programmatic 
+     * intervention, the component may decide to clear messages and run validation, based on the 
+     * current state it is in. </br>
+     * 
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The cached list of validator instances are cleared and new validator hints is pushed to 
+     * messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when validators changes, component does nothing other than the 
+     * steps it always performs.</li>
+     * <li>if component is invalid and is showing messages -
+     * <code class="prettyprint">messagesShown</code> option is non-empty, when 
+     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
+     * and full validation run using the display value on the component. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when validators changes, it does 
+     * nothing other than the steps it performs always.</li>
+     * </ul>
+     * </p>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared.  These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * </p>
+     * 
+     * @property {string} type - the validator type that has a {@link oj.ValidatorFactory} that can 
+     * be retrieved using the {@link oj.Validation} module. For a list of supported validators refer 
+     * to {@link oj.ValidatorFactory}. <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp'}]}</code>
+     * @property {Object=} options - optional Object literal of options that the validator expects. 
+     * <br/>
+     * E.g., <code class="prettyprint">{validators: [{type: 'regExp', options: {pattern: '[a-zA-Z0-9]{3,}'}}]}</code>
+
+     * 
+     * @example <caption>Initialize the component with validator object literal:</caption>
+     * $(".selector").ojInputSearch({
+     *   validators: [{
+     *     type: 'regExp', 
+     *     options : {
+     *       pattern: '[a-zA-Z0-9]{3,}'
+     *     }
+     *   }],
+     * });
+     * 
+     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
+     * to instantiate a range validator for numbers.
+     * 
+     * @example <caption>Initialize the component with multiple validator instances:</caption>
+     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
+     * var validator2 = new MyCustomValidator({'foo': 'B'});
+     * $(".selector").ojInputSearch({
+     *   value: 'option', 
+     *   validators: [validator1, validator2]
+     * });
+     * 
+     * @expose 
+     * @access public
+     * @instance
+     * @memberof! oj.ojInputSearch
+     * @type {Array|undefined}
+     */    
+      validators: undefined       
 
       /** 
        * The type of value is an array, and an array will always be returned from the component.
@@ -7949,7 +8840,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
     {
       return this.inputSearch.container;
     },
-
     /**
      * @override
      * @private
@@ -7984,7 +8874,122 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           this.options['value'] = value;
       }
     },
+        /**
+      * Performs post processing after _SetOption() is called. Different options when changed perform
+      * different tasks. See _AfterSetOption[OptionName] method for details.
+      *
+      * @param {string} option
+      * @param {Object|string=} previous
+      * @param {Object=} flags
+      * @protected
+      * @memberof! oj.ojInputSearch
+      * @instance
+      * @override
+      */
+    _AfterSetOption : function (option, previous, flags)
+    {
+      this._superApply(arguments);
+      switch (option)
+      {
+        case "required":
+          this._AfterSetOptionRequired(option);
+          break;
+        case "validators":
+          this._AfterSetOptionValidators(option);
+          break;
+        default:
+          break;
+      }
+    },
+    /**
+     * Whether the component is required.
+     * 
+     * @return {boolean} true if required; false
+     * 
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @protected
+     * @override
+     */
+    _IsRequired : function () 
+    {
+      return this.options['required'];
+    },
+    /**
+     * Performs post processing after required option is set by taking the following steps.
+     * 
+     * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+     * run full validation with UI value (we don't know if the UI error is from a required validator 
+     * or something else);<br/>
+     * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+     * updated<br/>
+     * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+     * listen to optionChange(value) to clear custom errors.<br/>
+     * 
+     * - if component is invalid and has messagesHidden -> required: false -> clear component 
+     * errors; no deferred validation is run.<br/>
+     * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+     * errors unnecessarily)<br/>
+     * - messagesCustom is never cleared<br/>
+     * 
+     * @param {string} option
+     * 
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+    /**
+     * When validators option changes, take the following steps.
+     * 
+     * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+     * - if component is valid -> validators changes -> no change<br/>
+     * - if component is invalid has messagesShown -> validators changes -> clear all component 
+     * messages and re-run full validation on displayValue. if there are no errors push value to 
+     * model;<br/>
+     * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change 
+     * the required-ness of component <br/>
+     * - messagesCustom is not cleared.<br/>
+     * 
+     * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern, 
+     * etc. Components can call this method when these options change.
+     * 
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,    
+    /**
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @private 
+     */
+    _refreshRequired : oj.EditableValueUtils._refreshRequired,  
+    /**
+     * This returns an array of all validators 
+     * normalized from the validators option set on the component. <br/>
+     * @return {Array} of validators. 
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @protected
+     */
+    _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
 
+    /**
+     * Called to find out if aria-required is unsupported.
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @protected
+     */
+    _AriaRequiredUnsupported : function()
+    {
+      return false;
+    },   
+    /**
+     * @memberof! oj.ojInputSearch
+     * @instance
+     * @private 
+     */
     _setup : function ()
     {
       var opts = {};
@@ -7995,6 +9000,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       this.inputSearch = new _OjInputSeachContainer();
       this.inputSearch._init(opts);
+      this._refreshRequired(this.options['required']);
     },
 
     /**
@@ -8023,8 +9029,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       this.inputSearch._destroy();
       this._setup();
       this._SetRootAttributes();
-      // re-apply oj-required on container
-      this._Refresh("required", this.options['required']);
     },
 
     /**
@@ -8196,7 +9200,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @override
      * @protected
      * @memberof! oj.ojInputSearch
-     * @return {Object} jquery element which represents the content.
+     * @return {jQuery} jquery element which represents the content.
      */
     _GetContentElement : function ()
     {
@@ -8453,6 +9457,33 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojInputSearch
    */
+
+  /**
+   * {@ojinclude "name":"ojStylingDocIntro"}
+   * 
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>oj-listbox-header</td>
+   *       <td>Optional. Custom header options can be added to the drop down through this styling.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-listbox-highlighter-section</td>
+   *       <td>Optional. Styling to control the which part of the option label has to be considered for highlighting.</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+   * @memberof oj.ojInputSearch
+   */
+
   });
 (function() {
 var ojComboboxMeta = {
@@ -8487,9 +9518,15 @@ var ojComboboxMeta = {
       "readOnly": true,
       "writeback": true
     },
+    "required": {
+      "type": "boolean"
+    },  
     "value": {
       "type": "string|Array",
       "writeback": true
+    },
+    "validators": {
+      "type": "Array"
     }
   },
   "methods": {
@@ -8500,13 +9537,12 @@ var ojComboboxMeta = {
     "widget": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojCombobox"
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojCombobox"
   }
 };
-oj.Components.registerMetadata('ojCombobox', 'editableValue', ojComboboxMeta);
-oj.Components.register('oj-combobox', oj.Components.getMetadata('ojCombobox'));
+oj.CustomElementBridge.registerMetadata('oj-combobox', 'editableValue', ojComboboxMeta);
+oj.CustomElementBridge.register('oj-combobox', {'metadata': oj.CustomElementBridge.getMetadata('oj-combobox')});
 })();
 
 (function() {
@@ -8536,9 +9572,15 @@ var ojInputSearchMeta = {
       "readOnly": true,
       "writeback": true
     },
+    "required": {
+      "type": "boolean"
+    },      
     "value": {
       "type": "string|Array",
       "writeback": true
+    },
+    "validators": {
+      "type": "Array"
     }
   },
   "methods": {
@@ -8551,13 +9593,12 @@ var ojInputSearchMeta = {
     "widget": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'input',
-    "_widgetName": "ojInputSearch"
+    _INNER_ELEM: 'input',
+    _WIDGET_NAME: "ojInputSearch"
   }
 };
-oj.Components.registerMetadata('ojInputSearch', 'editableValue', ojInputSearchMeta);
-oj.Components.register('oj-input-search', oj.Components.getMetadata('ojInputSearch'));
+oj.CustomElementBridge.registerMetadata('oj-input-search', 'editableValue', ojInputSearchMeta);
+oj.CustomElementBridge.register('oj-input-search', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-search')});
 })();
 
 (function() {
@@ -8587,6 +9628,9 @@ var ojSelectMeta = {
     "renderMode": {
       "type": "string"
     },
+    "required": {
+      "type": "boolean"
+    },      
     "value": {
       "type": "Array",
       "writeback": true
@@ -8600,12 +9644,11 @@ var ojSelectMeta = {
     "widget": {}
   },
   "extension": {
-    "_hasWrapper": true,
-    "_innerElement": 'select',
-    "_widgetName": "ojSelect"
+    _INNER_ELEM: 'select',
+    _WIDGET_NAME: "ojSelect"
   }
 };
-oj.Components.registerMetadata('ojSelect', 'editableValue', ojSelectMeta);
-oj.Components.register('oj-select', oj.Components.getMetadata('ojSelect'));
+oj.CustomElementBridge.registerMetadata('oj-select', 'editableValue', ojSelectMeta);
+oj.CustomElementBridge.register('oj-select', {'metadata': oj.CustomElementBridge.getMetadata('oj-select')});
 })();
 });

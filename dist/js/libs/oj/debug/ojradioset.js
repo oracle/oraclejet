@@ -120,87 +120,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * radio image.
  * </p> 
  * 
- *  * <h3 id="styling-section">
+ * <h3 id="styling-section">
  *   Styling
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
  * </h3>
- * <table class="generic-table styling-table">
- *   <thead>
- *     <tr>
- *       <th>Class(es)</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td>oj-choice-row</td>
- *       <td><p>Used to line up the input and the label with each other on the same line, and
- *              following input and label on the next line.
- *
- *           <p>The class is applied as follows:
- * 
- *           <ul>
- *             <li>The class must be applied to the span surrounding the input and label to keep them aligned.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-choice-row-inline</td>
- *       <td><p>Used to line up the input and the label with each other on the same line, and
- *              following input and label on the same line as well.
- *
- *           <p>The class is applied as follows:
- * 
- *           <ul>
- *             <li>The class must be applied to the span surrounding the input and label to keep them aligned.</li>
- *           </ul>
- *       </td>
- *     </tr>
-*     <tr>
- *       <td>oj-radioset-no-chrome</td>
- *       <td><p>Use this styleclass if you don't want the chrome around the set.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojRadioset.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-radioset-input-start</td>
- *       <td><p>Use this styleclass to order the radio at the start and label text at the end 
- *       even if a theme has a different default order.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojRadioset.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-radioset-input-end</td>
- *       <td><p>Use this styleclass to order the radio at the end and the label text at the start 
- *       even if a theme has a different default order.
- *
- *           <p>The class is applied as follows:
- *
- *           <ul>
- *             <li>The class must be applied to the div where you bind ojRadioset.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td>oj-focus-highlight</td>
- *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}
- *           <ul>
- *             <li>The class must be applied to the div where you apply oj-choice-row or oj-choice-row-inline.</li>
- *           </ul>
- *       </td>
- *     </tr>
- *   </tbody>
- * </table>
+ * {@ojinclude "name":"stylingDoc"}
  * <h3 id="jqui2jet-section">
  *   JET for jQuery UI developers
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#jqui2jet-section"></a>
@@ -228,7 +152,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * $(".selector").ojRadioset();
  * 
  * @example <caption>Initialize the radioset with some options and callbacks specified:</caption>
- * $( ".selector" ).ojRadioset( { "value": "copy", "valuechange": 
+ * $( ".selector" ).ojRadioset( { "value": "copy", "optionChange": 
  * function( event, ui ) {alert("valuechanged from " + ui.previousValue + " to " + ui.value);} } );             
  * @example <caption>Initialize component using widget API</caption>
  * &lt;label id="grouplabel">Greetings&lt;/label>
@@ -308,6 +232,87 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      */
     disabled: false,
     /** 
+     * Whether the component is required or optional. When required is set to true, an implicit 
+     * required validator is created using the validator factory - 
+     * <code class="prettyprint">oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator()</code>.
+     * 
+     * Translations specified using the <code class="prettyprint">translations.required</code> option 
+     * and the label associated with the component, are passed through to the options parameter of the 
+     * createValidator method. 
+     * 
+     * <p>
+     * When <code class="prettyprint">required</code> option changes due to programmatic intervention, 
+     * the component may clears message and run validation, based on the current state it's in. </br>
+     *  
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when required is set to true, then it runs deferred validation on 
+     * the option value. This is to ensure errors are not flagged unnecessarily.
+     * <ul>
+     *   <li>if there is a deferred validation error, then 
+     *   <code class="prettyprint">messagesHidden</code> option is updated. </li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when required is set to false, then 
+     * component messages are cleared but no deferred validation is run.
+     * </li>
+     * <li>if component is invalid and currently showing invalid messages when required is set, then 
+     * component messages are cleared and normal validation is run using the current display value. 
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
+     *   option is not updated and the error pushed to <code class="prettyprint">messagesShown</code>
+     *   option. 
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
+     *   option is updated; page author can listen to the <code class="prettyprint">optionChange</code> 
+     *   event on the <code class="prettyprint">value</code> option to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>Only messages created by the component are cleared. These include ones in 
+     * <code class="prettyprint">messagesHidden</code> and <code class="prettyprint">messagesShown</code>
+     *  options.</li>
+     * <li><code class="prettyprint">messagesCustom</code> option is not cleared.</li>
+     * </ul>
+     * 
+     * </p>
+     * 
+     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This is the default.
+     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * input's label will render a required icon. Additionally a required validator - 
+     * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
+     * An explicit required validator can be set by page authors using the validators option. 
+     * 
+     * @example <caption>Initialize the component with the <code class="prettyprint">required</code> option:</caption>
+     * $(".selector").ojRadioset({required: true});<br/>
+     * 
+     * @example <caption>Customize messages and hints used by implicit required validator when 
+     * <code class="prettyprint">required</code> option is set:</caption> 
+     * &lt;div data-bind="ojComponent: {
+     *   component: 'ojRadioset',
+     *   required: true, 
+     *   value: colors, 
+     *   translations: {'required': {
+     *                 hint: 'custom: check  one value',
+     *                 messageSummary: 'custom: \'{label}\' is Required', 
+     *                 messageDetail: 'custom: please check one value for \'{label}\''}}}"/>
+     * @expose 
+     * @access public
+     * @instance
+     * @default when the option is not set, the element's required property is used as its initial 
+     * value if it exists.
+     * @memberof oj.ojRadioset
+     * @type {boolean}
+     * @default false
+     * @since 0.7
+     * @see #translations
+     */
+    required: false,    
+    /** 
      * The value of the component. 
      * 
      * <p>
@@ -374,6 +379,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     
     this._super();      
     this._setup();
+
   },
   /**
    * Returns a jQuery object containing the element visually representing the radioset. 
@@ -389,6 +395,35 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   {
     return this.uiRadioset;
   },
+  /**
+   * Validates the component's display value using all validators registered on 
+   * the component and updates the <code class="prettyprint">value</code> option by performing the 
+   * following steps. 
+   * 
+   * <p>
+   * <ol> 
+   * <li>All messages are cleared, including custom messages added by the app. </li>
+   * <li>The implicit 
+   * required validator is run if the component is marked required. When a validation error is 
+   * encountered it is remembered. </li>
+   * <li>At the end of validation if there are errors, the <code class="prettyprint">messagesShown</code> 
+   * option is updated and method returns false. If there were no errors, then the 
+   * <code class="prettyprint">value</code> option is updated and method returns true.</li>
+   * </ol>
+   * 
+   * @returns {boolean} true if component passed validation, false if there were validation errors.
+   * 
+   * @example <caption>Validate component using its current value.</caption>
+   * // validate display value. 
+   * $(.selector).ojRadioset('validate');
+   * @method
+   * @access public
+   * @expose
+   * @instance
+   * @memberof oj.ojRadioset
+   * @since 0.7
+   */
+  validate : oj.EditableValueUtils.validate,
           
    /**** end Public APIs ****/         
           
@@ -464,7 +499,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     // Turn each radio into ojRadioCheckbox. Since ojRadiooxSet delegates to the _ojRadioCheckbox
     // component, and we need to mark this as an internal node so that oj.Components.getComponentElementByNode
     // knows it is an internal component in this case, not a stand-alone component
-    this.$radios._ojRadioCheckbox().attr('data-oj-internal', true);
+    this.$radios._ojRadioCheckbox().attr('data-oj-internal', '');
 
     // keep the root dom element as is, and add a wrapper dom underneath it. This way we can
     // have one div around all the inputs and labels, and for inline messaging we can have another
@@ -473,19 +508,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
       .wrapInner("<div class='oj-radioset-wrapper'></div>"); //@HTMLUpdateOK
     
     this._on(this._events);
-  },
-  /**
-   * This is where we do things right after the component was created.
-   * this._super should be called first.
-   * 
-   * @override
-   * @memberof oj.ojRadioset
-   * @instance
-   * @protected
-   */
-  _AfterCreate: function()
-  {
-    this._super();
     this._setup();
   },
   /**
@@ -541,8 +563,22 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     return true;
   },
   /**
+   * Whether the component is required.
+   * 
+   * @return {boolean} true if required; false
+   * 
+   * @memberof! oj.ojRadioset
+   * @instance
+   * @protected
+   * @override
+   */
+  _IsRequired : function () 
+  {
+    return this.options['required'];
+  },
+  /**
    * Sets the disabled option onto the dom. 
-   * This is a no-op for checkboxset since its root dom element is a div, and disabled is
+   * This is a no-op for radioset since its root dom element is a div, and disabled is
    * invalid on a div. If we did try to set disabled on the div, then restore attributes doesn't
    * work correctly since it wasn't saved correctly.
    * @param {Object} node - dom node
@@ -556,26 +592,35 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   {
     // no-op
   },
+
+  /**
+   * @memberof oj.ojRadioset
+   * @instance
+   * @private
+   */
+  _refreshRequired : oj.EditableValueUtils._refreshRequired,  
   /**
    * Returns a jquery object that is a set of elements that are input type radio
    * and have the name of the first radio found.
    * 
-   * @return {Object} jquery object of all the radios within the root dom element
+   * @return {jQuery} jquery object of all the radios within the root dom element
    * that have the same 'name' attribute as the first radio found.
    * @private
    */
   _findRadiosWithMatchingName : function ()
   {
-    //return this.element.find('input[type=radio]'); // simplest thing to do.
+    var allradios;
     var element = this.element;
-    var first = element.find("input[type=radio]:first"), 
-      name, allradios, selector;
-    if (first.length === 0)
+    var $first = element.find("input[type=radio]:first");
+    var name;
+    var selector;
+      
+    if ($first.length === 0)
     {
       oj.Logger.warn("Could not find any input type=radio within this element");
     }
     // get the name attribute of the first input radio
-    name = first.attr("name");
+    name = $first.attr("name");
     // find all input radios with matching name
     if (name === undefined)
     {
@@ -626,6 +671,15 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   {
     // at this point we already have this.$radios set to a list of radios for this radioset.
     this._propagateDisabled(this.options.disabled );
+    
+    // add to the root dom the style class 'oj-choice-direction-column' 
+    // if there isn't already a 'oj-choice-direction-row' or 'oj-choice-direction-column' there.
+    if (!(this.element.hasClass("oj-choice-direction-column")) && 
+        !(this.element.hasClass("oj-choice-direction-row")))
+    {
+      this.element.addClass("oj-choice-direction-column");
+    }
+    this._refreshRequired(this.options['required']);
   },  
   _events : 
   {
@@ -652,7 +706,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     // 
     var submittedValue = this._GetDisplayValue();
     // run full validation. There is no need to check if values have changed
-    //  since for checkboxset/radiosetif we get into this function we know value has changed.
+    //  since for checkboxset/radioset if we get into this function we know value has changed.
     // passing in doValueChangeCheck: false will skip the new-old value comparison
     this._SetValue(submittedValue, event, _sValueChangeCheckFalse);
   },
@@ -678,15 +732,17 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * what this means is we need to 'check' the radio whose value matches the
    * displayValue.
    * 
-   * @param {String} displayValue the value of the checkbox that needs to be checked
+   * @param {String} displayValue the value of the radio button that needs to be selected
    * @override
    * @protected
    * @memberof oj.ojRadioset
   */  
   _SetDisplayValue : function (displayValue) 
   {
+    var i;
     var length = this.$radios.length;
-    var radioInputValue, i, $radio;
+    var radioInputValue;
+    var $radio;
 
     // go through each _ojRadioCheckbox and see if it needs to be checked or unchecked.
     for (i = 0; i < length; i++)
@@ -768,23 +824,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     if (this.$radios != null)
       return this.$radios;
     else this._findRadiosWithMatchingName();
-  },
-    /**
-   * Called when a aria-required attribute needs to be set or removed. 
-   * Most inputs/selects need aria-required on the input element (aka 'content')
-   * But it is not legal to have aria-required on radio/checkboxes, nor on
-   * radiogroup/group.
-   * Subclasses can override to put aria-required where they want or not put it at all.
-   * 
-   * @param {Object=} value the current value of the required option
-   * @memberof oj.ojRadioset
-   * @instance
-   * @protected
-   */
-  _RefreshAriaRequired : function (value)
-  {
-    // Radiogroup/group does not support aria-required so we can't use it there.
-  },   
+  }, 
   /**
    * Called to find out if aria-required is unsupported. This is needed for the label.
    * It is not legal to have aria-required on radio/checkboxes, nor on
@@ -801,6 +841,34 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
   {
     return true;
   },
+  /**
+   * Performs post processing after required option is set by taking the following steps.
+   * 
+   * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
+   * run full validation with UI value (we don't know if the UI error is from a required validator 
+   * or something else);<br/>
+   * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+   * updated<br/>
+   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+   * listen to optionChange(value) to clear custom errors.<br/>
+   * 
+   * - if component is invalid and has messagesHidden -> required: false -> clear component 
+   * errors; no deferred validation is run.<br/>
+   * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+   * errors unnecessarily)<br/>
+   * - messagesCustom is never cleared<br/>
+   * 
+   * @param {string} option
+   * 
+   * @memberof oj.ojRadioset
+   * @instance
+   * @protected
+   */
+  _AfterSetOptionRequired : oj.EditableValueUtils._AfterSetOptionRequired,
+  
+  /**
+   * @private
+   */
   _propagateDisabled: function( disabled ) {
       disabled = !!disabled;
       this.$radios.each(function() 
@@ -835,6 +903,30 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
     if ( key === "disabled" ) 
     {
         this._propagateDisabled(value);
+    }
+  },
+  /**
+   * Performs post processing after _SetOption() is called. Different options when changed perform
+   * different tasks. See _AfterSetOption[OptionName] method for details.
+   *
+   * @param {string} option
+   * @param {Object|string=} previous
+   * @param {Object=} flags
+   * @protected
+   * @memberof oj.ojRadioset
+   * @instance
+   * @override
+   */
+  _AfterSetOption : function (option, previous, flags)
+  {
+    this._superApply(arguments);
+    switch (option)
+    {
+      case "required":
+        this._AfterSetOptionRequired(option);
+        break;
+      default:
+        break;
     }
   },
    getNodeBySubId: function(locator)
@@ -971,8 +1063,149 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *   </tbody>
    * </table>
    *
-   *
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojRadioset
+   */
+
+  /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * 
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocExampleHeader"}</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>oj-choice-item</td>
+     *       <td>Used to line up the input and the label with each other, and
+     *           as well as adding height to the row.
+     *           You must add for the component to work properly. 
+     *       <td>
+     * <pre class="prettyprint">
+     * <code>&lt;span class="oj-choice-item">
+     *   &lt;input id="blueopt" type="radio" value="blue">
+     *   &lt;label for="blueopt">Blue&lt;/label>
+     * &lt;/span>
+     * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-choice-direction-column</td>
+     *       <td>This is the default. It lays out the radios in a column.
+     *       </td>
+     *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;div id="radiosetId" aria-labelledby="radiosetLabelId" 
+   *  class="oj-choice-direction-column" 
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-choice-direction-row</td>
+     *       <td>It lays out the radio buttons in a row.
+     *       </td>
+     *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;div id="radiosetId" aria-labelledby="radiosetLabelId" 
+   *  class="oj-choice-direction-row" 
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   * </code></pre>
+   *       </td>
+   *     </tr>   
+   *     <tr>
+   *       <td style="text-decoration:line-through">oj-choice-row</td>
+   *       <td><span style="color:red">Deprecated</span>. Please use <code class="prettyprint">oj-choice-direction-column</code> and <code class="prettyprint">oj-choice-item</code> instead.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;!-- Deprecated. Please use oj-choice-direction-column and oj-choice-item instead. -->
+   * &lt;div id="radiosetId" aria-labelledby="radiosetLabelId"
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   *    &lt;span class="oj-choice-row">
+   *      &lt;input id="redid" type="radio" value="red">
+   *      &lt;label for="redid">Red</label>
+   *    &lt;/span>
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td style="text-decoration:line-through">oj-choice-row-inline</td>
+   *       <td><span style="color:red">Deprecated</span>. Please use <code class="prettyprint">oj-choice-direction-row</code> and <code class="prettyprint">oj-choice-item</code> instead.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;!-- Deprecated. Please use oj-choice-direction-row and oj-choice-item instead. -->
+   * &lt;div id="radiosetId" aria-labelledby="radiosetLabelId"
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   *    &lt;span class="oj-choice-row-inline">
+   *      &lt;input id="redid" type="radio" value="red">
+   *      &lt;label for="redid">Red</label>
+   *    &lt;/span>
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     
+   *     <tr>
+   *       <td>oj-radioset-no-chrome</td>
+   *       <td>Use this styleclass if you don't want the chrome around the set.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;div id="radiosetId" aria-labelledby="radiosetLabelId" 
+   *  class="oj-radioset-no-chrome" 
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-radioset-input-start</td>
+   *       <td>Use this styleclass to order the radio at the start and label text at the end 
+   *       even if a theme has a different default order.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;div id="radiosetId" aria-labelledby="radiosetLabelId" 
+   *  class="oj-radioset-input-start" 
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-radioset-input-end</td>
+   *       <td>Use this styleclass to order the radio at the end and the label text at the start 
+   *       even if a theme has a different default order.
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;div id="radiosetId" aria-labelledby="radiosetLabelId" 
+   *  class="oj-radioset-input-end" 
+   *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *     <tr>
+   *       <td>oj-focus-highlight</td>
+   *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}
+   *         <p>The class must be applied to the element where you apply oj-choice-item.</p>
+   *       </td>
+   *       <td>
+   * <pre class="prettyprint">
+   * <code>&lt;span class="oj-choice-item oj-focus-highlight">
+   *  &lt;input id="blueopt" type="radio" value="blue">
+   *  &lt;label for="blueopt">Blue&lt;/label>
+   * &lt;/span>
+   * </code></pre>
+   *       </td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
    * @memberof oj.ojRadioset
    */
 
@@ -983,13 +1216,6 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
  * do not do a value change check in _SetValue
  */
 var _sValueChangeCheckFalse = {doValueChangeCheck: false};
-/**
- * String used to determine how we are rendering the input.
- * @const
- * @private
- * @type {string}
- */
-var _HTML = "html";
 
 }());
 (function() {
@@ -998,6 +1224,9 @@ var ojRadiosetMeta = {
     "disabled": {
       "type": "boolean"
     },
+    "required": {
+      "type": "boolean"
+    },  
     "value": {
       "type": "string",
       "writeback": true
@@ -1006,13 +1235,14 @@ var ojRadiosetMeta = {
   "methods": {
     "destroy": {},
     "refresh": {},
-    "widget": {}
+    "widget": {},
+    "validate": {}
   },
   "extension": {
-    "_widgetName": "ojRadioset"
+    _WIDGET_NAME: "ojRadioset"
   }
 };
-oj.Components.registerMetadata('ojRadioset', 'editableValue', ojRadiosetMeta);
-oj.Components.register('oj-radioset', oj.Components.getMetadata('ojRadioset'));
+oj.CustomElementBridge.registerMetadata('oj-radioset', 'editableValue', ojRadiosetMeta);
+oj.CustomElementBridge.register('oj-radioset', {'metadata': oj.CustomElementBridge.getMetadata('oj-radioset')});
 })();
 });

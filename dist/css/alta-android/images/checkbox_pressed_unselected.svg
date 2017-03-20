@@ -1,13 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="Pressed_Unchecked_Checkbox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-	 x="0px" y="0px" width="48px" height="48px" viewBox="0 0 48 48" enable-background="new 0 0 48 48" xml:space="preserve">
-<g id="Background_Ellipse">
-	<circle fill="#C4C4C5" cx="24" cy="24" r="24"/>
-</g>
-<g id="chcekbox_border">
-	<g>
-		<path fill="#6D6D6D" d="M31,15H17c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V17C33,15.89,32.1,15,31,15z M31,31H17
-			V17h14V31z"/>
-	</g>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle fill="#C4C4C5" cx="24" cy="24" r="24"/><path fill="#6D6D6D" d="M31 15H17c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V17c0-1.11-.9-2-2-2zm0 16H17V17h14v14z"/></svg>

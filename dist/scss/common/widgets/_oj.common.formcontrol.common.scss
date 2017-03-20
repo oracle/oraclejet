@@ -6,6 +6,7 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 @import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
 
 
 @if $includeFormControlCommonClasses != false {
@@ -46,6 +47,8 @@
       max-width: 100%;
       min-width: 100%;
     }
+
+
   }
 }
 

@@ -49,11 +49,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *  - contentContainerStyleClass: Style class name for the content container DOM element,
  *  - itemStyleClass: Style class name for the DOM element of an item in the conveyor,
  *  - hiddenStyleClass: Style class name used to hide a DOM element
+ * @param {Object} agentInfo Browser user agent information.
  * @constructor
  * @ignore
  */
 function ConveyorBeltCommon(
-  elem, orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo)
+  elem, orientation, contentParent, bRtl, buttonInfo, callbackInfo, styleInfo, agentInfo)
 {
   this._elem = elem;
   this._orientation = orientation;
@@ -100,6 +101,10 @@ function ConveyorBeltCommon(
       this._hasStyleClassNameFunc = callbackInfo.hasStyleClassName;
     if (callbackInfo.filterContentElements)
       this._filterContentElementsFunc = callbackInfo.filterContentElements;
+    if (callbackInfo.subtreeDetached)
+      this._subtreeDetachedFunc = callbackInfo.subtreeDetached;
+    if (callbackInfo.subtreeAttached)
+      this._subtreeAttachedFunc = callbackInfo.subtreeAttached;
   }
   if (styleInfo)
   {
@@ -115,7 +120,8 @@ function ConveyorBeltCommon(
   
   this._bExternalScroll = true;
   this._firstVisibleItemIndex = 0;
-  
+  if (agentInfo)
+    this._agentVersion = agentInfo["browserVersion"];
   //copied basic checks from AdfAgent
   var navUserAgent = navigator.userAgent;
   var agentName = navUserAgent.toLowerCase();
@@ -126,6 +132,10 @@ function ConveyorBeltCommon(
   else if (agentName.indexOf("opera") !== -1)
   {
     this._bAgentOpera = true;
+  }
+  else if (agentInfo && agentInfo["browser"] === "safari")
+  {
+    this._bAgentSafari = true;
   }
   else if (agentName.indexOf("applewebkit") !== -1 ||
            agentName.indexOf("safari") !== -1)
@@ -189,12 +199,20 @@ ConveyorBeltCommon.prototype.setup = function(bInit)
   //handle an initial resize
   this._handleResize(true);
   
-  if (bInit && this._addResizeListenerFunc)
+  if (bInit)
   {
-    this._handleResizeFunc = function(width, height) {self._handleResize(false);};
-    //listen for resizes on both the conveyor itself and on its content
-    this._addResizeListenerFunc.call(this._callbackObj, this._elem, this._handleResizeFunc);
-    this._addResizeListenerFunc.call(this._callbackObj, this._contentContainer, this._handleResizeFunc);
+    if (this._addResizeListenerFunc)
+    {
+      this._handleResizeFunc = function(width, height) {self._handleResize(false);};
+      //listen for resizes on both the conveyor itself and on its content
+      this._addResizeListenerFunc.call(this._callbackObj, this._elem, this._handleResizeFunc);
+      this._addResizeListenerFunc.call(this._callbackObj, this._contentContainer, this._handleResizeFunc);
+    }
+    
+    //notify the child that it's being re-attached to the DOM AFTER attaching it
+    //(the detached notification happened in _reparentChildrenToContentContainer())
+    if (this._subtreeAttachedFunc)
+      this._subtreeAttachedFunc(this._contentContainer);
   }
 };
 
@@ -211,10 +229,12 @@ ConveyorBeltCommon.prototype.destroy = function()
   cbcClass._removeBubbleEventListener(this._overflowContainer, "touchmove", this._touchMoveListener);
   cbcClass._removeBubbleEventListener(this._overflowContainer, "touchend", this._touchEndListener);
   cbcClass._removeBubbleEventListener(this._overflowContainer, "touchcancel", this._touchEndListener);
+  cbcClass._removeBubbleEventListener(this._overflowContainer, "scroll", this._scrollListener);
   this._mouseWheelListener = null;
   this._touchStartListener = null;
   this._touchMoveListener = null;
   this._touchEndListener = null;
+  this._scrollListener = null;
   
   //remove listeners before reparenting original children and clearing member 
   //variables
@@ -249,6 +269,8 @@ ConveyorBeltCommon.prototype.destroy = function()
   this._removeStyleClassNameFunc = null;
   this._hasStyleClassNameFunc = null;
   this._filterContentElementsFunc = null;
+  this._subtreeDetachedFunc = null;
+  this._subtreeAttachedFunc = null;
   this._callbackObj = null;
 
   this._contentParent = null;
@@ -309,12 +331,16 @@ ConveyorBeltCommon.prototype.getScroll = function()
 ConveyorBeltCommon.prototype._reparentChildrenToContentContainer = function(
   fromNode, toNode)
 {
-  var cbcClass = ConveyorBeltCommon;
-  
   var fromNodeChildren = fromNode.childNodes;
   while (fromNodeChildren.length > 0)
   {
     var child = fromNodeChildren[0];
+    
+    //notify the child that it's being detached from the DOM BEFORE detaching it
+    //(the re-attached notification will happen in setup())
+    if (this._subtreeDetachedFunc)
+      this._subtreeDetachedFunc(child);
+    
     toNode.appendChild(child); // @HtmlUpdateOK
     
     if (child.nodeType === 1 && this._itemStyleClass)
@@ -713,7 +739,8 @@ ConveyorBeltCommon.prototype._createInnerContainers = function()
   
   //the overflow container listens to DOM scroll events in case the scroll was triggered externally,
   //for example when the user tabs through the child content
-  cbcClass._addBubbleEventListener(overflowContainer, "scroll", function (event) {self._handleScroll(event);});
+  this._scrollListener = function (event) {self._handleScroll(event);};
+  cbcClass._addBubbleEventListener(overflowContainer, "scroll", this._scrollListener);
 };
 
 /**
@@ -1573,16 +1600,20 @@ ConveyorBeltCommon.prototype._convertScrollLogicalToBrowser = function(scroll)
   //(comment mostly copied from AdfConveyorBeltSupport)
   //If this is LTR or RTL mode in IE, then we want the default positive new scroll value.
   //If FF in RTL, then get the negative scroll value
+  //If Safari version 10+ in RTL, then get the negative scroll value
   //If Webkit in RTL, to scroll to a position, we resolve this equation:
   // contentContainerWidth - browserScroll = overflowContainerWidth + logicalScroll
   // browserScroll = contentContainerWidth = overflowContainerWidth - logicalScroll
   var newScroll = scroll;
   if (this._bRtl && this._isHorizontal())
   {
-    if (this._bAgentGecko) {
+    //Safari version 10+ has the correct scroll offset in RTL mode
+    //So don't resolve the scroll equation for Safari version 10+
+    if (this._bAgentGecko || (this._bAgentSafari && this._agentVersion >= 10)) {
       newScroll = -scroll;
     }
-    else if (this._bAgentWebkit || this._bAgentOpera) {
+    else if (this._bAgentWebkit || this._bAgentOpera || 
+              (this._bAgentSafari && this._agentVersion < 10)) {
       var contentContainer = this._contentContainer;
       var overflowContainer = this._overflowContainer;
       newScroll = contentContainer.offsetWidth - overflowContainer.offsetWidth - scroll;
@@ -1947,15 +1978,23 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
   {
     this._super();
     
+    //Check if the reading direction have changed
+    var bRTL = (this._GetReadingDirection() === "rtl");
+    var bDirectionChanged = (this._bRTL != bRTL);
+    
+    //save and restore scroll position only if the reading direction is not changed
+    var scroll;
     //save the current scroll position
-    var scroll = this._cbCommon.getScroll();
+    if (!bDirectionChanged)
+      scroll = this._cbCommon.getScroll();
     
     //destroy the cbCommon and setup from scratch in case items were added/removed
     this._destroyCBCommon();
     this._setup(true);
     
     //restore the saved scroll position
-    this._cbCommon.setScroll(scroll, true);
+    if (!bDirectionChanged)
+      this._cbCommon.setScroll(scroll, true);
   },
   
   /**
@@ -2081,6 +2120,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
         callbackInfo.hasStyleClassName = this._hasStyleClassName;
         callbackInfo.filterContentElements = 
           function(arContentElements) { return self._filterContentElements(arContentElements); };
+        callbackInfo.subtreeDetached = oj.Components.subtreeDetached;
+        callbackInfo.subtreeAttached = oj.Components.subtreeAttached;
         //disable scroll animation during testing
         if (oj.Config.getAutomationMode() !== "enabled")
         {
@@ -2092,6 +2133,7 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
           //only use the first result returned from the contentParent selector
           contentParentElem = $(options.contentParent)[0];
         }
+        var agentInfo = oj.AgentUtils.getAgentInfo(navigator.userAgent);
         this._cbCommon = new ConveyorBeltCommon(
             elem[0],
             orientation, 
@@ -2099,7 +2141,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
             this._bRTL, 
             buttonInfo, 
             callbackInfo, 
-            styleInfo);
+            styleInfo,
+            agentInfo);
       }
     }
     var cbCommon = this._cbCommon;
@@ -2251,10 +2294,11 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     this._AddActiveable({
       'element': element,
       'afterToggle': function(eventtype) {
-        if (eventtype === "mousedown" || eventtype === "touchstart") {
+        if (eventtype === "mousedown" || eventtype === "touchstart" || eventtype === "mouseenter") {
           element.removeClass("oj-default");
         }
-        else if (eventtype === "mouseup" || eventtype === "touchend" || eventtype === "touchcancel") {
+        else if (eventtype === "mouseup" || eventtype === "touchend" || 
+                 eventtype === "touchcancel" || eventtype === "mouseleave") {
           element.addClass("oj-default");
         }
       }
@@ -2515,21 +2559,17 @@ var ojConveyorBeltMeta = {
     "contentParent": {
       "type": "string"
     },
-    "disabled": {
-      "type": "boolean"
-    },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     }
   },
-  "methods": {
-    "refresh": {}
-  },
   "extension": {
-    "_widgetName": "ojConveyorBelt"
+    _WIDGET_NAME: "ojConveyorBelt"
   }
 };
-oj.Components.registerMetadata('ojConveyorBelt', 'baseComponent', ojConveyorBeltMeta);
-oj.Components.register('oj-conveyor-belt', oj.Components.getMetadata('ojConveyorBelt'));
+oj.CustomElementBridge.registerMetadata('oj-conveyor-belt', 'baseComponent', ojConveyorBeltMeta);
+oj.CustomElementBridge.register('oj-conveyor-belt', {'metadata': oj.CustomElementBridge.getMetadata('oj-conveyor-belt')});
 })();
+
 });

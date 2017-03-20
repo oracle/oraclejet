@@ -136,6 +136,8 @@
   $colorList: _oj-theming-add-var($colorList, '$buttonInternalBorderColorSelected', $buttonInternalBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$buttonTextColorSelectedHover', $buttonTextColorSelectedHover);
   $colorList: _oj-theming-add-var($colorList, '$buttonIconColorSelectedHover', $buttonIconColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonBgColorSelectedHover', $buttonBgColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonBorderColorSelectedHover', $buttonBorderColorSelectedHover);
   $colorList: _oj-theming-add-var($colorList, '$buttonTextColorSelectedDisabled', $buttonTextColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$buttonIconColorSelectedDisabled', $buttonIconColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$buttonBgColorSelectedDisabled', $buttonBgColorSelectedDisabled);
@@ -159,6 +161,8 @@
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeBorderColorSelected', $buttonHalfChromeBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeTextColorSelectedHover', $buttonHalfChromeTextColorSelectedHover);
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeIconColorSelectedHover', $buttonHalfChromeIconColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeBgColorSelectedHover', $buttonHalfChromeBgColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeBorderColorSelectedHover', $buttonHalfChromeBorderColorSelectedHover);
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeTextColorSelectedDisabled', $buttonHalfChromeTextColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeIconColorSelectedDisabled', $buttonHalfChromeIconColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$buttonHalfChromeBgColorSelectedDisabled', $buttonHalfChromeBgColorSelectedDisabled);
@@ -184,6 +188,15 @@
   $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBgColorSelected', $buttonOutlinedChromeBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBorderColorSelected', $buttonOutlinedChromeBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeInternalBorderColorSelected', $buttonOutlinedChromeInternalBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeTextColorSelectedHover', $buttonOutlinedChromeTextColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeIconColorSelectedHover', $buttonOutlinedChromeIconColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBgColorSelectedHover', $buttonOutlinedChromeBgColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBorderColorSelectedHover', $buttonOutlinedChromeBorderColorSelectedHover);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeTextColorSelectedDisabled', $buttonOutlinedChromeTextColorSelectedDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeIconColorSelectedDisabled', $buttonOutlinedChromeIconColorSelectedDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBgColorSelectedDisabled', $buttonOutlinedChromeBgColorSelectedDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeBorderColorSelectedDisabled', $buttonOutlinedChromeBorderColorSelectedDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$buttonOutlinedChromeInternalBorderColorSelectedDisabled', $buttonOutlinedChromeInternalBorderColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$buttonConfirmColor', $buttonConfirmColor);
   $colorList: _oj-theming-add-var($colorList, '$buttonPrimaryColor', $buttonPrimaryColor);
 
@@ -454,6 +467,16 @@
   $colorList: _oj-theming-add-var($colorList, '$switchTrackBorderColorSelectedDisabled', $switchTrackBorderColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$switchThumbBgColorSelectedDisabled', $switchThumbBgColorSelectedDisabled);
   $colorList: _oj-theming-add-var($colorList, '$switchThumbBorderColorSelectedDisabled', $switchThumbBorderColorSelectedDisabled);
+  
+
+  $colorList: _oj-theming-add-var($colorList, '$colorSpectrumBorderColor', $colorSpectrumBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$colorSpectrumThumbBorderColor', $colorSpectrumThumbBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$colorspectrumThumbBorderColorDisabled', $colorspectrumThumbBorderColorDisabled);
+  
+  $colorList: _oj-theming-add-var($colorList, '$colorPaletteTextColor', $colorPaletteTextColor);
+  $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchInnerBorderColor', $colorPaletteSwatchInnerBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$colorPaletteSwatchOuterBorderColorSelected', $colorPaletteSwatchOuterBorderColorSelected);
+  
 
   @return $colorList;
 }
@@ -500,10 +523,17 @@
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColor', $dataGridCellBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBandedBgColor', $dataGridCellBandedBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorHover', $dataGridCellBgColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorHover', $dataGridCellBorderColorHover);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorFocus', $dataGridCellBgColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorFocus', $dataGridCellBorderColorFocus);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorSelected', $dataGridCellBgColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorSelected', $dataGridCellBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorSelectedInactive', $dataGridCellBgColorSelectedInactive);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridCellBorderColorSelectedInactive', $dataGridCellBorderColorSelectedInactive);
   $colorList: _oj-theming-add-var($colorList, '$dataGridCellBgColorDrag', $dataGridCellBgColorDrag);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridCellDragImageBorderColor', $dataGridCellDragImageBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridEditableCellBorderColorFocus', $dataGridEditableCellBorderColorFocus);
+  $colorList: _oj-theming-add-var($colorList, '$dataGridEditableCellBgColorReadOnly', $dataGridEditableCellBgColorReadOnly);
   $colorList: _oj-theming-add-var($colorList, '$dataGridStatusBgColor', $dataGridStatusBgColor);
 
   $colorList: _oj-theming-add-var($colorList, '$tableHeaderBorderColor', $tableHeaderBorderColor);
