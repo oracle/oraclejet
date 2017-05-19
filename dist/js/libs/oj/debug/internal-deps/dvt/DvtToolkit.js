@@ -1538,7 +1538,7 @@ DvtLockable.prototype.isLocked = function() {
 DvtLockable.prototype.__lock = function() {
   this._bLocked = true;
 };
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   * Class representing an item that can be scheduled to run with a scheduler.
   * @extends {dvt.Obj}
@@ -1632,8 +1632,6 @@ DvtScheduled.prototype.Init = function(context, scheduler, duration, delay, easi
 
   this._onInit = null;
   this._onInitObj = null;
-  this._onStart = null;
-  this._onStartObj = null;
   this._onEnd = null;
   this._onEndObj = null;
 };
@@ -1739,42 +1737,6 @@ DvtScheduled.prototype.getOnInit = function()
   return [this._onInit, this._onInitObj];
 };
 
-
-/**
-  * Set the function to call when this item starts.
-  *
-  * @param {function}  onStart  function to call when this item starts
-  * @param {object}  onStartObj  optional reference to object instance on which the
-  *        function is defined
-  */
-DvtScheduled.prototype.setOnStart = function(onStart, onStartObj)
-{
-  this._onStart = onStart;
-  if (onStartObj)
-  {
-    this._onStartObj = onStartObj;
-  }
-  else
-  {
-    this._onStartObj = null;
-  }
-};
-
-
-/**
-  * Get the function to call when this item starts.
-  * Returns an array of two elements:
-  * [0] the function
-  * [1] optional reference to object instance on which the function is defined
-  *
-  * @return {array}
-  */
-DvtScheduled.prototype.getOnStart = function()
-{
-  return [this._onStart, this._onStartObj];
-};
-
-
 /**
   * Set the function to call when this item ends.
   *
@@ -1866,7 +1828,6 @@ DvtScheduled.prototype.stop = function(bJumpToEnd)
     // Animation request id will be null after animations have been started.
     dvt.Context.cancelAnimationFrame(this._animationRequestId);
     this._animationRequestId = null;
-    return;
   }
 
   this._scheduler.removeScheduled(this);
@@ -1978,10 +1939,6 @@ DvtScheduled.prototype.ProcessStart = function()
 {
   this._bRunning = true;
   this._progress = 0;
-  if (this._onStart)
-  {
-    this._onStart.call(this._onStartObj);
-  }
 };
 
 
@@ -2022,10 +1979,10 @@ DvtScheduled.prototype.ProcessEnd = function()
     this._bRunning = false;
     this._progress = 1;
     this._state = DvtScheduled._STATE_BEGIN;
-    if (this._onEnd)
-    {
-      this._onEnd.call(this._onEndObj);
-    }
+  }
+  if (this._onEnd)
+  {
+    this._onEnd.call(this._onEndObj);
   }
 };
 
@@ -2410,7 +2367,7 @@ var DvtAnimatorPropItem = function(type, obj, getter, setter, destVal) {
 dvt.Obj.createSubclass(DvtAnimatorPropItem, dvt.Obj);
 
 // Nested class end ////////////////////////////////////////
-// Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
   * Abstract base class representing something that can be played, like an animation.
   * @extends {dvt.Obj}
@@ -2489,71 +2446,6 @@ dvt.Playable.prependOnEnd = function(playable, onEnd, onEndObj)
     playable.setOnEnd(newOnEnd);
   }
 };
-
-
-/**
-  * Append a function to the end of the given playable's current onStart function.
-  *
-  * @param {dvt.Playable}  playable  playable to append onStart function to
-  * @param {function}  onStart  new function to append to current onStart function
-  * @param {object}  onStartObj  optional reference to object instance on which the new
-  *        onStart function is defined
-  */
-dvt.Playable.appendOnStart = function(playable, onStart, onStartObj)
-{
-  if (!playable || !onStart || !playable.getOnStart || !playable.setOnStart)
-  {
-    return;
-  }
-
-  var arOnStart = playable.getOnStart();
-  if (!arOnStart || !arOnStart[0])
-  {
-    playable.setOnStart(onStart, onStartObj);
-  }
-  else
-  {
-    var newOnStart = function() 
-        {
-      arOnStart[0].call(arOnStart[1]);
-      onStart.call(onStartObj);
-    };
-    playable.setOnStart(newOnStart);
-  }
-};
-
-
-/**
-  * Prepend a function to the start of the given playable's current onStart function.
-  *
-  * @param {dvt.Playable}  playable  playable to prepend onStart function to
-  * @param {function}  onStart  new function to prepend to current onStart function
-  * @param {object}  onStartObj  optional reference to object instance on which the new
-  *        onStart function is defined
-  */
-dvt.Playable.prependOnStart = function(playable, onStart, onStartObj)
-{
-  if (!playable || !onStart || !playable.getOnStart || !playable.setOnStart)
-  {
-    return;
-  }
-
-  var arOnStart = playable.getOnStart();
-  if (!arOnStart || !arOnStart[0])
-  {
-    playable.setOnStart(onStart, onStartObj);
-  }
-  else
-  {
-    var newOnStart = function() 
-        {
-      onStart.call(onStartObj);
-      arOnStart[0].call(arOnStart[1]);
-    };
-    playable.setOnStart(newOnStart);
-  }
-};
-
 
 /**
   * Append a function to the end of the given playable's current onInit function.
@@ -28627,7 +28519,7 @@ dvt.DragSource.prototype.getDragCoords = function() {
  * Return the offset to use for the drag feedback.
  */
 dvt.DragSource.prototype.getDragOffset = function(mouseX, mouseY) {
-  var offset = null;
+  var offset = {};
   var feedback = this.getDragOverFeedback(mouseX, mouseY);
   if (feedback) {
     var bounds = dvt.DragAndDropUtils.getDragFeedbackBounds(feedback, this._context.getStage());
@@ -28640,12 +28532,15 @@ dvt.DragSource.prototype.getDragOffset = function(mouseX, mouseY) {
     }
 
     if (bounds) {
-      offset = {};
       offset.x = mouseX - bounds.x;
       offset.y = mouseY - bounds.y;
       offset.x += dvt.DragSource.DRAG_FEEDBACK_MARGIN;
       offset.y += dvt.DragSource.DRAG_FEEDBACK_MARGIN;
     }
+  }
+  else {
+    offset.x = 0;
+    offset.y = 0;
   }
   return offset;
 };
@@ -35850,7 +35745,7 @@ dvt.EventManager.prototype.OnDndDragStart = function(event) {
   this._context.getTooltipManager().hideTooltip();
 
   // Provide data to the dataTransfer based on dataTypes
-  var dragOptions = this._getDragOptions();
+  var dragOptions = this._getDragOptions(event);
   var dataTypes = dragOptions['dataTypes'];
   var callback = dragOptions['dragStart'];
 
@@ -38244,6 +38139,18 @@ dvt.ToolkitUtils.createSvgDocument = function(id) {
  * @return {object} An object containing drag feedback information.
  */
 dvt.ToolkitUtils.getDragFeedback = function(displayables, targetCoordinateSpace) {
+  var feedback = new Object();
+  if (!displayables) {
+    // This covers ER 25388103 - add ability to create diagram links via dnd
+    // In the link creation case there are no displayables to create traditional DnD feedback.
+    // The empty svg feedback object is created to suppress the default feedback,
+    // the diagram link will be generated to reflect the drag.
+    feedback.width = 1;
+    feedback.height = 1;
+    feedback.svg = dvt.ToolkitUtils.createSvgDocument('dnd');
+    return feedback;
+  }
+
   // Wrap in an array if not already wrapped.
   if (!(displayables instanceof Array)) {
     displayables = [displayables];
@@ -38251,7 +38158,6 @@ dvt.ToolkitUtils.getDragFeedback = function(displayables, targetCoordinateSpace)
   var bounds = dvt.DragAndDropUtils.getDragFeedbackBounds(displayables, targetCoordinateSpace);
   var svg = dvt.ToolkitUtils._getDragFeedbackSVG(displayables, bounds);
 
-  var feedback = new Object();
   feedback.width = bounds.w + dvt.DragSource.DRAG_FEEDBACK_MARGIN * 2;
   feedback.height = bounds.h + dvt.DragSource.DRAG_FEEDBACK_MARGIN * 2;
   if (svg)
@@ -38555,6 +38461,45 @@ dvt.ToolkitUtils.getImageUrl = function(context, className) {
   dvt.ToolkitUtils._IMAGE_URL_CACHE[className] = url;
   return url;
 };
+
+/**
+ * Helper method that adds a class to a DOM element if it is not already added
+ * @param {object} elem DOM element
+ * @param {string} className
+ */
+dvt.ToolkitUtils.addClassName = function(elem, className) {
+  if (elem && className) {
+    if (dvt.ToolkitUtils.hasAttrNullNS(elem, 'class')) {
+      var names = dvt.ToolkitUtils.getAttrNullNS(elem, 'class').split(' ');
+      if (dvt.ArrayUtils.getIndex(names, className) == -1) {
+        names.push(className);
+        dvt.ToolkitUtils.setAttrNullNS(elem, 'class', names.join(' '));
+      }
+    }
+    else {
+      dvt.ToolkitUtils.setAttrNullNS(elem, 'class', className);
+    }
+  }
+};
+
+/**
+ * Helper method that removes a class from DOM element if it exists
+ * @param {object} elem DOM element
+ * @param {string} className
+ */
+dvt.ToolkitUtils.removeClassName = function(elem, className) {
+  if (elem && className) {
+    if (dvt.ToolkitUtils.hasAttrNullNS(elem, 'class')) {
+      var names = dvt.ToolkitUtils.getAttrNullNS(elem, 'class').split(' ');
+      var index = dvt.ArrayUtils.getIndex(names, className);
+      if (index >= 0) {
+        names.splice(index, 1);
+        dvt.ToolkitUtils.setAttrNullNS(elem, 'class', names.join(' '));
+      }
+    }
+  }
+};
+
 
 
 dvt.Bundle.addDefaultStrings(dvt.Bundle.UTIL_PREFIX, {

@@ -42,10 +42,11 @@ var _matchMedia = (function() {
  * @private
  */
 var _isLargeScreen = _matchMedia.matches;
-
-window.addEventListener('resize', function() {
+var resizeLargeScreenChange = function() {
   _isLargeScreen = _matchMedia.matches;
-}, false);
+};
+
+window.addEventListener('resize', resizeLargeScreenChange, false);
 
 /**
  * @private
@@ -990,12 +991,14 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
                                               "animation": animation
                                             }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode;
       this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up
-      window.addEventListener('resize', function() {
-        if(oj.Components.isComponentInitialized(self._popUpDpDiv, "ojPopup")) 
+      this._resizePopupBind = function() {
+        if(oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup")) 
         {
-          self._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
+          this._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
         }
-      }, false);
+      }.bind(this);
+
+      window.addEventListener('resize', this._resizePopupBind, false);
 
       var pickerAttrs = this.options.pickerAttributes;
       if (pickerAttrs)
@@ -1257,6 +1260,12 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       this.element.removeProp("readonly");
     }
     
+    if(this._resizePopupBind)
+    {
+      window.removeEventListener('resize', this._resizePopupBind);
+    }
+    window.removeEventListener('resize', resizeLargeScreenChange);
+
     if(this._animationResolve)
     {
       this._animationResolve();
@@ -1500,7 +1509,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         case kc.LEFT:
           
           // next month/year on alt +left on Mac
-          if (event.originalEvent.altKey)
+          if ((event.originalEvent && event.originalEvent.altKey) || event.altKey)
           {
             this._adjustDate((event.ctrlKey ?  - this.options["datePicker"]["stepBigMonths"] :  - this._getStepMonths()), "M", true);
           }
@@ -1519,7 +1528,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         case kc.RIGHT:
           
           // next month/year on alt +right
-          if (event.originalEvent.altKey)
+          if ((event.originalEvent && event.originalEvent.altKey) || event.altKey)
           {
             this._adjustDate((event.ctrlKey ?  + this.options["datePicker"]["stepBigMonths"] :  + this._getStepMonths()), "M", true);
           }
@@ -3457,38 +3466,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     return value;
   },
 
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   *
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputDate
-   * @instance
-   *
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property. See the table for details on its fields.
-   *
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   *
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   *
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node
-   * or a hint node within the popup.
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   *
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojInputDate( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
+  //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
     var node = null,
@@ -3516,22 +3494,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     return node || this._superApply(arguments);
   },
 
-  /**
-   * Returns the subId string for the given child DOM node.  For more details, see
-   * <a href="#getNodeBySubId">getNodeBySubId</a>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputDate
-   * @instance
-   *
-   * @param {!Element} node - child DOM node
-   * @return {string|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-   *
-   * @example <caption>Get the subId for a certain DOM node:</caption>
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var subId = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
-   */
+  //** @inheritdoc */
   getSubIdByNode: function(node)
   {
     var dpDiv = this._dpDiv,
@@ -4705,13 +4668,15 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
                           '" class="oj-timepicker-content"></div></div>');
     this._getPrependNode().prepend(this._wheelPicker); //@HTMLUpdateOK
 
-    window.addEventListener('resize', function() {
-      $('.oj-timepicker-content', self._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass']('oj-timepicker-fixedheight');
-      if(self._isIndependentInput() && oj.Components.isComponentInitialized(self._popUpWheelPicker, "ojPopup")) 
+    this._resizePopupBind = function() {
+      $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass']('oj-timepicker-fixedheight');
+      if(this._isIndependentInput() && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup")) 
       {
-        self._popUpWheelPicker.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
+        this._popUpWheelPicker.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
       }
-    }, false);
+    }.bind(this);
+
+    window.addEventListener('resize', this._resizePopupBind, false);
 
     if(this._isIndependentInput()) 
     {
@@ -4938,6 +4903,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     {
       this._triggerNode.remove();
     }
+    if(this._resizePopupBind)
+    {
+      window.removeEventListener('resize', this._resizePopupBind);
+    }
+    window.removeEventListener('resize', resizeLargeScreenChange);
 
     if (this._wheelPicker)
       this._wheelPicker.remove();
@@ -5509,7 +5479,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   {
     var ret = false;
 
-    if(!this._isIndependentInput())
+    if(this._isContainedInDateTimePicker())
     {
       //never update the model if part of ojInputDateTime. Have ojInputDateTime update the model's value [otherwise 2 updates]
       //this is mainly for check of whether the format is correct [i.e when ojInputDateTime is inline], since the value
@@ -5536,6 +5506,12 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
             dateTimeValue);
 
         datePickerCompWidget.timeSelected(isoString, event);
+        if(this._isDatePickerInline())
+        {
+          //need to update the input element, reason one can't when of the same input is 
+          //b/c the wheelpicker apparently doesn't update minute for some odd reason
+          ret = this._super(newValue, null, options);
+        }
 
       }catch(e)
       {
@@ -5885,6 +5861,15 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     var footerLayoutDisplay = this.options["timePicker"]["footerLayout"];
 
     var timePickerModel = this._timePickerModel = new TimePickerModel(null);
+    var wheelPos = ["", "", "", ""];
+
+    var timePositions = converter._getTimePositioning();
+    for(var position in timePositions)
+    {
+      wheelPos[timePositions[position]] = position;
+    }
+    timePickerModel["wheelOrder"] = wheelPos.filter(function(val) { return !!val; }).join("");
+
     var pattern = options["pattern"] || options["patternFromOptions"];
     if (pattern)
     {
@@ -6020,38 +6005,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     
   },
 
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   *
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   *
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputTime
-   * @instance
-   *
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-   * property. See the table for details on its fields.
-   *
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   *
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   *
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node
-   * or a hint node within the popup.
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   *
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojInputTime( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
+  //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
     var node = null,
@@ -6080,22 +6034,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     return node || this._superApply(arguments);
   },
 
-  /**
-   * Returns the subId string for the given child DOM node.  For more details, see
-   * <a href="#getNodeBySubId">getNodeBySubId</a>.
-   *
-   * @expose
-   * @override
-   * @memberof oj.ojInputTime
-   * @instance
-   *
-   * @param {!Element} node - child DOM node
-   * @return {string|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-   *
-   * @example <caption>Get the subId for a certain DOM node:</caption>
-   * // Foo is ojInputNumber, ojInputTime, etc.
-   * var subId = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
-   */
+  //** @inheritdoc */
   getSubIdByNode: function(node)
   {
     var timeIcon = $(".oj-inputdatetime-time-icon", this._triggerNode),
@@ -6933,9 +6872,7 @@ function TimePickerModel(properties)
         // remove stuff between quotes.
         // remove anything that is not h, H, k, K, m or a
         format = format.replace(/\'[^']*\'/g, "").replace(/[^hHkKma]*/g, "");
-        // Normalize multiple h, H, k, K to a single h, same for mulpiple m's
-        _wheelOrder = format.replace(/(h|H|k|K)+/, "h").replace(/m+/, "m");
-
+        
         var matches = format.match(/([hHkK]+)/);
         var hourCode = matches[1];
         _hourModel["formatter"] = FORMAT_MAP[hourCode];
@@ -6956,6 +6893,10 @@ function TimePickerModel(properties)
       'get': function()
       {
         return _wheelOrder;
+      },
+      'set': function(wheelOrder)
+      {
+        _wheelOrder = wheelOrder;
       }
     });
 
@@ -8529,38 +8470,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     return retVal;
   },
   
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that 
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   * 
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is 
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   * 
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node 
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   * 
-   * @expose
-   * @override
-   * @memberof oj.ojInputDateTime
-   * @instance
-   * 
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code> 
-   * property. See the table for details on its fields.
-   * 
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   * 
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   * 
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node 
-   * or a hint node within the popup. 
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in 
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   * 
-   * @example <caption>Get the node for a certain subId:</caption>
-   * var node = $( ".selector" ).ojInputDateTime( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
+  //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
     var subId = locator && locator['subId'];
@@ -8585,22 +8495,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     return node || this._superApply(arguments);
   },
   
-  /**
-   * Returns the subId string for the given child DOM node.  For more details, see 
-   * <a href="#getNodeBySubId">getNodeBySubId</a>.
-   * 
-   * @expose
-   * @override
-   * @memberof oj.ojInputDateTime
-   * @instance
-   * 
-   * @param {!Element} node - child DOM node
-   * @return {string|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-   * 
-   * @example <caption>Get the subId for a certain DOM node:</caption>
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var subId = $( ".selector" ).ojFoo( "getSubIdByNode", nodeInsideComponent );
-   */
+  //** @inheritdoc */
   getSubIdByNode: function(node)
   {
     var dateTimeSpecific = null;

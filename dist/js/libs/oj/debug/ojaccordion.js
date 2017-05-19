@@ -707,6 +707,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
         newData = this._initEventData($(event.target), this._expandTarget);
       }
 
+      if (! newData && this._expandTarget)
+        newData = this._initEventData($(event.target), this._expandTarget);
+
       return newData;
     },
 

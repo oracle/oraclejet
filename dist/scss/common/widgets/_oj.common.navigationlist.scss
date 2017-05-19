@@ -65,6 +65,7 @@
 
         .oj-navigationlist-item-element:not(.oj-navigationlist-item) {
           display: block;
+          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block.
         }
         
         .oj-navigationlist-item-element {

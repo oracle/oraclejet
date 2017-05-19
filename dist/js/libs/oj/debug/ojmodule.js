@@ -66,6 +66,10 @@ oj.ModuleBinding.defaults =
   'transitionCompletedHandler': 'handleTransitionCompleted'
 };
 
+/**
+ * @ignore
+ */
+oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
 
 (function ()
 {
@@ -81,6 +85,7 @@ oj.ModuleBinding.defaults =
       var cacheHolder;
       var endCommentNode;
       var busyStateResolver;
+      var currentEmpty;
       
       function resolveBusyState()
       {
@@ -178,6 +183,11 @@ oj.ModuleBinding.defaults =
         var cacheKey;
         var lifecycleListener;
         var animation;
+        var requireFunc;
+        var modelPath;
+        var viewPath;
+        var view;
+        var viewModel;
 
         if (typeof value === 'string')
         {
@@ -193,32 +203,67 @@ oj.ModuleBinding.defaults =
           cacheKey = unwrap(value['cacheKey']);
           lifecycleListener = unwrap(value['lifecycleListener']);
           animation = unwrap(value['animation']);
+          view = unwrap(value['view']);
+          viewModel = unwrap(value['viewModel']);
+          requireFunc = unwrap(value['require']);
         }
+        
+        if (requireFunc != null && !(requireFunc instanceof Function))
+        {
+          viewPath = requireFunc['viewPath'];
+          modelPath = requireFunc['modelPath'];
+          requireFunc = requireFunc['instance'];
+        }
+        
+        viewName = viewName == null ? moduleName : viewName;
+        
+        var empty = (oj.ModuleBinding._EMPTY_MODULE === viewName);
         
         var attachPromise = _invokeLifecycleListener(lifecycleListener, 'activated', [element, valueAccessor]);
         
         var viewPromise;
         var modelPromise;
         
-        
-        var cached = cacheKey == null ? null : cache[cacheKey];
-        
-        if (cached != null)
+        if (empty) 
         {
-          delete cache[cacheKey]; 
-          viewPromise = Promise.resolve(cached.view);
-          modelPromise = Promise.resolve(cached.model);
+          viewPromise = Promise.resolve([]);
+          modelPromise = Promise.resolve(null);    
         }
         else
         {
-          if (modelFactory != null)
+          var cached = cacheKey == null ? null : cache[cacheKey];
+          
+          if (cached != null)
+          {
+            delete cache[cacheKey]; 
+            viewPromise = Promise.resolve(cached.view);
+            modelPromise = Promise.resolve(cached.model);
+          }
+        }
+        
+        if (viewPromise == null && view != null)
+        {
+          viewPromise = Promise.resolve(view);
+        }
+        
+        if (modelPromise == null)
+        {
+          if (viewModel != null)
+          {
+            modelPromise = Promise.resolve(viewModel);
+          }
+          else if (modelFactory != null)
           {
             modelPromise = ko.ignoreDependencies(modelFactory['createViewModel'], modelFactory, [params, valueAccessor]);
           }
           
           if (modelPromise == null && moduleName != null)
           {
-            modelPromise = _getRequirePromise(oj.ModuleBinding.defaults['modelPath'] + moduleName);
+            if (modelPath == null)
+            {
+              modelPath = oj.ModuleBinding.defaults['modelPath'];
+            }
+            modelPromise = _getRequirePromise(requireFunc, modelPath + moduleName);
           }
           
           if (modelPromise != null)
@@ -244,7 +289,7 @@ oj.ModuleBinding.defaults =
             );
             
             // Handle the case where the Model is responsible for creating a View
-            if (viewFunction != null)
+            if (viewPromise == null && viewFunction != null)
             {
               viewPromise = modelPromise.then(
                 function(id, model)
@@ -273,16 +318,18 @@ oj.ModuleBinding.defaults =
           }
           if (viewPromise == null)
           {
-            viewName = viewName == null ? moduleName : viewName;
             if (viewName != null)
             {
-              viewPromise = _getRequirePromise(oj.ModuleBinding.defaults['viewPath'] + viewName + 
-                                                                      oj.ModuleBinding.defaults['viewSuffix']);
+              if (viewPath == null)
+              {
+                viewPath = oj.ModuleBinding.defaults['viewPath'];
+              }
+              viewPromise = _getRequirePromise(requireFunc, viewPath + viewName + oj.ModuleBinding.defaults['viewSuffix']);
             }
             else
             {
               resolveBusyState();
-              throw new Error('View name must be specified');
+              throw new Error('View name or view instance must be specified');
             }
           }
           
@@ -339,7 +386,7 @@ oj.ModuleBinding.defaults =
             var oldKoNodes = _getKoNodes(element, cacheHolder);
             
             
-            if (currentCacheKey != null)
+            if (currentCacheKey != null && !currentEmpty)
             {
               saveInCache = true;
               cachedNodeArray = oldDomNodes;
@@ -397,6 +444,7 @@ oj.ModuleBinding.defaults =
     
               currentViewModel = model;
               currentCacheKey = cacheKey;
+              currentEmpty = empty;
             };
             
             
@@ -825,12 +873,13 @@ oj.ModuleBinding.defaults =
   /**
    * @ignore
    */
-  function _getRequirePromise(module)
+  function _getRequirePromise(requireFunc, module)
   {
+    requireFunc = requireFunc ? requireFunc : require;
     return new Promise(
       function(resolve, reject)
       {
-        require([module],
+        requireFunc([module],
           function(loaded)
           {
             resolve(loaded);
@@ -1140,13 +1189,23 @@ oj.ModuleBinding.defaults =
  
    /**
    * @name Options
-   * @property {string} name ViewModel name. Required if viewModelFactory parameter is not specified. The name will be
+   * @property {Promise|String|Array<Node>|DocumentFragment} view the View or a Promise for the View.
+   * A value has to be a document fragment, an array of DOM nodes, or a string containing the HTML. This option takes
+   * precedence over all other ways to load a View
+   * @property {Promise|Function|Object} viewModel the ViewModel(constrcutor or instance) or a Promise for the ViewModel.
+   * This option takes precedence over all other ways to load a ViewModel
+   * @property {string} name ViewModel name. The name will be
    * used to load an AMD module containing the definition of the ViewModel. If the module returns a function, it will be used
    * as a ViewModel constructor, and any other return value (including null) will be treated as a ViewModel instance.
-   * If the entire binding's value is a string, it will be treated as a 'name' option.
+   * If the entire binding's value is a string, it will be treated as a 'name' option. If the name is set to "oj:blank", 
+   * an empty View will be displayed, and no ViewModel will be loaded
    * If you need to create a view-only module, use the <code>viewName</code> option
    * @property {string} viewName View name. If omitted, the name of the View is assumed to be the same as the name of the 
-   * VewModel.
+   * VewModel. If the name is set to "oj:blank", an empty View will be displayed, and no ViewModel will be loaded
+   * @property {Function|{instance: Funcion, viewPath: string, modelPath: string}} require an instance of the require()
+   * function to be used by this ojModule, or an object optionally defining the require instance, the View path prefix and
+   * the ViewModel path prefix. It is recommended that the instance, the viewPath and the modelPath be defined if you are
+   * using ojModule within a Composite component, and you are not passing the View and ViewModel instances to ojModule directly.
    * @property {Object} viewModelFactory instance of the factory that implements <code>createViewModel(params, valueAccessor)</code> 
    * method. The method has to a return a Promise that will resolve to the ViewModel instance or constructor.
    * @property {Object} params object that will be passed into the ViewModel constructor or the
@@ -1154,7 +1213,7 @@ oj.ModuleBinding.defaults =
    * Knockout binding expressions.
    * @property {string} createViewFunction name of the ViewModel function used to create a View. If this parameter is 
    * specified, the ViewModel will be responsible for providing the definition of the View. The function has to return 
-   * a Promise that will be resolved to document fragment, an array of DOM nodes or a string containing the HTML
+   * a Promise that will be resolved to document fragment, an array of DOM nodes, or a string containing the HTML
    * @property {string} cacheKey The key used to cache the View after it is no longer displayed. Setting this parameter will 
    * enable View caching. When the View is about t be cached, its Knockout bindings will not be deactivated when 
    * the View is removed from DOM tree. The cache will be discarded after when the window object is destroyed or 

@@ -253,10 +253,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
     },
 
     //_ComboUtils
-    _focus: function($el)
+    _focus: function(widget, $el)
     {
       if ($el[0] === document.activeElement)
         return;
+      
+      // add busy state
+      var resolveBusyState = widget._addBusyState("focus");
 
       /* set the focus in a timeout - that way the focus is set after the processing
          of the current event has finished - which seems like the only reliable way
@@ -283,6 +286,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
               range.select();
             }
           }
+          
+          resolveBusyState();
         // Set a 40 timeout. In voiceover mode, previous partial value was read. See 
         // This happens on ios Safari only, not Chrome. Setting a 40 timeout fixes the issue 
         // on Safari in voiceover.
@@ -1609,7 +1614,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         // if the input part of the component is clipped in overflow, implicitly close the dropdown popup.
         if (oj.PositionUtils.isAligningPositionClipped(props))
         {
-          this._closeDelayTimer = window.setTimeout($.proxy(this.close, this), 1);
+          // add busy state
+          var resolveBusyState = this._addBusyState("close popup");
+          this._closeDelayTimer = window.setTimeout(function () {
+            $.proxy(this.close, this);
+            resolveBusyState();
+          }, 1);
+          
           return;
         }
 
@@ -2096,15 +2107,34 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         var minLength = this.opts.minLength || 0;
         if (term.length >= minLength)
         {
-          clearTimeout(this.queryTimer);
+          if (!isNaN(this._queryTimer))
+          {
+            clearTimeout(this._queryTimer);
+            this._queryTimer = Number.NaN;
+
+            // need to resolve the busy state when clearing the timer
+            if (this._queryResolveBusyState)
+            {
+              this._queryResolveBusyState();
+              this._queryResolveBusyState = null;
+            }
+          }
+
           if (!initial || initial === true)
           {
             this._queryResults(initial);
           }
           else
           {
-            this.queryTimer = setTimeout(function() {
+            this._queryResolveBusyState = this._addBusyState("query results");
+            this._queryTimer = setTimeout(function() {
               self._queryResults(initial);
+
+              if (self._queryResolveBusyState)
+                self._queryResolveBusyState();
+
+              self._queryResolveBusyState = null;
+              self._queryTimer = Number.NaN;
             }, _ComboUtils.DEFAULT_QUERY_DELAY);
           }
         }
@@ -2201,23 +2231,24 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
             if ((!data || data.results.length === 0 || this._isDataSelected(data)) 
               && _ComboUtils.checkFormatter(self.ojContext, opts.formatNoMatches, "formatNoMatches"))
             {
+              var transtr = opts.formatNoMatches(self.ojContext, search.val());
               if (this._classNm === "oj-select" || this.header)
               {
                 var li = $("<li>");
                 li.addClass("oj-listbox-no-results");
 
-                var transtr = opts.formatNoMatches(self.ojContext, search.val());
                 li.text(transtr);
                 this._showDropDown();
                 this._preprocessResults(results);
                 results.append(li); //@HTMLUpdateOK
                 postRender();
-                this._updateMatchesCount(transtr);
               }
               else
               {
                 this.close();
               }
+
+              this._updateMatchesCount(transtr);
               return;
             }
 
@@ -2238,7 +2269,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
             this._postprocessResults(data, initial);
             postRender();
 
-            this._updateMatchesCount(opts.formatMoreMatches(self.ojContext, data.results.length));
+            this._updateMatchesCount(opts.formatMoreMatches(self.ojContext,
+                                      this._findHighlightableChoices().length));
           })
         }
         );
@@ -2285,7 +2317,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       //_AbstractOjChoice
       _focusSearch : function ()
       {
-        _ComboUtils._focus(this.search);
+        _ComboUtils._focus(this, this.search);
       },
 
       //_AbstractOjChoice
@@ -2481,7 +2513,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         }
 
         //if search box is being displayed, focus on the search box otherwise focus on the select box
-        _ComboUtils._focus(focusOnSearchBox ? this.search : this.selection);
+        _ComboUtils._focus(this, focusOnSearchBox ? this.search : this.selection);
 
         ///disable "click" on spyglass
         if (focusOnSearchBox)
@@ -2508,6 +2540,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           len = this.datalist ? this.datalist[0].length : (this.opts.options ? this.opts.options.length: 0);
           
         return (len > threshold || this._userTyping);
+      },
+      
+      //_AbstractOjChoice
+      _addBusyState: function (description)
+      {
+        var busyStateOptions = {"description": description};
+        var busyContext = oj.Context.getContext(this.container[0]).getBusyContext();
+        
+        return busyContext.addBusyState(busyStateOptions);
       },
       
       _isDataSelected : function (data)
@@ -3467,7 +3508,7 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
         //don't set focus on the select box if event target is not select element
         if (! (event instanceof MouseEvent) ||
             event.target == this.selection || event.target == this.search) {
-          _ComboUtils._focus(this.selection);
+          _ComboUtils._focus(this, this.selection);
         }
 
         ///remove "mouse click" listeners on spyglass
@@ -4877,7 +4918,7 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       
       if (event && (! (event instanceof MouseEvent) ||
           event.target == this.selection || event.target == this.search))
-        _ComboUtils._focus(this.selection);
+        _ComboUtils._focus(this, this.selection);
     },
 
     _clearSearch : function ()
@@ -8000,7 +8041,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         "<div class='oj-listbox-drop' style='display:none' role='presentation'>",
         "   <ul class='oj-listbox-results' role='listbox'>",
         "   </ul>",
-        "</div>"].join(""));
+        "</div>",
+
+        "<div role='region' class='oj-helper-hidden-accessible oj-listbox-liveregion' aria-live='polite'></div>"
+      ].join(""));
 
       var trigger = container.find(".oj-inputsearch-search-button");
       this._attachSearchIconClickHandler(trigger);
@@ -9042,13 +9086,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       if (key === "value") {
         //clone the value, otherwise _setDisplayValue will not be invoked on binding value to ko observableArray.
         //TODO: Need to revisit this once 18724975 is fixed.
-        if (Array.isArray(value)) {
+
+        if (value != null) {
+          if (Array.isArray(value)) {
             value = value.slice(0);
-        }
-        else if (typeof value === "string") {
-          value = [value];
-        } else {
-          oj.Logger.error("ojInputSearch value has to be an array of string or a string.");
+          }
+          else if (typeof value === "string") {
+            value = [value];
+          } else {
+            oj.Logger.error("ojInputSearch value has to be an array of string or a string.");
+          }
         }
 
         // valueChangeTrigger will be used while setting the display value.
@@ -9159,6 +9206,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
     _parseValue: function(submittedValue) 
     {
       var parsedVal = [];
+
+      if (submittedValue == null)
+        return parsedVal;
 
       if (Array.isArray(submittedValue)) {
         for (var i = 0; i<submittedValue.length; i++) {

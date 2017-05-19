@@ -262,6 +262,17 @@
       @include oj-browser-focus-outline-approximation($primaryTextColor);
    }
 
+  // 
+  // In order to support the proper stacking context for animated nested dialogs,
+  // we use the following selector to set the z-index of the animating dialog to
+  // the top of the stack. Note that the dialog component adds the oj-animate-open
+  // class when a dialog is animating during dialog open.
+  // 
+ .oj-dialog-layer.oj-focus-within,
+ .oj-dialog-layer.oj-animate-open {
+    z-index: $dialogZindex + 1;
+  } 
+
   // icons
   //------------------------------------------
 

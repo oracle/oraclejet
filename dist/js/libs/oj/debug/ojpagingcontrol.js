@@ -3066,19 +3066,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           
           if (isDot)
           {
-            pagingControlNavPageSpan.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOT_BULLET_CLASS);
-            this._AddHoverable(pagingControlNavPageSpan);
+            // hide the number
+            pagingControlNavPageSpan.addClass(this._CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
+            // add the dot
+            var pagingControlNavPageDotBulletSpan = $(document.createElement('span'));
+            pagingControlNavPageDotBulletSpan.addClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_DOT_BULLET_CLASS);
+            this._AddHoverable(pagingControlNavPageDotBulletSpan);
             
             if (currentPage == pageNum)
             {
-               pagingControlNavPageSpan.addClass(this._MARKER_STYLE_CLASSES._SELECTED);
-               pagingControlNavPageSpan.addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
+               pagingControlNavPageDotBulletSpan.addClass(this._MARKER_STYLE_CLASSES._SELECTED);
+               pagingControlNavPageDotBulletSpan.addClass(this._MARKER_STYLE_CLASSES._ACTIVE);
             }
+            pagingControlNavPage.append(pagingControlNavPageDotBulletSpan); //@HTMLUpdateOK
+          }
+          else
+          {
+            this._AddHoverable(pagingControlNavPage);
           }
           var dirAttrVal = isRTL ? 'rtl' : 'ltr';
           pagingControlNavPageSpan.attr('dir', dirAttrVal);
           pagingControlNavPage.append(pagingControlNavPageSpan); //@HTMLUpdateOK
-          this._AddHoverable(pagingControlNavPage);
           if (isVertical)
           {
             pagingControlNavPage.css('display', 'block');

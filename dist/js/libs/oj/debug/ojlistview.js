@@ -121,7 +121,8 @@ oj.DataSourceContentHandler.prototype.RenderContent = function()
         presentation = document.createElement("li");
         row = document.createElement("ul");
         presentation.appendChild(row); //@HTMLUpdateOK 
-        $(presentation).attr("role", "presentation");
+        $(presentation).attr("role", "presentation")
+                       .css("width", "100%");
         $(row).attr("role", "row")
               .addClass(this.m_widget.getGroupStyleClass());
 
@@ -814,6 +815,16 @@ oj.TableDataSourceContentHandler.prototype._shouldAppendLoadingIndicator = funct
 };
 
 /**
+ * Whether the current datasource is a pagingdatasource.
+ * @return {boolean} if it is, false otherwise
+ * @private
+ */
+oj.TableDataSourceContentHandler.prototype._isPagingDataSource = function()
+{
+    return oj.PagingTableDataSource && (this.m_dataSource instanceof oj.PagingTableDataSource);
+};
+
+/**
  * @param {boolean} forceFetch
  * @override
  */
@@ -832,7 +843,7 @@ oj.TableDataSourceContentHandler.prototype.fetchRows = function(forceFetch)
 
         // otherwise paging control will initialize fetching of content
         // note this flag can be remove once we sort out not having paging control initialize fetch
-        if (oj.PagingTableDataSource && (this.m_dataSource instanceof oj.PagingTableDataSource))
+        if (this._isPagingDataSource())
         {
             initFetch = false;
 
@@ -1186,7 +1197,8 @@ oj.TableDataSourceContentHandler.prototype.handleModelResetEvent = function(even
     this.m_widget.ClearCache();
 
     // fetch data
-    this.fetchRows(true);
+    // don't force fetch for paging datasource as it also listens for model reset event, which will cause double fetch
+    this.fetchRows(this._isPagingDataSource() ? false : true);
 
     this.signalTaskEnd(); // signal method task end
 };
@@ -1639,7 +1651,7 @@ oj.StaticContentHandler.prototype.RenderContent = function()
     {
         // in card layout, this is going to be a single row, N columns grid
         // so we'll need to wrap all <li> within a row
-        $(this.m_root).children().wrapAll("<li role='presentation'><ul role='row' class='"+this.m_widget.getGroupStyleClass()+"'></ul></li>"); //@HTMLUpdateOK 
+        $(this.m_root).children().wrapAll("<li role='presentation' style='width:100%'><ul role='row' class='"+this.m_widget.getGroupStyleClass()+"'></ul></li>"); //@HTMLUpdateOK 
         root = $(this.m_root).children("li").first().children("ul").first().get(0);
     }
     this.modifyContent(root, 0);
@@ -3077,7 +3089,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      */
     SetAriaProperties: function()
     {
-        this.element.attr("aria-activedescendant", "");
         if (this._isMultipleSelection())
         {
             this.element.attr("aria-multiselectable", true);
@@ -5029,7 +5040,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         var removeAttr, isGroupItem;
 
         removeAttr = true;
-        if (item.attr("role") === "presentation")
+        if (item.attr("role") === "presentation" || oj.AgentUtils.getAgentInfo()['browser'] === oj.AgentUtils.BROWSER.CHROME)
         {
             removeAttr = false;
         }

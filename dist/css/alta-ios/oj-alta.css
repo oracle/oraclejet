@@ -2600,12 +2600,12 @@ oj-train {
 .oj-train-label-wrapper {
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-right: 5px;
+  margin-left: 5px;
   padding-top: 14px; }
 
 .oj-train-label {
   text-decoration: none;
-  margin-right: 5px;
-  margin-left: 5px;
   color: #595959;
   text-align: center; }
 
@@ -3913,7 +3913,8 @@ oj-navigation-list:not(.oj-complete) {
   margin: 0; }
 
 .oj-navigationlist-item-element:not(.oj-navigationlist-item) {
-  display: block; }
+  display: block;
+  line-height: 0; }
 
 .oj-navigationlist-item-element {
   list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"); }
@@ -5477,6 +5478,10 @@ html[dir="rtl"] .oj-dialog-footer > .oj-button:last-child {
   outline: dotted 1px #000;
   outline: -webkit-focus-ring-color auto; }
 
+.oj-dialog-layer.oj-focus-within,
+.oj-dialog-layer.oj-animate-open {
+  z-index: 1051; }
+
 .oj-dialog-option-defaults {
   font-family: '{"animation":{"open":[{"effect":"zoomIn"},"fadeIn"],"close":[{"effect":"zoomOut","persist":"all"},"fadeOut"]},"resizeBehavior":"none","cancelBehavior":"none","dragAffordance":"none"}'; }
 
@@ -5979,13 +5984,14 @@ html[dir="rtl"] .oj-pagingcontrol-nav-arrow-section:first-child {
 /* Styling for the page mode dot bullet. */
 .oj-pagingcontrol-nav-dot-bullet {
   font-size: 0;
-  background-color: #000000;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #878c90;
   border-radius: 50%;
-  opacity: 0.2;
   position: relative;
   transition: all 0.3s ease 0s;
-  width: 1rem;
-  height: 1rem;
+  width: 0.875rem;
+  height: 0.875rem;
   display: inline-block;
   vertical-align: middle; }
 
@@ -5993,17 +5999,12 @@ html[dir="rtl"] .oj-pagingcontrol-nav-arrow-section:first-child {
 .oj-hicontrast .oj-pagingcontrol-nav-dot-bullet {
   border: 3px double; }
 
-/* Styling for the page mode dot link when selected. */
-.oj-pagingcontrol-nav-dot-bullet.oj-selected {
-  background-color: #0572ce;
-  content: "";
-  opacity: 1; }
-
-/* Styling for the page mode dot link when hovered. */
+/* Styling for the page mode dot link when selected or hovered. */
+.oj-pagingcontrol-nav-dot-bullet.oj-selected,
 .oj-pagingcontrol-nav-dot-bullet.oj-hover {
   background-color: #0572ce;
-  content: "";
-  opacity: 1; }
+  border-color: #0572ce;
+  content: ""; }
 
 /* Styling for the page mode page links. */
 .oj-pagingcontrol-nav-page {
@@ -7380,7 +7381,6 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer {
   -webkit-justify-content: center;
   justify-content: center;
   box-sizing: border-box;
-  width: calc(2 * 0.625rem + 1rem);
   height: 100%;
   padding: 0.625rem;
   position: absolute;
@@ -10679,6 +10679,11 @@ oj-choice-row .oj-radio-label,
   -webkit-flex: 1 1 auto;
   flex: 1 1 auto; }
 
+.oj-form .oj-checkboxset-single.oj-choice-direction-column .oj-checkbox-label,
+.oj-form .oj-checkboxset-single.oj-choice-row .oj-checkbox-label {
+  -webkit-flex: 0 1 auto;
+  flex: 0 1 auto; }
+
 .oj-radioset,
 .oj-checkboxset {
   display: inline-block;
@@ -10823,8 +10828,8 @@ html[dir="rtl"] .oj-checkboxset-input-start .oj-radiocheckbox-label-text, html[d
 .oj-radioset-input-start .oj-radiocheckbox-label-text {
   padding: 0 0 0 10px; }
 
-.oj-radioset-input-end .oj-radio,
-.oj-checkboxset-input-end .oj-checkbox {
+.oj-radioset-input-end .oj-radiocheckbox-icon,
+.oj-checkboxset-input-end .oj-radiocheckbox-icon {
   -webkit-order: 1;
   order: 1; }
 
@@ -10899,21 +10904,14 @@ html[dir="rtl"] .oj-form-control-inherit .oj-checkbox-label {
 .oj-choice-row-inline {
   border-top-width: 0; }
 
-.oj-radio-label,
-.oj-checkbox-label {
-  display: -webkit-flex;
-  display: flex;
-  -webkit-align-items: center;
-  align-items: center;
-  height: 100%; }
-
-.oj-radiocheckbox-label-text {
-  -webkit-flex: 1 1 auto;
-  flex: 1 1 auto;
+.oj-radioset .oj-radio-label,
+.oj-checkboxset .oj-checkbox-label {
+  height: 100%;
   -webkit-order: 0;
   order: 0; }
 
-.oj-form .oj-checkboxset-single .oj-checkbox-label {
+.oj-form .oj-checkboxset-single .oj-choice-item,
+.oj-form .oj-checkboxset-single .oj-choice-row {
   justify-content: flex-end; }
 
 .oj-form .oj-checkboxset-single .oj-radiocheckbox-label-text {
@@ -10934,10 +10932,10 @@ html[dir="rtl"] .oj-form-control-inherit .oj-checkbox-label {
 .oj-radiocheckbox-icon {
   margin: 0 10px 0 10px; }
 
-.oj-radio-label .oj-radiocheckbox-icon {
+.oj-radioset .oj-radiocheckbox-icon {
   background-image: url("images/radio_ena_unselected.svg"); }
 
-.oj-radio-label.oj-selected .oj-radiocheckbox-icon {
+.oj-radioset .oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/radio_ena_selected.svg"); }
 
 .oj-radioset-wrapper > .oj-active .oj-radiocheckbox-icon {
@@ -10946,16 +10944,16 @@ html[dir="rtl"] .oj-form-control-inherit .oj-checkbox-label {
 .oj-radioset-wrapper > .oj-selected.oj-active .oj-radiocheckbox-icon {
   background-image: url("images/radio_pressed_selected.svg"); }
 
-.oj-radio-label.oj-disabled .oj-radiocheckbox-icon {
+.oj-radioset .oj-disabled .oj-radiocheckbox-icon {
   background-image: url("images/radio_dis_unselected.svg"); }
 
-.oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+.oj-radioset .oj-disabled.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/radio_dis_selected.svg"); }
 
-.oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-checkboxset .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_ena_unselected.svg"); }
 
-.oj-checkbox-label.oj-selected .oj-radiocheckbox-icon {
+.oj-checkboxset .oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_ena_selected.svg"); }
 
 .oj-checkboxset-wrapper > .oj-active .oj-radiocheckbox-icon {
@@ -10964,55 +10962,65 @@ html[dir="rtl"] .oj-form-control-inherit .oj-checkbox-label {
 .oj-checkboxset-wrapper > .oj-active.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_pressed_selected.svg"); }
 
-.oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+.oj-checkboxset .oj-disabled .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_dis_unselected.svg"); }
 
-.oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+.oj-checkboxset .oj-disabled.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_dis_selected.svg"); }
 
-.oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
-  background-image: url("images/cbsingle_hover_unselected.svg"); }
-
-.oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
-  background-image: url("images/cbsingle_hover_selected.svg"); }
-
-.oj-hicontrast .oj-radioset .oj-radio-label .oj-radiocheckbox-icon,
-.oj-hicontrast .oj-checkboxset .oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-hicontrast .oj-radioset .oj-choice-item .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-radioset .oj-choice-row .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset .oj-choice-item .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset .oj-choice-row .oj-radiocheckbox-icon {
   background-image: none; }
 
-.oj-hicontrast .oj-checkboxset .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-checkboxset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
   content: url("images/checkbox_ena_selected.svg"); }
 
-.oj-hicontrast .oj-radioset .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-radioset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-radioset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
   content: url("images/radio_ena_selected.svg"); }
 
-.oj-hicontrast .oj-checkboxset .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-checkboxset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
   content: url("images/checkbox_dis_selected.svg"); }
 
-.oj-hicontrast .oj-radioset .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-radioset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-radioset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
   content: url("images/radio_dis_selected.svg"); }
 
-.oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
-.oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+.oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
   background-image: none; }
 
 @media print {
-  .oj-radioset .oj-radio-label .oj-radiocheckbox-icon,
-  .oj-checkboxset .oj-checkbox-label .oj-radiocheckbox-icon,
-  .oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
-  .oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+  .oj-radioset .oj-choice-item .oj-radiocheckbox-icon,
+  .oj-radioset .oj-choice-row .oj-radiocheckbox-icon,
+  .oj-checkboxset .oj-choice-item .oj-radiocheckbox-icon,
+  .oj-checkboxset .oj-choice-row .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-item.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-row.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-item.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-row.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
     background-image: none; }
-  .oj-radioset .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after {
+  .oj-radioset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-radioset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
     content: url("images/radio_ena_selected.svg"); }
-  .oj-checkboxset .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+  .oj-checkboxset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-checkboxset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
     content: url("images/checkbox_ena_selected.svg"); }
-  .oj-radioset .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+  .oj-radioset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-radioset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
     content: url("images/radio_dis_selected.svg"); }
-  .oj-checkboxset .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+  .oj-checkboxset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-checkboxset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
     content: url("images/checkbox_dis_selected.svg"); } }
 
-.oj-radioset-input-start .oj-radiocheckbox-label-text,
-.oj-checkboxset-input-start .oj-radiocheckbox-label-text,
+.oj-radioset-input-start .oj-radio-label,
+.oj-checkboxset-input-start .oj-checkbox-label,
 .oj-radioset-input-end .oj-radiocheckbox-icon,
 .oj-checkboxset-input-end .oj-radiocheckbox-icon {
   -webkit-order: 1;
@@ -11020,8 +11028,8 @@ html[dir="rtl"] .oj-form-control-inherit .oj-checkbox-label {
 
 .oj-radioset-input-start .oj-radiocheckbox-icon,
 .oj-checkboxset-input-start .oj-radiocheckbox-icon,
-.oj-radioset-input-end .oj-radiocheckbox-label-text,
-.oj-checkboxset-input-end .oj-radiocheckbox-label-text {
+.oj-radioset-input-end .oj-radio-label,
+.oj-checkboxset-input-end .oj-checkbox-label {
   -webkit-order: 0;
   order: 0; }
 
@@ -11102,12 +11110,12 @@ html[dir="rtl"] .oj-radioset-input-end.oj-choice-direction-column .oj-choice-ite
   background-size: 0;
   background-image: none; }
 
-.oj-radio-label .oj-radiocheckbox-icon,
-.oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-choice-row .oj-radiocheckbox-icon,
+.oj-choice-item .oj-radiocheckbox-icon {
   background-image: none; }
 
-.oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-.oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+.oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+.oj-choice-item.oj-disabled .oj-radiocheckbox-icon {
   background-image: none; }
 
 .oj-radioset-wrapper > .oj-active .oj-radiocheckbox-icon,
@@ -11120,92 +11128,112 @@ html[dir="rtl"] .oj-radioset-input-end.oj-choice-direction-column .oj-choice-ite
 .oj-checkboxset-wrapper > .oj-active.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/checkbox_ena_selected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-checkboxset.oj-checkboxset-single .oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
+  background-image: url("images/cbsingle_hover_unselected.svg"); }
+
+.oj-checkboxset.oj-checkboxset-single .oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+  background-image: url("images/cbsingle_hover_selected.svg"); }
+
+.oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon {
   width: 22px;
   height: 22px; }
 
-.oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_ena_unselected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_ena_selected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label:active .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label:active .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label:active .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item:active .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row:active .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item:active .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row:active .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_pressed_unselected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label:active.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label:active.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_pressed_selected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row.oj-disabled .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_dis_unselected.svg"); }
 
-.oj-choice-direction-row .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-direction-row .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-.oj-choice-row-inline .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-.oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+.oj-choice-direction-row .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-direction-row .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+.oj-choice-row-inline .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+.oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon {
   background-image: url("images/cbsingle_dis_selected.svg"); }
 
-.oj-hicontrast oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-.oj-hicontrast oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-hicontrast .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-.oj-hicontrast .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
-.oj-hicontrast .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+.oj-hicontrast oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+.oj-hicontrast oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon {
   background-image: none; }
 
-.oj-hicontrast .oj-choice-direction-row .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-direction-row .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-choice-direction-row .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-direction-row .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after {
   content: url("images/cbsingle_ena_selected.svg"); }
 
-.oj-hicontrast .oj-choice-direction-row .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-direction-row .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-.oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+.oj-hicontrast .oj-choice-direction-row .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-direction-row .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-choice-row-inline .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+.oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
   content: url("images/cbsingle_dis_selected.svg"); }
 
 @media print {
-  .oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-  .oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-  .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-  .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+  .oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+  .oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+  .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+  .oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon,
+  .oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon {
     background-image: none; }
-  .oj-choice-direction-row .oj-radio-label.oj-disabled .oj-radiocheckbox-icon:after,
-  .oj-choice-direction-row .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after,
-  .oj-choice-row-inline .oj-radio-label.oj-disabled .oj-radiocheckbox-icon:after,
-  .oj-choice-row-inline .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after,
-  .oj-checkboxset-single .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after {
+  .oj-choice-direction-row .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-choice-direction-row .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-choice-row-inline .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-choice-row-inline .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-checkboxset-single .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+  .oj-checkboxset-single .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after {
     content: url("images/cbsingle_dis_unselected.svg"); }
-  .oj-choice-direction-row .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-  .oj-choice-direction-row .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-  .oj-choice-row-inline .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-  .oj-choice-row-inline .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-  .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after {
+  .oj-choice-direction-row .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-choice-direction-row .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-choice-row-inline .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-choice-row-inline .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+  .oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after {
     content: url("images/cbsingle_dis_selected.svg"); } }
 
 /* combobox */
@@ -12771,8 +12799,8 @@ oj-colorpalette-container:not(.oj-complete) {
   -webkit-print-color-adjust: exact; }
 
 .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
-  width: 50px;
-  height: 50px; }
+  width: 64px;
+  height: 64px; }
 
 .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg.oj-colorpalette-swatch-showlabel .oj-colorpalette-swatch {
   width: 64px;
@@ -12821,9 +12849,6 @@ oj-colorpalette-container:not(.oj-complete) {
   background-color: transparent;
   background-image: none; }
 
-.oj-colorpalette-container .oj-colorpalette-grid .oj-listview.oj-disabled .oj-listview-item.oj-selected {
-  background-color: transparent; }
-
 .oj-colorpalette-swatch-text {
   display: block;
   text-align: center;
@@ -12867,11 +12892,28 @@ oj-colorpalette-container:not(.oj-complete) {
   border-width: 0;
   cursor: pointer; }
 
+.oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
+  width: auto;
+  height: auto;
+  border-width: 0;
+  border-color: transparent;
+  border-radius: 0;
+  margin-top: 0;
+  margin-bottom: 0; }
+  html:not([dir="rtl"]) .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
+    margin-left: 0;
+    margin-right: 0; }
+  html[dir="rtl"] .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
+    margin-left: 0;
+    margin-right: 0; }
+
+.oj-colorpalette-container .oj-listview-card-layout .oj-listview-group {
+  margin-bottom: 0; }
+
 .oj-colorpalette-container .oj-listview-item.oj-focus-highlight::after {
   height: calc(100% - 2px); }
 
 /*  Remove listview item background and outline  */
-.oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus,
 .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
 .oj-colorpalette-container .oj-listview-item.oj-selected {
   background-color: transparent;

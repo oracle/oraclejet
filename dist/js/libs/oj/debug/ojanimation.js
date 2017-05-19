@@ -31,31 +31,39 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  *   <li>Define action specific CSS style classes on the animated item.
  * </ul>
  *
- * @example <caption>Customize a default "open" animation with oj.AnimationUtils method:</caption>
+ * <h4>Examples</h4>
+ * <br>
+ * <i>Customize a default "open" animation with oj.AnimationUtils method:</i>
+ * <pre class="prettyprint"><code>
  * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
  *   if (ui.action == "open") {
  *     event.preventDefault();
  *     oj.AnimationUtils.slideIn(ui.element).then(ui.endCallback);
  *   }
  * });
- *
- * @example <caption>Customize a default "close" animation with jQuery method:</caption>
+ * </code></pre>
+ * <br>
+ * <i>Customize a default "close" animation with jQuery method:</i>
+ * <pre class="prettyprint"><code>
  * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
  *   if (ui.action == "close") {
  *     event.preventDefault();
  *     $(ui.element).fadeOut(ui.endCallback);
  *   }
  * });
- *
- * @example <caption>Customize a default "update" animation with CSS style classes:</caption>
+ * </code></pre>
+ * <br>
+ * <i>Customize a default "update" animation with CSS style classes:</i>
+ * <pre class="prettyprint"><code>
  * $( ".selector" ).on( "ojanimatestart", function( event, ui ) {
  *   if (ui.action == "update") {
  *     event.preventDefault();
  *     ui.endCallback();
  *   }
  * });
+ * </code></pre>
  *
- * @example
+ * <pre class="prettyprint"><code>
  * .selector .oj-animate-update {
  *   color: red;
  * }
@@ -63,6 +71,31 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'], function(oj, 
  *   transition: color 1s;
  *   color: black;
  * }
+ * </code></pre>
+ *
+ * <h3 id="busy-state-section">
+ *   Adding Busy State
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#busy-state-section"></a>
+ * </h3>
+ *
+ * <p>Animations are asynchronous by nature.  Sometimes applications may need to wait for an animation to end before
+ *    proceeding with other operations.  All the effect methods in oj.AnimationUtils return promises that are
+ *    resolved when the animations end.</p>
+ * <p>In cases where applications use the {@link oj.BusyContext} class to track the busy state of components or pages, it is
+ *    up to the callers of the effect methods to add busy state to the appropriate context, which may or may not
+ *    be the context that contains the element being animated.</p>
+ *
+ * <h4>Examples</h4>
+ * <br>
+ * <i>Add a busy state while an animation is in progress:</i>
+ * <pre class="prettyprint"><code>
+ * // Context node is usually the animated element but can also be a node for any
+ * // context that wants to wait for the animation to end.
+ * var contextNode = element;
+ * var busyContext = oj.Context.getContext(contextNode).getBusyContext();
+ * var resolveFunc = busyContext.addBusyState({"description": "Animation in progress"});
+ * oj.AnimationUtils.slideOut(element).then(resolveFunc);
+ * </code></pre>
  *
  * @namespace
  * @export
@@ -587,6 +620,7 @@ oj.AnimationUtils._fade = function(element, options, effect, startOpacity, endOp
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {number=} options.startOpacity starting opacity. Default is 0.
  * @param {number=} options.endOpacity  ending opacity. Default is 1.
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -613,6 +647,7 @@ oj.AnimationUtils.fadeIn = function(element, options)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {number=} options.startOpacity starting opacity. Default is 1.
  * @param {number=} options.endOpacity  ending opacity. Default is 0.
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -642,6 +677,7 @@ oj.AnimationUtils.fadeOut = function(element, options)
  * @param {string=} options.endMaxHeight ending max-height value to expand to.  Default is natural element height.
  * @param {string=} options.startMaxWidth starting max-width value to expand from.  Default is "0".
  * @param {string=} options.endMaxWidth starting max-width value to expand to.  Default is natural element width.
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -676,6 +712,7 @@ oj.AnimationUtils.expand = function(element, options)
  * @param {string=} options.endMaxHeight ending max-height value to collapse to.  Default is "0".
  * @param {string=} options.startMaxWidth starting max-width value to collapse from.  Default is natural element width.
  * @param {string=} options.endMaxWidth starting max-width value to collapse to.  Default is "0".
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -753,6 +790,7 @@ oj.AnimationUtils._expandCollapse = function(element, options, isExpand)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.axis the axis along which to scale the element. Valid values are "x", "y", or "both". Default is "both".
  * @param {string=} options.transformOrigin set the CSS transform-origin property, which controls the anchor point for the zoom. Default is "center".
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -779,6 +817,7 @@ oj.AnimationUtils.zoomIn = function(element, options)
  *                                    Set to "all" to persist the inline style.  Default is "none".
  * @param {string=} options.axis the axis along which to scale the element. Valid values are "x", "y", or "both". Default is "both".
  * @param {string=} options.transformOrigin set the CSS transform-origin property, which controls the anchor point for the zoom. Default is "center".
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -831,6 +870,7 @@ oj.AnimationUtils._zoom = function(element, options, isIn)
  *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
  * @param {string=} options.offsetY The offset on the y-axis to translate from. This value must be a number followed by a unit such as "px", "em", etc.
  *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -861,6 +901,7 @@ oj.AnimationUtils.slideIn = function(element, options)
  *                                  If moving in a horizontal direction, default to element width. Otherwise, default to "0px".
  * @param {string=} options.offsetY The offset on the y-axis to translate to. This value must be a number followed by a unit such as "px", "em", etc.
  *                                  If moving in a vertical direction, default to element height. Otherwise, default to "0px".
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -962,6 +1003,7 @@ oj.AnimationUtils._slide = function(element, options, isIn)
  *                                   Default is specified in the "oj-animation-effect-ripple" CSS class.
  * @param {number=} options.startOpacity start opacity of the ripple. Default is specified in the "oj-animation-effect-ripple" CSS class.
  * @param {number=} options.endOpacity end opacity of the ripple. Default is 0.
+ * @return {Promise} a promise that will be resolved when the animation ends
  *
  * @export
  * @memberof oj.AnimationUtils
@@ -986,13 +1028,13 @@ oj.AnimationUtils.ripple = function(element, options)
   
   // prepend the rippler instead of append so that it doesn't obscure other children
   var position = (ele.css('position') == 'static') ? ele.position() : {'left':0, 'top':0};
-  ele.prepend(container);
+  ele.prepend(container); //@HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
   container.css({'left': position['left'] + 'px', 
                  'top': position['top'] + 'px',
                  'width': width + 'px',
                  'height': height + 'px'});
   
-  container.prepend(rippler);
+  container.prepend(rippler); //@HTMLUpdateOK; container is constructed by component code and is not using string passed in through any APIs.
   
   var fromCSS = fromState['css'] = {};
   var toStateCSS = toState['css'] = {};
@@ -1237,6 +1279,8 @@ oj.AnimationUtils._flip = function(element, options, effect, startAngle, endAngl
  *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
  *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
  *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
+ * @return {Promise} a promise that will be resolved when the animation ends
+ *
  * @export
  * @memberof oj.AnimationUtils
  */
@@ -1273,6 +1317,8 @@ oj.AnimationUtils.flipIn = function(element, options)
  *                                         has children to represent the front and back faces of a card.  The child that represents the back face must have
  *                                         the "oj-animation-backface" marker class.  Use this option instead of the "transform-style: preserve-3d" CSS style because
  *                                         some browsers do not support "transform-style".  See the cookbook for a Card Flip example of using this option.</p>
+ * @return {Promise} a promise that will be resolved when the animation ends
+ *
  * @export
  * @memberof oj.AnimationUtils
  */

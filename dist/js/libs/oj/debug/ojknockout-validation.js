@@ -544,27 +544,39 @@ oj.InvalidComponentTracker.prototype.focusOnFirstInvalid = function()
   var firstInvalid = null;
   var self = this;
   var updateCounter = this._updateCounter;
+  var busyContext;
+  var resolveBusyState;
   
+  // we don't always have a element associated, so this is on the page level context
+  busyContext = oj.Context.getPageContext().getBusyContext();
+  resolveBusyState = busyContext.addBusyState(
+    {"description" : "Setting Focus to first invalid component."});
+
   if (this['invalidShown'])
   {
     firstInvalid = this._getFirstInvalidComponent();
   }
 
-  // always call focus handler on a timer; to give time for updates to be applied on component. 
-  // oj.ComponentBinding.applyUpdates, happens on a timer.
+  // always call focus handler on a timer to give time for binding layer to
+  // apply changes on the component.
   setTimeout(function () {
-      // sometimes when this timer is called, firstInvalid may not have been determined 
-      // yet. Or the invalid states could have changed in between the timer being set and the 
-      // callback being called.
-      firstInvalid = (updateCounter === self._updateCounter) ? 
-                     firstInvalid || self._getFirstInvalidComponent() :
-                     self._getFirstInvalidComponent(); 
-      if (firstInvalid)
-      {
-        // Call a protected method Focus() exposed on editable components for now.
-        firstInvalid.call(firstInvalid, "Focus");
-      }
-    }, 1);
+
+    // sometimes when this timer is called, firstInvalid may not have been determined 
+    // yet. Or the invalid states could have changed in between the timer being set and the 
+    // callback being called.
+    // TODO: talk to Pavitra regarding this logic, it seems unnecessary. 
+    firstInvalid = (updateCounter === self._updateCounter) ? 
+                   firstInvalid || self._getFirstInvalidComponent() :
+                   self._getFirstInvalidComponent(); 
+
+    if (firstInvalid)
+    {
+      // Call a protected method Focus() exposed on editable components for now.
+      firstInvalid.call(firstInvalid, "Focus");
+    }
+
+    resolveBusyState();
+  }, 1);
   
   return firstInvalid ? true : false;
 };

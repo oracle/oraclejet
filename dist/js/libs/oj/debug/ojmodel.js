@@ -869,7 +869,7 @@ oj.Model._init = function(model, attributes, options, properties) {
             model['parse'] = parse;
         }
  
-        attrCopy = oj.Model._cloneAttributes(attributes, model.attributes);
+        model.attributes = attrCopy = oj.Model._cloneAttributes(attributes, model.attributes);
         
         attrCopy = parse ? model['parse'](attrCopy) : attrCopy;
         if (attrCopy == null || attrCopy === undefined) {
@@ -1269,21 +1269,45 @@ oj.Model.prototype.clear = function(options) {
 };
 
 oj.Model._cloneAttributes = function(oldData, newData) {    
-    newData = newData || {};
-    // Handle not overwriting defaults with undefined
-    var prop;
-    for (prop in oldData) {
-        if (newData.hasOwnProperty(prop) && oldData.hasOwnProperty(prop)) {
-            // They both have this: now is oldData undefined?
-            if (oldData[prop] === undefined) {
-                // Remove it so it doesn't get copied/overwritten
-                delete oldData[prop];
+          newData = newData || {};
+
+          // Handle not overwriting defaults with undefined
+          var newDataKeys = Object.keys(newData);
+          var prop;
+
+          var canUseJson = true;
+          
+          
+          if(newDataKeys.length > 0){
+            for (prop in newData) {
+              if (newData.hasOwnProperty(prop) && oldData.hasOwnProperty(prop)) {
+                // They both have this: now is oldData undefined?
+                if (oldData[prop] === undefined) {
+                  // Remove it so it doesn't get copied/overwritten
+                  delete oldData[prop];
+                }
+              }
             }
-        }
-    }
-    oj.CollectionUtils.copyInto(newData, oldData, undefined, true, 10000);
-    return newData;
-};
+            oj.CollectionUtils.copyInto(newData, oldData, undefined, true, 10000);
+            return newData;
+          }
+          var type;
+          for (prop in oldData) {
+            type = $.type(oldData[prop]);
+            if (type === "function" || type === "undefined" || type === "date" || type === "array" || type === "object") {
+              canUseJson = false;
+              break;
+            }
+          }
+
+          if (canUseJson) {
+            newData = JSON.parse(JSON.stringify(oldData));
+          }
+          else {
+             oj.CollectionUtils.copyInto(newData, oldData, undefined, true, 10000);
+          }
+          return newData;
+ };
 
 /**
  * Return a copy of the model with identical attributes and settings

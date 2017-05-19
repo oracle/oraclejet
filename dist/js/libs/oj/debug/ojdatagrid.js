@@ -6301,7 +6301,7 @@ DvtDataGrid.prototype._shouldLongScroll = function(scrollLeft, scrollTop)
  * @param {number} scrollTop - the position the scroller top should be
  */
 DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
-{  
+{
     if (scrollLeft != this.m_currentScrollLeft)
     {
         this.m_prevScrollLeft = this.m_currentScrollLeft;
@@ -6331,23 +6331,15 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
     // update header and databody scroll position
     this._syncScroller();
 
-    if (!this.m_utils.isTouchDevice())
-    {
-        // If detect an actual scroll, fire scroll event
-        if (this.m_prevScrollTop !== scrollTop || this.m_prevScrollLeft !== scrollLeft)
-        {
-            this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': scrollLeft, 'scrollY': scrollTop}});
-        }
-    }
-    
     // check if we need to adjust scroller dimension
     this._adjustScrollerSize();
 
     // check if there's a cell to focus
     if (this.m_cellToFocus != null)
     {
-        this._setActive(this.m_cellToFocus, null, false);
+        var cell = this.m_cellToFocus;
         this.m_cellToFocus = null;
+        this._setActive(cell, null, false);
     }
 
     //if there's an index we wanted to sctoll to after fetch it has now been scrolled to by scrollToIndex, so highlight it
@@ -6365,7 +6357,7 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
             this.m_scrollIndexAfterFetch = null;
         }
     }
-    
+
     // do the same for headers
     if (this.m_scrollHeaderAfterFetch != null)
     {
@@ -6378,7 +6370,17 @@ DvtDataGrid.prototype.scrollTo = function(scrollLeft, scrollTop)
         }
         //should be able to scroll to index without highlighting it
         this.m_scrollHeaderAfterFetch = null;
-    }       
+    }
+    
+    // wait until active is set to fire scroll event
+    if (!this.m_utils.isTouchDevice())
+    {
+        // If detect an actual scroll, fire scroll event
+        if (this.m_prevScrollTop !== scrollTop || this.m_prevScrollLeft !== scrollLeft)
+        {
+            this.fireEvent('scroll', {'event': null, 'ui':{'scrollX': scrollLeft, 'scrollY': scrollTop}});
+        }
+    }
 };
 
 /**
@@ -20378,6 +20380,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         this.grid.destroy();
         this._unregisterResizeListener(this.root);
         $(this.root).empty();        
+        this._MakeReady();
     },
 
 

@@ -491,7 +491,7 @@ oj.OffcanvasUtils._calcTransitionTime = function ($elem)
 
 oj.OffcanvasUtils._onTransitionEnd = function(target, handler)
 {
-  var endEvents = "transitionend.oc webkitTransitionEnd.oc otransitionend.oc oTransitionEnd.oc";
+  var endEvents = "transitionend.oc webkitTransitionEnd.oc";
   var transitionTimer;
   var listener =
     function ()
@@ -1000,6 +1000,8 @@ oj.OffcanvasUtils._openOverlay = function(offcanvas, resolve, reject, edge)
     });
 
 };
+
+/*
 oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
 {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
@@ -1059,6 +1061,7 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
       resolve(true);
     });
 };
+*/
 
 oj.OffcanvasUtils._closePush = function(offcanvas, resolve, reject, drawer, animation)
 {
@@ -1192,6 +1195,7 @@ oj.OffcanvasUtils._openOldDrawer = function(offcanvas, resolve, reject, edge, di
 
 };
 
+/*
 oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, animation)
 {
   var endHandler = function ()
@@ -1218,6 +1222,7 @@ oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, anima
     endHandler();
   }
 };
+*/
 
 oj.OffcanvasUtils._closeOldDrawer = function(offcanvas, resolve, reject, drawer, animation)
 {
@@ -1303,6 +1308,7 @@ oj.OffcanvasUtils.open = function(offcanvas)
       return oldOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY];
   }
 
+  var resolveBusyState;
   var veto = false;
   var promise = new Promise(function(resolve, reject)
   {
@@ -1318,7 +1324,7 @@ oj.OffcanvasUtils.open = function(offcanvas)
     {
       reject(oj.OffcanvasUtils.VETO_BEFOREOPEN_MSG);
       veto = true;
-      return promise;
+      return;
     }
 
     var displayMode = oj.OffcanvasUtils._getDisplayMode(offcanvas);
@@ -1338,8 +1344,15 @@ oj.OffcanvasUtils.open = function(offcanvas)
       if (! oj.OffcanvasUtils._noInnerWrapper(offcanvas))
         throw "Error: Both main content selector and the inner wrapper <div class='oj-offcanvas-inner-wrapper'> are provided. Please remove the inner wrapper.";
 
+      // Add a busy state for the animation.  The busy state resolver will be invoked
+      // when the animation is completed
+      var busyContext = oj.Context.getContext(drawer[0]).getBusyContext();
+      resolveBusyState = busyContext.addBusyState(
+        {"description" : "The offcanvas selector ='" + 
+         offcanvas[oj.OffcanvasUtils.SELECTOR_KEY] + "' doing the open animation."});
+
       if (isPin) {
-        oj.OffcanvasUtils._openPin(myOffcanvas, resolve, reject, edge);
+//        oj.OffcanvasUtils._openPin(myOffcanvas, resolve, reject, edge);
       }
       else if (displayMode === oj.OffcanvasUtils.DISPLAY_MODE_PUSH) {
         oj.OffcanvasUtils._openPush(myOffcanvas, resolve, reject, edge);
@@ -1353,6 +1366,17 @@ oj.OffcanvasUtils.open = function(offcanvas)
     }
   });
 
+  promise = promise.then(function(value) {
+    if (resolveBusyState) {
+      resolveBusyState();
+    }
+    return value;
+  }, function(error) {
+    if (resolveBusyState) {
+      resolveBusyState();
+    }
+    throw error;
+  });
 
   //save away the current promise
   if (! veto) {
@@ -1364,7 +1388,8 @@ oj.OffcanvasUtils.open = function(offcanvas)
       oj.Components.subtreeShown(drawer[0]);
     }
   }
-  return promise;
+
+  return /** @type{Promise} */ (promise);
 };
 
 /**
@@ -1404,6 +1429,7 @@ oj.OffcanvasUtils._close = function(selector, animation)
     return offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY];
   }
 
+  var resolveBusyState;
   var veto = false;
   var promise = new Promise(function(resolve, reject)
   {
@@ -1423,7 +1449,16 @@ oj.OffcanvasUtils._close = function(selector, animation)
       {
         reject(oj.OffcanvasUtils.VETO_BEFORECLOSE_MSG);
         veto = true;
-        return promise;
+        return;
+      }
+
+      // Add a busy state for the animation.  The busy state resolver will be invoked
+      // when the animation is completed
+      if (animation) {
+        var busyContext = oj.Context.getContext(drawer[0]).getBusyContext();
+        resolveBusyState = busyContext.addBusyState(
+          {"description" : "The offcanvas selector ='" + 
+           offcanvas[oj.OffcanvasUtils.SELECTOR_KEY] + "' doing the close animation."});
       }
 
       var isPin = oj.OffcanvasUtils._isPin(offcanvas);
@@ -1432,9 +1467,11 @@ oj.OffcanvasUtils._close = function(selector, animation)
         if (displayMode === oj.OffcanvasUtils.DISPLAY_MODE_PUSH) {
           oj.OffcanvasUtils._closePush(offcanvas, resolve, reject, drawer, animation);
         }
+/*
         else if (isPin) {
           oj.OffcanvasUtils._closePin(offcanvas, resolve, reject, drawer, animation);
         }
+*/
         else {
           oj.OffcanvasUtils._closeOverlay(offcanvas, resolve, reject, drawer, animation);
         }
@@ -1449,6 +1486,18 @@ oj.OffcanvasUtils._close = function(selector, animation)
     }
   });
 
+  promise = promise.then(function(value) {
+    if (resolveBusyState) {
+      resolveBusyState();
+    }
+    return value;
+  }, function(error) {
+    if (resolveBusyState) {
+      resolveBusyState();
+    }
+    throw error;
+  });
+
   //save away the current promise
   if (! veto) {
     offcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
@@ -1460,7 +1509,7 @@ oj.OffcanvasUtils._close = function(selector, animation)
     }
   }
 
-  return promise;
+  return /** @type{Promise} */ (promise);
 };
 
 /**
@@ -1819,7 +1868,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
                 }
             }
 
-            oj.OffcanvasUtils._animateWrapperAndDrawer(wrapper, drawer, edge, size);
+            oj.OffcanvasUtils._animateWrapperAndDrawer(wrapper, drawer, edge, size, offcanvas);
 
             $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY, offcanvas);
             $.data(drawer[0], oj.OffcanvasUtils._DATA_EDGE_KEY, edge);
@@ -1840,6 +1889,9 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 
             //remove handler
             wrapper.off(endEvents, listener);
+
+            //fire close event after completely closed
+            drawer.trigger("ojclose", offcanvas);
         };
 
         // add transition end listener
@@ -1852,7 +1904,7 @@ oj.OffcanvasUtils.setupPanToReveal = function(offcanvas)
 };
 
 // animate both the wrapper and drawer at the same time
-oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, size)
+oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, size, offcanvas)
 {
     var tt = 400, fps = 60, ifps, matrix, values, current, final, reqId, inc, lastFrame, func, currentFrame, adjInc;
 
@@ -1895,6 +1947,9 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function(wrapper, drawer, edge, siz
         {
             window.cancelAnimationFrame(reqId);
             wrapper.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+
+            //fire after completely open
+            drawer.trigger("ojopen", offcanvas);
         }
         else
         {

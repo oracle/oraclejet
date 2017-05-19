@@ -142,6 +142,8 @@ $labelPosition: $radioCheckboxLabelPosition) {
     //  </div>
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
+    // Note: It is intentional that the oj-radioset and oj-checkboxset below do not have the '.' before it.
+    // This selector matches the custom element name, not a class name.
     @if $initialVisibility == hidden {
       oj-radioset:not(.oj-complete) {
         visibility: hidden;
@@ -184,6 +186,11 @@ $labelPosition: $radioCheckboxLabelPosition) {
     .oj-choice-row .oj-checkbox-label,
     .oj-choice-row .oj-checkbox-label-nocomp {
       @include oj-flex-property(1 1 auto);
+    } 
+    
+    .oj-form .oj-checkboxset-single.oj-choice-direction-column .oj-checkbox-label,
+    .oj-form .oj-checkboxset-single.oj-choice-row .oj-checkbox-label {
+      @include oj-flex-property(0 1 auto);
     } 
 
     // .oj-radioset and .oj-checkboxset are the root dom elements
@@ -393,8 +400,10 @@ $labelPosition: $radioCheckboxLabelPosition) {
       }
     }
     
-    .oj-radioset-input-end .oj-radio,
-    .oj-checkboxset-input-end .oj-checkbox {
+    // we wrap the oj-radio and oj-checkbox in a span with .oj-radiocheckbox-icon class on it.
+    // in backgroundImage mode, this class has an icon, otherwise it does nothing and shows the input.
+    .oj-radioset-input-end .oj-radiocheckbox-icon,
+    .oj-checkboxset-input-end .oj-radiocheckbox-icon {
       @include oj-order-property(1);
     }
 
@@ -533,19 +542,12 @@ $labelPosition: $radioCheckboxLabelPosition) {
         border-top-width: 0;
       }
       
-      // make label a flexbox, with the text and the icon as flex items.
+      // 
       // label needs to take up the entire row so the user can click anywhere to select the item,
       // thus, height 100%.
-      .oj-radio-label, 
-      .oj-checkbox-label {
-        @include oj-display-flex-property();
-        @include oj-align-items-property(center);
+      .oj-radioset .oj-radio-label, 
+      .oj-checkboxset .oj-checkbox-label {
         height: 100%;
-      }
-
-      // label text takes up most of the room, but needs to shrink if necessary to fit the icon
-      .oj-radiocheckbox-label-text {
-        @include oj-flex-property(1 1 auto);
         @if($radioCheckboxLabelPosition == "start") {
           @include oj-order-property(0);
         }
@@ -556,7 +558,9 @@ $labelPosition: $radioCheckboxLabelPosition) {
 
       // align end when single and in a form whose field alignment is end
       @if ($formLayoutFieldInlineAlign == "end") {
-        .oj-form .oj-checkboxset-single .oj-checkbox-label {      
+        .oj-form .oj-checkboxset-single .oj-choice-item,
+        .oj-form .oj-checkboxset-single .oj-choice-row
+        {      
           justify-content: flex-end;
         }
       }
@@ -588,11 +592,11 @@ $labelPosition: $radioCheckboxLabelPosition) {
       
       // radio images
       // ------------
-      .oj-radio-label .oj-radiocheckbox-icon {
+      .oj-radioset .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_ena_unselected.svg"); 
       }
 
-      .oj-radio-label.oj-selected .oj-radiocheckbox-icon {
+      .oj-radioset .oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_ena_selected.svg");
       }
 
@@ -610,21 +614,21 @@ $labelPosition: $radioCheckboxLabelPosition) {
         background-image: oj-radiocheckbox-image-url("radio_pressed_selected.svg");
       }
 
-      .oj-radio-label.oj-disabled .oj-radiocheckbox-icon {
+      .oj-radioset .oj-disabled .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_dis_unselected.svg");
       }
 
-      .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+      .oj-radioset .oj-disabled.oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("radio_dis_selected.svg");
       }
 
       // checkbox images
       // ---------------      
-      .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-checkboxset .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_ena_unselected.svg"); 
       }
 
-      .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon {
+      .oj-checkboxset .oj-selected  .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_ena_selected.svg"); 
       }  
 
@@ -639,81 +643,87 @@ $labelPosition: $radioCheckboxLabelPosition) {
         background-image: oj-radiocheckbox-image-url("checkbox_pressed_selected.svg");
       }
 
-      .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+      .oj-checkboxset .oj-disabled .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_dis_unselected.svg");
       }
 
-      .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+      .oj-checkboxset .oj-disabled.oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_dis_selected.svg");
       }
 
-      // single checkbox images
-      // there is a hover icon for single checkboxes
-      .oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
-        background-image: oj-radiocheckbox-image-url("cbsingle_hover_unselected.svg");
-      }
 
-      .oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
-        background-image: oj-radiocheckbox-image-url("cbsingle_hover_selected.svg");
-      }
 
       // in high contrast mode, background-images disappear, so use content to show the checked item
-      .oj-hicontrast .oj-radioset .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-hicontrast .oj-checkboxset .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-hicontrast .oj-radioset .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-radioset .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset .oj-choice-row .oj-radiocheckbox-icon {
         background-image: none;
       }
 
       // in hicontrast mode, background-images disappear, so we use content to show the checked item.
-      .oj-hicontrast .oj-checkboxset .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-checkboxset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("checkbox_ena_selected.svg");
       }
-
-      .oj-hicontrast .oj-radioset .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-radioset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-radioset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("radio_ena_selected.svg");
       }
 
-      .oj-hicontrast .oj-checkboxset .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-checkboxset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("checkbox_dis_selected.svg");
       }
 
-      .oj-hicontrast .oj-radioset .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-radioset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-radioset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("radio_dis_selected.svg");
       }
-
-      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
-        .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
         background-image: none;
       }
 
       // in print mode, background-images disappear, so we use content to show the checked item.
       @media print {
-        .oj-radioset .oj-radio-label .oj-radiocheckbox-icon,
-        .oj-checkboxset .oj-checkbox-label .oj-radiocheckbox-icon,
-        .oj-checkboxset-single .oj-checkbox-label.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
-          .oj-checkboxset-single .oj-checkbox-label.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+        .oj-radioset .oj-choice-item .oj-radiocheckbox-icon,
+        .oj-radioset .oj-choice-row .oj-radiocheckbox-icon,
+        .oj-checkboxset .oj-choice-item .oj-radiocheckbox-icon,
+        .oj-checkboxset .oj-choice-row .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-item.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-row.oj-hover:not(.oj-active) .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-item.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-row.oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
           background-image: none;
         }
 
-        .oj-radioset .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after {
+        .oj-radioset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-radioset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("radio_ena_selected.svg");
         }
 
-        .oj-checkboxset .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+        .oj-checkboxset .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-checkboxset .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("checkbox_ena_selected.svg");
         }
 
-        .oj-radioset .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+        .oj-radioset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-radioset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("radio_dis_selected.svg");
         }
 
-        .oj-checkboxset .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+        .oj-checkboxset .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-checkboxset .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("checkbox_dis_selected.svg");
         }        
       }
 
       // order the image and the label text. order 1 means it comes last
-      .oj-radioset-input-start .oj-radiocheckbox-label-text,
-      .oj-checkboxset-input-start .oj-radiocheckbox-label-text,
+      .oj-radioset-input-start .oj-radio-label,
+      .oj-checkboxset-input-start .oj-checkbox-label,
       .oj-radioset-input-end .oj-radiocheckbox-icon,
       .oj-checkboxset-input-end .oj-radiocheckbox-icon {
         @include oj-order-property(1);
@@ -721,8 +731,8 @@ $labelPosition: $radioCheckboxLabelPosition) {
 
       .oj-radioset-input-start .oj-radiocheckbox-icon,
       .oj-checkboxset-input-start .oj-radiocheckbox-icon,
-      .oj-radioset-input-end .oj-radiocheckbox-label-text,
-      .oj-checkboxset-input-end .oj-radiocheckbox-label-text {
+      .oj-radioset-input-end .oj-radio-label,
+      .oj-checkboxset-input-end .oj-checkbox-label {
         @include oj-order-property(0);
       }
     }

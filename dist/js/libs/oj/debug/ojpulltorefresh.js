@@ -285,6 +285,7 @@ oj.PullToRefreshUtils._handleRelease = function(event, element, content, refresh
     // register busy state with host as the context, note you can't pull again until release is done
     busyContext = oj.Context.getContext(element).getBusyContext();
     busyStateResolve = busyContext.addBusyState({'description': 'PullToRefresh:handleRelease'});
+    $.data($(element)[0], "data-pulltorefresh-busystate", busyStateResolve);
 
     refreshFunc().then(function(val)
     {
@@ -301,11 +302,32 @@ oj.PullToRefreshUtils._handleRelease = function(event, element, content, refresh
             content.prev().text("");
 
             // clear busy state
-            busyStateResolve(null);
+            oj.PullToRefreshUtils._resolveBusyState(element);
         }
 
         // change text to complete
         content.prev().text(oj.Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
+        // hide the link
+        content.prev().prev().css("position", "");
+
+        content.on("transitionend", listener);
+        content.css("height", 0);
+    }, function(e)
+    {
+        listener = function()
+        {
+            // cleanup after everything is complete
+            oj.PullToRefreshUtils._cleanup(content);
+
+            content.off("transitionend", listener);                  
+
+            // clear the text, otherwise voice over will allow text to be focusable
+            content.prev().text("");
+
+            // clear busy state
+            oj.PullToRefreshUtils._resolveBusyState(element);
+        }
+
         // hide the link
         content.prev().prev().css("position", "");
 
@@ -329,6 +351,28 @@ oj.PullToRefreshUtils.tearDownPullToRefresh = function(element)
 
     // remove all listeners
     $(element).off(".pulltorefresh");
+
+    // free up busy state if it's not done already
+    oj.PullToRefreshUtils._resolveBusyState(element);
+};
+
+/**
+ * Helper method to resolve busy state
+ * @param {Element} element the DOM element that hosts the content to refresh
+ * @private
+ */
+oj.PullToRefreshUtils._resolveBusyState = function(element)
+{
+    var elem, busyStateResolve;
+
+    elem = $(element)[0];
+
+    busyStateResolve = /** @type {Function} */ ($.data(elem, "data-pulltorefresh-busystate"));
+    if (busyStateResolve)
+    {
+        busyStateResolve(null);
+        $.removeData(elem, "data-pulltorefresh-busystate");
+    }
 };
 
 /**

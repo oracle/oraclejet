@@ -13,7 +13,6 @@ THIRD-PARTY COMPONENT FILE                                               LICENSE
 --------------------------------------------------------------------------------
 js/libs/knockout/knockout-3.4.0.js										    MIT
 js/libs/knockout/knockout-mapping-latest.js								MIT
-js/libs/knockout/knockout-amd-helpers									    MIT
 js/libs/require/require.js												        MIT
 js/libs/require/text.js													          MIT
 js/libs/js-signals/signals.js											        MIT
@@ -28,13 +27,13 @@ js/libs/jquery/jqueryui-amd-1.12.0/widget.js							MIT
 js/libs/history/history.iegte8.js										      MIT
 js/libs/es6-promise/es6-promise.js									      MIT
 js/libs/crossroads/crossroads.js										      MIT
-js/libs/oj/v3.0.0/min/ojselectcombobox.js (Select2.js)		Apache 2.0
-js/libs/oj/v3.0.0/min/ojtree.js (jsTree.js)								MIT
-js/libs/oj/v3.0.0/ojL10n.js (requireJS i18n)							MIT
+js/libs/oj/v3.1.0/min/ojselectcombobox.js (Select2.js)		Apache 2.0
+js/libs/oj/v3.1.0/min/ojtree.js (jsTree.js)								MIT
+js/libs/oj/v3.1.0/ojL10n.js (requireJS i18n)							MIT
 js/libs/hammer/hammer-2.0.8.js											      MIT
 js/libs/require-css/css.js (require-css)				          MIT
 js/libs/proj4js/dist/proj4.js                             Proj4js
-scss/oj/v3.0.0/3rdparty/normalize/normalize.scss					MIT
+scss/oj/v3.1.0/3rdparty/normalize/normalize.scss					MIT
 
 /**
  * webcomponents.js - v0.7.23
@@ -188,11 +187,9 @@ Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors
  see: http://github.com/jrburke/requirejs for details
 */
 
-// knockout-amd-helpers 0.7.3 | (c) 2014 Ryan Niemeyer |  http://www.opensource.org/licenses/mit-license
-
 
 /*!
- * Knockout JavaScript library v3.3.0
+ * Knockout JavaScript library v3.4.0
  * (c) Steven Sanderson - http://knockoutjs.com/
  * License: MIT (http://www.opensource.org/licenses/mit-license.php)
  */

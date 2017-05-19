@@ -15220,6 +15220,7 @@ DvtChartDataUtils.isSeriesNegative = function(chart, seriesIndex) {
   if (isSeriesNegative != null)
     return isSeriesNegative;
   var groupCount = DvtChartDataUtils.getGroupCount(chart);
+  isSeriesNegative = true;
   for (var i = 0; i < groupCount; i++) { // Use first non zero value to set series type(negative or positive)
     var value = DvtChartDataUtils.getValue(chart, seriesIndex, i);
     if (value > 0) {
@@ -15227,7 +15228,7 @@ DvtChartDataUtils.isSeriesNegative = function(chart, seriesIndex) {
       break;
     }
   }
-  isSeriesNegative = true;
+  
   chart.getOptionsCache().putToCachedMap('isSeriesNegative', seriesIndex, isSeriesNegative);
   return isSeriesNegative;
 };

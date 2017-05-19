@@ -3952,6 +3952,7 @@ oj.DomUtils.isAncestorOrSelf = function (ancestorNode, node)
  * two parameters: 1) the new width in pixels; 2) the new height in pixels
  * @param {number=} collapseEventTimeout - timeout in milliseconds for collapsing
  * multiple resize events into one
+ * @export
  */
 oj.DomUtils.addResizeListener = function(elem, listener, collapseEventTimeout)
 {
@@ -3970,6 +3971,7 @@ oj.DomUtils.addResizeListener = function(elem, listener, collapseEventTimeout)
  * Removes a resize listener
  * @param {!Element} elem - node whose listener should be removed
  * @param {!Function} listener - listener to be removed
+ * @export
  */
 oj.DomUtils.removeResizeListener = function(elem, listener)
 {

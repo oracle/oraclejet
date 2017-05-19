@@ -636,6 +636,12 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     //perform a deferred layout
     if (this._needsSetup)
       this._setup(this._needsSetup[0]);
+    else
+    {
+      //explicitly relayout in case we don't get a resize notification when shown
+      var mlCommon = this._mlCommon;
+      mlCommon.setup(true);
+    }
   },
   
   /**
@@ -652,6 +658,12 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     //perform a deferred layout
     if (this._needsSetup)
       this._setup(this._needsSetup[0]);
+    else
+    {
+      //explicitly relayout in case we don't get a resize notification when attached
+      var mlCommon = this._mlCommon;
+      mlCommon.setup(true);
+    }
   },
 
   /**
@@ -712,7 +724,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       this._hideTileOnEndFunc = function(elem) {self._hideTileOnEnd(elem);};
       this._layoutOnEndFunc = function() {self._layoutOnEnd();};
       this._layoutCycleOnStartFunc = function() {self._layoutCycleOnStart();};
-      this._layoutCycleOnEndFunc = function() {self._layoutCycleOnEnd();};
+      this._layoutCycleOnEndFunc = 
+        function(resolveBusyState) {self._layoutCycleOnEnd(resolveBusyState);};
       if (!this._mlCommon)
       {
         var selectors = {};
@@ -740,6 +753,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
         callbackInfo.sortTilesOriginalOrderFunc = _sortTilesOriginalOrder;
         callbackInfo.subtreeAttached = oj.Components.subtreeAttached;
         callbackInfo.subtreeDetached = oj.Components.subtreeDetached;
+        callbackInfo.addBusyState = 
+          function(description) { return self._addBusyState(description); };
         
         //save the original order of the tiles, because the DOM order may 
         //change due to layout and we want to always use the original order
@@ -784,7 +799,8 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     if (isInit)
     {
       this._handleResizeFunc = function(width, height) {self._handleResize();};
-      oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc);
+      oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc, 
+        _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
     }
   },
 
@@ -1091,7 +1107,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       /** @expose */
       index: index
     };
-    this._trigger("insert", null, eventData);
+    this._eventsToFire.push("insert", eventData);
   },
   
   /** 
@@ -1124,7 +1140,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       /** @expose */
       tile: jqElem
     };
-    this._trigger("remove", null, eventData);
+    this._eventsToFire.push("remove", eventData);
   },
   
   /** 
@@ -1165,7 +1181,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
           /** @expose */
           sizeStyleClass: sizeStyleClass
         };
-        this._trigger("resize", null, eventData);
+        this._eventsToFire.push("resize", eventData);
       }
       this._arResizingTiles = null;
     }
@@ -1193,6 +1209,9 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   {
     this._inLayoutCycle = true;
     this._layoutStartActiveDomElem = null;
+    
+    //store events to fire when the layout cycle ends
+    this._eventsToFire = [];
 
     var activeDomElem = document.activeElement;
     //if the currently focused element is a child of the  masonryLayout, 
@@ -1207,11 +1226,12 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
 
   /**
    * Callback to run after whole layout cycle is done.
+   * @param {Function} resolveBusyState Resolve function for busy state.
    * @memberof oj.ojMasonryLayout
    * @instance
    * @private
    */
-  _layoutCycleOnEnd: function()
+  _layoutCycleOnEnd: function(resolveBusyState)
   {
     this._inLayoutCycle = false;
     
@@ -1247,6 +1267,25 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
           oj.FocusUtils.focusElement(layoutStartActiveDomElem);
         else
           oj.FocusUtils.focusFirstTabStop(elem);
+      }
+    }
+    
+    //FIX : resolve busy state after laying out, but BEFORE firing events so that when
+    //an app gets an event it doesn't then have to wait for the busy context to be resolved
+    if (resolveBusyState)
+      resolveBusyState();
+    
+    //fire stored events at end of layout cycle
+    if (this._eventsToFire)
+    {
+      var eventsToFire = this._eventsToFire;
+      this._eventsToFire = null;
+      
+      for (var i = 0; i < eventsToFire.length; i += 2)
+      {
+        var eventType = eventsToFire[i];
+        var eventData = eventsToFire[i + 1];
+        this._trigger(eventType, null, eventData);
       }
     }
   },
@@ -2509,6 +2548,31 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
   
   // end functions for drag-and-drop reordering ////////////////////////////////
   
+  /**
+   * Add a busy state to the busy context.
+   *
+   * @param {String} description Additional information about busy state.
+   * @returns {Function} Resolve function called by the registrant when the busy state completes.
+   *          The resultant function will throw an error if the busy state is no longer registered.
+   * @memberof oj.ojMasonryLayout
+   * @instance
+   * @private
+   */
+  _addBusyState: function(description)
+  {
+    var element = this.element;
+    var context = oj.Context.getContext(element[0]);
+    var busyContext = context.getBusyContext();
+    
+    var desc = "MasonryLayout";
+    var id = element.attr("id");
+    desc += " (id='" + id + "')";
+    desc += ": " + description;
+    
+    var busyStateOptions = {"description" : desc};
+    return busyContext.addBusyState(busyStateOptions);
+  },
+  
   //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
@@ -2600,6 +2664,9 @@ var _PX        = "px",
                              "paste-before" : "labelPasteBefore",
                              "paste-after"  : "labelPasteAfter"
                             },
+    //make sure the collapseEventTimeout param is less than the one used in the unit tests
+    //in order to ensure that the masonry listener gets the resize event before the unit test
+    _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25,
 
     /** 
      * Get the position of an element relative to the document.
@@ -2825,7 +2892,8 @@ var _PX        = "px",
  *  - layoutCycleOnEndFunc: Called after entire layout cycle is done,
  *  - sortTilesOriginalOrderFunc: Sort tile DOM elements into their original order,
  *  - subtreeAttached: Called after a tile is attached to the DOM,
- *  - subtreeDetached: Called after a tile is detached from the DOM.
+ *  - subtreeDetached: Called after a tile is detached from the DOM,
+ *  - addBusyState: Add a busy state to the busy context.
  * @constructor
  * @ignore
  */
@@ -2907,6 +2975,8 @@ function MasonryLayoutCommon(
       this._subtreeAttachedFunc = callbackInfo.subtreeAttached;
     if (callbackInfo.subtreeDetached)
       this._subtreeDetachedFunc = callbackInfo.subtreeDetached;
+    if (callbackInfo.addBusyState)
+      this._addBusyStateFunc = callbackInfo.addBusyState;
   }
   
   //create a non-absolutely positioned div to define the size of the 
@@ -2930,6 +3000,7 @@ function MasonryLayoutCommon(
   this._hideTilesFunc = function() {self._hideTiles();};
   this._handleHideTransitionEndFunc = function(event) {self._handleHideTransitionEnd(event);};
   this._handleShowTransitionEndFunc = function(event) {self._handleShowTransitionEnd(event);};
+  this._resolveBusyStateFunc = function() {self._resolveBusyState();};
 };
 
 /**
@@ -2943,12 +3014,17 @@ MasonryLayoutCommon.prototype.setup = function(init, reorder)
   var ret = false;
   if (init)
   {
+    //layout without animating
     ret = this._layout() ? true : false;
     //FIX : reorder the tile DOM elements to match the visual layout order
     this._reorderTilesForLayout();
   }
   else
   {
+    //FIX : add busy state before animating a layout change
+    if (this._addBusyStateFunc)
+      this._busyStateResolveFunc = this._addBusyStateFunc("performing layout (setup)");
+    
     //FIX : notify the peer that a layout cycle is starting so that
     //it can save state if it wants
     if (this._layoutCycleOnStartFunc)
@@ -2966,6 +3042,9 @@ MasonryLayoutCommon.prototype.setup = function(init, reorder)
  */
 MasonryLayoutCommon.prototype.destroy = function()
 {
+  //FIX : resolve busy state when destroying
+  this._resolveBusyState();
+  
   var elem = this._elem;
   
   //remove layout positions from the children
@@ -2989,6 +3068,7 @@ MasonryLayoutCommon.prototype.destroy = function()
   this._hideTilesFunc = null;
   this._handleHideTransitionEndFunc = null;
   this._handleShowTransitionEndFunc = null;
+  this._resolveBusyStateFunc = null;
   
   this._arMovedInfolets = null;
   this._arInfoletsToResize = null;
@@ -3009,6 +3089,7 @@ MasonryLayoutCommon.prototype.destroy = function()
   this._sortTilesOriginalOrderFunc = null;
   this._subtreeAttachedFunc = null;
   this._subtreeDetachedFunc = null;
+  this._addBusyStateFunc = null;
 };
 
 /**
@@ -3122,7 +3203,11 @@ MasonryLayoutCommon.prototype.resizeNotify = function()
       !this._hidingInfolets && 
       !this._showingInfolets)
   {
-    //FIX : notify the peer that a layout cycle is startin so that
+    //FIX : add busy state before animating a layout change
+    if (this._addBusyStateFunc)
+      this._busyStateResolveFunc = this._addBusyStateFunc("performing layout (resizeNotify)");
+    
+    //FIX : notify the peer that a layout cycle is starting so that
     //it can save state if it wants
     if (this._layoutCycleOnStartFunc)
       this._layoutCycleOnStartFunc();
@@ -3552,7 +3637,13 @@ MasonryLayoutCommon.prototype._queueRelayout = function()
     //otherwise, if we are in a layout cycle, set the flag indicating we need to queue
     //another one
     if (!this._layoutPhase)
+    {
+      //FIX : add busy state before animating a layout change
+      if (this._addBusyStateFunc)
+        this._busyStateResolveFunc = this._addBusyStateFunc("performing layout");
+      
       this._hideTilesTimeout = setTimeout(this._hideTilesFunc, 0); // @HtmlUpdateOK
+    }
     else if (!this._queuedRelayout)
       this._queuedRelayout = true;
   }
@@ -3988,7 +4079,9 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
       {
         if (target === arMovedInfolets[i])
         {
-          arMovedInfolets.splice(i, 1);
+          //as soon as we get a transition end for one moved tile, clear all the moved tiles
+          this._arMovedInfolets = [];
+          arMovedInfolets = this._arMovedInfolets;
           break;
         }
       }
@@ -4010,7 +4103,7 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
     {
       var arInfoletsToResize = this._arInfoletsToResize;
       this._arInfoletsToResize = null;
-      
+
       if (this.isAnimationEnabled())
       {
         for (var i = 0; i < arInfoletsToResize.length; i += 2)
@@ -4020,7 +4113,7 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
         }
       }
     }
-    
+
     if (this._reorderTransitionStarted)
     {
       if (this.isAnimationEnabled())
@@ -4048,13 +4141,13 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
     this._resizingInfolet = false;
     this._hidingInfolets = false;
     this._showingInfolets = false;
-    
+
     //FIX : reorder the tile DOM elements to match the visual layout order
     this._reorderTilesForLayout();
-    
+
     if (this._layoutOnEndFunc)
       this._layoutOnEndFunc();
-    
+
     if (this._layoutPhase === mlcClass._PHASE_LAYOUT)
     {
       if (this.isAnimationEnabled())
@@ -4077,8 +4170,9 @@ MasonryLayoutCommon.prototype._handleTransitionEnd = function(event)
     }
     else if (!this._layoutPhase)
     {
+      //FIX : resolve busy state after laying out
       if (this._layoutCycleOnEndFunc)
-        this._layoutCycleOnEndFunc();
+        this._layoutCycleOnEndFunc(this._resolveBusyStateFunc);
     }
   }
 };
@@ -4108,7 +4202,7 @@ MasonryLayoutCommon.prototype._hideTiles = function()
     this._hideTilesTimeout = null;
   }
   
-  //FIX : notify the peer that a layout cycle is startin so that
+  //FIX : notify the peer that a layout cycle is starting so that
   //it can save state if it wants
   if (this._layoutCycleOnStartFunc)
     this._layoutCycleOnStartFunc();
@@ -4367,8 +4461,9 @@ MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(event)
   {
     this._layoutPhase = null;
     //FIX : notify the callback that the layout cycle is done
+    //FIX : resolve busy state after laying out
     if (this._layoutCycleOnEndFunc)
-      this._layoutCycleOnEndFunc();
+      this._layoutCycleOnEndFunc(this._resolveBusyStateFunc);
     //FIX : if we got another layout request while we were in the layout cycle,
     //queue another layout now
     if (this._queuedRelayout)
@@ -4376,6 +4471,18 @@ MasonryLayoutCommon.prototype._handleShowTransitionEnd = function(event)
       this._queuedRelayout = false;
       this._queueRelayout();
     }
+  }
+};
+
+/**
+ * Resolve an outstanding busy state.
+ */
+MasonryLayoutCommon.prototype._resolveBusyState = function()
+{
+  if (this._busyStateResolveFunc)
+  {
+    this._busyStateResolveFunc();
+    this._busyStateResolveFunc = null;
   }
 };
 

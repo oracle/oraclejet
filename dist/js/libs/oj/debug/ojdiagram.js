@@ -1248,6 +1248,19 @@ var ojDiagramMeta = {
                 "dragStart": {}
               }
             }
+          },
+          "ports":{
+            "type":"object",
+            "properties": {
+              "dataTypes": {
+                "type": "Array<string>"
+              },
+              "feedbackStyle": {},
+              "selector": "string",
+              "drag": {},
+              "dragEnd": {},
+              "dragStart": {}
+            }
           }
         },
         "drop": {
@@ -1288,9 +1301,22 @@ var ojDiagramMeta = {
                 "dragOver": {},
                 "drop": {}
               }
+            },
+            "ports" :{
+              "type":"object",
+              "properties": {
+                "dataTypes": {
+                  "type": "Array<string>"
+                },
+                "feedbackStyle": {},
+                "selector": "string",
+                "dragEnter": {},
+                "dragLeave": {},
+                "dragOver": {},
+                "drop": {}
+              }
             }
           }
-          
         }
       }
     },

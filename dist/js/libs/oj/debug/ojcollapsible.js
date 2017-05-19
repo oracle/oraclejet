@@ -369,6 +369,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
 
     _destroy : function ()
     {
+      // - ojcollapsible should resolve busy state when it's destroyed
+      this._resolveBusyContext();
       this._cleanup();
 
       // clean up main element
@@ -639,9 +641,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
       this._on(this.wrapper,
       {
         "transitionend" : this._transitionEndHandler,
-        "webkitTransitionEnd" : this._transitionEndHandler,
-        "otransitionend" : this._transitionEndHandler,
-        "oTransitionEnd" : this._transitionEndHandler
+        "webkitTransitionEnd" : this._transitionEndHandler
       });
 
       if (!this._isDisabled())
@@ -937,25 +937,34 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
 
     _transitionEndHandler : function (event)
     {
-      if (this._transitionTimer) {
+      //ignore event if not for this collapsible
+      if (this._isDisabled() || event && event.target !== this.element[0])
+        return;
+
+      var isMaxHeight = false;
+      if (event && event.originalEvent)
+        isMaxHeight = (event.originalEvent.propertyName == "max-height");
+
+      //if transition property is MaxHeight, clear timer if exists
+      if (isMaxHeight && this._transitionTimer)
+      {
         clearTimeout(this._transitionTimer);
         this._transitionTimer = undefined;
       }
 
+      if (event)
+      {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+
+      //transition end already handled
       if (this._transitionEnded)
         return;
 
-      if (this._isDisabled())
-        return;
-
-      var propName = event && event.originalEvent? event.originalEvent.propertyName : null;
-      if (propName == "max-height")
-      {
-        event.preventDefault();
-        event.stopPropagation();
-
+      //always set flag either timer expired or transition end
+      if (isMaxHeight || ! event)
         this._transitionEnded = true;
-      }
 
       //just completed a collapse transition
       if (this.options.expanded)
@@ -975,6 +984,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
       this.wrapper.removeClass("oj-collapsible-transition");
       this._afterExpandCollapse(this.options.expanded, event);
 
+    },
+
+    _resolveBusyContext : function ()
+    {
+      // resolve/remove the component busy state
+      if (this._animationResolve) {
+        this._animationResolve();
+        this._animationResolve = null;
+      }
     },
 
     _afterExpandCollapse : function (isExpanded, event)
@@ -1012,11 +1030,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
 
       this._findFirstFocusableInHeader().attr("aria-expanded", isExpanded);
 
-      // resolve/remove the component busy state
-      if (this._animationResolve) {
-        this._animationResolve();
-        this._animationResolve = null;
-      }
+      this._resolveBusyContext();
 
       var eventData =
       {

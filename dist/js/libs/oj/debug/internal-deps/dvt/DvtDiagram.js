@@ -8499,6 +8499,61 @@ dvt.Diagram.prototype._updateKeyboardFocusEffect = function() {
 dvt.Diagram.prototype.clearDisclosedState = function() {
   this.DisclosedNodes = null;
 };
+
+/**
+ * @protected
+ * Creates or updates link creation feedback
+ * @param {dvt.BaseEvent} event DnD dragOver event
+ */
+dvt.Diagram.prototype.ShowLinkCreationFeedback = function(event) {
+  if (this.getEventManager().LinkCreationStarted) {
+    var stagePos = this._context.pageToStageCoords(event.pageX, event.pageY);
+    var localPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: stagePos.x, y: stagePos.y});
+    if (this._linkCreationFeedBack) {
+      var points = this._linkCreationFeedBack.getPoints();
+      this._linkCreationFeedBack.setPoints([points[0], points[1], localPos.x, localPos.y]);
+    }
+    else {
+      var obj = this.getEventManager().DragSource.getDragObject();
+      if (obj instanceof DvtDiagramNode) {
+        var startStagePos = this.getEventManager().DragSource.getDragCoords();
+        var startLocalPos = this.getPanZoomCanvas().getContentPane().stageToLocal({x: startStagePos.x, y: startStagePos.y});
+        var linkDefaults = this.getOptions()['styleDefaults']['linkDefaults'];
+        this._prepareLinkStyle(linkDefaults, 'style');
+        //get additional styles from callback
+        var styleCallback = this.getOptions()['dnd']['drag']['ports']['linkStyle'];
+        if (styleCallback && typeof styleCallback === 'function') {
+          var linkFeedbackStyle = styleCallback({'dataContext': obj.getDataContext(), 'portElement': obj.__dragPort});
+          if (linkFeedbackStyle) {
+            linkDefaults['style'] = dvt.JsonUtils.merge(linkFeedbackStyle['svgStyle'], linkDefaults['style']);
+            linkDefaults['svgClassName'] = linkFeedbackStyle['svgClassName'] ? linkFeedbackStyle['svgClassName'] : linkDefaults['svgClassName'];
+          }
+        }
+        var linkData = {
+          'id': 'linkFeedback',
+          'startNode' : obj.getId(),
+          'endNode' : obj.getId()
+        };
+        linkData = dvt.JsonUtils.merge(linkData, linkDefaults);
+        var link = DvtDiagramLink.newInstance(this, linkData, false);
+        this.getNodesPane().addChild(link);
+        link.setMouseEnabled(false);
+        link.setPoints([startLocalPos.x, startLocalPos.y, localPos.x, localPos.y]);
+        this._linkCreationFeedBack = link;
+      }
+    }
+  }
+};
+
+/**
+ * Removes link creation feedback
+ * @protected
+ */
+dvt.Diagram.prototype.HideLinkCreationFeedback = function() {
+  this.getNodesPane().removeChild(this._linkCreationFeedBack);
+  this._linkCreationFeedBack = null;
+};
+
 //
 // $Header: dsstools/modules/dvt-shared-js/src/META-INF/bi/sharedJS/toolkit/diagram/DvtDiagramBundle.js /bibeans_root/2 2016/06/02 13:59:45  Exp $
 //
@@ -8601,12 +8656,14 @@ DvtDiagramDefaults.VERSION_1 = {
   '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA),
   'dnd': {
     'drag': {
-      'nodes': {}
+      'nodes': {},
+      'ports': {}
     },
     'drop': {
       'background': {},
       'nodes': {},
-      'links': {}
+      'links': {},
+      'ports': {}
     }
   },
   'styleDefaults': {
@@ -8846,6 +8903,8 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(linkArray) {
 var DvtDiagramEventManager = function(context, callback, callbackObj) {
   this.Init(context, callback, callbackObj);
   this._diagram = callbackObj;
+  this._linkDragSelector = null;
+  this._linkDropSelector = null;
 };
 
 dvt.Obj.createSubclass(DvtDiagramEventManager, dvt.EventManager, 'DvtDiagramEventManager');
@@ -8992,8 +9051,26 @@ DvtDiagramEventManager.prototype.isDndSupported = function() {
  */
 DvtDiagramEventManager.prototype.GetDragSourceType = function(event) {
   var obj = this.DragSource.getDragObject();
+  if (obj && obj.__dragType)
+    return obj.__dragType;
+
   if (obj instanceof DvtDiagramNode) {
-    return 'nodes';
+    if (this._linkDragSelector === null) {
+      this._linkDragSelector = this._diagram.getOptions()['dnd']['drag']['ports']['selector'];
+    }
+    var dragPort;
+    if (this._linkDragSelector) {
+      var dragCoords = this.DragSource.getDragCoords();
+      var absolutePos = this._context.stageToPageCoords(dragCoords.x, dragCoords.y);
+      dragPort = this._getPortElement(document.elementFromPoint(absolutePos.x, absolutePos.y), this._linkDragSelector);
+      if (dragPort) {
+        this.LinkCreationStarted = true;
+        obj.__dragPort = dragPort;
+      }
+    }
+    // cache drag type and potential port until next dragstart
+    obj.__dragType = dragPort ? 'ports' : 'nodes';
+    return obj.__dragType;
   }
   return null;
 };
@@ -9003,20 +9080,28 @@ DvtDiagramEventManager.prototype.GetDragSourceType = function(event) {
  */
 DvtDiagramEventManager.prototype.GetDragDataContexts = function() {
   var obj = this.DragSource.getDragObject();
-
   if (this._diagram.isSelectionSupported() && this._diagram.getSelectionHandler().getSelectedCount() > 1) {
     var selection = this._diagram.getSelectionHandler().getSelection();
+    var contentPosition = this._getTopLeftContentCorner(selection);
+    var zoom = this._diagram.getPanZoomCanvas().getZoom();
     var contexts = [];
     for (var i = 0; i < selection.length; i++) {
       if (selection[i] instanceof DvtDiagramNode) { //don't drag links yet
-        contexts.push(selection[i].getDataContext());
+        var context = selection[i].getDataContext();
+        var bounds = selection[i].getDimensions(this._context.getStage());
+        context['nodeOffset'] = new dvt.Point((bounds.x - contentPosition.x) / zoom, (bounds.y - contentPosition.y) / zoom);
+        contexts.push(context);
       }
     }
     return contexts;
   }
-
   if (obj instanceof DvtDiagramNode) {
-    return [obj.getDataContext()];
+    if (obj.__dragType === 'ports' && obj.__dragPort) {
+      return {'dataContext': obj.getDataContext(), 'portElement': obj.__dragPort};
+    }
+    var context = obj.getDataContext();
+    context['nodeOffset'] = new dvt.Point(0, 0);
+    return [context];
   }
   return [];
 };
@@ -9025,15 +9110,69 @@ DvtDiagramEventManager.prototype.GetDragDataContexts = function() {
  * @override
  */
 DvtDiagramEventManager.prototype.GetDropOffset = function(event) {
-  var obj = this.DragSource.getDragObject();
-  if (obj instanceof DvtDiagramNode) {
-    var bounds = obj.getDimensions(this._context.getStage());
-    if (bounds) {
-      var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
-      return new dvt.Point(bounds.x - relPos.x, bounds.y - relPos.y);
+  var contentPosition;
+  if (this._diagram.isSelectionSupported() && this._diagram.getSelectionHandler().getSelectedCount() > 1) {
+    contentPosition = this._getTopLeftContentCorner(this._diagram.getSelectionHandler().getSelection());
+  }
+  else {
+    var obj = this.DragSource.getDragObject();
+    if (obj instanceof DvtDiagramNode) {
+      contentPosition = obj.getDimensions(this._context.getStage());
     }
   }
+  if (contentPosition) {
+    var relPos = this._context.pageToStageCoords(event.pageX, event.pageY);
+    var zoom = this._diagram.getPanZoomCanvas().getZoom();
+    return new dvt.Point((contentPosition.x - relPos.x) / zoom, (contentPosition.y - relPos.y) / zoom);
+  }
   return null;
+};
+
+/**
+ * @private
+ * Gets top left corner of the bounding rectangle of the selected nodes relative to stage
+ * @param {array} selection the current selection
+ * @return {dvt.Point} position of the top left corner
+ */
+DvtDiagramEventManager.prototype._getTopLeftContentCorner = function(selection) {
+  if (!selection) {
+    return null;
+  }
+  var minX = Number.MAX_VALUE;
+  var minY = Number.MAX_VALUE;
+  for (var i = 0; i < selection.length; i++) {
+    if (selection[i] instanceof DvtDiagramNode) {
+      var bounds = selection[i].getDimensions(this._context.getStage());
+      minX = bounds ? Math.min(bounds.x, minX) : minX;
+      minY = bounds ? Math.min(bounds.y, minY) : minY;
+    }
+  }
+  return new dvt.Point(minX, minY);
+};
+
+/**
+ * @override
+ */
+DvtDiagramEventManager.prototype.OnDndDragStart = function(event) {
+  //clean up from previous internal drags
+  //can't be done on dragend, since it is not always called
+  var dragObj = this.DragSource.getDragObject();
+  if (dragObj && dragObj.__dragType) {
+    dragObj.__dragType = null;
+    dragObj.__dragPort = null;
+  }
+  this.LinkCreationStarted = false;
+  DvtDiagramEventManager.superclass.OnDndDragStart.call(this, event);
+};
+
+/**
+ * @override
+ */
+DvtDiagramEventManager.prototype.OnDndDragOver = function(event) {
+  DvtDiagramEventManager.superclass.OnDndDragOver.call(this, event);
+  if (this.LinkCreationStarted) {
+    this._diagram.ShowLinkCreationFeedback(event);
+  }
 };
 
 /**
@@ -9041,6 +9180,12 @@ DvtDiagramEventManager.prototype.GetDropOffset = function(event) {
  */
 DvtDiagramEventManager.prototype.OnDndDragEnd = function(event) {
   DvtDiagramEventManager.superclass.OnDndDragEnd.call(this, event);
+
+  if (this.LinkCreationStarted) {
+    this._diagram.HideLinkCreationFeedback();
+    this.LinkCreationStarted = false;
+  }
+
   //reenabling panning on dragend and on mouseup
   //the panning is disabled on mousedown event to prevent panning for potential node drag
   //if the node was not dragged, the component will not get dragend event and the panning is reenabled on mouseup
@@ -9068,7 +9213,9 @@ DvtDiagramEventManager.prototype._setPanningEnabled = function(bEnablePanning) {
 DvtDiagramEventManager.prototype.IsDragSupported = function() {
   if (!this._isDragSupported) {
     var options = this._diagram.getOptions();
-    this._isDragSupported = this.isDndSupported() && options['dnd']['drag']['nodes']['dataTypes'];
+    this._isDragSupported = this.isDndSupported() &&
+        (options['dnd']['drag']['nodes']['dataTypes'] ||
+        options['dnd']['drag']['ports']['dataTypes']);
   }
   return this._isDragSupported;
 };
@@ -9127,7 +9274,15 @@ DvtDiagramEventManager.prototype.GetDropTargetType = function(event) {
     return 'background';
   }
   else if (obj instanceof DvtDiagramNode) {
-    return 'nodes';
+    var dropPort;
+    if (this._linkDropSelector === null) {
+      this._linkDropSelector = this._diagram.getOptions()['dnd']['drop']['ports']['selector'];
+    }
+    if (this._linkDropSelector) {
+      dropPort = this._getPortElement(event.getNativeEvent().target, this._linkDropSelector);
+    }
+    obj.__dropPort = dropPort; //save the value for the payload call
+    return dropPort ? 'ports' : 'nodes';
   }
   else if (obj instanceof DvtDiagramLink) {
     return 'links';
@@ -9157,7 +9312,13 @@ DvtDiagramEventManager.prototype.GetDropEventPayload = function(event) {
   //add node or link context if drop accepted by the node or link
   var obj = this.GetLogicalObject(this.GetCurrentTargetForEvent(event));
   if (obj instanceof DvtDiagramNode) {
-    payload['nodeContext'] = obj.getDataContext();
+    if (obj.__dropPort) {
+      payload['dataContext'] = obj.getDataContext();
+      payload['portElement'] = obj.__dropPort;
+    }
+    else {
+      payload['nodeContext'] = obj.getDataContext();
+    }
     var bounds = obj.getDimensions(this._context.getStage());
     var relNodePos = bounds ? this._diagram.getPanZoomCanvas().getContentPane().stageToLocal({x: bounds.x, y: bounds.y}) : null;
     payload['nodeX'] = relNodePos ? relPos.x - relNodePos.x : null;
@@ -9174,15 +9335,18 @@ DvtDiagramEventManager.prototype.GetDropEventPayload = function(event) {
  */
 DvtDiagramEventManager.prototype.ShowDropEffect = function(event) {
   var dropTargetType = this.GetDropTargetType(event);
+  var obj = this._diagram.getCache().getFromCache('dropTarget');
   if (dropTargetType === 'background') {
     var background = this._diagram.getPanZoomCanvas().getBackgroundPane();
     background.setClassName('oj-active-drop');
   }
   else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
-    var obj = this._diagram.getCache().getFromCache('dropTarget');
     if (obj && obj.ShowDropEffect) {
       obj.ShowDropEffect();
     }
+  }
+  else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
+    dvt.ToolkitUtils.addClassName(obj.__dropPort, 'oj-active-drop');
   }
 };
 
@@ -9191,15 +9355,18 @@ DvtDiagramEventManager.prototype.ShowDropEffect = function(event) {
  */
 DvtDiagramEventManager.prototype.ShowRejectedDropEffect = function(event) {
   var dropTargetType = this.GetDropTargetType(event);
+  var obj = this._diagram.getCache().getFromCache('dropTarget');
   if (dropTargetType === 'background') {
     var background = this._diagram.getPanZoomCanvas().getBackgroundPane();
     background.setClassName('oj-invalid-drop');
   }
   else if (dropTargetType === 'nodes' || dropTargetType === 'links') {
-    var obj = this._diagram.getCache().getFromCache('dropTarget');
     if (obj && obj.ShowRejectedDropEffect) {
       obj.ShowRejectedDropEffect();
     }
+  }
+  else if (obj && dropTargetType === 'ports' && obj.__dropPort) {
+    dvt.ToolkitUtils.addClassName(obj.__dropPort, 'oj-invalid-drop');
   }
 };
 
@@ -9213,9 +9380,23 @@ DvtDiagramEventManager.prototype.ClearDropEffect = function() {
   if (obj && obj.ClearDropEffect) {
     obj.ClearDropEffect();
   }
+  if (obj && obj.__dropPort) {
+    dvt.ToolkitUtils.removeClassName(obj.__dropPort, 'oj-active-drop');
+    dvt.ToolkitUtils.removeClassName(obj.__dropPort, 'oj-invalid-drop');
+  }
   this._diagram.getCache().putToCache('dropTarget', null);
 };
 
+/**
+ * @private
+ * Helper method for finding DOM element representing a port using selector and event target
+ * @param {object} elem DOM element
+ * @param {string} selector
+ * @return {object} DOM element
+ */
+DvtDiagramEventManager.prototype._getPortElement = function(elem, selector) {
+  return elem && elem.closest ? elem.closest(selector) : null;
+};
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 
 /**
@@ -11418,6 +11599,10 @@ DvtDiagramNode.prototype.getDragTransferable = function(mouseX, mouseY) {
  * @override
  */
 DvtDiagramNode.prototype.getDragFeedback = function(mouseX, mouseY) {
+  if (this._diagram.getEventManager().LinkCreationStarted) {
+    return null;
+  }
+
   // If more than one object is selected, return the displayables of all selected objects
   if (this._diagram.isSelectionSupported() && this._diagram.getSelectionHandler().getSelectedCount() > 1) {
     var selection = this._diagram.getSelectionHandler().getSelection();
@@ -11501,7 +11686,9 @@ DvtDiagramNode.prototype._setDraggableStyleClass = function() {
     var draggableTopShape = this._customNodeContent ? this :
         this.isDisclosed() ? this._containerShape :
         this._background ? this._background : this._shape;
-    draggableTopShape.setClassName('oj-diagram-node oj-draggable');
+    var el = draggableTopShape.getElem() ? draggableTopShape.getElem() : draggableTopShape;
+    dvt.ToolkitUtils.addClassName(el, 'oj-diagram-node');
+    dvt.ToolkitUtils.addClassName(el, 'oj-draggable');
   }
 };
 
@@ -11522,6 +11709,7 @@ DvtDiagramNode.ConvertNodeData = function(nodeData) {
     '_origData': nodeData
   };
 };
+
 /**
  *  Provides automation services for a DVT diagram component.
  *  @class  DvtDiagramAutomation

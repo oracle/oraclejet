@@ -21,12 +21,14 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
 (function () 
 {
 
+/*
   function debugObj(o)  {
     var s ;
     try { s = JSON.stringify(o) ; }
     catch (e) { s = "ERROR";}
     return s ;
   };
+*/
 
   //  ojColorPalette class names
   var   /** @const */   OJCP_CONTAINER         = "oj-colorpalette-container",
@@ -244,7 +246,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        switch (subId)
        {
          case 'oj-palette-entry' :
-                                     elems = this._$LV.find("li") ;
+                                     elems = this._$LV.find(".oj-listview-item") ;
                                      if (elems.length && index < elems.length)
                                      {
                                        ret = elems[index] ;
@@ -268,7 +270,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
         {
           subId = 'oj-palette-entry' ;
           id    = $node.attr("id") ;
-          elems = this._$LV.find("li") ;
+          elems = this._$LV.find(".oj-listview-item") ;
           $.each(elems, function(i, obj)
               {
                 if ($(obj).attr("id") === id)
@@ -316,16 +318,22 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
           }
         }
 
+        // Perform the add.
         if (o)
         {
-          o["id"] = this._palette.length ;
-          this._palDataSource.add(o) ;   // ListView will render the new entry
+           // Add a palette busy state for the add
+           // The busy state resolver will be invoked when ListView completes the add.
+           this._setPaletteBusyContext("The swatch add is being animated in the palette (id=" +
+                                       this.element.attr("id") + ").");
 
-         // Fire an optionChange for 'palette' to the user app
-         var newPalette = this._palette.slice(0) ;
-         newPalette.push(o) ;
-         this._fireOptionChangeEvent("palette", newPalette, null);
-         this._palette.push(o) ;      // (internalSet is true in fireOptionChangeEvent)
+           // Perform the add
+           o["id"] = this._getNewSwatchId() ;  // give the new swatch an id
+           if (!this._opStack) {
+             this._opStack = [] ;              // fifo stack of post-busy operations
+           }
+           this._opStack.push({op: "a", obj: o}) ;
+           this._palDataSource.add(o) ;        // ListView will render the new entry
+           this._waitForLV() ;                 // complete the add when LV is complete
         }
      },
 
@@ -342,34 +350,42 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
      remove : function(palEntry)
      {
         var index = -1,
-            id, t, c ;
+            id = null, t, c ;
      
         t = (typeof palEntry) ;
-        if (t === "number")
+        if (t === "number")              // index
         {
-          index = palEntry ;
-          palEntry = {} ;
+           if ((palEntry >= 0) && (palEntry < this._palette.length))
+           {
+             id = this._palette[palEntry]["id"] ;
+           }
+           else
+           {
+             oj.Logger.error("JET Color Palette (id='" + this.element.attr("id") + "'): Invalid index for remove (" + palEntry + ")");
+           }
         }
         else if (t === "object")
         {
-          if (palEntry instanceof oj.Color)
-          {
-            c = palEntry ;
-          }
-          else
-          {
-            c = palEntry["color"] ;
-          }
-     
-          index = this._findColorInPalette(c)
+          c  = (palEntry instanceof oj.Color)? palEntry : palEntry["color"];
+          id = this._findSwatchIdOfColorInPalette(c)
         }
      
-        if ((index >= 0) && (index < this._palette.length))
+        if (id)
         {
-          id = this._palette[index]["id"]
-          palEntry["id"] = id ;
-          this._palDataSource.remove(palEntry) ;
-          this._palette.splice(index, 1) ;
+           palEntry = { "id" : id } ;
+
+           // Add a palette busy state for the remove
+           // The busy state resolver will be invoked when ListView completes the remove.
+           this._setPaletteBusyContext("The removed swatch is being animated in the palette (id=" +
+                                       this.element.attr("id") + ").");
+           // Perform the remove
+           if (! this._opStack) {
+              this._opStack = [] ;      // fifo stack of post-busy operations
+           }
+           this._opStack.push({op: "r", obj:palEntry}) ;
+           this._palDataSource.remove(palEntry) ;    // LV will re-render
+
+          this._waitForLV() ;                        // complete the remove when LV is complete
         }
      },
 
@@ -389,7 +405,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
              self._$LV.ojListView("whenReady")
                  .then(function(zz) {
                                       resolve(true);
-                                     });
+                                    });
         });
         return promise ;
      },
@@ -403,9 +419,12 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
       */
      _destroy: function()
      {
+        this._resolvePaletteBusyContext();
+
         if (this._$LV)
         {
-         this._$LV.ojListView("destroy") ;
+          this._opStack = [] ;
+          this._$LV.ojListView("destroy") ;
         }
         this._palDataSource  = null ;
         this._$paletteContainer.remove() ;          // remove our markup from dom
@@ -437,8 +456,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
         var labelId = label.attr('id');
         if (!labelId)
         {
-          oj.Logger.warn("JET Color Palette: The label for this component needs an id in order " + 
-            "to be accessible");
+          oj.Logger.warn("JET Color Palette: The label for this component needs an id in order to be accessible");
         }
         else
           this._$LV.attr('aria-labelledby', labelId);
@@ -469,17 +487,17 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
 
         switch (key)
         {
-           case "value"  :        change = this._setOptValue(newval) ;
+           case "value"  :        this._setOptValue(newval) ;
                                   break ;
-           case "palette" :       change = this._setOptPalette(newval) ;
+           case "palette" :       this._setOptPalette(newval) ;
                                   break ;
-           case "swatchSize" :    change = this._setOptSwatchSize(newval) ;
+           case "swatchSize" :    this._setOptSwatchSize(newval) ;
                                   break ;
-           case "layout" :        change = this._setOptLayout(newval) ;
+           case "layout" :        this._setOptLayout(newval) ;
                                   break ;
-           case "labelDisplay" :  change = this._setOptLabelDisplay(newval) ;
+           case "labelDisplay" :  this._setOptLabelDisplay(newval) ;
                                   break ;
-           case "disabled":       change = this._setOptDisabled(newval, true) ;
+           case "disabled":       this._setOptDisabled(newval, true) ;
                                   break;
         }
 
@@ -495,6 +513,88 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
          this._selected(event, ui) ;
        }
      },
+
+
+     /**
+       *  Wait for ListView to be ready, and complete the add/remove
+       *  @private
+       */
+     _waitForLV: function()
+     {
+        if (this._LVResolve) {
+          return ;
+        }
+
+        var self = this;
+        this._LVResolve = oj.Context.getContext(this._$LV[0]).getBusyContext();
+        this._LVResolve.whenReady().then(function ()
+        {
+           self._LVResolve = null ;
+
+           var stackEntry, thisObj, postOp, newPalette, i, index ;
+
+           // Resolve palette's busy state
+           self._resolvePaletteBusyContext() ;
+
+           if (! self._opStack) {
+             return;
+           }
+
+           postOp = false ;
+           for (i = 0; i < self._opStack.length; i++)
+           {
+             stackEntry = self._opStack[i] ;
+             thisObj    = stackEntry.obj ;
+
+             if ((stackEntry.op === "a") || (stackEntry.op === "r"))
+             {
+               postOp = true ;
+               if (! newPalette) {
+                 newPalette = self._palette.slice(0) ;
+               }
+
+               if (stackEntry.op === "a")          // add swatch
+               {
+                 newPalette.push(thisObj) ;
+               }
+               else if (stackEntry.op === "r")     // remove swatch
+               {
+                 index = self._findIndexOfSwatchById(newPalette, thisObj["id"]) ;
+                 newPalette.splice(index, 1) ;
+                 stackEntry.index = index ;      // save doing this again later
+               }
+             }
+           }
+
+           // Fire the optionChange event for 'palette' add/remove
+           if (postOp)
+           {
+             // Fire the optionChange event for 'palette'
+             self._fireOptionChangeEvent("palette", newPalette, null);
+
+             // internalSet is true in fireOptionChangeEvent, so update _palette now.
+             while(self._opStack.length)
+             {
+               stackEntry = self._opStack.shift() ;
+               thisObj    = stackEntry.obj ;
+
+               if (stackEntry.op === "a")          // add swatch
+               {
+                 self._palette.push(thisObj) ;
+               }
+               else if (stackEntry.op === "r")     // remove swatch
+               {
+                 self._palette.splice(stackEntry.index, 1) ;
+               }
+             }
+           }
+        }, function() {
+             oj.Logger.error("JET Color Palette (id='" + self.element.attr("id") +
+                             "'): ListView timed out.");
+             self._opStack = [] ;
+        });
+     },
+
 
      /**
        *  Compares two color values (oj.Colors) 
@@ -562,13 +662,93 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
 
 
      /**
+       *  Returns the swatch ID of the supplied oj.Color in the palette.
+       *  @param {oj.Color}  color  the color to be found.
+       *  @returns {string | null}  the ID of the swatch, or null if not found.
+       *  @private
+       */
+     _findSwatchIdOfColorInPalette: function(color)
+     {
+        var  id = null,
+             a     = this._palette,
+             l     = a.length,
+             i, co ;
+
+        for (i = 0; i < l; i++)
+        {
+          co = a[i] ;
+          if (color.isEqual(co["color"]))
+          {
+             id = co["id"] ;
+             break ;
+          }
+        }
+
+        return id ;
+     },
+
+
+     /**
+       *  Returns the index to the swatch with the supplied ID in the array.
+       *  @param {string}  a   the array to be searched.
+       *  @param {string}  id   the ID to be found.
+       *  @returns {number}  the index to the swatch, or -1 if not found.
+       *  @private
+       */
+     _findIndexOfSwatchById: function(a, id)
+     {
+        var  index = -1,
+             l     = a.length,
+             i, co ;
+
+        for (i = 0; i < l; i++)
+        {
+          co = a[i] ;
+          if (co["id"] === id)
+          {
+             index = i ;
+             break ;
+          }
+        }
+
+        return index ;
+     },
+
+
+     /**
+       *  set Palette BusyContext
+       *  @private
+       */
+     _setPaletteBusyContext : function(description)
+     {
+        // The busy state resolver will be invoked when ListView completes the add.
+        if (! this._resolve) 
+        {
+          var busyContext  = oj.Context.getContext(this.element[0]).getBusyContext();
+          this._resolve = busyContext.addBusyState( {"description" : description} );
+        }
+      },
+
+     /**
+       *  Resolve PaletteBusyContext
+       *  @private
+       */
+     _resolvePaletteBusyContext : function()
+     {
+        if (this._resolve)
+        {
+          this._resolve() ;
+          this._resolve = null ;
+        }
+     },
+
+     /**
        *  Swatch renderer  called from ojListView.
        *  @param {Object}  context the ojListView context.
        *  @private
        */
      _renderer : function(context)
      {
-       //console.log("_renderer - this._labelDisplay=" + this._labelDisplay + " swatchSize=" + this._swatchSize + " swatchClass=" + this._swatchClass) ;
        var raw ;
 
        var color, label, haveLabel, showLabels, none, tooltip;
@@ -578,8 +758,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        {
           // If color is undefined, will substitute black.
           color = oj.Color.BLACK;
-          oj.Logger.warn("JET Color Palette: Substituting oj.Color.BLACK for an object that is " + 
-            "not an instance of oj.Color");
+          oj.Logger.warn("JET Color Palette (id='" + this.element.attr("id") + "'): Substituting oj.Color.BLACK for an object that is not an instance of oj.Color");
        }
 
        label = haveLabel = context["data"]["label"] ;
@@ -648,7 +827,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
       */
      _renderStandard : function(color, showLabels, label, tooltip, swatchClass, selectedClass)
      {
-//console.log("renderStandard") ;
         var raw;
 
         raw = "<div class='oj-colorpalette-swatch-entry " + swatchClass + 
@@ -659,8 +837,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
                     ((! label)? " title='" + tooltip + "'" : "") + ">" + 
                   "</div>" + 
                 "</div>" ;
-//"' style='background:" + color.toString() + "'" + " title='" + tooltip + "' +
-//((! showLabels)? " aria-label='" + tooltip + "'") + "></div>" ;
               
         if (label) {
           raw += "<span class='oj-colorpalette-swatch-text'>" + label + "</span>" ;
@@ -680,7 +856,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
       */
      _renderNone: function(showLabels, label, tooltip, swatchClass, selectedClass)
      {
-//console.log("renderNone") ;
         var raw;
 
         raw = "<div class='oj-colorpalette-swatch-entry " + swatchClass + 
@@ -709,7 +884,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        */
      _selected : function(event, ui)
      {
-//console.log("_selected " + (typeof ui.value) + " " + $.isArray(ui.value) + " ui.value=" + ui.value + " " +  debugObj(ui.value)) ;
          var newColor = null, swatch, lastSelected ;
 
          // Color the internal swatch border (normally transparent) so that it
@@ -755,7 +929,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
       * @param {boolean}  disabled  the "disabled" option value. 
       * @param {boolean} applyOnlyIfDifferent Only apply the new value if it's different from the
       *        current value.
-      * @returns {boolean}   true if the "disabled" option changed, else false.
       * @private
       */
      _setOptDisabled : function(disabled, applyOnlyIfDifferent)
@@ -797,22 +970,17 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
 
           this._disabled = disabled;
         }
-        return change ;
      },
 
      /**
        *  Handle "value" option change.
        *  @param {oj.Color}  color  the "value" option color.
-       *  @returns {boolean}  true if the "value" option caused the selection to change,
-       *                      else false.
        *  @private
        */
      _setOptValue :  function(color)
      {
         var palIndex = -1;
         var pal = [] ;
-
-//console.log(this._debug + "setOptValue c=" + color.toString() + " prev value=" + this._value.toString()); 
 
         if (this._palette.length > 0)
         {
@@ -840,26 +1008,28 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
      /**
        *  Handle "palette" option change.
        *  @param {Array}  palette  the "palette" option array. 
-       *  @returns {boolean}  true if the "palette" option array is different from the current
-       *                      option, else false.
        *  @private
        */
      _setOptPalette :  function(palette)
      {
-        var ret = false ;
         if ($.isArray(palette))
         {
           if (! this._isPaletteEqual(palette, this._palette))
           {
-              // Palettes are different
-              this._palette = palette.slice(0); ;   // make copy in case app is using same array
-              this._initSelection = this._findColorInPalette(this._value) ;
-              this._setData(palette, this._initSelection, true) ;
-              ret = true ;
+            // Palettes are different
+            // Add a palette busy state for the rerender of the ListView
+            // The busy state resolver will be invoked when ListView completes the add.
+            this._setPaletteBusyContext("The palette (id=" + this.element.attr("id") + ") option change in progress.");
+
+            this._opStack = [] ;                  // clear the fifo stack of post-busy operations
+
+            this._palette = palette.slice(0); ;   // make copy in case app is using same array
+            this._initSelection = this._findColorInPalette(this._value) ;
+            this._setData(palette, this._initSelection, true) ;
+
+            this._waitForLV() ;
           }
         }
-
-        return ret ;
      },
 
      /**
@@ -868,21 +1038,16 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        */
      _setOptSwatchSize :  function(swatchSize)
      {
-        var ret = false ;
-
         if (typeof swatchSize === "string")
         {
            if (swatchSize !== this._swatchSize)
            {
-              this._swatchSize = swatchSize ;
-              this._swatchClass = "oj-colorpalette-swatchsize-" + (swatchSize === "lg"? "lg" : 
-                                                                  ((swatchSize === "sm")? "sm" : "xs")) ;
-              this._$LV.ojListView("refresh") ;
-              ret = true ;
+             this._swatchSize = swatchSize ;
+             this._swatchClass = "oj-colorpalette-swatchsize-" + (swatchSize === "lg"? "lg" : 
+                                                                 ((swatchSize === "sm")? "sm" : "xs")) ;
+             this._$LV.ojListView("refresh") ;
            }
         }
-
-        return ret ;
      },
 
      /**
@@ -892,8 +1057,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        */
      _setOptLabelDisplay :  function(labelDisplay)
      {
-        var ret = false ;
-
         if (typeof labelDisplay === "string")
         {
            if (labelDisplay !== this._labelDisplay)
@@ -901,13 +1064,10 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
              if (labelDisplay === "auto" || labelDisplay === "off")
              {
                this._labelDisplay = labelDisplay ;
-             this._$LV.ojListView("refresh") ;
-               ret = true ;
+               this._$LV.ojListView("refresh") ;
              }
            }
         }
-
-        return ret ;
      },
 
      /**
@@ -917,8 +1077,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        */
      _setOptLayout :  function(layout)
      {
-        var ret = false;
-
         if (typeof layout === "string")
         {
            if (layout !== this._layout)
@@ -926,11 +1084,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
               this._layout = layout ;
               this._setDisplayFormat() ;
               this._$LV.ojListView("refresh") ;
-              ret = true ;
            }
         }
-
-        return ret ;
      },
 
      /**
@@ -946,14 +1101,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
         this._$LV.addClass(layoutClass) ;
         if (grid)
         {
-          //this._$LV.addClass("oj-listview-card-layout") ; // this causes rendering problems
-          this._$LV.css("display", "flex");
-          this._$LV.css("flex-wrap", "wrap") ;
-        }
-        else
-        {
-          this._$LV.css('display', '');
-          this._$LV.css('flex-wrap', '');
+          this._$LV.addClass("oj-listview-card-layout") ;
         }
      },
 
@@ -963,9 +1111,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
        */
      _setData : function(palette, initSelected, setOption)
      {
-//console.log("_setData palDatasource len=" + palette.length) ;
-       this._addIndexesToPalette(palette) ;            // add "id" props
-//console.log(debugObj(palette)) ;
+       this._addIdsToPalette(palette) ;            // add "id" props
        this._palDataSource  = new oj.ArrayTableDataSource(palette, {"idAttribute": "id"});
 
        //  If current value property matches a supplied swatch, select it.
@@ -979,10 +1125,6 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
          {
            this._palInitSelected[0] = initSelected ;
          }
-       }
-       else
-       {
-           // TDO  do we need to deselect here??
        }
 
        if (setOption)
@@ -999,6 +1141,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
       */
      _initPalette : function()
      {
+        this._setPaletteBusyContext("Palette (id=" + this.element.attr("id")+ ") is initializing.");
+
         this._initData() ;
         this._setup() ;
      },
@@ -1010,10 +1154,13 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
      _setup :  function()
      {
         // Add new listview markup as a child of this component's DOM element
-        this._$boundElem.append(this._markup) ;
+        this._$boundElem.append(this._markup) ;    //@HTMLUpdateOK (strings are all code constants)
         this._$boundElem.addClass("oj-colorpalette");
         this._$paletteContainer = this._$boundElem.find(".oj-colorpalette-container");
         this._$LV               = this._$paletteContainer.find(":first");  //Listview UL
+
+        // Will be using a component context for the ListView
+        this._$LV.attr("data-oj-context", "") ;
 
         //  If value property matches a supplied swatch, note for initial selection.
         if (this._value && this._value instanceof oj.Color)
@@ -1021,6 +1168,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
           this._initSelection = this._findColorInPalette(this._value) ;
         }
         
+        this._swatchId = 0 ;                   // use  _getNextSwatchId() to access
         this._setData(this._palette, this._initSelection, false) ;
 
         //  Instantiate the ListView
@@ -1033,15 +1181,13 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
                                "rootAttributes": {style: "height:100%;width:100%"}
                   }).attr('data-oj-internal', ''); // for use in automation api
 
-
-
-//this._debug = this._$boundElem.hasClass("demo-saved-palette")? "SAVEDPAL  " : "PALETTE  " ;
-
-        // don't want any list text if palette is empty
-        this._$LV.ojListView("option", "translations")["msgNoData"] = "" ;
-        
         var self = this;
-        this._$LV.ojListView("whenReady").then(function() {
+        var LV_resolve = oj.Context.getContext(this._$LV[0]).getBusyContext();
+        LV_resolve.whenReady().then(function()
+        {
+          // Don't want any listview text if palette is empty
+          self._$LV.ojListView("option", "translations.msgNoData", "") ;
+
           self._setOptDisabled(self._disabled);
           
           //FIX : when there is a vertical scrollbar, add
@@ -1051,9 +1197,10 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
           {
             var scrollbarWidth = self._getScrollbarWidth();
             var rtl = (self._GetReadingDirection() === "rtl");
-            self._$LV.css(rtl ? "padding-left" : "padding-right", 
-              scrollbarWidth + 1);
+            self._$LV.css(rtl ? "padding-left" : "padding-right", scrollbarWidth + 1);
           }
+
+          self._resolvePaletteBusyContext();    // component is ready to use
         });
      },
 
@@ -1070,28 +1217,21 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
 
         this._labelNone = this.getTranslatedString(TRANSKEY_NONE);
 
-        var layoutClass, layoutStyle ;
+        var layoutClass ;
         if ( this._layout === 'grid')
         {
-//          layoutClass =  "oj-colorpalette-grid oj-listview-card-layout" ;     // tdo why does this cause problems
-          layoutClass =  "oj-colorpalette-grid" ;
-          layoutStyle = "display:flex;flex-wrap:wrap;"
+          layoutClass =  "oj-colorpalette-grid oj-listview-card-layout" ;
         }
         else 
         {
           layoutClass =  "oj-colorpalette-list" ;
-          layoutStyle = "" ;
         }
-//orig layoutClass      =  (this._layout === 'grid'? 'oj-colorpalette-grid' : 'oj-colorpalette-list') ;
-//orig layoutClass      += (this._layout === 'grid'? "'oj-listview-card-layout' style='display:flex;flex-wrap:wrap;'" : "");
-//orig var layoutClassStyle = (this._layout === 'grid'? "'oj-listview-card-layout' style='display:flex;flex-wrap:wrap;'" : "");
-
 
         //  Create the inner ListView markup
         this._markup = (function () {
            return [
              "<div class='oj-colorpalette-container'>",
-                "<ul class='" + layoutClass + "'" + (layoutStyle? (" style='" + layoutStyle + "'") : "") + " />",
+                "<ul class='" + layoutClass + "'/>",
              "</div>"
            ].join("") ;
         })();
@@ -1155,16 +1295,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarrayt
         {
           opt = [] ;
         }
-//MASH        this._palette = opt ;
-this._palette = opt.slice(0); ;
+        this._palette = opt.slice(0); ;
 
-/*
-        opt = opts["renderer"] ;
-        if ($.isFunction(opt))
-        {
-          this._appRenderer = opt ;
-        }
-*/
         opt = opts["disabled"] ;
         if (typeof opt === "boolean")
         {
@@ -1225,14 +1357,26 @@ this._palette = opt.slice(0); ;
       *   Add "id" property to palette entries
       *   @private
       */
-    _addIndexesToPalette : function(palette)
+    _addIdsToPalette : function(palette)
     {
        var i, o, l = palette.length ;
        for (i = 0; i < l; i++)
        {
          o = palette[i] ;
-         o["id"] = i ;
+         o["id"] = this._getNewSwatchId() ;
        }
+    },
+
+
+    /**
+      *   Returns a new (unique) swatch id.
+      *   @private
+      */
+    _getNewSwatchId :function()
+    {
+      var s =  this._swatchId.toString() ;
+      this._swatchId++ ;
+      return s ;
     },
 
      /**
@@ -1241,10 +1385,10 @@ this._palette = opt.slice(0); ;
        */
      _clear : function()
      {
-        this._converterFactory      = 
-        this._convHex               = 
-        this._markup                = 
-        this._$LV                   = null ;
+        this._converterFactory   = 
+        this._convHex            = 
+        this._markup             = 
+        this._$LV                = null ;
      },
      
     /**
@@ -1260,7 +1404,7 @@ this._palette = opt.slice(0); ;
           "<div style='width: 100%; height: 100%;'></div>" + 
         "</div>"
       );
-      this.element.append(div);
+      this.element.append(div);             //@HTMLUpdateOK (strings are all code constants)
       var outerWidth = div[0].offsetWidth;
       var innerWidth = div.children()[0].offsetWidth;
       div.remove();

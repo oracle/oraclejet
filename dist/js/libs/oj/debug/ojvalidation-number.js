@@ -1958,7 +1958,8 @@ OraNumberConverter = (function () {
       number = _toRawFixed(number, options, numberSettings);
     var ret = "";
     //add negative prefix and suffix if number is negative
-    if (value < 0) {
+    //and the new formatted value isn't zero
+    if (value < 0 && (number - 0 != 0)) {
       ret += numberSettings['negativePrefix'] + number +
           numberSettings['negativeSuffix'];
     }

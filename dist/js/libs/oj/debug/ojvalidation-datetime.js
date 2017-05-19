@@ -1747,11 +1747,11 @@ oj.IntlDateTimeConverter.prototype.calculateWeek = function(value)
  * &lt;!-- For date-time values  -->
  * var options = {pattern: 'MM/dd/yy hh:mm:ss a'};
  * var conv = oj.Validation.converterFactory('datetime').createConverter(options);
- * cnv.parse('09/11/14 03:02:01 PM'); // '2014-10-20T15:02:01'
+ * cnv.parse('09/11/14 03:02:01 PM'); // '2014-09-11T15:02:01'
  * 
  * &lt;!-- For date values -->
  * var options = {pattern: 'MM/dd/yy'};
- * cnv.parse('09/11/14'); // '2014-10-20'
+ * cnv.parse('09/11/14'); // '2014-09-11'
  * 
  * &lt;!-- For time values -->
  * var options = {pattern: 'hh:mm:ss a'};
@@ -1964,6 +1964,18 @@ oj.IntlDateTimeConverter.prototype._isOptionSet = function (optionName)
   var ro = this.resolvedOptions(), hasOption = ro[optionName] ? true : false;
   return hasOption;
 };
+
+/**
+ * Internal API to getTimePositioning.
+ * @returns {Object} json object of the positioning with h + m as keys
+ * @export
+ * @ignore
+ */
+oj.IntlDateTimeConverter.prototype._getTimePositioning = function ()
+{
+  return this._getWrapped().getTimePositioning(oj.LocaleData.__getBundle(), this.resolvedOptions(), oj.Config.getLocale());
+};
+
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -6769,7 +6781,7 @@ OraDateTimeConverter = (function () {
     }
     return _getResolvedDefaultOptions(localeElements, locale, numberingSystemKey);
   };
-  
+
   _availableTimeZonesImpl = function (localeElements) {
 
     function getLocalizedName(id, offset, metaZones, cities) {
@@ -7300,27 +7312,31 @@ OraDateTimeConverter = (function () {
        * @param {string=} locale - A BCP47 compliant language tag. it is only 
        * used to extract the unicode extension keys.
        * @return {Object}. time tokens positions. For example  if the pattern is 'hh:mm a'
-       * the return value is { hour: 0, minute: 1, meridian: 2 }, fot RTL locales the order 
-       * of the tokens is reversed as follow { hour:2, minute: 1, meridian: 0 } 
+       * the return value is { 'h': 0, 'm': 1, 'a': 2 }, fot RTL locales the order 
+       * of the tokens is reversed for 'h' and 'm' { 'h':1, 'm': 0, 'a': 2 } 
        */
-       getTimePositioning: function (localeElements, options, locale) {
+      getTimePositioning: function (localeElements, options, locale) {
         var resOptions = _resolvedOptionsImpl(localeElements, options, locale);
         var pattern = resOptions['pattern'] || resOptions['patternFromOptions'];
-        pattern = pattern.replace(/\'[^']*\'/g, "").replace(/[^hHmsa]*/g, "");
-        pattern = pattern.replace(/(h|H)+/, "h").replace(/m+/, "m").replace(/s+/, "s");
+        pattern = pattern.replace(/\'[^']*\'/g, "").replace(/[^hHkKma]*/g, "");
+        pattern = pattern.replace(/(h|H|k|K)+/, "h").replace(/m+/, "m");
         var mainNodeKey = oj.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
         var lang = _getBCP47Lang(mainNodeKey);
         var isRTL = (lang === 'ar') || (lang === 'he');
         var positioning = {};
         var i = 0;
         var c;
-        var pos;
         var len = pattern.length;
-        for(i = 0; i < len; i++) {
+        for (i = 0; i < len; i++) {
           c = pattern.charAt(i);
-          pos = isRTL ? len - i -1 : i;
-          positioning[c] = pos;
-        }        
+          positioning[c] = i;
+        }
+        if (isRTL) {
+          // for RTL locales reverse h and m
+          i = positioning['h'];
+          positioning['h'] = positioning['m'];
+          positioning['m'] = i;
+        }
         return positioning;
       }
     };

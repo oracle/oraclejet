@@ -275,6 +275,10 @@ function _rgbToHsl(r, g, b)
      //** @inheritdoc */
      getSubIdByNode : function(elem)
      {
+        if (! elem) {
+          return null ;
+        }
+
         var $node = $(elem),
             subId = null,
             $ancestor,
@@ -886,7 +890,7 @@ function _rgbToHsl(r, g, b)
      },
 
      /**
-       * Handle drag and end dragstop of spectrum thumb
+       * Handle drag and end drag of spectrum thumb
        * @param {Event} e  the associated event. 
        * @param {Object} ui. 
        * @private
@@ -1291,22 +1295,6 @@ $(".oj-colorspectrum-alpha").uniqueId();
         opt = opts["disabled"] ;
         this._disabled = (typeof opt === "boolean")? opt : false ;
      },
-
-    /**
-      *  Returns true if an oj.Color represents the 'transparent' color.
-      *  @param {oj.Color} color the color object to be tested.
-      *  @returns {boolean}  true if oj.Color is transparent, else false.
-      *  @private
-      */
-    _isTransparent : function(color)
-    {
-       var r = color.getRed(),
-           g = color.getGreen(),
-           b = color.getBlue(),
-           a = color.getAlpha();
-       
-       return (r === 0 && g === 0 && b === 0 && a === 0) ;
-    },
 
     /**
       *  Enable/disable the hue and alpha sliders

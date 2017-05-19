@@ -534,7 +534,6 @@
             @include oj-align-items-property(center);
             @include oj-justify-content-property(center);
             box-sizing: border-box;
-            width: calc(2 * #{$dataGridCellPadding} + #{$dataGridCellFontSize});
             height: 100%;
             padding: $dataGridCellPadding;
             position: absolute;

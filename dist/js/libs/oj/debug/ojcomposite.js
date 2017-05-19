@@ -116,7 +116,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     {
       var methodName = methodMeta['internalName'] || method;
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      return bridge._VIEW_MODEL[methodName].apply(null, arguments);
+      return bridge._VIEW_MODEL[methodName].apply(bridge._VIEW_MODEL, arguments);
     };
   },
   
@@ -1006,13 +1006,18 @@ var _UNIQUE = '_ojcomposite';
  *       <td class="name"><code>version</code></td>
  *       <td>yes</td>
  *       <td>{string}</td>
- *       <td>The component version.</td>
+ *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
+ *         jetVersion should result in at least a minor composite version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
  *       <td class="name"><code>jetVersion</code></td>
  *       <td>yes</td>
  *       <td>{string}</td>
- *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s).</td>
+ *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s). 
+ *         Composite authors should not specify a semantic version range that includes unreleased JET major versions
+ *         as major releases may contain non backwards compatible changes. Authors should instead recertify composites 
+ *         with each major release and update the composite metadata or release a new version that is compatible with the new
+ *         release changes.</td>
  *     </tr>
  *     <tr>
  *       <td class="name"><code>compositeDependencies</code></td>
@@ -1286,8 +1291,8 @@ var _UNIQUE = '_ojcomposite';
  * <code>
  * {
  *  "name": "demo-card",
- *  "version": "1.0.0",
- *  "jetVersion": ">=3.0.0",
+ *  "version": "1.0.2",
+ *  "jetVersion": ">=3.0.0 <5.0.0",
  *  "properties": {
  *    "currentImage" : {
  *      "type": "string",

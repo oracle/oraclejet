@@ -852,10 +852,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         element.hide().addClass(rootStyle).attr("aria-hidden", "true");
         element.addClass("oj-component");
 
-        // Add a data attribute indicating the popup should be assigned its own
-        // whenReady busy context. @see oj.Context#getContext
-        element.attr("data-oj-context", "");
-
         // Creates a content element and moves the children of the root to the content element
         // and then appends the content element to the root element.
         var content = $("<div>");

@@ -138,22 +138,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    * The slider component will then use this information in the input tag to create the
    * appropriate aria attribute on the slider thumb(s).
    </p>
-   In addition, the slider thumb element can be accessed using
-   * <code class="prettyprint">getNodeBySubId()</code> method.
-   This allows the user to (a) override any of the above aria attributes that were set automically
-   * on the thumb, or (b) define additional aria attributes, such as
-   * <code class="prettyprint">aria-controls</code>
-   * or <code class="prettyprint">aria-valueText</code>.
-   * <p>
-   * If the slider controls another element that is in a remote area of the page,
+   * In addition, the slider thumb element can be accessed programmatically.
+   * This approach may be necessary to ensure accessibility conformance.
+   * For example, if the slider controls another element that is in a remote area of the page,
    * then the <code class="prettyprint">aria-controls</code> attribute for the slider thumb
-   * should be set. This can also be accomplished by accessing the slider thumb element using
-   * <code class="prettyprint">getNodeBySubID()</code>.
+   * should be set.
    *
    * <p>
-   * For example, suppose there is another component, that is in a remote area of the page
+   * Consider an example where you may need to set additional attributes for accessibility reasons.
+   * Suppose there is another component that is in a remote area of the page
    * that controlled by the slider.
-   * Assume that the <code class="prettyprint">id</code>  of the remote element is
+   * Assume that the <code class="prettyprint">id</code> of the remote element is
    * "idOfRemoteElement".
    * Below we use the <code class="prettyprint">getNodeBySubId()</code> method to access the
    * thumb element in order to set the
@@ -165,7 +160,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
    *  $(document).ready(function() {
    *     ko.applyBindings(...)
    *     var thumb0 =
-   *        $('#inputslider-id').ojSlider("getNodeBySubId", {subId:"oj-slider-thumb-0"});
+   *        $('#inputslider-id').find('.oj-slider-thumb')[0];
    *     $(thumb0).attr("aria-controls", "idOfRemoteElement");
    *  });
    * </code></pre>
@@ -2056,6 +2051,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       }
     },
 
+    // @inheritdoc
     getNodeBySubId: function(locator) {
       if (locator == null) {
         return this.element ? this.element[0] : null;

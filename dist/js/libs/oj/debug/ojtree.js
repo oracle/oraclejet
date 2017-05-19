@@ -891,7 +891,7 @@ oj.TreeDndContext.prototype._addInternalNode =  function()
   {
     this._internalNode = $("<li class='" + TreeUtils._OJ_TEMPNODE + " oj-tree-node oj-tree-leaf oj-valid-drop' id='" + TreeUtils._OJ_TEMPNODE + "'><ins class='oj-tree-icon'></ins><a href='#'><ins class='oj-tree-icon'></ins><span class='oj-tree-title'></span></a></li>");
   }
-  this.component._$container_ul.append(this._internalNode) ;       // @HtmlUpdateOk
+  this.component._$container_ul.append(this._internalNode) ;       // @HTMLUpdateOK  (no user supplied text involved)
 };
 
 
@@ -971,7 +971,7 @@ oj.TreeDndContext.prototype._dndEnter = function (obj)
      if (vars.r && vars.r.length && vars.r.hasClass(TreeUtils._OJ_COLLAPSED))
      { 
        // if the node is closed - open it, then recalculate
-       dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms);     // @HtmlUpdateOk
+       dnd.openTimerId = setTimeout(this._dndOpen.bind(this), ms);     // @HTMLUpdateOK
      }
    }
 
@@ -1641,18 +1641,22 @@ oj.TreeDndContext.prototype._setDragImage = function(dt, $nodes)
 
    $dragImg = $("<div></div>");
    ul = $("<ul style='padding:0px;margin:0;'></ul>");
-   $dragImg.append(ul);
+   $dragImg.append(ul);       //@HTMLUpdateOK; no user input involved and 
+                              // only creating a drag image.
 
    for (i = 0; i < len; i++)
    {
      el = $nodes[i].cloneNode(true);
      el.style.marginLeft  = 0;
      el.style.paddingLeft = 0;
-     ul.append(el);                // @HtmlUpdateOk
+     ul.append(el);            // @HTMLUpdateOK; appended elems have already
+                               // been sanitized before being added to the DOM,
+                               // and are only referenced here to create an image
+                               // for dragging.
    }
 
    elem = $dragImg[0] ;
-   document.body.appendChild(elem);
+   document.body.appendChild(elem);    // @HTMLUpdateOK; pre-sanitized elems used to create a drag image
    elem.style.position = "absolute";
    elem.style.top      = "-" + ($dragImg.height() * 2) + "px";
    elem.style.right    = "0";
@@ -3883,6 +3887,12 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
               .removeClass(TreeUtils._OJ_SELECTED)
               .addClass("oj-default") ;
 
+        this._busyStack.push( {op : 'c', id : node.attr("id")});
+
+        // Add a busy state for the animation.  The busy state resolver will be invoked
+        // when the animation is completed
+        this._addBusyState("Tree (id='" + this._elemId  + "') : node id='" + node.attr('id') + "' is animating.");
+
         if ((!skipAnim) && dur ) {
           this._slide(node, true) ;     // slideUp
         }
@@ -4005,13 +4015,17 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
       */
      _transitionEnd : function($ul, node)
      {
+        var op ;
+
         if (node.hasClass(TreeUtils._OJ_COLLAPSED)) {   // end collapse
+          op = 'c' ;       // collapse op
           $ul[0].style.display = "none";
 $ul.css('max-height', '') ;   //JRM
           this._emitEvent({ "obj" : node }, "collapse");
           this["after_close"](node);
         }
         else {                                          // end expand
+          op = 'e' ;       // expand op
           $ul[0].style.display = "block";
           $ul.css('max-height', '') ;
           this._emitEvent({ "obj" : node }, "expand");
@@ -4022,6 +4036,9 @@ $ul.css('max-height', '') ;   //JRM
           $ul.css('overflow', this._overflow) ;         // restore, 'hidden' was set in _slide()
           this._overflow = null ;
         }
+
+        this._removeFromBusyStack(op, node.attr("id"));
+        this._resolveIfBusyStackEmpty() ;
      },
 
 
@@ -4874,7 +4891,7 @@ $ul.css('max-height', '') ;   //JRM
           this._isSafari = (ai["browser"] === oj.AgentUtils.BROWSER.SAFARI) ;
           this._proxyTransitionEndHandler = this._transitionEndHandler.bind(this);
         }
-
+        this._busyStack = [] ;
         this._start() ;                                             // build/display the tree
      },
 
@@ -4884,6 +4901,7 @@ $ul.css('max-height', '') ;   //JRM
        */
      _destroy : function()
      {
+        this._resolveBusyContext();
         this._clearTree() ;    // Clean out the DOM.  After this, the tree markup has
                                // been removed from the div, and all event handlers
                                // removed.
@@ -5037,6 +5055,83 @@ $ul.css('max-height', '') ;   //JRM
        return (! bDiff) ;
      },
 
+     /**
+       *  Add animation busyState
+       *  @private
+       */
+     _addBusyState : function(description)
+     {
+        if (! this._animationResolve) 
+        {
+          var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
+          this._animationResolve = busyContext.addBusyState( {"description" : description} );
+        }
+     },
+
+     /**
+       *  Resolve BusyContext
+       *  @private
+       */
+     _resolveBusyContext : function()
+     {
+        if (this._animationResolve)
+        {
+          this._animationResolve() ;
+          this._animationResolve = null ;
+        }
+     },
+
+     /**
+       *  Check if entry is on the busy stack. Returns the index, or -1 if not found.
+       *  @private
+       */
+     _isOnBusyStack : function(op, id)
+     {
+       var a   = this._busyStack,
+       len = a.length,
+       i,
+       ret = -1 ;
+
+       for (i = 0; i < len; i++)
+       {
+         if ((a[i].id === id) && (a[i].op === op))
+         {  
+           ret = i ;
+           break ;
+         }
+       }
+
+       return ret ;
+     },
+
+
+     /**
+       *  Remove entry from the busy stack. Returns the index, or -1 if not found.
+       *  @private
+       */
+     _removeFromBusyStack : function(op, id)
+     {
+       var i = this._isOnBusyStack(op, id) ;
+
+       if (i >= 0)
+       {
+         this._busyStack.splice(i, 1) ;
+       }
+
+       return i ;
+     },
+
+     /**
+       *  If busy stack is empty can resolve busy
+       *  @private
+       */
+    _resolveIfBusyStackEmpty : function()
+    {
+      if (this._busyStack.length === 0)
+      {
+        this._resolveBusyContext() ;    
+      }
+    },
 
      /**
        *  Clears out the tree dom
@@ -5814,7 +5909,6 @@ $ul.css('max-height', '') ;   //JRM
          return ret ;
       },
 
-
       /**
         *  @private
         */
@@ -6107,16 +6201,21 @@ $ul.css('max-height', '') ;   //JRM
         // zero and a transition is started, the transitionend event does not fire and
         // we don't get the opportunity to emit an expand event.
 
-         var dur  = skipAnim? 0 : this._animDuration,
-             t    = this;
+         var dur = skipAnim? 0 : this._animDuration,
+             t   = this;
 
-         if (! this._is_loaded(obj))  {
+         if (! this._is_loaded(obj))
+         {
            obj.children("a").addClass(OJT_LOADING);
+
+           // Load the node. This does not return if an Ajax request is made and ends in failure.
+           // will downdate stack and resolve busy if stack is empty.
            this._load_node(obj, function () {
                                    t._expand(obj, callback, skipAnim);
                                 }, callback) ;
          }
-         else  {
+         else
+         {
            if (this.options["expandParents"])  {
              obj.parentsUntil(".oj-tree", ".oj-collapsed").each(function ()
                                    {
@@ -6136,6 +6235,12 @@ $ul.css('max-height', '') ;   //JRM
                 .removeClass(TreeUtils._OJ_SELECTED)
                 .addClass("oj-default") ;
 
+           this._busyStack.push( {op : 'e', id : obj.attr("id")});
+
+           // Add a busy state for the animation.  The busy state resolver will be invoked
+           // when the animation is completed
+           this._addBusyState("Tree (id='" + this._elemId  + "') : node id='" + obj.attr('id') + "' is animating.");
+
            if ((!skipAnim) && dur)  {
              this._slide(obj, false) ;       // slideDown
            }
@@ -6148,7 +6253,6 @@ $ul.css('max-height', '') ;   //JRM
            }
          }
     },
-
 
     /**
       *  Expands all collapsed nodes
@@ -7265,34 +7369,57 @@ $ul.css('max-height', '') ;   //JRM
 
           case (!data && !!ajax) || (!!data && !!ajax && obj && obj !== -1):
 
+                       // AJAX error function
                        error_func = function (x, status, e)
                        {
-                         var ef = this._getOptions()["data"]["ajax"]["error"];  // reget the options
+                         var self = this.ctx ;                      // get the tree's this
+                         //console.log("Ajax FAIL JSON id='" + this.id + "' obj.id=" +                        
+                         //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
+
+                         self._noteLoadFailureId(this.id, true) ;   // add id to load failure list
+                         self._removeFromBusyStack('j', ((obj === -1)? -1 : obj.attr('id'))) ;
+                         self._resolveIfBusyStackEmpty();
+
+                         var ef = self._getOptions()["data"]["ajax"]["error"];  // reget the options
                          if (ef) {                                              // without our updated ajax
-                           ef.call(this, status, e, x);                         // changes to avoid forever loop
+                           ef.call(self, status, e, x);                         // changes to avoid forever loop
                          }
-                         if (obj != -1 && obj.length)  {
+                         if (obj != -1 && obj.length)
+                         {
                             obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
                             obj.removeData("oj-tree-is-loading");
-                            if (status === "success" && this._data.ds.correctState)  {
-                              this._correct_state(obj);
+                            if (status === "success" && self._data.ds.correctState)  {
+                              self._correct_state(obj);
                             }
                          }
-                         else   {
-                           if ((status == "error") || (status === "success" && this._data.ds.correctState))  {
-                             this._$container_ul.empty();             // remove tree loading icon/node
+                         else
+                         {
+                           if ((status == "error") || (status === "success" && self._data.ds.correctState))  {
+                             self._$container_ul.empty();             // remove tree loading icon/node
+                             self._applyEmptyText() ;  // no tree data
                            }
                          }
                          if (e_call)  {
-                           e_call.call(this);
+                           e_call.call(self);
                          }
                        };
 
+                       // AJAX success function
                        success_func = function (d, status, x)
                        {
-                         var sf = this._getOptions()["data"]["ajax"]["success"];  // reget the options
-                         if (sf) {                                                // without our updated ajax
-                           d = sf.call(this, d, status, x) || d;                  // changes to avoid forever loop
+                         // 'this' is the context ptr
+                         var self = this.ctx ;      // get the tree's this
+
+                         //console.log("Ajax SUCCESS JSON id='" + this.id + "' obj.id=" +                        
+                         //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
+
+                         self._noteLoadFailureId(this.id, false) ;    // if this id is the failure list, remove it
+                         self._removeFromBusyStack('j', this.id) ;
+
+                         // Reget the options without our updated ajax changes to avoid forever loop
+                         var sf = self._getOptions()["data"]["ajax"]["success"];
+                         if (sf) {
+                           d = sf.call(self, d, status, x) || d;  // call app success function
                          }
 
                          // Check if all whitespace since JSON.parse() will barf on this.
@@ -7307,14 +7434,15 @@ $ul.css('max-height', '') ;   //JRM
                            }
                          }
 
-                         d = this._parseJson(d, obj);        // parse json and get a $(ul)
-                         if (d)  {
+                         d = self._parseJson(d, obj);        // parse json and get a $(ul)
+                         if (d)
+                         {
                             if (obj === -1 || !obj)  {
-                               var $u =  this._$container_ul;
+                               var $u =  self._$container_ul;
                                $u.empty().append(d.children());                                         //@HTMLUpdateOK
-                               $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, this._elemId)
+                               $u.attr(WA_ROLE, WA_TREE).attr(WA_LABELLEDBY, self._elemId)
                                                         .attr("tabindex", "0").css("outline", "none") ;
-                               if (this._data.core.selectMode === -1)  {
+                               if (self._data.core.selectMode === -1)  {
                                  $u.attr("aria-multiselectable", true) ;
                                }
                              }
@@ -7323,45 +7451,60 @@ $ul.css('max-height', '') ;   //JRM
                                 obj.removeData("oj-tree-is-loading");
                              }
 
-                             this._cleanNode(obj);
+                             self._cleanNode(obj);
                              if (s_call)  {
-                               s_call.call(this);
+                               s_call.call(self);
                              }
                          }
-                         else  {                             // parse returned nothing
+                         else
+                         {                             // parse returned nothing
                            if (obj === -1 || !obj) {
-                              if (this._data.ds.correctState)  {
-                                 this._$container_ul.empty();
+                              if (self._data.ds.correctState)  {
+                                 self._$container_ul.empty();
                                  if (s_call) {
-                                   s_call.call(this);
+                                   s_call.call(self);
                                  }
                               }
                            }
                            else  {
                               obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
                               obj.removeData("oj-tree-is-loading");
-                              if (this._data.ds.correctState) {
-                                this._correct_state(obj);
+                              if (self._data.ds.correctState) {
+                                self._correct_state(obj);
                                 if (s_call)  {
-                                  s_call.call(this);
+                                  s_call.call(self);
                                 }
                               }
                            }
                          }
                        };
 
-                       //  Prepare for an ajax op. (note: we are updating a copy of the options)
-                       s["ajax"]["context"] = this;
+                       //  Prepare for an aynchronous ajax op. (note: we are updating a copy of the options)
+
+                       var nodeId = ((obj === -1)? -1 : obj.attr("id"));
+                       this._busyStack.push( {op : 'j', id : nodeId});
+                       this._addBusyState("Tree (id='" + this._elemId + "') : node id='" + nodeId + "' is lazyloading.");
+
+                       //console.log("ajax JSON load (" + nodeId + ") . . .  busyStack=" + this._arrayToStr(this._busyStack)) ; 
+
+                       var reqContext = {ctx: this, id: nodeId};
+
+                       s["ajax"]["context"] = reqContext;
                        s["ajax"]["error"]   = error_func;
                        s["ajax"]["success"] = success_func;
 
                        if (! s["dataType"])  {
                          s["ajax"]["dataType"] = "json";
                        }
-                       if ($.isFunction(s["ajax"]["url"]))  {
+                       reqContext.type = s["ajax"]["dataType"] ;
+
+                       if ($.isFunction(s["ajax"]["url"]))
+                       {
                          s["ajax"]["url"] = s["ajax"]["url"].call(this, obj);
+                         reqContext.url = s["ajax"]["url"] ;
                        }
-                       if ($.isFunction(s["ajax"]["data"]))  {
+                       if ($.isFunction(s["ajax"]["data"]))
+                       {
                          s["ajax"]["data"] = s["ajax"]["data"].call(this, obj);
                        }
                        $.ajax(s["ajax"]);
@@ -7370,7 +7513,6 @@ $ul.css('max-height', '') ;   //JRM
        }   // end switch
 
      },
-
 
      /**
        *  Recursively parses a JSON representation of a tree or tree node(s).
@@ -7878,165 +8020,200 @@ $ul.css('max-height', '') ;   //JRM
                     }
                     break;
 
+          // AJAX request
           case (!data && !!ajax) || (!!data && !!ajax && obj && obj !== -1):
                     obj = this._getNode(obj);
-                    error_func = function (x, t, e)
-                         {
-                           var ef = this._getOptions()["data"]["ajax"]["error"];  // reget the options
-                           if (ef) {                                              // without our updated ajax
-                             ef.call(this, x, t, e);                              // changes to avoid forever loop
-                           }
+                    // AJAX error function
+                    error_func = function (x, status, e)
+                    {
+                      var self = this.ctx ;                      // get the tree's this
+                      //console.log("Ajax FAIL HTML id='" + this.id + "' obj.id=" +                        
+                      //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
 
-                           if (obj != -1 && obj.length)  {
-                             obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
-                             obj.removeData("oj-tree-is-loading");
-                             if (t === "success" && this._data.ds.correctState) {
-                                this._correct_state(obj);
-                             }
-                           }
-                           else  {
-                             if (t === "success" && this._data.ds.correctState) {
-                               this._$container_ul.empty();
-                             }
-                           }
-                           if (e_call)  {
-                             e_call.call(this);
-                           }
-                        };
-                    success_func = function (d, t, x)
+                      self._noteLoadFailureId(this.id, true) ;   // add id to load failure list
+
+                      self._removeFromBusyStack('j', ((obj === -1)? -1 : obj.attr('id'))) ;
+                      self._resolveIfBusyStackEmpty();
+
+                      var ef = self._getOptions()["data"]["ajax"]["error"];  // reget the options
+                      if (ef) {                                              // without our updated ajax
+                        ef.call(self, x, status, e);                         // changes to avoid forever loop
+                      }
+
+                      if (obj != -1 && obj.length)  {
+                        obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
+                        obj.removeData("oj-tree-is-loading");
+                        if (status === "success" && self._data.ds.correctState) {
+                           self._correct_state(obj);
+                        }
+                      }
+                      else  {
+                        if (status === "success" && self._data.ds.correctState) {
+                          self._$container_ul.empty();
+                          self._applyEmptyText() ;  // no tree data
+                        }
+                      }
+                      if (e_call)  {
+                        e_call.call(self);
+                      }
+                    };
+
+                    success_func = function (d, status, x)
+                    {
+                      var self = this.ctx ;                      // get the tree's this
+                      var parent, lazy ;
+
+                      self._noteLoadFailureId(this.id, false) ;  // if this id is in the failure list, remove
+                      self._removeFromBusyStack('j', ((obj === -1)? -1 : obj.attr('id'))) ;
+
+                      var sf = self._getOptions()["data"]["ajax"]["success"];  // reget the options
+                      if (sf) {                                                // without our updated ajax
+                        d = sf.call(self, d, status, x) || d;                       // changes to avoid forever loop
+                      }
+
+                      if (d === "" || (d && d.toString && d.toString().replace(/^[\s\n]+$/,"") === "")) {
+                        return error_func.call(self, x, status, "");
+                      }
+
+                      //console.log("Ajax SUCCESS HTML id='" + this.id + "' obj.id=" +                        
+                      //              ((obj === -1)? -1 : obj.attr("id")) + " url=" + this.url);
+                      if (d)
+                      {
+                        d = $(d);
+                        if (!d.is("ul")) {
+                          d = $("<ul />").append(d);             //@HTMLUpdateOK
+                        }
+                        if (obj == -1 || !obj)
                         {
-                          var parent, lazy ;
-                          var sf = this._getOptions()["data"]["ajax"]["success"];  // reget the options
-                          if (sf) {                                                // without our updated ajax
-                            d = sf.call(this, d, t, x) || d;                       // changes to avoid forever loop
-                          }
+                          self._$container_ul.empty()
+                                             .append(d.children())               //@HTMLUpdateOK
+                                             .find("li, a")
+                                             .filter(function ()
+                                                {
+                                                  return !self.firstChild || !self.firstChild.tagName ||
+                                                                             self.firstChild.tagName !== "INS";
+                                                })
+                                             .prepend("<ins class='oj-tree-icon'>&#160;</ins>")    //@HTMLUpdateOK
+                                             .end()
+                                             .filter("a")
+                                             .children("ins:first-child")
+                                             .not(".oj-tree-node-icon")
+                                             .addClass(OJT_NICON)
+                                             .addClass(OJT_ICON);
 
-                          if (d === "" || (d && d.toString && d.toString().replace(/^[\s\n]+$/,"") === "")) {
-                            return error_func.call(this, x, t, "");
-                          }
+                          self._$container_ul.find("li.oj-tree-leaf ins:first-child").removeClass(OJ_DISC)
+                                                                                     .removeClass(OJT_NICON)
+                                                                                     .addClass(OJT_ICON);
+                          parent = self._$container_ul ;
+                        }
+                        else
+                        {
+                           obj.children("a.oj-tree-loading")
+                              .removeClass(OJT_LOADING);
 
-                          if (d)  {
-                            d = $(d);
-                            if (!d.is("ul")) {
-                              d = $("<ul />").append(d);             //@HTMLUpdateOK
-                            }
-                            if (obj == -1 || !obj) {
-                              this._$container_ul.empty()
-                                                 .append(d.children())               //@HTMLUpdateOK
-                                                 .find("li, a")
-                                                 .filter(function ()
-                                                    {
-                                                      return !this.firstChild || !this.firstChild.tagName ||
-                                                                                 this.firstChild.tagName !== "INS";
-                                                    })
-                                                 .prepend("<ins class='oj-tree-icon'>&#160;</ins>")    //@HTMLUpdateOK
-                                                 .end()
-                                                 .filter("a")
-                                                 .children("ins:first-child")
-                                                 .not(".oj-tree-node-icon")
-                                                 .addClass(OJT_NICON)
-                                                 .addClass(OJT_ICON);
+                           self._removeEmptyUL(obj) ;
 
-                              this._$container_ul.find("li.oj-tree-leaf ins:first-child").removeClass(OJ_DISC)
-                                                                                         .removeClass(OJT_NICON)
-                                                                                         .addClass(OJT_ICON);
-                              parent = this._$container_ul ;
-                            }
-                            else  {
-                               obj.children("a.oj-tree-loading")
-                                  .removeClass(OJT_LOADING);
+                           obj.append(d)                           //@HTMLUpdateOK
+                              .children("ul")
+                              .find("li, a")
+                              .filter(function () {
+                                         return (!self.firstChild || !self.firstChild.tagName ||
+                                                                     self.firstChild.tagName !== "INS");
+                                      })
+                              .prepend("<ins class='oj-tree-icon'>&#160;</ins>")     //@HTMLUpdateOK
+                              .end()
+                              .filter("a")
+                              .children("ins:first-child")
+                              .not(".oj-tree-node-icon")
+                              .addClass(OJT_NICON)
+                              .addClass(OJT_ICON);
+                           obj.removeData("oj-tree-is-loading");
 
-                               this._removeEmptyUL(obj) ;
+                           obj.find("li.oj-tree-leaf ins:first-child").removeClass(OJ_DISC)
+                                                                      .removeClass(OJT_NICON)
+                                                                      .addClass(OJT_ICON);
+                           parent = obj ;
+                        }
 
-                               obj.append(d)                           //@HTMLUpdateOK
-                                  .children("ul")
-                                  .find("li, a")
-                                  .filter(function () {
-                                             return (!this.firstChild || !this.firstChild.tagName ||
-                                                                         this.firstChild.tagName !== "INS");
-                                          })
-                                  .prepend("<ins class='oj-tree-icon'>&#160;</ins>")     //@HTMLUpdateOK
-                                  .end()
-                                  .filter("a")
-                                  .children("ins:first-child")
-                                  .not(".oj-tree-node-icon")
-                                  .addClass(OJT_NICON)
-                                  .addClass(OJT_ICON);
-                               obj.removeData("oj-tree-is-loading");
+                        //  Look for parents with empty children <ul> list (lazy loading),
+                        //  and add the closed class to make it a parent.
+                        self._handleHtmlParentNoChildren(parent) ;
 
-                               obj.find("li.oj-tree-leaf ins:first-child").removeClass(OJ_DISC)
-                                                                          .removeClass(OJT_NICON)
-                                                                          .addClass(OJT_ICON);
-                               parent = obj ;
-                            }
+                        //  Add the <a> text <span> for hover/click styling
+                        self._insertHtmlTextSpan(parent) ;
 
-                            //  Look for parents with empty children <ul> list (lazy loading),
-                            //  and add the closed class to make it a parent.
-                            this._handleHtmlParentNoChildren(parent) ;
+                        //  Escape all Ajax loaded node text for security
+                        var nodes = parent.children("UL") ;
+                        if (nodes.length >= 1)
+                        {
+                          nodes = nodes.first().find("span.oj-tree-title") ;
+                          $.each(nodes, function() {
+                                         this.textContent = self._escapeHtml(this.textContent) ;
+                                         });
+                        }
 
-                            //  Add the <a> text <span> for hover/click styling
-                            this._insertHtmlTextSpan(parent) ;
+                        // If "default" type defined, apply to nodes with no assoc type
+                        if (self._data.types.defType && parent)  {
+                          self._addDefType(this._$container_ul) ;
+                        }
 
-                            //  Escape all Ajax loaded node text for security
-                            var nodes = parent.children("UL") ;
-                            if (nodes.length >= 1) {
-                              nodes = nodes.first().find("span.oj-tree-title") ;
-                              var _this = this ;
-                              $.each(nodes, function() {
-                                             this.textContent = _this._escapeHtml(this.textContent) ;
-                                             });
-                            }
-
-                            // If "default" type defined, apply to nodes with no assoc type
-                            if (this._data.types.defType && parent)  {
-                              this._addDefType(this._$container_ul) ;
-                            }
-
-                            this._cleanNode(obj);
-                            if (s_call)  {
-                              s_call.call(this);
-                            }
+                        self._cleanNode(obj);
+                        if (s_call)  {
+                          s_call.call(self);
+                        }
+                      }
+                      else  {
+                        if (obj && obj !== -1)  {
+                           obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
+                           obj.removeData("oj-tree-is-loading");
+                           if (self._data.ds.correctState)  {
+                              self._correct_state(obj);
+                              if (s_call) {
+                                s_call.call(self);
+                              }
+                           }
                           }
                           else  {
-                            if (obj && obj !== -1)  {
-                               obj.children("a.oj-tree-loading").removeClass(OJT_LOADING);
-                               obj.removeData("oj-tree-is-loading");
-                               if (this._data.ds.correctState)  {
-                                  this._correct_state(obj);
-                                  if (s_call) {
-                                    s_call.call(this);
-                                  }
+                            if (self._data.ds.correctState)  {
+                               self._$container_ul.empty();
+                               if (s_call) {
+                                 s_call.call(self);
                                }
-                              }
-                              else  {
-                                if (this._data.ds.correctState)  {
-                                   this._$container_ul.empty();
-                                   if (s_call) {
-                                     s_call.call(this);
-                                   }
-                                }
-                              }
-                              this._$container_ul.find("ul").attr(WA_ROLE, WA_GROUP) ;
-                              this._$container_ul.find("li").attr(WA_ROLE, WA_TREEITEM) ;
+                            }
                           }
-                        };
+                          self._$container_ul.find("ul").attr(WA_ROLE, WA_GROUP) ;
+                          self._$container_ul.find("li").attr(WA_ROLE, WA_TREEITEM) ;
+                      }
+                    };
 
-                        //  Prepare for an ajax op. (note: we are updating a copy of the options)
-                        s["ajax"]["context"] = this;
-                        s["ajax"]["error"]   = error_func;
-                        s["ajax"]["success"] = success_func;
+                    //  Prepare for an asynchronous ajax op. (note: we are updating a copy of the options)
 
-                        if (!s["ajax"]["dataType"]) {
-                          s["ajax"]["dataType"] = "html";
-                        }
-                        if ($.isFunction(s["ajax"]["url"])) {
-                          s["ajax"]["url"] = s["ajax"]["url"].call(this, obj);
-                        }
-                        if ($.isFunction(s["ajax"]["data"])) {
-                          s["ajax"]["data"] = s["ajax"]["data"].call(this, obj);
-                        }
-                        $.ajax(s["ajax"]);
-                        break;
+                    var nodeId = ((obj === -1)? -1 : obj.attr("id")) ;
+                    this._busyStack.push( {op: 'j', id : nodeId} );
+                    this._addBusyState("Tree (id='" + this._elemId + "') : node id='" + nodeId + "' is lazyloading.");
+                    //console.log("ajax HTML load (" + nodeId + ") . . . busyStack=" + this._arrayToStr(this._busyStack));
+
+                    var reqContext = {ctx: this, id: nodeId};
+                    s["ajax"]["context"] = reqContext;
+                    s["ajax"]["error"]   = error_func;
+                    s["ajax"]["success"] = success_func;
+
+                    if (!s["ajax"]["dataType"]) {
+                      s["ajax"]["dataType"] = "html";
+                    }
+                    reqContext.type = s["ajax"]["dataType"] ;
+
+                    if ($.isFunction(s["ajax"]["url"]))
+                    {
+                      s["ajax"]["url"] = s["ajax"]["url"].call(this, obj);
+                      reqContext.url   = s["ajax"]["url"]
+                    }
+                    if ($.isFunction(s["ajax"]["data"]))
+                    {
+                      s["ajax"]["data"] = s["ajax"]["data"].call(this, obj);
+                    }
+                    $.ajax(s["ajax"]);
+                    break;
        }
      },
 
@@ -8256,22 +8433,28 @@ $ul.css('max-height', '') ;   //JRM
              bDone     = true,
              current   = [],
              remaining = [],
-             ea, n, id, bExpandAll ;
+             ea, n, id ;
 
          if (! bIsCallback)  {
             this._data.core.reopen     = false;
             this._data.core.refreshing = true;
          }
 
-         bExpandAll = this._isOptExpandAll() ;     // is option initExpanded "all" ?
-         if (bExpandAll) {
+         // If option initExpanded "all", make list of nodes to expand
+         if (this._isOptExpandAll())
+         {
            this._data.core.toExpand  = [];
-           ea = this._$container_ul.find("li.oj-collapsed").each(function() {
-                  id = '#' + $(this).attr("id") ;
-                  if (! _this["isExpanded"](id)) {
-                    _this._data.core.toExpand.push(id) ;
-                  }
-                }) ;
+           ea = this._$container_ul.find("li.oj-collapsed").each(function()
+           {
+             id = '#' + $(this).attr("id") ;
+             if (! _this["isExpanded"](id))
+             {
+               if (! _this._isLoadFailureId(id))
+               {
+                 _this._data.core.toExpand.push(id) ;
+               }
+             }
+           }) ;
          }
 
          this._data.core.toExpand =
@@ -8360,9 +8543,11 @@ $ul.css('max-height', '') ;   //JRM
             if (this._data.core.reopen)  {
               clearTimeout(this._data.core.reopen);
             }
-            this._data.core.reopen = setTimeout(function () {
-                                                               _this._emitEvent({}, "reload_nodes", true);
-                                                            }, 50);
+            this._data.core.reopen = setTimeout(function ()
+            {
+              _this._emitEvent({}, "reload_nodes", true);
+              _this._resolveIfBusyStackEmpty() ; // there may be nothing to expand
+            }, 50);
             this._data.core.refreshing = false;
             this._reopen();                      // check expanded and selections
          }
@@ -9541,12 +9726,23 @@ if ((! newVal) && (! this.options["contextMenu"])) {
 
         //  Get the tree node acted on
         //  - if no hovered node, use the last selected node
-        this._data.menu.node       = keyboard? (this._data.ui.hovered || this._data.menu.activeNode) : $(event.target);
+        this._data.menu.node       = keyboard? (this._data.ui.hovered || this._data.menu.activeNode) :
+                                               $(event.target);
         this._data.menu.activeNode = null ;    // clear keyboard active node
 
         if (! this._data.menu.node) {          // is there an active (hovered) or last selected node ?
           event.preventDefault() ;
           return ;
+        }
+
+        // () Check that right-click/touch is not on whitespace near a node.
+        if (!keyboard)
+        {
+          var $origTarg = $(event.originalEvent.target);
+          if ($origTarg.is("LI") || $origTarg.hasClass(OJT_TREE) || $origTarg.is("UL"))
+          {
+            return ;   // no context menu
+          }
         }
 
         $nodeElem = keyboard? this._data.menu.node : this._data.menu.node.closest("li") ;
@@ -9642,10 +9838,13 @@ if ((! newVal) && (! this.options["contextMenu"])) {
         this._data.ds.type = DS_NONE ;
         this._data.html.useExistingMarkup  = false ;
         this._data.html.cloneMarkup        = false ;
+        this._loadFailureIds = {} ;
+
         // _data.html.markup_ul, _data.html.markup and  _data.html.markup_div
         // are left intact for destroy.
 
-        if (s) {
+        if (s)
+        {
           ot = $.type(s) ;
           if (ot === "string") {
            if (this._isHtml(s)) {
@@ -9734,7 +9933,6 @@ if ((! newVal) && (! this.options["contextMenu"])) {
      _initJsonOpts : function()
      {
      },
-
 
      /**
        *  Process html_data options
@@ -10458,6 +10656,39 @@ if ((! newVal) && (! this.options["contextMenu"])) {
          return '<a href="#">' + this._getString(key) + '</a>';
      },
 
+     /**
+       *  Returns true if node id is in the load failure map
+       *  @param {string | number}  id   the node id to query
+       *  @return {boolean}     true if in list, else false
+       *  @private
+       */
+     _isLoadFailureId : function(id)
+     {
+       id = (id === -1)? "-1" : id ;
+       id = (id.charAt(0) === '#')? id.substr(1) : id ;
+
+       return !! this._loadFailureIds[id] ;
+     },
+
+     /**
+       *  Add/remove node id from load failure map
+       *  @param {string | number}  id     the node id to add/remove
+       *  @param {boolean} add    true if id is to be added, false if it is to be removed.
+       *  @private
+       */
+     _noteLoadFailureId: function(id, add)
+     {
+       id = (id === -1)? "-1" : id ;
+
+       if (add)
+       {
+         this._loadFailureIds[id] = true ;
+       }
+       else  if (this._loadFailureIds.hasOwnProperty(id))
+       {
+         delete this._loadFailureIds[id];
+       }
+     },
 
      /**
        *  Menu "cut" functionality
@@ -10779,7 +11010,6 @@ _this._done = false ;
         return ret ;
      },
 
-
      /**
        *  Use emptyText option if defined.
        *  @private
@@ -10798,7 +11028,7 @@ _this._done = false ;
           $d[0].textContent = txt ;
           $u.empty().append($d);                             //@HTMLUpdateOK
         }
-      },
+     },
 
      /**
        *  Return the HTMLElement based on the locator subid property.
@@ -10881,7 +11111,6 @@ _this._done = false ;
         }
 
         return ret? (ret.length? ret[0] : null) : null ;
-
      },
 
      /**
@@ -11062,8 +11291,8 @@ _this._done = false ;
        */
      _varCopy :  function(obj, s)
      {
-        var o = {} ;
-        o[s] = obj[s] ;
+        var o  = {} ;
+        o[s]   = obj[s] ;
         var o2 = $.extend(true, {}, o) ;
 
         return o2[s] ;

@@ -238,9 +238,14 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
         this.uiRadioCheckbox = this.element.addClass("oj-radio oj-component");
         this.$label = this._getLabelsForElement();
         this.$label.addClass("oj-radio-label");
-    }	
-    this.$choiceItem = this._getChoiceItem();
+    }
     
+    this.$choiceItem = this._getChoiceItem();
+  
+    var iElem = document.createElement("span"); 
+    iElem.setAttribute("class", "oj-radiocheckbox-icon");
+    this.element.wrapAll(iElem); //@HTMLUpdateOk iElem constructed locally
+      
     var self = this;
     this._focusable( this.element );
     if (this.$choiceItem) {
@@ -265,9 +270,7 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
     {   
       // wrap children in span
       $(this.childNodes).wrapAll("<span class='oj-radiocheckbox-label-text'></span>"); //@HTMLUpdateOK
-      var iElem = document.createElement("span"); 
-      iElem.setAttribute("class", "oj-radiocheckbox-icon");
-      this.appendChild(iElem); //@HTMLUpdateOK
+
       
     });   
     this._setup();
@@ -389,10 +392,10 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
    * one label, not multiple labels.
    * We do not guarantee that the returned list is live
    * We do not guarantee that the returned list is in document order
-   * We check if we are nested in a label, and we check a jquery 
-   * selector query on <label>s with a 'for' id equal to our id starting at the document level
+   * We check a jquery selector query on <label>s with a 'for' id equal to our id starting at the document level
    * and also as a sibling of the input (needed if documentFragment instead of document as the
    * table/datagrid use).
+   * We do not support a label wrapping an input, so if we find that, we log an error.
    * NOTE: The .labels DOM property does not work on most browsers, so we don't use it.
    * e.g,
    * <pre>
@@ -403,15 +406,27 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
    */
   _getLabelsForElement: function() 
   {
-    // .closest("label") - For each element in the set, get the first element   
-    // that matches the selector by testing the element itself and traversing up 
-    // through its ancestors in the DOM tree.   
+    // this looks to see if the label is wrapping the input, which we do not support
     var $labelClosestParent = this.element.closest("label");
+    
     var id = this.element.prop("id");
     var labelForQuery = "label[for='" + id + "']";
     var $labelForElems = $(labelForQuery);
     var $labelSibling;
-    var $allLabels = $labelClosestParent.add($labelForElems);
+    
+    if ($labelClosestParent.length !== 0)
+    {
+      oj.Logger.error("Found a label that is an input's ancestor." +
+      " This is not supported in the ojCheckboxset or ojRadioset component and the component will\n\
+      not work correctly. " +
+      "Use a label as a sibling to the input and use the label 'for' attribute to tie the two together.");
+    }
+    
+    // make sure that the $labelClosestParent isn't also the one we found with the 'for' which would
+    // be weird, but still. If it is, remove it from the jQuery element list so we don't count it as found.
+    // e.g., <label for="input"><input id="input"></label> // not supported!
+    //.not() method creates a new set and leaves the original set unchanged
+    $labelForElems = $labelForElems.not($labelClosestParent); 
     
     if ($labelForElems.length === 0)
     {
@@ -419,41 +434,65 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
       // the labelFor query will return []. In that case, look for the label as a sibling of 
       // the element
       $labelSibling = this.element.siblings(labelForQuery);
-      $allLabels = $allLabels.add($labelSibling); //.add() method creates a new set and leaves the original set unchanged
+      //.add() method creates a new set and leaves the original set unchanged
+      $labelForElems = $labelForElems.add($labelSibling); 
     } 
 
-    if ($allLabels.length === 0)
-    {
-      // In native themes the label element is used to append the checkmark icon to, so if it is
-      // not found, no checkmark will be rendered. log a warning.
-      oj.Logger.warn("Could not find a label associated to the input element.");
-    }
-    // combine these query results to return the label we are nested in
-    // and/or the label with the for attribute pointing to the checkbox's id.
-    return $allLabels;
+    // combine these query results to return the label
+    // with the for attribute pointing to the checkbox's id.
+    return $labelForElems;
   },
   /**
+   * Call this before you wrap the input in a span class='oj-radiocheckbox-icon' because we
+   * are looking for the span with oj-choice-item as the parent of the input.
    * @private
    * @returns {Object|null}
    */
   _getChoiceItem: function()
   {
-    var choiceItem;
-    if (this.$label)
+    var choiceItem = null;
+    var elementParent;
+    var labelSelector;
+    var ojChoiceItemSpanString;    
+    var siblingLabel;
+    
+    
+    if (this.element)
     {
-      choiceItem = this.$label.parent();
+      elementParent = this.element.parent();
       // oj-choice-row and oj-choice-row-inline have been deprecated on December 7, 2016 in
       // version 3.0.0. Use oj-choice-item instead.
-      if (choiceItem && (choiceItem.hasClass("oj-choice-item") || 
-      choiceItem.hasClass("oj-choice-row") || choiceItem.hasClass("oj-choice-row-inline")))
+      if (elementParent && (elementParent.hasClass("oj-choice-item") || 
+      elementParent.hasClass("oj-choice-row") || elementParent.hasClass("oj-choice-row-inline")))
       {
-        return choiceItem;
+        choiceItem = elementParent;
+      }
+      else
+      {
+        oj.Logger.warn("The radioset/checkboxset's input and label dom should be wrapped in a dom " +
+          "node with class 'oj-choice-item'. JET is adding this missing dom to make the component work correctly.");
+          
+        // Since we can't find the oj-choice-item, create one. 
+        // It needs to wrap the input and its label (if any)
+        ojChoiceItemSpanString = "<span class='oj-choice-item oj-choice-item-added'></span>";
+        
+        // the most common case is an <input id='foo'><label for='foo'> pair, so look for that first
+        labelSelector = "label[for='" + this.element.attr("id") + "']";
+        siblingLabel = this.element.siblings().filter( labelSelector );
+
+        if (siblingLabel.length !== 0)
+        {
+         this.element.add(siblingLabel).wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
+         choiceItem = this.element.parent();
+        }
+        else
+        {
+          this.element.wrapAll(ojChoiceItemSpanString); //@HTMLUpdateOk adding empty span for styling
+          choiceItem = this.element.parent();
+        }   
       }
     }
-
-    oj.Logger.warn("The radioset/checkboxset's input and label dom should be wrapped in a dom " +
-      "node with class 'oj-choice-item'");
-    return null;
+    return choiceItem;
   },
   /**
    * Return the subcomponent node represented by the documented locator attribute values.
@@ -536,13 +575,24 @@ oj.__registerWidget("oj._ojRadioCheckbox", $['oj']['baseComponent'],
 
     // loop through each label to remove things we added
     $.each(self.$label, function ()
-    { 
-      var span = this.getElementsByClassName("oj-radiocheckbox-icon");
-      this.removeChild(span[0]);
+    {
       var text = this.getElementsByClassName("oj-radiocheckbox-label-text");
       if (text !== undefined)
         $(text[0].childNodes[0]).unwrap();
     });
+    
+    // remove the oj-radiocheckbox-icon span around the element.
+    this.element.unwrap();
+    
+    // remove the oj-choice-item span only if I added it.
+    // I marked it with 'oj-choice-item-added' style.
+    if (this.$choiceItem.hasClass("oj-choice-item-added"))
+    {
+        this.element.unwrap();
+    }
+    
+    this.$choiceItem = null;
+    this.$label = null;
 
     return ret;
   }

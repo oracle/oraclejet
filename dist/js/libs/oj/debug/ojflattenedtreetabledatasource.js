@@ -117,7 +117,10 @@ oj.FlattenedTreeTableDataSource = function(data, options)
       self._rows['indexes'].splice(rowIdx, 1);
     }
     // The index array must be sorted ascending
-    indexArray = indexArray.sort();
+    function sortNumber(a, b) {
+      return a - b;
+    }
+    indexArray = indexArray.sort(sortNumber);
     self._realignRowIndices();
     self._hasMore = true;
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});

@@ -1060,6 +1060,12 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     for(var i=0; i<componentStyles.length; i++) {
       this.element.removeClass(componentStyles[i]);
     }
+    
+    // Remove any pending busy states
+    if (this._readyResolveFunc) {
+      this._readyResolveFunc();
+      this._readyResolveFunc = null;
+    }
 
     // Call super last for destroy
     this._super();

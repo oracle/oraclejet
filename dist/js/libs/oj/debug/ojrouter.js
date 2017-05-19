@@ -161,7 +161,7 @@ function parseQueryParam(queryString) {
             if (!params[key]) {
                params[key] = [];
             }
-            value = parts[1] && decodeURIComponent(parts[1].replace(/\+/g, ' '));
+            value = parts[1] && decodeURIComponent(parts[1]);
             params[key].push(value);
          }
       });
@@ -2439,9 +2439,9 @@ oj.Router.urlParamAdapter = function () {
       changes = _appendOtherChanges(changes);
 
       // Retrieve the extra state from oj_Router param
-      stateStr = params[_ROUTER_PARAM];
+      stateStr = params['oj_Router'];
       if (stateStr) {
-         changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr));
+         changes.forEach(_updateBookmarkableData, decodeStateParam(stateStr[0]));
       }
 
       return changes;

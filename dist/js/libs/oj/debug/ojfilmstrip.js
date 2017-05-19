@@ -732,6 +732,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     //perform a deferred layout
     if (this._needsSetup)
       this._setup(this._needsSetup[0]);
+    else
+    {
+      //explicitly handle a resize in case we don't get a notification when shown
+      this._handleResize();
+    }
   },
   
   /**
@@ -748,6 +753,11 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     //perform a deferred layout
     if (this._needsSetup)
       this._setup(this._needsSetup[0]);
+    else
+    {
+      //explicitly handle a resize in case we don't get a notification when attached
+      this._handleResize();
+    }
   },
 
   // isInit is true for init (create and re-init), false for refresh
@@ -858,7 +868,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       for (var i = 0; i < originalItems.length; i++)
         oj.Components.subtreeAttached(originalItems[i]);
 
-      oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc);
+      oj.DomUtils.addResizeListener(elem[0], this._handleResizeFunc, 
+        _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
     }
   },
 
@@ -913,6 +924,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _destroyInternal: function()
   {
+    //FIX : clear the flag to handle a deferred resize
+    this._deferredHandleResize = false;
+    
+    //FIX : resolve busy state when destroying
+    this._resolveBusyState();
+    
     var elem = this.element;
     oj.DomUtils.removeResizeListener(elem[0], this._handleResizeFunc);
     //reset item size so it will be recalculated at the next layout
@@ -1023,8 +1040,13 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _handleResize: function()
   {
+    //FIX : if we're handling a page change, defer handling the resize
+    if (this._busyStateResolveFunc)
+    {
+      this._deferredHandleResize = true;
+    }
     //handle the resize if not already handling one
-    if (!this._bHandlingResize)
+    else if (!this._bHandlingResize)
     {
       this._bHandlingResize = true;
       this._adjustSizes(true);
@@ -1099,7 +1121,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     style.width = "10px";
     style.height = "10px";
     var elem = this.element[0];
-    elem.appendChild(div);
+    elem.appendChild(div); //@HTMLUpdateOK; div is created locally at the beginning of this function
     var bCanCalcSizes = false;
     try
     {
@@ -1702,7 +1724,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var pageIndex = event["page"];
     var prevPageIndex = event["previousPage"];
     var pagesWrapper = this._pagesWrapper;
-    var options = this.options;
     var pages = this._getPages();
     var pagingModel = this._pagingModel;
     var pageSize = pagingModel.getPageSize();
@@ -1753,6 +1774,9 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         newPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_FROM);
       }
     }
+    
+    //FIX : add busy state before animating a scroll
+    this._busyStateResolveFunc = this._addBusyState("scrolling");
     
     if (bDeferScroll)
     {
@@ -1917,6 +1941,17 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       if (newFirstItem)
         this.option(_CURRENT_ITEM, newFirstItem, {'_context': {writeback: true}});
     }
+    
+    //FIX : if we've deferred handling a resize during a page change, handle it now
+    if (this._deferredHandleResize)
+    {
+      this._deferredHandleResize = false;
+      
+      this._handleResize();
+    }
+    
+    //FIX : resolve busy state after animating a scroll
+    this._resolveBusyState();
   },
   
   /** 
@@ -2512,6 +2547,47 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     this._scrolledForThisTouch = false;
   },
   
+  /**
+   * Add a busy state to the busy context.
+   *
+   * @param {String} description Additional information about busy state.
+   * @returns {Function} Resolve function called by the registrant when the busy state completes.
+   *          The resultant function will throw an error if the busy state is no longer registered.
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _addBusyState: function(description)
+  {
+    var element = this.element;
+    var context = oj.Context.getContext(element[0]);
+    var busyContext = context.getBusyContext();
+    
+    var desc = "FilmStrip";
+    var id = element.attr("id");
+    desc += " (id='" + id + "')";
+    desc += ": " + description;
+    
+    var busyStateOptions = {"description" : desc};
+    return busyContext.addBusyState(busyStateOptions);
+  },
+  
+  /**
+   * Resolve an outstanding busy state.
+   * 
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _resolveBusyState: function()
+  {
+    if (this._busyStateResolveFunc)
+    {
+      this._busyStateResolveFunc();
+      this._busyStateResolveFunc = null;
+    }
+  },
+  
   //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
@@ -2749,6 +2825,9 @@ var _ADJACENT = "adjacent",
     _OVERLAY = "overlay",
     _PERIOD = ".",
     _PX = "px",
+    //make sure the collapseEventTimeout param is less than the one used in the unit tests
+    //in order to ensure that the filmStrip listener gets the resize event before the unit test
+    _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25,
     _TRANSFORM = "transform",
     _VERTICAL = "vertical",
     _VISIBLE = "visible",

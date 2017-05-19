@@ -2143,7 +2143,7 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
    * Screen readers need to know that the input is associated with the help (and required
    * for radioset/checkboxset components) icons.
    * We do this by rendering on the input an aria-describedby id if this ojLabel has a 'for'
-   * attribute.
+   * attribute. This is done in EditableValue.
    * </p>
    * <h3 id="keyboard-section">
    *   Keyboard End User Information
@@ -2446,105 +2446,7 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
       {
         helpSpan = this. _createIconSpan(this.helpSpanId);
         this._createHelp(helpSpan);
-        // now write aria-describedby on the form control, if there is a 'for'.
-        this._addAriaDescribedByOnFor(this.helpSpanId);
       }
-    },
-    /**  
-    * Add the id to the element's aria-describedby attribute, if it isn't already there.
-    * 
-    * @param {Element} elem the HTML element the id for aria-describedby
-    * @param {string} id the id for aria-describedby
-    * @private
-    * @instance
-    * 
-    */
-   _addAriaDescribedBy : function (elem, id)
-   {
-     var index;
-     var $elem = $(elem);
-
-      var describedby = $elem.attr("aria-describedby");
-      var tokens;
-
-      tokens = describedby ? describedby.split(/\s+/) : [];
-      // Get index that id is in the tokens, if at all.
-      index = $.inArray(id, tokens);
-      // add id if it isn't already there
-      if (index === -1)
-        tokens.push(id);
-      describedby = $.trim(tokens.join(" "));
-      $elem.attr("aria-describedby", describedby);
-   },
-  /**  
-   * Remove the id from the element's aria-describedby, if it is there.
-   * 
-   * @param {Element} elem the HTML element the id for aria-describedby
-   * @param {string} id the id for aria-describedby
-   * @private
-   * @instance
-   * 
-   */
-  _removeAriaDescribedBy : function (elem, id)
-  {
-    var $elem = $(elem);
-    var describedby;
-    var index;
-    var tokens;
-
-    // get aria-describedby that is on the content element(s)
-    describedby = $elem.attr("aria-describedby");
-    // split into tokens
-    tokens = describedby ? describedby.split(/\s+/) : [];
-    // Get index that id is in the tokens, if at all.
-    index = $.inArray(id, tokens);
-    // remove that from the tokens array
-    if (index !== -1)
-      tokens.splice(index, 1);
-    // join the tokens back together and trim whitespace
-    describedby = $.trim(tokens.join(" "));
-    if (describedby)
-      $elem.attr("aria-describedby", describedby);
-    else
-      $elem.removeAttr("aria-describedby");
-
-   },  
-   /**
-    * Add aria-describedby for help on the component that the label's for is pointing to.
-    * This way the screenreader and voiceover will read the help definition text.
-    * @private
-    * @param {string} helpSpanId
-    */
-    _addAriaDescribedByOnFor: function (helpSpanId)
-    {
-      var formElement;
-      var forAttr = this.element.attr("for");
-      
-      if (forAttr == null)
-        return;
-      
-      formElement = document.getElementById(forAttr);
-      if (formElement && helpSpanId)
-        this._addAriaDescribedBy(formElement, helpSpanId);
-    },
- 
-   /**
-    * Add aria-describedby for help on the component that the label's for is pointing to.
-    * This way the screenreader and voiceover will read the help definition text.
-    * @private
-    * @param {string} helpSpanId
-    */
-    _removeAriaDescribedByOnFor: function (helpSpanId)
-    {
-      var formElement;
-      var forAttr = this.element.attr("for");
-      
-      if (forAttr == null)
-        return;
-      
-      formElement = document.getElementById(forAttr);
-      if (formElement && helpSpanId)
-        this._removeAriaDescribedBy(formElement, helpSpanId);
     },
     /**
      * Create help if needed
@@ -3127,7 +3029,6 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
       else if (!needsHelpIcon && helpSpan !== null)
       {
         helpSpan.parentNode.removeChild(helpSpan);
-        this._removeAriaDescribedByOnFor(helpSpanId);
       }
 
       // ok, we removed the helpIcon at the start of this method, 
@@ -3135,8 +3036,6 @@ oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_po
       if(needsHelpIcon && helpSpan != null)
       {
         this._createHelp(helpSpan);
-        // now write aria-describedby on the form control, if there is a 'for'.
-        this._addAriaDescribedByOnFor(helpSpanId);
       }
 
     },
@@ -3984,39 +3883,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   
   // P U B L I C    M E T H O D S
   
-  /**
-   * Return the subcomponent node represented by the documented locator attribute values. <br/>
-   * If the locator is null or no subId string is provided then this method returns the element that 
-   * this component was initalized with. <br/>
-   * If a subId was provided but a subcomponent node cannot be located this method returns null.
-   * 
-   * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is 
-   * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-   * 
-   * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node 
-   * can be located, then this method returns <code class="prettyprint">null</code>.
-   * 
-   * @expose
-   * @override
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code> 
-   * property.  See the table for details on its fields.
-   * 
-   * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-   * 
-   * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-   * 
-   * @property {number=} locator.index - A zero-based index, used to locate a message content node 
-   * or a hint node within the popup. 
-   * @returns {Element|null} The DOM node located by the <code class="prettyprint">subId</code> string passed in 
-   * <code class="prettyprint">locator</code>, or <code class="prettyprint">null</code> if none is found.
-   * 
-   * @example <caption>Get the node for a certain subId:</caption>
-   * // Foo is ojInputNumber, ojInputDate, etc.
-   * var node = $( ".selector" ).ojFoo( "getNodeBySubId", {'subId': 'oj-some-sub-id'} );
-   */
+  // @inheritdoc
   getNodeBySubId: function(locator)
   {
     return this._super(locator);
@@ -4329,7 +4196,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
     
     // decorate the label
     this._createOjLabel();
-    
+
     // initialize component messaging
     this._initComponentMessaging();
     
@@ -4984,13 +4851,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
           helpSource = this.options.help["source"];
           this.$label._ojLabel("option", "help", 
                                {"definition" : helpDef, "source" : helpSource});
-          // if aria-labelledby is set on this.element, 
-          // add/remove aria-describedby to the inputs pointing to
-          // the label's helpIcon span.
-          // Note: ojLabel adds the aria-describedby to the inputs if the ojLabel has the 'for'
-          id = this._getAriaLabelledById(this.element);
-          if (id)
-            this._updateAriaDescribedToHelpIcon(id, helpDef, helpSource);
+          this._refreshDescribedByForLabel();
                     
         }
         break;
@@ -5529,7 +5390,6 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
   {
     var helpDef;
     var helpSource;
-    var id;
     
     this.$label = this._GetLabelElement();
     if (this.$label)
@@ -5542,18 +5402,53 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
         {rootAttributes:{'class': this._GetDefaultStyleClass()+"-label"},
         help:{'definition': helpDef, 
               'source': helpSource}});
-      // if aria-labelledby is set, 
-      // add/remove aria-describedby to the inputs pointing to
-      // the label+"_helpIcon".
-      id = this._getAriaLabelledById(this.element); 
-      if (id) 
-      {
-        if ((helpSource != null) || (helpDef != null))
-          this._addAriaDescribedBy(id + _HELP_ICON_ID);
-      }
+      this._createDescribedByForLabel();
     }    
   },
-
+  /**
+   * Refreshes the aria-describedby for label element's helpIcon
+   * @protected
+   * @memberof oj.editableValue
+   * @instance
+   */
+  _createDescribedByForLabel : function ()
+  {
+    var helpDef = this.options['help']['definition'];
+    var helpSource = this.options['help']['source'];
+    var labelId;
+    
+    if ((helpSource != null) || (helpDef != null))
+    {
+      // get label's helpIconSpan get the id and add it here.
+      labelId = this.$label.attr("id");
+      if (labelId) 
+      {
+        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
+      }        
+    }
+  },
+    /**
+   * Refreshes the aria-describedby for label element's helpIcon
+   * @private
+   * @memberof oj.editableValue
+   * @instance
+   */
+  _refreshDescribedByForLabel : function ()
+  {
+    var helpDef = this.options['help']['definition'];
+    var helpSource = this.options['help']['source'];
+    // if aria-labelledby is set, 
+    // add/remove aria-describedby to the inputs pointing to
+    // the label+"_helpIcon".
+    var labelId = this.$label.attr("id");
+    if (labelId) 
+    {
+      if ((helpSource != null) || (helpDef != null))
+        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
+      else
+        this._removeAriaDescribedBy(labelId + _HELP_ICON_ID);
+    }  
+  },
   /**
    * Refreshes the component to respond to DOM changes, in which case fullRefresh=true. 
    * @param {boolean} fullRefresh true if a full refresh of the component is desired.
@@ -5745,26 +5640,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      });
 
   },
-  /**  
-   * If aria-labelledby is set, update aria-describedby to point to the label's helpIcon.
-   * 
-   * @param {string} id this will be the id of the element that this.element's 
-   * aria-labelledby is pointing to. null if it doesn't exist
-   * @param {string} helpSource
-   * @param {string} helpDef
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _updateAriaDescribedToHelpIcon: function(id, helpSource, helpDef)
-  {
-    if ((helpSource != null) || (helpDef != null))
-      this._addAriaDescribedBy(id + _HELP_ICON_ID);
-    else
-      this._removeAriaDescribedBy(id + _HELP_ICON_ID);
-       
-  },
+
   /**
    * Returns a concat of messagesShown and messagesHidden.
    * 

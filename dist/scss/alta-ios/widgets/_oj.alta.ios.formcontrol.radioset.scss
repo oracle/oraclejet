@@ -112,13 +112,13 @@
     @if($radioCheckboxRenderInputAs == 'backgroundImage') {
 
       // ios doesn't have an icon if it isn't selected.
-      .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-choice-item .oj-radiocheckbox-icon {
         background-image: none; 
       }
                
-      .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-      .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+      .oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+      .oj-choice-item.oj-disabled .oj-radiocheckbox-icon {
         background-image: none; 
       }
                     
@@ -134,6 +134,18 @@
       .oj-checkboxset-wrapper > .oj-active.oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("checkbox_ena_selected.svg"); 
       }
+      
+      // not all themes have a hover icon, and if I put this in common, the image will flicker on
+      // hover even though the image contents are the same, and I don't want this to happen.
+      // single checkbox images
+      // there is a hover icon for single checkboxes
+      .oj-checkboxset.oj-checkboxset-single .oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_hover_unselected.svg");
+      }
+
+      .oj-checkboxset.oj-checkboxset-single .oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+        background-image: oj-radiocheckbox-image-url("cbsingle_hover_selected.svg");
+      }
 
       
       // ** single checkbox images -- in ios theme, if the checkboxset has only one checkbox, it has
@@ -141,110 +153,125 @@
       // ** inline mode -- we decided to show the single checkbox icon when the radioset or
       // checkboxset is inline using oj-choice-direction-row.
 
-      .oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-checkboxset-single  .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-checkboxset-single  .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-checkboxset-single  .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-item  .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon {
         width: 22px;
         height: 22px;
       }
 
-      .oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon
+      {
         background-image: oj-radiocheckbox-image-url("cbsingle_ena_unselected.svg"); 
       }
 
-      .oj-choice-direction-row  .oj-radio-label.oj-selected  .oj-radiocheckbox-icon,
-      .oj-choice-direction-row  .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon,
-      .oj-choice-row-inline  .oj-radio-label.oj-selected  .oj-radiocheckbox-icon,
-      .oj-choice-row-inline  .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label.oj-selected  .oj-radiocheckbox-icon {
+      .oj-choice-direction-row  .oj-choice-item.oj-selected  .oj-radiocheckbox-icon,
+      .oj-choice-direction-row  .oj-choice-row.oj-selected  .oj-radiocheckbox-icon,
+      .oj-choice-row-inline  .oj-choice-item.oj-selected  .oj-radiocheckbox-icon,
+      .oj-choice-row-inline  .oj-choice-row.oj-selected  .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item.oj-selected  .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row.oj-selected  .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("cbsingle_ena_selected.svg"); 
       }  
 
-      .oj-choice-direction-row .oj-radio-label:active .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label:active .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label:active .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item:active .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row:active .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item:active .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row:active .oj-radiocheckbox-icon {
        background-image: oj-radiocheckbox-image-url("cbsingle_pressed_unselected.svg");
       }
 
-      .oj-choice-direction-row .oj-radio-label:active.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-radio-label:active.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label:active.oj-selected .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item:active.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row:active.oj-selected .oj-radiocheckbox-icon {
        background-image: oj-radiocheckbox-image-url("cbsingle_pressed_selected.svg");
       }
 
-      .oj-choice-direction-row .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-radio-label.oj-disabled .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-row.oj-disabled .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item.oj-disabled .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row.oj-disabled .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("cbsingle_dis_unselected.svg");
       }
 
-      .oj-choice-direction-row .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-direction-row .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-      .oj-choice-row-inline .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon,
-      .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+      .oj-choice-direction-row .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-direction-row .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-choice-row-inline .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+      .oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon {
         background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
       }
 
       // in high contrast mode, background-images disappear, so use content to show the checked item
-      .oj-hicontrast oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-hicontrast oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-hicontrast .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label .oj-radiocheckbox-icon,
-      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+      .oj-hicontrast oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-hicontrast oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon {
         background-image: none;
       }
 
       // in hicontrast mode, background-images disappear, so we use content to show the checked item.
-      .oj-hicontrast .oj-choice-direction-row .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-direction-row .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-choice-direction-row .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-direction-row .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-selected .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-selected .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("cbsingle_ena_selected.svg"); 
       }  
 
-      .oj-hicontrast .oj-choice-direction-row .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-direction-row .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-row-inline .oj-radio-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-choice-row-inline .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
-      .oj-hicontrast .oj-checkboxset-single .oj-checkbox-label.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
+      .oj-hicontrast .oj-choice-direction-row .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-direction-row .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-choice-row-inline .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-row.oj-selected.oj-disabled .oj-radiocheckbox-icon:after,
+      .oj-hicontrast .oj-checkboxset-single .oj-choice-item.oj-selected.oj-disabled .oj-radiocheckbox-icon:after {
         content: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
       }
 
       // in print mode, background-images disappear, so we use content to show the checked item.
       @media print {
 
-        .oj-choice-direction-row .oj-radio-label .oj-radiocheckbox-icon,
-        .oj-choice-direction-row .oj-checkbox-label .oj-radiocheckbox-icon,
-        .oj-choice-row-inline .oj-radio-label .oj-radiocheckbox-icon,
-        .oj-checkboxset-single .oj-checkbox-label .oj-radiocheckbox-icon {
+        .oj-choice-direction-row .oj-choice-row .oj-radiocheckbox-icon,
+        .oj-choice-direction-row .oj-choice-item .oj-radiocheckbox-icon,
+        .oj-choice-row-inline .oj-choice-row .oj-radiocheckbox-icon,
+        .oj-choice-row-inline .oj-choice-item .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-row .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-item .oj-radiocheckbox-icon {
           background-image: none;
         }
 
-        .oj-choice-direction-row .oj-radio-label.oj-disabled .oj-radiocheckbox-icon:after,
-        .oj-choice-direction-row .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after,
-        .oj-choice-row-inline .oj-radio-label.oj-disabled .oj-radiocheckbox-icon:after,
-        .oj-choice-row-inline .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after,
-        .oj-checkboxset-single .oj-checkbox-label.oj-disabled .oj-radiocheckbox-icon:after {
+        .oj-choice-direction-row .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-choice-direction-row .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-checkboxset-single .oj-choice-row.oj-disabled .oj-radiocheckbox-icon:after,
+        .oj-checkboxset-single .oj-choice-item.oj-disabled .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("cbsingle_dis_unselected.svg");
         }
 
-        .oj-choice-direction-row .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-        .oj-choice-direction-row .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-        .oj-choice-row-inline .oj-radio-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
-        .oj-choice-row-inline .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,        
-        .oj-checkboxset-single .oj-checkbox-label.oj-disabled.oj-selected .oj-radiocheckbox-icon:after {
+        .oj-choice-direction-row .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-choice-direction-row .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-choice-row-inline .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,
+        .oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon:after,        
+        .oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon:after {
           content: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
         }
       }

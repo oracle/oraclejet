@@ -124,13 +124,14 @@
     /* Styling for the page mode dot bullet. */
     .oj-pagingcontrol-nav-dot-bullet {
       font-size: 0;
-      background-color: $boxShadowColor;
+      border-width: 1px;
+      border-style: solid;
+      border-color: $iconColorDefault;
       border-radius: 50%;
-      opacity: 0.2;
       position: relative;
       transition: all 0.3s ease 0s;
-      width: $fontSize;
-      height: $fontSize;
+      width: $smallFontSize;
+      height: $smallFontSize;
       display: inline-block;
       vertical-align: middle;
     }
@@ -140,18 +141,12 @@
       border: 3px double;
     }
     
-    /* Styling for the page mode dot link when selected. */
-    .oj-pagingcontrol-nav-dot-bullet.oj-selected {
-      background-color: $iconColorActive;
-      content: "";
-      opacity: 1;
-    }
-    
-    /* Styling for the page mode dot link when hovered. */
+    /* Styling for the page mode dot link when selected or hovered. */
+    .oj-pagingcontrol-nav-dot-bullet.oj-selected,
     .oj-pagingcontrol-nav-dot-bullet.oj-hover {
       background-color: $iconColorActive;
+      border-color: $iconColorActive;
       content: "";
-      opacity: 1;
     }
     
     /* Styling for the page mode page links. */

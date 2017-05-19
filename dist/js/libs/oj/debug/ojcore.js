@@ -46,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "3.0.0",
-  'build' : "14",
-  'revision': "32945",
+  'version': "3.1.0",
+  'build' : "7",
+  'revision': "34561",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -2876,7 +2876,7 @@ oj.CollectionUtils.copyInto = function(
  */
 oj.CollectionUtils.isPlainObject = function(obj)
 {
-  if (typeof obj === 'object')
+  if (obj !== null && typeof obj === 'object')
   {
     try
     {
@@ -3346,11 +3346,11 @@ Object.defineProperties(oj.BusyState.prototype,
  */
 oj.BusyState.prototype.toString = function ()
 {
-  var buff = "Busy state: [decsription=";
+  var buff = "Busy state: [description=";
 
   var description = this["description"];
 
-  if (description != null)
+  if (description !== null)
   {
     buff += description;
   }
@@ -3383,10 +3383,70 @@ oj.BusyState._getTs = function ()
  */
 
 /**
- * This context tracks busy states of components.  Busy states, include but are
- * not limited to, animation and data fetch.
+ * <p>The purpose of the BusyContext API is to accommodate sequential dependencies of asynchronous
+ * operations. A common use cases defining the API is for automation testing (qunit and webdriver).
+ * Automation test developers can use this API to wait until components finish animation effects
+ * or data fetch before trying to interact with components.</p>
  *
- * This cnstructor should never be invoked by the application code directly
+ * The Busy Context API will block until all the busy states have resolved or a timeout period
+ * has elapsed. There are four primary wait scenarios:
+ * <ol>
+ *   <li>Components that implement new animation effects.</li>
+ *   <li>Components that must fetch data from a REST endpoint.</li>
+ *   <li>General wait conditions that are not specific to the Jet framework. The customer might
+ *       choose to register some blocking condition associated with application domain logic such
+ *       as REST endpoints.</li>
+ *   <li>Wait until the bootstrap of the page has completed - jet libraries loaded via requireJS.</li>
+ * </ol>
+ *
+ * <p>The first step for waiting on a busy context is to determine what conditions are of interest
+ *   to wait on. The granularity of a busy context can be scoped for the entirety of the page or
+ *   for a specific DOM element. Busy contexts have hierarchical dependencies mirroring the
+ *   document's DOM structure with the root being the page context. Depending on the particular
+ *   scenario, developers might need to target one of the following busy context scopes:</p>
+ * <ul>
+ *   <li>Scoped for the Page - Automation test developers will more commonly choose the page busy
+ *     context. This context represents the page as a whole. Automation developers commonly need
+ *     to wait until the page is fully loaded before starting automation. More commonly, automation
+ *     developers are interesting in testing the functionality of an application having multiple
+ *     JET components versus just a single component.
+ *
+ *     <pre class="prettyprint">
+ *     <code>
+ *     var busyContext = oj.Context.getPageContext().getBusyContext();
+ *     </code></pre>
+ *
+ *   </li>
+ *   <li>Scoped for the nearest DOM Element - Application developers sometime need a mechanism to
+ *     wait until a specific component operation has complete. For example, it might be desirable
+ *     to block until a popup has finished open or close animation before initiating the next task
+ *     in their application flow. For this problem space developers would need to obtain a busy
+ *     context scoped for a DOM node.  The "data-oj-context" marker attribute is used to define
+ *     a busy context for a dom subtree.
+ *
+ *     <pre class="prettyprint">
+ *     <code>
+ *     <!-- subtree assigned a marker 'data-oj-context' attribute -->
+ *     &lt;div id="mycontext" data-oj-context&gt;
+ *        ...
+ *        &lt;!-- JET content --&gt;
+ *        ...
+ *     &lt;/div&gt;
+ *
+ *     var node = $("#mycontext");
+ *     var busyContext = oj.Context.getContext(node[0]).getBusyContext();
+ *     </code></pre>
+ *
+ *   </li>
+ * </ul>
+ *
+ * The BusyContext API utilizes {@link oj.Logger.LEVEL_LOG} to log detail busy state activity.
+ * <pre class="prettyprint">
+ * <code>
+ *  oj.Logger.option("level", oj.Logger.LEVEL_LOG);
+ * </code></pre>
+ *
+ * <b>This constructor should never be invoked by the application code directly.</b>
  * @param {Element=} hostNode DOM element associated with this busy context
  * @export
  * @constructor
@@ -3400,6 +3460,30 @@ oj.BusyContext = function (hostNode)
 
 oj.Object.createSubclass(oj.BusyContext, oj.Object, "oj.BusyContext");
 
+
+/**
+ * @ignore
+ * @private
+ * @type {number} see oj.BusyContext#setDefaultTimeout
+ */
+oj.BusyContext._defaultTimeout = Number.NaN;
+
+/**
+ * Sets a default for the optional <code>timeout</code> argument of the {@link oj.BusyContext#whenReady}
+ * for all BusyContext instances. The default value will be implicitly used if a timeout argument is not
+ * provided.
+ *
+ * @export
+ * @see oj.BusyContext#whenReady
+ * @since 3.1.0
+ * @param {number} timeout in milliseconds
+ */
+oj.BusyContext.setDefaultTimeout = function(timeout)
+{
+  if (!isNaN(timeout))
+    oj.BusyContext._defaultTimeout = timeout;
+};
+
 /**
  * @param {Element=} hostNode DOM element associated with this busy context
  * @instance
@@ -3408,7 +3492,7 @@ oj.Object.createSubclass(oj.BusyContext, oj.Object, "oj.BusyContext");
 oj.BusyContext.prototype.Init = function (hostNode)
 {
   oj.BusyContext.superclass.Init.call(this);
-  
+
   this._hostNode = hostNode;
 
   /**
@@ -3497,7 +3581,7 @@ oj.BusyContext.prototype.Init = function (hostNode)
       this._slaveTimeoutPromiseTimers = [];
       for (var i = 0; i < slaveTimeoutPromiseTimers.length; i++)
         window.clearTimeout(slaveTimeoutPromiseTimers[i]);
-        
+
       return true;
     },
     /**
@@ -3542,24 +3626,23 @@ oj.BusyContext.prototype.Init = function (hostNode)
   };
 };
 
-
 /**
  * Logs the current registered busy states ordered acceding by the order they were added.
- * The cost of compiling the list is only made if the logger level is info.
+ * The cost of compiling the list is only made if the logger level is oj.Logger.LEVEL_LOG.
  * @param {?} statesMap busy states
  * @returns {void}
  * @private
  */
 oj.BusyContext._log = function (statesMap)
 {
-  if (oj.Logger.option('level') !== oj.Logger.LEVEL_INFO)
+  if (oj.Logger.option('level') !== oj.Logger.LEVEL_LOG)
     return;
 
-  oj.Logger.info(">> Busy states: %d", statesMap.size);
+  oj.Logger.log(">> Busy states: %d", statesMap.size);
 
   var busyStates = oj.BusyContext._values(statesMap);
   if (busyStates.length > 0)
-    oj.Logger.info(busyStates.join("\n"));
+    oj.Logger.log(busyStates.join("\n"));
 };
 
 /**
@@ -3579,8 +3662,38 @@ oj.BusyContext._values = function (statesMap)
 };
 
 /**
- * Called by components or services performing a task that should be considered
- * in the overall busy state of the page. An example would be animation or fetching data.
+ * <p>Called by components or services performing a task that should be considered
+ * in the overall busy state of the page. An example would be animation or fetching data.</p>
+ *
+ * Caveats:
+ * <ul>
+ *   <li>Busy context dependency relationships are determined at the point the first busy state
+ *       is added.  If the DOM node is re-parented after a busy context was added, the context will
+ *       maintain dependencies with any parent DOM contexts.</li>
+ *   <li>The application logic creating busy states is responsible for ensuring these busy states
+ *       are resolved. Busy states added internally by JET are automatically accounted for.
+ *       The busy states added by the application logic must manage a reference to the resolve
+ *       function associated with a busy state and it must be called to release the busy state.</li>
+ * </ul>
+ *
+ * <pre class="prettyprint">
+ * <code>// apply the marker attribute to the element
+ * &lt;div id="context1" data-oj-context ... &gt;&lt;/&gt;
+ * ...
+ * ...
+ * var context1 = document.querySelector("#context1");
+ *
+ * // obtain a busy context scoped for the target node
+ * var busyContext1 = oj.Context.getContext(context1).getBusyContext();
+ * // add a busy state to the target context
+ * var options = {"description": "#context1 fetching data"};
+ * var resolve = busyContext1.addBusyState(options);
+ * ...
+ * ...  // perform asynchronous operation that needs guarded by a busy state
+ * ...
+ * // resolve the busy state after the operation completes
+ * resolve();
+ * </code></pre>
  *
  * @since 2.1.0
  * @export
@@ -3595,117 +3708,221 @@ oj.BusyContext._values = function (statesMap)
  */
 oj.BusyContext.prototype.addBusyState = function (options)
 {
-  oj.Logger.info("BusyContext.addBusyState: start");
+  oj.Logger.log("BusyContext.addBusyState: start scope='%s'", this._getDebugScope());
 
   var statesMap = this._statesMap;
 
   /** @type {oj.BusyState} */
   var busyState = new oj.BusyState(options[oj.BusyContext._DESCRIPTION]);
 
-  oj.Logger.info(">> " + busyState);
+  oj.Logger.log(">> " + busyState);
 
   statesMap.set(busyState.id, busyState);
-  
+
   this._addBusyStateToParent();
 
-  oj.Logger.info("BusyContext.addBusyState: end");
+  oj.Logger.log("BusyContext.addBusyState: end scope='%s'", this._getDebugScope());
 
   return this._removeBusyState.bind(this, busyState);
 };
 
 /**
- * Returns a Promise that will resolve when all registered busy states have completed or a maximum
+ * Logs all active busy states to the {@link oj.Logger} at {oj.Logger.LEVEL_INFO}.
+ * <pre class="prettyprint">
+ * <code>
+ *  oj.Logger.option("level", oj.Logger.LEVEL_INFO);
+ *  oj.Context.getPageContext().getBusyContext().dump("before popup open");
+ * </code></pre>
+ *
+ * @export
+ * @since 3.1.0
+ * @param {string=} message optional text used to further denote a debugging point
+ */
+oj.BusyContext.prototype.dump = function (message)
+{
+  oj.Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(),
+                 message ? message : "");
+
+  var statesMap = this._statesMap;
+  oj.Logger.info(">> Busy states: %d", statesMap.size);
+
+  var busyStates = oj.BusyContext._values(statesMap);
+  if (busyStates.length > 0)
+    oj.Logger.info(busyStates.join("\n"));
+
+  oj.Logger.info("BusyContext.dump: start scope='%s' %s", this._getDebugScope(),
+                 message ? message : "");
+};
+
+/**
+ * Returns an array of states representing the active busy states managed by the instance.
+ *
+ * @export
+ * @since 3.1.0
+ * @return {Array.<{id:String, description:String}>} active busy states managed by the context
+ *         instance
+ */
+oj.BusyContext.prototype.getBusyStates = function ()
+{
+  var statesMap = this._statesMap;
+
+   /** @type {?} */
+  var busyStates = oj.BusyContext._values(statesMap);
+  return busyStates;
+};
+
+/**
+ * Forces all busy states per context instance to release.
+ * Use with discretion - last course of action.
+ *
+ * @since 3.1.0
+ * @export
+ */
+oj.BusyContext.prototype.clear = function ()
+{
+  oj.Logger.log("BusyContext.clear: start scope='%s'", this._getDebugScope());
+
+  var statesMap = this._statesMap;
+  var busyStates = oj.BusyContext._values(statesMap);
+  for (var i = 0; i < busyStates.length; i++)
+  {
+    /** @type {?} **/
+    var busyState = busyStates[i];
+    try
+    {
+      this._removeBusyState(busyState);
+    }
+    catch (e)
+    {
+      oj.Logger.log("BusyContext.clear: %o", e);
+    }
+
+    Object.defineProperty(busyState, oj.BusyContext._OJ_RIP, {'value': true, 'enumerable': false});
+  }
+
+  oj.Logger.log("BusyContext.clear: end scope='%s'", this._getDebugScope());
+};
+
+/**
+ * <p>Returns a Promise that will resolve when all registered busy states have completed or a maximum
  * timeout period has elapsed. The promise will be rejected if all the busy states are not resolved
- * within the timeout period.
+ * within the timeout period. The busyness of the whenReady promsie is evaluated in the next-tick
+ * of resolving a busy state.</p>
+ *
+ * "next-tick" is not waiting for the microtask queue to be exhausted. However, this may change in
+ * future releases.
  *
  * @see oj.BusyContext#applicationBoostrapComplete
  * @since 2.1.0
  * @export
  * @param {number=} timeout "optional" maximum period in milliseconds the resultant promise
- *        will wait
+ *        will wait. Also see {@link oj.BusyContext.setDefaultTimeout}.
  * @returns {Promise}
  */
 oj.BusyContext.prototype.whenReady = function (timeout)
 {
-  oj.Logger.info("BusyContext.whenReady: start, timeout:%d", timeout);
+  var debugScope = this._getDebugScope();
+
+  oj.Logger.log("BusyContext.whenReady: start, scope='%s', timeout=%d", debugScope, timeout);
   /** @type {?} */
   var statesMap = this._statesMap;
-  
+
   var mediator = this._mediator;
-  
+
   var promise =  oj.BusyContext._BOOTSTRAP_MEDIATOR.whenReady().then(
     function()
     {
+      oj.Logger.log("BusyContext.whenReady: bootstrap mediator ready scope=%s", debugScope);
+      
+      // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
+      // Doing so will allow us to take into account any busy states added in response to the pending updates
+      oj.BusyContext._deliverThrottledUpdates();
+
       if (statesMap.size === 0)
       {
         // no busy states, promise resolves immediately
-        oj.Logger.info("BusyContext.whenReady: resolved");
+        oj.Logger.log("BusyContext.whenReady: resolved no busy states scope=%s", debugScope);
         return Promise.resolve(true);
       }
       else
       {
-        return mediator.getMasterWhenReadyPromise(); 
+        oj.Logger.log("BusyContext.whenReady: busy states returning master scope=%s", debugScope);
+        return mediator.getMasterWhenReadyPromise();
       }
     }
-  
+
   );
-  
+
+  // if a timeout argument is not provided, check the default timeout
+  if (isNaN(timeout) && !isNaN(oj.BusyContext._defaultTimeout))
+    timeout = oj.BusyContext._defaultTimeout;
+
+
   if (!isNaN(timeout))
   {
-    var handleTimeout = function() 
+    var handleTimeout = function()
     {
-       oj.Logger.info("BusyContext.whenReady: rejected");
-       
-       var error;
-       var expiredText = "whenReady timeout of " + timeout + "ms expired ";
-       
-       if (!oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady())
-       {
-          error = new Error(expiredText + 'while the application is loading.' +
+      var error;
+      var expiredText = "whenReady timeout of " + timeout + "ms expired ";
+
+      oj.BusyContext._log(statesMap);
+      var busyStates = oj.BusyContext._values(statesMap);
+
+      if (!oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady())
+      {
+        error = new Error(expiredText + 'while the application is loading.' +
           ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
           ' Application bootstrap busy state is released by calling' +
           ' "oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();".');
-       }
+      }
        else
        {
-          oj.BusyContext._log(statesMap);
-         
-          var busyStates = oj.BusyContext._values(statesMap);
-          error = new Error(expiredText + "with the following busy states: " + busyStates.join(", "));
-          error["busyStates"] = busyStates;
+          error = new Error(expiredText + "with the following busy states: " +
+                            busyStates.join(", "));
        }
-       
+
+       error["busyStates"] = busyStates;
+
+       oj.Logger.log("BusyContext.whenReady: rejected scope='%s'\n%s", debugScope, error.message);
        return error;
-      
+
     };
     promise = mediator.getSlaveTimeoutPromise(promise, handleTimeout, timeout);
   }
-  
 
-  oj.Logger.info("BusyContext.whenReady: end");
+
+  oj.Logger.log("BusyContext.whenReady: end scope='%s'", this._getDebugScope());
   return promise;
-  
+
 };
 
 /**
+ * <p>Describes the busyness of the context. The busyness is evaluated in the "next-tick" of a busy
+ * state being resolved, meaning the number of busy states doesn't necessarily equate to readiness.
+ * The readiness is in sync with the {@link oj.BusyContext#whenReady} resultant promise resolution.</p>
+ *
+ * "next-tick" is not waiting for the microtask queue to be exhausted. However, this may change in
+ * future releases.
+ *
+ * @see oj.BusyContext#getBusyStates
  * @since 2.1.0
  * @export
- * @returns {boolean} <code>true</code> if the page is not busy
+ * @returns {boolean} <code>true</code> if the context is not busy
  */
 oj.BusyContext.prototype.isReady = function ()
 {
-  oj.Logger.info("BusyContext.isReady: start");
+  oj.Logger.log("BusyContext.isReady: start scope='%s'", this._getDebugScope());
   var rtn = false;
-  
-  if (oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady())
+
+  if (oj.BusyContext._BOOTSTRAP_MEDIATOR.isReady() && !this._waitingOnNextTickBusynessEval)
   {
     var statesMap = this._statesMap;
-  
+
     rtn = statesMap.size === 0;
     oj.BusyContext._log(statesMap);
   }
 
-  oj.Logger.info("BusyContext.isReady: end");
+  oj.Logger.log("BusyContext.isReady: end scope='%s'", this._getDebugScope());
   return rtn;
 };
 
@@ -3717,27 +3934,73 @@ oj.BusyContext.prototype.isReady = function ()
  */
 oj.BusyContext.prototype._removeBusyState = function (busyState)
 {
+  var debugScope = this._getDebugScope();
+
+  oj.Logger.log("BusyContext._removeBusyState: start scope='%s'", debugScope);
+
   // The BusyState object is passed here instead of just the generated id to provide a more
   // descriptive message when the busy state is removed twice. The description (if provided) of
   // the busy state will be captured in the error message.
 
   var statesMap = this._statesMap;
 
-  if (!statesMap["delete"](busyState.id)) // quoted to make the closure compiler happy
+  if (busyState[oj.BusyContext._OJ_RIP])
+  {
+    oj.Logger.log("Busy state has been forcefully resolved via clear:\n" + busyState);
+    return;
+  }
+  else if (!statesMap["delete"](busyState.id)) // quoted to make the closure compiler happy
   {
     throw new Error("Busy state has already been resolved:\n" + busyState);
   }
 
-  // no more busy states; resolve pending promises.
+  // no more busy states; evaluate busyness in the next tick
+  if (statesMap.size === 0 && !this._waitingOnNextTickBusynessEval)
+  {
+    // TODO: replace with setImmediate in v4.0 versus using a promise for "next-tick"
+    Promise.resolve(true).then(this._evalBusyness.bind(this));
+    this._waitingOnNextTickBusynessEval = true;
+  }
+  else
+  {
+    oj.Logger.log("BusyContext._removeBusyState: resolving busy state:\n" + busyState);
+  }
+
+  oj.Logger.log("BusyContext._removeBusyState: end scope='%s'", debugScope);
+};
+
+/**
+ * Evaluates the busyness of the context.
+ * @private
+ */
+oj.BusyContext.prototype._evalBusyness = function()
+{
+  var debugScope = this._getDebugScope();
+
+  oj.Logger.log("BusyContext._evalBusyness: begin scope='%s'", debugScope);
+  
+  // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
+  // Doing so will allow us to take into account any busy states added in response to the pending updates
+  oj.BusyContext._deliverThrottledUpdates();
+
+  var statesMap = this._statesMap;
+  var mediator = this._mediator;
+
   if (statesMap.size === 0)
   {
-    var mediator = this._mediator;
-    oj.Logger.info("BusyContext._removeBusyState: resolving whenReady promises");
+    oj.Logger.log("BusyContext._evalBusyness: resolving whenReady promises");
+
     mediator.resolveMasterWhenReadyPromise();
     this._resolveBusyStateForParent();
   }
+  else
+  {
+    oj.BusyContext._log(statesMap);
+  }
 
-  oj.Logger.info("BusyContext._removeBusyState: end");
+  this._waitingOnNextTickBusynessEval = false;
+
+  oj.Logger.log("BusyContext._evalBusyness: end scope='%s'", debugScope);
 };
 
 /**
@@ -3781,36 +4044,47 @@ oj.BusyContext.prototype._removeBusyState = function (busyState)
  */
 oj.BusyContext.prototype.applicationBoostrapComplete = function ()
 {
+  var debugScope = this._getDebugScope();
+  oj.Logger.log("BusyContext.applicationBoostrapComplete: begin scope='%s'", debugScope);
+
   oj.BusyContext._BOOTSTRAP_MEDIATOR.notifyComplete();
+
+  oj.Logger.log("BusyContext.applicationBoostrapComplete: end scope='%s'", debugScope);
 };
 
 
 /**
  * @ignore
+ * @private
+ * @return {oj.BusyContext} returns the nearest parent context
  */
 oj.BusyContext.prototype._getParentBusyContext = function()
 {
   if (this._hostNode)
   {
-    var parentContext =  oj.Context.getContext(this._hostNode.parentElement);
+    var parentContext =  oj.Context.getContext(oj.Context.getParentElement(this._hostNode));
     if (parentContext)
     {
       return parentContext.getBusyContext();
     }
   }
-  
+
   return null;
 }
 
 /**
+ * Links a child context to its parent by registering a busy state with the parent
+ * that will recursively register with its parent.
+ *
  * @ignore
+ * @private
  */
 oj.BusyContext.prototype._addBusyStateToParent = function()
 {
   if (!this._parentNotified)
   {
     this._parentNotified = true;
-    
+
     var parentContext = this._getParentBusyContext();
     if (parentContext)
     {
@@ -3822,7 +4096,10 @@ oj.BusyContext.prototype._addBusyStateToParent = function()
 }
 
 /**
+ * Resolves the busy state linking a child context with its parent.
+ *
  * @ignore
+ * @private
  */
 oj.BusyContext.prototype._resolveBusyStateForParent = function()
 {
@@ -3835,7 +4112,9 @@ oj.BusyContext.prototype._resolveBusyStateForParent = function()
 }
 
 /**
+ * @private
  * @ignore
+ * @return {string} description of all active busy states held by the context.
  */
 oj.BusyContext.prototype._getCompoundDescription = function()
 {
@@ -3844,29 +4123,109 @@ oj.BusyContext.prototype._getCompoundDescription = function()
 }
 
 /**
+ * @private
  * @ignore
+ * @return {string} context debug scope
+ */
+oj.BusyContext.prototype._getDebugScope = function()
+{
+  function toSelector(node)
+  {
+    var selector = "undefined";
+    if (node)
+    {
+      if (node.id && node.id.length > 0)
+        selector = "#" + node.id;
+      else
+      {
+        selector = node.nodeName;
+        if (node.hasAttribute("data-oj-context"))
+          selector += '[data-oj-context]';
+
+        var clazz = node.getAttribute("class");
+        if (clazz)
+          selector += "." + clazz.split(" ").join(".");
+      }
+    }
+
+    return selector;
+  }
+
+  if (!this._debugScope)
+  {
+    if (this._hostNode)
+      this._debugScope = toSelector(this._hostNode.parentElement) + " > " +
+                         toSelector(this._hostNode);
+    else
+      this._debugScope = "page";
+  }
+
+  return this._debugScope;
+};
+
+/**
+ * @since 3.1.0
+ * @override
+ * @returns {string} returns the value of the object as a string
+ */
+oj.BusyContext.prototype.toString = function ()
+{
+  var msg = "Busy Context: [scope=";
+  msg += this._getDebugScope();
+  msg += " states=" + this._getCompoundDescription() + "]"
+  return msg;
+};
+
+/**
+ * @ignore
+ */
+oj.BusyContext._deliverThrottledUpdates = function()
+{
+  // Dynamically check for the presence of ojs/ojknockout
+  if (oj.ComponentBinding)
+  {
+    oj.ComponentBinding.deliverChanges();
+  }
+}
+
+/**
+ * @private
+ * @ignore
+ * @const
+ * @type {string} attribute name describing a busystate
  */
 oj.BusyContext._DESCRIPTION = "description";
 
+/**
+ * @ignore
+ * @private
+ * @constant
+ * @type {string} {@link oj.BusyState} property name indicating the instance is dead
+ */
+oj.BusyContext._OJ_RIP = "__ojRip";
 
+/**
+ * @private
+ * @ignore
+ */
 oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
 {
   var _tracking;
   var _readyPromise;
   var _resolveCallback;
-  
+
   if (typeof window !== 'undefined')
   {
     _tracking = window["oj_whenReady"];
   }
-  
+
   this.whenReady = function()
   {
     if (_readyPromise)
     {
       return _readyPromise;
     }
-    
+
     if (!_tracking)
     {
       _readyPromise = Promise.resolve(true);
@@ -3882,12 +4241,12 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
     }
     return _readyPromise;
   }
-  
+
   this.isReady = function()
   {
     return !_tracking;
   }
-  
+
   this.notifyComplete = function()
   {
     _tracking = false;
@@ -3896,7 +4255,7 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
       _resolveCallback(true);
     }
   }
-  
+
 })();
 
 /**
@@ -3911,7 +4270,7 @@ oj.BusyContext._BOOTSTRAP_MEDIATOR = new /** @constructor */(function()
  */
 
 /**
- * The constructor should never be invoked by an application directly. Use 
+ * <b>The constructor should never be invoked by an application directly</b>. Use
  * {@link oj.Context.getPageContext} and {@link oj.Context.getContext} APIs to
  * retrieve an instance of the context.
  * @param {Element=} node DOM node where the context should be created
@@ -3944,19 +4303,21 @@ oj.Context.prototype.Init = function (node)
  * Returns the closest enclosing JET context for a node.
  * Any DOM element may be designated by the page author as a host of JET context.
  * The designation must be expressed in HTML markup by specifying the "data-oj-context"
- * attribute on the host element: 
- 
+ * attribute on the host element:
+
  * <pre class="prettyprint">
  * &lt;div data-oj-context>&lt;div>
  * </pre>
- * 
- * This method will walk up the element hierarchy starting with the source node to 
+ *
+ * <p>This method will walk up the element hierarchy starting with the source node to
  * find an element that has the data-oj-context attribute. If no such element is found,
- * the page context will be returned.
- * If the JET context is established on a particular element, the {@link oj.BusyContext} 
+ * the page context will be returned.</p>
+ *
+ * If the JET context is established on a particular element, the {@link oj.BusyContext}
  * associated with that context will be tracking busy states for that element and
  * its subtree
- * 
+ *
+ * @see oj.BusyContext for code examples
  * @param {Element} node DOM element whose enclosing context will be provided
  * @return {oj.Context} context object scoped per the target node
  * @since 2.2.0
@@ -3974,17 +4335,20 @@ oj.Context.getContext = function(node)
     if (node.hasAttribute(oj.Context._OJ_CONTEXT_ATTRIBUTE))
     {
       context = new oj.Context(node);
-      Object.defineProperty(node, oj.Context._OJ_CONTEXT_INSTANCE, 
+      Object.defineProperty(node, oj.Context._OJ_CONTEXT_INSTANCE,
                                                         {'value': context});
       return context;
     }
-    node = node.parentElement;
+
+    node = oj.Context.getParentElement(node);
   }
+
   return oj.Context.getPageContext();
 };
 
 /**
  * Static factory method that returns the page context.
+ * @see oj.BusyContext for code examples
  * @export
  * @since 2.1.0
  * @return {oj.Context} context scoped for the page
@@ -3998,6 +4362,7 @@ oj.Context.getPageContext = function ()
 };
 
 /**
+ * @see oj.BusyContext for code examples
  * @since 2.1.0
  * @export
  * @returns {oj.BusyContext} busy state context
@@ -4012,14 +4377,69 @@ oj.Context.prototype.getBusyContext = function ()
 
 /**
  * @ignore
+ * @private
+ * @constant
+ * @type {string} Element marker attribute defining a context
  */
 oj.Context._OJ_CONTEXT_ATTRIBUTE = "data-oj-context";
 
+/**
+ * @ignore
+ * @private
+ * @constant
+ * @type {string} Element property name for a context
+ */
 oj.Context._OJ_CONTEXT_INSTANCE = "__ojContextInstance";
 
-  
-  
+/**
+ * @ignore
+ * @private
+ * @constant
+ * @type {string} attribute identifying an open popup
+ */
+oj.Context._OJ_SURROGATE_ATTR = "data-oj-surrogate-id";
 
+/**
+ * @ignore
+ * @public
+ * @param {Element} element target
+ * @return {Element} the logical parent of an element accounting for open popups
+ */
+oj.Context.getParentElement = function (element)
+{
+  // @see oj.ZOrderUtils._SURROGATE_ATTR in "ojpopupcore/PopupService.js" for the details on how
+  // this attribute is used by the popup service. The constant was re-declared to simplify module
+  // dependencies.
+
+  if (element && element.hasAttribute(oj.Context._OJ_SURROGATE_ATTR))
+  {
+    var surrogate = document.getElementById(element.getAttribute(oj.Context._OJ_SURROGATE_ATTR));
+    if (surrogate)
+      return surrogate.parentElement;
+  }
+
+  return element.parentElement;
+};
+
+(function () {  
+  if (typeof window === 'undefined') {
+    return;
+  }
+  // polyfill for Element.closest()
+  if (window['Element'] && !Element.prototype.closest) {
+    Element.prototype.closest =
+        function(s) {
+      var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+              i,
+              el = this;
+      do {
+        i = matches.length;
+        while (--i >= 0 && matches.item(i) !== el) {}
+      } while ((i < 0) && (el = el.parentElement));
+      return el;
+    };
+  }
+})();
 (function()
 {
 

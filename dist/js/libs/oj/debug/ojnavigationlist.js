@@ -696,7 +696,7 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function() {
       .addClass(this.m_widget.getItemStyleClass())
       .addClass(this.m_widget.NAVLIST_OVERFLOW_MENU_ITEM)
       .addClass('oj-default')
-      .append(anchorElement);
+      .append(anchorElement);// @HTMLUpdateOK constructed by component and not using string passed through any API
     anchorElement.addClass(this.m_widget.getFocusedElementStyleClass())
       .addClass(this.m_widget.ITEM_CONTENT_STYLE_CLASS);
     anchorElement.attr('role', 'button')
@@ -705,8 +705,8 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function() {
       .attr('tabindex', '-1')
       .attr('data-tabmod', '-1')
       .attr('href', '#')
-      .append(iconElement)
-      .append(labelElement);
+      .append(iconElement)// @HTMLUpdateOK constructed by component and not using string passed through any API
+      .append(labelElement);// @HTMLUpdateOK label text is read from resource bundle and it was properly escaped
 
     if (!this.m_root.find('ul:first').hasClass(this.m_widget._NAVLIST_HAS_ICONS)) {
       anchorElement.addClass(this.m_widget._NAVLIST_ITEM_HAS_NO_ICON);
@@ -720,7 +720,7 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenuButton = function() {
       .addClass(this.m_widget.NAVLIST_OVERFLOW_ITEM_ICON);
 
     overflowMenuItem[0].key = overflowMenuItem.attr('id');
-    lastItem.after(overflowMenuItem);
+    lastItem.after(overflowMenuItem);// @HTMLUpdateOK constructed by component and not using string passed through any API
     this._addSeparator(overflowMenuItem, items.length);
     this.m_overflowMenuItem = overflowMenuItem;
   }
@@ -742,7 +742,7 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenu = function() {
   if (!this.m_overflowMenu) {
     overflowMenu = $(document.createElement('ul'));
     overflowMenu.addClass(this.m_widget.NAVLIST_OVERFLOW_MENU).hide()
-    this.m_root.append(overflowMenu);
+    this.m_root.append(overflowMenu);// @HTMLUpdateOK constructed by component and not using string passed through any API
 
     // create menu markup
     for (i = 0; i < data.length; i++) {
@@ -759,8 +759,8 @@ oj.HorizontalNavListHandler.prototype._getOverflowMenu = function() {
         menuListItem.addClass('oj-disabled');
       }
 
-      menuListItem.append(menuItem);
-      overflowMenu.append(menuListItem);
+      menuListItem.append(menuItem);// @HTMLUpdateOK menuItem's label text is read from dataSource and it was properly escaped 
+      overflowMenu.append(menuListItem);// @HTMLUpdateOK constructed by component and not using string passed through any API
     }
 
     //initialize ojmenu
@@ -1117,7 +1117,7 @@ oj.SlidingNavListHandler.prototype.Collapse = function (target, key, animate, ev
 
 oj.SlidingNavListHandler.prototype.UpdateAriaPropertiesOnSelectedItem = function (elem, highlight) {
   if (highlight) {
-    elem.attr('aria-describedby', 'selectedLabel');
+    elem.attr('aria-describedby', this._selectedLabelId);
   } else {
     elem.removeAttr('aria-describedby');
   }
@@ -1218,9 +1218,9 @@ oj.SlidingNavListHandler.prototype._buildSlidingNavListHeader = function (opts) 
   this._hviewMenu = $(document.createElement('ul'));
   this._hviewMenu.addClass('oj-navigationlist-hierarchical-menu').hide();
   selectedLabel = $(document.createElement('label'));
-  selectedLabel.addClass('oj-helper-hidden-accessible')
-    .attr('aria-hidden', 'true')// @HTMLUpdateOK
-    .attr('id', 'selectedLabel');// @HTMLUpdateOK
+  selectedLabel.uniqueId().addClass('oj-helper-hidden-accessible')
+    .attr('aria-hidden', 'true');// @HTMLUpdateOK
+  this._selectedLabelId = selectedLabel.attr('id');
   selectedLabel.text(this.m_component.getTranslatedString('selectedLabel'));
   this._previousLink.append(this._headerLabel); // @HTMLUpdateOK
   this._toolbar.append(this._prevButton); // @HTMLUpdateOK

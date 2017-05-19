@@ -140,10 +140,6 @@
      background-color: transparent;
      background-image: none;
    }
-   
-   .oj-colorpalette-container .oj-colorpalette-grid .oj-listview.oj-disabled .oj-listview-item.oj-selected {
-     background-color: transparent;
-   }
   
    .oj-colorpalette-swatch-text  {
      display:block;
@@ -195,6 +191,29 @@
     border-width: 0;
     cursor: pointer;
   }
+
+  .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
+    width: auto;
+    height: auto;
+    border-width: 0;
+    border-color: transparent;
+    border-radius: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    //need to specify separately for ltr and rtl in order to override specific listview styles
+    @include oj-ltr() {
+      margin-left: 0;
+      margin-right: 0;
+    }
+    @include oj-rtl() {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  
+  .oj-colorpalette-container .oj-listview-card-layout .oj-listview-group {
+    margin-bottom: 0;
+  }
   
   //Decrease the height of the focus rect by an extra pixel so that it
   //appears centered around the swatch.  Otherwise, the bottom extends
@@ -204,7 +223,6 @@
   }
 
   /*  Remove listview item background and outline  */
-  .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-focus,
   .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
   .oj-colorpalette-container .oj-listview-item.oj-selected   {
     background-color: transparent;

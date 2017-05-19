@@ -427,6 +427,13 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
         this._unregisterResizeListener(container);
         this._unregisterTouchHandler(container);
 
+        // if there's outstanding busy state, release it now
+        if (this.busyStateResolve)
+        {
+            this.busyStateResolve(null);
+            this.busyStateResolve = null;
+        }
+
         oj.DomUtils.unwrap(this.element, $(container));
     },
 
@@ -942,13 +949,14 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
      */
     _setCurrentSection: function(section)
     {
-        var self = this, busyContext, item, val;
+        var self = this, busyContext, promise, item, val;
 
         busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
         this.busyStateResolve = busyContext.addBusyState({'description': 'setCurrentSection'});
 
         // sets on the IndexerModel
-        this._getIndexerModel().setSection(section).then(function(val)
+        promise = /** @type {Promise} */ (this._getIndexerModel().setSection(section));
+        promise.then(function(val)
         {
             // the resolve value is the section that actually scrolls to
             if (val != null)
@@ -960,6 +968,10 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
                 }
             }
 
+            self.busyStateResolve(null);
+            self.busyStateResolve = null;
+        }, function(e)
+        {
             self.busyStateResolve(null);
             self.busyStateResolve = null;
         });

@@ -28,14 +28,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * It also adds and removes the correct
  * oj-* styles to the dom elements so it has the JET styling and is themable.
  * </p>
- * <p>To use an ojRadioset, group all the inputs and their labels within a 
- *   container dom element, e.g., <code class="prettyprint">div</code>.
- *   For accessibility, set <code class="prettyprint">aria-labelledby</code> on 
- *   this container dom element.
+ * <p>To use an ojRadioset, group all the inputs and their (optional) labels within a 
+ *   container dom element, e.g., <code class="prettyprint">div</code>, with each input/label
+ *   pair wrapped in a span with class <code class="prettyprint">oj-choice-item</code>.
  *   Also set each input's <code class="prettyprint">id</code> attribute, and 
  *   refer to that in the input's label's 
- *   <code class="prettyprint">for</code> attribute.
- *   Then create the ojRadioset on this container dom element.  
+ *   <code class="prettyprint">for</code> attribute. Group the inputs together by using the same
+ *   <code class="prettyprint">name</code> attribute. Then create the ojRadioset on this container dom element. 
+ * </p>
+ * <p>
+ *   We recommend that the label and input be siblings. Currently the component works 
+ *   if the input's label is elsewhere
+ *   on the page (though not a parent of input), but this may not be supported in future releases.
+ *    
  * </p>
  * <p>
  *  The <code class="prettyprint">fieldset</code>/<code class="prettyprint">legend</code> elements 
@@ -48,6 +53,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  *   Both are equally accessible. 
  * </p>
  * <p>
+ *  Wrapping the input element with a label element is not supported. The input and label should
+ *  be siblings, and label's  <code class="prettyprint">for</code> attribute is set to the input's 
+ *   <code class="prettyprint">id</code>.
+ * </p>
+ * <p>
  *  Radioset is used by selecting a container element which contains the 
  *  radio input elements and calling <code class="prettyprint">ojRadioset()</code>. 
  *  You can enable and disable a radio set, 
@@ -58,9 +68,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  *  readonly on radios and checkboxes.
  * </p>
  * <p>
- * In native themes, the label element is required. The label element is used to render the
- * radio image.
- * </p> 
+ * The label element is not required. If you don't use a label element,
+ * then you need to set <code class="prettyprint">aria-label</code> on the input for accessibility.
+ * </p>
  * 
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -111,14 +121,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox'],
  * not the label for each radio.
  * </p>
  * <p>
- * The component will decorate its associated label with required and help 
+ * The component will decorate its associated main label with required and help 
  * information, if the <code class="prettyprint">required</code> and 
  * <code class="prettyprint">help</code> options are set. 
  * </p>
- * <p>
- * In native themes, the label element is required. The label element is used to render the
- * radio image.
- * </p> 
  * 
  * <h3 id="styling-section">
  *   Styling
@@ -1081,13 +1087,14 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *   <tbody>
    *     <tr>
    *       <td>oj-choice-item</td>
-     *       <td>Used to line up the input and the label with each other, and
-     *           as well as adding height to the row.
-     *           You must add for the component to work properly. 
-     *       <td>
+   *       <td>Used to line up the input and the label with each other, and
+   *           as well as adding height to the row.
+   *           <b>You must add a span with oj-choice-item around the input and (optional) label
+   *           for the component to work properly.</b>
+   *       <td>
      * <pre class="prettyprint">
      * <code>&lt;span class="oj-choice-item">
-     *   &lt;input id="blueopt" type="radio" value="blue">
+     *   &lt;input id="blueopt" type="radio" value="blue" name="color">
      *   &lt;label for="blueopt">Blue&lt;/label>
      * &lt;/span>
      * </code></pre>
@@ -1127,7 +1134,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * &lt;div id="radiosetId" aria-labelledby="radiosetLabelId"
    *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
    *    &lt;span class="oj-choice-row">
-   *      &lt;input id="redid" type="radio" value="red">
+   *      &lt;input id="redid" type="radio" value="red"  name="color">
    *      &lt;label for="redid">Red</label>
    *    &lt;/span>
    * </code></pre>
@@ -1143,7 +1150,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * &lt;div id="radiosetId" aria-labelledby="radiosetLabelId"
    *  data-bind="ojComponent: {component: 'ojRadioset', value: radiovalues}" >
    *    &lt;span class="oj-choice-row-inline">
-   *      &lt;input id="redid" type="radio" value="red">
+   *      &lt;input id="redid" type="radio" value="red"  name="color">
    *      &lt;label for="redid">Red</label>
    *    &lt;/span>
    * </code></pre>
@@ -1196,7 +1203,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    *       <td>
    * <pre class="prettyprint">
    * <code>&lt;span class="oj-choice-item oj-focus-highlight">
-   *  &lt;input id="blueopt" type="radio" value="blue">
+   *  &lt;input id="blueopt" type="radio" value="blue"  name="color">
    *  &lt;label for="blueopt">Blue&lt;/label>
    * &lt;/span>
    * </code></pre>

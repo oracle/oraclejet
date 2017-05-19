@@ -347,9 +347,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       //
 
       this.mouse['_mouseCapture'] = function(event) {
-        if (this.element) {
-          this.element.focus();
-        }
         return that._mouseCapture(event);
       };
 
@@ -362,6 +359,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       };
 
       this.mouse['_mouseStop'] = function(event) {
+        if (this.element) {
+          this.element.focus();
+        }
         return that._mouseStop(event);
       };
 
@@ -2625,6 +2625,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       rootElement.show();
       rootElement["position"](position);
 
+      // We add .oj-animate-open when the dialog is animating on open.
+      // This supports maintaing the visibility of a nested dialog during animation open.
+      rootElement.parent().addClass('oj-animate-open');
+
       var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily('oj-dialog-option-defaults') ||
         {})["animation"]
       if (animationOptions && animationOptions["open"])
@@ -2647,6 +2651,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      */
     _afterOpenHandler : function (psOptions)
     {
+      var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
+      rootElement.parent().removeClass('oj-animate-open');
       this._trigger("open");
       this._focusTabbable();
     },
@@ -2752,8 +2758,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           // Setting tabIndex makes the div focusable
           'tabIndex': -1,
           'role': this.options.role,
-          'id': this._wrapperId,
-          'data-oj-context': ''  //@see oj.Context#getContext
+          'id': this._wrapperId
         });
 
       this._on(this.uiDialog, {
@@ -2892,18 +2897,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           event.stopImmediatePropagation();
           this.close(event);
         },
-        //
-        // Close dialog when close icon has focus and SPACE is entered.
-        //
-        keydown: function(event) {
 
-          if (event.keyCode && event.keyCode === $.ui.keyCode.SPACE || event.keyCode === $.ui.keyCode.ENTER) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            this.close(event);
-            return;
-          }
-        }
       });
 
       // no need to do this - buttons handle focus on their own.

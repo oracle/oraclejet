@@ -254,43 +254,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       return this._element2;
     },
 
-    /**
-     * Return the subcomponent node represented by the documented locator attribute values.
-     * <p>
-     * If the locator is null or no subId string is provided then this method returns the
-     * element that this component was initalized with.
-     * </p>
-     * <p>
-     * If a subId was provided but a subcomponent node cannot be located this method returns null.
-     * </p>
-     * <p>
-     * Test authors should target switch sub elements using the following names:
-     * </p>
-     * <ul>
-     * <li><b>oj-switch-track</b>: span represents dom for switch track</li>
-     * <li><b>oj-switch-thumb</b>: span represents dom for switch thumb</li>
-     * </ul>
-     *
-     * @expose
-     * @override
-     * @memberof oj.ojSwitch
-     * @instance
-     * @param {Object} locator An Object containing at minimum a subId property
-     * whose value is a string, documented by the component, that allows the component to
-     * look up the subcomponent associated with that string.  It contains:
-     * <ul>
-     * <li>
-     *   component: optional - in the future there may be more than one component
-     *   contained within a page element
-     * </li>
-     * <li>
-     *   subId: the string, documented by the component, that the component expects
-     *   in getNodeBySubId to locate a particular subcomponent
-     * </li>
-     * </ul>
-     * @returns {Element|null} the subcomponent located by the subId string
-     * passed in locator, if found.
-     */
+    // @inheritdoc
     getNodeBySubId: function (locator) {
       var node;
       var subId;

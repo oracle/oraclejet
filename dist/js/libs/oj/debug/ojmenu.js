@@ -883,8 +883,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             .hide()
             .attr({
                 "role": this.role,
-                "tabIndex": "0",
-                "data-oj-context": ""   //@see oj.Context#getContext
+                "tabIndex": "0"
             });
 
         // pass true to catch these events on all menus, not just enabled menus

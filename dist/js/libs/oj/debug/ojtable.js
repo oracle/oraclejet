@@ -3037,11 +3037,17 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
 
         if (focusedRowIdx == null && focusedHeaderColumnIdx == null)
         {
+          var focusRowIdx = null;
           var currentRow = this._getCurrentRow();
-          var focusRowIdx = currentRow == null ? -1 : currentRow['rowIndex'];
+          var currentRowKey = currentRow != null ? currentRow['rowKey'] : null;
+          if (currentRowKey != null)
+          {
+            focusRowIdx = this._getRowIdxForRowKey(currentRowKey);
+          }
+
           // if no row or column is focused 
           // and currentRow is null then set the focus on the first column or row
-          if (focusRowIdx < 0)
+          if (focusRowIdx == null)
           {
             if (this._isTableHeaderless())
             {
@@ -3367,12 +3373,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               self._getTableDomUtils().removeTableBodyRow(rows[i].rowIdx);
             }
           }
-          
-          if (resetFocus)
-          {
-            this._getTableDomUtils().getTable().focus();
-          }
-          
+                    
           // reset the currentRow if needed
           if (currentRowKey != null)
           {
@@ -3395,8 +3396,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             self._showNoDataMessage();
           }
-          // fix focus if needed
-          self._checkRowOrHeaderColumnFocus(null);
+          
+          if (resetFocus)
+          {
+            this._getTableDomUtils().getTable().focus();
+          }
+          
           self = null;
         });
       },
@@ -4123,7 +4128,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _getTabbableElements: function(element)
       {
-        var tabbableElements = element.find(':tabbable');
+        var tabbableElements = element.find(':tabbable').not('.oj-helper-hidden-accessible');
 
         if (tabbableElements != null && tabbableElements.length > 0)
         {
@@ -4665,13 +4670,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // mode then want to Tab within that row until Esc or F2 is pressed
         var tabHandled = false;
         var focusedRowIdx = this._getFocusedRowIdx();
+        var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
 
-        if (focusedRowIdx != null && 
-            (this._isTableActionableMode() ||
+        if ((focusedRowIdx != null ||
+          focusedHeaderColumnIdx != null) &&
+          (this._isTableActionableMode() ||
             this._hasEditableRow()))
         {
           var currentFocusElement = document.activeElement;
           var tableBody = this._getTableDomUtils().getTableBody();
+          var tableHeader = this._getTableDomUtils().getTableHeader();
 
           if (this._getEditableRowIdx() === focusedRowIdx)
           {
@@ -4701,38 +4709,78 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
               return;
             }
           }
-          else if ($.contains(tableBody[0], currentFocusElement))
+          else if ($.contains(tableBody[0], currentFocusElement) ||
+            $.contains(tableHeader[0], currentFocusElement))
           {
-            var tableBodyRow = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
-            var tabbableElementsInRow = this._getTabbableElements(tableBodyRow);
+            var focusedElement = null;
             
-            if (tabbableElementsInRow.length > 0)
+            if ($.contains(tableBody[0], currentFocusElement)) 
+            {
+              focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
+            }
+            else if ($.contains(tableHeader[0], currentFocusElement)) 
+            {
+              focusedElement = this._getTableDomUtils().getTableHeader();
+            }
+            var tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
+            
+            if (tabbableElementsInFocusedElement.length > 0)
             {
               // If only one tabbable element then stay on it
-              if (tabbableElementsInRow.length > 1)
+              if (tabbableElementsInFocusedElement.length > 1)
               {
                 if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
                 {
-                  // Tabbing on the last tabbable element in a row will wrap back
-                  var lastTabbableElementInRow = tabbableElementsInRow[tabbableElementsInRow.length - 1];
+                  // Tabbing on the last tabbable element will wrap back
+                  var lastTabbableElementFocusedElement = tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1];
 
-                  if (currentFocusElement == lastTabbableElementInRow)
+                  if (currentFocusElement == lastTabbableElementFocusedElement)
                   {
-                    $(tabbableElementsInRow[0]).focus();
+                    $(tabbableElementsInFocusedElement[0]).focus();
                     event.preventDefault();
                     event.stopPropagation();
+                  }
+                  else
+                  {
+                    // find which element it is
+                    var i;
+                    for (i = 0; i < tabbableElementsInFocusedElement.length; i++)
+                    {
+                      if (currentFocusElement == tabbableElementsInFocusedElement[i])
+                      {
+                        tabbableElementsInFocusedElement[i + 1].focus();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        break;
+                      }
+                    }
                   }
                 }
                 else
                 {
                   // Shift+Tabbing on the first tabbable element in a row will wrap back
-                  var firstTabbableElementInRow = tabbableElementsInRow[0];
+                  var firstTabbableElementFocusedElement = tabbableElementsInFocusedElement[0];
 
-                  if (currentFocusElement == firstTabbableElementInRow)
+                  if (currentFocusElement == firstTabbableElementFocusedElement)
                   {
-                    $(tabbableElementsInRow[tabbableElementsInRow.length - 1]).focus();
+                    $(tabbableElementsInFocusedElement[tabbableElementsInFocusedElement.length - 1]).focus();
                     event.preventDefault();
                     event.stopPropagation();
+                  }
+                  else
+                  {
+                    // find which element it is
+                    var i;
+                    for (i = 0; i < tabbableElementsInFocusedElement.length; i++)
+                    {
+                      if (currentFocusElement == tabbableElementsInFocusedElement[i])
+                      {
+                        tabbableElementsInFocusedElement[i - 1].focus();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        break;
+                      }
+                    }
                   }
                 }
               }
@@ -4745,32 +4793,51 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
           }
 
-          var tabbableElementsInBody = this._getTabbableElements(tableBody);
-
-          if (focusedRowIdx != null && !this._hasEditableRow())
+          if (focusedRowIdx != null && !this._hasEditableRow() ||
+            focusedHeaderColumnIdx != null)
           {
             if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
             {
               tabHandled = true;
-              var tableBodyRow = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
-              var tabbableElementsInRow = this._getTabbableElements(tableBodyRow);
-
-              if (tabbableElementsInRow != null)
+              var focusedElement = null;
+              if (focusedRowIdx != null) 
               {
-                $(tabbableElementsInRow[0]).focus();
+                focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
+              } 
+              else if (focusedHeaderColumnIdx != null) 
+              {
+                focusedElement = this._getTableDomUtils().getTableHeaderColumn(focusedHeaderColumnIdx);
+              }
+              var tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
+
+              if (tabbableElementsInFocusedElement != null)
+              {
+                $(tabbableElementsInFocusedElement[0]).focus();
               }
               else
               {
-                // if there are no tabbable elements
-                // in the row then focus on the first
-                // tabbable element in the body
-                $(tabbableElementsInBody[0]).focus();
+                if (focusedRowIdx != null) 
+                {
+                  // if there are no tabbable elements
+                  // in the row then focus on the first
+                  // tabbable element in the body
+                  var tabbableElementsInBody = this._getTabbableElements(tableBody);
+                  $(tabbableElementsInBody[0]).focus();
+                } 
+                else if (focusedHeaderColumnIdx != null) 
+                {
+                  // if there are no tabbable elements
+                  // in the column then focus on the first
+                  // tabbable element in the thead
+                  var tabbableElementsInHeader = this._getTabbableElements(tableHeader);
+                  $(tabbableElementsInHeader[0]).focus();
+                }
               }
               event.preventDefault();
               event.stopPropagation();
             }
           }
-        }
+        } 
 
         if (!tabHandled)
         {
@@ -6035,6 +6102,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             }
           }
           tableBody.append(tableBodyDocFrag); //@HTMLUpdateOK
+          this._getTableDomUtils().clearCachedDomRowData();
           // only bother calling subtree attached if there are potentially
           // components in our rows
           if (this._hasRowOrCellRenderer())
@@ -7446,20 +7514,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         if (value)
         {
           var focusedRowIdx = this._getFocusedRowIdx();
+          var focusedHeaderColumnIdx = this._getFocusedHeaderColumnIdx();
 
-          if (focusedRowIdx != null)
+          if (focusedRowIdx != null ||
+            focusedHeaderColumnIdx != null)
           {
-            var tableBodyRow = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
-
-            if (tableBodyRow != null)
+            var focusedElement = null;
+            
+            if (focusedRowIdx != null)
             {
-              var tabbableElementsInRow = this._getTabbableElements(tableBodyRow);
+              focusedElement = this._getTableDomUtils().getTableBodyRow(focusedRowIdx);
+            }
+            else
+            {
+              focusedElement = this._getTableDomUtils().getTableHeaderColumn(focusedHeaderColumnIdx);
+            }
 
-              if (tabbableElementsInRow != null && tabbableElementsInRow.length > 0)
+            if (focusedElement != null)
+            {
+              var tabbableElementsInFocusedElement = this._getTabbableElements(focusedElement);
+
+              if (tabbableElementsInFocusedElement != null && tabbableElementsInFocusedElement.length > 0)
               {
                 this._tableActionableMode = value;
                 // set focus on the first tabbable element
-                tabbableElementsInRow[0].focus();
+                tabbableElementsInFocusedElement[0].focus();
               }
             }
           }
@@ -7850,13 +7929,20 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           if (self._taskCount == 0)
           {
             self._pendingTasks = undefined;
-            if (!self._componentDestroyed)
+            try 
             {
-              if (self._finalTask)
+              if (!self._componentDestroyed)
               {
-                self._finalTask();
+                if (self._finalTask)
+                {
+                  self._finalTask();
+                }
+                self._trigger("ready");
               }
-              self._trigger("ready");
+            }
+            catch(err)
+            {
+              oj.Logger.error(err);
             }
             // Need to remove busy state even if the component is destroyed
             self._setComponentReady();
@@ -9083,7 +9169,7 @@ oj.TableDomUtils.prototype.getTableBodyMessageCell = function()
   var tableBody = this.getTableBody();
   if (tableBody)
   {
-    var messageCell = tableBody.children('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
+    var messageCell = tableBody.find('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_BODY_MESSAGE_CLASS);
     if (messageCell && messageCell.length > 0)
     {
       return $(messageCell.get(0));

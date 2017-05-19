@@ -42,6 +42,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
  *  - hasStyleClassName: Callback function to check whether a style class name is applied
  *    to a DOM element,
  *  - filterContentElements: Callback function to filter the array of conveyor content elements,
+ *  - subtreeAttached: Callback function to notify when a DOM subtree is attached,
+ *  - subtreeDetached: Callback function to notify when a DOM subtree is detached,
+ *  - addBusyState: Callback function to add a busy state to the busy context,
  *  - callbackObj: Optional object on which the callback functions are defined
  *    has changed
  * @param {Object} styleInfo Map of properties for the following style information:
@@ -105,6 +108,8 @@ function ConveyorBeltCommon(
       this._subtreeDetachedFunc = callbackInfo.subtreeDetached;
     if (callbackInfo.subtreeAttached)
       this._subtreeAttachedFunc = callbackInfo.subtreeAttached;
+    if (callbackInfo.addBusyState)
+      this._addBusyStateFunc = callbackInfo.addBusyState;
   }
   if (styleInfo)
   {
@@ -136,6 +141,10 @@ function ConveyorBeltCommon(
   else if (agentInfo && agentInfo["browser"] === "safari")
   {
     this._bAgentSafari = true;
+  }
+  else if (agentInfo && agentInfo["browser"] === "edge")
+  {
+    this._bAgentEdge = true;
   }
   else if (agentName.indexOf("applewebkit") !== -1 ||
            agentName.indexOf("safari") !== -1)
@@ -221,6 +230,9 @@ ConveyorBeltCommon.prototype.setup = function(bInit)
  */
 ConveyorBeltCommon.prototype.destroy = function()
 {
+  //FIX : resolve busy state when destroying
+  this._resolveBusyState();
+  
   var elem = this._elem;
   var cbcClass = ConveyorBeltCommon;
   cbcClass._removeBubbleEventListener(elem, "mousewheel", this._mouseWheelListener);
@@ -271,6 +283,7 @@ ConveyorBeltCommon.prototype.destroy = function()
   this._filterContentElementsFunc = null;
   this._subtreeDetachedFunc = null;
   this._subtreeAttachedFunc = null;
+  this._addBusyStateFunc = null;
   this._callbackObj = null;
 
   this._contentParent = null;
@@ -1186,14 +1199,36 @@ ConveyorBeltCommon.prototype._setCurrScrollHelper = function(scroll, bImmediate)
   //if animating the change, call out to the provided callback
   else
   {
+    //FIX : add busy state before animating a scroll
+    if (this._addBusyStateFunc)
+      this._busyStateResolveFunc = this._addBusyStateFunc("scrolling");
+    
     var cbcClass = ConveyorBeltCommon;
     // 1.1 px/ms is the desired animation speed, so calculate the duration based on the distance to scroll
     var duration = Math.abs(this._getCurrScroll() - scroll) / cbcClass._SCROLL_SPEED;
     var self = this;
-    var onEndFunc = function () {self._onScrollAnimEnd(scroll);};
+    var onEndFunc = function ()
+    {
+      self._onScrollAnimEnd(scroll);
+      
+      //FIX : resolve busy state after animating a scroll
+      self._resolveBusyState();
+    };
     //need to convert the logical scroll to the browser value for animating
     scrollFunc.call(this._callbackObj, this._overflowContainer, this._convertScrollLogicalToBrowser(scroll), 
                     duration, onEndFunc);
+  }
+};
+
+/**
+ * Resolve an outstanding busy state.
+ */
+ConveyorBeltCommon.prototype._resolveBusyState = function()
+{
+  if (this._busyStateResolveFunc)
+  {
+    this._busyStateResolveFunc();
+    this._busyStateResolveFunc = null;
   }
 };
 
@@ -2039,6 +2074,14 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     {
       this._setup(this._needsSetup[0]);
     }
+    //with internal flexbox layout, conveyor doesn't get notified when
+    //content resizes while detached, so explicitly handle a resize when
+    //attached again
+    else if (this._cbCommon)
+    {
+      var cbCommon = this._cbCommon;
+      cbCommon.handleResize();
+    }
   },
 
   // isInit is true for init (create and re-init), false for refresh
@@ -2113,7 +2156,9 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
         styleInfo.itemStyleClass = "oj-conveyorbelt-item";
         styleInfo.hiddenStyleClass = "oj-helper-hidden";
         var callbackInfo = {};
-        callbackInfo.addResizeListener = oj.DomUtils.addResizeListener;
+        callbackInfo.addResizeListener = function(elem, listener) {
+          oj.DomUtils.addResizeListener(elem, listener, _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT);
+        };
         callbackInfo.removeResizeListener = oj.DomUtils.removeResizeListener;
         callbackInfo.addStyleClassName = this._addStyleClassName;
         callbackInfo.removeStyleClassName = this._removeStyleClassName;
@@ -2122,6 +2167,8 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
           function(arContentElements) { return self._filterContentElements(arContentElements); };
         callbackInfo.subtreeDetached = oj.Components.subtreeDetached;
         callbackInfo.subtreeAttached = oj.Components.subtreeAttached;
+        callbackInfo.addBusyState = 
+          function(description) { return self._addBusyState(description); };
         //disable scroll animation during testing
         if (oj.Config.getAutomationMode() !== "enabled")
         {
@@ -2415,6 +2462,30 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
     return ret;
   },
   
+  /**
+   * Add a busy state to the busy context.
+   *
+   * @param {String} description Additional information about busy state.
+   * @returns {Function} Resolve function called by the registrant when the busy state completes.
+   *          The resultant function will throw an error if the busy state is no longer registered.
+   * @memberof! oj.ojConveyorBelt
+   * @private
+   */
+  _addBusyState: function(description)
+  {
+    var element = this.element;
+    var context = oj.Context.getContext(element[0]);
+    var busyContext = context.getBusyContext();
+    
+    var desc = "ConveyorBelt";
+    var id = element.attr("id");
+    desc += " (id='" + id + "')";
+    desc += ": " + description;
+    
+    var busyStateOptions = {"description" : desc};
+    return busyContext.addBusyState(busyStateOptions);
+  },
+  
   //** @inheritdoc */
   getNodeBySubId: function(locator)
   {
@@ -2549,6 +2620,10 @@ oj.__registerWidget("oj.ojConveyorBelt", $['oj']['baseComponent'],
 
 //FIX : log warning message when "disabled" option set
 var _WARNING_DISABLED_OPTION = "JET ConveyorBelt: 'disabled' option not supported";
+
+//make sure the collapseEventTimeout param is less than the one used in the unit tests
+//in order to ensure that the filmStrip listener gets the resize event before the unit test
+var _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25;
     
 // end static members and functions ////////////////////////////////////////////
 
