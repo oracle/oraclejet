@@ -230,6 +230,7 @@
   $colorList: _oj-theming-add-var($colorList, '$progressbarBgColor', $progressbarBgColor);
   $colorList: _oj-theming-add-var($colorList, '$progressbarValueBgColor', $progressbarValueBgColor);
   $colorList: _oj-theming-add-var($colorList, '$progressbarBorderColor', $progressbarBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$progressCircleBgColor', $progressCircleBgColor);
 
   @return $colorList;
 }

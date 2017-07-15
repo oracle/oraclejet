@@ -289,26 +289,17 @@ DvtDataGrid.HEADER_TAP_SHORT_HOLD_DURATION = 300;
 DvtDataGrid.FETCH_PIXEL_THRESHOLD = 5;
 
 //visibility constants
-/**
- * @export
- */
+
 DvtDataGrid.VISIBILITY_STATE_HIDDEN = 'hidden';
-/**
- * @export
- */
+
 DvtDataGrid.VISIBILITY_STATE_REFRESH = 'refresh';
-/**
- * @export
- */
+
 DvtDataGrid.VISIBILITY_STATE_RENDER = 'render';
-/**
- * @export
- */
+
 DvtDataGrid.VISIBILITY_STATE_VISIBLE = 'visible';
 
 /**
  * Sets options on DataGrid
- * @export
  * @param {Object} options - the options to set on the data grid
  */
 DvtDataGrid.prototype.SetOptions = function(options)
@@ -318,7 +309,6 @@ DvtDataGrid.prototype.SetOptions = function(options)
 
 /**
  * Update options on DataGrid
- * @export
  * @param {Object} options - the options to set on the data grid
  * @param {Object=} flags - contains modified subkey
  */
@@ -630,7 +620,6 @@ DvtDataGrid.prototype.GetOptions = function()
 
 /**
  * Sets resources on DataGrid
- * @export
  * @param {Object} resources - the resources to set on the data grid
  */
 DvtDataGrid.prototype.SetResources = function(resources)
@@ -640,7 +629,6 @@ DvtDataGrid.prototype.SetResources = function(resources)
 
 /**
  * Gets resources from DataGrid
- * @export
  * @return {Object} the resources set on the data grid
  */
 DvtDataGrid.prototype.getResources = function()
@@ -650,7 +638,6 @@ DvtDataGrid.prototype.getResources = function()
 
 /**
  * Gets start row index from DataGrid
- * @export
  * @return {number} the start row index
  */
 DvtDataGrid.prototype.getStartRow = function()
@@ -660,7 +647,6 @@ DvtDataGrid.prototype.getStartRow = function()
 
 /**
  * Gets start row header index from DataGrid
- * @export
  * @return {number} the start row header index
  */
 DvtDataGrid.prototype.getStartRowHeader = function()
@@ -670,7 +656,6 @@ DvtDataGrid.prototype.getStartRowHeader = function()
 
 /**
  * Gets start column index from DataGrid
- * @export
  * @return {number} the start column index
  */
 DvtDataGrid.prototype.getStartColumn = function()
@@ -680,7 +665,6 @@ DvtDataGrid.prototype.getStartColumn = function()
 
 /**
  * Gets start column header index from DataGrid
- * @export
  * @return {number} the start column header index
  */
 DvtDataGrid.prototype.getStartColumnHeader = function()
@@ -690,7 +674,6 @@ DvtDataGrid.prototype.getStartColumnHeader = function()
 
 /**
  * Gets start row end header index from DataGrid
- * @export
  * @return {number} the start row end header index
  */
 DvtDataGrid.prototype.getStartRowEndHeader = function()
@@ -700,7 +683,6 @@ DvtDataGrid.prototype.getStartRowEndHeader = function()
 
 /**
  * Gets start column end header index from DataGrid
- * @export
  * @return {number} the start column end header index
  */
 DvtDataGrid.prototype.getStartColumnEndHeader = function()
@@ -721,7 +703,6 @@ DvtDataGrid.prototype.getMappedStyle = function(key)
 
 /**
  * Sets the data source on DataGrid
- * @export
  * @param {Object} dataSource - the data source to set on the data grid
  */
 DvtDataGrid.prototype.SetDataSource = function(dataSource)
@@ -747,7 +728,6 @@ DvtDataGrid.prototype.SetDataSource = function(dataSource)
 
 /**
  * Gets the data source from the DataGrid
- * @export
  * @return {Object} the data source set on the data grid
  */
 DvtDataGrid.prototype.getDataSource = function()
@@ -758,7 +738,6 @@ DvtDataGrid.prototype.getDataSource = function()
 /**
  * Set the internal visibility of datagrid
  * @param {string} state a string for the visibility
- * @export
  */
 DvtDataGrid.prototype.setVisibility = function(state)
 {
@@ -768,7 +747,6 @@ DvtDataGrid.prototype.setVisibility = function(state)
 /**
  * Get the internal visibility of datagrid
  * @return {string} visibility
- * @export
  */
 DvtDataGrid.prototype.getVisibility = function()
 {
@@ -789,7 +767,6 @@ DvtDataGrid.prototype.getVisibility = function()
 /**
  * Set the callback for remove
  * @param {Function} callback a callback for the remove function
- * @export
  */
 DvtDataGrid.prototype.SetOptionCallback = function(callback)
 {
@@ -799,7 +776,6 @@ DvtDataGrid.prototype.SetOptionCallback = function(callback)
 /**
  * Set the callback for remove
  * @param {Function} callback a callback for the remove function
- * @export
  */
 DvtDataGrid.prototype.SetRemoveCallback = function(callback)
 {
@@ -809,7 +785,6 @@ DvtDataGrid.prototype.SetRemoveCallback = function(callback)
 /**
  * Set the callback for subtreeAttached that should be called when adding content to the dom
  * @param {Function} callback a callback for the subtree attached function
- * @export
  */
 DvtDataGrid.prototype.SetSubtreeAttachedCallback = function(callback)
 {
@@ -819,7 +794,6 @@ DvtDataGrid.prototype.SetSubtreeAttachedCallback = function(callback)
 /**
  * Remove an element from the DOM, if it is not being reattached
  * @param {Element} element the element to remove
- * @export
  */
 DvtDataGrid.prototype._remove = function(element)
 {
@@ -838,7 +812,6 @@ DvtDataGrid.prototype._remove = function(element)
 /**
  * Set the callback for signifying not ready
  * @param {Function} callback a callback for the not ready function
- * @export
  */
 DvtDataGrid.prototype.SetNotReadyCallback = function(callback)
 {
@@ -848,7 +821,6 @@ DvtDataGrid.prototype.SetNotReadyCallback = function(callback)
 /**
  * Set the callback for signifying ready
  * @param {Function} callback a callback for the make ready function
- * @export
  */
 DvtDataGrid.prototype.SetMakeReadyCallback = function(callback)
 {
@@ -976,7 +948,6 @@ DvtDataGrid.prototype._getLocalKeys = function(indexes)
  * Register a callback when creating the header context or cell context.
  * @param {function(Object)} callback the callback function to inject addition or modify
  *        properties in the context.
- * @export
  */
 DvtDataGrid.prototype.SetCreateContextCallback = function(callback)
 {
@@ -987,7 +958,6 @@ DvtDataGrid.prototype.SetCreateContextCallback = function(callback)
  * Register the focusable callbacks for handling focus classNames
  * @param {function()} focusInHandler
  * @param {function()} focusOutHandler
- * @export
  */
 DvtDataGrid.prototype.SetFocusableCallback =  function(focusInHandler, focusOutHandler) 
 {
@@ -999,7 +969,6 @@ DvtDataGrid.prototype.SetFocusableCallback =  function(focusInHandler, focusOutH
  * Register a callback when creating the header context or cell context.
  * @param {function(Object)} callback the callback function to inject addition or modify
  *        properties in the context.
- * @export
  */
 DvtDataGrid.prototype.SetFixContextCallback = function(callback)
 {
@@ -1019,7 +988,6 @@ DvtDataGrid.prototype._isHighWatermarkScrolling = function()
 /**
  * Destructor method that should be called when the widget is destroyed. Removes event
  * listeners on the document.
- * @export
  */
 DvtDataGrid.prototype.destroy = function()
 {
@@ -1508,7 +1476,6 @@ DvtDataGrid.prototype.empty = function()
 /**
  * Re-renders the data grid. Resets all the necessary properties.
  * @param {Element} root - the root dom element for the DataGrid.
- * @export
  */
 DvtDataGrid.prototype.refresh = function(root)
 {
@@ -1751,7 +1718,6 @@ DvtDataGrid.prototype._runModelEventQueue = function()
 /**
  * Renders the DataGrid, initializes DataGrid properties.
  * @param {Element} root - the root dom element for the DataGrid.
- * @export
  */
 DvtDataGrid.prototype.render = function(root)
 {
@@ -2004,7 +1970,6 @@ DvtDataGrid.prototype.buildGrid = function(root)
  * Handle resize of grid to a new width and height.
  * @param {number} width the new width
  * @param {number} height the new height
- * @export
  */
 DvtDataGrid.prototype.HandleResize = function(width, height)
 {
@@ -2826,7 +2791,6 @@ DvtDataGrid.prototype.populateAccInfo = function()
  * This is currently used by the Row Expander to alert screenreader of such
  * information as depth, expanded state, index etc
  * @param {Object} context an object containing attribute context or state to set m_accessibleContext/state
- * @export
  */
 DvtDataGrid.prototype.SetAccessibleContext = function(context)
 {
@@ -6194,7 +6158,6 @@ DvtDataGrid.prototype._getMaxScrollHeight = function()
 
 /**
  * Handle a programtic scroll
- * @export
  * @param {Object} options an object containing the scrollTo information
  * @param {Object} options.position scroll to an x,y location which is relative to the origin of the grid
  * @param {Object} options.position.scrollX the x position of the scrollable region, this should always be positive
@@ -7510,7 +7473,6 @@ DvtDataGrid.prototype.dumpRanges = function()
  * @param {Event} event the event of the context menu gesture
  * @param {string} eventType keyboard/touch/mouse
  * @param {Function} callback where to pass the data back
- * @export
  */
 DvtDataGrid.prototype.handleContextMenuGesture = function(event, eventType, callback)
 {
@@ -7756,7 +7718,6 @@ DvtDataGrid.prototype._getHeaderCapability = function(header, actualCell)
 
 /**
  * Handle the callback from the widget to resize or sort.
- * @export
  * @param {Event} event - the original contextmenu event
  * @param {string} id - the id returned from the context menu
  * @param value - the value set in the dialog on resizing
@@ -8990,7 +8951,6 @@ DvtDataGrid.prototype.fireEvent = function(functionName, details)
  * Add a callback function to the callbacks object
  * @param {string} functionName - the function name to callback on
  * @param {Object.<Function>} handler - the function to callback to
- * @export
  */
 DvtDataGrid.prototype.addListener = function(functionName, handler)
 {
@@ -14803,7 +14763,6 @@ DvtDataGrid.prototype._selectRangeCallback = function(event, newRange)
 /**
  * Retrieve the current selection
  * @return {Array} an array of ranges
- * @export
  */
 DvtDataGrid.prototype.GetSelection = function()
 {
@@ -14817,7 +14776,6 @@ DvtDataGrid.prototype.GetSelection = function()
 /**
  * Sets a range of selections
  * @param {Object} selection
- * @export
  */
 DvtDataGrid.prototype.SetSelection = function(selection)
 {

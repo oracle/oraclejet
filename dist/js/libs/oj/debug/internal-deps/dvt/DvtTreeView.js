@@ -4098,8 +4098,8 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     // Calculate the bounds for the selection effect
     var x = this._x;
     var y = this._y + DvtTreemapNode._LINE_FUDGE_FACTOR;
-    var w = this._width - DvtTreemapNode._LINE_FUDGE_FACTOR;
-    var h = this._height - DvtTreemapNode._LINE_FUDGE_FACTOR;
+    var w = Math.max(this._width - DvtTreemapNode._LINE_FUDGE_FACTOR, 0);
+    var h = Math.max(this._height - DvtTreemapNode._LINE_FUDGE_FACTOR, 0);
 
     // Workaround for different pixel drawing behavior between browsers
     if (dvt.Agent.isPlatformWebkit())
@@ -4118,7 +4118,10 @@ DvtTreemapNode.prototype.setSelected = function(selected) {
     this._selectionOuter.setPixelHinting(true);
     this._shape.addChild(this._selectionOuter);
 
-    this._selectionInner = new dvt.Rect(this.getView().getCtx(), x + 1, y + 1, w - 2, h - 2);
+    //  - treemap visualization issues
+    var innerWidth = Math.max(w - 2, 0);
+    var innerHeight = Math.max(h - 2, 0);
+    this._selectionInner = new dvt.Rect(this.getView().getCtx(), x + 1, y + 1, innerWidth, innerHeight);
     this._selectionInner.setMouseEnabled(false);
     this._selectionInner.setFill(null);
     this._selectionInner.setPixelHinting(true);
@@ -4274,6 +4277,10 @@ DvtTreemapNode.prototype.showHoverEffect = function() {
 
     stroke = new dvt.SolidStroke(nodeDefaults['hoverColor'], DvtTreemapNode.NODE_HOVER_OPACITY, DvtTreemapNode.NODE_SELECTION_WIDTH);
   }
+
+  //  - treemap visualization issues
+  h = Math.max(h, 0);
+  w = Math.max(w, 0);
 
   // Apply and show the effect
   this.getView().__showHoverEffect(x, y, w, h, stroke);
@@ -5067,7 +5074,11 @@ DvtTreemapNode.prototype._getGeometriesWithGaps = function() {
   if (this._textStyle == DvtTreemapNode.TEXT_STYLE_HEADER) {
     ret._shape = new dvt.Rectangle(this._x, this._y, this._width - 1, this._titleBarHeight);
     ret._innerShape = new dvt.Rectangle(this._x + 1, this._y + 1, this._width - 3, this._titleBarHeight - 1);
-    ret._backgroundShape = new dvt.Rectangle(this._x, this._y + this._titleBarHeight, this._width - 1, this._height - this._titleBarHeight - 1);
+
+    //  - treemap visualization issues
+    var adjustedBackgroundShapeWidth = Math.max(this._width - 1, 0);
+    var adjustedBackgroundShapeHeight = Math.max(this._height - this._titleBarHeight - 1, 0);
+    ret._backgroundShape = new dvt.Rectangle(this._x, this._y + this._titleBarHeight, adjustedBackgroundShapeWidth, adjustedBackgroundShapeHeight);
   }
   else {
     // Non-header node with children, make 0 height so it doesn't bleed through the gaps.
@@ -6517,6 +6528,8 @@ DvtSunburstNode.TEXT_BUFFER_HORIZ = 6;
 DvtSunburstNode._EXPAND_ICON_SIZE = 16;
 /** @private @const */
 DvtSunburstNode._ROOT_NODE_MARGIN = 2;
+/** @private @const */
+DvtSunburstNode._MIN_ANGLE_EXTENT = 0.0006;
 
 // Constant for efficiency
 DvtSunburstNode.TWO_PI = (Math.PI * 2);
@@ -6612,6 +6625,25 @@ DvtSunburstNode.prototype.render = function(container) {
 
   // Create the container for the children and render
   this.renderChildren(container);
+};
+
+/**
+ * @override
+ */
+DvtSunburstNode.prototype.renderChildren = function(container) {
+  // Render children of this node
+  var children = this.getChildNodes();
+  if (children != null) {
+    for (var i = 0; i < children.length; i++) {
+      var angleExtent = children[i]._angleExtent;
+
+      //  - rendering issues for funnel/pie/sunburst charts
+      if (angleExtent < DvtSunburstNode._MIN_ANGLE_EXTENT)
+        continue; // skip render
+
+      children[i].render(container);
+    }
+  }
 };
 
 /**

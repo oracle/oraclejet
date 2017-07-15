@@ -2200,7 +2200,6 @@ oj.TreeDndContext._DND_INTERNAL_DT_REORDER ="_ojtreereorder" ;   // internal dat
     if (s.length === 0 || s == "shift+" || s == "ctrl+") {
       return true ;
     }
-
     // If we can find a handler from a tree with focus, dispatch the
     // keystroke event to it.
     var retHandler = null ;
@@ -7591,7 +7590,7 @@ $ul.css('max-height', '') ;   //JRM
            var bIns = false,
                sp ;
 
-           tmp = $("<a tabindex='-1' />");
+           tmp = $("<a/>");
            $.each(js["data"], function (i, m)   {
                 if ($.isFunction(m)) {
                   m = m.call(this, js);
@@ -7969,7 +7968,6 @@ $ul.css('max-height', '') ;   //JRM
                       this._cleanNode();
                       this._$container_ul.find("ul").attr(WA_ROLE, WA_GROUP) ;
                       this._$container_ul.find("li").attr(WA_ROLE, WA_TREEITEM) ;
-                      this._$container_ul.find("a").attr("tabindex", -1) ;
                     }
                     if (s_call)  {
                       s_call.call(this);
@@ -8013,7 +8011,6 @@ $ul.css('max-height', '') ;   //JRM
                            this._cleanNode();
                            this._$container_ul.find("ul").attr(WA_ROLE, WA_GROUP) ;
                            this._$container_ul.find("li").attr(WA_ROLE, WA_TREEITEM) ;
-                           this._$container_ul.find("a").attr("tabindex", "-1") ;
                     }
                     if (s_call)  {
                          s_call.call(this);
@@ -9114,7 +9111,6 @@ $ul.css('max-height', '') ;   //JRM
                         {
                           this._data.ui.touchEvent = false ;
                           this._handleNodeTapClick(event) ;
-                          return false;   // prevent jump to top of list if vertical scrollbar
                         }.bind(this))
              .delegate(".oj-tree-list a", "mouseenter.ojtree",
                         function (event)

@@ -1818,7 +1818,7 @@ oj.Model._triggerError = function(self, silent, options, status, err, xhr) {
  * asynchronous process. The callback is called passing the Model object, response from the AJAX call, and the 
  * fetch options argument.<p>
  * <b>error</b>: a user callback function called if the save fails. <p>
- * <b>contextType</b>: in case the user's REST service requires a different POST content type than the default, 
+ * <b>contentType</b>: in case the user's REST service requires a different POST content type than the default, 
  * 'application/json'<p>
  * <b>validate</b>: should the validation routine be called if available<p>
  * <b>wait</b>: if true, wait for the server call before setting the attributes on the model<p>

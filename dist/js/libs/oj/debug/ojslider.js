@@ -991,6 +991,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         this
       );
 
+      this._destroyDraggable();
+
       if (this._range) this._range.remove();
       if (this._sliderContainer) this._sliderContainer.remove();
 
@@ -2362,6 +2364,28 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       } else {
         if (this._thumb.is('.ui-draggable')) {
           this._thumb.draggable('disable');
+        }
+      }
+    },
+
+    // 
+    // Destroy the draggable that was instantiated on each slider thumb.
+    // 
+    _destroyDraggable: function () {
+      if (this._multipleThumbs) {
+        this._thumbs.toArray().forEach(
+
+          function (current) {
+            var thumb = $(current);
+            if (thumb.is('.ui-draggable')) {
+              thumb['draggable']('destroy');
+            }
+          },
+          this
+        );
+      } else {
+        if (this._thumb.is('.ui-draggable')) {
+          this._thumb.draggable('destroy');
         }
       }
     }

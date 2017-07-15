@@ -189,7 +189,15 @@ function bindHover(dpDiv)
  */
 function bindActive(dateTime)
 {
-  var triggerRootContainer = $(dateTime.element[0]).parent().parent();
+  var triggerRootContainer;
+  if(dateTime._isInLine)
+  {
+    triggerRootContainer = $(dateTime.element[0]).parent();
+  }
+  else
+  {
+    triggerRootContainer = $(dateTime.element[0]).parent().parent();
+  }
 
   // There are few issues in mobile using hover and active marker classes (iOS and Android, more
   // evident on iOS). Some fix is needed in _activeable(), tracking .
@@ -1239,13 +1247,21 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    */
   _destroy : function __destroy()
   {
-    var retVal = this._super();
-
-    var triggerRootContainer = $(this.element[0]).parent().parent();
+    var triggerRootContainer;
+    if (this._isInLine) 
+    {
+      triggerRootContainer = $(this.element[0]).parent();
+    }
+    else 
+    {
+      triggerRootContainer = $(this.element[0]).parent().parent();
+    }
     this._RemoveActiveable(triggerRootContainer);
 
     this.element.off("focus touchstart");
     this._wrapper.off("touchstart");
+
+    var retVal = this._super();
 
     if (this._triggerNode)
     {
@@ -2203,6 +2219,14 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   _attachHandlers : function ()
   {
     var stepMonths = this._getStepMonths(), self = this;
+    var keyDownPrevent = function(evt) {
+      var allowDefaultEvent = false;
+      if(evt.type === "keydown" && evt.keyCode === $.ui.keyCode.TAB) 
+      {
+        allowDefaultEvent = true;
+      }
+      return allowDefaultEvent;
+    }
     this._dpDiv.find("[data-handler]").map(function ()
     {
       var handler =
@@ -2214,7 +2238,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
           {
             self._gotoPrev(stepMonths);
           }
-          return false;
+          return keyDownPrevent(evt);
         },
         /** @expose */
         next : function (evt)
@@ -2223,7 +2247,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
           {
             self._gotoNext(stepMonths);
           }
-          return false;
+          return keyDownPrevent(evt);
         },
         /** @expose */
         today : function (evt)
@@ -2232,25 +2256,34 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
           {
             self._gotoToday();
           }
-          return false;
+          return keyDownPrevent(evt);
         },
         /** @expose */
         selectDay : function (evt)
         {
+          if (self._isButtonActivated(evt))
+          {
           self._selectDay( + this.getAttribute("data-month"),  + this.getAttribute("data-year"), this, evt);
-          return false;
+          }
+          return keyDownPrevent(evt);
         },
         /** @expose */
-        selectMonth : function ()
+        selectMonth : function (evt)
         {
+          if (self._isButtonActivated(evt))
+          {
           self._selectMonthYear(this, "M");
-          return false;
+          }
+          return keyDownPrevent(evt);
         },
         /** @expose */
-        selectYear : function ()
+        selectYear : function (evt)
         {
+          if (self._isButtonActivated(evt))
+          {
           self._selectMonthYear(this, "Y");
-          return false;
+          }
+          return keyDownPrevent(evt);
         },
         /** @expose */
         calendarKey : function (evt)
@@ -2282,7 +2315,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
               self._updateDatepicker(true, 'month');
             }
           }
-          return false;
+          return keyDownPrevent(evt);
         },
         /** @expose */
         selectYearHeader : function (evt)
@@ -2300,7 +2333,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
               self._updateDatepicker(true, 'year');
             }
           }
-          return false;
+          return keyDownPrevent(evt);
         }
       };
       $(this).bind(this.getAttribute("data-event"), handler[this.getAttribute("data-handler")]);
@@ -4908,11 +4941,50 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       window.removeEventListener('resize', this._resizePopupBind);
     }
     window.removeEventListener('resize', resizeLargeScreenChange);
-
+    this._destroyHammer();
     if (this._wheelPicker)
+    {	    
       this._wheelPicker.remove();
+      this._clearWheelModels();
+    }
 
     return retVal;
+  },
+
+  /**
+   * @ignore
+   * @private
+   * @override
+   */
+  _clearWheelModels : function ()
+  {
+    var timePickerModel = this._timePickerModel;
+	  if (!timePickerModel) return;
+	  var model = timePickerModel.getWheelModel("hour");
+	  if (model) model.wheel = undefined;
+	  model = timePickerModel.getWheelModel("minute");
+	  if (model) model.wheel = undefined;
+	  model = timePickerModel.getWheelModel("ampm");
+	  if (model) model.wheel = undefined;
+  },
+
+  /**
+   * @ignore
+   * @protected
+   * @override
+   */
+  _destroyHammer : function ()
+  {
+    if (this._wheelGroup && this._wheelGroup.length) {
+      var group = this._wheelGroup[0];
+      var wheel;
+      var children = group.children;
+      for (var index = 0; index < children.length; index++)
+      {
+        wheel = children[index];
+        wheel.ojDestroy();
+      }
+    }
   },
 
   /**
@@ -5490,10 +5562,20 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
         //before the below timeselected is propagated to the datetimepicker (which has the complete value that must be 
         //used and because of that kicked it down)
 
-        var converter = this._GetConverter(),
-            parsedNewValue = converter["parse"](newValue),
+        //if the operation is an enter key in the input field (not in the picker), the newValue is not just time, it is date+time. So we
+        //need to deal differently
+        var converter, datePickerCompWidget = this._datePickerComp["widget"];
+        if(event && event.target && event.target === this.element[0] && !this._isDatePickerInline())
+        {
+          converter = datePickerCompWidget._GetConverter();
+        }
+        else
+        {
+          converter = this._GetConverter();
+        }
+
+        var parsedNewValue = converter["parse"](newValue),
             converterUtils = oj.IntlConverterUtils,
-            datePickerCompWidget = this._datePickerComp["widget"],
             dateTimeValue = datePickerCompWidget.getValueForInputTime() || converterUtils.dateToLocalIso(new Date());
 
         if(parsedNewValue && converter.compareISODates(dateTimeValue, parsedNewValue) === 0)
@@ -5832,7 +5914,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   {
     var wheelPicker = this._wheelPicker;
     var wheelPickerContent = this._getWheelPickerContent(wheelPicker);
-
+    this._destroyHammer();
     wheelPickerContent.empty();
 
     var converter = this._GetConverter();
@@ -6398,6 +6480,7 @@ function createWheel(model, isNumber, classList)
     _wheel.ojSpinUp = spinUp;
     _wheel.ojSpinDown = spinDown;
     _wheel.ojRefresh = refresh;
+    _wheel.ojDestroy = destroy;
     _wheel.ojLinked = function()
     {
       return model["linked"];
@@ -6406,23 +6489,38 @@ function createWheel(model, isNumber, classList)
 
   function defineEvents()
   {
-    var mc = new Hammer(_wheel);
-    mc.get('pan').set({ direction: Hammer["DIRECTION_VERTICAL"] });
-    mc.get('swipe').set({ direction: Hammer["DIRECTION_VERTICAL"] });
+    var hammerOptions = {
+      "recognizers": [
+        [Hammer.Pan, {"direction": Hammer["DIRECTION_VERTICAL"]}],
+        [Hammer.Tap],
+        [Hammer.Swipe, {"direction": Hammer["DIRECTION_VERTICAL"]}]
+      ]
+    };
 
-    mc.on("tap", tapHander);
-    mc.on("swipeup", swipeUpHandler);
-    mc.on("swipedown", swipeDownHandler);
-
-    mc.on("panstart", panStartHandler);
-    mc.on("panend pancancel", panEndHandler);
-
-    mc.on("panup pandown", panHandler);
+    $wheel.ojHammer(hammerOptions)
+    .on("tap", tapHander)
+    .on("swipeup", swipeUpHandler)
+    .on("swipedown", swipeDownHandler)
+    .on("panstart", panStartHandler)
+    .on("panend pancancel", panEndHandler)
+    .on("panup pandown", panHandler);
 
     _wheel.addEventListener('wheel', wheelHandler, false);
     _wheel.addEventListener('keydown', keydownHandler, false);
     _wheel.addEventListener('focus', focusHandler, false);
     _wheel.addEventListener('blur', blurHandler, false);
+  }
+
+  function destroy()
+  {
+    $wheel.ojHammer()
+    .off("tap", tapHander)
+    .off("swipeup", swipeUpHandler)
+    .off("swipedown", swipeDownHandler)
+    .off("panstart", panStartHandler)
+    .off("panend pancancel", panEndHandler)
+    .off("panup pandown", panHandler);
+    $wheel.ojHammer("destroy");
   }
 
   function spinUp()
@@ -6537,7 +6635,7 @@ function createWheel(model, isNumber, classList)
   function tapHander(event)
   {
     _wheel.focus();
-    var tapY = event["center"].y;
+    var tapY = event["gesture"]["center"].y;
     var wheelTop = $wheel.offset().top;
     var wheelHeight = $wheel.height();
     var tapFraction = (tapY - wheelTop) / wheelHeight;
@@ -6557,7 +6655,7 @@ function createWheel(model, isNumber, classList)
   function swipeUpHandler(event)
   {
     _wheel.focus();
-    var velocity = event.velocityY;
+    var velocity = event["gesture"].velocityY;
     var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
     _momentum = Math.floor(extraPixels / $wheel.height() * 5);
     event.preventDefault();
@@ -6566,7 +6664,7 @@ function createWheel(model, isNumber, classList)
   function swipeDownHandler(event)
   {
     _wheel.focus();
-    var velocity = event.velocityY;
+    var velocity = event["gesture"].velocityY;
     var extraPixels = velocity * velocity / MOMENTUM_FACTOR;
     _momentum = -Math.floor(extraPixels / $wheel.height() * 5);
     event.preventDefault();
@@ -6575,7 +6673,7 @@ function createWheel(model, isNumber, classList)
   function panStartHandler(event)
   {
     _wheel.focus();
-    _panStartY = _panLastSpinY = event["center"].y;
+    _panStartY = _panLastSpinY = event["gesture"]["center"].y;
     _panLastZone = 0;
     _momentum = 0;
   }
@@ -6595,7 +6693,7 @@ function createWheel(model, isNumber, classList)
   function panHandler(event)
   {
     _wheel.focus();
-    var panY = event["center"].y;
+    var panY = event["gesture"]["center"].y;
     var newZone = Math.round(((_panStartY - panY) / $wheel.height()) * 5);
     if (newZone !== _panLastZone && Math.abs(_panLastSpinY - panY) > PAN_SPIN_THRESHOLD)
     {
@@ -7378,6 +7476,7 @@ function createWheelGroup(timePickerModel)
     var wheel;
     while (wheel = _group.firstChild)
     {
+      wheel.ojDestroy();
       _group.removeChild(wheel);
     }
     _wheels = [];
@@ -8056,9 +8155,8 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    */
   _destroy : function ()
   {
-    var ret = this._super();
-
     this._timePicker.ojInputTime("destroy");
+    var ret = this._super();
 
     if (this._isInLine)
     {
@@ -8295,6 +8393,23 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     this._previousValue = newValue;
 
     return ret;
+  },
+
+  /**
+   * @ignore
+   * @protected
+   * @override
+   * @instance
+   * @memberof! oj.ojInputDateTime
+   */
+  _SetDisplayValue : function (displayValue)
+  {
+    if(!this._isInLine)
+    {
+      this._superApply(arguments);
+      this._updateSwitcherText();
+    }
+    this._switcherTimeValue = null;
   },
   
   /**
@@ -9274,6 +9389,10 @@ function WheelModel(parentModel, properties)
 
   function spinWheel()
   {
+    if(!self.wheel)
+    { //wheel destroyed already
+      return;
+    }
     SPIN_TIMES.forEach(function(time)
     {
       self.wheel.classList.remove("oj-timepicker-wheel-spin-" + time);

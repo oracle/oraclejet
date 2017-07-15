@@ -454,7 +454,7 @@ html[dir="rtl"] .oj-padding-lg-end {
     /  generate a class ".binky-icon". You
     /  could then put class="oj-icon binky-icon" on your dom element.
     --------------------------------------------------------------------*/
-.oj-fwk-icon, .oj-panel-drag-icon, .oj-panel-expand-icon, .oj-panel-collapse-icon, .oj-panel-remove-icon, .oj-confirmation.oj-train-icon, .oj-error.oj-train-icon, .oj-info.oj-train-icon, .oj-warning.oj-train-icon, .oj-listview-drag-handle, .oj-listview-card-layout .oj-listview-drag-handle, .oj-web-applayout-offcanvas-icon,
+.oj-fwk-icon, .oj-panel-drag-icon, .oj-panel-expand-icon, .oj-panel-collapse-icon, .oj-panel-remove-icon, .oj-confirmation.oj-train-icon, .oj-error.oj-train-icon, .oj-info.oj-train-icon, .oj-warning.oj-train-icon, .oj-listview-drag-handle, .oj-listview-card-layout .oj-listview-drag-handle, .oj-web-applayout-offcanvas-icon, .oj-progressstatus-cancel-icon,
 .oj-component-icon,
 .oj-popup-tail.oj-popup-tail-simple {
   font-family: "Alta Icon Font";
@@ -471,7 +471,7 @@ html[dir="rtl"] .oj-padding-lg-end {
   box-sizing: content-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale; }
-  .oj-fwk-icon:before, .oj-panel-drag-icon:before, .oj-panel-expand-icon:before, .oj-panel-collapse-icon:before, .oj-panel-remove-icon:before, .oj-confirmation.oj-train-icon:before, .oj-error.oj-train-icon:before, .oj-info.oj-train-icon:before, .oj-warning.oj-train-icon:before, .oj-listview-drag-handle:before, .oj-listview-card-layout .oj-listview-drag-handle:before, .oj-web-applayout-offcanvas-icon:before,
+  .oj-fwk-icon:before, .oj-panel-drag-icon:before, .oj-panel-expand-icon:before, .oj-panel-collapse-icon:before, .oj-panel-remove-icon:before, .oj-confirmation.oj-train-icon:before, .oj-error.oj-train-icon:before, .oj-info.oj-train-icon:before, .oj-warning.oj-train-icon:before, .oj-listview-drag-handle:before, .oj-listview-card-layout .oj-listview-drag-handle:before, .oj-web-applayout-offcanvas-icon:before, .oj-progressstatus-cancel-icon:before,
   .oj-component-icon:before,
   .oj-popup-tail.oj-popup-tail-simple:before {
     display: inline-block; }
@@ -595,6 +595,54 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 .oj-fwk-icon-status-error:before, .oj-message-status-icon.oj-message-error-icon:before {
   content: url("images/stat_error_16.svg"); }
 
+.oj-fwk-icon-status-confirmation3, .oj-progressstatus-done-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: top left;
+  background-size: 100%;
+  background-image: url("../common/images/status_confirmation.svg"); }
+
+/* in high-contrast mode, background-image disappears, so we have to use content */
+.oj-hicontrast .oj-fwk-icon-status-confirmation3, .oj-hicontrast .oj-progressstatus-done-icon {
+  background-image: none; }
+
+.oj-hicontrast .oj-fwk-icon-status-confirmation3:before, .oj-hicontrast .oj-progressstatus-done-icon:before {
+  content: url("../common/images/status_confirmation.svg"); }
+
+/* in print mode, background-image disappears, so we have to use content */
+@media print {
+  .oj-fwk-icon-status-confirmation3, .oj-progressstatus-done-icon {
+    background-image: none; }
+  .oj-fwk-icon-status-confirmation3:before, .oj-progressstatus-done-icon:before {
+    content: url("../common/images/status_confirmation.svg"); } }
+
+.oj-fwk-icon-status-error3, .oj-progressstatus-error-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: top left;
+  background-size: 100%;
+  background-image: url("../common/images/status_error.svg"); }
+
+/* in high-contrast mode, background-image disappears, so we have to use content */
+.oj-hicontrast .oj-fwk-icon-status-error3, .oj-hicontrast .oj-progressstatus-error-icon {
+  background-image: none; }
+
+.oj-hicontrast .oj-fwk-icon-status-error3:before, .oj-hicontrast .oj-progressstatus-error-icon:before {
+  content: url("../common/images/status_error.svg"); }
+
+/* in print mode, background-image disappears, so we have to use content */
+@media print {
+  .oj-fwk-icon-status-error3, .oj-progressstatus-error-icon {
+    background-image: none; }
+  .oj-fwk-icon-status-error3:before, .oj-progressstatus-error-icon:before {
+    content: url("../common/images/status_error.svg"); } }
+
 .oj-fwk-icon-folder-open:before, .oj-expanded:not(.oj-tree-type) > a .oj-tree-node-icon:before {
   content: url("images/hier_folderopen_16_mono.svg"); }
 
@@ -621,7 +669,7 @@ a.oj-disabled.oj-clickable-icon-nocontext,
   /* Needed for old versions of IE11 */ }
 
 /* Icon Font Icons =========== */
-.oj-fwk-icon-cross:before, .oj-panel-remove-icon:before, .oj-error.oj-train-icon:before, .oj-dialog-close-icon:before, .oj-combobox-clear-entry-icon:before, .oj-select-clear-entry-icon:before {
+.oj-fwk-icon-cross:before, .oj-panel-remove-icon:before, .oj-error.oj-train-icon:before, .oj-dialog-close-icon:before, .oj-combobox-clear-entry-icon:before, .oj-select-clear-entry-icon:before, .oj-progressstatus-cancel-icon:before {
   content: "\e608"; }
 
 .oj-fwk-icon-cross02:before, .oj-menu-icons .oj-menu-cancel-icon:before {
@@ -653,6 +701,9 @@ a.oj-disabled.oj-clickable-icon-nocontext,
 
 .oj-fwk-icon-folderhierarchy:before, .oj-hier-icon:before {
   content: "\e611"; }
+
+.oj-fwk-icon-arrowbox-n:before {
+  content: "\e902"; }
 
 .oj-fwk-icon-checkmark:before, .oj-confirmation.oj-train-icon:before {
   content: "\e615"; }
@@ -4692,10 +4743,12 @@ html[dir="rtl"] .oj-offcanvas-end {
 
 /* progressbar */
 /* --------------------------------------------------------------- */
-oj-progressbar:not(.oj-complete) {
+oj-progressbar:not(.oj-complete),
+oj-progress:not(.oj-complete) {
   visibility: hidden; }
 
-oj-progressbar {
+oj-progressbar,
+oj-progress {
   display: block; }
 
 .oj-progressbar {
@@ -4731,6 +4784,29 @@ html[dir="rtl"] .oj-progressbar-end-label {
 
 .oj-hicontrast .oj-progressbar-value {
   border: 1px dashed #dfe4e7; }
+
+/* progress-circle */
+/* --------------------------------------------------------------- */
+.oj-progress-circle {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px; }
+
+.oj-progress-circle-base {
+  fill: transparent;
+  stroke-width: 10%;
+  stroke: #ebeced; }
+
+.oj-progress-circle-value {
+  stroke: #0572ce; }
+
+.oj-progress-circle-transform {
+  transform: rotate(-90deg); }
+
+.oj-progress-circle-overlay {
+  background-size: cover;
+  background-image: url("../common/images/spinner_full.gif"); }
 
 .oj-progressbar-overlay {
   height: 100%;
@@ -14640,5 +14716,74 @@ html[dir="rtl"] .oj-web-applayout-footer li:last-child {
   margin-left: 0;
   padding-left: 0;
   border-left: none; }
+
+oj-file-picker:not(.oj-complete) {
+  visibility: hidden; }
+
+.oj-filepicker {
+  display: block; }
+
+.oj-filepicker-custom {
+  display: inline-block; }
+
+.oj-filepicker:not(.oj-filepicker-custom) {
+  max-width: 400px;
+  width: 100%; }
+
+.oj-filepicker-dropzone {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: center;
+  align-items: center;
+  height: 100px;
+  box-sizing: border-box;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: #dfe4e7;
+  border-radius: 2px;
+  background-color: #fcfdfe; }
+
+.oj-filepicker-dropzone.oj-valid-drop,
+.oj-filepicker-dropzone:active {
+  padding: 1px;
+  border-width: 1px;
+  background-color: rgba(217, 244, 250, 0.6); }
+
+/* 
+     * Suppress focus ring
+     */
+.oj-filepicker-dropzone:not(.oj-focus-highlight):focus {
+  outline: none; }
+
+.oj-filepicker-text {
+  font-size: 1.28571rem;
+  color: #045fab;
+  text-align: center;
+  padding: 10px; }
+
+oj-progress-list:not(.oj-complete) {
+  visibility: hidden; }
+
+.oj-progresslist {
+  display: block; }
+
+.oj-progresslist-item {
+  padding: 4px 10px 4px 12px; }
+
+.oj-progresslist-info {
+  padding-left: 10px;
+  padding-right: 10px; }
+
+.oj-progresslist-error-message {
+  color: #ff0000; }
+
+.oj-progressstatus-cancel-icon {
+  padding: 4px; }
+
+.oj-progressstatus-cell {
+  width: 24px;
+  height: 24px; }
 
 /*# sourceMappingURL=oj-alta-notag.css.map */

@@ -143,7 +143,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
           cacheHolder.className = "oj-helper-module-cache";
           // it is Ok to insert the cache holder as the first element because
           // all current children of the element will be moved to the cache holder
-          ko.virtualElements.prepend(element, cacheHolder);
+          ko.virtualElements.prepend(element, cacheHolder); //@HTMLUpdateOK; cacheHolder is constructed above
         }
       };
       
@@ -674,7 +674,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     nodes.forEach(
       function(n)
       {
-        target.appendChild(n);
+        target.appendChild(n); //@HTMLUpdateOK; child nodes are module view
       }
     );
   }
@@ -818,7 +818,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
     var nodeCount = nodes.length;
     for (var i=nodeCount-1; i>=0; i--)
     {
-      ko.virtualElements.prepend(container, nodes[i]);
+      ko.virtualElements.prepend(container, nodes[i]); //@HTMLUpdateOK; nodes are the module view
     }
   }
   
@@ -1191,7 +1191,9 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * @name Options
    * @property {Promise|String|Array<Node>|DocumentFragment} view the View or a Promise for the View.
    * A value has to be a document fragment, an array of DOM nodes, or a string containing the HTML. This option takes
-   * precedence over all other ways to load a View
+   * precedence over all other ways to load a View. Note that ojModule will not be cloning the document fragment or the node array provided 
+   * by the function before using it as the module's View and applying bindings to it. If the application needs to have access to the original 
+   * document fragment or node array, it should be setting the 'view' property to a cloned copy.
    * @property {Promise|Function|Object} viewModel the ViewModel(constrcutor or instance) or a Promise for the ViewModel.
    * This option takes precedence over all other ways to load a ViewModel
    * @property {string} name ViewModel name. The name will be
@@ -1213,7 +1215,9 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
    * Knockout binding expressions.
    * @property {string} createViewFunction name of the ViewModel function used to create a View. If this parameter is 
    * specified, the ViewModel will be responsible for providing the definition of the View. The function has to return 
-   * a Promise that will be resolved to document fragment, an array of DOM nodes, or a string containing the HTML
+   * a Promise that will be resolved to document fragment, an array of DOM nodes, or a string containing the HTML. Note that ojModule will not
+   * be cloning the document fragment or the node array provided by the function before using it as the module's View and applying bindings to it.
+   * If the application needs to have access to the original document fragment or node array, it should be returning a cloned copy.
    * @property {string} cacheKey The key used to cache the View after it is no longer displayed. Setting this parameter will 
    * enable View caching. When the View is about t be cached, its Knockout bindings will not be deactivated when 
    * the View is removed from DOM tree. The cache will be discarded after when the window object is destroyed or 

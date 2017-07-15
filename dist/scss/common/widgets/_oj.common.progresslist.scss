@@ -1,0 +1,59 @@
+// Copyright (c) 2014, 2017, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.progresslist.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeProgressListClasses != false  {
+  @include module-include-once("common.progresslist") {
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-progress-list:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    .oj-progresslist {
+      display: block;
+    }
+
+    .oj-progresslist-item {
+      padding: 4px 10px 4px 12px;
+    }
+
+    .oj-progresslist-info {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    
+    .oj-progresslist-error-message {
+      color: $textColorError;
+    }
+
+    .oj-progressstatus-done-icon {
+      @extend .oj-fwk-icon-status-confirmation3;
+    }
+
+    .oj-progressstatus-error-icon {
+      @extend .oj-fwk-icon-status-error3;
+    }
+
+    .oj-progressstatus-cancel-icon {
+      @extend .oj-fwk-icon-cross;
+      @extend .oj-fwk-icon;
+      //center the cancel icon because its size is 16x16 and all other icons are 24x24
+      padding: 4px;
+    }
+    
+    // To prevent jumpy when progress status changing from progress circle to other icons
+    .oj-progressstatus-cell {
+      width: 24px;
+      height: 24px;
+    }
+
+  }
+}

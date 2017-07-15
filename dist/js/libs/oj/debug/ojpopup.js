@@ -335,7 +335,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * when the popup opens.  The values of these properties describe horizontal and
            * vertical alignments.</p>
            *
-           * @deprecated <a href="http://api.jqueryui.com/position/">jQuery UI position</a> syntax in v3.0.0
+           * @deprecated <a href="http://api.jqueryui.com/position/">jQuery UI
+           * position</a> syntax is deprectated in v3.0.0; Use of a percent unit with
+           * "my" or "at" is not supported.
            * @expose
            * @memberof! oj.ojPopup
            * @instance

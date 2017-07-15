@@ -1514,67 +1514,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         
         return null;
       },
-      /**
-       * Return the subcomponent node represented by the documented locator attribute values.
-       * <p>
-       * To lookup a cell the locator object should have the following:
-       * <br>(Note: This will return the cell based on displayed index. ie, colspan defined cells
-       * <br>will span the specified number of positions. For example, if the first td has colspan 3
-       * <br>then calling with columnIndex=2 will return that td.)
-       * <ul>
-       * <li><b>subId</b>: 'oj-table-cell'</li>
-       * <li><b>rowIndex</b>: the zero based absolute row index</li>
-       * <li><b>columnIndex</b>: the zero based absolute column index</li>
-       * </ul>
-       *
-       * To lookup a header the locator object should have the following:
-       * <br>(Note: This will return the header based on displayed index. ie, colspan defined headers
-       * <br>will span the specified number of positions. For example, if the first th has colspan 3
-       * <br>then calling with index=2 will return that th.)
-       * <ul>
-       * <li><b>subId</b>: 'oj-table-header'</li>
-       * <li><b>index</b>: the zero based absolute column index.</li>
-       * </ul>
-       *
-       * To lookup a sort ascending link the locator object should have the following:
-       * <br>(Note: This will return the link based on displayed index. ie, colspan defined headers
-       * <br>will span the specified number of positions.)
-       * <ul>
-       * <li><b>subId</b>: 'oj-table-sort-ascending'</li>
-       * <li><b>index</b>: the zero based absolute column index</li>
-       * </ul>
-       *
-       * To lookup a sort descending link the locator object should have the following:
-       * <br>(Note: This will return the link based on displayed index. ie, colspan defined headers
-       * <br>will span the specified number of positions.)
-       * <ul>
-       * <li><b>subId</b>: 'oj-table-sort-descending'</li>
-       * <li><b>index</b>: the zero based absolute column index</li>
-       * </ul>
-       *
-       * To lookup a footer the locator object should have the following:
-       * <br>(Note: This will return the footer based on displayed index. ie, colspan defined footers
-       * <br>will span the specified number of positions.)
-       * <ul>
-       * <li><b>subId</b>: 'oj-table-footer'</li>
-       * <li><b>index</b>: the zero based absolute column index.</li>
-       * </ul>
-       *
-       * @expose
-       * @memberof! oj.ojTable
-       * @instance
-       * @override
-       * @param {Object} locator An Object containing at minimum a subId property
-       *        whose value is a string, documented by the component, that allows
-       *         the component to look up the subcomponent associated with that
-       *        string.  It contains:<p>
-       *        component: optional - in the future there may be more than one
-       *        component contained within a page element<p>
-       *        subId: the string, documented by the component, that the component
-       *        expects in getNodeBySubId to locate a particular subcomponent
-       * @returns {Array.<(Element|null)>|Element|null} the subcomponent located by the subId string passed
-       *          in locator, if found.<p>
-       */
+      //** @inheritdoc */
       'getNodeBySubId': function(locator)
       {
         if (locator == null)
@@ -1634,22 +1574,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         // Non-null locators have to be handled by the component subclasses
         return null;
       },
-      /**
-       * Returns the subId string for the given child DOM node.  For more details, see
-       * <a href="#getNodeBySubId">getNodeBySubId</a>.
-       *
-       * @expose
-       * @override
-       * @memberof oj.ojTable
-       * @instance
-       *
-       * @param {!Element} node - child DOM node
-       * @param {boolean} [ignoreSortIcons=false] - true to ignore sort icons and treat them as table header; false to return subId for them. 
-       * @return {Object|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-       *
-       * @example <caption>Get the subId for a certain DOM node:</caption>
-       * var subId = $( ".selector" ).ojTable( "getSubIdByNode", nodeInsideComponent );
-       */
+      //** @inheritdoc */
       'getSubIdByNode': function(node, ignoreSortIcons)
       {
         var cell = $(node).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
@@ -1809,9 +1734,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           this._on(tableContainer, this._eventsContainer);
         }
         this._registerDomEventListeners();
-        // register event listeners for table on the datasource so that the table
-        // component is notified when rows are added, deleted, etc from the datasource.
-        this._registerDataSourceEventListeners();
+
         // cache the options
         this._cachedOptions = $.extend(true, {}, this.options);
         this._setEditableRowIdx(null);
@@ -1827,7 +1750,44 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         this._super();
         // create the context menu
         this._getTableDomUtils().createContextMenu(this._handleContextMenuSelect.bind(this));
-        this._initFetch();
+        this._isInitFetch = true;
+      },
+      /**
+       * Sets up needed resources for table, for example, add
+       * listeners.
+       * @protected
+       * @override
+       * @memberof! oj.ojTable
+       */
+      _SetupResources: function ()
+      {
+        this._super();
+        this._registerResizeListener();
+        // register event listeners for table on the datasource so that the table
+        // component is notified when rows are added, deleted, etc from the datasource.
+        this._registerDataSourceEventListeners();
+        if (this._isInitFetch)
+        {
+          this._initFetch();
+          this._isInitFetch = false;
+        }
+        else
+        {
+          this._invokeDataFetchRows();
+        }
+      },
+      /**
+       * Releases resources for table.
+       * @protected
+       * @override
+       * @memberof! oj.ojTable
+       */
+      _ReleaseResources: function ()
+      {
+        this._super();
+        // unregister the listeners on the datasource
+        this._unregisterDataSourceEventListeners();
+        this._unregisterResizeListener();
       },
       /**
        * <p>Notifies the component that its subtree has been connected to the document programmatically after the component has
@@ -1933,11 +1893,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
        */
       _destroy: function()
       {
-        var data = this._getData();
-        // unregister the listeners on the datasource
-        this._unregisterDataSourceEventListeners();
-        this._unregisterResizeListener();
-
         this._getTableDomUtils().getTableBody().removeAttr(oj.Components._OJ_CONTAINER_ATTR);
 
         this.element.children().remove('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_HEADER_CLASS);
@@ -2034,8 +1989,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this.disable();
         }
-
-        this._registerResizeListener();
       },
       /**
        * @override
@@ -4952,6 +4905,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
             {
               return;
             }
+            this._getTableDomUtils().getTable().focus();
 
             if (event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
             {
@@ -5056,21 +5010,27 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
           {
             var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
             var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
-            
-            if (!this._hasEditableRow())
+            if (this._isTableEditMode())
             {
-              this._setTableEditable(true, false, 0, true, event);
-              return;
-            }
-            var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
-            
-            if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
-            {
-              this._setNextRowEditable(columnIdx, event);
+              if (!this._hasEditableRow())
+              {
+                this._setTableEditable(true, false, 0, true, event);
+                return;
+              }
+              var columnIdx = this._getTableDomUtils().getElementColumnIdx($(event.target));
+
+              if (!event[this._KEYBOARD_CODES._KEYBOARD_MODIFIER_SHIFT])
+              {
+                this._setNextRowEditable(columnIdx, event);
+              }
+              else
+              {
+                this._setPreviousRowEditable(columnIdx, event);
+              }
             }
             else
             {
-              this._setPreviousRowEditable(columnIdx, event);
+              this._setTableActionableMode(true);
             }
           }
         }
@@ -8434,8 +8394,8 @@ oj.TableDomUtils.prototype.createTableBodyRowTouchSelectionAffordance = function
     topAffordance.data('rowIdx', rowIdx);
     var topIcon = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
     topIcon.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_TOP_ICON_CLASS);
-    topIcon.attr('role', 'button');
-    topIcon.attr('aria-label', this.component.getTranslatedString('labelAccSelectionAffordanceTop'));
+    topIcon.attr(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
+    topIcon.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceTop'));
     topIcon.data('rowIdx', rowIdx);
     topAffordance.append(topIcon); //@HTMLUpdateOK
 
@@ -8445,8 +8405,8 @@ oj.TableDomUtils.prototype.createTableBodyRowTouchSelectionAffordance = function
     bottomAffordance.data('rowIdx', rowIdx);
     var bottomIcon = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
     bottomIcon.addClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_TOUCH_SELECTIOM_AFFORDANCE_BOTTOM_ICON_CLASS);
-    bottomIcon.attr('role', 'button');
-    bottomIcon.attr('aria-label', this.component.getTranslatedString('labelAccSelectionAffordanceBottom'));
+    bottomIcon.attr(oj.TableDomUtils.DOM_ATTR._ROLE, 'button');
+    bottomIcon.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, this.component.getTranslatedString('labelAccSelectionAffordanceBottom'));
     bottomIcon.data('rowIdx', rowIdx);
     bottomAffordance.append(bottomIcon); //@HTMLUpdateOK
     
@@ -11692,7 +11652,9 @@ oj.TableDomUtils.DOM_ATTR =
     _HREF: 'href',
     _HEADERS: 'headers',
     _COLSPAN: 'colspan',
-    _ROLE: 'role'
+    _ROLE: 'role',
+    _ARIA_LABEL: 'aria-label',
+    _ARIA_HIDDEN: 'aria-hidden'
   };
   
 /**
@@ -11876,7 +11838,8 @@ oj.TableDomUtils._OPTION_DISPLAY =
  *     </tr>
  *     <tr>
  *       <td><kbd>Enter</kbd></td>
- *       <td>If the table <code class="prettyprint">editMode</code> is rowEdit then make the current row editable.</td>
+ *       <td>If the table <code class="prettyprint">editMode</code> is rowEdit then make the current row editable. 
+ *           <br>If the table <code class="prettyprint">editMode</code> is none then toggle the current row to actionable mode if there exists a tabbable element in the row. Once toggled to actionable mode, focus will be moved to be first tabbable element in the row.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>F2</kbd></td>
@@ -13119,6 +13082,7 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
   headerColumnAscDiv.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_CLASS);
   headerColumnDiv.append(headerColumnAscDiv); //@HTMLUpdateOK
   var headerColumnAscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
+  headerColumnAscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
   headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_LINK_CLASS);
   headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
   headerColumnAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ASC_ICON_CLASS);
@@ -13135,7 +13099,7 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
   headerColumnAccAscLink.attr(oj.TableDomUtils.DOM_ATTR._HREF, '#');
   headerColumnAccAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_ASC_LINK_CLASS);
   headerColumnAccAscLink.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  headerColumnAccAscLink.text(component.getTranslatedString('labelSortAsc') + ' ' + column.headerText);
+  headerColumnAccAscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortAsc') + ' ' + column.headerText);
   headerColumnAscDiv.append(headerColumnAccAscLink); //@HTMLUpdateOK
   
   var headerColumnSortPlaceholderDiv = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._DIV));
@@ -13154,6 +13118,7 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
   headerColumnDiv.append(headerColumnDscDiv); //@HTMLUpdateOK
 
   var headerColumnDscLink = $(document.createElement(oj.TableDomUtils.DOM_ELEMENT._A));
+  headerColumnDscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_HIDDEN, 'true');
   headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_LINK_CLASS);
   headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._WIDGET_ICON_CLASS);
   headerColumnDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_DSC_ICON_CLASS);
@@ -13168,7 +13133,7 @@ oj.TableRendererUtils.columnHeaderSortableIconRenderer = function(component, con
   headerColumnAccDscLink.attr(oj.TableDomUtils.DOM_ATTR._HREF, '#');
   headerColumnAccDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_ACC_DSC_LINK_CLASS);
   headerColumnAccDscLink.addClass(oj.TableDomUtils.CSS_CLASSES._HIDDEN_CONTENT_ACC_CLASS);
-  headerColumnAccDscLink.text(component.getTranslatedString('labelSortDsc') + ' ' + column.headerText);
+  headerColumnAccDscLink.attr(oj.TableDomUtils.DOM_ATTR._ARIA_LABEL, component.getTranslatedString('labelSortDsc') + ' ' + column.headerText);
   headerColumnDscDiv.append(headerColumnAccDscLink); //@HTMLUpdateOK
   
   // call the delegateRenderer

@@ -729,11 +729,20 @@ oj.OffcanvasUtils._toggleOuterWrapper = function(offcanvas, drawer, test)
 
 oj.OffcanvasUtils._afterCloseHandler = function(offcanvas)
 {
+  // - customsyntax memory leak: offcanvas needs to implement _disconnected
+  //unregister dismiss handler
+  oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
+
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   var isPin = oj.OffcanvasUtils._isPin(offcanvas);
 
   //validate offcanvas
-  var curOffcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+  var curOffcanvas = null;
+  try {
+    curOffcanvas = $.data(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
+  }
+  catch (e) {
+  }
   if (curOffcanvas !== offcanvas)
     return;
 
@@ -751,9 +760,6 @@ oj.OffcanvasUtils._afterCloseHandler = function(offcanvas)
 
   //Remove the glassPane if offcanvas is modal
   oj.OffcanvasUtils._removeModality(offcanvas, drawer);
-
-  //unregister dismiss handler
-  oj.OffcanvasUtils._unregisterCloseHandler(offcanvas);
 
   if (isPin) {
     oj.OffcanvasUtils._getOuterWrapper(drawer).removeClass(oj.OffcanvasUtils.PIN_WRAPPER_SELECTOR);

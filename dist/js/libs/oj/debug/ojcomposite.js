@@ -248,14 +248,14 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
 
       oj.CompositeTemplateRenderer.renderTemplate(params, element, view, bindingContext);
 
-      // Deprecated 3.0.0
-      oj.CompositeElementBridge._fireEvent('ready', element);
-
       // Set flag when we can fire property change events
       bridge._READY_TO_FIRE = true;
 
       // Resolve the component busy state 
       bridge.GetDelayedReadyPromise().resolvePromise();
+      
+      // Deprecated 3.0.0
+      oj.CompositeElementBridge._fireEvent('ready', element);
     });
   },
 
@@ -645,14 +645,18 @@ oj.CompositeElementBridge._getDomNodes = function(content)
   }
   else if (oj.CompositeElementBridge._isDocumentFragment(content))
   {
+    var clonedContent = content.cloneNode(true);
     var nodes = [];
-    for (var i = 0; i < content.childNodes.length; i++)
-      nodes.push(content.childNodes[i]);
+    for (var i = 0; i < clonedContent.childNodes.length; i++)
+      nodes.push(clonedContent.childNodes[i]);
     return nodes;
   }
   else if (Array.isArray(content))
   {
-    return content.splice(0);
+    var clonedContent = [];
+    for (var i = 0; i < content.length; i++)
+      clonedContent.push(content[i].cloneNode(true));
+    return clonedContent;
   }
   else
   {
@@ -970,7 +974,7 @@ var _UNIQUE = '_ojcomposite';
  *  the "properties", "methods", "events" or "slots" objects. Any metadata in an extension field will be ignored.</p>
  *  
  * <p>The Metadata JSON object should have the following required properties: "name", "version", "jetVersion" and 
- *  the following optional properties: "description", compositeDependencies", properties", "methods", "events", or "slots". 
+ *  the following optional properties: "description", "compositeDependencies", "icon", "displayName", "properties", "methods", "events", or "slots". 
  *  See the tables below for descriptions of these properties.</p>
  *  
  * <p>Keys defined in the "properties" top level object should map to the composite component's properties following
@@ -1025,13 +1029,55 @@ var _UNIQUE = '_ojcomposite';
  *       <td>{Object<string, string>}</td>
  *       <td>Dependency to semantic version mapping for composite dependencies. 
  *         3rd party libraries should not be included in this mapping. Not used at run time.
- *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code></td>
+ *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code></td> 
  *     </tr>
  *     <tr>
  *       <td class="name"><code>description</code></td>
  *       <td>no</td>
  *       <td>{string}</td>
- *       <td>A high-level description for the component. Not used at run time.</td>
+ *       <td>A high-level description for the component. Not used at run time.</td> 
+ *     </tr> 
+ *     <tr>
+ *       <td class="name"><code>displayName</code></td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>A user friendly, translatable name of the component. Not used at run time.</td> 
+ *     </tr> 
+ *     <tr>
+ *       <td class="name"><code>icon</code></td>
+ *       <td>no</td>
+ *       <td>{Object}</td>
+ *       <td>One or more optional images for representing the component within a design time environment's component palette. The object has the following properties:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>iconPath</code></td>
+ *               <td>{string}</td>
+ *               <td>A relative path to the default (enabled) icon.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>selectedIconPath</code></td>
+ *               <td>{string}</td>
+ *               <td>A relative path to the icon that represents the selected state of the component.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>hoverIconPath</code></td>
+ *               <td>{string}</td>
+ *               <td>A relative path to the icon that represents the hover state of the component.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *         </br>
+ *         Not used at runtime. 
+ *      </td>
  *     </tr>
  *     <tr>
  *       <td class="name"><code>properties</code></td>
@@ -1059,7 +1105,7 @@ var _UNIQUE = '_ojcomposite';
  *     </tr>
  *   </tbody>
  * </table>
- * 
+ *
  * <h3>Properties</h3>
  * <table class="params">
  *   <thead>
@@ -1088,6 +1134,161 @@ var _UNIQUE = '_ojcomposite';
  *               <td>A description for the property. Not used at run time.</td>
  *             </tr>
  *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the property. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>displayOrder</code></td>
+ *               <td>{number}</td>
+ *               <td>Display ranking of the property (nth property). Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>editable</code></td>
+ *               <td>{boolean}</td>
+ *               <td>Specifies whether the property can be changed within a design time environment. True by default. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>enumValues</code></td>
+ *               <td>{Array<string>}</td>
+ *               <td>An optional list of valid enum values for a string property. An error is thrown if a property value does not
+ *                 match one of the provided enumValues.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>max</code></td>
+ *               <td>{number}</td>
+ *               <td>Validation metadata for number type properties. Specifies the high end of a possible range of values. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>min</code></td>
+ *               <td>{number}</td>
+ *               <td>Validation metadata for number type properties. Specifies the low end of a possible range of values. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>priority</code></td>
+ *               <td>{string}</td>
+ *               <td>Sets the priority for this property. Valid settings are:
+ *                  <ul>
+ *                    <li>
+ *                      <em>"required"</em> - required to be set to a valid value at run time</li>
+ *                    <li>
+ *                      <em>"primary"</em> - specifying a value for this property should be encouraged when creating an instance of this component in a design time environment (e.g., provide a field for this property in a popup dialog at create time when the component is dragged onto the page from the component palette).</li>
+ *                    <li>
+ *                      <em>"optional"</em> - the default, if unspecified</li>
+ *                  </ul>
+ *                   Not used at run time.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>propertyEditorHint</code></td>
+ *               <td>{string}</td>
+ *               <td>Hint to the design time regarding what UI element to use for editing this property in the design time.  Valid settings:
+ *                 <ul>
+ *                   <li>
+ *                      <em>"checkbox"</em> (input form of type "checkbox")
+ *                   </li>
+ *                   <li>
+ *                      <em>"checkboxSet"</em> (multiple checkboxes allowing multi select)
+ *                   </li>
+ *                   <li>
+ *                      <em>"combobox"</em> (editable single selection)
+ *                   </li>
+ *                   <li>
+ *                      <em>"enumeration"</em> (icon-based radio buttons) 
+ *                   </li>
+ *                   <li>
+ *                      <em>"inputDate"</em> (editable text field handling Date type input)
+ *                   </li>
+ *                   <li> 
+ *                      <em>"inputText"</em> (input form of type "text")
+ *                   </li>
+ *                   <li>
+ *                      <em>"none"</em> (do not display in the property inspector)
+ *                   </li>
+ *                   <li>
+ *                      <em>"multiSelect" </em>(multiple selection allowed if the property is an enum, non-editable)
+ *                   </li>
+ *                   <li>
+ *                      <em>"radioSet"</em> (text-based radio buttons)
+ *                   </li>
+ *                   <li>
+ *                      <em>"select"</em> (single select dropdown, non-editable values)
+ *                   </li>  
+ *                 </ul>
+ *                 Not used at run time.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>propertyEditorValues</code></td>
+ *               <td>{Object}</td>
+ *               <td>Additional design time metadata that enhances the <code>enumValues</code> run time metadata. 
+ *                   The value is an Object with properties matching the values in the <code>enumValues</code> array. 
+ *                   The corresponding value for each key is an Object with the following properties:
+ *                   <h6>Properties</h6>
+ *                   <table class="params">
+ *                     <thead>
+ *                       <tr>
+ *                         <th>Name</th>
+ *                         <th>Type</th>
+ *                         <th>Description</th>
+ *                       </tr>
+ *                     </thead>
+ *                     <tbody>
+ *                       <tr>
+ *                         <td class="name"><code>displayName</code></td>
+ *                         <td>{string}</td>
+ *                         <td>A displayable, translatable label for the value.</td>
+ *                       </tr>
+ *                       <tr>
+ *                         <td class="name"><code>icon</code></td>
+ *                         <td>{Object}</td>
+ *                         <td>One or more optional images for representing the value. The object has the following properties:
+ *                           <h6>Properties</h6>
+ *                           <table class="params">
+ *                             <thead>
+ *                               <tr>
+ *                                 <th>Name</th>
+ *                                 <th>Type</th>
+ *                                 <th>Description</th>
+ *                               </tr>
+ *                             </thead>
+ *                             <tbody>
+ *                               <tr>
+ *                                 <td class="name"><code>iconPath</code></td>
+ *                                 <td>{string}</td>
+ *                                 <td>A relative path to the icon that represents the value.</td>
+ *                               </tr>
+ *                               <tr>
+ *                                 <td class="name"><code>selectedIconPath</code></td>
+ *                                 <td>{string}</td>
+ *                                 <td>A relative path to the icon that represents the selected state of the value.</td>
+ *                               </tr>
+ *                               <tr>
+ *                                 <td class="name"><code>hoverIconPath</code></td>
+ *                                 <td>{string}</td>
+ *                                 <td>A relative path to the icon that represents the hover state of the value.</td>
+ *                               </tr>
+ *                             </tbody>
+ *                           </table>
+ *                         </td> 
+ *                       </tr>
+ *                     </tbody>
+ *                   </table>
+ *                   </br>
+ *                   Not used at run time.
+ *             <tr>
+ *               <td class="name"><code>properties</code></td>
+ *               <td>{Object}</td>
+ *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
+ *                 be set using dot notation in the attribute. See the <a href="#subproperties">Subproperties</a> section for more details on 
+ *                 working with subproperties.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>propertyGroup</code></td>
+ *               <td>{string}</td>
+ *               <td>Identifies a grouping bucket for this property.  For example, design time tools would typically group properties associated with data binding under a "Data" <code>propertyGroup</code>. Ordering within a <code>propertyGroup</code> is determined by <code>displayOrder</code>. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>readOnly</code></td>
  *               <td>{boolean}</td>
  *               <td>Determines whether a property can be updated outside of the ViewModel.
@@ -1095,6 +1296,11 @@ var _UNIQUE = '_ojcomposite';
  *                 components within the composite. This property only needs to be defined for the top level property, 
  *                 with subproperties inheriting that value.</td>
  *             </tr>
+ *             <tr>
+ *               <td class="name"><code>translatable</code></td>
+ *               <td>{boolean}</td>
+ *               <td>True if the <em>value</em> of this property is eligible to be included when application resources are translated for Internationalization. False by default. Not used at run time.</td>
+ *             </tr> 
  *             <tr>
  *               <td class="name"><code>type</code></td>
  *               <td>{string}</td>
@@ -1115,19 +1321,6 @@ var _UNIQUE = '_ojcomposite';
  *               <td>Determines whether an expression bound to this property should be written back to. False by default.
  *                 If writeback is true, any updates to the property will result in an update to the expression. This property only needs to be defined
  *                 for the top level property, with subproperties inheriting that value.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>enumValues</code></td>
- *               <td>{Array<string>}</td>
- *               <td>An optional list of valid enum values for a string property. An error is thrown if a property value does not
- *                 match one of the provided enumValues.</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>properties</code></td>
- *               <td>{Object}</td>
- *               <td>A nested properties object for complex properties. Subproperties exposed using nested properties objects in the metadata can
- *                 be set using dot notation in the attribute. See the <a href="#subproperties">Subproperties</a> section for more details on 
- *                 working with subproperties.</td>
  *             </tr>
  *           </tbody>
  *         </table>
@@ -1162,6 +1355,11 @@ var _UNIQUE = '_ojcomposite';
  *               <td class="name"><code>description</code></td>
  *               <td>{string}</td>
  *               <td>A description for the method. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the method. Not used at run time.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>internalName</code></td>
@@ -1223,6 +1421,11 @@ var _UNIQUE = '_ojcomposite';
  *               <td>A description for the event. Not used at run time.</td>
  *             </tr>
  *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the event. Not used at run time.</td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>detail</code></td>
  *               <td>{object}</td>
  *               <td>Describes the properties available on the event's detail property which contains data passed when initializing the event. Not used at run time.</p>
@@ -1277,13 +1480,18 @@ var _UNIQUE = '_ojcomposite';
  *               <td>{string}</td>
  *               <td>A description for the slot. Not used at run time.</td>
  *             </tr>
+ *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the slot. Not used at run time.</td>
+ *             </tr> 
  *           </tbody>
  *         </table>
  *       </td>
  *     </tr>
  *   </tbody>
  * </table>
- * 
+ *
  * <h3>Example of Run Time Metadata</h3>
  * <p>The JET framework will ignore "extension" fields. Extension fields cannot be defined at 
  *   the first level of the "properties", "methods", "events", or "slots" objects.</p>

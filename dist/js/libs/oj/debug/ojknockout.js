@@ -34,7 +34,7 @@ GlobalChangeQueue.prototype.registerComponentChanges = function(tracker)
     this._trackers.push(tracker);
     if (!this._delayTimer)
     {
-      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);
+      this._delayTimer = setTimeout(oj.Object.createCallback(this, this._deliverChangesImpl), 1);//@HTMLUpdateOK; delayting our own callback
     }
   }
 };
@@ -619,7 +619,7 @@ oj.ComponentBinding.prototype._initComponent = function(element, ctx)
 oj.ComponentBinding.__CreateEvaluator = function(expr)
 {
   /*jslint evil:true */
-  return new Function("$context", "with($context){with($data||{}){return " + expr + ";}}");
+  return new Function("$context", "with($context){with($data||{}){return " + expr + ";}}"); //@HTMLUpdateOK; binding expression evaluation
 }
 
 /**
@@ -1385,7 +1385,7 @@ ko.bindingHandlers['ojContextMenu'] =
                 menu.__contextMenuPressHoldJustEnded(true);
                 setTimeout(function() { 
                     menu.__contextMenuPressHoldJustEnded(false);
-                }, touchendMousedownThreshold);
+                }, touchendMousedownThreshold); //@HTMLUpdateOK; delaying our own callback
             });
         }
 
@@ -1445,7 +1445,7 @@ ko.bindingHandlers['ojContextMenu'] =
             doubleOpenType = event.type;
             doubleOpenTimer = setTimeout(function(){ 
               doubleOpenType = null;
-            }, doubleOpenThreshold);
+            }, doubleOpenThreshold); //@HTMLUpdateOK; delaying our own callback
           }
         }
     };
@@ -1505,7 +1505,7 @@ ko.bindingHandlers['ojContextMenu'] =
             // start a pressHold timer on touchstart.  If not cancelled before 750ms by touchend/etc., will launch the CM.
             if (event.type === "touchstart") {
                 touchInProgress = true;
-                pressHoldTimer = setTimeout(launch.bind(undefined, event, "touch", true), pressHoldThreshold);
+                pressHoldTimer = setTimeout(launch.bind(undefined, event, "touch", true), pressHoldThreshold);//@HTMLUpdateOK; delaying our own callback
             }
 
             return true;
@@ -1922,7 +1922,10 @@ oj.__ExpressionPropertyUpdater = function(element, bindingContext)
     var names = Object.keys(_expressionListeners);
     for (var i=0; i<names.length; i++)
     {
-      _expressionListeners[names[i]]['dispose']();
+      var listener = _expressionListeners[names[i]];
+      // listener might be null if this attribute changed from an expression to a literal
+      if (listener)
+        listener['dispose']();
     }
     _expressionListeners = {};
 
@@ -2622,19 +2625,27 @@ oj.koStringTemplateEngine.install = function()
                   function()
                   {
                     //resolved
-                    setup();
+                    try 
+                    {
+                      setup();      
+                    } 
+                    catch (ex) 
+                    {
+                      bridge.notifyBindingsFailed(element);
+                      // Rethrow the exception
+                      throw ex;
+                    }
                   }
                 ),
                 _createCallbackWithIdMatching(callbackId,
                   function(reason)
                   {
+                    bridge.notifyBindingsFailed(element);
                     //rejected
                     oj.Logger.error("Component create Promise rejected. Reason: %o", 
                         reason);
                   }
                 )
-              
-              
               );
               
               
@@ -2646,8 +2657,8 @@ oj.koStringTemplateEngine.install = function()
       );
   
       ko.utils.domNodeDisposal.addDisposeCallback(element, cleanup);
-      
     
+  
   
     }
   }

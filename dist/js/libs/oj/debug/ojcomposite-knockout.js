@@ -147,6 +147,9 @@ oj.CompositeTemplateRenderer._storeNodes = function(element, view)
     assignableNodes.forEach(function (node) {
       nodeStorage.appendChild(node); // @HTMLUpdateOK
     });
+    // Notifies JET components inside nodeStorage that they have been hidden
+    if (oj.Components)
+      oj.Components.subtreeHidden(nodeStorage);
   }
   return nodeStorage;
 };
@@ -253,7 +256,12 @@ ko['bindingHandlers']['_ojSlot_'] =
           // Save a reference to the next node before we move it
           var next = ko.virtualElements.nextSibling(node);
           if (node['__oj_slots'] != null)
+          {
             nodeStorage.appendChild(node); // @HTMLUpdateOK
+            // Notifies JET components in node that they have been hidden
+            if (oj.Components)
+              oj.Components.subtreeHidden(node);
+          }
           node = next;
         }
       }
@@ -279,6 +287,15 @@ ko['bindingHandlers']['_ojSlot_'] =
         node['__oj_slots'] = unwrap(values['slot']) || '';
       }
       ko.virtualElements.setDomNodeChildren(element, assignedNodes);
+
+      // Notifies JET components in node that they have been shown
+      if (oj.Components)
+      {
+        for (var i = 0; i < assignedNodes.length; i++)
+        {
+          oj.Components.subtreeShown(assignedNodes[i]);
+        }
+      }
 
       // If no assigned nodes, let ko apply bindings to default slot content
       return {'controlsDescendantBindings' : true};

@@ -46,9 +46,9 @@ var _oldVal = _scope['oj'];
  */
 var oj = _scope['oj'] =
 {
-  'version': "3.1.0",
-  'build' : "7",
-  'revision': "34561",
+  'version': "3.2.0",
+  'build' : "4",
+  'revision': "35665",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -2988,7 +2988,10 @@ oj.Translations.setBundle = function(bundle)
 
 /**
  * Retrives a translated resource for a given key
- * @param {string} key resource key
+ * @param {string} key resource key The dot character (.) within the key string
+ * is interpreted as a separator for the name of a sub-section within the bundle.
+ * For example, 'components.chart', would be read as the 'chart' section within
+ * 'components'. Thus the key name for an individual section should never contain a dot.
  * @return {Object|string|null} resource associated with the key or null if none was found
  * @export
  */
@@ -3020,9 +3023,8 @@ oj.Translations.applyParameters = function(pattern, parameters)
 };
 
 /**
- * Retrieves a translated string after inserting optional parameters
- * @param {string} key  translations resource key
- * The key is used to retrieve a format pattern from the resource bundle.
+ * Retrieves a translated string after inserting optional parameters. 
+ * The method uses a key to retrieve a format pattern from the resource bundle.
  * Tokens like {0}, {1}, {name} within the pattern will be used to define placement
  * for the optional parameters.  Token strings should not contain comma (,) 
  * or space characters, since they are reserved for future format type enhancements.
@@ -3030,6 +3032,10 @@ oj.Translations.applyParameters = function(pattern, parameters)
  * $ { } [ ]  
  * These characters will not appear in the formatted output unless they are escaped
  * with a dollar character ('$').
+ * @param {string} key  translations resource key. The dot character (.) within the key string
+ * is interpreted as a separator for the name of a sub-section within the bundle.
+ * For example, 'components.chart', would be read as the 'chart' section within
+ * 'components'. Thus the key name for an individual section should never contain a dot.
  * 
  * @param {...string|Object|Array} var_args  - optional parameters to be inserted into the 
  * translated pattern.
@@ -3812,7 +3818,7 @@ oj.BusyContext.prototype.clear = function ()
  * "next-tick" is not waiting for the microtask queue to be exhausted. However, this may change in
  * future releases.
  *
- * @see oj.BusyContext#applicationBoostrapComplete
+ * @see oj.BusyContext#applicationBootstrapComplete
  * @since 2.1.0
  * @export
  * @param {number=} timeout "optional" maximum period in milliseconds the resultant promise
@@ -3833,7 +3839,7 @@ oj.BusyContext.prototype.whenReady = function (timeout)
     function()
     {
       oj.Logger.log("BusyContext.whenReady: bootstrap mediator ready scope=%s", debugScope);
-      
+
       // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
       // Doing so will allow us to take into account any busy states added in response to the pending updates
       oj.BusyContext._deliverThrottledUpdates();
@@ -3873,7 +3879,7 @@ oj.BusyContext.prototype.whenReady = function (timeout)
         error = new Error(expiredText + 'while the application is loading.' +
           ' Busy state enabled by setting the "window.oj_whenReady = true;" global variable.' +
           ' Application bootstrap busy state is released by calling' +
-          ' "oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();".');
+          ' "oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();".');
       }
        else
        {
@@ -3978,7 +3984,7 @@ oj.BusyContext.prototype._evalBusyness = function()
   var debugScope = this._getDebugScope();
 
   oj.Logger.log("BusyContext._evalBusyness: begin scope='%s'", debugScope);
-  
+
   // Since we are executing this code on 'next tick', it is safe to flush any JET throttled updates.
   // Doing so will allow us to take into account any busy states added in response to the pending updates
   oj.BusyContext._deliverThrottledUpdates();
@@ -4017,7 +4023,7 @@ oj.BusyContext.prototype._evalBusyness = function()
  * &lt;head&gt;
  *   &lt;script type=&quot;text/javascript&quot;&gt;
  *     // The "oj_whenReady" global variable enables a strategy that the busy context whenReady,
- *     // will implicitly add a busy state, until the application calls applicationBoostrapComplete
+ *     // will implicitly add a busy state, until the application calls applicationBootstrapComplete
  *     // on the busy state context.
  *     window["oj_whenReady"] = true;
  *   &lt;/script&gt;
@@ -4032,26 +4038,32 @@ oj.BusyContext.prototype._evalBusyness = function()
  *   function(ko, $, app)
  *   {
  *     // release the application bootstrap busy state
- *     oj.Context.getPageContext().getBusyContext().applicationBoostrapComplete();
+ *     oj.Context.getPageContext().getBusyContext().applicationBootstrapComplete();
  *     ...
  *     ...
  *   });
  * </code></pre>
  *
- * @since 2.1.0
+ * @since 3.2.0
  * @export
  * @returns {void}
  */
-oj.BusyContext.prototype.applicationBoostrapComplete = function ()
+oj.BusyContext.prototype.applicationBootstrapComplete = function ()
 {
   var debugScope = this._getDebugScope();
-  oj.Logger.log("BusyContext.applicationBoostrapComplete: begin scope='%s'", debugScope);
+  oj.Logger.log("BusyContext.applicationBootstrapComplete: begin scope='%s'", debugScope);
 
   oj.BusyContext._BOOTSTRAP_MEDIATOR.notifyComplete();
 
-  oj.Logger.log("BusyContext.applicationBoostrapComplete: end scope='%s'", debugScope);
+  oj.Logger.log("BusyContext.applicationBootstrapComplete: end scope='%s'", debugScope);
 };
 
+/**
+ * @deprecated in v3.2.0; see {@link oj.BusyContext#applicationBootstrapComplete}
+ * @since 2.1.0
+ * @export
+ */
+oj.BusyContext.prototype.applicationBoostrapComplete = oj.BusyContext.prototype.applicationBootstrapComplete;
 
 /**
  * @ignore

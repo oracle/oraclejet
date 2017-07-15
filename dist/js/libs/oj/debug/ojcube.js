@@ -1807,17 +1807,7 @@ oj.CubeDataGridDataSource.prototype._getIndex = function(keys, axis, retObj) {
 };
 
 /**
- * Performs a sort on the data source.
- * @param {Object} criteria the sort criteria.  Specifies null to reset sort state.
- * @param {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @param {Object} criteria.key The key that identifies which header to sort
- * @param {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
- * @param {Object} callbacks the callbacks to be invoke upon completion of the sort operation.  The callback
- *        properties are "success" and "error".
- * @param {function()} callbacks.success the callback to invoke when the sort completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when sort failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
- *        You can specify the callback object for each callbacks using the "success" and "error" properties.
+ * @ignore
  * @export
  */
 oj.CubeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
@@ -1826,16 +1816,7 @@ oj.CubeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbac
 };
 
 /**
- * Moves a row from one location to another.
- * @param {Object} rowToMove the key of the row to move
- * @param {Object} referenceRow the key of the reference row which combined with position are used to determine 
- *        the destination of where the row should moved to.
- * @param {string} position The position of the moved row relative to the reference row.  
- *        Valid values are: "before", "after" 
- * @param {function()} callbacks.success the callback to invoke when the move completed successfully.  
- * @param {function({status: Object})} callbacks.error the callback to invoke when move failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
- *        You can specify the callback object for each callbacks using the "success" and "error" properties.
+ * @ignore
  * @export
  */ 
 oj.CubeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks, callbackObjects)

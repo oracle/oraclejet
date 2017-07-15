@@ -1015,7 +1015,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                             // If the active item is on the top level, let it stay active.
                             // Otherwise, blur the active item since it is no longer visible.
                             if (this.active && this.active.parents(".oj-menu").length === 1) {
-                                clearTimeout(this.timer);
+                                this._clearTimer && this._clearTimer();
                             }
                         }
                     }
@@ -1090,7 +1090,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 //Checking event.KeyCode along with event.which as currently event created by jquery-simulate.js is setting only event.keyCode for chrome/IE.
                 //This avoids test failures. This can be removed after jquery simulates event properly.
 
-                if (event.type === "focus" || event.type === "mousedown" || event.type === "touchstart" || event.which == 93 || (event.which == 121 && event.shiftKey) || event.keyCode == 93) { // Windows contextMenu key (93) or Shift-F10 (121)                    // Resolves a Mobile Safari issue that occurs because mousedown fires after the touchend.
+                if (event.type === "focus" || event.type === "mousedown" || event.type === "touchstart" || event.which == 93 || (event.which == 121 && event.shiftKey) || event.keyCode == 93) { // Windows contextMenu key (93) or Shift-F10 (121)
+                    // Resolves a Mobile Safari issue that occurs because mousedown fires after the touchend.
                     // baseComponent's contextMenu logic explains the issue more fully.
                     if (event.type === "mousedown" && _contextMenuPressHoldJustEnded) {
                         return;
@@ -1130,13 +1131,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     },
 
     _destroy: function() { // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
-      if (this.element.is(":visible"))
-        this.__dismiss();
+        if (this.element.is(":visible"))
+            this.__dismiss();
 
-      clearTimeout( this.timer );
-        delete this.timer;
+        this._clearTimer && this._clearTimer();
+        delete this._clearTimer;
 
-      // Destroy (sub)menus
+        // Destroy (sub)menus
         this.element
             .removeAttr( "aria-activedescendant" )
             .removeClass( "oj-component" )
@@ -1183,12 +1184,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         delete this._popupServiceEvents;
         delete this._usingCallback;
 
-        var closeDelayTimer = this._closeDelayTimer;
-        if (!isNaN(closeDelayTimer))
-        {
-          delete this._closeDelayTimer;
-          window.clearTimeout(closeDelayTimer);
-        }
+        var clearCloseDelayTimer = this._clearCloseDelayTimer;
+        delete this._clearCloseDelayTimer;
+        clearCloseDelayTimer && clearCloseDelayTimer();
 
         this._cancelDom && this._cancelDom.remove();
         this.element.ojHammer("destroy");
@@ -1306,9 +1304,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 this._focus( event, match );
                 if ( match.length > 1 ) {
                     this.previousFilter = character;
-                    this.filterTimer = this._delay(function() {
+                    this.filterTimer = setTimeout(function() {
                         delete this.previousFilter;
-                    }, 1000 );
+                    }.bind(this), 1000 );
                 } else {
                     delete this.previousFilter;
                 }
@@ -1560,9 +1558,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @param {!jQuery} item - The menu item to focus.  Its containing submenu, if any, must already be expanded. Must not be null or length 0.
      */
     _focus: function( event, item ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        // JQUI called blur() here.  This "if blah clearTimeout" is the only thing from that call that we (presumably) still want to do here.
+        // JQUI called blur() here.  This "if blah clear timer" is the only thing from that call that we (presumably) still want to do here.
         if ( !(event && event.type === "focus") )
-            clearTimeout( this.timer );
+            this._clearTimer && this._clearTimer();
 
         item = item.first(); // li.  Length 1.
         this._makeActive(item, event);
@@ -1579,10 +1577,10 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if ( event && event.type === "keydown" ) {
             this._close();
         } else {
-            this.timer = this._delay(function() {
-                delete this.timer;
+            this._clearTimer = this._setTimer(function() {
+                delete this._clearTimer;
                 this._close();
-            }, this.delay );
+            }, this._getSubmenuBusyStateDescription("closing"), this.delay );
         }
 
         var nested = item.children( ".oj-menu" ); // immediately nested submenu.  length 0 or 1.
@@ -1648,7 +1646,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @param {Event=} event - What triggered the menu item to blur.  May be <code class="prettyprint">null</code> or omitted.
      */
     _blur: function( event ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        clearTimeout( this.timer );
+        this._clearTimer && this._clearTimer();
         this._removeActive(event);
     },
 
@@ -2051,27 +2049,26 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     },
 
     _startOpening: function( submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
-        clearTimeout( this.timer );
+        this._clearTimer && this._clearTimer();
 
         // Don't open if already open fixes a Firefox bug that caused a .5 pixel
         // shift in the submenu position when mousing over the submenu icon
         if ( submenu.attr( "aria-hidden" ) !== "true" ) {
             return;
         }
-        if (this.timer)
-          clearTimeout(this.timer);
-        this.timer = this._delay(function() {
-            delete this.timer;
+
+        this._clearTimer = this._setTimer(function() {
+            delete this._clearTimer;
             this._close();
             this._open( submenu );
-        }, this.delay );
+        }, this._getSubmenuBusyStateDescription("closing and opening"), this.delay );
     },
 
     // opens a *sub*menu
     _open: function( submenu ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         var position = $.extend( {"of": this.active}, this._submenuPosition); // normalizeHorizontalAlignment() was already called on the ivar
 
-        clearTimeout( this.timer );
+        this._clearTimer && this._clearTimer();
         this.element.find( ".oj-menu" ).not( submenu.parents( ".oj-menu" ) )
             .hide()
             .attr( "aria-hidden", "true" )
@@ -2094,10 +2091,10 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * Same as calling _collapse(event, "eventSubtree") or _collapse(event, "all"), except that, if delay param is not passed, it collapses the menu immediately.
      */
     __collapseAll: function(event, all, delay) {
-        clearTimeout(this.timer);
+        this._clearTimer && this._clearTimer();
         var self = this;
         var collapseMenu = function() {
-            delete self.timer;
+            delete self._clearTimer;
             // If we were passed an event, look for the submenu that contains the event
             var currentMenu = all ? self.element :
                 $(event && event.target).closest(self.element.find(".oj-menu"));
@@ -2113,7 +2110,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             self.activeMenu = currentMenu;
         };
         if (delay) {
-            this.timer = this._delay(collapseMenu, delay);
+            this._clearTimer = this._setTimer(collapseMenu, this._getSubmenuBusyStateDescription("closing"), delay);
         } else {
             collapseMenu();
         }
@@ -2198,14 +2195,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if ( newItem && newItem.length ) {
             this._open( newItem.parent() );
 
-            if (this.timer)
-              clearTimeout(this.timer);
+            this._clearTimer && this._clearTimer();
 
             // Delay so Firefox will not hide activedescendant change in expanding submenu from AT
-            this.timer = this._delay(function() {
-                delete this.timer;
+            this._clearTimer = this._setTimer(function() {
+                delete this._clearTimer;
                 this._focus( event, newItem );
-            });
+            }, this._getBusyStateDescription("focusing an item"));
         }
     },
 
@@ -2381,7 +2377,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
       // implicitly dismiss the menu when the position.of is clipped in an overflow container.
       if (oj.PositionUtils.isAligningPositionClipped(props))
-        this._closeDelayTimer = this._delay($.proxy(this._closeAll, this), 1);
+        this._clearCloseDelayTimer = this._setTimer(this._closeAll, this._getSubmenuBusyStateDescription("closing"), 1);
     },
 
     // @inheritdoc
@@ -2557,6 +2553,61 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         return mediator.isOperationPending(this, operation, methodName, methodArgs);
       else
         return false;
+    },
+
+    /**
+     * Adds a busy state with the specified description.
+     *
+     * Asynchronously, after the specified delay in ms, calls callback with "this" bound to this menu instance, 
+     * and then resolves the busy state.
+     *
+     * Returns a "cancel" function that if called:
+     * - Cancels the timer, so that the callback is never called (unless it has already been called).  
+     * - Resolves the busy state.
+     * 
+     * @memberof oj.ojMenu
+     * @instance
+     * @private
+     * @param {function()} callback
+     * @param {string} description
+     * @param {number=} delay in ms. Defaults to 0.
+     * @returns {function()} a "cancel" function as described above
+     */
+    _setTimer: function (callback, description, delay) {
+        // Call this line each time rather than caching busyContext
+        var resolve = oj.Context.getContext(this.element[0]).getBusyContext().addBusyState({"description": description});
+
+        // resolve() bombs if called a 2nd time, so prevent that possibility by wrapping it in a function that can't call 
+        // it twice, and never calling resolve() directly. If that "bombs 2nd time" behavior is removed from the BusyContext 
+        // framework, can remove this "resolveOnce" wrapper var, and just call resolve() below.
+        var resolveOnce = function() {
+            if (resolve) {
+                resolve();
+                resolve = null;
+            }
+        };
+
+        var self = this;
+
+        var id = setTimeout(function() {
+            callback.bind(self)();
+            resolveOnce();
+        }, delay || 0);
+
+        return function() {
+            clearTimeout(id);
+            resolveOnce();
+        };
+    },
+
+    // action is "focusing an item", ...
+    _getBusyStateDescription: function (action) {
+        return "Menu with id '" + this.element.attr("id") + "' is busy " + action + ".";
+    },
+
+    // action is "opening", "closing", "closing and opening", ...
+    _getSubmenuBusyStateDescription: function (action) {
+        return this._getBusyStateDescription(action + " a submenu");
     }
 
     // API doc for inherited methods with no JS in this file:

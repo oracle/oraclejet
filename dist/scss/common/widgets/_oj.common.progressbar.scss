@@ -8,12 +8,14 @@
         
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
-      oj-progressbar:not(.oj-complete) {
+      oj-progressbar:not(.oj-complete),
+      oj-progress:not(.oj-complete){
         visibility: hidden;
       }      
     }
     
-    oj-progressbar {
+    oj-progressbar,
+    oj-progress {
       display:block;
     }
 
@@ -57,6 +59,36 @@
     // Add border for high contrast mode where the background color can't be seen
     .oj-hicontrast .oj-progressbar-value {
       border: 1px dashed $progressbarBorderColor;
+    }
+
+
+    /* progress-circle */
+    /* --------------------------------------------------------------- */
+
+    .oj-progress-circle {
+      position: relative; 
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+    }
+
+    .oj-progress-circle-base {
+      fill: transparent;
+      stroke-width: 10%;
+      stroke: $progressCircleBgColor;
+    }
+ 
+    .oj-progress-circle-value {
+      stroke: $progressbarValueBgColor;
+    }
+ 
+    .oj-progress-circle-transform {
+      transform: rotate(-90deg); 
+    }
+    
+    .oj-progress-circle-overlay {
+      background-size: cover;
+      background-image: oj-common-image-url("spinner_full.gif");
     }
   }
 }

@@ -260,6 +260,64 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
 
 
+    .oj-fwk-icon-status-confirmation3 {
+      width:  24px;
+      height: 24px;
+      font-size: 24px;
+      display: inline-block;
+      background-repeat: no-repeat;
+      background-position: top left;
+      background-size: 100%;
+      background-image: oj-common-image-url('status_confirmation.svg');
+    }
+
+    /* in high-contrast mode, background-image disappears, so we have to use content */
+    .oj-hicontrast .oj-fwk-icon-status-confirmation3 {
+      background-image: none;
+    }
+    .oj-hicontrast .oj-fwk-icon-status-confirmation3:before {
+      content: oj-common-image-url('status_confirmation.svg');
+    }
+
+    /* in print mode, background-image disappears, so we have to use content */
+    @media print {
+      .oj-fwk-icon-status-confirmation3 {
+        background-image: none;
+      }
+      .oj-fwk-icon-status-confirmation3:before {
+        content: oj-common-image-url('status_confirmation.svg');
+      }
+    }
+
+    .oj-fwk-icon-status-error3 {
+      width:  24px;
+      height: 24px;
+      font-size: 24px;
+      display: inline-block;
+      background-repeat: no-repeat;
+      background-position: top left;
+      background-size: 100%;
+      background-image: oj-common-image-url('status_error.svg');
+    }
+
+    /* in high-contrast mode, background-image disappears, so we have to use content */
+    .oj-hicontrast .oj-fwk-icon-status-error3 {
+      background-image: none;
+    }
+    .oj-hicontrast .oj-fwk-icon-status-error3:before {
+      content: oj-common-image-url('status_error.svg');
+    }
+
+    /* in print mode, background-image disappears, so we have to use content */
+    @media print {
+      .oj-fwk-icon-status-error3 {
+        background-image: none;
+      }
+      .oj-fwk-icon-status-error3:before {
+        content: oj-common-image-url('status_error.svg');
+      }
+    }
+
     .oj-fwk-icon-folder-open {
       @extend %default-icon-file-size;
       @include oj-icon-content(
@@ -329,6 +387,9 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     }
     .oj-fwk-icon-folderhierarchy:before {
       content: oj-prepend-slash($oj-fwk-icon-folderhierarchy);
+    }
+    .oj-fwk-icon-arrowbox-n:before {
+      content: oj-prepend-slash($oj-fwk-icon-arrowbox-n);
     }
 
     @if global-variable-exists(oj-fwk-icon-corner-drag) and $oj-fwk-icon-corner-drag != '' {

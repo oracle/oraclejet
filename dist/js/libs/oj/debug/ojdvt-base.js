@@ -1238,6 +1238,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     // Note: Checking offsetParent() does not work here since it returns false for position: fixed.
     if(!this._context.isReadyToRender()){
       this._renderNeeded = true;
+      this._MakeReady();
     }
     else {
       // If flowing layout is supported, don't pass width and height to the component render method
@@ -1251,7 +1252,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       // Add draggable attribute if DnD is supported
       if (this.options['dnd'])
-        this.element.attr('draggable', true);
+        this.element.attr('draggable', true); 
 
       // Merge css styles with with json options object
       this._ProcessStyles();

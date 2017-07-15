@@ -215,6 +215,7 @@
 //$includeConveyerBeltClasses:     $includeAllClasses !default;
 //$includeDataGridClasses:         $includeAllClasses !default;
 //$includeDialogClasses:           $includeAllClasses !default;
+//$includeFilePickerClasses:       $includeAllClasses !default;
 //$includeFilmStripClasses:        $includeAllClasses !default;
 //$includeFlexClasses:             $includeAllClasses !default;
 //$includeFormLayoutClasses:       $includeAllClasses !default;
@@ -231,6 +232,7 @@
 //$includePopupClasses:            $includeAllClasses !default;
 //$includePullToRefreshClasses:    $includeAllClasses !default;
 //$includeProgressbarClasses:      $includeAllClasses !default;
+//$includeProgressListClasses:     $includeAllClasses !default;
 //$includeResponsiveHelperClasses: $includeAllClasses !default;
 //$includeRowExpanderClasses:      $includeAllClasses !default;
 //$includeSwipeToRevealClasses:    $includeAllClasses !default;
@@ -395,6 +397,7 @@
 //$tertiaryTextColor:     $secondaryTextColor !default;
 //$contrastTextColor:     #ffffff !default;
 //$textColorDisabled:     #9e9e9e !default;
+//$textColorError:        #ff0000 !default;
 
 //$formControlLabelColor: #3a3a3a !default;
 
@@ -1873,6 +1876,8 @@
 //$progressbarBorderStyle:                 none !default;
 //$progressbarIndeterminateOverlayOpacity: 1 !default;
 
+//$progressCircleBgColor:                  $progressbarBgColor !default;
+
 // TRAIN
 //-----------------------------------------------------------------------------
 
@@ -2361,6 +2366,23 @@
 //$navigationListPointerUpAnimation:   (effect: "none") !default;
 
 // END of NavigationList variables
+
+// File picker
+//-----------------------------------------------------------------------------
+
+//oj-file-picker
+//$filePickerBgColor:               $formControlBgColor !default;
+//$filePickerBorderColor:           $formControlBorderColor !default;
+//$filePickerBorderWidth:           2px !default;
+//$filePickerBorderRadius:          $formControlBorderRadius !default;
+//$filePickerBorderStyle:           dashed !default;
+//$filePickerTextColor:             $linkTextColor !default;
+//$filePickerTextFontSize:          oj-px-to-rem(18px, $baseFontSize: 14px) !default;
+
+
+//active
+//$filePickerBgColorActive:         rgba($dropTarget1Color, 0.6) !default;
+//$filePickerBorderWidthActive:     1px !default;
 
 
 

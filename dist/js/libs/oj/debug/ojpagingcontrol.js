@@ -496,27 +496,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         this._super();
         this._refresh();
       },
-      /**
-       * Return the subcomponent node represented by the documented locator attribute values. <br/>
-       *
-       * <p>If the <code class="prettyprint">locator</code> or its <code class="prettyprint">subId</code> is
-       * <code class="prettyprint">null</code>, then this method returns the element on which this component was initalized.
-       *
-       * <p>If a <code class="prettyprint">subId</code> was provided but no corresponding node
-       * can be located, then this method returns <code class="prettyprint">null</code>.
-       *
-       * @expose
-       * @override
-       * @memberof oj.ojPagingControl
-       * @instance
-       *
-       * @param {Object} locator An Object containing, at minimum, a <code class="prettyprint">subId</code>
-       * property. See the table for details on its fields.
-       *
-       * @property {string=} locator.subId - A string that identifies a particular DOM node in this component.
-       *
-       * <p>The supported sub-ID's are documented in the <a href="#subids-section">Sub-ID's</a> section of this document.
-       */
+      //** @inheritdoc */
       'getNodeBySubId': function(locator)
       {
         if (locator == null)
@@ -595,21 +575,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
 
         return retval;
       },              
-      /**
-       * Returns the subId string for the given child DOM node.  For more details, see
-       * <a href="#getNodeBySubId">getNodeBySubId</a>.
-       *
-       * @expose
-       * @override
-       * @memberof oj.ojPagingControl
-       * @instance
-       *
-       * @param {!Element} node - child DOM node
-       * @return {Object|null} The subId for the DOM node, or <code class="prettyprint">null</code> when none is found.
-       *
-       * @example <caption>Get the subId for a certain DOM node:</caption>
-       * var subId = $( ".selector" ).ojPagingControl( "getSubIdByNode", nodeInsideComponent );
-       */
+      //** @inheritdoc */
       'getSubIdByNode': function(node)
       {
         if ($(node).hasClass(this._CSS_CLASSES._PAGING_CONTROL_NAV_INPUT_CLASS))
@@ -689,9 +655,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       _ComponentCreate : function ()
       {
         this._super();
-        this._registerDataSourceEventListeners();
         this._draw();
-        this._registerResizeListener(this._getPagingControlContainer());
         this._on(this._events);
       },
       /**
@@ -704,7 +668,42 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
       {  
         this._super();
         this._registerSwipeHandler();
-        this._setInitialPage();
+        this._isInitFetch = true;
+      },
+      /**
+       * Sets up needed resources for paging control, for example, add
+       * listeners.
+       * @protected
+       * @override
+       * @memberof! oj.ojPagingControl
+       */
+      _SetupResources: function ()
+      {
+        this._super();
+        this._registerResizeListener(this._getPagingControlContainer());
+        this._registerDataSourceEventListeners();
+        if (this._isInitFetch)
+        {
+          this._setInitialPage();
+          this._isInitFetch = false;
+        } 
+        else
+        {
+          this._refresh();
+        }
+      },
+      /**
+       * Releases resources for paging control.
+       * @protected
+       * @override
+       * @memberof! oj.ojPagingControl
+       */
+      _ReleaseResources: function ()
+      {
+        this._super();
+        // unregister the listeners on the datasource
+        this._unregisterDataSourceEventListeners();
+        this._unregisterResizeListener();
       },
       /**
        * Called by component to add a busy state and return the resolve function
@@ -2384,15 +2383,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
        * @private
        */
       _registerResizeListener: function(element)
-      {         
-        if (!this._isResizeListenerAdded)
+      { 
+        if (!this._resizeListener)
         {
           var self = this;
-          oj.DomUtils.addResizeListener(element[0], function(width, height)
-                                                    {
-                                                      self._queueRefresh();
-                                                    }, 50);
-          this._isResizeListenerAdded = true;
+          this._resizeListener = function (width, height) 
+          {
+            self._queueRefresh();
+          };
+        }
+        if (!this._resizeListenerElement)
+        {
+          oj.DomUtils.addResizeListener(element[0], this._resizeListener, 50);
+          this._resizeListenerElement = element;
         }
       },
       /**
@@ -2559,6 +2562,18 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
           self._UnregisterChildNode(this);
         });
         self = null;
+      },
+      /**
+       * Unregister event listeners for resize the container DOM element.
+       * @private
+       */
+      _unregisterResizeListener: function()
+      {
+        if (this._resizeListenerElement != null)
+        {
+          oj.DomUtils.removeResizeListener(this._resizeListenerElement, this._resizeListener);
+          this._resizeListenerElement = null;
+        }
       },
       /**
        * Unregister swipe handler for DOM element.

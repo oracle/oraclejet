@@ -53,6 +53,14 @@ oj.BaseCustomElementBridge.proto =
   {
     this.HandleBindingsCleaned(element);
     this.GetDelayedReadyPromise().resolvePromise();
+  },  
+
+  /**
+   * Notifies the bridge that the bindings have failed so we can resolve the BusyState.
+   */
+  notifyBindingsFailed: function(element)
+  {
+    this.GetDelayedReadyPromise().rejectPromise();
   },
   
   /**
@@ -68,7 +76,11 @@ oj.BaseCustomElementBridge.proto =
       function() {
         // Add marker class to unhide components
         element.classList.add('oj-complete');
-
+        // Resolve BusyState when Promise is resolved
+        initCompleteCallback();
+      },
+      function(reason) {
+        // Resolve BusyState when Promise is rejected
         initCompleteCallback();
       }
     );
@@ -344,10 +356,10 @@ oj.BaseCustomElementBridge.__InitProperties = function(element, componentProps, 
     // If complex property, check if there are any overlapping attributes
     oj.BaseCustomElementBridge.__CheckOverlappingAttribute(element, attr.nodeName);
 
-    var info = oj.__AttributeUtils.getExpressionInfo(attr.nodeValue);
+    var info = oj.__AttributeUtils.getExpressionInfo(attr.value);
     if (!info.expr)
     {
-      var value = oj.BaseCustomElementBridge.__ParseAttrValue(property, attr.nodeValue, meta, parseFun);
+      var value = oj.BaseCustomElementBridge.__ParseAttrValue(property, attr.value, meta, parseFun);
       oj.BaseCustomElementBridge.__CheckEnumValues(element, property, value, meta);
       oj.BaseCustomElementBridge.__SetProperty(bridge.GetAliasForProperty.bind(bridge), componentProps, property, value);
     }
@@ -479,11 +491,12 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
 {
   var _promise;
   var _resolve;
+  var _reject;
 
   /**
    * Returns the create Promise, creating one as needed.
    * @return {Promise}
-   * @private
+   * @ignore
    */
   this.getPromise = function()
   {
@@ -492,21 +505,33 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
       _promise = new Promise(function (resolve, reject) 
       {
         _resolve = resolve;
+        _reject = reject;
       });
     }
     return _promise;
   };
+  
+  /**
+   * Rejects the create Promise if one exists.
+   * @ignore
+   */
+  this.rejectPromise = function(reason)
+  {
+    if (_reject) 
+    {
+      _reject(reason);
+    }
+  };
 
   /**
    * Resolves the create Promise if one exists.
-   * @private
+   * @ignore
    */
   this.resolvePromise = function(value)
   {
     if (_resolve) 
     {
       _resolve(value);
-      _resolve = null;
     }
     else
     {

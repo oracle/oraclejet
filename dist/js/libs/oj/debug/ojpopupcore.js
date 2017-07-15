@@ -463,43 +463,43 @@ oj.PositionUtils._parseJSON = function(value)
   return null;
 }
 
-
 /**
- * Converts a source "position.my" into a suitable state held by jet components.
+ * Converts a source "position.my" or "position.at" into a suitable state held by jet components.
  *
- * @param {Object} mySource postion.my to shape into a Jet position object
+ * @param {string} type "my" or "at"
+ * @param {Object} source postion.my or position.at to shape into a Jet position object
  * @param {Object=} offsetSource position.offset
- * @param {Object=} myDefault default values
+ * @param {Object=} sourceDefault default values
  * @returns {Object} internal position impl
  * @private
  */
-oj.PositionUtils._coerceMyToJet = function (mySource, offsetSource, myDefault)
+oj.PositionUtils._coerceMyAtToJet = function (type, source, offsetSource, sourceDefault)
 {
-  var obj = oj.PositionUtils._parseJSON(mySource);
+  var obj = oj.PositionUtils._parseJSON(source);
   if (obj)
-    mySource = obj;
+    source = obj;
 
   obj = oj.PositionUtils._parseJSON(offsetSource);
   if (obj)
     offsetSource = obj;
 
-  if (!myDefault)
-    myDefault = {};
+  if (!sourceDefault)
+    sourceDefault = {};
 
-  var myTarget = $.extend({}, myDefault);
-  var myOffsetTarget = {"x": 0, "y": 0};
+  var target = $.extend({}, sourceDefault);
+  var offsetTarget = {"x": 0, "y": 0};
   if (offsetSource && "x" in offsetSource && "y" in offsetSource)
   {
-    myOffsetTarget["x"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["x"]);
-    myOffsetTarget["y"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["y"]);
+    offsetTarget["x"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["x"]);
+    offsetTarget["y"] = oj.DomUtils.getCSSLengthAsInt(offsetSource["y"]);
   }
 
   var groups;
 
-  if (oj.StringUtils.isString(mySource))  // jquery ui
+  if (oj.StringUtils.isString(source))  // jquery ui
   {
     // split horizontal and vertical tokens
-    var tokens = mySource.split(/\s/);
+    var tokens = source.split(/\s/);
 
     // parse horizontal
     if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
@@ -510,9 +510,9 @@ oj.PositionUtils._coerceMyToJet = function (mySource, offsetSource, myDefault)
       // verify horizontal enum
       if (groups[0])
       {
-        myTarget["horizontal"] = groups[0];
+        target["horizontal"] = groups[0];
         if (!isNaN(groups[1]))
-          myOffsetTarget["x"] = groups[1];
+          offsetTarget["x"] = groups[1];
       }
     }
 
@@ -525,123 +525,46 @@ oj.PositionUtils._coerceMyToJet = function (mySource, offsetSource, myDefault)
       // verify vertical enum
       if (groups[0])
       {
-        myTarget["vertical"] = groups[0];
+        target["vertical"] = groups[0];
         if (!isNaN(groups[1]))
-          myOffsetTarget["y"] = groups[1];
+          offsetTarget["y"] = groups[1];
       }
     }
   }
-  else if (mySource)
+  else if (source)
   {
     // my is is in the jet position format
-    if ("horizontal" in mySource)
+    if ("horizontal" in source)
     {
-      groups = oj.PositionUtils._parsePositionNmnemonic(mySource["horizontal"],
+      groups = oj.PositionUtils._parsePositionNmnemonic(source["horizontal"],
         oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
 
       if (groups[0])
       {
-        myTarget["horizontal"] = groups[0];
+        target["horizontal"] = groups[0];
         if (!isNaN(groups[1]))
-          myOffsetTarget["x"] = groups[1];
+          offsetTarget["x"] = groups[1];
       }
     }
 
-    if ("vertical" in mySource)
+    if ("vertical" in source)
     {
-      groups = oj.PositionUtils._parsePositionNmnemonic(mySource["vertical"],
+      groups = oj.PositionUtils._parsePositionNmnemonic(source["vertical"],
         oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
 
       if (groups[0])
       {
-        myTarget["vertical"] = groups[0];
+        target["vertical"] = groups[0];
         if (!isNaN(groups[1]))
-          myOffsetTarget["y"] = groups[1];
+          offsetTarget["y"] = groups[1];
       }
     }
   }
 
-  return {"my": myTarget, "offset": myOffsetTarget};
-};
-
-/**
- * Converts a source "position.at" into a suitable state held by jet components.
- *
- * @param {Object} atSource postion.at to shape into a Jet position object
- * @param {Object=} atDefault default values
- * @returns {Object} internal position impl
- * @private
- */
-oj.PositionUtils._coerceAtToJet = function (atSource, atDefault)
-{
-  var obj = oj.PositionUtils._parseJSON(atSource);
-  if (obj)
-    atSource = obj;
-
-  if (!atDefault)
-    atDefault = {};
-
-  var atTarget = $.extend({}, atDefault);
-  var groups;
-
-  if (oj.StringUtils.isString(atSource))  // jquery ui
-  {
-    // split horizontal and vertical tokens
-    var tokens = atSource.split(/\s/);
-
-    // parse horizontal
-    if (tokens.length > 0 && !oj.StringUtils.isEmpty(tokens[0]))
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[0],
-        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
-
-      // verify horizontal enum
-      if (groups[0])
-      {
-        atTarget["horizontal"] = groups[0];
-      }
-    }
-
-    // parse vertical
-    if (tokens.length > 1 && !oj.StringUtils.isEmpty(tokens[1]))
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(tokens[1],
-        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
-
-      // verify vertical enum
-      if (groups[0])
-      {
-        atTarget["vertical"] = groups[0];
-      }
-    }
-  }
-  else if (atSource)
-  {
-    // my is is in the jet position format
-    if ("horizontal" in atSource)
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(atSource["horizontal"],
-        oj.PositionUtils._HORIZONTAL_ENUM_TST_REGX);
-
-      if (groups[0])
-      {
-        atTarget["horizontal"] = groups[0];
-      }
-    }
-
-    if ("vertical" in atSource)
-    {
-      groups = oj.PositionUtils._parsePositionNmnemonic(atSource["vertical"],
-        oj.PositionUtils._VERTICAL_ENUM_TST_REGX);
-
-      if (groups[0])
-      {
-        atTarget["vertical"] = groups[0];
-      }
-    }
-  }
-
-  return {"at": atTarget};
+  var targetPosition = {};
+  targetPosition[type] = target;
+  targetPosition["offset"] = offsetTarget;
+  return targetPosition;
 };
 
 /**
@@ -765,9 +688,21 @@ oj.PositionUtils.coerceToJet = function (source, defaults)
   var ofDefault = defaults["of"];
   var usingDefault = undefined;  // to dangerous to inherit
 
+  var targetMy = oj.PositionUtils._coerceMyAtToJet("my", source["my"], source["offset"], myDefault);
+  var targetAt = oj.PositionUtils._coerceMyAtToJet("at", source["at"], null, atDefault);
+
+  // sum the "at" and "my" offsets
+  var targetOffset = {"offset":
+      {"x": targetMy["offset"]["x"] + targetAt["offset"]["x"],
+       "y": targetMy["offset"]["y"] + targetAt["offset"]["y"],
+    }};
+  delete targetMy["offset"];
+  delete targetAt["offset"];
+
   var target = $.extend({},
-                 oj.PositionUtils._coerceMyToJet(source["my"], source["offset"], myDefault),
-                 oj.PositionUtils._coerceAtToJet(source["at"], atDefault),
+                 targetMy,
+                 targetAt,
+                 targetOffset,
                  oj.PositionUtils._coerceCollisionToJet(source["collision"], collisionDefault),
                  oj.PositionUtils._coerceOfToJet(source["of"], ofDefault),
                  _coerceUsingToJet(source["using"], usingDefault));

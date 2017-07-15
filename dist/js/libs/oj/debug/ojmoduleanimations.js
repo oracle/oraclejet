@@ -133,14 +133,14 @@ oj.ModuleAnimations._createViewParent = function(oldView)
                   'left': oldView.offsetLeft + 'px',
                   'top': oldView.offsetTop + 'px'};
 
-  viewport.appendTo(oldView.offsetParent);
+  viewport.appendTo(oldView.offsetParent); //@HTMLUpdateOK; viewPort constructed above
   viewport.css(cssStyle);
   viewport.addClass('oj-animation-host-viewport');
   
   var host = document.createElement('div');
   host.className = 'oj-animation-host';
 
-  viewport.append(host);
+  viewport.append(host); //@HTMLUpdateOK; host is constructed above
   
   return host;
 };

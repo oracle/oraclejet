@@ -867,6 +867,10 @@ $.widget('oj.' + _BASE_COMPONENT,
     this._ComponentCreate();
     this._AfterCreate();
 
+    // allow subcomponent to setup needed resources
+    // after the component is created.
+    this._SetupResources();
+
     // Marker class for all JET components on the init node (as opposed to the outer node)
     // This marker class is used to:
     // 1) find all JET components within a subtree
@@ -1454,6 +1458,9 @@ $.widget('oj.' + _BASE_COMPONENT,
     //remove hover and active listeners
 //    this.widget().off(this.eventNamespace);
 
+    // allow subcomponent to release resources they hold.
+    this._ReleaseResources();
+
     // clean up states
     this.element.removeClass(_OJ_COMPONENT_NODE_CLASS);
     this.widget().removeClass( "oj-disabled" );
@@ -1794,6 +1801,44 @@ $.widget('oj.' + _BASE_COMPONENT,
 
       this._trigger("optionChange", originalEvent, optionChangeData);
     }
+  },
+
+  /**
+   * <p>Sets up needed resources for this component, for example, add
+   * listeners. This is called during _create.
+   * <a href="#_ReleaseResources">_ReleaseResources</a> will release resources
+   * help by this component, and is called during destroy.
+   * </p>
+   * <p> This base class default implementation does nothing.
+   * </p>
+   *  Component subclasses can opt in by overriding _SetupResources and
+  *   _ReleaseResources.
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _SetupResources: function ()
+  {
+    // default implementation does nothing.
+  },
+
+  /**
+   * <p>Release resources held by this component, for example, remove
+   * listeners. This is called during destroy.
+   * <a href="#_SetupResources">_SetupResources</a> will set up resources
+   * needed by this component, and is called during _create.
+   * </p>
+   * <p> This base class default implementation does nothing.
+   * </p>
+   *  Component subclasses can opt in by overriding _SetupResources and
+  *   _ReleaseResources.
+   * @memberof oj.baseComponent
+   * @instance
+   * @protected
+   */
+  _ReleaseResources: function()
+  {
+    // default implementation does nothing.
   },
 
   /**
@@ -3774,6 +3819,7 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  * @ojfragment nodeContextExample
  * @memberof oj.baseComponent
  */
+
 /*jslint browser: true*/
 /**
  * in some OS/browser combinations you can attempt to detect high contrast mode
@@ -4139,14 +4185,14 @@ oj.DomUtils._ResizeTracker = function(div)
       _detectExpansion = document.createElement("div");
       _detectExpansion.className = "oj-helper-detect-expansion";
       var expansionChild = document.createElement("div");
-      _detectExpansion.appendChild(expansionChild);
+      _detectExpansion.appendChild(expansionChild); //@HTMLUpdateOK; expansionChild constructed by the code above
       if (firstChild != null)
       {
-        div.insertBefore(_detectExpansion, firstChild);
+        div.insertBefore(_detectExpansion, firstChild);//@HTMLUpdateOK; _detectExpansion constructed by the code above
       }
       else
       {
-        div.appendChild(_detectExpansion);
+        div.appendChild(_detectExpansion);//@HTMLUpdateOK; _detectExpansion constructed by the code above
       }
 
       _detectExpansion.addEventListener("scroll", _scrollListener, false);
@@ -4159,8 +4205,8 @@ oj.DomUtils._ResizeTracker = function(div)
       var contractionChild = document.createElement("div");
       contractionChild.style.width = "200%";
       contractionChild.style.height = "200%";
-      _detectContraction.appendChild(contractionChild);
-      div.insertBefore(_detectContraction, _detectExpansion);
+      _detectContraction.appendChild(contractionChild); //@HTMLUpdateOK; contractionChild constructed by the code above
+      div.insertBefore(_detectContraction, _detectExpansion); //@HTMLUpdateOK; _detectContraction constructed by the code above
 
       _detectContraction.addEventListener("scroll", _scrollListener, false);
 
@@ -4507,7 +4553,7 @@ oj.DomUtils.getScrollBarWidth = function()
 
   /** @type {jQuery} **/
   var scrollBarMeasure = $("<div />");
-  $(document.body).append(scrollBarMeasure);
+  $(document.body).append(scrollBarMeasure); //@HTMLUpdateOK; scrollBarMeasure constructed by the code above
   scrollBarMeasure.width(50).height(50)
     .css({
             'overflow': 'scroll',
@@ -4518,7 +4564,7 @@ oj.DomUtils.getScrollBarWidth = function()
   /** @type {jQuery} **/
   var scrollBarMeasureContent = $("<div />");
   scrollBarMeasureContent.height(1);
-  scrollBarMeasure.append(scrollBarMeasureContent);
+  scrollBarMeasure.append(scrollBarMeasureContent);  //@HTMLUpdateOK; scrollBarMeasureContent constructed by the code above
 
   var insideWidth = scrollBarMeasureContent.width();
   var outsideWitdh = scrollBarMeasure.width();
@@ -4550,7 +4596,7 @@ oj.DomUtils.getReadingDirection = function()
 oj.DomUtils.getCSSLengthAsInt = function(cssLength)
 {
   if (!isNaN(cssLength))
-    return cssLength;
+    return parseInt(cssLength, 10);
 
   if (cssLength && cssLength.length > 0 && cssLength != "auto")
   {
@@ -4578,7 +4624,7 @@ oj.DomUtils.getCSSLengthAsInt = function(cssLength)
 oj.DomUtils.getCSSLengthAsFloat = function(cssLength)
 {
   if (!isNaN(cssLength))
-    return cssLength;
+    return parseFloat(cssLength);
 
   if (cssLength && cssLength.length > 0)
   {
@@ -4710,7 +4756,7 @@ oj.DomUtils._supressNativeContextMenu = function()
 }
 oj.DomUtils._supressNativeContextMenu();
 
-// standard duration of a pressHold gesture.  Point of reference: default 
+// standard duration of a pressHold gesture.  Point of reference: default
 // JQ Mobile threshold to be a press-and-hold is 750ms.
 oj.DomUtils.PRESS_HOLD_THRESHOLD = 750;
 
@@ -4722,7 +4768,7 @@ oj.DomUtils.PRESS_HOLD_THRESHOLD = 750;
 /**
  * Returns true if a touchend or touchcancel has been detected anywhere in the document in the last 500 ms.
  * Note: This function adds event listeners only once per document load.
- * 
+ *
  * @return {boolean} boolean indicating whether a touch has recently been detected
  */
 oj.DomUtils.recentTouchEnd = (function()
@@ -4753,7 +4799,7 @@ oj.DomUtils.recentTouchEnd = (function()
 /**
  * Returns true if a touchstart has been detected anywhere in the document in the last 800 ms.
  * Note: This function adds event listeners only once per document load.
- * 
+ *
  * @return {boolean} boolean indicating whether a touch has recently been detected
  */
 oj.DomUtils.recentTouchStart = (function()
@@ -4787,13 +4833,13 @@ oj.DomUtils.recentTouchStart = (function()
 // ------------------------------------------------------------------------------------------------
 
 /**
- * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the 
+ * Returns true if a touchstart, touchend, mousedown, or mouseup has been detected anywhere in the
  * document in the last n ms, where n is calibrated across a variety of platforms to make this API
- * a maximally reliable indicator of whether the code now running was likely "caused by" the 
- * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page 
- * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming 
+ * a maximally reliable indicator of whether the code now running was likely "caused by" the
+ * specified touch and mouse interaction, vs. some other thing (e.g. mousemove, keyboard, or page
+ * load).  E.g. the makeFocusable() / _focusable() mechanism uses this API to vary the focus theming
  * depending on whether the element was focused via keyboard or pointer.
- * 
+ *
  * @return {boolean} boolean indicating whether a mouse button or finger has recently been down or up
  */
 oj.DomUtils.recentPointer = (function()
@@ -4803,20 +4849,20 @@ oj.DomUtils.recentPointer = (function()
   // - Let "pointer down" mean mousedown or touchstart, and "pointer up" likewise.  (Not MS pointer events.)
   // - Event order can be 1) mousedown>focus>mouseup (like push buttons) or 2) mousedown>mouseup>focus (like toggle buttons).
   // - For 2, semantics for "focus caused by pointer" must be "if pointer interaction in last n ms," rather than "if pointer is currently down".
-  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down, 
+  // - Those "last n ms" semantics are preferred for 1 as well, rather than relying on pointer up to cancel a state set by pointer down,
   //   since if the pointer up is never received, we'd get stuck in an inaccessible state.
   // - So both pointer down and pointer up set a timestamp, and recentPointer() returns true if Date.now() is within n ms of that timestamp,
   //   where n is higher for touchstart per below.
 
-  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any 
+  // Timestamp of last mousedown/up or touchstart/end. Initial value of 0 (1/1/1970) guarantees that if element is focused before any
   // mouse/touch interaction, then recentPointer() is false, so focus ring appears as desired.
   var pointerTimestamp = 0;
 
   var pointerTimestampIsTouchStart; // whether the latest timestamp is for touchstart vs. touchend/mouse
 
-  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has 
-  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome, 
-  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no 
+  // On Edge (Surface Win10), the lag from the up event to resulting programmatic focus is routinely ~350ms, even when the 300ms "tap delay" has
+  // been prevented and confirmed to be absent.  (In Chrome on same device the same lag is ~10 ms.)  So use 600ms to be safe.  Even on Chrome,
+  // the lag from the down/up event to natively induced focus can routinely be well into the 1xx ms range. Can exceed 600 if needed. There is no
   // need for a tight bound; if there was pointer interaction in the last second or so, it's perfectly reasonable to suppress the focus ring.
   var POINTER_THRESHOLD_CUSHION = 600;
 
@@ -4824,11 +4870,11 @@ oj.DomUtils.recentPointer = (function()
   // See also TOUCHSTART_THRESHOLD.
   var POINTER_THRESHOLD = POINTER_THRESHOLD_CUSHION;
 
-  // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same 
-  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the 
-  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms 
-  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus 
-  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher 
+  // For touchstart only, use 750+600ms so that focus set by a 750ms pressHold gesture (e.g. context menu) is recognized as touch-related.  Same
+  // 600ms padding as for POINTER_THRESHOLD.  A high threshold is OK, as it is used only for actual pressHolds (and the unusual case where the
+  // pointer up is never received), since for normal clicks and taps, the pointerUp replaces the "1350ms after touchstart" policy with a "600ms
+  // after pointerUp" policy. On Edge and desktop FF (desktop version runs on hybrid devices like Surface), which lack touchstart, context menus
+  // are launched by the contextmenu event, which happen after the pointer up in both browsers, so the fact that we're using the higher
   // threshold only for touchstart should not be a problem there.
   var TOUCHSTART_THRESHOLD = oj.DomUtils.PRESS_HOLD_THRESHOLD + POINTER_THRESHOLD_CUSHION;
 
@@ -4837,16 +4883,16 @@ oj.DomUtils.recentPointer = (function()
 
   // Use capture phase to make sure we hear the events before someone cancels them
   document.addEventListener("mousedown", function() {
-    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown 
+    // If the mousedown immediately follows a touchstart, i.e. if it seems to be the compatibility mousedown
     // corresponding to the touchstart, then we want to consider it a "recent pointer activity" until the end time
     // that is max(touchstartTime + TOUCHSTART_THRESHOLD, now + POINTER_THRESHOLD), where now is mousedownTime in this
-    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with 
-    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold 
-    // is over, in which case the following analysis applies:  
-    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms, 
-    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold 
-    //   (like a context menu) never happened, 
-    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above, 
+    // case.  (I.e. it would defeat the purpose if the inevitable mousedown replaced the longer touchstart threshold with
+    // a shorter one.)  We don't do this in the touchend/mouseup listeners, as those obviously happen after the pressHold
+    // is over, in which case the following analysis applies:
+    // - If the pressHold was < PRESS_HOLD_THRESHOLD ms,
+    // - then the higher TOUCHSTART_THRESHOLD is not needed or relevant, since anything focused on pressHold
+    //   (like a context menu) never happened,
+    // - else the touchend/mouseup happened > PRESS_HOLD_THRESHOLD ms after the touchstart, so in the max() above,
     //   the 2nd quantity is always bigger (later).
     var now = Date.now();
     if ((!pointerTimestampIsTouchStart) || (now > pointerTimestamp + oj.DomUtils.PRESS_HOLD_THRESHOLD)) {
@@ -4888,56 +4934,56 @@ oj.DomUtils.recentPointer = (function()
 // ------------------------------------------------------------------------------------------------
 
 /**
- * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the 
- * similarities and differences listed below.  This API is intended for non-component callers; 
+ * This API works like baseComponent's _focusable() API (see its detailed JSDoc), with the
+ * similarities and differences listed below.  This API is intended for non-component callers;
  * components should typically call the baseComponent API via this._focusable().
- * 
+ *
  * Comparison to baseComponent._focusable() :
- * 
- * - This function's "options" param must be an object.  Only baseComponent._focusable() 
+ *
+ * - This function's "options" param must be an object.  Only baseComponent._focusable()
  *   supports the backward-compatibility syntax where the options param can be the element.
  * - Same usage of oj-focus, oj-focus-highlight, and $focusHighlightPolicy.
  * - Same required invariant that oj-focus-highlight must not be set if oj-focus is not set.
- * - Same parameters with same semantics, plus the additional "component" and "remove" params 
+ * - Same parameters with same semantics, plus the additional "component" and "remove" params
  *   discussed below.
- * - New options.component param, which takes a JET component instance.  (When a component is 
- *   involved, typically that component should call this._focusable() rather than calling this 
+ * - New options.component param, which takes a JET component instance.  (When a component is
+ *   involved, typically that component should call this._focusable() rather than calling this
  *   version of the method directly.)
- * 
- * If options.component is specified, then the following things work like the baseComponent 
+ *
+ * If options.component is specified, then the following things work like the baseComponent
  * version of this API:
- * 
- * - If the specified element is in the component subtree, 
- *   then the classes will automatically be removed when the component is 
- *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc, 
+ *
+ * - If the specified element is in the component subtree,
+ *   then the classes will automatically be removed when the component is
+ *   destroyed/disabled/detached, as detailed in the baseComponent JSDoc,
  *   else the caller has the same responsibility to remove the classes at those times.
- * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the 
+ * - Same rules as to whether listeners are automatically cleaned up, or suppressed when the
  *   component is disabled, vs. being the caller's responsibility to handle those things.
- * 
- * If options.component is NOT specified (for non-component callers), then those things are 
+ *
+ * If options.component is NOT specified (for non-component callers), then those things are
  * the caller's responsibility.  Specifically:
- * 
+ *
  * - Class removal can be done directly, as needed.
  * - To remove the listeners, see the following.
- * 
+ *
  * Listener removal:
- * 
- * - If options.component was specified, see above.  
- * - Else if options.setupHandlers was specified, then only the caller knows what listeners were 
+ *
+ * - If options.component was specified, see above.
+ * - Else if options.setupHandlers was specified, then only the caller knows what listeners were
  *   registered and how, so it is the caller's responsibility to remove them directly when needed.
- * - The remaining case is that options.component and options.setupHandlers were not specified.  
- *   To remove from element e both the 2 classes and all listeners applied to e by all previous 
- *   invocations of makeFocusable() where these options were not specified, 
+ * - The remaining case is that options.component and options.setupHandlers were not specified.
+ *   To remove from element e both the 2 classes and all listeners applied to e by all previous
+ *   invocations of makeFocusable() where these options were not specified,
  *   call makeFocusable( {'element': e, 'remove': true} ).
  */
 // If this is named focusable(), Closure Compiler generates a warning, and fails to rename the function in minified code,
-// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in 
-// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\), 
+// which suggests that focusable (not just _focusable) is apparently externed somewhere (although not in
+// 3rdparty\jquery\externs\jquery-1.8.js, main\javascript\externs.js, or build\tools\closure\compiler.jar\externs.zip\),
 // perhaps for JQUI's :focusable selector.  So name it makeFocusable().
 oj.DomUtils.makeFocusable = (function()
 {
   var nextId = 0; // used for unique namespace, for "remove" functionality
-  
+
   // This private var is shared by all callers that use makeFocusable() and don't supply their own focus highlight policy.
   // If the oj-focus-config SASS object ever acquires a 2nd field, should continue to call pJFFF() only once, statically.
   var FOCUS_HIGHLIGHT_POLICY = (oj.ThemeUtils.parseJSONFromFontFamily('oj-focus-config') || {})['focusHighlightPolicy'];
@@ -4947,7 +4993,7 @@ oj.DomUtils.makeFocusable = (function()
    *   specific focus policy mechanism instead of the built-in mechanism.
    * @param {function()} recentPointerCallback Optional function passed to makeFocusable() by callers wishing to use a caller-
    *   specific mechanism in addition to the built-in mechanism.
-   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code> 
+   * @return {boolean} boolean indicating whether it is appropriate to apply the <code class="prettyprint">oj-focus-highlight</code>
    *   CSS class for a focus happening at the time of this method call.
    */
   var shouldApplyFocusHighlight = function(focusPolicyCallback, recentPointerCallback)
@@ -4978,7 +5024,7 @@ oj.DomUtils.makeFocusable = (function()
 
       // id's of listeners needing removal
       var ids = element.data(dataKey);
-      if (ids == undefined) 
+      if (ids == undefined)
           return;
 
       // map ids to namespaces.  "2" -> ".ojFocusable2".  "2,7" -> ".ojFocusable2 .ojFocusable7"
@@ -4989,7 +5035,7 @@ oj.DomUtils.makeFocusable = (function()
     }
 
     var afterToggle = options['afterToggle'] || $.noop;
-    
+
     var applyOnlyFocus = function( element ) {
       element.addClass( "oj-focus" );
       afterToggle("focusin");
@@ -5004,7 +5050,7 @@ oj.DomUtils.makeFocusable = (function()
     };
 
     var addClasses = options['applyHighlight'] ? applyBothClasses : applyOnlyFocus;
-    
+
     var removeClasses = function( element ) {
       element.removeClass( "oj-focus oj-focus-highlight" );
       afterToggle("focusout");
@@ -5025,7 +5071,7 @@ oj.DomUtils.makeFocusable = (function()
           focusout: focusOutListener
         });
       } else {
-        // neither options.component nor options.setupHandlers were passed, so we must provide a 
+        // neither options.component nor options.setupHandlers were passed, so we must provide a
         // way for the caller to remove the listeners.  That's done via the "remove" param, which
         // uses the namespaces that we stash via data().
         var id = nextId++;
@@ -5044,7 +5090,7 @@ oj.DomUtils.makeFocusable = (function()
         element.on(handlers);
       }
     };
-    
+
     setupHandlers(addClasses, removeClasses);
   };
 

@@ -34586,6 +34586,7 @@ dvt.EventManager.prototype._processShowTooltip = function(target, obj, pageX, pa
       }
 
       this.TooltipLaunched(text, borderColor);
+      this.DispatchElementEvent('tooltiplaunched');
       return true;
     } else {
       this.hideTooltip();
@@ -36088,6 +36089,17 @@ dvt.EventManager.prototype._handleDropTargetEventHelper = function(event, eventT
   }
 
   return true;
+};
+
+/**
+ * Dispatches a non bubbling CustomEvent from the root SVG element. This method can be used for
+ * firing events out for testing purposes, e.g. after a tooltip is launched.
+ * @param {string} eventType The CustomEvent type
+ * @param {Object} eventDetail The object that will be passed in the CustomEvent's detail property.
+ * @protected
+ */
+dvt.EventManager.prototype.DispatchElementEvent = function(eventType, eventDetail) {
+  this.getCtx().getSvgDocument().dispatchEvent(new CustomEvent(eventType, {'detail': eventDetail}));
 };
 /**
  * Interactivity manager for custom tooltips and menus.  The two can be visually combined.

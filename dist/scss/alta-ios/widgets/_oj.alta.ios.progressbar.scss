@@ -17,6 +17,8 @@
         background: oj-image-url("animated-overlay-rtl.gif");
       }
     }
-   
+    .oj-progress-circle-overlay {
+      background-image: oj-image-url("spinner_full.gif");
+    }
   }
 }

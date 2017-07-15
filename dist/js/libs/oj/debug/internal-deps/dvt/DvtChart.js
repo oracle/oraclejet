@@ -25472,6 +25472,8 @@ DvtChartFunnelRenderer._DEFAULT_2D_GAP_RATIO = 1 / 70;
 DvtChartFunnelRenderer._MAX_WIDTH_FOR_GAPS = 0.25;
 /** @private @const */
 DvtChartFunnelRenderer._GROUP_INDEX = 0;
+/** @private @const */
+DvtChartFunnelRenderer._ANGLE_EXTENT_THRESHOLD = 0.0001;
 
 /**
  * Renders the funnel into the available space.
@@ -25562,6 +25564,11 @@ DvtChartFunnelRenderer._renderFunnelSlices = function(chart, container, availSpa
     var value = DvtChartDataUtils.getValue(chart, seriesIndex, DvtChartFunnelRenderer._GROUP_INDEX);
     var targetValue = DvtChartDataUtils.getTargetValue(chart, seriesIndex);
     if ((value <= 0 && targetValue == null) || (targetValue != null && targetValue <= 0))
+      continue;
+
+    //  - rendering issues for funnel/pie/sunburst charts
+    var sliceValue = targetValue ? targetValue : value;
+    if (sliceValue < DvtChartFunnelRenderer._ANGLE_EXTENT_THRESHOLD * totalValue)
       continue;
 
     var slice;
